@@ -238,7 +238,31 @@ const TEXT = {
     includedReport: "Incluído no Relatório",
     scheduled: "Agendado",
     completed: "Realizado",
-    certificateIssued: "Certificado Emitido"
+    certificateIssued: "Certificado Emitido",
+    classProgress: "Progresso das Aulas",
+    class1: "Aula 1",
+    class2: "Aula 2",
+    class3: "Aula 3",
+    class4: "Aula 4",
+    class5: "Aula 5",
+    class6: "Aula 6",
+    class7: "Aula 7",
+    classesCompletedText: "aulas concluídas",
+    classesCompletedSummary: "{n}/7 aulas concluídas",
+    readyForExam: "Pronto para Exame",
+    practicalCompleted: "Prática concluída",
+    soulsWon: "Número de almas ganhas",
+    enrolled: "Inscrito",
+    approved: "Aprovado",
+    graduated: "Graduado",
+    studentData: "Dados do Aluno",
+    evaluation: "Avaliação",
+    finalization: "Finalização",
+    examScore: "Nota do Exame",
+    markClassTitle: "Marcar Aula",
+    launchScoreTitle: "Lançar Nota",
+    autoStatusHint: "Estado sugerido automaticamente. Pode ajustar manualmente.",
+    certificateIssuedLabel: "Certificado emitido"
   },
   en: {
     loginTitle: "Team Portal",
@@ -467,7 +491,31 @@ const TEXT = {
     includedReport: "Included in Report",
     scheduled: "Scheduled",
     completed: "Completed",
-    certificateIssued: "Certificate Issued"
+    certificateIssued: "Certificate Issued",
+    classProgress: "Class Progress",
+    class1: "Class 1",
+    class2: "Class 2",
+    class3: "Class 3",
+    class4: "Class 4",
+    class5: "Class 5",
+    class6: "Class 6",
+    class7: "Class 7",
+    classesCompletedText: "classes completed",
+    classesCompletedSummary: "{n}/7 classes completed",
+    readyForExam: "Ready for Exam",
+    practicalCompleted: "Practical completed",
+    soulsWon: "Number of souls won",
+    enrolled: "Enrolled",
+    approved: "Approved",
+    graduated: "Graduated",
+    studentData: "Student Details",
+    evaluation: "Evaluation",
+    finalization: "Finalization",
+    examScore: "Exam Score",
+    markClassTitle: "Mark Class",
+    launchScoreTitle: "Launch Score",
+    autoStatusHint: "Status suggested automatically. You can adjust it manually.",
+    certificateIssuedLabel: "Certificate issued"
   }
 };
 
@@ -553,7 +601,15 @@ Object.assign(STATUS_KEYS, {
   "Inactivo": "inactive",
   "Em Revisão": "review",
   "Por Confirmar": "toConfirm",
-  "Incompleto": "incomplete"
+  "Incompleto": "incomplete",
+  "Pending Enrolment": "enrolled",
+  "Enrolled": "enrolled",
+  "Exam Ready": "readyForExam",
+  "Passed": "approved",
+  "Graduated": "graduated",
+  "Pronto para Exame": "readyForExam",
+  Graduado: "graduated",
+  Aprovado: "approved"
 });
 
 const CHURCH_TYPES = ["Sede Nacional", "Igreja Local", "Igreja Online", "Igreja Virtual", "Grupo / Missão"];
@@ -1750,7 +1806,16 @@ const FINANCE_STATUS_VERIFIED = "Verificado";
 const FINANCE_STATUS_REJECTED = "Rejeitado";
 const FINANCE_STATUS_INCLUDED = "Incluído no Relatório";
 const financeStatuses = [FINANCE_STATUS_PENDING, FINANCE_STATUS_VERIFIED, FINANCE_STATUS_REJECTED, FINANCE_STATUS_INCLUDED];
-const foundationStatuses = ["Pending Enrolment", "Enrolled", "In Progress", "Exam Ready", "Passed", "Graduated", "Certificate Issued"];
+const foundationStatuses = ["Inscrito", "Em Curso", "Pronto para Exame", "Aprovado", "Graduado", "Certificado Emitido"];
+const FOUNDATION_STATUS_MAP = {
+  "Pending Enrolment": "Inscrito",
+  Enrolled: "Inscrito",
+  "In Progress": "Em Curso",
+  "Exam Ready": "Pronto para Exame",
+  Passed: "Aprovado",
+  Graduated: "Graduado",
+  "Certificate Issued": "Certificado Emitido"
+};
 const givingCategories = ["Dízimo", "Ofertas", "Acção de Graças", "Primícias", "Semente de Fé", "Ofertas Especiais", "Rapsódia de Realidades", "Loveworld SAT", "Escola de Cura", "Projecto de Construção de Igreja", "Projecto da Igreja", "Alcançar Moçambique", "Missões no Interior das Cidades", "Outros"];
 const paymentMethods = ["Dinheiro", "Cheque", "M-Pesa", "E-Mola", "Banco"];
 const serviceOptions = ["Domingo Manhã", "Domingo Tarde", "Quarta-Feira", "Sexta-Feira", "Programa Especial"];
@@ -1827,7 +1892,30 @@ const seedData = {
     { id: "m-2", tratamento: "Irmã", nome: "Aminata", apelido: "Chivinda", telefone: "848287179", email: "", church_id: "church-hq", celula: "Mavalane", departamento: "Seguimento", estado: "In Progress", data_de_entrada: "2026-07-05", origem: "Primeira Vez", notas: "" }
   ],
   foundationStudents: [
-    { id: "fs-1", first_timer_id: "ft-2", church_id: "church-hq", nome: "Mateus", apelido: "Nhantumbo", telefone: "862720011", celula: "Cell Central", mes_de_inscricao: "2026-07", estado: "In Progress", presencas: [true, true, true, true, false, false, false], notas_aulas: [88, 91, 85, 79, 0, 0, 0], nota_exame: 0, pratica_evangelismo: true, numero_de_almas_ganhas: 2, aprovado: false, graduado: false, certificado_emitido: false }
+    {
+      id: "fs-1",
+      first_timer_id: "ft-2",
+      member_id: "",
+      church_id: "church-hq",
+      nome: "Mateus",
+      apelido: "Nhantumbo",
+      telefone: "862720011",
+      celula: "Cell Central",
+      mes_de_inscricao: "2026-07",
+      class_attendance: { class_1: true, class_2: true, class_3: true, class_4: true, class_5: false, class_6: false, class_7: false },
+      completed_classes: 4,
+      class_progress_percent: 57,
+      estado: "Em Curso",
+      nota_exame: 0,
+      pratica_evangelismo: true,
+      numero_de_almas_ganhas: 2,
+      aprovado: false,
+      graduado: false,
+      certificado_emitido: false,
+      notes: "",
+      created_at: "2026-07-01",
+      updated_at: "2026-07-10"
+    }
   ],
   contributors: [],
   finance: [
@@ -2129,6 +2217,7 @@ function normalizeState(saved) {
   });
   merged.finance = savedFinance.length ? savedFinance : seedFinance;
   merged.contributors = Array.isArray(merged.contributors) ? merged.contributors : structuredClone(seedData.contributors || []);
+  merged.foundationStudents = (merged.foundationStudents || []).map((student) => migrateFoundationStudent(student));
   return merged;
 }
 
@@ -3051,8 +3140,8 @@ function badge(status) {
 
 function badgeClass(status) {
   const key = statusKey(status);
-  if (["active", "verified", "becameMember", "completed", "certificateIssued", "confirmed", "available", "approved", "received", "sent", "reportSubmitted", "validated", "excellent", "good", "growing"].includes(key)) return "good";
-  if (["contacted", "sentToCell", "enrolledFoundation", "enrolled", "exam"].includes(key)) return "blue";
+  if (["active", "verified", "becameMember", "completed", "certificateIssued", "confirmed", "available", "approved", "received", "sent", "reportSubmitted", "validated", "excellent", "good", "growing", "graduated"].includes(key)) return "good";
+  if (["contacted", "sentToCell", "enrolledFoundation", "enrolled", "exam", "readyForExam"].includes(key)) return "blue";
   if (["pending", "pendingVerification", "scheduled", "planned", "inPreparation", "requested", "draft", "submitted", "needsAttention", "toConfirm"].includes(key)) return "warn";
   if (["incomplete"].includes(key)) return "danger";
   if (["rejected", "cancelled", "outOfStock", "critical"].includes(key)) return "danger";
@@ -3647,9 +3736,300 @@ function renderMembers() {
   `;
 }
 
+function defaultFoundationAttendance() {
+  return { class_1: false, class_2: false, class_3: false, class_4: false, class_5: false, class_6: false, class_7: false };
+}
+
+function getFoundationCompletedClasses(student) {
+  const attendance = student.class_attendance || defaultFoundationAttendance();
+  return Array.from({ length: 7 }, (_, i) => attendance[`class_${i + 1}`]).filter(Boolean).length;
+}
+
+function getFoundationClassProgressPercent(student) {
+  return Math.round((getFoundationCompletedClasses(student) / 7) * 100);
+}
+
+function migrateFoundationStudent(student) {
+  const record = { ...student };
+  if (!record.class_attendance) {
+    const legacy = Array.isArray(record.presencas) ? record.presencas : [];
+    record.class_attendance = defaultFoundationAttendance();
+    legacy.forEach((present, index) => {
+      if (index < 7) record.class_attendance[`class_${index + 1}`] = !!present;
+    });
+  }
+  for (let i = 1; i <= 7; i += 1) {
+    if (record.class_attendance[`class_${i}`] === undefined) record.class_attendance[`class_${i}`] = false;
+  }
+  record.completed_classes = getFoundationCompletedClasses(record);
+  record.class_progress_percent = getFoundationClassProgressPercent(record);
+  if (FOUNDATION_STATUS_MAP[record.estado]) record.estado = FOUNDATION_STATUS_MAP[record.estado];
+  if (record.notes === undefined) record.notes = record.notas || "";
+  return record;
+}
+
+function applyFoundationCalculations(student, autoStatus = false) {
+  const record = migrateFoundationStudent(student);
+  record.completed_classes = getFoundationCompletedClasses(record);
+  record.class_progress_percent = getFoundationClassProgressPercent(record);
+  if (autoStatus) record.estado = suggestFoundationStatus(record);
+  return record;
+}
+
+function suggestFoundationStatus(student) {
+  const record = migrateFoundationStudent(student);
+  const completed = record.completed_classes;
+  if (record.certificado_emitido) return "Certificado Emitido";
+  if (record.graduado) return "Graduado";
+  if (record.aprovado && record.pratica_evangelismo && Number(record.nota_exame) > 0) return "Aprovado";
+  if (completed === 7 && !Number(record.nota_exame)) return "Pronto para Exame";
+  if (completed >= 1 && completed <= 6) return "Em Curso";
+  if (completed === 0) return "Inscrito";
+  return record.estado || "Inscrito";
+}
+
+function foundationClassLabel(index) {
+  return L(`class${index}`);
+}
+
+function foundationProgressSummary(student) {
+  const record = migrateFoundationStudent(student);
+  return L("classesCompletedSummary").replace("{n}", record.completed_classes);
+}
+
+function foundationProgressBar(percent, extraClass = "") {
+  return `<div class="progress foundation-progress-bar ${extraClass}"><div class="progress-bar" style="width:${percent}%"></div></div>`;
+}
+
+function foundationClassDots(student, compact = false) {
+  const record = migrateFoundationStudent(student);
+  return `<div class="step-row foundation-class-steps ${compact ? "is-compact" : ""}">${Array.from({ length: 7 }, (_, i) => {
+    const n = i + 1;
+    const done = record.class_attendance[`class_${n}`];
+    return `<span class="${done ? "done" : "pending"}" title="${foundationClassLabel(n)}">${n}</span>`;
+  }).join("")}</div>`;
+}
+
+function foundationClassProgressCell(student) {
+  const record = migrateFoundationStudent(student);
+  return `
+    <div class="foundation-progress-cell">
+      ${foundationProgressBar(record.class_progress_percent)}
+      ${foundationClassDots(record, true)}
+      <small class="foundation-progress-percent">${record.class_progress_percent}%</small>
+    </div>
+  `;
+}
+
+function foundationClassCheckboxes(student, prefix = "class_") {
+  const record = migrateFoundationStudent(student);
+  return `<div class="foundation-class-grid">${Array.from({ length: 7 }, (_, i) => {
+    const n = i + 1;
+    const key = `${prefix}${n}`;
+    const checked = record.class_attendance[`class_${n}`] ? "checked" : "";
+    return `<label class="foundation-class-toggle"><input type="checkbox" name="${key}" data-foundation-class="${n}" ${checked}><span>${foundationClassLabel(n)}</span></label>`;
+  }).join("")}</div>`;
+}
+
+function foundationProgressPreviewHtml(student) {
+  const record = migrateFoundationStudent(student);
+  return `
+    <div class="foundation-progress-preview" data-foundation-progress-preview>
+      ${foundationProgressBar(record.class_progress_percent, "mb-2")}
+      ${foundationClassDots(record)}
+      <p class="foundation-progress-copy mb-0" data-foundation-progress-text>${foundationProgressSummary(record)} · ${record.class_progress_percent}%</p>
+    </div>
+  `;
+}
+
+function foundationSectionTitle(title) {
+  return `<div class="col-12"><h6 class="foundation-form-section">${title}</h6></div>`;
+}
+
+function readFoundationAttendanceFromForm(form, prefix = "class_") {
+  const attendance = defaultFoundationAttendance();
+  for (let i = 1; i <= 7; i += 1) attendance[`class_${i}`] = new FormData(form).has(`${prefix}${i}`);
+  return attendance;
+}
+
+function updateFoundationProgressPreview(form) {
+  const preview = form.closest(".modal-content")?.querySelector("[data-foundation-progress-preview]");
+  if (!preview) return;
+  const attendance = readFoundationAttendanceFromForm(form);
+  const completed = Object.values(attendance).filter(Boolean).length;
+  const percent = Math.round((completed / 7) * 100);
+  const bar = preview.querySelector(".progress-bar");
+  const text = preview.querySelector("[data-foundation-progress-text]");
+  if (bar) bar.style.width = `${percent}%`;
+  if (text) text.textContent = `${L("classesCompletedSummary").replace("{n}", completed)} · ${percent}%`;
+  preview.querySelectorAll(".foundation-class-steps span").forEach((dot, index) => {
+    dot.classList.toggle("done", !!attendance[`class_${index + 1}`]);
+    dot.classList.toggle("pending", !attendance[`class_${index + 1}`]);
+  });
+}
+
+function renderFoundationStudentForm(record = {}, mode = "edit") {
+  const student = migrateFoundationStudent(record);
+  const statusOptions = foundationStatuses.map((status) => `<option value="${status}" ${student.estado === status ? "selected" : ""}>${statusText(status)}</option>`).join("");
+  const churchOptions = state.churches.map((church) => `<option value="${church.id}" ${student.church_id === church.id ? "selected" : ""}>${church.church_name}</option>`).join("");
+  const readonly = mode === "view" ? "disabled" : "";
+  return `
+    ${foundationSectionTitle(L("studentData"))}
+    <div class="col-md-6"><label class="form-label">${L("name")}</label><input name="nome" class="form-control" value="${student.nome || ""}" ${readonly} required></div>
+    <div class="col-md-6"><label class="form-label">${L("surname")}</label><input name="apelido" class="form-control" value="${student.apelido || ""}" ${readonly}></div>
+    <div class="col-md-6"><label class="form-label">${L("phone")}</label><input name="telefone" class="form-control" value="${student.telefone || ""}" ${readonly}></div>
+    <div class="col-md-6"><label class="form-label">${L("church")}</label><select name="church_id" class="form-select" ${readonly}>${churchOptions}</select></div>
+    <div class="col-md-6"><label class="form-label">${L("cell")}</label><input name="celula" class="form-control" value="${student.celula || ""}" ${readonly}></div>
+    <div class="col-md-6"><label class="form-label">${L("status")}</label><select name="estado" class="form-select" data-foundation-status ${readonly}>${statusOptions}</select><small class="text-white-50 d-block mt-1">${L("autoStatusHint")}</small></div>
+    ${foundationSectionTitle(L("classProgress"))}
+    <div class="col-12">${mode === "view" ? foundationProgressPreviewHtml(student) : foundationClassCheckboxes(student)}</div>
+    ${mode !== "view" ? `<div class="col-12">${foundationProgressPreviewHtml(student)}</div>` : ""}
+    ${foundationSectionTitle(L("evaluation"))}
+    <div class="col-md-6"><label class="form-label">${L("examScore")}</label><input name="nota_exame" type="number" min="0" max="100" class="form-control" value="${student.nota_exame || ""}" ${readonly}></div>
+    <div class="col-md-6 d-flex align-items-end"><label class="form-check"><input name="pratica_evangelismo" type="checkbox" class="form-check-input" ${student.pratica_evangelismo ? "checked" : ""} ${readonly}> <span class="form-check-label">${L("practicalCompleted")}</span></label></div>
+    <div class="col-md-6"><label class="form-label">${L("soulsWon")}</label><input name="numero_de_almas_ganhas" type="number" min="0" class="form-control" value="${student.numero_de_almas_ganhas || 0}" ${readonly}></div>
+    <div class="col-md-6 d-flex align-items-end"><label class="form-check"><input name="aprovado" type="checkbox" class="form-check-input" ${student.aprovado ? "checked" : ""} ${readonly}> <span class="form-check-label">${L("approved")}</span></label></div>
+    ${foundationSectionTitle(L("finalization"))}
+    <div class="col-md-6 d-flex align-items-end"><label class="form-check foundation-check-graduated"><input name="graduado" type="checkbox" class="form-check-input" ${student.graduado ? "checked" : ""} ${readonly}> <span class="form-check-label">${L("graduated")}</span></label></div>
+    <div class="col-md-6 d-flex align-items-end"><label class="form-check foundation-check-certificate"><input name="certificado_emitido" type="checkbox" class="form-check-input" ${student.certificado_emitido ? "checked" : ""} ${readonly}> <span class="form-check-label">${L("certificateIssuedLabel")}</span></label></div>
+    <div class="col-12"><label class="form-label">${L("notes")}</label><textarea name="notes" class="form-control" rows="3" ${readonly}>${student.notes || ""}</textarea></div>
+  `;
+}
+
+function renderFoundationMarkClassForm(record) {
+  const student = migrateFoundationStudent(record);
+  return `
+    <div class="col-12"><p class="mb-1"><strong>${fullName(student)}</strong></p><p class="text-white-50 small mb-0">${student.telefone || ""} · ${churchName(student.church_id)}</p></div>
+    <div class="col-12">${foundationClassCheckboxes(student)}</div>
+    <div class="col-12">${foundationProgressPreviewHtml(student)}</div>
+  `;
+}
+
+function renderFoundationScoreForm(record) {
+  const student = migrateFoundationStudent(record);
+  return `
+    <div class="col-12"><p class="mb-1"><strong>${fullName(student)}</strong></p><p class="text-white-50 small mb-3">${foundationProgressSummary(student)} · ${student.class_progress_percent}%</p></div>
+    <div class="col-md-6"><label class="form-label">${L("examScore")}</label><input name="nota_exame" type="number" min="0" max="100" class="form-control" value="${student.nota_exame || ""}" required></div>
+    <div class="col-md-6 d-flex align-items-end"><label class="form-check"><input name="pratica_evangelismo" type="checkbox" class="form-check-input" ${student.pratica_evangelismo ? "checked" : ""}> <span class="form-check-label">${L("practicalCompleted")}</span></label></div>
+    <div class="col-md-6"><label class="form-label">${L("soulsWon")}</label><input name="numero_de_almas_ganhas" type="number" min="0" class="form-control" value="${student.numero_de_almas_ganhas || 0}"></div>
+    <div class="col-md-6 d-flex align-items-end"><label class="form-check"><input name="aprovado" type="checkbox" class="form-check-input" ${student.aprovado ? "checked" : ""}> <span class="form-check-label">${L("approved")}</span></label></div>
+  `;
+}
+
+function openFoundationStudentForm(id = null) {
+  modalMode = id ? "edit" : "create";
+  modalType = "foundationStudent";
+  modalRecordId = id;
+  const record = id ? getCollection("foundationStudent").find((item) => item.id === id) : {};
+  byId("modalEyebrow").textContent = modalMode === "edit" ? L("edit") : L("add");
+  byId("modalTitle").textContent = L("foundationSchool");
+  byId("modalFields").innerHTML = renderFoundationStudentForm(record, modalMode);
+  bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
+}
+
+function openFoundationMarkClass(id) {
+  const record = getCollection("foundationStudent").find((item) => item.id === id);
+  if (!record) return;
+  modalMode = "edit";
+  modalType = "foundationMarkClass";
+  modalRecordId = id;
+  byId("modalEyebrow").textContent = L("markClass");
+  byId("modalTitle").textContent = L("markClassTitle");
+  byId("modalFields").innerHTML = renderFoundationMarkClassForm(record);
+  bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
+}
+
+function openFoundationScore(id) {
+  const record = getCollection("foundationStudent").find((item) => item.id === id);
+  if (!record) return;
+  modalMode = "edit";
+  modalType = "foundationScore";
+  modalRecordId = id;
+  byId("modalEyebrow").textContent = L("launchScore");
+  byId("modalTitle").textContent = L("launchScoreTitle");
+  byId("modalFields").innerHTML = renderFoundationScoreForm(record);
+  bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
+}
+
+function collectFoundationStudentPayload(form, base = {}) {
+  const data = Object.fromEntries(new FormData(form).entries());
+  ["pratica_evangelismo", "aprovado", "graduado", "certificado_emitido"].forEach((key) => {
+    data[key] = new FormData(form).has(key);
+  });
+  data.class_attendance = readFoundationAttendanceFromForm(form);
+  data.nota_exame = Number(data.nota_exame || 0);
+  data.numero_de_almas_ganhas = Number(data.numero_de_almas_ganhas || 0);
+  return applyFoundationCalculations({ ...base, ...data }, false);
+}
+
+function submitFoundationStudent(form) {
+  const collection = getCollection("foundationStudent");
+  const today = new Date().toISOString().slice(0, 10);
+  if (modalMode === "edit") {
+    const index = collection.findIndex((item) => item.id === modalRecordId);
+    const merged = collectFoundationStudentPayload(form, collection[index]);
+    if (!form.elements.estado?.dataset.manualStatus) merged.estado = suggestFoundationStatus(merged);
+    collection[index] = { ...collection[index], ...merged, updated_at: today };
+  } else {
+    const payload = collectFoundationStudentPayload(form, {
+      id: `fs-${Date.now()}`,
+      first_timer_id: "",
+      member_id: "",
+      mes_de_inscricao: new Date().toISOString().slice(0, 7),
+      created_at: today,
+      updated_at: today
+    });
+    payload.estado = form.elements.estado?.dataset.manualStatus ? payload.estado : suggestFoundationStatus(payload);
+    collection.push(payload);
+  }
+  saveState(`${modalMode === "edit" ? "Updated" : "Created"} foundation student`);
+  bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide();
+  form.reset();
+  setRoute(activeRoute);
+}
+
+function submitFoundationMarkClass(form) {
+  const collection = getCollection("foundationStudent");
+  const index = collection.findIndex((item) => item.id === modalRecordId);
+  if (index < 0) return;
+  const merged = applyFoundationCalculations({
+    ...collection[index],
+    class_attendance: readFoundationAttendanceFromForm(form),
+    updated_at: new Date().toISOString().slice(0, 10)
+  }, true);
+  collection[index] = merged;
+  saveState("Updated foundation class attendance");
+  bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide();
+  form.reset();
+  setRoute(activeRoute);
+}
+
+function submitFoundationScore(form) {
+  const collection = getCollection("foundationStudent");
+  const index = collection.findIndex((item) => item.id === modalRecordId);
+  if (index < 0) return;
+  const data = Object.fromEntries(new FormData(form).entries());
+  ["pratica_evangelismo", "aprovado"].forEach((key) => {
+    data[key] = new FormData(form).has(key);
+  });
+  const merged = applyFoundationCalculations({
+    ...collection[index],
+    nota_exame: Number(data.nota_exame || 0),
+    pratica_evangelismo: data.pratica_evangelismo,
+    numero_de_almas_ganhas: Number(data.numero_de_almas_ganhas || 0),
+    aprovado: data.aprovado,
+    updated_at: new Date().toISOString().slice(0, 10)
+  }, true);
+  collection[index] = merged;
+  saveState("Updated foundation exam score");
+  bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide();
+  form.reset();
+  setRoute(activeRoute);
+}
+
 function renderFoundation() {
   const pending = foundationPending();
-  const students = scoped(state.foundationStudents);
+  const students = scoped(state.foundationStudents).map((student) => migrateFoundationStudent(student));
   byId("content").innerHTML = `
     ${moduleNavShell("foundationSchool", { title: L("foundationSchool"), subtitle: L("foundationSubtitle"), modalType: "foundationStudent", icon: "bi-mortarboard" },
       `<div class="tab-strip module-tab-strip">${[
@@ -3674,7 +4054,7 @@ function renderFoundation() {
         <article id="panel-foundationStudents" class="panel">
           ${filterBar()}
           ${dataTable([L("student"), L("church"), L("cell"), L("classes"), L("exam"), L("practical"), L("status"), L("progress"), L("actions")], students.map((s) => [
-            fullName(s), churchName(s.church_id), s.celula, `${s.presencas.filter(Boolean).length}/7`, s.nota_exame || "-", yesNo(s.pratica_evangelismo), badge(s.estado), progressSteps(s),
+            fullName(s), churchName(s.church_id), s.celula, `${s.completed_classes}/7`, s.nota_exame || "-", yesNo(s.pratica_evangelismo), badge(s.estado), foundationClassProgressCell(s),
             actionButtons([["view", "foundationStudent", s.id, L("view")], ["edit", "foundationStudent", s.id, L("edit")], ["markClass", "foundationStudent", s.id, L("markClass")], ["score", "foundationStudent", s.id, L("launchScore")], ["graduate", "foundationStudent", s.id, L("graduate")]])
           ]))}
         </article>
@@ -3689,14 +4069,7 @@ function foundationPending() {
 }
 
 function foundationProgress(student) {
-  const completed = student.presencas.filter(Boolean).length + (Number(student.nota_exame) >= 70 ? 1 : 0) + (student.pratica_evangelismo ? 1 : 0) + (student.graduado ? 1 : 0);
-  return Math.round((completed / 10) * 100);
-}
-
-function progressSteps(student) {
-  const labels = ["1", "2", "3", "4", "5", "6", "7", L("exam"), L("practical"), L("graduation")];
-  const done = [...student.presencas, Number(student.nota_exame) >= 70, student.pratica_evangelismo, student.graduado];
-  return `<div class="progress mb-1"><div class="progress-bar" style="width:${foundationProgress(student)}%"></div></div><div class="step-row">${labels.map((label, i) => `<span class="${done[i] ? "done" : ""}">${label}</span>`).join("")}</div>`;
+  return migrateFoundationStudent(student).class_progress_percent;
 }
 
 function renderFinance() {
@@ -4701,9 +5074,7 @@ const formSchemas = {
   member: [
     ["tratamento", "treatment", "select", treatmentOptions], ["nome", "name"], ["apelido", "surname"], ["telefone", "phone"], ["email", "email", "email"], ["church_id", "church", "church"], ["celula", "cell"], ["departamento", "department"], ["estado", "status", "select", memberStatuses], ["data_de_entrada", "entryDate", "date"], ["origem", "origin", "select", ["Primeira Vez", "Escola de Fundação", "Transferência", "Manual"]], ["notas", "notes", "textarea"]
   ],
-  foundationStudent: [
-    ["nome", "name"], ["apelido", "surname"], ["telefone", "phone"], ["church_id", "church", "church"], ["celula", "cell"], ["mes_de_inscricao", "filterMonth", "month"], ["estado", "status", "select", foundationStatuses], ["nota_exame", "exam", "number"], ["pratica_evangelismo", "practical", "checkbox"], ["numero_de_almas_ganhas", "New Converts", "number"], ["aprovado", "Passed", "checkbox"], ["graduado", "graduation", "checkbox"], ["certificado_emitido", "certificates", "checkbox"]
-  ],
+  foundationStudent: [],
   finance: financeEntrySchema(),
   church: [
     ["church_name", "church"], ["public_name", "publicName"], ["type", "Type", "select", CHURCH_TYPES],
@@ -4795,6 +5166,7 @@ function getCollection(type) {
 }
 
 function openForm(type, id = null) {
+  if (type === "foundationStudent") return openFoundationStudentForm(id);
   if (type === "church") return openChurchDrawer(id ? "form" : "form", id);
   if (type === "finance" && id) return openFinanceDrawer("edit", id);
   modalMode = id ? "edit" : "create";
@@ -4922,10 +5294,7 @@ function submitForm(form) {
       }
       delete record.save_as_contributor;
     }
-    if (modalType === "foundationStudent") {
-      record.presencas = [false, false, false, false, false, false, false];
-      record.notas_aulas = [0, 0, 0, 0, 0, 0, 0];
-    }
+
     if (modalType === "church") record.church_id = record.id;
     if (modalType === "cell") {
       record.presencas = [{ data: new Date().toISOString().slice(0, 10), total: 0 }];
@@ -4943,6 +5312,14 @@ function submitForm(form) {
 function openView(type, id) {
   if (type === "church") return openChurchDrawer("view", id);
   if (type === "finance") return openFinanceDrawer("view", id);
+  if (type === "foundationStudent") {
+    const record = getCollection(type).find((item) => item.id === id);
+    byId("modalEyebrow").textContent = L("view");
+    byId("modalTitle").textContent = L("foundationSchool");
+    byId("modalFields").innerHTML = renderFoundationStudentForm(record, "view");
+    modalType = null;
+    return bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
+  }
   const record = getCollection(type).find((item) => item.id === id);
   byId("modalEyebrow").textContent = L("view");
   byId("modalTitle").textContent = formTitle(type);
@@ -5007,7 +5384,9 @@ function quickAction(action, type, id) {
   if (action === "status" && type === "church") return openChurchDrawer("status", id);
   if (action === "export" && type === "church") return alert(`${L("exportChurch")}: ${churchName(id)}`);
   if (action === "edit" && type === "finance") return openFinanceDrawer("edit", id);
-  if (action === "edit" || action === "moveChurch" || action === "status" || action === "markClass" || action === "score") return openForm(type, id);
+  if (action === "markClass" && type === "foundationStudent") return openFoundationMarkClass(id);
+  if (action === "score" && type === "foundationStudent") return openFoundationScore(id);
+  if (action === "edit" || action === "moveChurch" || action === "status") return openForm(type, id);
   if (action === "followup") return openFollowup(id);
   if (action === "submit" || action === "approve") {
     const record = getCollection(type).find((item) => item.id === id);
@@ -5039,9 +5418,14 @@ function quickAction(action, type, id) {
     return setRoute(activeRoute);
   }
   if (action === "graduate") {
-    const record = getCollection(type).find((item) => item.id === id);
-    record.graduado = true;
-    record.estado = "Graduated";
+    const collection = getCollection(type);
+    const index = collection.findIndex((item) => item.id === id);
+    if (index < 0) return;
+    collection[index] = applyFoundationCalculations({
+      ...collection[index],
+      graduado: true,
+      updated_at: new Date().toISOString().slice(0, 10)
+    }, true);
     saveState("Graduated student");
     return setRoute(activeRoute);
   }
@@ -5051,7 +5435,27 @@ function quickAction(action, type, id) {
 function enrollFirstTimer(id) {
   const person = state.firstTimers.find((item) => item.id === id);
   if (!person) return;
-  state.foundationStudents.push({ id: `fs-${Date.now()}`, first_timer_id: person.id, church_id: person.church_id, nome: person.nome, apelido: person.apelido, telefone: person.telefone, celula: person.celula_preferida || "", mes_de_inscricao: new Date().toISOString().slice(0, 7), estado: "Pending Enrolment", presencas: [false, false, false, false, false, false, false], notas_aulas: [0, 0, 0, 0, 0, 0, 0], nota_exame: 0, pratica_evangelismo: false, numero_de_almas_ganhas: 0, aprovado: false, graduado: false, certificado_emitido: false });
+  state.foundationStudents.push(applyFoundationCalculations({
+    id: `fs-${Date.now()}`,
+    first_timer_id: person.id,
+    member_id: "",
+    church_id: person.church_id,
+    nome: person.nome,
+    apelido: person.apelido,
+    telefone: person.telefone,
+    celula: person.celula_preferida || "",
+    mes_de_inscricao: new Date().toISOString().slice(0, 7),
+    class_attendance: defaultFoundationAttendance(),
+    nota_exame: 0,
+    pratica_evangelismo: false,
+    numero_de_almas_ganhas: 0,
+    aprovado: false,
+    graduado: false,
+    certificado_emitido: false,
+    notes: "",
+    created_at: new Date().toISOString().slice(0, 10),
+    updated_at: new Date().toISOString().slice(0, 10)
+  }, true));
   person.estado_do_seguimento = "Enrolled in Foundation School";
   saveState(`Enrolled ${fullName(person)}`);
   renderFoundation();
@@ -5168,6 +5572,9 @@ document.addEventListener("click", (event) => {
 byId("entryForm").addEventListener("submit", (event) => {
   event.preventDefault();
   if (modalType === "followup") return submitFollowup(event.target);
+  if (modalType === "foundationStudent") return submitFoundationStudent(event.target);
+  if (modalType === "foundationMarkClass") return submitFoundationMarkClass(event.target);
+  if (modalType === "foundationScore") return submitFoundationScore(event.target);
   if (modalType) submitForm(event.target);
 });
 
@@ -5184,6 +5591,15 @@ document.addEventListener("submit", (event) => {
 });
 
 document.addEventListener("input", (event) => {
+  if (event.target.matches("[data-foundation-class]")) {
+    const form = event.target.closest("form");
+    if (form) updateFoundationProgressPreview(form);
+    return;
+  }
+  if (event.target.matches("[data-foundation-status]")) {
+    event.target.dataset.manualStatus = "1";
+    return;
+  }
   if (event.target.id === "financeContributorSearch") {
     updateFinanceContributorSearch(event.target.value);
     return;
@@ -5246,6 +5662,15 @@ document.addEventListener("keydown", (event) => {
 });
 
 document.addEventListener("change", (event) => {
+  if (event.target.matches("[data-foundation-class]")) {
+    const form = event.target.closest("form");
+    if (form) updateFoundationProgressPreview(form);
+    return;
+  }
+  if (event.target.matches("[data-foundation-status]")) {
+    event.target.dataset.manualStatus = "1";
+    return;
+  }
   if (event.target.name === "church_id" && event.target.dataset?.financePersonField) {
     const form = byId("entryForm");
     if (form?.elements.igreja) form.elements.igreja.value = churchName(event.target.value);

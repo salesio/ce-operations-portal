@@ -1291,6 +1291,97 @@ table,
   background: linear-gradient(135deg, var(--cyan), var(--gold-soft));
 }
 
+.step-row span.pending,
+.foundation-class-steps span.pending {
+  color: var(--muted);
+  background: rgba(13, 23, 48, 0.08);
+}
+
+.foundation-progress-cell {
+  min-width: 10rem;
+}
+
+.foundation-progress-percent {
+  display: block;
+  margin-top: 0.2rem;
+  color: rgba(248, 251, 255, 0.62);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.foundation-progress-preview {
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(32, 215, 255, 0.16);
+  border-radius: 0.9rem;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.foundation-progress-copy {
+  color: rgba(248, 251, 255, 0.78);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.foundation-form-section {
+  margin: 0.35rem 0 0;
+  padding-top: 0.35rem;
+  color: var(--gold-soft);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.foundation-class-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.foundation-class-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0.85rem 0.95rem;
+  border: 1px solid rgba(32, 215, 255, 0.18);
+  border-radius: 0.85rem;
+  background: rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  user-select: none;
+}
+
+.foundation-class-toggle input {
+  width: 1.15rem;
+  height: 1.15rem;
+  margin: 0;
+  accent-color: var(--cyan);
+}
+
+.foundation-class-toggle span {
+  font-weight: 800;
+  color: #fff;
+}
+
+.foundation-class-toggle:has(input:checked) {
+  border-color: rgba(32, 215, 255, 0.45);
+  background: rgba(32, 215, 255, 0.12);
+}
+
+.foundation-check-graduated input {
+  accent-color: var(--gold-soft);
+}
+
+.foundation-check-certificate input {
+  accent-color: var(--royal);
+}
+
+@media (max-width: 575.98px) {
+  .foundation-class-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .detail-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
