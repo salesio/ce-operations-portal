@@ -79,7 +79,7 @@ function FilterToolbar(options = {}) {
       ${extraFields}
       ${viewToggle}
       <div class="filter-toolbar-actions">
-        ${exportBtn ? `<button type="button" class="btn btn-outline-light btn-touch action-secondary"><i class="bi bi-download me-1"></i>${uiT("export", "Exportar")}</button>` : ""}
+        ${exportBtn ? `<button type="button" class="btn btn-outline-cyan btn-touch action-secondary"><i class="bi bi-download me-1"></i>${uiT("export", "Exportar")}</button>` : ""}
         ${addBtn}
       </div>
     </div>`;

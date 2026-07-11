@@ -1,23 +1,45 @@
 :root {
-  --navy-950: #030816;
-  --navy-900: #071225;
-  --navy-850: #0a1730;
-  --royal: #175cff;
-  --royal-soft: #2a7dff;
-  --cyan: #20d7ff;
-  --cyan-soft: rgba(32, 215, 255, 0.22);
-  --gold: #d7ae4b;
-  --gold-soft: #f1d88c;
-  --glass: rgba(255, 255, 255, 0.92);
+  --bg-main: #030A18;
+  --bg-panel: #071326;
+  --bg-panel-soft: #0B1B33;
+  --card-light: #F4F8FB;
+  --card-light-2: #EAF3F8;
+  --card-dark: rgba(8, 22, 42, 0.92);
+  --card-glass: rgba(255, 255, 255, 0.08);
+  --border-cyan: rgba(34, 211, 238, 0.35);
+  --border-gold: rgba(245, 199, 85, 0.45);
+  --text-main: #F8FAFC;
+  --text-muted: #B9C6D8;
+  --text-dark: #071326;
+  --text-dark-muted: #53657A;
+  --gold: #F5C755;
+  --gold-dark: #C9971A;
+  --cyan: #22D3EE;
+  --blue: #2563EB;
+  --success: #16A34A;
+  --warning: #D99A00;
+  --danger: #DC2626;
+  --navy-950: var(--bg-main);
+  --navy-900: var(--bg-panel);
+  --navy-850: var(--bg-panel-soft);
+  --royal: var(--blue);
+  --royal-soft: #3B82F6;
+  --cyan-soft: rgba(34, 211, 238, 0.22);
+  --gold-soft: #F8D97A;
+  --glass: var(--card-light);
   --glass-line: rgba(255, 255, 255, 0.14);
-  --ink: #0d1730;
-  --muted: #75819c;
+  --ink: var(--text-dark);
+  --muted: var(--text-dark-muted);
   --sidebar-width: 316px;
   --sidebar-width-collapsed: 92px;
   --topbar-height: 86px;
   --font-heading: "Playfair Display", "Merriweather", Georgia, serif;
   --font-ui: "Inter", "Manrope", "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --bs-body-font-family: var(--font-ui);
+  --page-pad: clamp(1rem, 2.5vw, 2rem);
+  --section-gap: 1.5rem;
+  --card-pad: clamp(1.15rem, 2vw, 1.5rem);
+  --filter-gap: 0.75rem;
 }
 
 * {
@@ -705,7 +727,7 @@ table,
   min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
-  padding: 1.5rem;
+  padding: var(--page-pad);
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
 }
@@ -717,14 +739,15 @@ table,
   gap: 1rem;
   min-height: 310px;
   padding: clamp(1.25rem, 3vw, 2rem);
-  margin-bottom: 1.3rem;
+  margin-bottom: var(--section-gap);
   overflow: hidden;
-  border: 1px solid rgba(32, 215, 255, 0.18);
+  color: #FFFFFF;
+  border: 1px solid var(--border-cyan);
   border-radius: 1.35rem;
   background:
-    linear-gradient(120deg, rgba(7, 18, 37, 0.92), rgba(10, 23, 48, 0.82) 46%, rgba(23, 92, 255, 0.42)),
+    linear-gradient(135deg, rgba(3, 10, 25, 0.92), rgba(7, 28, 55, 0.82)),
     url("https://embaixada-de-cristo.obiuba.com/assets/web/hero-service.jpg") center / cover;
-  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .ops-hero::after {
@@ -739,15 +762,22 @@ table,
 .ops-hero h2 {
   max-width: 760px;
   margin: 0.75rem 0 1rem;
+  color: #FFFFFF;
   font-family: var(--font-heading);
   font-size: clamp(2rem, 5vw, 4.2rem);
-  line-height: 1;
+  line-height: 1.05;
+  text-shadow: 0 2px 28px rgba(0, 0, 0, 0.38);
 }
 
 .ops-hero p {
   max-width: 690px;
-  color: rgba(248, 251, 255, 0.76);
+  color: #D7E3F5;
   font-size: 1.04rem;
+  line-height: 1.55;
+}
+
+.ops-hero .eyebrow {
+  color: var(--gold);
 }
 
 .hero-card {
@@ -755,10 +785,11 @@ table,
   position: relative;
   z-index: 1;
   padding: 1.25rem;
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  border: 1px solid var(--border-cyan);
   border-radius: 1.1rem;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(14px);
+  background: linear-gradient(145deg, rgba(8, 22, 42, 0.72), rgba(9, 32, 60, 0.58));
+  backdrop-filter: blur(16px);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
 }
 
 .hero-card strong {
@@ -780,11 +811,11 @@ table,
 .metric-card,
 .chart-card,
 .record-card {
-  border: 1px solid rgba(32, 215, 255, 0.14);
+  border: 1px solid rgba(34, 211, 238, 0.18);
   border-radius: 1.15rem;
-  background: var(--glass);
-  color: var(--ink);
-  box-shadow: 0 20px 54px rgba(0, 0, 0, 0.16);
+  background: linear-gradient(145deg, #F8FBFD 0%, #E7F3F9 100%);
+  color: var(--text-dark);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
 }
 
 .panel,
@@ -968,33 +999,33 @@ table,
 }
 
 .status-good {
-  background: rgba(25, 135, 84, 0.12);
-  color: #0f6843;
+  background: rgba(22, 163, 74, 0.15);
+  color: #047857;
 }
 
 .status-warn {
-  background: rgba(215, 174, 75, 0.18);
-  color: #805b05;
+  background: rgba(245, 199, 85, 0.22);
+  color: #8A6200;
 }
 
 .status-blue {
-  background: rgba(23, 92, 255, 0.12);
-  color: #174bd0;
+  background: rgba(37, 99, 235, 0.14);
+  color: #1D4ED8;
 }
 
 .status-danger {
-  background: rgba(220, 53, 69, 0.12);
-  color: #a01828;
+  background: rgba(220, 38, 38, 0.14);
+  color: #B91C1C;
 }
 
 .status-course {
-  background: rgba(111, 66, 193, 0.14);
-  color: #5d2db5;
+  background: rgba(124, 58, 237, 0.14);
+  color: #6D28D9;
 }
 
 .status-muted {
-  background: rgba(108, 117, 125, 0.14);
-  color: #525b63;
+  background: rgba(83, 101, 122, 0.14);
+  color: #3D4F63;
 }
 
 .table {
@@ -1812,26 +1843,27 @@ table,
 }
 
 .church-card {
-  padding: 1.1rem;
-  border: 1px solid rgba(32, 215, 255, 0.16);
+  padding: var(--card-pad);
+  border: 1px solid rgba(34, 211, 238, 0.18);
   border-radius: 1rem;
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.96), rgba(238, 249, 255, 0.9));
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.14);
+  background: linear-gradient(145deg, #F8FBFD 0%, #E7F3F9 100%);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
 }
 
 .church-card-head {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
+  gap: 0.85rem;
+  margin-bottom: 0.85rem;
 }
 
 .church-card h3 {
   margin: 0.35rem 0 0;
-  color: var(--ink);
+  color: var(--text-dark);
   font-family: var(--font-heading);
-  font-size: 1.05rem;
+  font-size: 1.12rem;
+  font-weight: 700;
   line-height: 1.3;
 }
 
@@ -2047,11 +2079,11 @@ table,
 .church-service-chip {
   display: inline-flex;
   align-items: center;
-  padding: 0.34rem 0.62rem;
-  border: 1px solid rgba(32, 215, 255, 0.28);
+  padding: 0.36rem 0.72rem;
+  border: 1px solid rgba(34, 211, 238, 0.45);
   border-radius: 999px;
-  background: rgba(32, 215, 255, 0.1);
-  color: #0a4f68;
+  background: rgba(34, 211, 238, 0.22);
+  color: #044E63;
   font-family: var(--font-ui);
   font-size: 0.74rem;
   font-weight: 800;
@@ -2551,12 +2583,13 @@ table,
   justify-content: space-between;
   gap: 1.25rem;
   flex-wrap: wrap;
-  padding: clamp(1.1rem, 2.5vw, 1.55rem);
+  padding: var(--card-pad);
   margin-bottom: 0.25rem;
-  border: 1px solid rgba(32, 215, 255, 0.2);
+  color: var(--text-dark);
+  border: 1px solid rgba(34, 211, 238, 0.18);
   border-radius: 1.25rem;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(232, 246, 255, 0.9));
-  box-shadow: 0 22px 58px rgba(0, 0, 0, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  background: linear-gradient(145deg, #F8FBFD 0%, #E7F3F9 100%);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.85);
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
@@ -2651,14 +2684,15 @@ table,
 .filter-toolbar {
   display: grid;
   grid-template-columns: minmax(220px, 1.5fr) repeat(auto-fit, minmax(150px, 1fr)) auto;
-  gap: 0.7rem;
+  gap: var(--filter-gap);
   align-items: center;
   padding: 0.9rem 1rem;
   margin-bottom: 1rem;
-  border: 1px solid rgba(32, 215, 255, 0.16);
+  color: var(--text-dark);
+  border: 1px solid rgba(34, 211, 238, 0.18);
   border-radius: 1rem;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(240, 249, 255, 0.88));
-  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.08);
+  background: linear-gradient(145deg, #F8FBFD 0%, #E7F3F9 100%);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.1);
 }
 
 .filter-toolbar-search {
@@ -3172,4 +3206,392 @@ table,
     min-height: 100vh;
     border-radius: 0;
   }
+}
+
+/* ============================================================
+   Global Contrast & Legibility v3
+   ============================================================ */
+
+/* Dark surfaces: light text */
+.ops-sidebar,
+.ops-topbar,
+.church-drawer,
+.finance-drawer,
+.ops-hero,
+.ops-hero--command,
+.card-dark,
+.card-glass-dark {
+  color: var(--text-main);
+}
+
+/* Light surfaces: dark text — never white on pale cards */
+.panel,
+.metric-card,
+.chart-card,
+.record-card,
+.data-card,
+.module-hero-card,
+.filter-toolbar,
+.glass-panel,
+.data-table-wrap,
+.data-table-mobile-card,
+.kanban-column,
+.churches-toolbar,
+.churches-filter-grid,
+.ui-empty-state,
+.church-card,
+.summary-card {
+  color: var(--text-dark);
+}
+
+.module-hero-card .eyebrow,
+.church-card .eyebrow,
+.data-card .eyebrow,
+.panel .eyebrow {
+  color: var(--gold-dark);
+}
+
+.module-hero-card-title,
+.panel-title,
+.data-card-title,
+.church-card h3 {
+  color: var(--text-dark);
+}
+
+.module-hero-card-subtitle,
+.metric-card small,
+.metric-card span,
+.data-card-meta-row span,
+.church-card-meta span {
+  color: var(--text-dark-muted);
+}
+
+.metric-card strong,
+.data-card-meta-row strong,
+.church-card-meta strong {
+  color: var(--text-dark);
+}
+
+/* Dashboard command hero — always dark regardless of shared classes */
+.ops-hero.ops-hero--command,
+section.ops-hero {
+  color: #FFFFFF;
+}
+
+.ops-hero.ops-hero--command h2,
+.ops-hero.ops-hero--command .panel-title {
+  color: #FFFFFF;
+}
+
+.ops-hero.ops-hero--command p,
+.ops-hero.ops-hero--command .module-hero-card-subtitle {
+  color: #D7E3F5;
+}
+
+.ops-hero.ops-hero--command .eyebrow {
+  color: var(--gold);
+}
+
+/* Premium light card utility */
+.card-light,
+.card-light-premium {
+  background: linear-gradient(145deg, #F8FBFD 0%, #E7F3F9 100%);
+  color: var(--text-dark);
+  border: 1px solid rgba(34, 211, 238, 0.18);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+}
+
+.card-light:hover,
+.card-light-premium:hover,
+.metric-card:hover,
+.data-card:hover,
+.church-card:hover {
+  border-color: rgba(34, 211, 238, 0.38);
+  box-shadow: 0 22px 48px rgba(0, 0, 0, 0.2), 0 0 24px rgba(34, 211, 238, 0.08);
+}
+
+/* Dark glass card utility */
+.card-dark,
+.card-glass-dark {
+  background: linear-gradient(145deg, rgba(7, 19, 38, 0.96), rgba(9, 32, 60, 0.86));
+  border: 1px solid rgba(34, 211, 238, 0.22);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
+}
+
+/* Buttons */
+.btn-ce-gold {
+  --bs-btn-bg: var(--gold);
+  --bs-btn-border-color: var(--border-gold);
+  --bs-btn-color: var(--text-dark);
+  --bs-btn-hover-bg: #F8D97A;
+  --bs-btn-hover-border-color: #F8D97A;
+  --bs-btn-hover-color: var(--text-dark);
+  background-image: linear-gradient(135deg, var(--gold-soft), var(--gold));
+  font-weight: 900;
+  box-shadow: 0 12px 28px rgba(245, 199, 85, 0.28);
+}
+
+.btn-ce-gold:hover {
+  box-shadow: 0 16px 36px rgba(245, 199, 85, 0.38);
+  transform: translateY(-1px);
+}
+
+.btn-outline-cyan {
+  --bs-btn-color: #1D4ED8;
+  --bs-btn-border-color: rgba(34, 211, 238, 0.45);
+  --bs-btn-hover-color: #0F338F;
+  --bs-btn-hover-bg: rgba(34, 211, 238, 0.12);
+  --bs-btn-hover-border-color: var(--cyan);
+  color: #1D4ED8;
+  border-color: rgba(34, 211, 238, 0.45);
+  background: rgba(255, 255, 255, 0.65);
+  font-weight: 800;
+}
+
+.action-btn--ghost,
+.action-btn.action-btn--ghost {
+  color: #1D4ED8;
+  border-color: rgba(37, 99, 235, 0.22);
+  background: rgba(37, 99, 235, 0.06);
+}
+
+/* Tables — elegant, not spreadsheet */
+.data-table-wrap,
+.glass-panel.data-table-wrap {
+  padding: 0.5rem 0.65rem 0.75rem;
+  background: linear-gradient(145deg, #F8FBFD 0%, #E7F3F9 100%);
+}
+
+.table th {
+  color: var(--text-dark-muted);
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  padding-top: 0.85rem;
+  padding-bottom: 0.85rem;
+}
+
+.table td {
+  color: var(--text-dark);
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
+.table tbody tr:hover {
+  background: rgba(34, 211, 238, 0.08);
+}
+
+.data-table-desktop tbody tr {
+  border-bottom: 1px solid rgba(7, 19, 38, 0.07);
+}
+
+/* Filter toolbar inputs */
+.filter-toolbar .form-control,
+.filter-toolbar .form-select,
+.churches-filter-grid .form-control,
+.churches-filter-grid .form-select,
+.panel .form-control,
+.panel .form-select {
+  min-height: 2.75rem;
+  color: var(--text-dark);
+  background-color: #FFFFFF;
+}
+
+.filter-toolbar .form-control:focus,
+.filter-toolbar .form-select:focus,
+.churches-filter-grid .form-control:focus,
+.churches-filter-grid .form-select:focus {
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 0.2rem rgba(34, 211, 238, 0.18);
+}
+
+/* Church cards — improved hierarchy */
+.church-card-type {
+  color: var(--gold-dark);
+}
+
+.church-card-public {
+  color: var(--text-dark-muted);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.church-card-meta {
+  gap: 0.55rem;
+  margin: 0.75rem 0 1rem;
+  color: var(--text-dark);
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.church-card-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--text-dark-muted);
+  font-size: 0.68rem;
+}
+
+.church-card-meta span i {
+  color: var(--cyan);
+  font-size: 0.82rem;
+}
+
+.church-card-meta strong {
+  text-align: right;
+  font-weight: 700;
+}
+
+.church-badge-row {
+  flex-shrink: 0;
+  align-items: flex-start;
+  justify-content: flex-end;
+}
+
+.church-card-foot,
+.church-card-foot .action-cluster {
+  gap: 0.45rem;
+}
+
+.church-card-foot .action-btn {
+  min-height: 2.5rem;
+}
+
+.churches-toolbar,
+.churches-filter-grid {
+  color: var(--text-dark);
+  background: linear-gradient(145deg, #F8FBFD 0%, #E7F3F9 100%);
+  border: 1px solid rgba(34, 211, 238, 0.18);
+}
+
+/* Status badges — global consistency */
+.status-pill.status-cyan {
+  background: rgba(34, 211, 238, 0.18);
+  color: #0A6F86;
+}
+
+.status-pill.status-orange {
+  background: rgba(245, 199, 85, 0.22);
+  color: #8A6200;
+}
+
+/* Modals & drawers — dark glass with readable inputs */
+.ops-modal .form-control,
+.ops-modal .form-select,
+.church-drawer .form-control,
+.church-drawer .form-select,
+.finance-drawer .form-control,
+.finance-drawer .form-select {
+  color: var(--text-dark);
+  background-color: var(--card-light);
+  border-color: rgba(34, 211, 238, 0.28);
+}
+
+.ops-modal .form-label,
+.church-drawer .form-label {
+  color: var(--text-muted);
+}
+
+.ops-modal .modal-title {
+  color: var(--text-main);
+}
+
+/* Module hero breadcrumb strip (optional) */
+.module-hero-card--with-crumb {
+  border-radius: 1.25rem 1.25rem 0 0;
+  margin-bottom: 0;
+}
+
+.module-hero-breadcrumb {
+  padding: 0.55rem 1.25rem;
+  border: 1px solid rgba(34, 211, 238, 0.14);
+  border-top: 0;
+  border-radius: 0 0 1rem 1rem;
+  background: linear-gradient(145deg, rgba(7, 19, 38, 0.96), rgba(9, 32, 60, 0.86));
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+/* Page shell spacing */
+.page-shell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--section-gap);
+}
+
+.page-shell > .row.g-3,
+.page-shell > .row.g-4 {
+  margin-bottom: 0;
+}
+
+/* Typography refinements */
+.summary-card-value,
+.metric-card strong {
+  color: var(--text-dark);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.summary-card-label,
+.metric-card span {
+  letter-spacing: 0.1em;
+}
+
+/* Kanban & empty states on light surfaces */
+.kanban-column {
+  background: linear-gradient(180deg, #F8FBFD, #E7F3F9);
+}
+
+.ui-empty-state {
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--text-dark);
+}
+
+.empty-state-desc {
+  color: var(--text-dark-muted);
+}
+
+/* Data card pills */
+.data-card-pill {
+  color: #044E63;
+  background: rgba(34, 211, 238, 0.2);
+  border: 1px solid rgba(34, 211, 238, 0.35);
+}
+
+/* Prevent Bootstrap utility clashes on light cards */
+.church-card .text-secondary,
+.data-card .text-secondary,
+.panel .text-secondary {
+  color: var(--text-dark-muted) !important;
+}
+
+/* Glass panel on dark page background */
+.glass-panel {
+  background: linear-gradient(145deg, #F8FBFD 0%, #E7F3F9 100%);
+  color: var(--text-dark);
+}
+
+.chart-row {
+  color: var(--text-dark);
+}
+
+.chart-row strong {
+  color: var(--text-dark);
+}
+
+/* View toggle on light toolbar */
+.view-toggle {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(34, 211, 238, 0.22);
+}
+
+.view-toggle-btn {
+  color: var(--text-dark-muted);
+}
+
+.view-toggle-btn.active,
+.view-toggle-btn:hover {
+  color: var(--text-dark);
 }

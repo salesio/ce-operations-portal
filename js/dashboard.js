@@ -3714,7 +3714,7 @@ function renderDashboard() {
   const pendingFollowups = firstTimers.filter((p) => statusKey(p.estado_do_seguimento) !== "closed").length;
   const monthlyGiving = finance.filter((f) => f.data?.startsWith("2026-07")).reduce((sum, f) => sum + Number(f.valor || 0), 0);
   setPageContent(`
-    <section class="ops-hero module-hero-card" style="display:grid;">
+    <section class="ops-hero ops-hero--command">
       <div>
         <span class="eyebrow">Christ Embassy Mozambique</span>
         <h2>${L("heroTitle")}</h2>
@@ -4335,10 +4335,10 @@ function renderChurchCard(church) {
   return `
     <article class="church-card data-card">
       <div class="church-card-head">
-        <div>
-          <span class="eyebrow">${churchTypeText(church.type)}</span>
+        <div class="church-card-titles">
+          <span class="eyebrow church-card-type">${churchTypeText(church.type)}</span>
           <h3>${church.church_name}</h3>
-          ${church.public_name && church.public_name !== church.church_name ? `<p class="text-secondary mb-0 small">${church.public_name}</p>` : ""}
+          ${church.public_name && church.public_name !== church.church_name ? `<p class="church-card-public mb-0">${church.public_name}</p>` : ""}
         </div>
         <div class="church-badge-row">
           ${badge(church.status)}
@@ -4346,12 +4346,12 @@ function renderChurchCard(church) {
         </div>
       </div>
       <div class="church-card-meta">
-        <div><span>${L("Province")} / ${L("City")}</span><strong>${church.province} / ${church.city}</strong></div>
-        <div><span>${L("Pastor")}</span><strong>${church.pastor_in_charge || L("toBeConfirmed")}</strong></div>
-        <div><span>${L("phone")}</span><strong>${churchPhone(church)}</strong></div>
+        <div><span><i class="bi bi-geo-alt" aria-hidden="true"></i>${L("Province")} / ${L("City")}</span><strong>${church.province} / ${church.city}</strong></div>
+        <div><span><i class="bi bi-person-badge" aria-hidden="true"></i>${L("Pastor")}</span><strong>${church.pastor_in_charge || L("toBeConfirmed")}</strong></div>
+        <div><span><i class="bi bi-telephone" aria-hidden="true"></i>${L("phone")}</span><strong>${churchPhone(church)}</strong></div>
       </div>
       ${servicesHtml}
-      ${churchActions(church.id)}
+      <footer class="church-card-foot data-card-foot">${churchActions(church.id)}</footer>
     </article>`;
 }
 
