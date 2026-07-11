@@ -1056,6 +1056,14 @@ Object.assign(TEXT.pt, {
   infoToConfirm: "Informações por Confirmar",
   publicName: "Nome Público",
   districtOrArea: "Zona / Bairro",
+  cityDistrict: "Cidade/Distrito",
+  areaNeighborhood: "Zona/Bairro",
+  selectProvince: "Seleccione a província",
+  selectCity: "Seleccione a cidade",
+  selectChurch: "Seleccione a igreja",
+  noChurchRegistered: "Nenhuma igreja registada",
+  addNewChurch: "Adicionar nova igreja",
+  serviceTimesShort: "Horários",
   phonePrimary: "Telefone Principal",
   phoneSecondary: "Telefone Secundário",
   serviceTimes: "Horários de Culto",
@@ -1422,6 +1430,14 @@ Object.assign(TEXT.en, {
   infoToConfirm: "Information to Confirm",
   publicName: "Public Name",
   districtOrArea: "District / Area",
+  cityDistrict: "City/District",
+  areaNeighborhood: "Area/Neighborhood",
+  selectProvince: "Select province",
+  selectCity: "Select city",
+  selectChurch: "Select church",
+  noChurchRegistered: "No church registered",
+  addNewChurch: "Add new church",
+  serviceTimesShort: "Service Times",
   phonePrimary: "Primary Phone",
   phoneSecondary: "Secondary Phone",
   serviceTimes: "Service Times",
@@ -1872,10 +1888,10 @@ const seedData = {
     { id: "u-13", name: "Staff Member Demo", email: "staff.member@ce-mozambique.org", role: "Staff Member", church_id: "church-hq", department_permissions: ["assignedEquipment"], assigned_staff_name: "Laiza Teresa Chirindza", can_view_all_churches: false }
   ],
   churches: [
-    { id: "church-hq", church_id: "church-hq", church_name: "National HQ - Christ Embassy Mozambique", public_name: "Igreja Embaixada de Cristo Maputo / Embaixada de Cristo Moçambique", type: "Sede Nacional", province: "Maputo", city: "Maputo", district_or_area: "Maputo", address: "Avenida de Angola, ao lado da CETRACO, Maputo", pastor_in_charge: "Pastor Kene Ume", phone_primary: "+258 86 227 0000", phone_secondary: "", email: "info@embaixada-de-cristo.obiuba.com", facebook: "Embaixada de Cristo Moçambique", instagram: "@embaixada_de_cristo_mocambique", youtube: "", service_times: defaultSeedServiceTimes("church-hq", "Sede Nacional"), parent_church_id: "", status: "Activa", information_status: "Por Confirmar", notes: "Dados iniciais importados para o protótipo. Confirmar detalhes com a equipa local.", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2024-01-01", updated_at: "2026-07-10", attendance_last_4_weeks: [112, 98, 104, 92] },
-    { id: "church-matola", church_id: "church-matola", church_name: "Igreja Embaixada de Cristo Matola", public_name: "Embaixada de Cristo Matola", type: "Igreja Local", province: "Maputo", city: "Matola", district_or_area: "Matola", address: "Rua Mário Estêves Coluna, Nr 63B, perto do KFC / DNIC", pastor_in_charge: "", phone_primary: "+258 84 372 2630", phone_secondary: "+258 84 643 5951 / +258 87 780 9005", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("church-matola", "Igreja Local"), parent_church_id: "church-hq", status: "Activa", information_status: "Por Confirmar", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [48, 52, 46, 50] },
-    { id: "church-khongolote", church_id: "church-khongolote", church_name: "Igreja Embaixada de Cristo Khongolote", public_name: "Embaixada de Cristo Khongolote", type: "Igreja Local", province: "Maputo", city: "Matola", district_or_area: "Khongolote", address: "Rua Licuacuanine, 648 – Khongolote, Matola", pastor_in_charge: "", phone_primary: "", phone_secondary: "", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("church-khongolote", "Igreja Local"), parent_church_id: "church-hq", status: "Activa", information_status: "Por Confirmar", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [32, 28, 30, 29] },
-    { id: "church-choupal", church_id: "church-choupal", church_name: "Igreja Embaixada de Cristo Choupal", public_name: "Embaixada de Cristo Choupal", type: "Igreja Local", province: "Maputo", city: "Maputo", district_or_area: "Choupal", address: "Choupal, Maputo", pastor_in_charge: "", phone_primary: "", phone_secondary: "", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("church-choupal", "Igreja Local"), parent_church_id: "church-hq", status: "Activa", information_status: "Por Confirmar", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [28, 30, 27, 31] },
+    { id: "church-hq", church_id: "church-hq", church_name: "National HQ - Christ Embassy Mozambique", public_name: "Igreja Embaixada de Cristo Maputo / Embaixada de Cristo Moçambique", type: "Sede Nacional", province: "Maputo Cidade", city: "KaMpfumo", district_or_area: "Maputo", address: "Avenida de Angola, ao lado da CETRACO, Maputo", pastor_in_charge: "Pastor Kene Ume", phone_primary: "+258 86 227 0000", phone_secondary: "", email: "info@embaixada-de-cristo.obiuba.com", facebook: "Embaixada de Cristo Moçambique", instagram: "@embaixada_de_cristo_mocambique", youtube: "", service_times: defaultSeedServiceTimes("church-hq", "Sede Nacional"), parent_church_id: "", status: "Activa", information_status: "Por Confirmar", notes: "Dados iniciais importados para o protótipo. Confirmar detalhes com a equipa local.", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2024-01-01", updated_at: "2026-07-10", attendance_last_4_weeks: [112, 98, 104, 92] },
+    { id: "church-matola", church_id: "church-matola", church_name: "Igreja Embaixada de Cristo Matola", public_name: "Embaixada de Cristo Matola", type: "Igreja Local", province: "Maputo Província", city: "Matola", district_or_area: "Matola", address: "Rua Mário Estêves Coluna, Nr 63B, perto do KFC / DNIC", pastor_in_charge: "", phone_primary: "+258 84 372 2630", phone_secondary: "+258 84 643 5951 / +258 87 780 9005", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("church-matola", "Igreja Local"), parent_church_id: "church-hq", status: "Activa", information_status: "Por Confirmar", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [48, 52, 46, 50] },
+    { id: "church-khongolote", church_id: "church-khongolote", church_name: "Igreja Embaixada de Cristo Khongolote", public_name: "Embaixada de Cristo Khongolote", type: "Igreja Local", province: "Maputo Província", city: "Matola", district_or_area: "Khongolote", address: "Rua Licuacuanine, 648 – Khongolote, Matola", pastor_in_charge: "", phone_primary: "", phone_secondary: "", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("church-khongolote", "Igreja Local"), parent_church_id: "church-hq", status: "Activa", information_status: "Por Confirmar", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [32, 28, 30, 29] },
+    { id: "church-choupal", church_id: "church-choupal", church_name: "Igreja Embaixada de Cristo Choupal", public_name: "Embaixada de Cristo Choupal", type: "Igreja Local", province: "Maputo Cidade", city: "KaMubukwana", district_or_area: "Choupal", address: "Choupal, Maputo", pastor_in_charge: "", phone_primary: "", phone_secondary: "", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("church-choupal", "Igreja Local"), parent_church_id: "church-hq", status: "Activa", information_status: "Por Confirmar", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [28, 30, 27, 31] },
     { id: "church-beira", church_id: "church-beira", church_name: "Igreja Embaixada de Cristo Beira", public_name: "Igreja Embaixada de Cristo Beira", type: "Igreja Local", province: "Sofala", city: "Beira", district_or_area: "Beira", address: "Por confirmar", pastor_in_charge: "", phone_primary: "", phone_secondary: "", email: "", facebook: "Igreja Embaixada de Cristo Beira", instagram: "@embaixada_de_cristo_beira", youtube: "", service_times: defaultSeedServiceTimes("church-beira", "Igreja Local"), parent_church_id: "church-hq", status: "Activa", information_status: "Por Confirmar", notes: "Endereço e contactos a confirmar com a igreja local.", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [40, 38, 42, 39] },
     { id: "church-nampula", church_id: "church-nampula", church_name: "Igreja Embaixada de Cristo Nampula", public_name: "Embaixada De Cristo Nampula", type: "Igreja Local", province: "Nampula", city: "Nampula", district_or_area: "Muhala-Expansão", address: "Terminal de Chapa Muhala-Expansão, Paragem Igreja", pastor_in_charge: "Pastor Armando de Jesus", phone_primary: "", phone_secondary: "", email: "", facebook: "Embaixada De Cristo Nampula", instagram: "@embaixada_de_cristo.nampula", youtube: "", service_times: defaultSeedServiceTimes("church-nampula", "Igreja Local"), parent_church_id: "church-hq", status: "Activa", information_status: "Por Confirmar", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [36, 34, 35, 37] },
     { id: "church-virtual", church_id: "church-virtual", church_name: "CE Mozambique Online Church", public_name: "Igreja Embaixada de Cristo Online", type: "Igreja Online", province: "Online", city: "Online", district_or_area: "Virtual", address: "Transmissão online", pastor_in_charge: "Equipa de Media", phone_primary: "+258 86 877 389", phone_secondary: "", email: "online@embaixada-de-cristo.obiuba.com", facebook: "", instagram: "", youtube: "Christ Embassy Mozambique Online", service_times: defaultSeedServiceTimes("church-virtual", "Igreja Online"), parent_church_id: "church-hq", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2024-06-01", updated_at: "2026-07-10", attendance_last_4_weeks: [54, 61, 48, 57] }
@@ -2237,6 +2253,43 @@ function hasPermission(...permissions) {
   return permissions.some((permission) => grants.includes(permission));
 }
 
+function canAddChurch() {
+  return hasPermission("*") || ["Super Admin", "Church Pastor"].includes(activeUser.role);
+}
+
+function relationalChurches() {
+  return state.churches.map((church) => migrateChurchRecord(church));
+}
+
+function relationalFormOptions(extra = {}) {
+  return {
+    churches: relationalChurches(),
+    translate: L,
+    canAddChurch: canAddChurch(),
+    renderServiceTimes: (times) => getActiveServiceTimes(times).map((record) => `<li>${formatServiceTimeDetail(record)}</li>`).join(""),
+    ...extra
+  };
+}
+
+function mountRelationalControls(form) {
+  if (!form) return;
+  initRelationalFormControls(form, relationalFormOptions());
+}
+
+function enrichRecordChurchFields(data) {
+  const churchId = data.church_id || data.igreja || data.igreja_responsavel || data.igreja_destinataria;
+  const church = findChurchById(relationalChurches(), churchId);
+  if (!church) return data;
+  if (data.church_id) data.church_id = church.id;
+  if (!data.igreja) data.igreja = church.public_name || church.church_name;
+  if (!data.province) data.province = church.province;
+  if (!data.city) data.city = church.city;
+  if (!data.district_or_area) data.district_or_area = church.district_or_area || "";
+  return data;
+}
+
+
+
 function canManageVenue() {
   return hasPermission("*", "inventory", "venues", "maintenance", "checklists");
 }
@@ -2335,11 +2388,16 @@ function migrateChurchRecord(church) {
   const legacyStatus = { Active: "Activa", Inactive: "Inactiva" };
   const churchId = church.id || church.church_id;
   const churchType = legacyType[church.type] || church.type || "Igreja Local";
+  const normalized = typeof normalizeLocationValues === "function"
+    ? normalizeLocationValues(church.province, church.city)
+    : { province: church.province, city: church.city };
   return {
     ...church,
     id: churchId,
     church_id: church.church_id || churchId,
     public_name: church.public_name || church.church_name || "",
+    province: normalized.province || church.province || "",
+    city: normalized.city || church.city || "",
     district_or_area: church.district_or_area || church.city || "",
     phone_primary: church.phone_primary || church.phone || "",
     phone_secondary: church.phone_secondary || "",
@@ -2691,6 +2749,8 @@ function applyContributorToFinanceForm(candidate) {
   setFinanceLinkedBadge(true);
   renderFinanceContributorSuggestions();
   renderFinanceDuplicateWarning([]);
+  const churchSelectEl = form.querySelector('[name="church_id"][data-church-select]');
+  if (churchSelectEl) applyChurchSelection(churchSelectEl, relationalChurches(), relationalFormOptions());
 }
 
 function clearFinanceContributorLink(clearFields = false) {
@@ -2737,7 +2797,11 @@ function checkFinanceManualDuplicates() {
 
 function financeContributorSectionHtml(record = {}) {
   const migrated = migrateFinanceRecord(record);
-  const churchOptions = state.churches.map((church) => `<option value="${church.id}" ${migrated.church_id === church.id ? "selected" : ""}>${church.church_name}</option>`).join("");
+  const churchField = churchSelect("church_id", L("church"), migrated, {
+    ...relationalFormOptions(),
+    igrejaField: "igreja",
+    selectAttrs: "data-finance-person-field"
+  });
   return `
     <div class="col-12 finance-form-section">
       <h4 class="finance-form-section-title">${L("contributorSection")}</h4>
@@ -2763,7 +2827,7 @@ function financeContributorSectionHtml(record = {}) {
         <div class="col-md-6"><label class="form-label">${L("email")}</label><input class="form-control" name="email" type="email" data-finance-person-field value="${migrated.email || ""}"></div>
         <div class="col-md-6"><label class="form-label">${L("address")}</label><input class="form-control" name="endereco" data-finance-person-field value="${migrated.endereco || ""}"></div>
         <div class="col-md-6"><label class="form-label">${L("cell")}</label><input class="form-control" name="celula" data-finance-person-field value="${migrated.celula || ""}"></div>
-        <div class="col-md-6"><label class="form-label">${L("church")}</label><select class="form-select" name="church_id" data-finance-person-field>${churchOptions}</select></div>
+        ${churchField}
       </div>
       <label class="finance-save-contributor form-check mt-3">
         <input class="form-check-input" type="checkbox" name="save_as_contributor" value="1">
@@ -2907,6 +2971,7 @@ function openFinanceDrawer(mode, id = null) {
     byId("financeDrawerEyebrow").textContent = L("edit");
     byId("financeDrawerTitle").textContent = fullName(record) || L("finance");
     body.innerHTML = `<form id="financeDrawerForm" class="row g-3">${getFinanceSchema("edit").map((field) => fieldControl(field, record)).join("")}</form>`;
+    requestAnimationFrame(() => mountRelationalControls(byId("financeDrawerForm")));
     foot.innerHTML = `<button type="button" class="btn btn-outline-light" data-finance-drawer-close>${L("cancel")}</button>
       <button type="submit" form="financeDrawerForm" class="btn btn-ce-gold">${L("save")}</button>`;
   } else if (mode === "verify") {
@@ -3871,14 +3936,19 @@ function updateFoundationProgressPreview(form) {
 function renderFoundationStudentForm(record = {}, mode = "edit") {
   const student = migrateFoundationStudent(record);
   const statusOptions = foundationStatuses.map((status) => `<option value="${status}" ${student.estado === status ? "selected" : ""}>${statusText(status)}</option>`).join("");
-  const churchOptions = state.churches.map((church) => `<option value="${church.id}" ${student.church_id === church.id ? "selected" : ""}>${church.church_name}</option>`).join("");
   const readonly = mode === "view" ? "disabled" : "";
+  const churchField = churchSelect("church_id", L("church"), student, {
+    ...relationalFormOptions(),
+    showInfoCard: true,
+    autofillFields: ["church_id", "province", "city", "district_or_area"],
+    readonly: mode === "view"
+  });
   return `
     ${foundationSectionTitle(L("studentData"))}
     <div class="col-md-6"><label class="form-label">${L("name")}</label><input name="nome" class="form-control" value="${student.nome || ""}" ${readonly} required></div>
     <div class="col-md-6"><label class="form-label">${L("surname")}</label><input name="apelido" class="form-control" value="${student.apelido || ""}" ${readonly}></div>
     <div class="col-md-6"><label class="form-label">${L("phone")}</label><input name="telefone" class="form-control" value="${student.telefone || ""}" ${readonly}></div>
-    <div class="col-md-6"><label class="form-label">${L("church")}</label><select name="church_id" class="form-select" ${readonly}>${churchOptions}</select></div>
+    ${churchField}
     <div class="col-md-6"><label class="form-label">${L("cell")}</label><input name="celula" class="form-control" value="${student.celula || ""}" ${readonly}></div>
     <div class="col-md-6"><label class="form-label">${L("status")}</label><select name="estado" class="form-select" data-foundation-status ${readonly}>${statusOptions}</select><small class="text-white-50 d-block mt-1">${L("autoStatusHint")}</small></div>
     ${foundationSectionTitle(L("classProgress"))}
@@ -3925,6 +3995,7 @@ function openFoundationStudentForm(id = null) {
   byId("modalTitle").textContent = L("foundationSchool");
   byId("modalFields").innerHTML = renderFoundationStudentForm(record, modalMode);
   bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
+  requestAnimationFrame(() => mountRelationalControls(byId("entryForm")));
 }
 
 function openFoundationMarkClass(id) {
@@ -4264,6 +4335,7 @@ function openChurchDrawer(mode, id = null) {
       <button type="submit" form="churchDrawerForm" class="btn btn-ce-gold">${L("save")}</button>`;
     drawer.classList.add("church-drawer--form");
     syncChurchServiceTimesJson();
+    requestAnimationFrame(() => mountRelationalControls(byId("churchDrawerForm")));
   }
 
   if (mode !== "form") drawer.classList.remove("church-drawer--form");
@@ -5072,13 +5144,15 @@ const formSchemas = {
     ["tratamento", "treatment", "select", treatmentOptions], ["nome", "name"], ["apelido", "surname"], ["genero", "gender", "select", ["Feminino", "Masculino"]], ["data_de_nascimento", "birthDate", "date"], ["telefone", "phone"], ["whatsapp", "whatsapp"], ["email", "email", "email"], ["endereco", "address"], ["church_id", "church", "church"], ["data_do_culto", "date", "date"], ["culto", "service", "select", serviceOptions], ["convidado_por", "Invited by"], ["nasceu_de_novo", "bornAgain", "checkbox"], ["quer_escola_de_fundacao", "foundationSchool", "checkbox"], ["quer_aconselhamento", "counseling", "checkbox"], ["interesse_em_celula", "cellInterest", "checkbox"], ["celula_preferida", "preferredCell"], ["estado_do_seguimento", "followupState", "select", followupStatuses], ["conselheiro_responsavel", "responsibleCounselor"], ["notas", "notes", "textarea"]
   ],
   member: [
-    ["tratamento", "treatment", "select", treatmentOptions], ["nome", "name"], ["apelido", "surname"], ["telefone", "phone"], ["email", "email", "email"], ["church_id", "church", "church"], ["celula", "cell"], ["departamento", "department"], ["estado", "status", "select", memberStatuses], ["data_de_entrada", "entryDate", "date"], ["origem", "origin", "select", ["Primeira Vez", "Escola de Fundação", "Transferência", "Manual"]], ["notas", "notes", "textarea"]
+    ["tratamento", "treatment", "select", treatmentOptions], ["nome", "name"], ["apelido", "surname"], ["telefone", "phone"], ["email", "email", "email"],
+    ["church_id", "church", "church", { showInfoCard: true, autofillFields: ["church_id", "province", "city", "district_or_area"], igrejaField: "igreja" }],
+    ["celula", "cell"], ["departamento", "department"], ["estado", "status", "select", memberStatuses], ["data_de_entrada", "entryDate", "date"], ["origem", "origin", "select", ["Primeira Vez", "Escola de Fundação", "Transferência", "Manual"]], ["notas", "notes", "textarea"]
   ],
   foundationStudent: [],
   finance: financeEntrySchema(),
   church: [
     ["church_name", "church"], ["public_name", "publicName"], ["type", "Type", "select", CHURCH_TYPES],
-    ["province", "Province"], ["city", "City"], ["district_or_area", "districtOrArea"], ["address", "address"],
+    ["province", "province", "province"], ["city", "cityDistrict", "city"], ["district_or_area", "areaNeighborhood"], ["address", "address"],
     ["pastor_in_charge", "Pastor"], ["phone_primary", "phonePrimary"], ["phone_secondary", "phoneSecondary"],
     ["email", "email", "email"], ["facebook", "facebook"], ["instagram", "instagram"], ["youtube", "youtube"],
     ["parent_church_id", "parentChurch", "parentChurch"],
@@ -5093,7 +5167,7 @@ const formSchemas = {
   fevoConfig: [["semana_inicio", "weekStart", "date"], ["semana_fim", "weekEnd", "date"], ["team_a_activity", "teamAActivity", "select", fevoActivities], ["team_b_activity", "teamBActivity", "select", fevoActivities], ["team_c_activity", "teamCActivity", "select", fevoActivities], ["team_d_activity", "teamDActivity", "select", fevoActivities], ["preparado_por", "preparedBy"], ["church_id", "church", "church"], ["observacoes", "observations", "textarea"], ["estado", "status", "select", fevoConfigStatuses]],
   fevoReport: [["semana_inicio", "weekStart", "date"], ["semana_fim", "weekEnd", "date"], ["team", "team", "select", fevoTeams], ["activity_type", "activityType", "select", fevoActivities], ["group_id", "groupName"], ["cell_id", "cell", "cellSelect"], ["leader_id", "Leader"], ["church_id", "church", "church"], ["group_name", "groupName"], ["leader_name", "leaderName"], ["number_of_cells", "numberOfCells", "number"], ["number_of_members", "numberOfMembers", "number"], ["leaders_present", "leadersPresent", "number"], ["members_present", "membersPresent", "number"], ["ft_in_church", "ftInChurch", "number"], ["submitted_report", "submittedReport", "checkbox"], ["submitted_by", "submittedBy"], ["submitted_at", "submittedAt", "date"], ["souls_contacted", "soulsContacted", "number"], ["feedback_count", "feedbackCount", "number"], ["followup_result", "followupResult", "textarea"], ["next_action", "nextAction"], ["souls_evangelized", "soulsEvangelized", "number"], ["new_converts", "newConverts", "number"], ["evangelism_location", "evangelismLocation"], ["materials_distributed", "materialsDistributed", "number"], ["souls_visited", "soulsVisited", "number"], ["family_members_reached", "familyMembersReached", "number"], ["visit_location", "visitLocation"], ["visit_result", "visitResult", "textarea"], ["average_members_present", "averageMembersPresent", "number"], ["days_of_prayer", "daysOfPrayer", "number"], ["prayer_focus", "prayerFocus", "textarea"], ["prayer_testimonies", "prayerTestimonies", "textarea"], ["notes", "notes", "textarea"], ["status", "status", "select", fevoReportStatuses]],
   fevoNoReport: [["semana_inicio", "weekStart", "date"], ["semana_fim", "weekEnd", "date"], ["team", "team", "select", fevoTeams], ["activity_type", "activityType", "select", fevoActivities], ["church_id", "church", "church"], ["group_name", "groupName"], ["leader_name", "leaderName"], ["reason_not_submitted", "reasonNotSubmitted", "textarea"], ["followup_action", "followupAction", "textarea"], ["contacted", "contacted", "checkbox"], ["contacted_by", "contactedBy"], ["status", "status", "select", fevoNoReportStatuses]],
-  prisonLocation: [["nome_da_prisao", "prisonName"], ["provincia", "province"], ["cidade", "city"], ["church_id", "church", "church"], ["igreja_responsavel", "responsibleChurch", "church"], ["representante_da_prisao", "prisonRepresentative"], ["contacto_do_representante", "representativeContact"], ["estado", "status", "select", prisonStatusOptions], ["observacoes", "observations", "textarea"]],
+  prisonLocation: [["nome_da_prisao", "prisonName"], ["provincia", "province", "province"], ["cidade", "cityDistrict", "city"], ["church_id", "church", "church"], ["igreja_responsavel", "responsibleChurch", "church"], ["representante_da_prisao", "prisonRepresentative"], ["contacto_do_representante", "representativeContact"], ["estado", "status", "select", prisonStatusOptions], ["observacoes", "observations", "textarea"]],
   prisonService: [["data", "date", "date"], ["dia_da_semana", "weekday", "select", ["Quinta", "Sexta"]], ["prisao", "prison", "prison"], ["church_id", "church", "church"], ["igreja_responsavel", "responsibleChurch", "church"], ["lider_responsavel", "responsibleLeader"], ["membros_que_foram", "membersWent", "textarea"], ["numero_de_internos_presentes", "inmatesPresent", "number"], ["novos_convertidos", "prisonNewConverts", "number"], ["interessados_em_escola_de_fundacao", "interestedFoundation", "number"], ["aula_de_fundacao_dada", "foundationClassGiven", "checkbox"], ["tema_ou_mensagem", "topicMessage"], ["estado", "status", "select", prisonServiceStatuses], ["observacoes", "observations", "textarea"]],
   prisonFoundation: [["nome_do_participante", "participantName"], ["prisao", "prison", "prison"], ["church_id", "church", "church"], ["igreja_responsavel", "responsibleChurch", "church"], ["aula_1_presenca", "classes", "checkbox"], ["aula_2_presenca", "classes", "checkbox"], ["aula_3_presenca", "classes", "checkbox"], ["aula_4_presenca", "classes", "checkbox"], ["aula_5_presenca", "classes", "checkbox"], ["aula_6_presenca", "classes", "checkbox"], ["aula_7_presenca", "classes", "checkbox"], ["nota_exame", "exam", "number"], ["pratica_evangelismo", "evangelismPractice", "checkbox"], ["aprovado", "approved", "checkbox"], ["graduado", "graduated", "checkbox"], ["certificado_emitido", "certificateIssued", "checkbox"], ["estado", "status", "select", prisonFoundationStatuses], ["observacoes", "observations", "textarea"]],
   prisonAgenda: [["semana_inicio", "weekStart", "date"], ["semana_fim", "weekEnd", "date"], ["segunda_preparar_relatorios_e_agenda", "mondayAgenda", "checkbox"], ["terca_reuniao_de_oracao", "tuesdayPrayer", "checkbox"], ["quarta_followup_com_representante", "wednesdayFollowup", "checkbox"], ["quinta_servico_prisional", "thursdayService", "checkbox"], ["sexta_servico_prisional", "fridayService", "checkbox"], ["sabado_domingo_acompanhamento", "weekendFollowup", "checkbox"], ["responsavel", "responsible"], ["estado", "status", "select", prisonAgendaStatuses], ["observacoes", "observations", "textarea"]],
@@ -5182,6 +5256,7 @@ function openForm(type, id = null) {
     byId("modalFields").innerHTML = schema.map((field) => fieldControl(field, record)).join("");
   }
   bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
+  requestAnimationFrame(() => mountRelationalControls(byId("entryForm")));
 }
 
 function formTitle(type) {
@@ -5192,12 +5267,43 @@ function formTitle(type) {
 function fieldControl([name, labelKey, inputType = "text", options = []], record = {}) {
   const label = L(labelKey) || labelKey;
   const value = record[name] ?? "";
+  const fieldOptions = Array.isArray(options) ? options : (options || {});
+  const enrichedRecord = { ...record };
+  if (enrichedRecord.church_id && !enrichedRecord.province) {
+    const linkedChurch = findChurchById(relationalChurches(), enrichedRecord.church_id);
+    if (linkedChurch) {
+      enrichedRecord.province = linkedChurch.province;
+      enrichedRecord.city = linkedChurch.city;
+      enrichedRecord.district_or_area = linkedChurch.district_or_area || enrichedRecord.district_or_area;
+    }
+  }
+  if ((name === "provincia" || name === "cidade") && !enrichedRecord.province && enrichedRecord.provincia) {
+    enrichedRecord.province = enrichedRecord.provincia;
+    enrichedRecord.city = enrichedRecord.cidade;
+  }
+  if (inputType === "province") {
+    const cityTarget = name === "provincia" ? "cidade" : "city";
+    return provinceSelect(name, label, enrichedRecord, { ...relationalFormOptions(), cityTarget, attrs: "data-province-field" });
+  }
+  if (inputType === "city") {
+    const provinceField = name === "cidade" ? "provincia" : "province";
+    return citySelect(name, label, enrichedRecord, { ...relationalFormOptions(), provinceSource: provinceField, attrs: `data-city-field data-province-link="${provinceField}"` });
+  }
   if (inputType === "church") {
-    return `<div class="col-md-6"><label class="form-label">${label}</label><select name="${name}" class="form-select">${state.churches.map((c) => `<option value="${c.id}" ${value === c.id ? "selected" : ""}>${c.church_name}</option>`).join("")}</select></div>`;
+    const colClass = fieldOptions.showInfoCard || fieldOptions.fullWidth ? "col-12" : "col-md-6";
+    return churchSelect(name, label, enrichedRecord, { ...relationalFormOptions(), ...fieldOptions, colClass });
   }
   if (inputType === "parentChurch") {
     const currentId = record.id || churchDrawerRecordId || "";
-    return `<div class="col-md-6"><label class="form-label">${label}</label><select name="${name}" class="form-select"><option value="">${L("all")}</option>${state.churches.filter((c) => c.id !== currentId).map((c) => `<option value="${c.id}" ${value === c.id ? "selected" : ""}>${c.church_name}</option>`).join("")}</select></div>`;
+    const churches = getChurchOptions(relationalChurches().filter((church) => church.id !== currentId));
+    return `
+      <div class="col-md-6">
+        <label class="form-label">${label}</label>
+        <select name="${name}" class="form-select relational-church-select">
+          <option value="">${L("selectChurch")}</option>
+          ${churches.map((church) => `<option value="${church.id}" ${value === church.id ? "selected" : ""}>${churchOptionLabel(church)}</option>`).join("")}
+        </select>
+      </div>`;
   }
   if (inputType === "prison") {
     return `<div class="col-md-6"><label class="form-label">${label}</label><select name="${name}" class="form-select">${state.prisonMinistry.prisons.map((p) => `<option value="${p.id}" ${value === p.id ? "selected" : ""}>${p.nome_da_prisao}</option>`).join("")}</select></div>`;
@@ -5209,7 +5315,8 @@ function fieldControl([name, labelKey, inputType = "text", options = []], record
     return `<div class="col-md-6"><label class="form-label">${label}</label><select name="${name}" class="form-select"><option value="">${L("all")}</option>${state.cells.map((c) => `<option value="${c.id}" ${value === c.id ? "selected" : ""}>${c.nome_da_celula}</option>`).join("")}</select></div>`;
   }
   if (inputType === "select") {
-    return `<div class="col-md-6"><label class="form-label">${label}</label><select name="${name}" class="form-select">${options.map((o) => `<option value="${o}" ${value === o ? "selected" : ""}>${STATUS_KEYS[o] ? statusText(o) : o}</option>`).join("")}</select></div>`;
+    const selectOptions = Array.isArray(options) ? options : [];
+    return `<div class="col-md-6"><label class="form-label">${label}</label><select name="${name}" class="form-select">${selectOptions.map((o) => `<option value="${o}" ${value === o ? "selected" : ""}>${STATUS_KEYS[o] ? statusText(o) : o}</option>`).join("")}</select></div>`;
   }
   if (inputType === "checkbox") {
     return `<div class="col-md-6 d-flex align-items-end"><label class="form-check"><input name="${name}" type="checkbox" class="form-check-input" ${value ? "checked" : ""}> <span class="form-check-label">${label}</span></label></div>`;
@@ -5237,6 +5344,7 @@ function submitForm(form) {
   schema.forEach(([name, , inputType]) => {
     if (inputType === "checkbox") data[name] = new FormData(form).has(name);
   });
+  enrichRecordChurchFields(data);
   const collection = getCollection(modalType);
   if (modalMode === "edit") {
     const index = collection.findIndex((item) => item.id === modalRecordId);
@@ -5616,7 +5724,9 @@ document.addEventListener("input", (event) => {
         });
       }
     }
-    if (event.target.name === "church_id" && form?.elements.igreja) {
+    if (event.target.matches("[data-church-select]") && form) {
+      applyChurchSelection(event.target, relationalChurches(), relationalFormOptions());
+    } else if (event.target.name === "church_id" && form?.elements.igreja) {
       form.elements.igreja.value = churchName(event.target.value);
     }
     checkFinanceManualDuplicates();
@@ -5671,9 +5781,9 @@ document.addEventListener("change", (event) => {
     event.target.dataset.manualStatus = "1";
     return;
   }
-  if (event.target.name === "church_id" && event.target.dataset?.financePersonField) {
-    const form = byId("entryForm");
-    if (form?.elements.igreja) form.elements.igreja.value = churchName(event.target.value);
+  if (event.target.matches("[data-church-select]")) {
+    const form = event.target.closest("form");
+    if (form) applyChurchSelection(event.target, relationalChurches(), relationalFormOptions());
   }
   const serviceField = event.target.dataset?.serviceField;
   if (serviceField) {
@@ -5729,3 +5839,5 @@ applyLanguage(lang);
 applySidebarCollapse();
 applyBackToTopLabel();
 updateBackToTopVisibility();
+
+const ServiceTimesEditor = renderChurchServiceTimesEditor;
