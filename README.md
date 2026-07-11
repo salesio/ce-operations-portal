@@ -2,6 +2,8 @@
 
 First dashboard prototype for the church team portal.
 
+**Live demo:** https://salesio.github.io/ce-mozambique-dashboard/
+
 ## Included in v1 prototype
 
 - Login screen placeholder
