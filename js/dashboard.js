@@ -214,6 +214,13 @@ const TEXT = {
     reqRemainingPending: "Valor Ainda Pendente",
     reqExportPdf: "Exportar PDF",
     reqExportExcel: "Exportar Excel",
+    reqExportCsv: "Exportar CSV",
+    rptInventoryAwaiting: "Aguardando Liberação",
+    rptInventoryRegistered: "Registado",
+    rptInventoryCompleted: "Concluído",
+    rptInventoryItemId: "ID Inventário",
+    dateFrom: "Data inicial",
+    dateTo: "Data final",
     reqPrintReport: "Imprimir Relatório",
     reqViewRelease: "Ver Liberação",
     reqRequisitionStatus: "Estado da Requisição",
@@ -902,6 +909,13 @@ const TEXT = {
     reqRemainingPending: "Remaining Pending Amount",
     reqExportPdf: "Export PDF",
     reqExportExcel: "Export Excel",
+    reqExportCsv: "Export CSV",
+    rptInventoryAwaiting: "Awaiting Release",
+    rptInventoryRegistered: "Registered",
+    rptInventoryCompleted: "Completed",
+    rptInventoryItemId: "Inventory Item ID",
+    dateFrom: "Start date",
+    dateTo: "End date",
     reqPrintReport: "Print Report",
     reqViewRelease: "View Release",
     reqRequisitionStatus: "Requisition Status",
@@ -4254,6 +4268,7 @@ function renderRequisitionReportsPanel(options = {}) {
 
   const exportBtns = rep.canExportReports(activeUser) ? `
     <div class="requisition-report-export d-flex flex-wrap gap-2 mb-4">
+      <button type="button" class="btn btn-outline-glass" data-req-report-export="csv"><i class="bi bi-filetype-csv me-1"></i>${L("reqExportCsv")}</button>
       <button type="button" class="btn btn-ce-gold" data-req-report-export="excel"><i class="bi bi-file-earmark-excel me-1"></i>${L("reqExportExcel")}</button>
       <button type="button" class="btn btn-outline-cyan" data-req-report-export="print"><i class="bi bi-printer me-1"></i>${L("reqPrintReport")}</button>
       <button type="button" class="btn btn-outline-glass" data-req-report-export="pdf"><i class="bi bi-file-earmark-pdf me-1"></i>${L("reqExportPdf")}</button>
@@ -7916,17 +7931,17 @@ function fevoActivityPanel(id, title, rows) {
 function renderReports() {
   const framework = window.CEReportsFramework;
   const domains = [
-    { id: "funnel", icon: "bi-person-heart", route: "firstTimers" },
-    { id: "foundation", icon: "bi-mortarboard", route: "foundationSchool" },
-    { id: "financeExpenses", icon: "bi-wallet2", route: "finance" },
-    { id: "reqInventory", icon: "bi-box-seam", route: "requisitions" },
-    { id: "staff", icon: "bi-people-fill", route: "staffHr" },
-    { id: "cell", icon: "bi-diagram-3", route: "cellMinistryOverview" },
-    { id: "fevo", icon: "bi-compass", route: "fevo" },
-    { id: "venue", icon: "bi-box-seam", route: "venueInventory" },
-    { id: "sacraments", icon: "bi-droplet", route: "sacraments" },
-    { id: "prison", icon: "bi-shield-lock", route: "prisonMinistry" },
-    { id: "materials", icon: "bi-journal-richtext", route: "ministryMaterials" }
+    { id: "funnel", icon: "bi-person-heart" },
+    { id: "foundation", icon: "bi-mortarboard" },
+    { id: "financeExpenses", icon: "bi-wallet2" },
+    { id: "reqInventory", icon: "bi-box-seam" },
+    { id: "staff", icon: "bi-people-fill" },
+    { id: "cell", icon: "bi-diagram-3" },
+    { id: "fevo", icon: "bi-compass" },
+    { id: "venue", icon: "bi-box-seam" },
+    { id: "sacraments", icon: "bi-droplet" },
+    { id: "prison", icon: "bi-shield-lock" },
+    { id: "materials", icon: "bi-journal-richtext" }
   ];
   const visibleDomains = domains.filter((d) => framework?.canViewDomain?.(activeUser, d.id));
   const executiveCards = visibleDomains.map((d) => {
@@ -7935,25 +7950,39 @@ function renderReports() {
     const title = adapter?.titleKey ? L(adapter.titleKey) : d.id;
     const primary = stats.total ?? stats.releasedTotal ?? stats.salesValue ?? 0;
     const display = typeof primary === "number" && primary > 999 ? money(primary) : primary;
-    return sm(d.icon, title, display, "reports", { filterPayload: { domain: d.id }, route: d.route });
+    return sm(d.icon, title, display, "reports", { filterPayload: { domain: d.id } });
   }).join("");
   const activeDomain = reportsPageState.domain && framework?.canViewDomain(activeUser, reportsPageState.domain)
     ? reportsPageState.domain
     : (visibleDomains[0]?.id || "");
-  if (activeDomain && !reportsPageState.domain) reportsPageState.domain = activeDomain;
+  reportsPageState.domain = activeDomain;
   const domainTabs = visibleDomains.map((d) => {
     const title = L(framework.getAdapter(d.id)?.titleKey || d.id);
     return `<button type="button" class="tab-button ${reportsPageState.domain === d.id ? "active" : ""}" data-report-domain-tab="${d.id}">${title}</button>`;
   }).join("");
   const activePanel = activeDomain ? renderDomainReportsPanel(activeDomain, { module: "reports", showTitle: false, formAttr: `data-domain-report-filters-${activeDomain}` }) : "";
+  const showReqApproved = window.CERequisitionReports?.canViewReports?.(activeUser)
+    && (activeDomain === "financeExpenses" || activeDomain === "reqInventory");
+  const reqApprovedSection = showReqApproved ? `
+    <article class="panel glass-panel module-content-card reports-hub-requisitions mt-4">
+      ${renderRequisitionReportsPanel({
+        module: "reports",
+        showTitle: true,
+        filters: { ...financePageState.requisitionReportFilters, ...domainReportFilters.reqInventory },
+        targetTab: "reports"
+      })}
+    </article>` : "";
   setPageContent(`
     ${sectionHeader(L("rptExecutiveTitle"), L("rptExecutiveHint"), null, "bi-bar-chart-line")}
-    <article class="panel glass-panel module-content-card mb-4">
-      <div class="tab-strip module-tab-strip mb-3">${domainTabs}</div>
-      <div class="row g-3 summary-cards-row mb-4">${executiveCards}</div>
-      ${summaryFilterChips("reports")}
-      <div class="tab-content-panel">${activePanel}</div>
-    </article>
+    <div class="reports-hub">
+      <article class="panel glass-panel module-content-card mb-4 reports-hub-main">
+        <div class="tab-strip module-tab-strip reports-hub-tabs mb-3">${domainTabs}</div>
+        <div class="row g-3 summary-cards-row reports-hub-executive mb-4">${executiveCards}</div>
+        ${summaryFilterChips("reports")}
+        <div class="tab-content-panel reports-hub-panel">${activePanel}</div>
+      </article>
+      ${reqApprovedSection}
+    </div>
     `);
 }
 
@@ -9563,9 +9592,11 @@ document.addEventListener("click", (event) => {
     if (!rep?.canExportReports(activeUser)) return;
     const { list, stats } = getActiveRequisitionReportContext();
     const kind = reqReportExport.dataset.reqReportExport;
-    if (kind === "excel") exportRequisitionReportExcel(list);
-    else if (kind === "print") window.print();
-    else if (kind === "pdf" && typeof exportFinancePrint === "function") {
+    if (kind === "csv") exportRequisitionReportCsv(list);
+    else if (kind === "excel") exportRequisitionReportExcel(list);
+    else if (kind === "print" && typeof exportFinancePrint === "function") {
+      exportFinancePrint(buildRequisitionReportExportHtml(list, stats), L("reqReportsTitle"));
+    } else if (kind === "pdf" && typeof exportFinancePrint === "function") {
       exportFinancePrint(buildRequisitionReportExportHtml(list, stats), L("reqReportsTitle"));
     }
     return;
@@ -9720,6 +9751,7 @@ document.addEventListener("submit", (event) => {
     const data = Object.fromEntries(new FormData(event.target).entries());
     financePageState.requisitionReportFilters = { ...financePageState.requisitionReportFilters, ...data };
     if (activeRoute === "finance") renderFinance();
+    else if (activeRoute === "reports") renderReports();
     return;
   }
   if (event.target.matches("[data-requisition-module-report-filters]")) {

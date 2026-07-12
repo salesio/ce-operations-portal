@@ -74,8 +74,7 @@
     const filename = `${adapter.id}-report-${stamp}`;
     if (format === "excel") exportExcel(list, headers, rowFn, `${filename}.xls`, title);
     else if (format === "csv") exportCsv(list, headers, rowFn, `${filename}.csv`);
-    else if (format === "print") window.print();
-    else if (format === "pdf") {
+    else if (format === "print" || format === "pdf") {
       const summaryCards = adapter.printSummaryCards
         ? adapter.printSummaryCards(stats, labelFn, moneyFn)
         : [];

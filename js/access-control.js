@@ -201,6 +201,7 @@
     "Requisition Officer": {
       modules: {
         dashboard: { ...VIEW_ONLY, scope: "all" },
+        reports: { ...VIEW_ONLY, scope: "all", can_export: true },
         requisitions: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "all", can_review: true, can_forward: true },
         venueInventory: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "all" }
       }

@@ -32,8 +32,23 @@
       const access = window.CEAccessControl?.resolveModuleAccess?.(user, "finance");
       return Boolean(access?.can_export);
     },
-    getList(state) {
-      return (state.financeDisbursements || []).filter((d) => d.transaction_type === "expense");
+    filterFieldMap: { churchId: "church_id", department: "department_name", status: "status" },
+    getList(state, user) {
+      let list = (state.financeDisbursements || []).filter((d) => d.transaction_type === "expense");
+      const access = window.CEAccessControl?.resolveModuleAccess?.(user, "finance");
+      if (access?.scope === "church" && user?.church_id) {
+        list = list.filter((d) => d.church_id === user.church_id);
+      } else if (access?.scope === "department") {
+        const dept = user?.assigned_department || user?.department_name || "";
+        list = list.filter((d) => d.department_name === dept || d.department_id === user?.department_id);
+      }
+      return list;
+    },
+    getDepartments(state, list) {
+      return [...new Set(list.map((r) => r.department_name).filter(Boolean))].sort();
+    },
+    getStatuses(state, list) {
+      return [...new Set(list.map((r) => r.status).filter(Boolean))].sort();
     },
     filterRecords(list, filters) {
       let out = fw().applyPeriodFilter(list, filters, "released_at");
@@ -98,59 +113,101 @@
     }
   });
 
+  function resolveInventoryLinkStatus(record) {
+    const status = String(record.status || "");
+    if (record.inventory_item_id) {
+      if (/Fechado|Concluído|Completed|Fechada/i.test(status)) return "completed";
+      return "registered";
+    }
+    if (/Registado no Inventário|Registado/i.test(status)) return "registered";
+    if (Number(record.released_amount || 0) > 0 || /Recursos Liberados|Comprado|Executado/i.test(status)) return "pending";
+    return "awaiting";
+  }
+
+  function inventoryStatusLabel(record, L) {
+    const key = {
+      awaiting: "rptInventoryAwaiting",
+      pending: "rptPendingInventory",
+      registered: "rptInventoryRegistered",
+      completed: "rptInventoryCompleted"
+    }[record.inventory_link_status || resolveInventoryLinkStatus(record)];
+    return L(key || "finAwaitingRelease");
+  }
+
   /* ── Phase 2: Requisition → Inventory ── */
   register({
     id: "reqInventory",
     accessModule: "requisitions",
     titleKey: "rptReqInventoryTitle",
     hintKey: "rptReqInventoryHint",
+    filterFieldMap: { churchId: "church_id", department: "department_name", status: "inventory_link_status" },
     canView(user) { return reqRep()?.canViewReports?.(user); },
     canExport(user) { return reqRep()?.canExportReports?.(user); },
     getList(state, user) {
-      return (reqRep()?.getFinanceApprovedList?.(state, user) || []).map((r) => ({
-        ...r,
-        in_inventory: Boolean(r.inventory_item_id || /Inventário|Registado/.test(r.status || "")),
-        pending_inventory: !r.inventory_item_id && Number(r.released_amount || 0) > 0
-      }));
+      return (reqRep()?.getFinanceApprovedList?.(state, user) || []).map((r) => {
+        const inventory_link_status = resolveInventoryLinkStatus(r);
+        return {
+          ...r,
+          inventory_link_status,
+          inventory_item_label: r.inventory_item_id || "—"
+        };
+      });
     },
     filterRecords(list, filters) {
       let out = reqRep()?.filterRecords?.(list, filters) || list;
-      if (filters.card_filter === "pending_inv") out = out.filter((r) => r.pending_inventory);
-      if (filters.card_filter === "in_inventory") out = out.filter((r) => r.in_inventory);
+      out = fw().applyCommonFilters(out, filters, { churchId: "church_id", department: "department_name", status: "inventory_link_status" });
+      if (filters.card_filter === "pending_inv") out = out.filter((r) => r.inventory_link_status === "pending");
+      if (filters.card_filter === "registered") out = out.filter((r) => r.inventory_link_status === "registered");
+      if (filters.card_filter === "completed") out = out.filter((r) => r.inventory_link_status === "completed");
+      if (filters.card_filter === "in_inventory") out = out.filter((r) => ["registered", "completed"].includes(r.inventory_link_status));
+      if (filters.card_filter === "awaiting") out = out.filter((r) => r.inventory_link_status === "awaiting");
       return out;
+    },
+    getDepartments(state, list) {
+      return [...new Set(list.map((r) => r.department_name).filter(Boolean))].sort();
+    },
+    getStatuses(state, list) {
+      return [...new Set(list.map((r) => r.inventory_link_status).filter(Boolean))].sort();
     },
     computeStats(list) {
       return {
         total: list.length,
-        inInventory: list.filter((r) => r.in_inventory).length,
-        pendingInventory: list.filter((r) => r.pending_inventory).length,
+        awaiting: list.filter((r) => r.inventory_link_status === "awaiting").length,
+        pendingInventory: list.filter((r) => r.inventory_link_status === "pending").length,
+        registered: list.filter((r) => r.inventory_link_status === "registered").length,
+        completed: list.filter((r) => r.inventory_link_status === "completed").length,
+        inInventory: list.filter((r) => ["registered", "completed"].includes(r.inventory_link_status)).length,
         releasedValue: list.reduce((s, r) => s + Number(r.released_amount || 0), 0)
       };
     },
     getSummaryCards(stats, L, money) {
       return [
-        { icon: "bi-box-seam", label: L("rptInInventory"), value: stats.inInventory, filter: { card_filter: "in_inventory" } },
+        { icon: "bi-hourglass-split", label: L("rptInventoryAwaiting"), value: stats.awaiting, filter: { card_filter: "awaiting" } },
         { icon: "bi-hourglass", label: L("rptPendingInventory"), value: stats.pendingInventory, filter: { card_filter: "pending_inv" } },
-        { icon: "bi-clipboard-check", label: L("finApprovedRequisitions"), value: stats.total, filter: {} },
+        { icon: "bi-box-seam", label: L("rptInventoryRegistered"), value: stats.registered, filter: { card_filter: "registered" } },
+        { icon: "bi-check-circle", label: L("rptInventoryCompleted"), value: stats.completed, filter: { card_filter: "completed" } },
         { icon: "bi-wallet2", label: L("finReleasedAmount"), value: money(stats.releasedValue), filter: {} }
       ];
     },
     getCharts(list, stats, L) {
       return [
-        { type: "donut", title: L("rptInventoryStatus"), data: [[L("rptInInventory"), stats.inInventory], [L("rptPendingInventory"), stats.pendingInventory], [L("finAwaitingRelease"), list.filter((r) => !r.in_inventory && !r.pending_inventory).length]] },
-        { type: "hbar", title: L("reqReportByType"), data: fw().groupSum(list.filter((r) => r.in_inventory), "requisition_type", "approved_amount") }
+        { type: "donut", title: L("rptInventoryStatus"), data: [[L("rptInventoryAwaiting"), stats.awaiting], [L("rptPendingInventory"), stats.pendingInventory], [L("rptInventoryRegistered"), stats.registered], [L("rptInventoryCompleted"), stats.completed]] },
+        { type: "hbar", title: L("reqReportByType"), data: fw().groupSum(list.filter((r) => r.inventory_item_id), "requisition_type", "approved_amount") }
       ];
     },
     getTables(list, stats, L, opts) {
       const money = opts.moneyFn || ((v) => v);
       return [{
         title: L("rptReqInventoryDetail"),
-        headers: [L("reqNumber"), L("reqTitle"), L("reqType"), L("finReleasedAmount"), L("rptInventoryStatus"), L("status")],
-        rows: list.map((r) => [r.request_number, r.title, r.requisition_type, money(r.released_amount), r.in_inventory ? L("rptInInventory") : r.pending_inventory ? L("rptPendingInventory") : L("finAwaitingRelease"), r.status])
+        headers: [L("reqNumber"), L("reqTitle"), L("reqType"), L("finReleasedAmount"), L("rptInventoryItemId"), L("rptInventoryStatus"), L("status")],
+        rows: list.map((r) => [r.request_number, r.title, r.requisition_type, money(r.released_amount), r.inventory_item_id || "—", inventoryStatusLabel(r, L), r.status])
       }];
     },
-    exportHeaders(L) { return [L("reqNumber"), L("reqTitle"), L("rptInventoryStatus"), L("finReleasedAmount")]; },
-    exportRow(r) { return [r.request_number, r.title, r.in_inventory ? "In Inventory" : "Pending", r.released_amount]; }
+    exportHeaders(L) { return [L("reqNumber"), L("reqTitle"), L("rptInventoryItemId"), L("rptInventoryStatus"), L("finReleasedAmount")]; },
+    exportRow(r) {
+      const labels = { awaiting: "Awaiting Release", pending: "Pending Inventory", registered: "Registered", completed: "Completed" };
+      return [r.request_number, r.title, r.inventory_item_id || "", labels[r.inventory_link_status] || r.inventory_link_status, r.released_amount];
+    }
   });
 
   /* ── Phase 2: Staff & HR ── */

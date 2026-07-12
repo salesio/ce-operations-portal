@@ -366,12 +366,15 @@
     const store = window.reportsPageState;
     if (!store) return;
     const filters = payload.filterPayload || {};
-    if (filters.domain) store.domain = filters.domain;
-    if (filters.domain && window.domainReportFilters?.[filters.domain]) {
-      Object.assign(window.domainReportFilters[filters.domain], filters);
+    if (filters.domain) {
+      store.domain = filters.domain;
+      if (window.domainReportFilters?.[filters.domain]) {
+        Object.assign(window.domainReportFilters[filters.domain], filters);
+      }
     }
-    if (payload.route && typeof setRoute === "function") {
-      setRoute(payload.route);
+    const targetRoute = payload.route || (filters.domain ? "reports" : "");
+    if (targetRoute && typeof setRoute === "function") {
+      setRoute(targetRoute);
       return false;
     }
     return true;

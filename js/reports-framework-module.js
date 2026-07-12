@@ -5,6 +5,18 @@
   "use strict";
 
   const adapters = {};
+  const ALL_DOMAIN_IDS = [
+    "funnel", "foundation", "financeExpenses", "reqInventory", "staff",
+    "cell", "fevo", "venue", "sacraments", "prison", "materials"
+  ];
+  const ROLE_DOMAIN_WHITELIST = {
+    "Super Admin": ALL_DOMAIN_IDS,
+    "Main Pastor": ALL_DOMAIN_IDS,
+    "National Admin": ALL_DOMAIN_IDS,
+    "Finance Head": ["financeExpenses", "reqInventory", "venue"],
+    "HR Manager": ["staff"],
+    "Requisition Officer": ["reqInventory"]
+  };
   const DEFAULT_FILTERS = {
     period: "month", dateFrom: "", dateTo: "", churchId: "", department: "",
     status: "", card_filter: "", search: ""
@@ -14,11 +26,24 @@
     return window.CEAccessControl || null;
   }
 
+  function roleAllowsDomain(user, domainId) {
+    const whitelist = ROLE_DOMAIN_WHITELIST[user?.role || ""];
+    if (!whitelist) return null;
+    return whitelist.includes(domainId);
+  }
+
   function canViewDomain(user, domainId) {
+    const roleAllowed = roleAllowsDomain(user, domainId);
+    if (roleAllowed === false) return false;
     const adapter = adapters[domainId];
-    if (adapter?.canView) return adapter.canView(user);
-    const access = accessApi()?.resolveModuleAccess?.(user, adapter?.accessModule || "reports");
-    return Boolean(access?.can_view);
+    if (!adapter) return false;
+    const moduleOk = adapter.canView ? adapter.canView(user) : Boolean(
+      accessApi()?.resolveModuleAccess?.(user, adapter.accessModule || "reports")?.can_view
+    );
+    if (!moduleOk) return false;
+    if (roleAllowed === true) return true;
+    const reportsAccess = accessApi()?.resolveModuleAccess?.(user, "reports");
+    return Boolean(reportsAccess?.can_view);
   }
 
   function canExportDomain(user, domainId) {
@@ -87,6 +112,16 @@
     return Object.entries(map).sort((a, b) => b[1] - a[1]);
   }
 
+  function deriveDepartments(list = [], fieldMap = {}) {
+    const key = fieldMap.department || "department_name";
+    return [...new Set(list.map((r) => r[key] || r.department_name || r.departamento_responsavel).filter(Boolean))].sort();
+  }
+
+  function deriveStatuses(list = [], fieldMap = {}) {
+    const key = fieldMap.status || "status";
+    return [...new Set(list.map((r) => r[key] || r.status || r.estado || r.funnel_stage).filter(Boolean))].sort();
+  }
+
   function buildFilterBar(filters, labelFn, options = {}) {
     const departments = options.departments || [];
     const statuses = options.statuses || [];
@@ -100,18 +135,24 @@
       ["year", labelFn("financePeriodYear")],
       ["custom", labelFn("financePeriodCustom")]
     ];
+    const customDates = filters.period === "custom" ? `
+      <div class="col-md-2"><label class="form-label">${labelFn("dateFrom")}</label>
+        <input type="date" name="dateFrom" class="form-control" value="${filters.dateFrom || ""}"></div>
+      <div class="col-md-2"><label class="form-label">${labelFn("dateTo")}</label>
+        <input type="date" name="dateTo" class="form-control" value="${filters.dateTo || ""}"></div>` : "";
     return `<form class="row g-3 domain-report-filters mb-4" data-domain-report-filters data-report-domain="${domain}">
       <input type="hidden" name="domain" value="${domain}">
       <div class="col-md-2"><label class="form-label">${labelFn("financePeriodMonth")}</label>
         <select name="period" class="form-select">${periodOpts.map(([v, l]) => `<option value="${v}" ${filters.period === v ? "selected" : ""}>${l}</option>`).join("")}</select></div>
+      ${customDates}
       <div class="col-md-2"><label class="form-label">${labelFn("church")}</label>
         <select name="churchId" class="form-select"><option value="">${labelFn("all")}</option>${churches.map((c) => `<option value="${c.id}" ${filters.churchId === c.id ? "selected" : ""}>${c.church_name}</option>`).join("")}</select></div>
-      ${departments.length ? `<div class="col-md-2"><label class="form-label">${labelFn("reqDepartment")}</label>
-        <select name="department" class="form-select"><option value="">${labelFn("all")}</option>${departments.map((d) => `<option value="${d}" ${filters.department === d ? "selected" : ""}>${d}</option>`).join("")}</select></div>` : ""}
-      ${statuses.length ? `<div class="col-md-2"><label class="form-label">${labelFn("status")}</label>
-        <select name="status" class="form-select"><option value="">${labelFn("all")}</option>${statuses.map((s) => `<option value="${s}" ${filters.status === s ? "selected" : ""}>${s}</option>`).join("")}</select></div>` : ""}
-      <div class="col-md-2"><label class="form-label">${labelFn("search")}</label><input name="search" class="form-control" value="${filters.search || ""}"></div>
-      <div class="col-md-4 d-flex align-items-end gap-2">
+      <div class="col-md-2"><label class="form-label">${labelFn("reqDepartment")}</label>
+        <select name="department" class="form-select"><option value="">${labelFn("all")}</option>${departments.map((d) => `<option value="${d}" ${filters.department === d ? "selected" : ""}>${d}</option>`).join("")}</select></div>
+      <div class="col-md-2"><label class="form-label">${labelFn("status")}</label>
+        <select name="status" class="form-select"><option value="">${labelFn("all")}</option>${statuses.map((s) => `<option value="${s}" ${filters.status === s ? "selected" : ""}>${s}</option>`).join("")}</select></div>
+      <div class="col-md-2"><label class="form-label">${labelFn("search")}</label><input name="search" class="form-control" value="${filters.search || ""}" placeholder="${labelFn("search")}"></div>
+      <div class="col-md-4 d-flex align-items-end gap-2 flex-wrap">
         <button type="submit" class="btn btn-ce-gold">${labelFn("save")}</button>
         <button type="button" class="btn btn-outline-glass" data-domain-report-clear data-report-domain="${domain}">${labelFn("clearFilters")}</button>
       </div>
@@ -171,12 +212,14 @@
     }
     const { list, stats } = getContext(adapter, state, user, filters);
     const churches = options.churches || (state.churches || []);
+    const rawList = adapter.getList(state, user) || [];
+    const fieldMap = adapter.filterFieldMap || {};
     const filterBar = buildFilterBar(filters, labelFn, {
       formAttr: options.formAttr || "data-domain-report-filters",
       domain: adapter.id,
       churches,
-      departments: adapter.getDepartments ? adapter.getDepartments(state, list) : [],
-      statuses: adapter.getStatuses ? adapter.getStatuses(state, list) : []
+      departments: adapter.getDepartments ? adapter.getDepartments(state, rawList) : deriveDepartments(rawList, fieldMap),
+      statuses: adapter.getStatuses ? adapter.getStatuses(state, rawList) : deriveStatuses(rawList, fieldMap)
     });
     const summaryCards = buildSummaryCards(
       adapter.getSummaryCards ? adapter.getSummaryCards(stats, labelFn, options.moneyFn) : [],
@@ -188,6 +231,7 @@
     const tablesHtml = buildTables(tables, dataTableFn, labelFn);
     const exportBtns = canExportDomain(user, adapter.id) ? `
       <div class="domain-report-export d-flex flex-wrap gap-2 mb-4">
+        <button type="button" class="btn btn-outline-glass" data-domain-report-export="csv" data-report-domain="${adapter.id}"><i class="bi bi-filetype-csv me-1"></i>${labelFn("reqExportCsv")}</button>
         <button type="button" class="btn btn-ce-gold" data-domain-report-export="excel" data-report-domain="${adapter.id}"><i class="bi bi-file-earmark-excel me-1"></i>${labelFn("reqExportExcel")}</button>
         <button type="button" class="btn btn-outline-cyan" data-domain-report-export="print" data-report-domain="${adapter.id}"><i class="bi bi-printer me-1"></i>${labelFn("reqPrintReport")}</button>
         <button type="button" class="btn btn-outline-glass" data-domain-report-export="pdf" data-report-domain="${adapter.id}"><i class="bi bi-file-earmark-pdf me-1"></i>${labelFn("reqExportPdf")}</button>
@@ -233,6 +277,9 @@
     renderPanel,
     computeExecutiveKpis,
     buildFilterBar,
+    deriveDepartments,
+    deriveStatuses,
+    ROLE_DOMAIN_WHITELIST,
     buildPrintHtml: (opts) => window.CEReportsExport?.buildPrintHtml?.(opts)
   };
 })();

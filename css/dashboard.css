@@ -3131,15 +3131,139 @@ table,
   color: #fca5a5;
 }
 
-/* Domain reports framework */
-.domain-reports-panel .panel-title,
+/* Reports hub & domain reports framework */
+.reports-hub {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.reports-hub-main,
+.reports-hub-requisitions {
+  border: 1px solid rgba(34, 211, 238, 0.12);
+  background: linear-gradient(145deg, rgba(11, 31, 63, 0.92), rgba(15, 42, 78, 0.88));
+}
+
+.reports-hub-tabs .tab-button {
+  color: rgba(226, 232, 240, 0.72);
+  border-color: rgba(148, 163, 184, 0.2);
+}
+
+.reports-hub-tabs .tab-button:hover,
+.reports-hub-tabs .tab-button:focus-visible {
+  color: #22d3ee;
+  border-color: rgba(34, 211, 238, 0.45);
+  box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.15);
+}
+
+.reports-hub-tabs .tab-button.active {
+  color: #0b1f3f;
+  background: linear-gradient(135deg, #d7ad45, #f0cc6a);
+  border-color: #d7ad45;
+  font-weight: 600;
+}
+
+.reports-hub-executive .summary-card,
+.reports-hub-executive .metric-card {
+  border: 1px solid rgba(215, 173, 69, 0.22);
+  background: linear-gradient(160deg, rgba(248, 250, 252, 0.97), rgba(241, 245, 249, 0.94));
+  color: #0b1f3f;
+}
+
+.reports-hub-executive .summary-card .metric-label,
+.reports-hub-executive .metric-card .metric-label {
+  color: #475569;
+}
+
+.reports-hub-executive .summary-card .metric-value,
+.reports-hub-executive .metric-card .metric-value {
+  color: #0b1f3f;
+}
+
+.reports-hub-executive .summary-card:hover,
+.reports-hub-executive .metric-card:hover {
+  border-color: rgba(34, 211, 238, 0.5);
+  box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.12);
+}
+
+.reports-hub-panel .domain-reports-panel .glass-panel,
+.reports-hub-requisitions .glass-panel {
+  background: rgba(248, 250, 252, 0.97);
+  color: #0b1f3f;
+}
+
+.reports-hub-panel .domain-reports-panel .panel-title,
+.reports-hub-requisitions .panel-title {
+  color: #0b1f3f;
+}
+
+.reports-hub-panel .domain-reports-panel .text-secondary,
+.reports-hub-requisitions .text-secondary {
+  color: #475569 !important;
+}
+
+.domain-reports-panel .panel-title {
+  color: rgba(248, 250, 252, 0.95);
+}
+
 .domain-report-filters .form-label {
-  color: rgba(226, 232, 240, 0.85);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(226, 232, 240, 0.88);
+}
+
+.domain-report-filters .form-select,
+.domain-report-filters .form-control {
+  background: rgba(15, 42, 78, 0.65);
+  border-color: rgba(148, 163, 184, 0.28);
+  color: #f8fafc;
+}
+
+.domain-report-filters .form-select:focus,
+.domain-report-filters .form-control:focus {
+  border-color: #22d3ee;
+  box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.2);
+  color: #f8fafc;
 }
 
 .domain-report-cards .summary-card,
 .domain-report-cards .metric-card {
   min-height: 5.75rem;
+  background: linear-gradient(160deg, rgba(248, 250, 252, 0.97), rgba(241, 245, 249, 0.92));
+  color: #0b1f3f;
+  border: 1px solid rgba(215, 173, 69, 0.2);
+}
+
+.domain-report-cards .metric-label {
+  color: #475569;
+}
+
+.domain-report-cards .metric-value {
+  color: #0b1f3f;
+}
+
+.domain-reports-panel .finance-chart-card {
+  background: rgba(248, 250, 252, 0.97);
+  color: #0b1f3f;
+}
+
+.domain-reports-panel .finance-chart-card .panel-title,
+.domain-reports-panel .finance-chart-empty {
+  color: #0b1f3f;
+}
+
+.domain-reports-panel .finance-hbar-label {
+  color: #334155;
+}
+
+.domain-reports-panel .finance-hbar-value {
+  color: #0b1f3f;
+  font-weight: 600;
+}
+
+.domain-reports-panel .finance-donut-legend {
+  color: #334155;
 }
 
 .domain-report-export .btn {
@@ -3147,6 +3271,17 @@ table,
 }
 
 @media (max-width: 767.98px) {
+  .reports-hub-tabs {
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .reports-hub-tabs .tab-button {
+    flex: 1 1 calc(50% - 0.35rem);
+    min-width: 8.5rem;
+    font-size: 0.78rem;
+  }
+
   .domain-report-filters > [class*="col-"] {
     width: 100%;
   }
@@ -3158,11 +3293,18 @@ table,
   .domain-report-export .btn {
     width: 100%;
   }
+
+  .reports-hub-executive > [class*="col-"] {
+    width: 100%;
+  }
 }
 
 @media print {
+  .reports-hub-tabs,
   .domain-report-filters,
-  .domain-report-export {
+  .domain-report-export,
+  .requisition-report-filters,
+  .requisition-report-export {
     display: none !important;
   }
 }
