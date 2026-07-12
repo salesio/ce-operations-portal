@@ -7177,7 +7177,7 @@ document.addEventListener("click", (event) => {
   if (enrollButton) return enrollFirstTimer(enrollButton.dataset.enroll);
 });
 
-byId("entryForm").addEventListener("submit", (event) => {
+byId("entryForm")?.addEventListener("submit", (event) => {
   event.preventDefault();
   if (modalType === "followup") return submitFollowup(event.target);
   if (modalType === "foundationStudent") return submitFoundationStudent(event.target);
