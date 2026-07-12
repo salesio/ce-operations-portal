@@ -10,11 +10,22 @@ var CESupabase = (function () {
   const BUCKET = "payment-proofs";
   let cachedClient = null;
 
+  function isValidSupabaseConfig(url, anonKey) {
+    if (!url || !anonKey) return false;
+    if (/YOUR_PROJECT|YOUR_SUPABASE|example\.com|placeholder/i.test(url + anonKey)) return false;
+    try {
+      const parsed = new URL(url);
+      return parsed.protocol === "https:" && parsed.hostname.endsWith(".supabase.co");
+    } catch {
+      return false;
+    }
+  }
+
   function getSupabaseConfig() {
     const runtime = typeof window !== "undefined" ? window.__CE_ENV__ || {} : {};
     const url = String(runtime.VITE_SUPABASE_URL || "").trim();
     const anonKey = String(runtime.VITE_SUPABASE_ANON_KEY || "").trim();
-    return { url, anonKey, isConfigured: Boolean(url && anonKey) };
+    return { url, anonKey, isConfigured: isValidSupabaseConfig(url, anonKey) };
   }
 
   function getSupabaseClient() {

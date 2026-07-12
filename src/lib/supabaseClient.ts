@@ -15,12 +15,23 @@ export interface SupabaseConfig {
   isConfigured: boolean;
 }
 
+function isValidSupabaseConfig(url: string, anonKey: string): boolean {
+  if (!url || !anonKey) return false;
+  if (/YOUR_PROJECT|YOUR_SUPABASE|example\.com|placeholder/i.test(url + anonKey)) return false;
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === "https:" && parsed.hostname.endsWith(".supabase.co");
+  } catch {
+    return false;
+  }
+}
+
 export function getSupabaseConfig(): SupabaseConfig {
   const runtimeUrl = typeof window !== "undefined" ? window.__CE_ENV__?.VITE_SUPABASE_URL : "";
   const runtimeKey = typeof window !== "undefined" ? window.__CE_ENV__?.VITE_SUPABASE_ANON_KEY : "";
   const url = (import.meta.env.VITE_SUPABASE_URL || runtimeUrl || "").trim();
   const anonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY || runtimeKey || "").trim();
-  return { url, anonKey, isConfigured: Boolean(url && anonKey) };
+  return { url, anonKey, isConfigured: isValidSupabaseConfig(url, anonKey) };
 }
 
 let cachedClient: SupabaseClient | null = null;

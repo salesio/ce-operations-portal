@@ -7328,33 +7328,53 @@ byId("content")?.addEventListener("scroll", updateBackToTopVisibility, { passive
 
 byId("backToTopBtn")?.addEventListener("click", () => scrollContentTo("content"));
 
-byId("loginForm").addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const email = byId("loginEmail")?.value || "";
-  const password = byId("loginPassword")?.value || "";
-  if (window.CESupabaseBridge?.trySupabaseLogin) {
-    await window.CESupabaseBridge.trySupabaseLogin(email, password);
-  }
-  await syncFinanceFromSupabaseIfEnabled();
-  byId("loginView").classList.add("d-none");
-  byId("appView").classList.remove("d-none");
+function enterDashboard() {
+  byId("loginView")?.classList.add("d-none");
+  byId("appView")?.classList.remove("d-none");
   renderShell();
   syncTopbarHeight();
   applyBackToTopLabel();
   setRoute(location.hash.replace("#", "") || "dashboard");
   updateBackToTopVisibility();
+}
+
+function runOptionalSupabaseLoginSync(email, password) {
+  (async () => {
+    try {
+      if (window.CESupabaseBridge?.trySupabaseLogin) {
+        await Promise.race([
+          window.CESupabaseBridge.trySupabaseLogin(email, password),
+          new Promise((resolve) => setTimeout(() => resolve({ ok: false, timeout: true }), 4000))
+        ]);
+      }
+      await Promise.race([
+        syncFinanceFromSupabaseIfEnabled(),
+        new Promise((resolve) => setTimeout(() => resolve(false), 4000))
+      ]);
+    } catch (error) {
+      console.warn("[CE] Supabase login/sync skipped — using local data.", error);
+    }
+  })();
+}
+
+byId("loginForm")?.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const email = byId("loginEmail")?.value || "";
+  const password = byId("loginPassword")?.value || "";
+  enterDashboard();
+  runOptionalSupabaseLoginSync(email, password);
 });
 
 window.addEventListener("resize", syncTopbarHeight);
 
-byId("logoutBtn").addEventListener("click", () => {
-  byId("appView").classList.add("d-none");
-  byId("loginView").classList.remove("d-none");
+byId("logoutBtn")?.addEventListener("click", () => {
+  byId("appView")?.classList.add("d-none");
+  byId("loginView")?.classList.remove("d-none");
   updateBackToTopVisibility();
 });
 
-byId("menuToggle").addEventListener("click", () => {
-  document.querySelector(".ops-sidebar").classList.toggle("is-open");
+byId("menuToggle")?.addEventListener("click", () => {
+  document.querySelector(".ops-sidebar")?.classList.toggle("is-open");
 });
 
 byId("sidebarCollapseToggle")?.addEventListener("click", () => {
