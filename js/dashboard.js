@@ -120,6 +120,26 @@ const TEXT = {
     dashboardRecentSection: "Actividade Recente",
     dashboardRecentHint: "Últimas acções e sacramentos registados.",
     viewAll: "Ver Tudo",
+    financeOverviewSection: "Resumo Financeiro",
+    financeOverviewHint: "Totais do dia, do mês e estado de verificação.",
+    financeAnalyticsSection: "Análise de Contribuições",
+    financeAnalyticsHint: "Distribuição por categoria, igreja e método de pagamento.",
+    financeRecordsSection: "Registos de Contribuições",
+    financeRecordsHint: "Pesquisa, filtros e acções sobre cada contribuição.",
+    cellAlecSection: "Formação ALEC",
+    cellAlecHint: "Inscrições, progresso e certificação de líderes.",
+    cellNetworkSection: "Rede Celular",
+    cellNetworkHint: "Grupos, células activas e indicadores da rede.",
+    cellGrowthSection: "Crescimento e Desempenho",
+    cellGrowthHint: "Presença, primeira vez, convertidos e ofertas.",
+    cellDataSection: "Dados Operacionais",
+    cellDataHint: "Tabelas, relatórios e acções do módulo.",
+    fevoOverviewSection: "Panorama F.E.V.O",
+    fevoOverviewHint: "Métricas consolidadas de evangelismo, visitação e oração.",
+    fevoAnalyticsSection: "Análise por Equipa",
+    fevoAnalyticsHint: "Actividades, contactos e grupos sem relatório.",
+    fevoDataSection: "Registos da Semana",
+    fevoDataHint: "Configurações, relatórios e follow-up por equipa.",
     firstTimerSubtitle: "Visitantes captados nos cultos e no acompanhamento.",
     followupSubtitle: "Fluxo claro para acompanhar cada visitante até integração.",
     membersSubtitle: "Base de membros por igreja, célula, departamento e estado.",
@@ -396,6 +416,26 @@ const TEXT = {
     dashboardRecentSection: "Recent Activity",
     dashboardRecentHint: "Latest actions and sacraments recorded.",
     viewAll: "View All",
+    financeOverviewSection: "Finance Summary",
+    financeOverviewHint: "Daily and monthly totals plus verification status.",
+    financeAnalyticsSection: "Giving Analytics",
+    financeAnalyticsHint: "Distribution by category, church and payment method.",
+    financeRecordsSection: "Contribution Records",
+    financeRecordsHint: "Search, filters and actions for each contribution.",
+    cellAlecSection: "ALEC Training",
+    cellAlecHint: "Registrations, progress and leader certification.",
+    cellNetworkSection: "Cell Network",
+    cellNetworkHint: "Groups, active cells and network indicators.",
+    cellGrowthSection: "Growth & Performance",
+    cellGrowthHint: "Attendance, first timers, converts and offerings.",
+    cellDataSection: "Operational Data",
+    cellDataHint: "Tables, reports and module actions.",
+    fevoOverviewSection: "F.E.V.O Overview",
+    fevoOverviewHint: "Consolidated evangelism, visitation and prayer metrics.",
+    fevoAnalyticsSection: "Team Analytics",
+    fevoAnalyticsHint: "Activities, contacts and groups without reports.",
+    fevoDataSection: "Weekly Records",
+    fevoDataHint: "Configurations, reports and team follow-up.",
     firstTimerSubtitle: "Visitors captured from services and follow-up.",
     followupSubtitle: "Clear workflow to follow up each visitor until integration.",
     membersSubtitle: "Member database by church, cell, department and status.",
@@ -3011,14 +3051,14 @@ function openFinanceDrawer(mode, id = null) {
     byId("financeDrawerEyebrow").textContent = L("financeDetails");
     byId("financeDrawerTitle").textContent = fullName(record) || L("finance");
     body.innerHTML = financeDetailGrid(record);
-    foot.innerHTML = `<button type="button" class="btn btn-outline-light" data-finance-drawer-close>${L("cancel")}</button>
+    foot.innerHTML = `<button type="button" class="btn btn-outline-glass" data-finance-drawer-close>${L("cancel")}</button>
       <button type="button" class="btn btn-ce-gold" data-action="edit" data-type="finance" data-id="${record.id}">${L("edit")}</button>`;
   } else if (mode === "edit") {
     byId("financeDrawerEyebrow").textContent = L("edit");
     byId("financeDrawerTitle").textContent = fullName(record) || L("finance");
     body.innerHTML = `<form id="financeDrawerForm" class="row g-3">${getFinanceSchema("edit").map((field) => fieldControl(field, record)).join("")}</form>`;
     requestAnimationFrame(() => mountRelationalControls(byId("financeDrawerForm")));
-    foot.innerHTML = `<button type="button" class="btn btn-outline-light" data-finance-drawer-close>${L("cancel")}</button>
+    foot.innerHTML = `<button type="button" class="btn btn-outline-glass" data-finance-drawer-close>${L("cancel")}</button>
       <button type="submit" form="financeDrawerForm" class="btn btn-ce-gold">${L("save")}</button>`;
   } else if (mode === "verify") {
     byId("financeDrawerEyebrow").textContent = L("verifyFinance");
@@ -3027,7 +3067,7 @@ function openFinanceDrawer(mode, id = null) {
       <form id="financeDrawerForm" class="row g-3 mt-2">
         ${fieldControl(["comentario_verificacao", "verificationComment", "textarea-optional"], record)}
       </form>`;
-    foot.innerHTML = `<button type="button" class="btn btn-outline-light" data-finance-drawer-close>${L("cancel")}</button>
+    foot.innerHTML = `<button type="button" class="btn btn-outline-glass" data-finance-drawer-close>${L("cancel")}</button>
       <button type="submit" form="financeDrawerForm" class="btn btn-ce-gold">${L("verify")}</button>`;
   } else if (mode === "reject") {
     byId("financeDrawerEyebrow").textContent = L("rejectFinance");
@@ -3036,7 +3076,7 @@ function openFinanceDrawer(mode, id = null) {
       <form id="financeDrawerForm" class="row g-3 mt-2">
         ${fieldControl(["motivo_rejeicao", "rejectionReason", "textarea"], record)}
       </form>`;
-    foot.innerHTML = `<button type="button" class="btn btn-outline-light" data-finance-drawer-close>${L("cancel")}</button>
+    foot.innerHTML = `<button type="button" class="btn btn-outline-glass" data-finance-drawer-close>${L("cancel")}</button>
       <button type="submit" form="financeDrawerForm" class="btn btn-outline-danger">${L("reject")}</button>`;
   }
 
@@ -3730,6 +3770,13 @@ function metric(icon, label, value, hint = "", options = {}) {
     </div>`;
 }
 
+function moduleSection(title, subtitle, icon, route, content) {
+  if (typeof ModuleSection === "function") {
+    return ModuleSection({ title, subtitle, icon, linkRoute: route, linkLabel: route ? L("viewAll") : "", content });
+  }
+  return dashboardSection(title, subtitle, icon, route, content);
+}
+
 function dashboardSection(title, subtitle, icon, route, content) {
   if (typeof DashboardSection === "function") {
     return DashboardSection({ title, subtitle, icon, linkRoute: route, linkLabel: L("viewAll"), content });
@@ -4190,7 +4237,7 @@ function renderFoundationStudentForm(record = {}, mode = "edit") {
     <div class="col-md-6"><label class="form-label">${L("phone")}</label><input name="telefone" class="form-control" value="${student.telefone || ""}" ${readonly}></div>
     ${churchField}
     <div class="col-md-6"><label class="form-label">${L("cell")}</label><input name="celula" class="form-control" value="${student.celula || ""}" ${readonly}></div>
-    <div class="col-md-6"><label class="form-label">${L("status")}</label><select name="estado" class="form-select" data-foundation-status ${readonly}>${statusOptions}</select><small class="text-white-50 d-block mt-1">${L("autoStatusHint")}</small></div>
+    <div class="col-md-6"><label class="form-label">${L("status")}</label><select name="estado" class="form-select" data-foundation-status ${readonly}>${statusOptions}</select><small class="form-hint d-block mt-1">${L("autoStatusHint")}</small></div>
     ${foundationSectionTitle(L("classProgress"))}
     <div class="col-12">${mode === "view" ? foundationProgressPreviewHtml(student) : foundationClassCheckboxes(student)}</div>
     ${mode !== "view" ? `<div class="col-12">${foundationProgressPreviewHtml(student)}</div>` : ""}
@@ -4209,7 +4256,7 @@ function renderFoundationStudentForm(record = {}, mode = "edit") {
 function renderFoundationMarkClassForm(record) {
   const student = migrateFoundationStudent(record);
   return `
-    <div class="col-12"><p class="mb-1"><strong>${fullName(student)}</strong></p><p class="text-white-50 small mb-0">${student.telefone || ""} · ${churchName(student.church_id)}</p></div>
+    <div class="col-12"><p class="mb-1"><strong>${fullName(student)}</strong></p><p class="form-hint small mb-0">${student.telefone || ""} · ${churchName(student.church_id)}</p></div>
     <div class="col-12">${foundationClassCheckboxes(student)}</div>
     <div class="col-12">${foundationProgressPreviewHtml(student)}</div>
   `;
@@ -4218,7 +4265,7 @@ function renderFoundationMarkClassForm(record) {
 function renderFoundationScoreForm(record) {
   const student = migrateFoundationStudent(record);
   return `
-    <div class="col-12"><p class="mb-1"><strong>${fullName(student)}</strong></p><p class="text-white-50 small mb-3">${foundationProgressSummary(student)} · ${student.class_progress_percent}%</p></div>
+    <div class="col-12"><p class="mb-1"><strong>${fullName(student)}</strong></p><p class="form-hint small mb-3">${foundationProgressSummary(student)} · ${student.class_progress_percent}%</p></div>
     <div class="col-md-6"><label class="form-label">${L("examScore")}</label><input name="nota_exame" type="number" min="0" max="100" class="form-control" value="${student.nota_exame || ""}" required></div>
     <div class="col-md-6 d-flex align-items-end"><label class="form-check"><input name="pratica_evangelismo" type="checkbox" class="form-check-input" ${student.pratica_evangelismo ? "checked" : ""}> <span class="form-check-label">${L("practicalCompleted")}</span></label></div>
     <div class="col-md-6"><label class="form-label">${L("soulsWon")}</label><input name="numero_de_almas_ganhas" type="number" min="0" class="form-control" value="${student.numero_de_almas_ganhas || 0}"></div>
@@ -4400,25 +4447,28 @@ function renderFinance() {
   const methodFilter = `<select class="form-select" aria-label="${L("method")}"><option value="">${L("method")}</option>${paymentMethods.map((m) => `<option>${m}</option>`).join("")}</select>`;
   setPageContent(`
     ${sectionHeader(L("finance"), L("financeSubtitle"), "finance", "bi-cash-coin")}
-    <div class="row g-3 mb-4 summary-cards-row">
-      ${metric("bi-calendar-day", L("totalToday"), money(today), L("finance"))}
-      ${metric("bi-calendar3", L("totalThisMonth"), money(month), L("thisMonth"))}
-      ${metric("bi-hourglass", L("pendingVerification"), list.filter((f) => statusKey(f.estado) === "pendingVerification").length, L("needsAction"))}
-      ${metric("bi-patch-check", L("verified"), list.filter((f) => statusKey(f.estado) === "verified").length, L("status"))}
-      ${metric("bi-x-circle", L("rejected"), list.filter((f) => statusKey(f.estado) === "rejected").length, L("status"))}
-    </div>
-    <div class="row g-4 mb-4">
-      <div class="col-xl-4">${chartCard(L("byCategory"), groupSum(list, "categoria_da_contribuicao", "valor"))}</div>
-      <div class="col-xl-4">${chartCard(L("byChurch"), groupSum(list.map((f) => ({ ...f, igreja: churchName(f.church_id) })), "igreja", "valor"))}</div>
-      <div class="col-xl-4">${chartCard(L("byPaymentMethod"), groupSum(list, "metodo_de_pagamento", "valor"))}</div>
-    </div>
-    <article class="panel glass-panel">
-      ${filterBar({ extraFields: `${categoryFilter}${methodFilter}`, statusOptions: financeStatuses })}
-      ${dataTable([L("contributor"), L("category"), L("method"), L("amount"), L("date"), L("church"), L("status"), L("actions")], list.map((f) => [
-        fullName(f), f.categoria_da_contribuicao, f.metodo_de_pagamento, money(f.valor), f.data, churchName(f.church_id), badge(f.estado),
-        financeActions(f.id, f)
-      ]))}
-    </article>
+    ${moduleSection(L("financeOverviewSection"), L("financeOverviewHint"), "bi-speedometer2", "", `
+      <div class="row g-3 summary-cards-row">
+        ${metric("bi-calendar-day", L("totalToday"), money(today), L("finance"))}
+        ${metric("bi-calendar3", L("totalThisMonth"), money(month), L("thisMonth"))}
+        ${metric("bi-hourglass", L("pendingVerification"), list.filter((f) => statusKey(f.estado) === "pendingVerification").length, L("needsAction"))}
+        ${metric("bi-patch-check", L("verified"), list.filter((f) => statusKey(f.estado) === "verified").length, L("status"))}
+        ${metric("bi-x-circle", L("rejected"), list.filter((f) => statusKey(f.estado) === "rejected").length, L("status"))}
+      </div>`)}
+    ${moduleSection(L("financeAnalyticsSection"), L("financeAnalyticsHint"), "bi-pie-chart", "", `
+      <div class="row g-4">
+        <div class="col-xl-4">${chartCard(L("byCategory"), groupSum(list, "categoria_da_contribuicao", "valor"))}</div>
+        <div class="col-xl-4">${chartCard(L("byChurch"), groupSum(list.map((f) => ({ ...f, igreja: churchName(f.church_id) })), "igreja", "valor"))}</div>
+        <div class="col-xl-4">${chartCard(L("byPaymentMethod"), groupSum(list, "metodo_de_pagamento", "valor"))}</div>
+      </div>`)}
+    ${moduleSection(L("financeRecordsSection"), L("financeRecordsHint"), "bi-table", "", `
+      <article class="panel glass-panel mb-0">
+        ${filterBar({ extraFields: `${categoryFilter}${methodFilter}`, statusOptions: financeStatuses })}
+        ${dataTable([L("contributor"), L("category"), L("method"), L("amount"), L("date"), L("church"), L("status"), L("actions")], list.map((f) => [
+          fullName(f), f.categoria_da_contribuicao, f.metodo_de_pagamento, money(f.valor), f.data, churchName(f.church_id), badge(f.estado),
+          financeActions(f.id, f)
+        ]))}
+      </article>`)}
   `);
 }
 
@@ -4523,7 +4573,7 @@ function renderChurches() {
   const filters = churchPageState.filters;
   const listHtml = churchPageState.view === "table"
     ? `<article class="panel">${renderChurchesTable(churches)}</article>`
-    : `<div class="church-card-grid">${churches.length ? churches.map((church) => renderChurchCard(church)).join("") : `<article class="empty-state col-12">${L("empty")}</article>`}</div>`;
+    : `<div class="church-card-grid">${churches.length ? churches.map((church) => renderChurchCard(church)).join("") : `<div class="col-12">${EmptyState({ title: L("empty"), icon: "bi-building" })}</div>`}</div>`;
 
   setPageContent( `
     ${sectionHeader(L("churches"), L("churchesSubtitle"), "church", "bi-building")}
@@ -4567,7 +4617,7 @@ function openChurchDrawer(mode, id = null) {
     byId("churchDrawerEyebrow").textContent = L("churchDetails");
     byId("churchDrawerTitle").textContent = record.church_name || L("churches");
     body.innerHTML = churchDetailGrid(record);
-    foot.innerHTML = `<button type="button" class="btn btn-outline-light" data-church-drawer-close>${L("cancel")}</button>
+    foot.innerHTML = `<button type="button" class="btn btn-outline-glass" data-church-drawer-close>${L("cancel")}</button>
       <button type="button" class="btn btn-ce-gold" data-action="edit" data-type="church" data-id="${record.id}">${L("edit")}</button>`;
   } else if (mode === "status") {
     byId("churchDrawerEyebrow").textContent = L("updateChurchStatus");
@@ -4576,14 +4626,14 @@ function openChurchDrawer(mode, id = null) {
       ${fieldControl(["status", "status", "select", CHURCH_STATUSES], record)}
       ${fieldControl(["information_status", "informationStatus", "select", CHURCH_INFO_STATUSES], record)}
     </form>`;
-    foot.innerHTML = `<button type="button" class="btn btn-outline-light" data-church-drawer-close>${L("cancel")}</button>
+    foot.innerHTML = `<button type="button" class="btn btn-outline-glass" data-church-drawer-close>${L("cancel")}</button>
       <button type="submit" form="churchDrawerForm" class="btn btn-ce-gold">${L("save")}</button>`;
   } else {
     const migrated = migrateChurchRecord(record);
     byId("churchDrawerEyebrow").textContent = id ? L("editChurch") : L("addChurch");
     byId("churchDrawerTitle").textContent = id ? (migrated.church_name || L("edit")) : L("addChurch");
     body.innerHTML = `<form id="churchDrawerForm" class="row g-3">${formSchemas.church.map((field) => fieldControl(field, migrated)).join("")}${renderChurchServiceTimesEditor(migrated.service_times)}</form>`;
-    foot.innerHTML = `<button type="button" class="btn btn-outline-light" data-church-drawer-close>${L("cancel")}</button>
+    foot.innerHTML = `<button type="button" class="btn btn-outline-glass" data-church-drawer-close>${L("cancel")}</button>
       <button type="submit" form="churchDrawerForm" class="btn btn-ce-gold">${L("save")}</button>`;
     drawer.classList.add("church-drawer--form");
     syncChurchServiceTimesJson();
@@ -4739,40 +4789,46 @@ function renderCellMinistry(activeTab = "alecOverview") {
 
   if (activeTab === "alecOverview") {
     bodyHtml = `
-      <div class="row g-3 mb-4">
-        ${metric("bi-mortarboard", L("totalAlecRegistered"), alecRegistrations.length, L("alecFull"))}
-        ${metric("bi-person-badge", L("alreadyLeaders"), alecRegistrations.filter((item) => item.e_lider).length, L("cellLeaders"))}
-        ${metric("bi-book", L("didFoundationSchool"), alecRegistrations.filter((item) => item.fez_escola_de_fundacao).length, L("foundationSchool"))}
-        ${metric("bi-hourglass-split", L("inTraining"), alecRegistrations.filter((item) => item.estado === "Em Formação").length, L("active"))}
-        ${metric("bi-award", L("alecCompleted"), alecScores.filter((item) => item.terminou).length, L("certificateIssued"))}
-        ${metric("bi-clipboard-check", L("churchReports"), churchReports.length, L("reports"))}
-      </div>
-      <div class="row g-4">
-        <div class="col-xl-6">${chartCard(L("alecProgressByChurch"), groupCount(alecRegistrations, "igreja"))}</div>
-        <div class="col-xl-6">${chartCard(L("reportsByStatus"), groupCount(alecScores, "estado"))}</div>
-      </div>`;
+      ${moduleSection(L("cellAlecSection"), L("cellAlecHint"), "bi-mortarboard", "cellAlecOverview", `
+        <div class="row g-3 summary-cards-row">
+          ${metric("bi-mortarboard", L("totalAlecRegistered"), alecRegistrations.length, L("alecFull"))}
+          ${metric("bi-person-badge", L("alreadyLeaders"), alecRegistrations.filter((item) => item.e_lider).length, L("cellLeaders"))}
+          ${metric("bi-book", L("didFoundationSchool"), alecRegistrations.filter((item) => item.fez_escola_de_fundacao).length, L("foundationSchool"))}
+          ${metric("bi-hourglass-split", L("inTraining"), alecRegistrations.filter((item) => item.estado === "Em Formação").length, L("active"))}
+          ${metric("bi-award", L("alecCompleted"), alecScores.filter((item) => item.terminou).length, L("certificateIssued"))}
+          ${metric("bi-clipboard-check", L("churchReports"), churchReports.length, L("reports"))}
+        </div>`)}
+      ${moduleSection(L("cellGrowthSection"), L("cellAlecHint"), "bi-graph-up", "", `
+        <div class="row g-4">
+          <div class="col-xl-6">${chartCard(L("alecProgressByChurch"), groupCount(alecRegistrations, "igreja"))}</div>
+          <div class="col-xl-6">${chartCard(L("reportsByStatus"), groupCount(alecScores, "estado"))}</div>
+        </div>`)}`;
   } else if (activeTab === "ministryOverview") {
     bodyHtml = `
-      <div class="row g-3 mb-4">
-        ${metric("bi-collection", L("totalGroupCells"), groups.length, L("cellGroups"))}
-        ${metric("bi-diagram-3", L("totalCells"), registry.length, L("activeCells"))}
-        ${metric("bi-clipboard-check", L("submittedReports"), cellReports.filter((item) => item.estado !== "Rascunho").length, L("reports"))}
-        ${metric("bi-hourglass-split", L("pendingReportsShort"), cellReports.filter((item) => ["Rascunho", "Submetido", "Em Avaliação"].includes(item.estado)).length, L("needsAction"))}
-        ${metric("bi-people", L("totalAttendance"), totalAttendance, L("attendance"))}
-        ${metric("bi-person-heart", L("totalFirstTime"), totalFt, L("firstTimers"))}
-        ${metric("bi-stars", L("totalNewConverts"), totalNc, L("newConverts"))}
-        ${metric("bi-cash-coin", L("totalOffering"), money(totalOffering), L("finance"))}
-        ${metric("bi-lightning-charge", L("explosionCells"), explosionCells, L("readyToSplit"))}
-        ${metric("bi-exclamation-triangle", L("attentionCells"), attentionEvaluations.length, L("leaderSupport"))}
-      </div>
-      <div class="row g-4 mb-4">
-        <div class="col-xl-4">${chartCard(L("attendanceByWeek"), groupSum(cellReports, "semana", "att"))}</div>
-        <div class="col-xl-4">${chartCard(L("firstTimersByCell"), groupSum(cellReports, "celula", "ft"))}</div>
-        <div class="col-xl-4">${chartCard(L("newConvertsByCell"), groupSum(cellReports, "celula", "nc"))}</div>
-        <div class="col-xl-4">${chartCard(L("offeringByWeek"), groupSum(cellReports, "semana", "oferta"))}</div>
-        <div class="col-xl-4">${chartCard(L("reportsByStatus"), groupCount(cellReports, "estado"))}</div>
-        <div class="col-xl-4">${chartCard(L("topCellsGrowth"), cellReports.map((report) => [report.celula, Number(report.ft || 0) + Number(report.nc || 0)]))}</div>
-      </div>`;
+      ${moduleSection(L("cellNetworkSection"), L("cellNetworkHint"), "bi-diagram-3", "cellMinistryOverview", `
+        <div class="row g-3 summary-cards-row">
+          ${metric("bi-collection", L("totalGroupCells"), groups.length, L("cellGroups"))}
+          ${metric("bi-diagram-3", L("totalCells"), registry.length, L("activeCells"))}
+          ${metric("bi-clipboard-check", L("submittedReports"), cellReports.filter((item) => item.estado !== "Rascunho").length, L("reports"))}
+          ${metric("bi-hourglass-split", L("pendingReportsShort"), cellReports.filter((item) => ["Rascunho", "Submetido", "Em Avaliação"].includes(item.estado)).length, L("needsAction"))}
+          ${metric("bi-lightning-charge", L("explosionCells"), explosionCells, L("readyToSplit"))}
+          ${metric("bi-exclamation-triangle", L("attentionCells"), attentionEvaluations.length, L("leaderSupport"))}
+        </div>`)}
+      ${moduleSection(L("cellGrowthSection"), L("cellGrowthHint"), "bi-graph-up-arrow", "", `
+        <div class="row g-3 summary-cards-row mb-3">
+          ${metric("bi-people", L("totalAttendance"), totalAttendance, L("attendance"))}
+          ${metric("bi-person-heart", L("totalFirstTime"), totalFt, L("firstTimers"))}
+          ${metric("bi-stars", L("totalNewConverts"), totalNc, L("newConverts"))}
+          ${metric("bi-cash-coin", L("totalOffering"), money(totalOffering), L("finance"))}
+        </div>
+        <div class="row g-4">
+          <div class="col-xl-4">${chartCard(L("attendanceByWeek"), groupSum(cellReports, "semana", "att"))}</div>
+          <div class="col-xl-4">${chartCard(L("firstTimersByCell"), groupSum(cellReports, "celula", "ft"))}</div>
+          <div class="col-xl-4">${chartCard(L("newConvertsByCell"), groupSum(cellReports, "celula", "nc"))}</div>
+          <div class="col-xl-4">${chartCard(L("offeringByWeek"), groupSum(cellReports, "semana", "oferta"))}</div>
+          <div class="col-xl-4">${chartCard(L("reportsByStatus"), groupCount(cellReports, "estado"))}</div>
+          <div class="col-xl-4">${chartCard(L("topCellsGrowth"), cellReports.map((report) => [report.celula, Number(report.ft || 0) + Number(report.nc || 0)]))}</div>
+        </div>`)}`;
   } else if (activeTab === "cellPerformance") {
     bodyHtml = `
       <div class="row g-3 mb-4">
@@ -4833,7 +4889,9 @@ function renderCellMinistry(activeTab = "alecOverview") {
       cellLeaders: () => modulePanel("cellLeader", L("cellLeaders"), "cellLeader", [L("fullName"), L("contact"), L("church"), L("cell"), L("actualLeader"), L("cameFromAlec"), L("alecFinished"), L("supervisor"), L("status"), L("actions")], leaders.map((item) => [item.nome_completo, item.contacto, churchName(item.igreja), item.celula, yesNo(item.e_lider_actual), yesNo(item.veio_do_alec), yesNo(item.alec_concluido), item.supervisor, badge(item.estado), backendActions("cellLeader", item.id)]), true),
       finalValidation: () => modulePanel("finalValidation", L("finalValidation"), "finalValidation", [L("reports"), L("validatedBy"), L("date"), L("decision"), L("finalStatus"), L("actions")], validations.map((item) => [item.report_id, item.validado_por, item.data_validacao, badge(item.decisao), badge(item.estado_final), backendActions("finalValidation", item.id)]), true)
     };
-    bodyHtml = `<div class="row g-4"><div class="col-12">${(panels[activeTab] || panels.alecRegistration)()}</div></div>`;
+    const panelTitle = cellRouteLabel(activeRoute);
+    bodyHtml = moduleSection(panelTitle, L("cellDataHint"), "bi-table", activeRoute, `
+      <div class="row g-4"><div class="col-12">${(panels[activeTab] || panels.alecRegistration)()}</div></div>`);
   }
 
   setPageContent(navHtml + tabParallaxWrap(bodyHtml, activeRoute));
@@ -5230,8 +5288,8 @@ function renderFevo(activeTab = "overview") {
       ["analysis", "fevoAnalysisRoute", "analysis"]
     ].map(([key, route, tab]) => `<button type="button" class="${activeTab === tab ? "active" : ""}" data-route="${route}">${L(key)}</button>`).join("")}</div>`
   );
-  const bodyHtml = `
-    ${show("analysis") ? `<div class="row g-3 mb-4">
+  const overviewSection = show("analysis") ? moduleSection(L("fevoOverviewSection"), L("fevoOverviewHint"), "bi-compass", "fevo", `
+    <div class="row g-3 summary-cards-row">
       ${metric("bi-collection", L("totalGroups"), groups.size, L("fevoFull"))}
       ${metric("bi-diagram-3", L("totalCells"), totals.cells, L("cellMinistry"))}
       ${metric("bi-people", L("totalMembers"), totals.members, L("members"))}
@@ -5244,15 +5302,17 @@ function renderFevo(activeTab = "overview") {
       ${metric("bi-calendar-heart", L("daysOfPrayer"), totals.prayerDays, L("prayer"))}
       ${metric("bi-person-heart", L("ftInChurch"), totals.firstTimers, L("firstTimers"))}
       ${metric("bi-exclamation-triangle", L("groupsWithoutReport"), noReports.length, L("needsAction"))}
-    </div>` : ""}
-    ${show("analysis") ? `<div class="row g-4 mb-4">
+    </div>`) : "";
+  const analyticsSection = show("analysis") ? moduleSection(L("fevoAnalyticsSection"), L("fevoAnalyticsHint"), "bi-bar-chart-line", "", `
+    <div class="row g-4">
       <div class="col-xl-4">${chartCard(L("activitiesByWeek"), groupCount(reports, "activity_type"))}</div>
       <div class="col-xl-4">${chartCard(L("contactedByGroup"), groupSum(reports, "group_name", "souls_contacted"))}</div>
       <div class="col-xl-4">${chartCard(L("evangelizedByGroup"), groupSum(reports, "group_name", "souls_evangelized"))}</div>
       <div class="col-xl-4">${chartCard(L("visitedByGroup"), groupSum(reports, "group_name", "souls_visited"))}</div>
       <div class="col-xl-4">${chartCard(L("prayerDaysByTeam"), groupSum(reports, "team", "days_of_prayer"))}</div>
       <div class="col-xl-4">${chartCard(L("noReportByWeek"), groupCount(noReports, "semana_inicio"))}</div>
-    </div>` : ""}
+    </div>`) : "";
+  const dataPanels = `
     <div class="row g-4">
       ${show("config") ? `<div class="col-12">${modulePanel("fevoConfig", L("weeklyConfiguration"), "fevoConfig", [L("weekStart"), L("weekEnd"), L("teamAActivity"), L("teamBActivity"), L("teamCActivity"), L("teamDActivity"), L("preparedBy"), L("status"), L("actions")], configs.map((item) => [item.semana_inicio, item.semana_fim, item.team_a_activity, item.team_b_activity, item.team_c_activity, item.team_d_activity, item.preparado_por, badge(item.estado), backendActions("fevoConfig", item.id)]), true)}</div>` : ""}
       ${show("followup") ? `<div class="col-12">${fevoActivityPanel("fevoFollowUp", L("followUp"), reports.filter((item) => item.activity_type === "Follow-Up"))}</div>` : ""}
@@ -5263,6 +5323,9 @@ function renderFevo(activeTab = "overview") {
       ${show("noReports") ? `<div class="col-12">${modulePanel("fevoNoReport", L("groupsWithoutReport"), "fevoNoReport", [L("weekStart"), L("team"), L("activityType"), L("groupName"), L("leaderName"), L("reasonNotSubmitted"), L("contacted"), L("status"), L("actions")], noReports.map((item) => [item.semana_inicio, item.team, item.activity_type, item.group_name, item.leader_name, item.reason_not_submitted, yesNo(item.contacted), badge(item.status), backendActions("fevoNoReport", item.id)]), true)}</div><div class="col-12">${summaryTiles(L("groupsWithoutReport"), [[L("groupsNoReportThisWeek"), noReports.length], [L("recurringGroups"), noReports.filter((item) => statusKey(item.status) === "recurrent").length], [L("contacted"), noReports.filter((item) => item.contacted).length], [L("resolved"), noReports.filter((item) => statusKey(item.status) === "resolved").length]])}</div>` : ""}
       ${show("weeklyReports") ? `<div class="col-12">${renderFevoWeeklyReport(weeklyReports[0], reports, noReports)}</div>` : ""}
     </div>`;
+  const bodyHtml = activeTab === "overview" || activeTab === "analysis"
+    ? `${overviewSection}${analyticsSection}`
+    : moduleSection(L("fevoDataSection"), L("fevoDataHint"), "bi-journal-text", "", dataPanels);
   setPageContent(navHtml + tabParallaxWrap(bodyHtml, activeRoute));
   triggerTabParallax();
 }

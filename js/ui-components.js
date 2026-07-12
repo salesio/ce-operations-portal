@@ -209,23 +209,27 @@ function ChartPanel(title, content) {
     </article>`;
 }
 
-function DashboardSection({ title, subtitle = "", icon = "bi-grid", linkRoute = "", linkLabel = "", content = "" } = {}) {
+function DashboardSection({ title, subtitle = "", icon = "bi-grid", linkRoute = "", linkLabel = "", content = "", className = "" } = {}) {
+  return ModuleSection({ title, subtitle, icon, linkRoute, linkLabel, content, className: `dashboard-section ${className}`.trim() });
+}
+
+function ModuleSection({ title, subtitle = "", icon = "bi-grid", linkRoute = "", linkLabel = "", content = "", className = "module-section" } = {}) {
   const link = linkRoute
-    ? `<a class="btn btn-sm btn-outline-cyan btn-touch dashboard-section-link" href="#${linkRoute}" data-route="${linkRoute}">${linkLabel || uiT("viewAll", "Ver Tudo")}<i class="bi bi-arrow-right-short ms-1"></i></a>`
+    ? `<a class="btn btn-sm btn-outline-cyan btn-touch module-section-link" href="#${linkRoute}" data-route="${linkRoute}">${linkLabel || uiT("viewAll", "Ver Tudo")}<i class="bi bi-arrow-right-short ms-1"></i></a>`
     : "";
   return `
-    <section class="dashboard-section">
-      <header class="dashboard-section-head">
-        <div class="dashboard-section-copy">
-          <span class="dashboard-section-icon" aria-hidden="true"><i class="bi ${icon}"></i></span>
+    <section class="${className}">
+      <header class="module-section-head dashboard-section-head">
+        <div class="module-section-copy dashboard-section-copy">
+          <span class="module-section-icon dashboard-section-icon" aria-hidden="true"><i class="bi ${icon}"></i></span>
           <div>
-            <h3 class="dashboard-section-title">${title}</h3>
-            ${subtitle ? `<p class="dashboard-section-subtitle">${subtitle}</p>` : ""}
+            <h3 class="module-section-title dashboard-section-title">${title}</h3>
+            ${subtitle ? `<p class="module-section-subtitle dashboard-section-subtitle">${subtitle}</p>` : ""}
           </div>
         </div>
         ${link}
       </header>
-      <div class="dashboard-section-body">${content}</div>
+      <div class="module-section-body dashboard-section-body">${content}</div>
     </section>`;
 }
 

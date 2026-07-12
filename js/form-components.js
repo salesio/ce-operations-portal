@@ -91,7 +91,7 @@ function churchSelect(name, label, record = {}, options = {}) {
         <option value="">${noChurches ? t("noChurchRegistered") : placeholder}</option>
         ${churches.map((church) => `<option value="${church.id}" ${value === church.id ? "selected" : ""}>${churchOptionLabel(church)}</option>`).join("")}
       </select>
-      ${noChurches ? `<small class="text-white-50 d-block mt-1">${t("noChurchRegistered")}</small>` : ""}
+      ${noChurches ? `<small class="form-hint d-block mt-1">${t("noChurchRegistered")}</small>` : ""}
       ${addChurchHtml}
       ${options.showInfoCard ? `<div id="${infoCardId}" class="church-info-card mt-2" data-church-info-card></div>` : ""}
       ${options.igrejaField ? `<input type="hidden" name="${options.igrejaField}" value="${record[options.igrejaField] || ""}">` : ""}

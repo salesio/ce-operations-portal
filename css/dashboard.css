@@ -3789,3 +3789,349 @@ section.ops-hero {
 .view-toggle-btn:hover {
   color: var(--text-dark);
 }
+
+/* ============================================================
+   Modules v3 — sections, modals, tabs, contrast audit
+   ============================================================ */
+
+.module-section,
+.dashboard-section {
+  margin-bottom: var(--section-gap);
+  padding: var(--card-pad);
+  border: 1px solid rgba(34, 211, 238, 0.14);
+  border-radius: 1.25rem;
+  background: linear-gradient(145deg, rgba(7, 19, 38, 0.42), rgba(9, 32, 60, 0.28));
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.22);
+}
+
+.module-section-body .panel,
+.module-section-body .glass-panel {
+  margin-bottom: 0;
+}
+
+.module-section-link,
+.dashboard-section-link {
+  white-space: nowrap;
+}
+
+/* Modals — premium dark glass */
+.ops-modal-shell .modal-backdrop {
+  backdrop-filter: blur(6px);
+}
+
+.ops-modal-dialog {
+  margin: 1.25rem auto;
+}
+
+.ops-modal {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 2.5rem);
+  color: var(--text-main);
+  border: 1px solid rgba(34, 211, 238, 0.24);
+  border-radius: 1.25rem;
+  background: linear-gradient(160deg, rgba(7, 19, 38, 0.98), rgba(9, 32, 60, 0.96));
+  box-shadow: 0 32px 90px rgba(0, 0, 0, 0.48), 0 0 40px rgba(34, 211, 238, 0.08);
+  overflow: hidden;
+}
+
+.ops-modal-header {
+  flex-shrink: 0;
+  padding: 1.1rem 1.35rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ops-modal-header .eyebrow {
+  color: var(--gold);
+}
+
+.ops-modal-header .modal-title {
+  margin-top: 0.2rem;
+  color: var(--text-main);
+  font-family: var(--font-heading);
+  font-size: 1.35rem;
+}
+
+.ops-modal-close {
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid rgba(34, 211, 238, 0.28);
+  border-radius: 0.85rem;
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.ops-modal-close:hover {
+  color: var(--text-main);
+  border-color: var(--border-cyan);
+  background: rgba(34, 211, 238, 0.14);
+}
+
+.ops-modal-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 1.25rem 1.35rem 1rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ops-modal-footer {
+  flex-shrink: 0;
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  display: flex;
+  gap: 0.65rem;
+  justify-content: flex-end;
+  padding: 0.95rem 1.35rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(180deg, rgba(7, 19, 38, 0.82), rgba(7, 19, 38, 0.98));
+  backdrop-filter: blur(12px);
+}
+
+.ops-modal .form-control,
+.ops-modal .form-select,
+.church-drawer .form-control,
+.church-drawer .form-select,
+.finance-drawer .form-control,
+.finance-drawer .form-select {
+  min-height: 2.75rem;
+  color: var(--text-dark);
+  background-color: var(--card-light);
+  border-color: rgba(34, 211, 238, 0.28);
+}
+
+.ops-modal .form-label,
+.church-drawer .form-label,
+.finance-drawer .form-label {
+  color: var(--text-muted);
+  font-weight: 800;
+}
+
+.ops-modal .form-hint,
+.church-drawer .form-hint,
+.finance-drawer .form-hint,
+.form-hint {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.ops-modal strong,
+.church-drawer strong,
+.finance-drawer strong {
+  color: var(--text-main);
+}
+
+.btn-outline-glass {
+  --bs-btn-color: var(--text-main);
+  --bs-btn-border-color: rgba(255, 255, 255, 0.28);
+  --bs-btn-hover-color: var(--text-main);
+  --bs-btn-hover-bg: rgba(255, 255, 255, 0.1);
+  --bs-btn-hover-border-color: var(--border-cyan);
+  color: var(--text-main);
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.04);
+  font-weight: 800;
+}
+
+/* Drawers */
+.church-drawer,
+.finance-drawer {
+  display: flex;
+  flex-direction: column;
+}
+
+.church-drawer-body,
+.finance-drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem 1.15rem 1.25rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.church-drawer-foot,
+.finance-drawer-foot {
+  flex-shrink: 0;
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  gap: 0.55rem;
+  justify-content: flex-end;
+  padding: 0.95rem 1.15rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(180deg, rgba(7, 19, 38, 0.82), rgba(7, 19, 38, 0.98));
+  backdrop-filter: blur(12px);
+}
+
+.church-drawer .icon-btn,
+.finance-drawer .icon-btn {
+  border: 1px solid rgba(34, 211, 238, 0.28);
+  border-radius: 0.85rem;
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* Module nav & tabs refinement */
+.module-nav-panel {
+  border: 1px solid rgba(34, 211, 238, 0.14);
+  background: linear-gradient(180deg, rgba(7, 19, 38, 0.35), rgba(3, 10, 25, 0.2));
+}
+
+.module-nav-panel .department-tabs,
+.module-nav-panel .tab-strip.module-tab-strip {
+  gap: 0.5rem;
+  border-color: rgba(34, 211, 238, 0.18);
+  background: linear-gradient(180deg, rgba(7, 19, 38, 0.98), rgba(3, 10, 25, 0.98));
+  box-shadow: inset 0 1px 0 rgba(34, 211, 238, 0.08);
+}
+
+.module-nav-panel .department-tabs {
+  scrollbar-color: rgba(34, 211, 238, 0.35) transparent;
+}
+
+.module-nav-panel .department-tabs button,
+.module-nav-panel .tab-strip.module-tab-strip button {
+  min-height: 2.65rem;
+  color: var(--text-muted);
+  border-color: rgba(34, 211, 238, 0.22);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.module-nav-panel .department-tabs button:hover,
+.module-nav-panel .department-tabs button.active,
+.module-nav-panel .tab-strip.module-tab-strip button:hover,
+.module-nav-panel .tab-strip.module-tab-strip button.active {
+  color: var(--text-dark);
+  border-color: var(--border-gold);
+  background: linear-gradient(135deg, var(--gold-soft), var(--gold));
+  box-shadow: 0 10px 24px rgba(245, 199, 85, 0.22);
+}
+
+.cell-route-context {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  padding: 0.55rem 0.95rem 0.65rem;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-top: 1px solid rgba(34, 211, 238, 0.1);
+  background: linear-gradient(180deg, rgba(3, 10, 25, 0.92), rgba(7, 19, 38, 0.88));
+}
+
+.cell-route-context .eyebrow {
+  color: var(--gold);
+  font-size: 0.62rem;
+}
+
+.cell-route-sep {
+  color: rgba(34, 211, 238, 0.55);
+}
+
+.module-nav-collapsed .eyebrow {
+  color: var(--gold-dark);
+}
+
+/* Contrast audit — light surfaces */
+.panel .text-secondary,
+.glass-panel .text-secondary,
+.record-card .text-secondary,
+.data-card .text-secondary,
+.chart-card .text-secondary,
+.metric-card .text-secondary {
+  color: var(--text-dark-muted) !important;
+}
+
+.panel .progress,
+.glass-panel .progress,
+.record-card .progress {
+  background: rgba(7, 19, 38, 0.08);
+}
+
+.panel small.text-secondary,
+.glass-panel small.text-secondary {
+  color: var(--text-dark-muted) !important;
+}
+
+.empty-state:not(.ui-empty-state) {
+  color: var(--text-dark-muted);
+  background: linear-gradient(145deg, #F8FBFD 0%, #E7F3F9 100%);
+  border-color: rgba(34, 211, 238, 0.22);
+}
+
+#content .empty-state.ui-empty-state {
+  color: var(--text-dark);
+}
+
+.step-row span {
+  color: var(--text-dark-muted);
+}
+
+.step-row span.done {
+  color: #047857;
+  font-weight: 800;
+}
+
+.finance-form-section,
+.form-section {
+  padding: 0.85rem 0.95rem;
+  margin-bottom: 0.65rem;
+  border: 1px solid rgba(34, 211, 238, 0.14);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.ops-modal .finance-form-section,
+.church-drawer .finance-form-section {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(34, 211, 238, 0.16);
+}
+
+@media (max-width: 767.98px) {
+  .ops-modal-dialog {
+    margin: 0;
+    max-width: 100%;
+    min-height: 100%;
+  }
+
+  .ops-modal-shell .modal-dialog {
+    height: 100%;
+  }
+
+  .ops-modal {
+    min-height: 100vh;
+    min-height: 100dvh;
+    max-height: none;
+    border-radius: 0;
+  }
+
+  .ops-modal-footer .btn,
+  .church-drawer-foot .btn,
+  .finance-drawer-foot .btn {
+    flex: 1;
+  }
+
+  .module-section-head,
+  .dashboard-section-head {
+    align-items: flex-start;
+  }
+
+  .module-section-link,
+  .dashboard-section-link {
+    width: 100%;
+  }
+
+  .church-drawer,
+  .finance-drawer {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .department-tabs {
+    padding-bottom: 0.35rem;
+  }
+}
