@@ -2,23 +2,28 @@
   --bg-main: #030A18;
   --bg-panel: #071326;
   --bg-panel-soft: #0B1B33;
-  --card-light: #F4F8FB;
-  --card-light-2: #EAF3F8;
-  --card-dark: rgba(8, 22, 42, 0.92);
+  --card-light: #F6FAFD;
+  --card-light-2: #E8F4FA;
+  --card-dark: #071326;
+  --card-dark-2: #0B1B33;
   --card-glass: rgba(255, 255, 255, 0.08);
   --border-cyan: rgba(34, 211, 238, 0.35);
   --border-gold: rgba(245, 199, 85, 0.45);
   --text-main: #F8FAFC;
-  --text-muted: #B9C6D8;
-  --text-dark: #071326;
-  --text-dark-muted: #53657A;
+  --text-muted: #C9D6E8;
+  --text-dark: #061329;
+  --text-dark-muted: #4F647A;
+  --text-strong: #020817;
   --gold: #F5C755;
-  --gold-dark: #C9971A;
+  --gold-dark: #A77400;
   --cyan: #22D3EE;
   --blue: #2563EB;
   --success: #16A34A;
   --warning: #D99A00;
   --danger: #DC2626;
+  --tab-inactive-color: #E6EEF8;
+  --tab-inactive-bg: var(--bg-panel-soft);
+  --tab-inactive-border: rgba(34, 211, 238, 0.25);
   --navy-950: var(--bg-main);
   --navy-900: var(--bg-panel);
   --navy-850: var(--bg-panel-soft);
@@ -745,7 +750,7 @@ table,
   border: 1px solid var(--border-cyan);
   border-radius: 1.35rem;
   background:
-    linear-gradient(135deg, rgba(3, 10, 25, 0.92), rgba(7, 28, 55, 0.82)),
+    linear-gradient(135deg, rgba(3, 10, 25, 0.94), rgba(7, 28, 55, 0.86)),
     url("https://embaixada-de-cristo.obiuba.com/assets/web/hero-service.jpg") center / cover;
   box-shadow: 0 28px 80px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
@@ -1102,21 +1107,32 @@ table,
 }
 
 .tab-strip button {
-  border: 1px solid rgba(32, 215, 255, 0.22);
+  border: 1px solid var(--tab-inactive-border);
   border-radius: 999px;
   padding: 0.56rem 0.9rem;
-  color: rgba(248, 251, 255, 0.78);
-  background: rgba(255, 255, 255, 0.08);
+  color: var(--tab-inactive-color);
+  background: var(--tab-inactive-bg);
   font-size: 0.78rem;
-  font-weight: 900;
+  font-weight: 800;
   text-transform: uppercase;
+  opacity: 1;
+  transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
 }
 
 .tab-strip button.active,
-.tab-strip button:hover {
-  color: #06101f;
-  border-color: rgba(241, 216, 140, 0.85);
+.tab-strip button:hover:not(:disabled) {
+  color: var(--text-dark);
+  border-color: var(--border-gold);
   background: linear-gradient(135deg, var(--gold-soft), var(--gold));
+  box-shadow: 0 8px 20px rgba(245, 199, 85, 0.24);
+  font-weight: 800;
+  opacity: 1;
+}
+
+.tab-strip button:disabled,
+.tab-strip button.is-disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .module-nav-shell {
@@ -2604,7 +2620,7 @@ table,
 }
 
 .finance-donut-legend-value {
-  color: rgba(248, 251, 255, 0.5);
+  color: var(--text-dark-muted);
   font-size: 0.68rem;
 }
 
@@ -2803,17 +2819,18 @@ table,
 
 .finance-metric-pill strong {
   font-size: 0.88rem;
-  color: rgba(248, 251, 255, 0.92);
+  color: var(--text-dark);
 }
 
 .finance-privacy-banner,
 .finance-privacy-notice {
   padding: 0.75rem 1rem;
   border-radius: 0.75rem;
-  background: rgba(34, 211, 238, 0.08);
-  border: 1px solid rgba(34, 211, 238, 0.2);
-  color: rgba(248, 251, 255, 0.82);
+  background: rgba(34, 211, 238, 0.12);
+  border: 1px solid rgba(34, 211, 238, 0.32);
+  color: #044E63;
   font-size: 0.84rem;
+  font-weight: 700;
 }
 
 .finance-segment-tabs {
@@ -4454,9 +4471,10 @@ section.ops-hero {
 .module-nav-panel .department-tabs button,
 .module-nav-panel .tab-strip.module-tab-strip button {
   min-height: 2.65rem;
-  color: var(--text-muted);
-  border-color: rgba(34, 211, 238, 0.22);
-  background: rgba(255, 255, 255, 0.05);
+  color: #E6EEF8;
+  border-color: rgba(34, 211, 238, 0.25);
+  background: rgba(255, 255, 255, 0.08);
+  opacity: 1;
 }
 
 .module-nav-panel .department-tabs button:hover,
@@ -4635,4 +4653,430 @@ section.ops-hero {
   font-size: 3rem;
   color: var(--ce-cyan, #5eead4);
   opacity: 0.85;
+}
+
+/* ============================================================
+   Global Contrast System v4 — light/dark surfaces & components
+   ============================================================ */
+
+.light-surface,
+.surface-light,
+#content .glass-panel,
+#content .panel:not(.ops-hero):not(.ops-modal),
+#content .chart-card,
+#content .metric-card,
+#content .summary-card,
+#content .record-card,
+#content .data-card,
+#content .module-hero-card,
+#content .data-table-wrap,
+#content .filter-toolbar,
+#content .churches-toolbar,
+#content .churches-filter-grid {
+  --tab-inactive-color: var(--text-dark);
+  --tab-inactive-bg: #F8FBFD;
+  --tab-inactive-border: rgba(34, 211, 238, 0.25);
+  color: var(--text-dark);
+}
+
+.dark-surface,
+.surface-dark,
+.ops-hero,
+.ops-modal,
+.church-drawer,
+.finance-drawer,
+.module-nav-panel,
+.dashboard-section,
+.module-section {
+  --tab-inactive-color: #E6EEF8;
+  --tab-inactive-bg: rgba(255, 255, 255, 0.08);
+  --tab-inactive-border: rgba(34, 211, 238, 0.25);
+  color: var(--text-main);
+}
+
+.light-surface .muted,
+.light-surface .card-subtitle,
+.light-surface .chart-label,
+.light-surface .meta-text,
+.light-surface .text-secondary,
+.surface-light .muted,
+#content .glass-panel .text-secondary,
+#content .chart-card .text-secondary {
+  color: var(--text-dark-muted) !important;
+}
+
+.dark-surface .muted,
+.dark-surface .card-subtitle,
+.dark-surface .chart-label,
+.dark-surface .meta-text,
+.dark-surface .text-secondary,
+.surface-dark .muted {
+  color: var(--text-muted) !important;
+}
+
+.light-surface .panel-title,
+.light-surface h3,
+.light-surface strong,
+#content .chart-card .panel-title,
+#content .glass-panel .panel-title {
+  color: var(--text-dark);
+}
+
+.light-surface .eyebrow,
+#content .module-hero-card .eyebrow,
+#content .data-card .eyebrow {
+  color: var(--gold-dark);
+}
+
+/* Charts on light cards — finance & dashboard */
+#content .chart-card .finance-hbar-label,
+#content .chart-card .finance-hbar-value,
+#content .glass-panel .finance-hbar-label,
+#content .glass-panel .finance-hbar-value,
+#content .chart-card .finance-chart-label,
+#content .chart-card .finance-chart-value,
+#content .chart-card .finance-line-label,
+#content .chart-card .finance-line-label span,
+#content .chart-card .chart-row span,
+#content .chart-card .chart-row strong {
+  color: var(--text-dark);
+}
+
+#content .chart-card .finance-line-label strong {
+  color: var(--gold-dark);
+}
+
+#content .chart-card .finance-chart-empty,
+#content .glass-panel .finance-chart-empty {
+  color: var(--text-dark-muted);
+}
+
+#content .chart-card .finance-hbar-track,
+#content .glass-panel .finance-hbar-track {
+  background: rgba(7, 19, 38, 0.08);
+}
+
+#content .chart-card .finance-donut-hole {
+  background: #F8FBFD;
+}
+
+#content .chart-card .finance-donut-hole strong {
+  color: var(--text-dark);
+}
+
+#content .chart-card .finance-donut-hole span,
+#content .chart-card .finance-donut-legend-label {
+  color: var(--text-dark);
+}
+
+#content .chart-card .finance-donut-legend-value {
+  color: var(--text-dark-muted);
+}
+
+#content .chart-card .finance-partner-chip {
+  color: var(--text-dark);
+  background: rgba(37, 99, 235, 0.06);
+  border-color: rgba(34, 211, 238, 0.22);
+}
+
+#content .chart-card .finance-partner-chip:hover {
+  background: rgba(34, 211, 238, 0.1);
+  border-color: rgba(34, 211, 238, 0.38);
+}
+
+#content .chart-card .finance-metric-pill,
+#content .glass-panel .finance-metric-pill {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(34, 211, 238, 0.18);
+}
+
+#content .chart-card .finance-metric-pill span,
+#content .glass-panel .finance-metric-pill span {
+  color: var(--text-dark-muted);
+}
+
+#content .chart-card .finance-metric-pill strong,
+#content .glass-panel .finance-metric-pill strong {
+  color: var(--text-dark);
+}
+
+#content .chart-card .finance-partner-arm-metrics span {
+  color: var(--text-dark-muted);
+}
+
+#content .chart-card .finance-partner-arm-metrics > div {
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--text-dark);
+}
+
+#content .chart-card .panel-title .text-info,
+#content .glass-panel .panel-title .text-info {
+  color: var(--blue) !important;
+}
+
+/* Summary / metric cards */
+#content .summary-card,
+#content .metric-card {
+  background: linear-gradient(145deg, #F8FBFD 0%, #E7F3F9 100%);
+  border: 1px solid rgba(34, 211, 238, 0.18);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+}
+
+#content .summary-card-label,
+#content .metric-card span {
+  color: var(--text-dark-muted);
+}
+
+#content .summary-card-value,
+#content .metric-card strong {
+  color: var(--text-strong);
+}
+
+#content .summary-card-hint,
+#content .metric-card small {
+  color: var(--text-dark-muted);
+}
+
+/* Data tables on light surfaces */
+#content .data-table-wrap {
+  background: linear-gradient(145deg, #F8FBFD 0%, #E7F3F9 100%);
+}
+
+#content .data-table-mobile-card {
+  background: linear-gradient(145deg, #F8FBFD 0%, #E8F4FA 100%);
+  color: var(--text-dark);
+  border: 1px solid rgba(34, 211, 238, 0.16);
+}
+
+#content .data-table-mobile-row span {
+  color: var(--text-dark-muted);
+}
+
+/* Filter inputs — always dark text on light field */
+.filter-toolbar .form-control,
+.filter-toolbar .form-select,
+.churches-filter-grid .form-control,
+.churches-filter-grid .form-select,
+.finance-report-filters .form-control,
+.finance-report-filters .form-select,
+.light-surface .form-control,
+.light-surface .form-select {
+  color: var(--text-dark);
+  background-color: #FFFFFF;
+  border-color: rgba(34, 211, 238, 0.35);
+}
+
+.filter-toolbar .form-control::placeholder,
+.churches-filter-grid .form-control::placeholder {
+  color: #64748B;
+}
+
+/* Action buttons on light surfaces */
+#content .action-btn {
+  color: #1D4ED8;
+  border-color: rgba(37, 99, 235, 0.22);
+  background: rgba(37, 99, 235, 0.06);
+  font-weight: 800;
+}
+
+#content .action-btn:hover {
+  color: #0F338F;
+  border-color: rgba(34, 211, 238, 0.45);
+  background: rgba(34, 211, 238, 0.12);
+}
+
+#content .action-btn--danger {
+  color: #B91C1C;
+  border-color: rgba(220, 38, 38, 0.22);
+  background: rgba(220, 38, 38, 0.08);
+}
+
+/* Status badges — readable on light & dark */
+.status-pill.status-good {
+  background: rgba(22, 163, 74, 0.15);
+  color: #047857;
+}
+
+.status-pill.status-muted {
+  background: rgba(100, 116, 139, 0.16);
+  color: #475569;
+}
+
+.status-pill.status-warn {
+  background: rgba(245, 199, 85, 0.24);
+  color: #8A6200;
+}
+
+.status-pill.status-blue {
+  background: rgba(37, 99, 235, 0.14);
+  color: #1D4ED8;
+}
+
+.status-pill.status-course {
+  background: rgba(124, 58, 237, 0.16);
+  color: #6D28D9;
+}
+
+.status-pill.status-cyan {
+  background: rgba(34, 211, 238, 0.16);
+  color: #036879;
+}
+
+.status-pill.status-danger {
+  background: rgba(220, 38, 38, 0.14);
+  color: #B91C1C;
+}
+
+.status-pill.status-orange {
+  background: rgba(249, 115, 22, 0.16);
+  color: #C2410C;
+}
+
+/* Locked sidebar — legible */
+.nav-item-btn.is-locked {
+  opacity: 0.55;
+}
+
+/* Focus accessibility */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+.action-btn:focus-visible,
+.nav-item-btn:focus-visible,
+.tab-strip button:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+/* Dark glass cards inside page (partner highlights etc.) */
+.card-dark-premium,
+.finance-partner-arm-card.card-glass-dark {
+  color: var(--text-main);
+  background: linear-gradient(145deg, rgba(7, 19, 38, 0.96), rgba(9, 32, 60, 0.86));
+  border: 1px solid rgba(34, 211, 238, 0.22);
+}
+
+.card-dark-premium .finance-partner-arm-metrics span,
+.card-glass-dark .finance-partner-arm-metrics span {
+  color: var(--text-muted);
+}
+
+.card-dark-premium .finance-partner-arm-metrics strong,
+.card-glass-dark .finance-partner-arm-metrics strong {
+  color: var(--text-main);
+}
+
+/* Module tabs inside light panels */
+.finance-module-tabs,
+.requisitions-module-tabs,
+.staff-hr-module-tabs,
+#content .glass-panel .tab-strip {
+  gap: 0.45rem;
+}
+
+/* Empty states */
+#content .ui-empty-state,
+#content .empty-state {
+  color: var(--text-dark);
+}
+
+#content .empty-state-desc,
+#content .ui-empty-state p {
+  color: var(--text-dark-muted);
+}
+
+/* Dark variant — module hero cards */
+.module-hero-card.dark-surface,
+.module-hero-card.surface-dark {
+  color: var(--text-main);
+  background: linear-gradient(145deg, rgba(7, 19, 38, 0.96), rgba(9, 32, 60, 0.86));
+  border: 1px solid rgba(34, 211, 238, 0.22);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
+}
+
+.module-hero-card.dark-surface .module-hero-card-title,
+.module-hero-card.surface-dark .module-hero-card-title {
+  color: #FFFFFF;
+}
+
+.module-hero-card.dark-surface .module-hero-card-subtitle,
+.module-hero-card.surface-dark .module-hero-card-subtitle {
+  color: #D7E3F5;
+}
+
+.module-hero-card.dark-surface .eyebrow,
+.module-hero-card.surface-dark .eyebrow {
+  color: var(--gold);
+}
+
+/* Tabs inside light glass panels (Finanças, etc.) */
+#content .glass-panel .tab-strip button,
+#content .glass-panel .finance-module-tabs button {
+  color: var(--text-dark);
+  background: #F8FBFD;
+  border: 1px solid rgba(34, 211, 238, 0.25);
+  opacity: 1;
+}
+
+#content .glass-panel .tab-strip button.active,
+#content .glass-panel .tab-strip button:hover:not(:disabled),
+#content .glass-panel .finance-module-tabs button.active,
+#content .glass-panel .finance-module-tabs button:hover:not(:disabled) {
+  color: var(--text-dark);
+  border-color: var(--border-gold);
+  background: linear-gradient(135deg, var(--gold-soft), var(--gold));
+  box-shadow: 0 8px 20px rgba(245, 199, 85, 0.24);
+}
+
+/* Chart mode / segment toggles on light surfaces */
+.finance-chart-mode-toggle,
+.finance-segment-tabs {
+  display: inline-flex;
+  gap: 0.3rem;
+  padding: 0.22rem;
+  border: 1px solid rgba(34, 211, 238, 0.25);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.finance-chart-mode-toggle button,
+.finance-segment-tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 2.75rem;
+  padding: 0.45rem 0.85rem;
+  border: 0;
+  border-radius: 999px;
+  color: var(--text-dark-muted);
+  background: transparent;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.finance-chart-mode-toggle button.active,
+.finance-chart-mode-toggle button:hover,
+.finance-segment-tabs button.active,
+.finance-segment-tabs button:hover {
+  color: var(--text-dark);
+  background: linear-gradient(135deg, var(--gold-soft), var(--gold));
+  box-shadow: 0 8px 20px rgba(215, 174, 75, 0.22);
+}
+
+/* Church cards — stronger titles */
+.church-card.light-surface h3,
+.church-card h3 {
+  color: var(--text-strong);
+  font-weight: 800;
+}
+
+/* Locked tabs */
+.tab-strip button.is-locked::before,
+.tab-strip button:disabled .bi-lock {
+  margin-right: 0.25rem;
 }

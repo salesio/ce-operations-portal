@@ -1,10 +1,15 @@
 /**
  * CE Mozambique Operations — global UI component library.
  * Uses L() from dashboard.js when available.
+ * Supports variant="light" | "dark" for contrast-safe surfaces.
  */
 
 function uiT(key, fallback = "") {
   return typeof L === "function" ? L(key) : (fallback || key);
+}
+
+function surfaceClass(variant = "light") {
+  return variant === "dark" ? "dark-surface surface-dark" : "light-surface surface-light";
 }
 
 function PageShell(content = "", options = {}) {
@@ -12,7 +17,7 @@ function PageShell(content = "", options = {}) {
   return `<div class="page-shell ${extraClass}">${content}</div>`;
 }
 
-function ModuleHeroCard({ title, subtitle, icon = "bi-stars", eyebrow, modalType, addLabel, moduleNavKey, compact = false, actions = "" } = {}) {
+function ModuleHeroCard({ title, subtitle, icon = "bi-stars", eyebrow, modalType, addLabel, moduleNavKey, compact = false, actions = "", variant = "light" } = {}) {
   const label = eyebrow || uiT("titleChurchOps", "CHRIST EMBASSY OPERATIONS");
   const addBtn = modalType
     ? `<button type="button" class="btn btn-ce-gold btn-touch" data-open-form="${modalType}"><i class="bi bi-plus-lg me-2"></i>${addLabel || uiT("add", "Adicionar")}</button>`
@@ -21,13 +26,13 @@ function ModuleHeroCard({ title, subtitle, icon = "bi-stars", eyebrow, modalType
     ? `<button type="button" class="module-nav-arrow" data-module-nav-toggle="${moduleNavKey}" aria-expanded="true" aria-label="${uiT("sidebarCollapse", "Recolher")}"><i class="bi bi-chevron-up" aria-hidden="true"></i></button>`
     : "";
   return `
-    <article class="module-hero-card ${compact ? "module-hero-card--compact" : ""}">
+    <article class="module-hero-card ${surfaceClass(variant)} ${compact ? "module-hero-card--compact" : ""}">
       <div class="module-hero-card-body">
         <div class="module-hero-card-icon"><i class="bi ${icon}"></i></div>
         <div class="module-hero-card-copy">
           <span class="eyebrow">${label}</span>
           <h2 class="module-hero-card-title">${title}</h2>
-          ${subtitle ? `<p class="module-hero-card-subtitle">${subtitle}</p>` : ""}
+          ${subtitle ? `<p class="module-hero-card-subtitle card-subtitle">${subtitle}</p>` : ""}
         </div>
       </div>
       <div class="module-hero-card-actions">
@@ -41,14 +46,15 @@ function ModuleHeroCard({ title, subtitle, icon = "bi-stars", eyebrow, modalType
 function SummaryCard(icon, label, value, hint = "", options = {}) {
   const col = options.colClass || "col-sm-6 col-xl-4 col-xxl-3";
   const tone = options.tone ? ` summary-card--${options.tone}` : "";
+  const variant = options.variant || "light";
   return `
     <div class="${col}">
-      <article class="summary-card metric-card${tone}">
+      <article class="summary-card metric-card ${surfaceClass(variant)}${tone}">
         <div class="summary-card-icon metric-icon"><i class="bi ${icon}"></i></div>
         <div class="summary-card-body">
-          <span class="summary-card-label">${label}</span>
+          <span class="summary-card-label chart-label">${label}</span>
           <strong class="summary-card-value">${value}</strong>
-          ${hint ? `<small class="summary-card-hint">${hint}</small>` : ""}
+          ${hint ? `<small class="summary-card-hint meta-text">${hint}</small>` : ""}
         </div>
       </article>
     </div>`;
@@ -68,10 +74,11 @@ function FilterToolbar(options = {}) {
     addBtn = "",
     viewToggle = "",
     extraFields = "",
-    className = ""
+    className = "",
+    variant = "light"
   } = options;
   return `
-    <div class="filter-toolbar filter-bar ${className}">
+    <div class="filter-toolbar filter-bar ${surfaceClass(variant)} ${className}">
       ${search ? `<div class="filter-toolbar-field filter-toolbar-search"><i class="bi bi-search"></i><input class="form-control" type="search" placeholder="${uiT("search", "Pesquisar")}" aria-label="${uiT("search", "Pesquisar")}"></div>` : ""}
       ${church ? `<select class="form-select" aria-label="${uiT("filterChurch", "Filtrar por Igreja")}"><option value="">${uiT("filterChurch", "Filtrar por Igreja")}</option>${(options.churches || []).map((c) => `<option value="${c.id || c}">${c.church_name || c}</option>`).join("")}</select>` : ""}
       ${month ? `<input class="form-control" type="month" aria-label="${uiT("filterMonth", "Filtrar por Mês")}">` : ""}
@@ -89,20 +96,20 @@ function ViewToggle(activeView = "table", labels = {}) {
   const cardsLabel = labels.cards || uiT("cardsView", "Cartões");
   const tableLabel = labels.table || uiT("tableView", "Tabela");
   return `
-    <div class="view-toggle" role="group" aria-label="${uiT("viewMode", "Modo de visualização")}">
+    <div class="view-toggle light-surface" role="group" aria-label="${uiT("viewMode", "Modo de visualização")}">
       <button type="button" class="view-toggle-btn ${activeView === "cards" ? "active" : ""}" data-view-mode="cards"><i class="bi bi-grid-3x3-gap"></i><span>${cardsLabel}</span></button>
       <button type="button" class="view-toggle-btn ${activeView === "table" ? "active" : ""}" data-view-mode="table"><i class="bi bi-table"></i><span>${tableLabel}</span></button>
     </div>`;
 }
 
-function DataCard({ title, subtitle = "", badges = [], meta = [], pills = [], actions = "", className = "" } = {}) {
+function DataCard({ title, subtitle = "", badges = [], meta = [], pills = [], actions = "", className = "", variant = "light" } = {}) {
   const badgesHtml = badges.length ? `<div class="data-card-badges">${badges.join("")}</div>` : "";
   const metaHtml = meta.length
-    ? `<div class="data-card-meta">${meta.map(([label, value, icon]) => `<div class="data-card-meta-row"><span>${icon ? `<i class="bi ${icon}"></i>` : ""}${label}</span><strong>${value ?? "-"}</strong></div>`).join("")}</div>`
+    ? `<div class="data-card-meta">${meta.map(([label, value, icon]) => `<div class="data-card-meta-row"><span class="chart-label">${icon ? `<i class="bi ${icon}"></i>` : ""}${label}</span><strong>${value ?? "-"}</strong></div>`).join("")}</div>`
     : "";
   const pillsHtml = pills.length ? `<div class="data-card-pills">${pills.map((pill) => `<span class="data-card-pill">${pill}</span>`).join("")}</div>` : "";
   return `
-    <article class="data-card record-card ${className}">
+    <article class="data-card record-card ${surfaceClass(variant)} ${className}">
       <div class="data-card-head">
         <div class="data-card-titles">
           ${subtitle ? `<span class="eyebrow">${subtitle}</span>` : ""}
@@ -123,22 +130,23 @@ function DataCardsGrid(cardsHtml = "", emptyHtml = "") {
 
 function DataTable(headers, rows, options = {}) {
   const tableId = options.id ? ` id="${options.id}"` : "";
+  const variant = options.variant || "light";
   const mobileCards = options.mobileCards !== false && rows.length
-    ? `<div class="data-table-mobile">${rows.map((row, rowIndex) => `
-        <article class="data-table-mobile-card">
+    ? `<div class="data-table-mobile">${rows.map((row) => `
+        <article class="data-table-mobile-card ${surfaceClass(variant)}">
           ${row.map((cell, index) => {
             if (headers[index] === uiT("actions", "Acções") || String(headers[index]).toLowerCase().includes("acç") || String(headers[index]).toLowerCase().includes("action")) {
               return `<div class="data-table-mobile-actions">${cell}</div>`;
             }
-            return `<div class="data-table-mobile-row"><span>${headers[index]}</span><div>${cell ?? "-"}</div></div>`;
+            return `<div class="data-table-mobile-row"><span class="chart-label">${headers[index]}</span><div>${cell ?? "-"}</div></div>`;
           }).join("")}
         </article>`).join("")}</div>`
     : "";
   return `
-    <div class="data-table-wrap glass-panel"${tableId}>
+    <div class="data-table-wrap glass-panel ${surfaceClass(variant)}"${tableId}>
       <div class="table-responsive data-table">
         <table class="table align-middle data-table-desktop">
-          <thead><tr>${headers.map((h) => `<th scope="col">${h}</th>`).join("")}</tr></thead>
+          <thead><tr>${headers.map((h) => `<th scope="col" class="chart-label">${h}</th>`).join("")}</tr></thead>
           <tbody>${rows.length ? rows.map((row) => `<tr>${row.map((cell, index) => `<td data-label="${headers[index]}">${cell ?? "-"}</td>`).join("")}</tr>`).join("") : `<tr><td colspan="${headers.length}" class="data-table-empty">${EmptyState({ icon: "bi-inbox", title: uiT("empty", "Sem registos"), compact: true })}</td></tr>`}</tbody>
         </table>
       </div>
@@ -173,37 +181,39 @@ function ActionButtonCluster(buttons = [], mapFn = null) {
   return `<div class="action-cluster action-button-cluster">${items.join("")}</div>`;
 }
 
-function FormSection(title, content = "", description = "") {
+function FormSection(title, content = "", description = "", variant = "dark") {
   return `
-    <section class="form-section finance-form-section">
+    <section class="form-section finance-form-section ${surfaceClass(variant)}">
       <header class="form-section-head">
         <h4 class="form-section-title finance-form-section-title">${title}</h4>
-        ${description ? `<p class="form-section-desc">${description}</p>` : ""}
+        ${description ? `<p class="form-section-desc card-subtitle">${description}</p>` : ""}
       </header>
       <div class="form-section-body row g-3">${content}</div>
     </section>`;
 }
 
-function EmptyState({ icon = "bi-inbox", title, description = "", action = "", compact = false } = {}) {
+function EmptyState({ icon = "bi-inbox", title, description = "", action = "", compact = false, variant = "light" } = {}) {
   return `
-    <div class="empty-state ui-empty-state ${compact ? "ui-empty-state--compact" : ""}">
+    <div class="empty-state ui-empty-state ${surfaceClass(variant)} ${compact ? "ui-empty-state--compact" : ""}">
       <div class="empty-state-icon"><i class="bi ${icon}"></i></div>
       <h4 class="empty-state-title">${title || uiT("empty", "Sem registos")}</h4>
-      ${description ? `<p class="empty-state-desc">${description}</p>` : ""}
+      ${description ? `<p class="empty-state-desc meta-text">${description}</p>` : ""}
       ${action}
     </div>`;
 }
 
 function GlassPanel(title, content, options = {}) {
+  const variant = options.variant || "light";
   const head = title
     ? `<div class="glass-panel-head panel-head"><h3 class="panel-title">${title}</h3>${options.actions || ""}</div>`
     : "";
-  return `<article class="glass-panel panel ${options.className || ""}">${head}${content}</article>`;
+  return `<article class="glass-panel panel ${surfaceClass(variant)} ${options.className || ""}">${head}${content}</article>`;
 }
 
-function ChartPanel(title, content) {
+function ChartPanel(title, content, options = {}) {
+  const variant = options.variant || "light";
   return `
-    <article class="chart-card glass-panel h-100">
+    <article class="chart-card glass-panel ${surfaceClass(variant)} h-100 ${options.className || ""}">
       <div class="panel-head"><h3 class="panel-title"><i class="bi bi-activity me-2 text-info"></i>${title}</h3></div>
       ${content}
     </article>`;
@@ -218,13 +228,13 @@ function ModuleSection({ title, subtitle = "", icon = "bi-grid", linkRoute = "",
     ? `<a class="btn btn-sm btn-outline-cyan btn-touch module-section-link" href="#${linkRoute}" data-route="${linkRoute}">${linkLabel || uiT("viewAll", "Ver Tudo")}<i class="bi bi-arrow-right-short ms-1"></i></a>`
     : "";
   return `
-    <section class="${className}">
+    <section class="${className} dark-surface">
       <header class="module-section-head dashboard-section-head">
         <div class="module-section-copy dashboard-section-copy">
           <span class="module-section-icon dashboard-section-icon" aria-hidden="true"><i class="bi ${icon}"></i></span>
           <div>
             <h3 class="module-section-title dashboard-section-title">${title}</h3>
-            ${subtitle ? `<p class="module-section-subtitle dashboard-section-subtitle">${subtitle}</p>` : ""}
+            ${subtitle ? `<p class="module-section-subtitle dashboard-section-subtitle card-subtitle">${subtitle}</p>` : ""}
           </div>
         </div>
         ${link}
@@ -242,10 +252,10 @@ function DashboardQuickList(items = []) {
 
 function DashboardQuickItem({ title, meta = "", badge = "", actions = "" } = {}) {
   return `
-    <article class="dashboard-quick-item">
+    <article class="dashboard-quick-item light-surface">
       <div class="dashboard-quick-item-copy">
         <strong class="dashboard-quick-item-title">${title}</strong>
-        ${meta ? `<span class="dashboard-quick-item-meta">${meta}</span>` : ""}
+        ${meta ? `<span class="dashboard-quick-item-meta meta-text">${meta}</span>` : ""}
       </div>
       ${badge ? `<div class="dashboard-quick-item-badge">${badge}</div>` : ""}
       ${actions ? `<div class="dashboard-quick-item-actions">${actions}</div>` : ""}
@@ -256,7 +266,7 @@ function KanbanBoard(columns = []) {
   return `
     <div class="kanban-board">
       ${columns.map(([title, count, cardsHtml, tone]) => `
-        <section class="kanban-column kanban-column--${tone || "default"}">
+        <section class="kanban-column kanban-column--${tone || "default"} light-surface">
           <header class="kanban-column-head">
             <h4>${title}</h4>
             <span class="kanban-count">${count}</span>

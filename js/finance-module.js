@@ -266,7 +266,7 @@ function computeContributorProfiles(records) {
 function financeDonutChart(title, rows, emptyLabel) {
   const total = rows.reduce((sum, [, v]) => sum + Number(v || 0), 0);
   if (!total) {
-    return `<article class="chart-card glass-panel finance-chart-card h-100"><div class="panel-head"><h3 class="panel-title"><i class="bi bi-pie-chart me-2 text-info"></i>${title}</h3></div><p class="finance-chart-empty">${emptyLabel}</p></article>`;
+    return `<article class="${FINANCE_CHART_SURFACE}"><div class="panel-head"><h3 class="panel-title"><i class="bi bi-pie-chart me-2 text-info"></i>${title}</h3></div><p class="finance-chart-empty">${emptyLabel}</p></article>`;
   }
   const colors = ["#22d3ee", "#d7ad45", "#60a5fa", "#34d399", "#f472b6", "#a78bfa", "#fb923c", "#94a3b8"];
   let cursor = 0;
@@ -286,7 +286,7 @@ function financeDonutChart(title, rows, emptyLabel) {
       <span class="finance-donut-legend-value">${Number(s.value).toLocaleString()}</span>
     </div>`).join("");
   return `
-    <article class="chart-card glass-panel finance-chart-card h-100">
+    <article class="${FINANCE_CHART_SURFACE}">
       <div class="panel-head"><h3 class="panel-title"><i class="bi bi-pie-chart me-2 text-info"></i>${title}</h3></div>
       <div class="finance-donut-wrap">
         <div class="finance-donut" style="background:conic-gradient(${gradient})">
@@ -307,7 +307,7 @@ function financeBarChart(title, rows, emptyLabel) {
         <strong class="finance-chart-value">${Number(value).toLocaleString()}</strong>
       </div>`).join("")
     : `<p class="finance-chart-empty">${emptyLabel}</p>`;
-  return `<article class="chart-card glass-panel finance-chart-card h-100"><div class="panel-head"><h3 class="panel-title"><i class="bi bi-bar-chart me-2 text-info"></i>${title}</h3></div><div class="chart-bars">${bars}</div></article>`;
+  return `<article class="${FINANCE_CHART_SURFACE}"><div class="panel-head"><h3 class="panel-title"><i class="bi bi-bar-chart me-2 text-info"></i>${title}</h3></div><div class="chart-bars">${bars}</div></article>`;
 }
 
 function exportFinanceCsv(records, filename) {
@@ -333,6 +333,8 @@ const FINANCE_CHART_COLORS = {
   red: "#f87171",
   blue: "#60a5fa"
 };
+
+const FINANCE_CHART_SURFACE = "chart-card glass-panel finance-chart-card light-surface h-100";
 
 function financeStatusTone(record) {
   const estado = String(record?.estado || "");
@@ -530,7 +532,7 @@ function filterPartnerProfiles(profiles, filters = {}) {
 
 function financeLineChart(title, rows, emptyLabel, color = FINANCE_CHART_COLORS.gold) {
   if (!rows.length || !rows.some(([, v]) => Number(v) > 0)) {
-    return `<article class="chart-card glass-panel finance-chart-card h-100"><div class="panel-head"><h3 class="panel-title"><i class="bi bi-graph-up me-2 text-warning"></i>${title}</h3></div><p class="finance-chart-empty">${emptyLabel}</p></article>`;
+    return `<article class="${FINANCE_CHART_SURFACE}"><div class="panel-head"><h3 class="panel-title"><i class="bi bi-graph-up me-2 text-warning"></i>${title}</h3></div><p class="finance-chart-empty">${emptyLabel}</p></article>`;
   }
   const max = Math.max(...rows.map(([, v]) => Number(v)), 1);
   const width = 100;
@@ -547,7 +549,7 @@ function financeLineChart(title, rows, emptyLabel, color = FINANCE_CHART_COLORS.
     return `<div class="finance-line-label" style="--i:${index};--n:${rows.length}"><span>${label.slice(5)}</span><strong>${Number(value).toLocaleString()}</strong></div>`;
   }).join("");
   return `
-    <article class="chart-card glass-panel finance-chart-card h-100">
+    <article class="${FINANCE_CHART_SURFACE}">
       <div class="panel-head"><h3 class="panel-title"><i class="bi bi-graph-up me-2" style="color:${color}"></i>${title}</h3></div>
       <div class="finance-line-chart">
         <svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" class="finance-line-svg" aria-hidden="true">
@@ -569,7 +571,7 @@ function financeHBarChart(title, rows, emptyLabel, color = FINANCE_CHART_COLORS.
         <strong class="finance-hbar-value">${Number(value).toLocaleString()}</strong>
       </div>`).join("")
     : `<p class="finance-chart-empty">${emptyLabel}</p>`;
-  return `<article class="chart-card glass-panel finance-chart-card h-100"><div class="panel-head"><h3 class="panel-title"><i class="bi bi-bar-chart-steps me-2" style="color:${color}"></i>${title}</h3></div><div class="finance-hbar-chart">${bars}</div></article>`;
+  return `<article class="${FINANCE_CHART_SURFACE}"><div class="panel-head"><h3 class="panel-title"><i class="bi bi-bar-chart-steps me-2" style="color:${color}"></i>${title}</h3></div><div class="finance-hbar-chart">${bars}</div></article>`;
 }
 
 function financeChurchBarChart(title, churchRows, emptyLabel) {
@@ -595,7 +597,7 @@ function financeSemanticBarChart(title, rows, tone = "cyan", emptyLabel) {
         <strong class="finance-chart-value">${Number(value).toLocaleString()}</strong>
       </div>`).join("")
     : `<p class="finance-chart-empty">${emptyLabel}</p>`;
-  return `<article class="chart-card glass-panel finance-chart-card h-100"><div class="panel-head"><h3 class="panel-title"><i class="bi bi-bar-chart me-2" style="color:${color}"></i>${title}</h3></div><div class="chart-bars">${bars}</div></article>`;
+  return `<article class="${FINANCE_CHART_SURFACE}"><div class="panel-head"><h3 class="panel-title"><i class="bi bi-bar-chart me-2" style="color:${color}"></i>${title}</h3></div><div class="chart-bars">${bars}</div></article>`;
 }
 
 function exportFinanceExcel(records, filename, sheetName = "Finance") {
@@ -651,7 +653,7 @@ function financeReportFilterBar(filters, churches, labels) {
     ["occasional", labels.frequencyOccasional]
   ];
   return `
-    <div class="finance-report-filters filter-toolbar filter-bar mb-3">
+    <div class="finance-report-filters filter-toolbar filter-bar light-surface mb-3">
       <select class="form-select" data-finance-report-filter="period" aria-label="${labels.period}">
         ${periodOptions.map(([v, l]) => `<option value="${v}" ${filters.period === v ? "selected" : ""}>${l}</option>`).join("")}
       </select>

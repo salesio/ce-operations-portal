@@ -3247,8 +3247,8 @@ function financePartnerSegmentTabs() {
     ["inactive", L("financeSegmentInactive")],
     ["followup", L("financeSegmentFollowup")]
   ];
-  return `<div class="finance-segment-tabs view-toggle mb-3" role="group">${segments.map(([key, label]) =>
-    `<button type="button" class="${financePageState.partnerSegment === key ? "active" : ""}" data-finance-partner-segment="${key}">${label}</button>`
+  return `<div class="finance-segment-tabs view-toggle light-surface mb-3" role="group">${segments.map(([key, label]) =>
+    `<button type="button" class="view-toggle-btn ${financePageState.partnerSegment === key ? "active" : ""}" data-finance-partner-segment="${key}">${label}</button>`
   ).join("")}</div>`;
 }
 
@@ -4364,7 +4364,7 @@ function badgeClass(status) {
   if (["submitted", "reportSubmitted"].includes(key)) return "cyan";
   if (["underEvaluation", "forwardValidation"].includes(key)) return "course";
   if (["partiallyConfirmed"].includes(key)) return "cyan";
-  if (["incomplete"].includes(key)) return "danger";
+  if (["incomplete"].includes(key)) return "orange";
   if (["rejected", "cancelled", "outOfStock", "critical"].includes(key)) return "danger";
   if (["inProgress", "interested", "inTraining"].includes(key)) return "course";
   if (["inactive", "closed", "transferred", "paused", "discontinued", "returned"].includes(key)) return "muted";
@@ -4863,7 +4863,7 @@ function metric(icon, label, value, hint = "", options = {}) {
   if (typeof SummaryCard === "function") return SummaryCard(icon, label, value, hint, options);
   return `
     <div class="col-sm-6 col-xl-4 col-xxl-3">
-      <article class="metric-card summary-card">
+      <article class="metric-card summary-card light-surface">
         <div class="metric-icon summary-card-icon"><i class="bi ${icon}"></i></div>
         <div class="summary-card-body">
           <span class="summary-card-label">${label}</span>
@@ -4998,7 +4998,7 @@ function renderDashboard() {
       <div class="row g-4 align-items-stretch">
         <div class="col-xl-7">${renderDashboardPendingList(firstTimers)}</div>
         <div class="col-xl-5">
-          <article class="chart-card glass-panel h-100 dashboard-side-card">
+          <article class="chart-card glass-panel light-surface h-100 dashboard-side-card">
             <div class="panel-head"><h3 class="panel-title"><i class="bi bi-lightning-charge me-2 text-info"></i>${L("needsAction")}</h3></div>
             <div class="dashboard-side-metrics">
               <div><span>${L("pending")}</span><strong>${firstTimers.filter((p) => statusKey(p.estado_do_seguimento) === "pending").length}</strong></div>
@@ -5031,19 +5031,19 @@ function chartCard(title, rows) {
   const max = Math.max(...rows.map((r) => Number(r[1] || 0)), 1);
   const bars = rows.length ? rows.map(([label, value]) => `
       <div class="chart-row">
-        <span>${label}</span>
-        <div class="chart-track"><div class="chart-fill" style="width:${Math.max(5, Math.round((Number(value) / max) * 100))}%"></div></div>
-        <strong>${value}</strong>
-      </div>`).join("") : EmptyState({ compact: true, title: L("empty"), icon: "bi-bar-chart" });
-  if (typeof ChartPanel === "function") return ChartPanel(title, `<div class="chart-bars">${bars}</div>`);
-  return `<article class="chart-card glass-panel h-100"><div class="panel-head"><h3 class="panel-title"><i class="bi bi-activity me-2 text-info"></i>${title}</h3></div><div class="chart-bars">${bars}</div></article>`;
+        <span class="chart-label finance-chart-label">${label}</span>
+        <div class="chart-track"><div class="chart-fill finance-chart-fill" style="width:${Math.max(5, Math.round((Number(value) / max) * 100))}%"></div></div>
+        <strong class="finance-chart-value">${value}</strong>
+      </div>`).join("") : EmptyState({ compact: true, title: L("empty"), icon: "bi-bar-chart", variant: "light" });
+  if (typeof ChartPanel === "function") return ChartPanel(title, `<div class="chart-bars">${bars}</div>`, { variant: "light" });
+  return `<article class="chart-card glass-panel light-surface h-100"><div class="panel-head"><h3 class="panel-title"><i class="bi bi-activity me-2 text-info"></i>${title}</h3></div><div class="chart-bars">${bars}</div></article>`;
 }
 
 function summaryTiles(title, rows) {
   return `
-    <article class="chart-card glass-panel h-100">
+    <article class="chart-card glass-panel light-surface h-100">
       <div class="panel-head"><h3 class="panel-title"><i class="bi bi-grid-1x2 me-2 text-info"></i>${title}</h3></div>
-      <div class="donut-grid">${rows.map(([label, value]) => `<div class="donut-item"><span>${label}</span><strong>${value}</strong></div>`).join("")}</div>
+      <div class="donut-grid">${rows.map(([label, value]) => `<div class="donut-item"><span class="chart-label">${label}</span><strong>${value}</strong></div>`).join("")}</div>
     </article>
   `;
 }
@@ -5643,9 +5643,9 @@ function renderFinance() {
     ? financeReportFilterBar(filters, scoped(state.churches), getFinanceReportLabels())
     : "";
 
-  const chartModeToggle = `<div class="finance-chart-mode-toggle view-toggle" role="group">
-    <button type="button" class="${financePageState.reportChartMode === "bar" ? "active" : ""}" data-finance-chart-mode="bar"><i class="bi bi-bar-chart"></i> ${L("financeChartBar")}</button>
-    <button type="button" class="${financePageState.reportChartMode === "donut" ? "active" : ""}" data-finance-chart-mode="donut"><i class="bi bi-pie-chart"></i> ${L("financeChartDonut")}</button>
+  const chartModeToggle = `<div class="finance-chart-mode-toggle view-toggle light-surface" role="group">
+    <button type="button" class="view-toggle-btn ${financePageState.reportChartMode === "bar" ? "active" : ""}" data-finance-chart-mode="bar"><i class="bi bi-bar-chart"></i> ${L("financeChartBar")}</button>
+    <button type="button" class="view-toggle-btn ${financePageState.reportChartMode === "donut" ? "active" : ""}" data-finance-chart-mode="donut"><i class="bi bi-pie-chart"></i> ${L("financeChartDonut")}</button>
   </div>`;
 
   const maskContributor = (name) => (financeAccess.canViewIndividualDetails ? name : L("financeAggregatedOnly"));
@@ -5738,7 +5738,7 @@ function renderFinance() {
           <div class="col-xl-6">${categoryChart}</div>
           <div class="col-xl-6">${armChart}</div>
           <div class="col-xl-6">${monthlyChart}</div>
-          <div class="col-xl-6">${financeAccess.canViewIndividualDetails ? topPartnersChart : `<article class="chart-card glass-panel finance-chart-card h-100"><div class="panel-head"><h3 class="panel-title">${L("financeTopPartners")}</h3></div><p class="finance-chart-empty">${L("financeAggregatedOnly")}</p></article>`}</div>
+          <div class="col-xl-6">${financeAccess.canViewIndividualDetails ? topPartnersChart : `<article class="chart-card glass-panel finance-chart-card light-surface h-100"><div class="panel-head"><h3 class="panel-title">${L("financeTopPartners")}</h3></div><p class="finance-chart-empty">${L("financeAggregatedOnly")}</p></article>`}</div>
           <div class="col-12">${churchChart}</div>
         </div>
         <div class="row g-4 mb-4">
@@ -5858,7 +5858,7 @@ function renderChurchCard(church) {
     ? `<div class="church-card-services">${upcoming.map((record) => `<span class="church-service-chip">${formatServiceTimeShort(record)}</span>`).join("")}</div>`
     : "";
   return `
-    <article class="church-card data-card">
+    <article class="church-card data-card light-surface">
       <div class="church-card-head">
         <div class="church-card-titles">
           <span class="eyebrow church-card-type">${churchTypeText(church.type)}</span>
