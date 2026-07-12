@@ -84,6 +84,88 @@ const TEXT = {
     accessControl: "Controlo de Acesso",
     settings: "Definições",
     auditLogs: "Registos de Auditoria",
+    requisitions: "Requisições & Aprovações",
+    requisitionsSubtitle: "Fluxo de requisições departamentais — revisão, aprovação pastoral e liberação de recursos.",
+    staffHr: "Staff & Recursos Humanos",
+    staffHrSubtitle: "Registo de equipa, funções, salários, desempenho, presenças e equipamentos atribuídos.",
+    reqTabOverview: "Visão Geral",
+    reqTabNew: "Nova Requisição",
+    reqTabReceived: "Requisições Recebidas",
+    reqTabReview: "Em Aprovação Pastoral",
+    reqTabPastoral: "Aguardando Pastor Principal",
+    reqTabApproved: "Aprovadas",
+    reqTabRejected: "Rejeitadas",
+    reqTabReleased: "Recursos Liberados",
+    reqTabHistory: "Histórico",
+    reqPending: "Requisições Pendentes",
+    reqInReview: "Em Revisão",
+    reqAwaitingPastor: "Aguardando Pastor Principal",
+    reqApprovedMonth: "Aprovadas Este Mês",
+    reqRejected: "Rejeitadas",
+    reqReleased: "Recursos Liberados",
+    reqApprovedValue: "Valor Total Aprovado",
+    reqPendingValue: "Valor Pendente",
+    reqNumber: "Nº Requisição",
+    reqType: "Tipo",
+    reqTitle: "Título",
+    reqDepartment: "Departamento",
+    reqUrgency: "Urgência",
+    reqNeededBy: "Necessário até",
+    reqEstimated: "Valor Estimado",
+    reqSubmit: "Submeter",
+    reqReview: "Rever",
+    reqForwardPastor: "Enviar ao Pastor Principal",
+    reqApprove: "Aprovar",
+    reqReject: "Rejeitar",
+    reqReleaseResources: "Liberar Recursos",
+    reqMarkPurchased: "Marcar como Comprado",
+    reqRegisterInventory: "Registar no Inventário",
+    reqClose: "Fechar",
+    reqJustification: "Justificação",
+    reqDescription: "Descrição",
+    reqSupplier: "Fornecedor",
+    reqQuotation: "Nº Cotação",
+    staffTabOverview: "Visão Geral",
+    staffTabStaff: "Staff",
+    staffTabDepartments: "Departamentos",
+    staffTabRoles: "Funções",
+    staffTabSalaries: "Salários & Subsídios",
+    staffTabPerformance: "Desempenho",
+    staffTabAttendance: "Presenças",
+    staffTabEquipment: "Equipamentos Atribuídos",
+    staffTabDocuments: "Documentos",
+    staffTabReports: "Relatórios",
+    staffTotal: "Total de Staff",
+    staffActive: "Staff Activo",
+    staffVolunteers: "Voluntários",
+    staffWithSalary: "Staff com Salário/Subsídio",
+    staffPendingEval: "Avaliações Pendentes",
+    staffPendingPay: "Pagamentos Pendentes",
+    staffAssignedEq: "Equipamentos Atribuídos",
+    staffBirthdays: "Aniversariantes do Mês",
+    staffFullName: "Nome Completo",
+    staffRoleTitle: "Função",
+    staffEmploymentType: "Tipo de Vínculo",
+    staffStartDate: "Data de Início",
+    staffSalary: "Salário/Subsídio",
+    staffPaymentFreq: "Frequência de Pagamento",
+    staffSupervisor: "Supervisor",
+    staffRegisterSalary: "Registar Salário/Subsídio",
+    staffEvaluate: "Avaliar Desempenho",
+    staffRegisterAttendance: "Registar Presença",
+    staffViewEquipment: "Ver Equipamentos",
+    staffPrivacyBanner: "Informação salarial restrita. Apenas perfis autorizados podem ver valores.",
+    staffSalaryHidden: "Valor confidencial",
+    accessDeniedTitle: "Acesso Restrito",
+    accessDeniedText: "Não tem permissão para aceder a esta área. Contacte o administrador se precisar de acesso.",
+    accessDeniedBack: "Voltar ao Painel",
+    navLockedTooltip: "Sem permissão para aceder a este módulo",
+    accessMatrixModule: "Módulo",
+    accessMatrixView: "Ver",
+    accessMatrixCreate: "Criar",
+    accessMatrixEdit: "Editar",
+    accessMatrixApprove: "Aprovar",
+    accessMatrixScope: "Âmbito",
     heroTitle: "Uma plataforma viva para cuidar da igreja, das almas e da visão.",
     heroText: "Operações da Christ Embassy Mozambique com acompanhamento pastoral, crescimento celular, escola, finanças, sacramentos e relatórios por igreja.",
     pendingFollowups: "Seguimentos Pendentes",
@@ -501,6 +583,88 @@ const TEXT = {
     accessControl: "Access Control",
     settings: "Settings",
     auditLogs: "Audit Logs",
+    requisitions: "Requisitions & Approvals",
+    requisitionsSubtitle: "Department requisition workflow — review, pastoral approval and resource release.",
+    staffHr: "Staff & Human Resources",
+    staffHrSubtitle: "Staff registry, roles, salaries, performance, attendance and assigned equipment.",
+    reqTabOverview: "Overview",
+    reqTabNew: "New Requisition",
+    reqTabReceived: "Received Requisitions",
+    reqTabReview: "Under Pastoral Review",
+    reqTabPastoral: "Awaiting Main Pastor",
+    reqTabApproved: "Approved",
+    reqTabRejected: "Rejected",
+    reqTabReleased: "Resources Released",
+    reqTabHistory: "History",
+    reqPending: "Pending Requisitions",
+    reqInReview: "In Review",
+    reqAwaitingPastor: "Awaiting Main Pastor",
+    reqApprovedMonth: "Approved This Month",
+    reqRejected: "Rejected",
+    reqReleased: "Resources Released",
+    reqApprovedValue: "Total Approved Value",
+    reqPendingValue: "Pending Value",
+    reqNumber: "Requisition No.",
+    reqType: "Type",
+    reqTitle: "Title",
+    reqDepartment: "Department",
+    reqUrgency: "Urgency",
+    reqNeededBy: "Needed By",
+    reqEstimated: "Estimated Amount",
+    reqSubmit: "Submit",
+    reqReview: "Review",
+    reqForwardPastor: "Send to Main Pastor",
+    reqApprove: "Approve",
+    reqReject: "Reject",
+    reqReleaseResources: "Release Resources",
+    reqMarkPurchased: "Mark as Purchased",
+    reqRegisterInventory: "Register in Inventory",
+    reqClose: "Close",
+    reqJustification: "Justification",
+    reqDescription: "Description",
+    reqSupplier: "Supplier",
+    reqQuotation: "Quotation No.",
+    staffTabOverview: "Overview",
+    staffTabStaff: "Staff",
+    staffTabDepartments: "Departments",
+    staffTabRoles: "Roles",
+    staffTabSalaries: "Salaries & Allowances",
+    staffTabPerformance: "Performance",
+    staffTabAttendance: "Attendance",
+    staffTabEquipment: "Assigned Equipment",
+    staffTabDocuments: "Documents",
+    staffTabReports: "Reports",
+    staffTotal: "Total Staff",
+    staffActive: "Active Staff",
+    staffVolunteers: "Volunteers",
+    staffWithSalary: "Staff with Salary/Allowance",
+    staffPendingEval: "Pending Evaluations",
+    staffPendingPay: "Pending Payments",
+    staffAssignedEq: "Assigned Equipment",
+    staffBirthdays: "Birthdays This Month",
+    staffFullName: "Full Name",
+    staffRoleTitle: "Role Title",
+    staffEmploymentType: "Employment Type",
+    staffStartDate: "Start Date",
+    staffSalary: "Salary/Allowance",
+    staffPaymentFreq: "Payment Frequency",
+    staffSupervisor: "Supervisor",
+    staffRegisterSalary: "Register Salary/Allowance",
+    staffEvaluate: "Evaluate Performance",
+    staffRegisterAttendance: "Register Attendance",
+    staffViewEquipment: "View Equipment",
+    staffPrivacyBanner: "Salary information is restricted. Only authorized profiles can view amounts.",
+    staffSalaryHidden: "Confidential amount",
+    accessDeniedTitle: "Access Restricted",
+    accessDeniedText: "You do not have permission to access this area. Contact the administrator if you need access.",
+    accessDeniedBack: "Back to Dashboard",
+    navLockedTooltip: "You do not have permission to access this module",
+    accessMatrixModule: "Module",
+    accessMatrixView: "View",
+    accessMatrixCreate: "Create",
+    accessMatrixEdit: "Edit",
+    accessMatrixApprove: "Approve",
+    accessMatrixScope: "Scope",
     heroTitle: "A living platform for caring for the church, souls and vision.",
     heroText: "Christ Embassy Mozambique operations with pastoral follow-up, cell growth, school, finance, sacraments and church-level reporting.",
     pendingFollowups: "Pending Follow-Ups",
@@ -2139,8 +2303,8 @@ function isModuleTabRoute(route) {
 
 const NAV_GROUPS = [
   { key: "main", items: [["dashboard", "bi-speedometer2", "dashboard"], ["churches", "bi-building", "churches"], ["members", "bi-people", "members"], ["firstTimers", "bi-person-heart", "firstTimers"], ["followUp", "bi-telephone-outbound", "followUp"], ["reports", "bi-bar-chart-line", "reports"]] },
-  { key: "departments", items: [["counseling", "bi-chat-heart", "counseling"], ["foundation", "bi-mortarboard", "foundationSchool"], ["finance", "bi-cash-coin", "finance"], ["fevo", "bi-compass", "fevo"], ["venueInventory", "bi-box-seam", "venueInventoryShort"], ["sacraments", "bi-droplet", "sacraments"], ["cellPrison", "bi-shield-lock", "prisonMinistry"], ["cellMaterials", "bi-journal-richtext", "ministryMaterials"], ["programs", "bi-calendar-event", "programs"], ["partnership", "bi-stars", "partnership"], ["media", "bi-broadcast", "media"]] },
-  { key: "admin", items: [["users", "bi-person-lock", "usersRoles"], ["access", "bi-shield-lock", "accessControl"], ["settings", "bi-gear", "settings"], ["audit", "bi-journal-check", "auditLogs"]] }
+  { key: "departments", items: [["counseling", "bi-chat-heart", "counseling"], ["foundation", "bi-mortarboard", "foundationSchool"], ["finance", "bi-cash-coin", "finance"], ["requisitions", "bi-clipboard-check", "requisitions"], ["fevo", "bi-compass", "fevo"], ["venueInventory", "bi-box-seam", "venueInventoryShort"], ["sacraments", "bi-droplet", "sacraments"], ["cellPrison", "bi-shield-lock", "prisonMinistry"], ["cellMaterials", "bi-journal-richtext", "ministryMaterials"], ["programs", "bi-calendar-event", "programs"], ["partnership", "bi-stars", "partnership"], ["media", "bi-broadcast", "media"]] },
+  { key: "admin", items: [["staffHr", "bi-people-fill", "staffHr"], ["users", "bi-person-lock", "usersRoles"], ["access", "bi-shield-lock", "accessControl"], ["settings", "bi-gear", "settings"], ["audit", "bi-journal-check", "auditLogs"]] }
 ];
 
 const followupStatuses = ["Pending", "Contacted", "No Answer", "Interested", "Sent to Cell", "Enrolled in Foundation School", "Became Member", "Closed"];
@@ -2221,7 +2385,54 @@ const seedData = {
     { id: "u-13", name: "Staff Member Demo", email: "staff.member@ce-mozambique.org", role: "Staff Member", church_id: "church-hq", department_permissions: ["assignedEquipment"], assigned_staff_name: "Laiza Teresa Chirindza", can_view_all_churches: false },
     { id: "u-14", name: "Finance Officer Demo", email: "finance.officer@ce-mozambique.org", role: "Finance Officer", church_id: "church-hq", department_permissions: ["finance", "financeOfficer"], can_view_all_churches: false },
     { id: "u-15", name: "Finance Head Demo", email: "finance.head@ce-mozambique.org", role: "Finance Head", church_id: "church-hq", department_permissions: ["finance", "financeHead", "financeVerify", "reports"], can_view_all_churches: true },
-    { id: "u-16", name: "Finance Viewer Demo", email: "finance.viewer@ce-mozambique.org", role: "Viewer", church_id: "church-hq", department_permissions: ["financeViewer", "reports"], can_view_all_churches: true }
+    { id: "u-16", name: "Finance Viewer Demo", email: "finance.viewer@ce-mozambique.org", role: "Viewer", church_id: "church-hq", department_permissions: ["financeViewer", "reports"], can_view_all_churches: true },
+    { id: "u-17", name: "Pastor Kene Ume", email: "pastor.kene@ce-mozambique.org", role: "Main Pastor", church_id: "church-hq", department_permissions: ["reports", "requisitions", "staffHr", "finance"], can_view_all_churches: true },
+    { id: "u-18", name: "Pastora Responsável Requisições", email: "requisitions@ce-mozambique.org", role: "Requisition Officer", church_id: "church-hq", department_permissions: ["requisitions"], can_view_all_churches: true },
+    { id: "u-19", name: "Gestora de RH", email: "hr@ce-mozambique.org", role: "HR Manager", church_id: "church-hq", department_permissions: ["staffHr"], can_view_all_churches: true }
+  ],
+  departments: [
+    { id: "dept-finance", church_id: "church-hq", name: "Finanças", lead_name: "Finance Head Demo" },
+    { id: "dept-cell", church_id: "church-hq", name: "Ministério de Células", lead_name: "Pastora Flavia" },
+    { id: "dept-media", church_id: "church-hq", name: "Media", lead_name: "Media Team" },
+    { id: "dept-venue", church_id: "church-hq", name: "Venue Management", lead_name: "Marcelo Panguene" },
+    { id: "dept-programs", church_id: "church-hq", name: "Programas", lead_name: "Programs Team" }
+  ],
+  requisitions: [
+    { id: "req-1", request_number: "REQ-2026-0001", requested_by_user_id: "u-12", requested_by_name: "Department Head Demo", department_id: "dept-cell", department_name: "Cell Ministry", church_id: "church-hq", church_name: "National HQ - Christ Embassy Mozambique", requisition_type: "Material de Ministério", title: "Materiais para Escola de Células", description: "Livros, manuais e apostilas para formação de líderes.", justification: "Preparação do trimestre de liderança celular.", estimated_amount: 18500, currency: "MZN", urgency: "Normal", needed_by_date: "2026-08-01", attachments: [], supplier_or_vendor: "Loveworld Books", quotation_number: "QT-2026-014", reviewed_by: "", reviewed_at: "", review_notes: "", sent_to_main_pastor_at: "", approved_by: "", approved_at: "", approval_notes: "", rejected_by: "", rejected_at: "", rejection_reason: "", resources_released_by: "", resources_released_at: "", amount_released: 0, finance_record_id: "", inventory_item_id: "", status: "Submetido", created_at: "2026-07-08T10:00:00.000Z", updated_at: "2026-07-08T10:00:00.000Z" },
+    { id: "req-2", request_number: "REQ-2026-0002", requested_by_user_id: "u-13", requested_by_name: "Staff Member Demo", department_id: "dept-finance", department_name: "Finanças", church_id: "church-hq", church_name: "National HQ - Christ Embassy Mozambique", requisition_type: "Apoio Operacional", title: "Material de escritório para Finanças", description: "Papel A4, pastas e toners para impressão de relatórios.", justification: "Reposição de consumíveis do departamento.", estimated_amount: 4200, currency: "MZN", urgency: "Baixa", needed_by_date: "2026-07-20", attachments: [], supplier_or_vendor: "Office Supply Maputo", quotation_number: "", reviewed_by: "Pastora Responsável Requisições", reviewed_at: "2026-07-09T11:00:00.000Z", review_notes: "Organizado e encaminhado.", sent_to_main_pastor_at: "", approved_by: "", approved_at: "", approval_notes: "", rejected_by: "", rejected_at: "", rejection_reason: "", resources_released_by: "", resources_released_at: "", amount_released: 0, finance_record_id: "", inventory_item_id: "", status: "Em Revisão", created_at: "2026-07-07T09:00:00.000Z", updated_at: "2026-07-09T11:00:00.000Z" },
+    { id: "req-3", request_number: "REQ-2026-0003", requested_by_user_id: "u-5", requested_by_name: "Pastora Flavia", department_id: "dept-cell", department_name: "Ministério de Células", church_id: "church-hq", church_name: "National HQ - Christ Embassy Mozambique", requisition_type: "Transporte", title: "Transporte para visitação celular — Beira", description: "Deslocação da equipa nacional para apoio à rede de Beira.", justification: "Visita pastoral e formação de líderes.", estimated_amount: 28000, currency: "MZN", urgency: "Alta", needed_by_date: "2026-07-25", attachments: [], supplier_or_vendor: "Transporte CE", quotation_number: "QT-2026-021", reviewed_by: "Pastora Responsável Requisições", reviewed_at: "2026-07-10T08:00:00.000Z", review_notes: "Prioridade confirmada com Pastor Principal.", sent_to_main_pastor_at: "2026-07-10T09:00:00.000Z", approved_by: "", approved_at: "", approval_notes: "", rejected_by: "", rejected_at: "", rejection_reason: "", resources_released_by: "", resources_released_at: "", amount_released: 0, finance_record_id: "", inventory_item_id: "", status: "Enviado ao Pastor Principal", created_at: "2026-07-05T14:00:00.000Z", updated_at: "2026-07-10T09:00:00.000Z" },
+    { id: "req-4", request_number: "REQ-2026-0004", requested_by_user_id: "u-11", requested_by_name: "Marcelo Panguene", department_id: "dept-venue", department_name: "Venue Management", church_id: "church-hq", church_name: "National HQ - Christ Embassy Mozambique", requisition_type: "Nova Aquisição", title: "Microfones sem fio adicionais", description: "Compra de 4 microfones BMK ES600 para cultos simultâneos.", justification: "Expansão do auditório e culto online.", estimated_amount: 74000, currency: "MZN", urgency: "Normal", needed_by_date: "2026-08-10", attachments: [], supplier_or_vendor: "Audio Supplier", quotation_number: "QT-2026-033", reviewed_by: "Pastora Responsável Requisições", reviewed_at: "2026-07-01T10:00:00.000Z", review_notes: "Aprovado para compra após verificação técnica.", sent_to_main_pastor_at: "2026-07-02T10:00:00.000Z", approved_by: "Pastor Kene Ume", approved_at: "2026-07-03", approval_notes: "Autorizado — prioridade media.", rejected_by: "", rejected_at: "", rejection_reason: "", resources_released_by: "Finance Head Demo", resources_released_at: "2026-07-04T15:00:00.000Z", amount_released: 74000, finance_record_id: "fin-req-req-4", inventory_item_id: "", status: "Recursos Liberados", created_at: "2026-06-28T08:00:00.000Z", updated_at: "2026-07-04T15:00:00.000Z" },
+    { id: "req-5", request_number: "REQ-2026-0005", requested_by_user_id: "u-9", requested_by_name: "Sister Cassandra", department_id: "dept-programs", department_name: "Programas", church_id: "church-hq", church_name: "National HQ - Christ Embassy Mozambique", requisition_type: "Evento/Programa", title: "Apoio logístico — Semana F.E.V.O", description: "Material de evangelização, transporte e refeições para equipas.", justification: "Semana intensiva de F.E.V.O nacional.", estimated_amount: 52000, currency: "MZN", urgency: "Urgente", needed_by_date: "2026-07-15", attachments: [], supplier_or_vendor: "", quotation_number: "", reviewed_by: "Pastora Responsável Requisições", reviewed_at: "2026-07-11T09:00:00.000Z", review_notes: "Encaminhado ao Pastor Principal.", sent_to_main_pastor_at: "2026-07-11T10:00:00.000Z", approved_by: "Pastor Kene Ume", approved_at: "2026-07-12", approval_notes: "Aprovado com limite de 50.000 MZN.", rejected_by: "", rejected_at: "", rejection_reason: "", resources_released_by: "", resources_released_at: "", amount_released: 0, finance_record_id: "", inventory_item_id: "", status: "Aprovado", created_at: "2026-07-09T12:00:00.000Z", updated_at: "2026-07-12T08:00:00.000Z" },
+    { id: "req-6", request_number: "REQ-2026-0006", requested_by_user_id: "u-14", requested_by_name: "Finance Officer Demo", department_id: "dept-finance", department_name: "Finanças", church_id: "church-hq", church_name: "National HQ - Christ Embassy Mozambique", requisition_type: "Pagamento de Serviço", title: "Auditoria externa trimestral", description: "Serviço de revisão de registos financeiros Q2.", justification: "Conformidade e transparência.", estimated_amount: 35000, currency: "MZN", urgency: "Normal", needed_by_date: "2026-07-30", attachments: [], supplier_or_vendor: "Audit Partners Lda", quotation_number: "QT-AUD-02", reviewed_by: "Pastora Responsável Requisições", reviewed_at: "2026-07-06T10:00:00.000Z", review_notes: "Não prioritário neste momento.", sent_to_main_pastor_at: "2026-07-06T11:00:00.000Z", approved_by: "", approved_at: "", approval_notes: "", rejected_by: "Pastor Kene Ume", rejected_at: "2026-07-07T09:00:00.000Z", rejection_reason: "Adiar para o próximo trimestre.", resources_released_by: "", resources_released_at: "", amount_released: 0, finance_record_id: "", inventory_item_id: "", status: "Rejeitado", created_at: "2026-07-04T08:00:00.000Z", updated_at: "2026-07-07T09:00:00.000Z" },
+    { id: "req-7", request_number: "REQ-2026-0007", requested_by_user_id: "u-11", requested_by_name: "Marcelo Panguene", department_id: "dept-venue", department_name: "Venue Management", church_id: "church-hq", church_name: "National HQ - Christ Embassy Mozambique", requisition_type: "Equipamento", title: "Laptop para técnico de som", description: "Laptop dedicado para software de som digital.", justification: "Substituição de equipamento antigo.", estimated_amount: 62000, currency: "MZN", urgency: "Normal", needed_by_date: "2026-06-30", attachments: [], supplier_or_vendor: "IT Supplier", quotation_number: "QT-IT-08", reviewed_by: "Pastora Responsável Requisições", reviewed_at: "2026-06-20T10:00:00.000Z", review_notes: "Compra concluída e registada.", sent_to_main_pastor_at: "2026-06-21T10:00:00.000Z", approved_by: "Pastor Kene Ume", approved_at: "2026-06-22", approval_notes: "Aprovado.", rejected_by: "", rejected_at: "", rejection_reason: "", resources_released_by: "Finance Head Demo", resources_released_at: "2026-06-23T10:00:00.000Z", amount_released: 62000, finance_record_id: "fin-req-req-7", inventory_item_id: "inv-req-req-7", status: "Fechado", created_at: "2026-06-15T08:00:00.000Z", updated_at: "2026-06-28T10:00:00.000Z" }
+  ],
+  staffProfiles: [
+    { id: "staff-1", user_id: "u-5", full_name: "Flavia Moneedi Tivane", title: "Pastora", gender: "Feminino", phone: "860000101", whatsapp: "860000101", email: "flavia@ce-mozambique.org", church_id: "church-hq", church_name: "National HQ - Christ Embassy Mozambique", department_id: "dept-cell", department_name: "Ministério de Células", role_title: "Cell Ministry Head", supervisor_user_id: "u-17", supervisor_name: "Pastor Kene Ume", start_date: "2024-01-15", employment_type: "Full-time", salary_or_allowance: 45000, payment_frequency: "Mensal", payment_method: "Banco", bank_or_mobile_details: "BCI ****4521", status: "Activo", date_of_birth: "1990-03-14", notes: "", created_at: "2024-01-15", updated_at: "2026-07-10" },
+    { id: "staff-2", user_id: "u-4", full_name: "Angelica Amilcar Macuacua", title: "Irmã", gender: "Feminino", phone: "860000102", whatsapp: "860000102", email: "angelica@ce-mozambique.org", church_id: "church-hq", church_name: "National HQ - Christ Embassy Mozambique", department_id: "dept-cell", department_name: "Ministério de Células", role_title: "ALEC Coordinator", supervisor_user_id: "u-5", supervisor_name: "Pastora Flavia", start_date: "2023-06-01", employment_type: "Full-time", salary_or_allowance: 38000, payment_frequency: "Mensal", payment_method: "M-Pesa", bank_or_mobile_details: "86XXXXXXX", status: "Activo", date_of_birth: "1992-07-22", notes: "", created_at: "2023-06-01", updated_at: "2026-07-10" },
+    { id: "staff-3", user_id: "u-11", full_name: "Marcelo Moises Panguene", title: "Irmão", gender: "Masculino", phone: "860000103", whatsapp: "860000103", email: "marcelo.panguene@ce-mozambique.org", church_id: "church-hq", church_name: "National HQ - Christ Embassy Mozambique", department_id: "dept-venue", department_name: "Venue Management", role_title: "Venue Manager", supervisor_user_id: "u-17", supervisor_name: "Pastor Kene Ume", start_date: "2022-11-01", employment_type: "Full-time", salary_or_allowance: 52000, payment_frequency: "Mensal", payment_method: "Banco", bank_or_mobile_details: "BCI ****8832", status: "Activo", date_of_birth: "1988-11-05", notes: "", created_at: "2022-11-01", updated_at: "2026-07-10" },
+    { id: "staff-4", user_id: "", full_name: "Laiza Teresa Chirindza", title: "Irmã", gender: "Feminino", phone: "860000104", whatsapp: "860000104", email: "laiza@ce-mozambique.org", church_id: "church-hq", church_name: "National HQ - Christ Embassy Mozambique", department_id: "dept-finance", department_name: "Finanças", role_title: "Finance Officer", supervisor_user_id: "u-15", supervisor_name: "Finance Head Demo", start_date: "2024-03-01", employment_type: "Full-time", salary_or_allowance: 40000, payment_frequency: "Mensal", payment_method: "E-Mola", bank_or_mobile_details: "87XXXXXXX", status: "Activo", date_of_birth: "1995-01-18", notes: "", created_at: "2024-03-01", updated_at: "2026-07-10" },
+    { id: "staff-5", user_id: "u-6", full_name: "Eduarda Paula Mnganhela", title: "Irmã", gender: "Feminino", phone: "860000105", whatsapp: "860000105", email: "eduarda@ce-mozambique.org", church_id: "church-hq", church_name: "National HQ - Christ Embassy Mozambique", department_id: "dept-cell", department_name: "Ministério de Células", role_title: "Final Coordinator", supervisor_user_id: "u-5", supervisor_name: "Pastora Flavia", start_date: "2023-09-01", employment_type: "Part-time", salary_or_allowance: 25000, payment_frequency: "Mensal", payment_method: "M-Pesa", bank_or_mobile_details: "", status: "Activo", date_of_birth: "1993-09-09", notes: "", created_at: "2023-09-01", updated_at: "2026-07-10" },
+    { id: "staff-6", user_id: "u-3", full_name: "Janet Baptista Ngoca", title: "Irmã", gender: "Feminino", phone: "860000106", whatsapp: "860000106", email: "janet.marquele@ce-mozambique.org", church_id: "church-hq", church_name: "National HQ - Christ Embassy Mozambique", department_id: "dept-programs", department_name: "Programas", role_title: "Ministry Coordinator", supervisor_user_id: "u-17", supervisor_name: "Pastor Kene Ume", start_date: "2022-05-01", employment_type: "Full-time", salary_or_allowance: 42000, payment_frequency: "Mensal", payment_method: "Banco", bank_or_mobile_details: "", status: "Activo", date_of_birth: "1987-12-02", notes: "", created_at: "2022-05-01", updated_at: "2026-07-10" },
+    { id: "staff-7", user_id: "u-18", full_name: "Pastora Responsável Requisições", title: "Pastora", gender: "Feminino", phone: "860000107", whatsapp: "860000107", email: "requisitions@ce-mozambique.org", church_id: "church-hq", church_name: "National HQ - Christ Embassy Mozambique", department_id: "dept-programs", department_name: "Programas", role_title: "Requisition Officer", supervisor_user_id: "u-17", supervisor_name: "Pastor Kene Ume", start_date: "2024-06-01", employment_type: "Full-time", salary_or_allowance: 36000, payment_frequency: "Mensal", payment_method: "Banco", bank_or_mobile_details: "", status: "Activo", date_of_birth: "1991-05-20", notes: "Responsável por organizar requisições.", created_at: "2024-06-01", updated_at: "2026-07-10" },
+    { id: "staff-8", user_id: "u-7", full_name: "Cell Leader Demo", title: "Irmão", gender: "Masculino", phone: "860000108", whatsapp: "860000108", email: "cellleader@ce-mozambique.org", church_id: "church-hq", church_name: "National HQ - Christ Embassy Mozambique", department_id: "dept-cell", department_name: "Ministério de Células", role_title: "Cell Leader", supervisor_user_id: "u-5", supervisor_name: "Pastora Flavia", start_date: "2025-01-01", employment_type: "Voluntário", salary_or_allowance: 0, payment_frequency: "Nenhum", payment_method: "Nenhum", bank_or_mobile_details: "", status: "Activo", date_of_birth: "1998-08-30", notes: "", created_at: "2025-01-01", updated_at: "2026-07-10" }
+  ],
+  staffSalaries: [
+    { id: "sal-1", staff_id: "staff-1", month: "2026-06", base_amount: 45000, bonus: 5000, deductions: 0, net_amount: 50000, payment_status: "Pago", approved_by: "Finance Head Demo", paid_by: "Finance Head Demo", paid_at: "2026-07-05", notes: "" },
+    { id: "sal-2", staff_id: "staff-3", month: "2026-07", base_amount: 52000, bonus: 0, deductions: 2000, net_amount: 50000, payment_status: "Pendente", approved_by: "", paid_by: "", paid_at: "", notes: "Aguardar aprovação." },
+    { id: "sal-3", staff_id: "staff-4", month: "2026-07", base_amount: 40000, bonus: 0, deductions: 0, net_amount: 40000, payment_status: "Aprovado", approved_by: "Finance Head Demo", paid_by: "", paid_at: "", notes: "" }
+  ],
+  staffPerformance: [
+    { id: "perf-1", staff_id: "staff-1", evaluation_period: "2026-H1", punctuality_score: 9, task_completion_score: 9, report_submission_score: 8, teamwork_score: 9, supervisor_rating: 9, overall_score: 8.8, strengths: "Liderança e organização.", areas_to_improve: "Delegação de tarefas.", action_plan: "Formação de líderes de área.", evaluated_by: "Pastor Kene Ume", evaluated_at: "2026-07-01" },
+    { id: "perf-2", staff_id: "staff-3", evaluation_period: "2026-H1", punctuality_score: 0, task_completion_score: 0, report_submission_score: 0, teamwork_score: 0, supervisor_rating: 0, overall_score: 0, strengths: "", areas_to_improve: "", action_plan: "", evaluated_by: "", evaluated_at: "" }
+  ],
+  staffAttendance: [
+    { id: "att-1", staff_id: "staff-1", date: "2026-07-10", church_id: "church-hq", department_id: "dept-cell", attendance_status: "Presente", check_in_time: "08:45", check_out_time: "17:30", notes: "" },
+    { id: "att-2", staff_id: "staff-4", date: "2026-07-10", church_id: "church-hq", department_id: "dept-finance", attendance_status: "Presente", check_in_time: "09:00", check_out_time: "18:00", notes: "" },
+    { id: "att-3", staff_id: "staff-3", date: "2026-07-10", church_id: "church-hq", department_id: "dept-venue", attendance_status: "Atrasado", check_in_time: "09:35", check_out_time: "17:00", notes: "Trânsito." }
+  ],
+  staffDocuments: [
+    { id: "doc-1", staff_id: "staff-1", document_type: "BI", file_url: "/docs/staff-1-bi.pdf", expiry_date: "", notes: "" },
+    { id: "doc-2", staff_id: "staff-3", document_type: "Contrato", file_url: "/docs/staff-3-contract.pdf", expiry_date: "2027-11-01", notes: "Contrato anual renovável." }
   ],
   churches: [
     { id: "church-hq", church_id: "church-hq", church_name: "National HQ - Christ Embassy Mozambique", public_name: "Igreja Embaixada de Cristo Maputo / Embaixada de Cristo Moçambique", type: "Sede Nacional", province: "Maputo Cidade", city: "KaMpfumo", district_or_area: "Maputo", address: "Avenida de Angola, ao lado da CETRACO, Maputo", pastor_in_charge: "Pastor Kene Ume", phone_primary: "+258 86 227 0000", phone_secondary: "", email: "info@embaixada-de-cristo.obiuba.com", facebook: "Embaixada de Cristo Moçambique", instagram: "@embaixada_de_cristo_mocambique", youtube: "", service_times: defaultSeedServiceTimes("church-hq", "Sede Nacional"), parent_church_id: "", status: "Activa", information_status: "Por Confirmar", notes: "Dados iniciais importados para o protótipo. Confirmar detalhes com a equipa local.", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2024-01-01", updated_at: "2026-07-10", attendance_last_4_weeks: [112, 98, 104, 92] },
@@ -2501,6 +2712,8 @@ const churchPageState = {
   view: localStorage.getItem(CHURCH_VIEW_KEY) || "cards",
   filters: { search: "", province: "", city: "", type: "", status: "", information_status: "" }
 };
+const requisitionsPageState = { tab: "overview" };
+const staffHrPageState = { tab: "overview", selectedStaffId: "" };
 
 function L(key) {
   return TEXT[lang]?.[key] || TEXT.en[key] || key;
@@ -2616,6 +2829,14 @@ function normalizeState(saved) {
   merged.contributors = Array.isArray(merged.contributors) ? merged.contributors : structuredClone(seedData.contributors || []);
   merged.publicGivingSubmissions = Array.isArray(merged.publicGivingSubmissions) ? merged.publicGivingSubmissions : structuredClone(seedData.publicGivingSubmissions || []);
   merged.foundationStudents = (merged.foundationStudents || []).map((student) => migrateFoundationStudent(student));
+  ["departments", "requisitions", "staffProfiles", "staffSalaries", "staffPerformance", "staffAttendance", "staffDocuments"].forEach((key) => {
+    merged[key] = Array.isArray(merged[key]) ? merged[key] : structuredClone(seedData[key] || []);
+    const seedItems = seedData[key] || [];
+    const savedIds = new Set(merged[key].map((item) => item.id));
+    seedItems.forEach((item) => {
+      if (!savedIds.has(item.id)) merged[key].push(structuredClone(item));
+    });
+  });
   return merged;
 }
 
@@ -4150,9 +4371,23 @@ function badgeClass(status) {
   return "blue";
 }
 
+function resolveRouteAccess(route) {
+  if (window.CEAccessControl?.getNavItemState) {
+    return window.CEAccessControl.getNavItemState(activeUser, route);
+  }
+  return { visible: true, locked: false, access: { can_view: true } };
+}
+
 function canAccessNavRoute(route) {
+  const nav = resolveRouteAccess(route);
+  if (!nav.visible) return false;
   if (route === "venueInventory") return canViewVenueModule();
   return true;
+}
+
+function canEnterRoute(route) {
+  const nav = resolveRouteAccess(route);
+  return nav.access?.can_view && !nav.locked;
 }
 
 function loadSidebarGroupState() {
@@ -4260,13 +4495,14 @@ function applySidebarCollapse(collapsed = isSidebarCollapsed()) {
 
 function renderShell() {
   byId("sidebarNav").innerHTML = NAV_GROUPS.map((group) => {
-    const items = group.items.filter(([route]) => canAccessNavRoute(route));
+    const items = group.items.map(([route, icon, label]) => ({ route, icon, label, nav: resolveRouteAccess(route) }))
+      .filter((item) => item.nav.visible && (item.route !== "venueInventory" || canViewVenueModule()));
     if (!items.length && group.key !== "departments") return "";
     const expanded = isSidebarGroupExpanded(group.key);
     const cellNav = group.key === "departments" ? renderCellSidebarNav() : "";
-    const navItems = items.map(([route, icon, label]) => `
-      <button type="button" class="nav-item-btn" data-route="${route}" title="${L(label)}">
-        <i class="bi ${icon}"></i><span>${L(label)}</span>
+    const navItems = items.map(({ route, icon, label, nav }) => `
+      <button type="button" class="nav-item-btn ${nav.locked ? "is-locked" : ""}" ${nav.locked ? `data-locked-route="${route}"` : `data-route="${route}"`} title="${nav.locked ? L("navLockedTooltip") : L(label)}" ${nav.locked ? "disabled" : ""}>
+        <i class="bi ${icon}"></i><span>${L(label)}</span>${nav.locked ? `<i class="bi bi-lock-fill nav-lock-icon" aria-hidden="true"></i>` : ""}
       </button>
     `).join("");
     if (!navItems && !cellNav) return "";
@@ -4353,10 +4589,30 @@ function scrollContentTo(target, { behavior = "smooth" } = {}) {
   content.scrollTo({ top: Math.max(0, top), behavior });
 }
 
+function renderAccessDenied() {
+  setPageContent(`
+    <article class="panel glass-panel access-denied-panel text-center py-5">
+      <div class="access-denied-icon mb-3"><i class="bi bi-shield-lock"></i></div>
+      <h2 class="mb-2">${L("accessDeniedTitle")}</h2>
+      <p class="text-secondary mb-4">${L("accessDeniedText")}</p>
+      <button type="button" class="btn btn-ce-gold btn-touch" data-route="dashboard">${L("accessDeniedBack")}</button>
+    </article>
+  `);
+}
+
 function setRoute(route) {
   const prevRoute = activeRoute;
   activeRoute = route || "dashboard";
   if (CELL_ROUTE_ALIASES[activeRoute]) activeRoute = CELL_ROUTE_ALIASES[activeRoute];
+  if (!canEnterRoute(activeRoute)) {
+    renderAccessDenied();
+    byId("pageTitle").textContent = L("accessDeniedTitle");
+    byId("sectionLabel").textContent = L("admin");
+    history.replaceState(null, "", `#${activeRoute}`);
+    document.querySelector(".ops-sidebar")?.classList.remove("is-open");
+    updateBackToTopVisibility();
+    return;
+  }
   if (activeRoute.startsWith("venueInventory") && !canAccessVenueRoute(activeRoute)) {
     activeRoute = isStaffEquipmentOnly() ? "venueInventoryStaff" : "venueInventory";
   }
@@ -4464,6 +4720,8 @@ function setRoute(route) {
     programs: () => renderSimple("programs", L("programs"), state.programs),
     partnership: () => renderSimple("partnership", L("partnership"), state.partnership),
     media: () => renderSimple("media", L("media"), state.media),
+    requisitions: renderRequisitions,
+    staffHr: renderStaffHr,
     users: renderUsers,
     access: renderAccess,
     settings: renderSettings,
@@ -6493,12 +6751,213 @@ function renderReports() {
     </div>`);
 }
 
+function requisitionsModuleTabs() {
+  const tabs = [
+    ["overview", L("reqTabOverview")],
+    ["new", L("reqTabNew")],
+    ["received", L("reqTabReceived")],
+    ["review", L("reqTabReview")],
+    ["pastoral", L("reqTabPastoral")],
+    ["approved", L("reqTabApproved")],
+    ["rejected", L("reqTabRejected")],
+    ["released", L("reqTabReleased")],
+    ["history", L("reqTabHistory")]
+  ];
+  return `<div class="tab-strip module-tab-strip requisitions-module-tabs mb-3">${tabs.map(([key, label]) =>
+    `<button type="button" class="${requisitionsPageState.tab === key ? "active" : ""}" data-requisition-tab="${key}">${label}</button>`
+  ).join("")}</div>`;
+}
+
+function requisitionActionLabel(action) {
+  const map = {
+    submit: L("reqSubmit"), review: L("reqReview"), forwardPastor: L("reqForwardPastor"),
+    approve: L("reqApprove"), reject: L("reqReject"), releaseResources: L("reqReleaseResources"),
+    markPurchased: L("reqMarkPurchased"), registerInventory: L("reqRegisterInventory"), close: L("reqClose"),
+    edit: L("edit"), view: L("view")
+  };
+  return map[action] || action;
+}
+
+function requisitionActionButtons(record) {
+  const lib = window.CERequisitions;
+  if (!lib) return "";
+  const actions = lib.availableActions(activeUser, record).filter((a) => a !== "view");
+  const buttons = [["view", "requisition", record.id, L("view")], ...actions.map((a) => [a, "requisition", record.id, requisitionActionLabel(a)])];
+  return actionButtons(buttons);
+}
+
+function renderRequisitions() {
+  const lib = window.CERequisitions;
+  if (!lib?.resolveAccess(activeUser).can_view) return renderAccessDenied();
+  const access = lib.resolveAccess(activeUser);
+  const scoped = lib.scopeFilter(state.requisitions || [], activeUser, access);
+  const stats = lib.computeStats(scoped);
+  let tabContent = "";
+
+  if (requisitionsPageState.tab === "overview") {
+    tabContent = `
+      <div class="row g-3 mb-4">
+        ${metric("bi-hourglass-split", L("reqPending"), stats.pending)}
+        ${metric("bi-search", L("reqInReview"), stats.review)}
+        ${metric("bi-person-badge", L("reqAwaitingPastor"), stats.pastoral)}
+        ${metric("bi-check-circle", L("reqApprovedMonth"), stats.approvedMonth)}
+        ${metric("bi-x-circle", L("reqRejected"), stats.rejected)}
+        ${metric("bi-cash-stack", L("reqReleased"), stats.released)}
+        ${metric("bi-graph-up", L("reqApprovedValue"), money(stats.approvedTotal))}
+        ${metric("bi-clock-history", L("reqPendingValue"), money(stats.pendingValue))}
+      </div>
+      ${dataTable([L("reqNumber"), L("reqTitle"), L("reqDepartment"), L("reqType"), L("reqEstimated"), L("status"), L("actions")],
+        scoped.slice(0, 8).map((r) => [r.request_number, r.title, r.department_name, r.requisition_type, money(r.estimated_amount), badge(r.status), requisitionActionButtons(r)]))}`;
+  } else if (requisitionsPageState.tab === "new") {
+    tabContent = access.can_create ? `
+      <div class="d-flex justify-content-end mb-3">
+        <button type="button" class="btn btn-ce-gold btn-touch" data-open-form="requisition">${L("add")} ${L("requisitions")}</button>
+      </div>
+      <p class="text-secondary">${L("reqTabNew")} — ${L("requisitionsSubtitle")}</p>`
+      : `<div class="finance-privacy-banner"><i class="bi bi-shield-lock"></i><span>${L("accessDeniedText")}</span></div>`;
+  } else {
+    const filtered = lib.filterByTab(scoped, requisitionsPageState.tab);
+    tabContent = dataTable(
+      [L("reqNumber"), L("reqTitle"), L("reqDepartment"), L("reqUrgency"), L("reqNeededBy"), L("reqEstimated"), L("status"), L("actions")],
+      filtered.map((r) => [r.request_number, r.title, r.department_name, r.urgency, r.needed_by_date || "-", money(r.estimated_amount), badge(r.status), requisitionActionButtons(r)])
+    );
+  }
+
+  setPageContent(`
+    ${sectionHeader(L("requisitions"), L("requisitionsSubtitle"), "requisition", "bi-clipboard-check")}
+    <article class="panel glass-panel mb-4">
+      ${requisitionsModuleTabs()}
+      ${tabContent}
+    </article>
+  `);
+}
+
+function staffHrModuleTabs() {
+  const tabs = [
+    ["overview", L("staffTabOverview")],
+    ["staff", L("staffTabStaff")],
+    ["departments", L("staffTabDepartments")],
+    ["roles", L("staffTabRoles")],
+    ["salaries", L("staffTabSalaries")],
+    ["performance", L("staffTabPerformance")],
+    ["attendance", L("staffTabAttendance")],
+    ["equipment", L("staffTabEquipment")],
+    ["documents", L("staffTabDocuments")],
+    ["reports", L("staffTabReports")]
+  ];
+  return `<div class="tab-strip module-tab-strip staff-hr-module-tabs mb-3">${tabs.map(([key, label]) =>
+    `<button type="button" class="${staffHrPageState.tab === key ? "active" : ""}" data-staff-tab="${key}">${label}</button>`
+  ).join("")}</div>`;
+}
+
+function renderStaffHr() {
+  const lib = window.CEStaffHr;
+  if (!lib?.resolveAccess(activeUser).can_view) return renderAccessDenied();
+  const access = lib.resolveAccess(activeUser);
+  const staffList = lib.scopeFilterStaff(state.staffProfiles || [], activeUser, access);
+  const salaries = lib.filterSalaries(state.staffSalaries || [], state.staffProfiles || [], activeUser);
+  const equipment = state.venueInventory?.staffEquipment || [];
+  const stats = lib.computeStats(staffList, salaries, state.staffPerformance, equipment);
+  const canSalary = lib.canViewSalary(activeUser);
+  let tabContent = "";
+
+  if (staffHrPageState.tab === "overview") {
+    tabContent = `
+      <div class="row g-3 mb-4">
+        ${metric("bi-people", L("staffTotal"), stats.total)}
+        ${metric("bi-person-check", L("staffActive"), stats.active)}
+        ${metric("bi-heart", L("staffVolunteers"), stats.volunteers)}
+        ${metric("bi-wallet2", L("staffWithSalary"), stats.withPay)}
+        ${metric("bi-clipboard-data", L("staffPendingEval"), stats.pendingEval)}
+        ${metric("bi-cash", L("staffPendingPay"), stats.pendingPay)}
+        ${metric("bi-laptop", L("staffAssignedEq"), stats.assignedEq)}
+        ${metric("bi-gift", L("staffBirthdays"), stats.birthdays)}
+      </div>`;
+  } else if (staffHrPageState.tab === "staff") {
+    tabContent = `${access.can_create ? `<div class="d-flex justify-content-end mb-3"><button type="button" class="btn btn-ce-gold btn-touch" data-open-form="staffProfile">${L("add")}</button></div>` : ""}
+      ${dataTable([L("staffFullName"), L("staffRoleTitle"), L("church"), L("reqDepartment"), L("staffEmploymentType"), L("status"), L("actions")],
+        staffList.map((s) => [s.full_name, s.role_title, churchName(s.church_id), s.department_name, s.employment_type, badge(s.status),
+          actionButtons([["view", "staffProfile", s.id, L("viewProfile")], ["edit", "staffProfile", s.id, L("edit")]])]))}`;
+  } else if (staffHrPageState.tab === "departments") {
+    tabContent = dataTable([L("name"), L("church"), L("staffSupervisor"), L("actions")],
+      (state.departments || []).map((d) => [d.name, churchName(d.church_id), d.lead_name || "-", "-"]));
+  } else if (staffHrPageState.tab === "roles") {
+    const roles = [...new Set(staffList.map((s) => s.role_title))];
+    tabContent = dataTable([L("staffRoleTitle"), L("staffTotal")], roles.map((r) => [r, staffList.filter((s) => s.role_title === r).length]));
+  } else if (staffHrPageState.tab === "salaries") {
+    tabContent = `${!canSalary ? `<div class="finance-privacy-banner mb-3"><i class="bi bi-shield-lock"></i><span>${L("staffPrivacyBanner")}</span></div>` : ""}
+      ${dataTable([L("staffFullName"), L("date"), L("staffSalary"), L("amount"), L("status"), L("actions")],
+        salaries.map((sal) => {
+          const staff = staffList.find((s) => s.id === sal.staff_id) || state.staffProfiles.find((s) => s.id === sal.staff_id);
+          return [staff?.full_name || "-", sal.month, canSalary ? money(sal.net_amount) : L("staffSalaryHidden"), money(canSalary ? sal.net_amount : 0), badge(sal.payment_status),
+            actionButtons([["view", "staffSalary", sal.id, L("view")]])];
+        }))}`;
+  } else if (staffHrPageState.tab === "performance") {
+    tabContent = dataTable([L("staffFullName"), L("date"), L("progress"), L("status"), L("actions")],
+      (state.staffPerformance || []).filter((p) => staffList.some((s) => s.id === p.staff_id)).map((p) => {
+        const staff = staffList.find((s) => s.id === p.staff_id);
+        return [staff?.full_name || "-", p.evaluation_period, p.overall_score ? `${p.overall_score}/10` : "-", badge(p.evaluated_at ? L("verified") : L("pendingVerification")),
+          actionButtons([["view", "staffPerformance", p.id, L("view")]])];
+      }));
+  } else if (staffHrPageState.tab === "attendance") {
+    tabContent = dataTable([L("staffFullName"), L("date"), L("church"), L("status"), L("notes")],
+      (state.staffAttendance || []).filter((a) => staffList.some((s) => s.id === a.staff_id)).map((a) => {
+        const staff = staffList.find((s) => s.id === a.staff_id);
+        return [staff?.full_name || "-", a.date, churchName(a.church_id), badge(a.attendance_status), a.notes || "-"];
+      }));
+  } else if (staffHrPageState.tab === "equipment") {
+    const rows = staffList.flatMap((s) => {
+      const items = lib.getStaffEquipment(s, state.venueInventory);
+      return items.length ? items.map((eq) => [s.full_name, eq.dispositivo, eq.modelo, eq.departamento, badge(eq.status)]) : [[s.full_name, "-", "-", s.department_name, badge(L("empty"))]];
+    });
+    tabContent = dataTable([L("staffFullName"), L("device"), L("model"), L("reqDepartment"), L("status")], rows);
+  } else if (staffHrPageState.tab === "documents") {
+    tabContent = dataTable([L("staffFullName"), L("category"), L("date"), L("notes")],
+      (state.staffDocuments || []).filter((d) => staffList.some((s) => s.id === d.staff_id)).map((d) => {
+        const staff = staffList.find((s) => s.id === d.staff_id);
+        return [staff?.full_name || "-", d.document_type, d.expiry_date || "-", d.notes || "-"];
+      }));
+  } else {
+    tabContent = `<div class="module-grid">${[
+      [L("staffTotal"), stats.total],
+      [L("staffActive"), stats.active],
+      [L("staffPendingPay"), stats.pendingPay],
+      [L("staffBirthdays"), stats.birthdays]
+    ].map(([label, val]) => `<article class="record-card data-card"><span class="eyebrow">${L("staffTabReports")}</span><h3>${label}</h3><p class="mb-0">${val}</p></article>`).join("")}</div>`;
+  }
+
+  setPageContent(`
+    ${sectionHeader(L("staffHr"), L("staffHrSubtitle"), "staffProfile", "bi-people-fill")}
+    <article class="panel glass-panel mb-4">
+      ${staffHrModuleTabs()}
+      ${tabContent}
+    </article>
+  `);
+}
+
 function renderUsers() {
+  if (!canEnterRoute("users")) return renderAccessDenied();
   setPageContent(`${sectionHeader(L("usersRoles"), L("accessControl"), "user", "bi-person-lock")}<article class="panel glass-panel">${dataTable([L("name"), L("email"), L("Role"), L("church"), L("Permissions"), L("actions")], state.users.map((u) => [u.name, u.email, u.role, churchName(u.church_id), u.department_permissions.join(", "), actionButtons([["view", "user", u.id, L("view")], ["edit", "user", u.id, L("edit")]])]))}</article>`);
 }
 
 function renderAccess() {
-  setPageContent(`${sectionHeader(L("accessControl"), lang === "pt" ? "Base de acesso por igreja e departamento." : "Role-based foundations by church and department.", null, "bi-shield-lock")}<article class="panel glass-panel">${dataTable([L("Role"), L("Scope"), L("Permissions")], state.users.map((u) => [u.role, u.can_view_all_churches ? L("all") : churchName(u.church_id), u.department_permissions.join(", ")]))}</article>`);
+  if (!canEnterRoute("access")) return renderAccessDenied();
+  const moduleLabels = {
+    dashboard: "dashboard", churches: "churches", members: "members", firstTimers: "firstTimers",
+    followUp: "followUp", reports: "reports", counseling: "counseling", foundation: "foundationSchool",
+    finance: "finance", fevo: "fevo", venueInventory: "venueInventoryShort", sacraments: "sacraments",
+    prisonMinistry: "prisonMinistry", ministryMaterials: "ministryMaterials", programs: "programs",
+    partnership: "partnership", media: "media", cell: "cellMinistry", requisitions: "requisitions",
+    staffHr: "staffHr", usersRoles: "usersRoles", accessControl: "accessControl", settings: "settings", auditLogs: "auditLogs"
+  };
+  const modules = window.CEAccessControl?.ALL_MODULES || [];
+  const rows = modules.map((mod) => {
+    const access = window.CEAccessControl.resolveModuleAccess(activeUser, mod);
+    return [L(moduleLabels[mod] || mod), access.can_view ? L("yes") : L("no"), access.can_create ? L("yes") : L("no"), access.can_edit ? L("yes") : L("no"), access.can_approve ? L("yes") : L("no"), access.scope || "-"];
+  });
+  setPageContent(`${sectionHeader(L("accessControl"), L("staffHrSubtitle"), null, "bi-shield-lock")}
+    <article class="panel glass-panel mb-3">${dataTable([L("Role"), L("Scope"), L("Permissions")], state.users.map((u) => [u.role, u.can_view_all_churches ? L("all") : churchName(u.church_id), u.department_permissions.join(", ")]))}</article>
+    <article class="panel glass-panel">${dataTable([L("accessMatrixModule"), L("accessMatrixView"), L("accessMatrixCreate"), L("accessMatrixEdit"), L("accessMatrixApprove"), L("accessMatrixScope")], rows)}</article>`);
 }
 
 function renderSettings() {
@@ -6506,6 +6965,7 @@ function renderSettings() {
 }
 
 function renderAudit() {
+  if (!canEnterRoute("audit")) return renderAccessDenied();
   setPageContent(`${sectionHeader(L("auditLogs"), lang === "pt" ? "Histórico operacional das alterações neste protótipo." : "Operational history for changes in this prototype.", null, "bi-journal-check")}<article class="panel glass-panel">${dataTable([L("date"), L("Actor"), L("church"), L("Action")], state.auditLogs.slice().reverse().map((log) => [log.date, log.actor, churchName(log.church_id), log.action]))}</article>`);
 }
 
@@ -6596,7 +7056,9 @@ const formSchemas = {
   venueMaintenance: [["item", "item"], ["categoria", "category", "select", inventoryCategories], ["quantidade", "quantity", "number"], ["problema_reportado", "reportedProblem", "textarea"], ["estado_antes", "conditionBefore", "select", inventoryStatuses], ["estado_depois", "conditionAfter", "select", inventoryStatuses], ["custo_da_reparacao", "repairCost", "number"], ["tecnico_ou_responsavel", "technicianResponsible"], ["data_de_envio", "sentDate", "date"], ["data_de_retorno", "returnedDate", "date"], ["church_id", "church", "church"], ["estado", "status", "select", repairStatuses], ["observacoes", "observations", "textarea"]],
   venueMovement: [["item", "item"], ["quantidade", "quantity", "number"], ["origem", "originPlace"], ["destino", "destination"], ["departamento_solicitante", "requestingDepartment"], ["pessoa_responsavel", "responsiblePerson"], ["data_de_saida", "exitDate", "date"], ["data_prevista_de_retorno", "expectedReturnDate", "date"], ["data_real_de_retorno", "actualReturnDate", "date"], ["estado_ao_sair", "conditionOut", "select", inventoryStatuses], ["estado_ao_voltar", "conditionBack", "select", inventoryStatuses], ["aprovado_por", "approvedBy"], ["church_id", "church", "church"], ["estado", "status", "select", movementStatuses], ["observacoes", "observations", "textarea"]],
   venueSpace: [["nome_do_espaco", "spaceName"], ["localizacao", "location"], ["church_id", "church", "church"], ["capacidade", "capacity", "number"], ["tipo", "spaceType", "select", venueTypes], ["equipamentos_fixos", "fixedEquipment", "textarea"], ["responsavel", "responsible"], ["estado", "status", "select", venueStatuses], ["observacoes", "observations", "textarea"]],
-  venueChecklist: [["data_do_culto", "serviceDate", "date"], ["church_id", "church", "church"], ["espaco", "space"], ["tipo_de_culto_ou_evento", "serviceEventType"], ["som_verificado", "soundChecked", "checkbox"], ["luzes_verificadas", "lightsChecked", "checkbox"], ["ac_verificado", "acChecked", "checkbox"], ["projector_verificado", "projectorChecked", "checkbox"], ["cadeiras_organizadas", "chairsOrganized", "checkbox"], ["pulpito_pronto", "pulpitReady", "checkbox"], ["cameras_prontas", "camerasReady", "checkbox"], ["microfones_prontos", "microphonesReady", "checkbox"], ["limpeza_feita", "cleaningDone", "checkbox"], ["responsavel", "responsible"], ["estado", "status", "select", checklistStatuses], ["observacoes", "observations", "textarea"]]
+  venueChecklist: [["data_do_culto", "serviceDate", "date"], ["church_id", "church", "church"], ["espaco", "space"], ["tipo_de_culto_ou_evento", "serviceEventType"], ["som_verificado", "soundChecked", "checkbox"], ["luzes_verificadas", "lightsChecked", "checkbox"], ["ac_verificado", "acChecked", "checkbox"], ["projector_verificado", "projectorChecked", "checkbox"], ["cadeiras_organizadas", "chairsOrganized", "checkbox"], ["pulpito_pronto", "pulpitReady", "checkbox"], ["cameras_prontas", "camerasReady", "checkbox"], ["microfones_prontos", "microphonesReady", "checkbox"], ["limpeza_feita", "cleaningDone", "checkbox"], ["responsavel", "responsible"], ["estado", "status", "select", checklistStatuses], ["observacoes", "observations", "textarea"]],
+  requisition: [["title", "reqTitle"], ["requisition_type", "reqType", "select", (window.CERequisitions?.TYPES || [])], ["department_name", "reqDepartment"], ["church_id", "church", "church"], ["description", "reqDescription", "textarea"], ["justification", "reqJustification", "textarea"], ["estimated_amount", "reqEstimated", "number"], ["urgency", "reqUrgency", "select", (window.CERequisitions?.URGENCY || [])], ["needed_by_date", "reqNeededBy", "date"], ["supplier_or_vendor", "reqSupplier"], ["quotation_number", "reqQuotation"]],
+  staffProfile: [["full_name", "staffFullName"], ["title", "treatment", "select", treatmentOptions], ["gender", "gender", "select", ["Feminino", "Masculino"]], ["phone", "phone"], ["whatsapp", "whatsapp"], ["email", "email", "email"], ["church_id", "church", "church"], ["department_name", "reqDepartment"], ["role_title", "staffRoleTitle"], ["supervisor_name", "staffSupervisor"], ["start_date", "staffStartDate", "date"], ["employment_type", "staffEmploymentType", "select", (window.CEStaffHr?.EMPLOYMENT_TYPES || [])], ["salary_or_allowance", "staffSalary", "number"], ["payment_frequency", "staffPaymentFreq", "select", (window.CEStaffHr?.PAYMENT_FREQUENCIES || [])], ["payment_method", "method", "select", paymentMethods], ["status", "status", "select", (window.CEStaffHr?.STAFF_STATUSES || [])], ["notes", "notes", "textarea"]]
 };
 
 function getCollection(type) {
@@ -6607,6 +7069,10 @@ function getCollection(type) {
   if (type === "church") return state.churches;
   if (type === "cell") return state.cells;
   if (type === "user") return state.users;
+  if (type === "requisition") return state.requisitions;
+  if (type === "staffProfile") return state.staffProfiles;
+  if (type === "staffSalary") return state.staffSalaries;
+  if (type === "staffPerformance") return state.staffPerformance;
   if (type === "baptism") return state.sacraments.baptisms;
   if (type === "marriage") return state.sacraments.marriages;
   if (type === "baby") return state.sacraments.babies;
@@ -6667,7 +7133,7 @@ function openForm(type, id = null) {
 }
 
 function formTitle(type) {
-  const map = { firstTimer: L("firstTimers"), member: L("members"), foundationStudent: L("foundationSchool"), finance: L("finance"), church: L("churches"), cell: L("cellLeadership"), user: L("usersRoles"), baptism: L("baptismTab"), marriage: L("marriageTab"), baby: L("babyTab"), fevoConfig: L("weeklyConfiguration"), fevoReport: L("weeklyReports"), fevoNoReport: L("groupsWithoutReport"), fevoWeeklyReport: L("weeklyReports"), prisonLocation: L("prisonsLocations"), prisonService: L("prisonServices"), prisonFoundation: L("foundationSchool"), prisonAgenda: L("weeklyAgenda"), prisonReport: L("ministryReports"), materialCatalogue: L("catalogue"), materialSale: L("sales"), materialDistribution: L("churchDistribution"), materialStock: L("weeklyStock"), materialFund: L("freeDistributionFunds"), materialReport: L("ministryReports"), alecRegistration: L("alecRegistration"), alecScore: L("alecScores"), churchReport: L("churchReports"), cellReport: L("cellReports"), cellLeader: L("cellLeaders"), cellEvaluation: L("cellEvaluation"), finalValidation: L("finalValidation"), inventoryItem: L("generalInventory"), venueAcquisition: L("newAcquisitions"), venueStaffEquipment: L("staffEquipment"), venueMaintenance: L("maintenanceRepairs"), venueMovement: L("loansMovements"), venueSpace: L("venuesRooms"), venueChecklist: L("serviceChecklist") };
+  const map = { firstTimer: L("firstTimers"), member: L("members"), foundationStudent: L("foundationSchool"), finance: L("finance"), church: L("churches"), cell: L("cellLeadership"), user: L("usersRoles"), requisition: L("requisitions"), staffProfile: L("staffHr"), baptism: L("baptismTab"), marriage: L("marriageTab"), baby: L("babyTab"), fevoConfig: L("weeklyConfiguration"), fevoReport: L("weeklyReports"), fevoNoReport: L("groupsWithoutReport"), fevoWeeklyReport: L("weeklyReports"), prisonLocation: L("prisonsLocations"), prisonService: L("prisonServices"), prisonFoundation: L("foundationSchool"), prisonAgenda: L("weeklyAgenda"), prisonReport: L("ministryReports"), materialCatalogue: L("catalogue"), materialSale: L("sales"), materialDistribution: L("churchDistribution"), materialStock: L("weeklyStock"), materialFund: L("freeDistributionFunds"), materialReport: L("ministryReports"), alecRegistration: L("alecRegistration"), alecScore: L("alecScores"), churchReport: L("churchReports"), cellReport: L("cellReports"), cellLeader: L("cellLeaders"), cellEvaluation: L("cellEvaluation"), finalValidation: L("finalValidation"), inventoryItem: L("generalInventory"), venueAcquisition: L("newAcquisitions"), venueStaffEquipment: L("staffEquipment"), venueMaintenance: L("maintenanceRepairs"), venueMovement: L("loansMovements"), venueSpace: L("venuesRooms"), venueChecklist: L("serviceChecklist") };
   return map[type] || type;
 }
 
@@ -6748,6 +7214,64 @@ function fieldControl([name, labelKey, inputType = "text", options = []], record
 function submitForm(form) {
   const schema = modalType === "finance" ? getFinanceSchema(modalMode === "edit" ? "edit" : "create") : formSchemas[modalType];
   const data = Object.fromEntries(new FormData(form).entries());
+  if (modalType === "requisition") {
+    schema.forEach(([name, , inputType]) => {
+      if (inputType === "checkbox") data[name] = new FormData(form).has(name);
+    });
+    enrichRecordChurchFields(data);
+    const dept = (state.departments || []).find((d) => d.name === data.department_name);
+    const now = new Date().toISOString();
+    if (modalMode === "edit") {
+      const index = state.requisitions.findIndex((item) => item.id === modalRecordId);
+      state.requisitions[index] = { ...state.requisitions[index], ...data, updated_at: now };
+    } else {
+      state.requisitions = state.requisitions || [];
+      state.requisitions.push({
+        id: `req-${Date.now()}`,
+        request_number: window.CERequisitions?.nextRequestNumber(state.requisitions) || `REQ-${Date.now()}`,
+        requested_by_user_id: activeUser.id,
+        requested_by_name: activeUser.name,
+        department_id: dept?.id || "",
+        church_name: churchName(data.church_id || activeUser.church_id),
+        currency: "MZN",
+        attachments: [],
+        status: "Rascunho",
+        created_at: now,
+        updated_at: now,
+        reviewed_by: "", reviewed_at: "", review_notes: "", sent_to_main_pastor_at: "",
+        approved_by: "", approved_at: "", approval_notes: "",
+        rejected_by: "", rejected_at: "", rejection_reason: "",
+        resources_released_by: "", resources_released_at: "", amount_released: 0,
+        finance_record_id: "", inventory_item_id: "",
+        ...data,
+        church_id: data.church_id || activeUser.church_id
+      });
+    }
+    saveState(`${modalMode} requisition`);
+    bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide();
+    if (activeRoute === "requisitions") renderRequisitions();
+    return;
+  }
+  if (modalType === "staffProfile") {
+    schema.forEach(([name, , inputType]) => {
+      if (inputType === "checkbox") data[name] = new FormData(form).has(name);
+    });
+    enrichRecordChurchFields(data);
+    data.church_name = churchName(data.church_id);
+    data.salary_or_allowance = Number(data.salary_or_allowance || 0);
+    const today = new Date().toISOString().slice(0, 10);
+    if (modalMode === "edit") {
+      const index = state.staffProfiles.findIndex((item) => item.id === modalRecordId);
+      state.staffProfiles[index] = { ...state.staffProfiles[index], ...data, updated_at: today };
+    } else {
+      state.staffProfiles = state.staffProfiles || [];
+      state.staffProfiles.push({ id: `staff-${Date.now()}`, user_id: "", created_at: today, updated_at: today, bank_or_mobile_details: "", date_of_birth: "", ...data });
+    }
+    saveState(`${modalMode} staffProfile`);
+    bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide();
+    if (activeRoute === "staffHr") renderStaffHr();
+    return;
+  }
   schema.forEach(([name, , inputType]) => {
     if (inputType === "checkbox") data[name] = new FormData(form).has(name);
   });
@@ -6886,6 +7410,21 @@ function submitFollowup(form) {
 }
 
 function quickAction(action, type, id) {
+  if (type === "requisition" && window.CERequisitions) {
+    const record = (state.requisitions || []).find((r) => r.id === id);
+    if (!record) return;
+    if (action === "view") {
+      alert(`${record.request_number}\n${record.title}\n${record.status}\n\n${record.description || ""}`);
+      return;
+    }
+    if (action === "edit") return openForm("requisition", id);
+    const result = window.CERequisitions.applyWorkflowAction(state, activeUser, id, action, {});
+    if (result.ok) {
+      saveState(`${action} requisition ${record.request_number}`);
+      return setRoute(activeRoute);
+    }
+    return;
+  }
   if (action === "viewGroupCells") {
     cellRegistryFilter.groupId = id;
     return setRoute("cellCellsList");
@@ -7007,6 +7546,8 @@ document.addEventListener("click", (event) => {
   }
   const routeButton = event.target.closest("[data-route]");
   if (routeButton) return setRoute(routeButton.dataset.route);
+  const lockedRoute = event.target.closest("[data-locked-route]");
+  if (lockedRoute) return;
   const scrollButton = event.target.closest("[data-scroll]");
   if (scrollButton) {
     scrollButton.closest(".department-tabs, .tab-strip")?.querySelectorAll("button").forEach((button) => button.classList.toggle("active", button === scrollButton));
@@ -7101,6 +7642,18 @@ document.addEventListener("click", (event) => {
   if (financeTabBtn) {
     financePageState.tab = financeTabBtn.dataset.financeTab || "overview";
     if (activeRoute === "finance") renderFinance();
+    return;
+  }
+  const requisitionTabBtn = event.target.closest("[data-requisition-tab]");
+  if (requisitionTabBtn) {
+    requisitionsPageState.tab = requisitionTabBtn.dataset.requisitionTab || "overview";
+    if (activeRoute === "requisitions") renderRequisitions();
+    return;
+  }
+  const staffTabBtn = event.target.closest("[data-staff-tab]");
+  if (staffTabBtn) {
+    staffHrPageState.tab = staffTabBtn.dataset.staffTab || "overview";
+    if (activeRoute === "staffHr") renderStaffHr();
     return;
   }
   const financeChartModeBtn = event.target.closest("[data-finance-chart-mode]");
@@ -7329,6 +7882,9 @@ byId("content")?.addEventListener("scroll", updateBackToTopVisibility, { passive
 byId("backToTopBtn")?.addEventListener("click", () => scrollContentTo("content"));
 
 function enterDashboard() {
+  const email = (byId("loginEmail")?.value || "").trim().toLowerCase();
+  const matchedUser = state.users.find((user) => String(user.email || "").trim().toLowerCase() === email);
+  if (matchedUser) activeUser = matchedUser;
   byId("loginView")?.classList.add("d-none");
   byId("appView")?.classList.remove("d-none");
   renderShell();

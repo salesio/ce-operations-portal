@@ -4596,3 +4596,43 @@ section.ops-hero {
     padding-bottom: 0.35rem;
   }
 }
+
+/* RBAC — locked sidebar modules */
+.nav-item-btn.is-locked {
+  opacity: 0.45;
+  cursor: not-allowed;
+  position: relative;
+}
+
+.nav-item-btn.is-locked:hover,
+.nav-item-btn.is-locked:focus {
+  background: transparent;
+  color: inherit;
+}
+
+.nav-item-btn.is-locked .nav-lock-icon {
+  margin-left: auto;
+  font-size: 0.72rem;
+  color: var(--ce-gold, #d4a853);
+  opacity: 0.9;
+}
+
+.nav-item-btn.is-locked span {
+  flex: 1;
+}
+
+.requisitions-module-tabs,
+.staff-hr-module-tabs {
+  flex-wrap: wrap;
+}
+
+.access-denied-panel {
+  max-width: 560px;
+  margin: 2rem auto;
+}
+
+.access-denied-icon {
+  font-size: 3rem;
+  color: var(--ce-cyan, #5eead4);
+  opacity: 0.85;
+}

@@ -394,6 +394,65 @@ create policy "payment_proofs_staff_update"
 */
 
 -- ---------------------------------------------------------------------------
+-- Requisitions & Staff HR (future backend parity)
+-- ---------------------------------------------------------------------------
+/*
+create table if not exists public.departments (
+  id text primary key,
+  church_id text references public.churches(id),
+  name text not null,
+  lead_name text,
+  created_at timestamptz default now()
+);
+
+create table if not exists public.requisitions (
+  id text primary key,
+  request_number text unique not null,
+  requested_by_user_id uuid references auth.users(id),
+  department_id text references public.departments(id),
+  church_id text references public.churches(id),
+  requisition_type text not null,
+  title text not null,
+  description text,
+  justification text,
+  estimated_amount numeric(14,2) default 0,
+  currency text default 'MZN',
+  urgency text,
+  needed_by_date date,
+  status text not null,
+  finance_record_id text,
+  inventory_item_id text,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+create table if not exists public.staff_profiles (
+  id text primary key,
+  user_id uuid references auth.users(id),
+  full_name text not null,
+  church_id text references public.churches(id),
+  department_id text references public.departments(id),
+  role_title text,
+  employment_type text,
+  salary_or_allowance numeric(14,2),
+  payment_frequency text,
+  status text default 'Activo',
+  created_at timestamptz default now()
+);
+
+create table if not exists public.staff_salaries (
+  id text primary key,
+  staff_id text references public.staff_profiles(id),
+  month text not null,
+  base_amount numeric(14,2),
+  bonus numeric(14,2) default 0,
+  deductions numeric(14,2) default 0,
+  net_amount numeric(14,2),
+  payment_status text default 'Pendente'
+);
+*/
+
+-- ---------------------------------------------------------------------------
 -- Seed churches (matches dashboard mock IDs)
 -- ---------------------------------------------------------------------------
 insert into public.churches (id, church_name, public_name, province, city, type, is_active)
