@@ -138,6 +138,12 @@ const TEXT = {
     staffTabBirthdays: "Aniversários",
     dateOfBirth: "Data de Nascimento",
     staffUpcomingBirthdays: "Próximos Aniversários",
+    staffBirthdaysToday: "Aniversariantes de Hoje",
+    staffPastBirthdaysThisMonth: "Aniversários Já Passados Este Mês",
+    staffActiveBirthdays: "Aniversários Staff Activo",
+    staffMissingDateOfBirth: "Data de Nascimento em Falta",
+    staffBirthdayDayMonth: "Dia / Mês",
+    staffClickToView: "Clique para ver",
     staffAge: "Idade",
     staffDaysUntilBirthday: "Dias até ao Aniversário",
     staffBirthdayLabel: "Aniversário",
@@ -663,6 +669,12 @@ const TEXT = {
     staffTabBirthdays: "Birthdays",
     dateOfBirth: "Date of Birth",
     staffUpcomingBirthdays: "Upcoming Birthdays",
+    staffBirthdaysToday: "Birthdays Today",
+    staffPastBirthdaysThisMonth: "Past Birthdays This Month",
+    staffActiveBirthdays: "Active Staff Birthdays",
+    staffMissingDateOfBirth: "Missing Date of Birth",
+    staffBirthdayDayMonth: "Day / Month",
+    staffClickToView: "Click to view",
     staffAge: "Age",
     staffDaysUntilBirthday: "Days Until Birthday",
     staffBirthdayLabel: "Birthday",
@@ -2768,7 +2780,7 @@ const requisitionsPageState = { tab: "overview" };
 const staffHrPageState = {
   tab: "overview",
   selectedStaffId: "",
-  birthdayFilters: { month: "", churchId: "", department: "", status: "" }
+  birthdayFilters: { month: "", churchId: "", department: "", status: "", search: "" }
 };
 
 function L(key) {
@@ -4967,9 +4979,11 @@ function filterBar(options = {}) {
 
 function metric(icon, label, value, hint = "", options = {}) {
   if (typeof SummaryCard === "function") return SummaryCard(icon, label, value, hint, options);
+  const clickable = options.clickable ? " summary-card--clickable" : "";
+  const clickAttrs = options.clickAction ? ` data-staff-metric="${options.clickAction}" role="button" tabindex="0" aria-label="${label}"` : "";
   return `
     <div class="col-sm-6 col-xl-4 col-xxl-3">
-      <article class="metric-card summary-card light-surface">
+      <article class="metric-card summary-card light-surface${clickable}"${clickAttrs}>
         <div class="metric-icon summary-card-icon"><i class="bi ${icon}"></i></div>
         <div class="summary-card-body">
           <span class="summary-card-label metric-label chart-label label">${label}</span>
@@ -6999,12 +7013,17 @@ function openStaffProfileView(id) {
   const canBirthday = lib.canViewBirthday(activeUser, enriched, access);
   const canSalary = lib.canViewSalary(activeUser);
   const sections = lib.staffProfileSections(canSalary);
-  const birthdayBlock = canBirthday && enriched.date_of_birth ? `
+  const birthdayBlock = canBirthday ? (enriched.date_of_birth ? `
     <div class="col-12 staff-birthday-panel light-surface">
       <p class="mb-1"><strong>${L("dateOfBirth")}:</strong> ${enriched.date_of_birth}</p>
       <p class="mb-1"><strong>${L("staffBirthdayLabel")}:</strong> ${lib.formatBirthdayDisplay(enriched.date_of_birth, lang)}</p>
-      ${enriched.age != null ? `<p class="mb-0"><strong>${L("staffAge")}:</strong> ${enriched.age}</p>` : ""}
-    </div>` : "";
+      <p class="mb-1"><strong>${L("staffBirthdayDayMonth")}:</strong> ${lib.formatBirthdayDayMonth(enriched.date_of_birth, lang)}</p>
+      ${enriched.age != null ? `<p class="mb-1"><strong>${L("staffAge")}:</strong> ${enriched.age}</p>` : ""}
+      ${enriched.days_until_birthday != null ? `<p class="mb-0"><strong>${L("staffDaysUntilBirthday")}:</strong> ${enriched.days_until_birthday}</p>` : ""}
+    </div>` : `
+    <div class="col-12 staff-birthday-panel staff-birthday-panel--warning light-surface">
+      <p class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>${L("staffMissingDateOfBirth")}</p>
+    </div>`) : "";
   const detailSections = sections.map((section) => {
     const rows = section.fields.map(([name, labelKey]) =>
       staffProfileDetailRow(L(labelKey), staffProfileFieldValue(name, enriched, lib, access))
@@ -7021,13 +7040,137 @@ function openStaffProfileView(id) {
   bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
 }
 
+function staffVisibleBirthdays(staffList, lib, access) {
+  return lib.enrichStaffList(staffList).filter((staff) =>
+    lib.hasDateOfBirth(staff) && lib.canViewBirthday(activeUser, staff, access)
+  );
+}
+
+function staffBirthdayActions(staff, canEdit = false) {
+  const actions = [
+    ["view", "staffProfile", staff.id, L("viewProfile")],
+    ["staffMessage", "staffProfile", staff.id, L("staffSendMessage")]
+  ];
+  if (canEdit) actions.push(["edit", "staffProfile", staff.id, L("edit")]);
+  return actionButtons(actions);
+}
+
+function staffBirthdayEmptyState() {
+  if (typeof EmptyState === "function") {
+    return EmptyState({ icon: "bi-gift", title: L("empty"), description: "", compact: true, variant: "light" });
+  }
+  return `<p class="text-secondary mb-0">${L("empty")}</p>`;
+}
+
+function staffBirthdayCard(staff, lib, canEdit = false) {
+  return `
+    <article class="staff-birthday-card light-surface">
+      <div class="staff-birthday-card-head">
+        <div>
+          <h6 class="staff-birthday-card-name">${staff.full_name}</h6>
+          <p class="staff-birthday-card-role mb-0">${staff.role_title || "-"} · ${staff.department_name || "-"}</p>
+        </div>
+        ${staff.days_until_birthday === 0 ? `<span class="staff-birthday-today-badge">🎂</span>` : ""}
+      </div>
+      <div class="staff-birthday-card-meta">
+        <span><strong>${L("church")}:</strong> ${churchName(staff.church_id)}</span>
+        <span><strong>${L("dateOfBirth")}:</strong> ${staff.date_of_birth}</span>
+        <span><strong>${L("staffBirthdayDayMonth")}:</strong> ${lib.formatBirthdayDayMonth(staff.date_of_birth, lang)}</span>
+        <span><strong>${L("staffAge")}:</strong> ${staff.age ?? "-"}</span>
+        <span><strong>${L("staffDaysUntilBirthday")}:</strong> ${staff.days_until_birthday ?? "-"}</span>
+        <span><strong>${L("phone")}:</strong> ${staff.phone || staff.whatsapp || "-"}</span>
+        <span>${badge(staff.status)}</span>
+      </div>
+      <div class="staff-birthday-card-actions">${staffBirthdayActions(staff, canEdit)}</div>
+    </article>`;
+}
+
+function staffBirthdayTableRows(staffList, lib, canEdit = false) {
+  return staffList.map((staff) => [
+    staff.full_name,
+    staff.role_title || "-",
+    staff.department_name || "-",
+    churchName(staff.church_id),
+    staff.date_of_birth,
+    lib.formatBirthdayDayMonth(staff.date_of_birth, lang),
+    staff.age ?? "-",
+    staff.days_until_birthday ?? "-",
+    staff.phone || staff.whatsapp || "-",
+    badge(staff.status),
+    staffBirthdayActions(staff, canEdit)
+  ]);
+}
+
+function renderStaffBirthdayList(staffList, lib, { compact = false, canEdit = false } = {}) {
+  if (!staffList.length) return staffBirthdayEmptyState();
+  const headers = [
+    L("staffFullName"), L("staffRoleTitle"), L("reqDepartment"), L("church"),
+    L("dateOfBirth"), L("staffBirthdayDayMonth"), L("staffAge"), L("staffDaysUntilBirthday"),
+    L("phone"), L("status"), L("actions")
+  ];
+  const rows = staffBirthdayTableRows(staffList, lib, canEdit);
+  if (compact) {
+    return dataTable(
+      [L("staffFullName"), L("staffBirthdayLabel"), L("staffAge"), L("staffDaysUntilBirthday"), L("actions")],
+      staffList.map((staff) => [
+        staff.full_name,
+        lib.formatBirthdayDisplay(staff.date_of_birth, lang),
+        staff.age ?? "-",
+        staff.days_until_birthday ?? "-",
+        staffBirthdayActions(staff, false)
+      ])
+    );
+  }
+  return `
+    <div class="staff-birthday-cards-grid d-md-none">${staffList.map((staff) => staffBirthdayCard(staff, lib, canEdit)).join("")}</div>
+    <div class="d-none d-md-block">${dataTable(headers, rows)}</div>`;
+}
+
+function staffBirthdaySection(title, staffList, lib, { compact = false, canEdit = false } = {}) {
+  return `
+    <section class="staff-birthday-section light-surface">
+      <header class="staff-birthday-section-head">
+        <h5 class="mb-0">${title}</h5>
+        <span class="staff-birthday-section-count">${staffList.length}</span>
+      </header>
+      <div class="staff-birthday-section-body">${renderStaffBirthdayList(staffList, lib, { compact, canEdit })}</div>
+    </section>`;
+}
+
+function openStaffBirthdaysModal(section = "thisMonth") {
+  const lib = window.CEStaffHr;
+  const access = lib.resolveAccess(activeUser);
+  const visible = staffVisibleBirthdays(lib.scopeFilterStaff(state.staffProfiles || [], activeUser, access), lib, access);
+  let title = L("staffBirthdays");
+  let rows = lib.birthdaysThisMonth(visible);
+  if (section === "today") {
+    title = L("staffBirthdaysToday");
+    rows = lib.birthdaysToday(visible);
+  } else if (section === "upcoming") {
+    title = L("staffUpcomingBirthdays");
+    rows = lib.upcomingBirthdays(visible, 50, 365);
+  } else if (section === "past") {
+    title = L("staffPastBirthdaysThisMonth");
+    rows = lib.pastBirthdaysThisMonth(visible);
+  }
+  rows = lib.sortByUpcomingBirthday(rows);
+  byId("modalEyebrow").textContent = L("staffTabBirthdays");
+  byId("modalTitle").textContent = title;
+  byId("modalFields").innerHTML = `<div class="col-12 staff-birthday-modal-body">${renderStaffBirthdayList(rows, lib, { compact: false })}</div>`;
+  modalType = null;
+  bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
+}
+
 function staffUpcomingBirthdaysPanel(staffList, lib, access) {
-  const upcoming = lib.upcomingBirthdays(staffList, 5, 30).filter((staff) => lib.canViewBirthday(activeUser, staff, access));
-  if (!upcoming.length) return `<p class="text-secondary mb-0">${L("empty")}</p>`;
+  const upcoming = lib.upcomingBirthdays(staffVisibleBirthdays(staffList, lib, access), 5, 60);
+  if (!upcoming.length) return staffBirthdayEmptyState();
   return `<ul class="staff-birthday-shortlist list-unstyled mb-0">${upcoming.map((staff) => `
     <li class="d-flex justify-content-between align-items-center gap-2 py-2 border-bottom border-light-subtle">
-      <span><strong>${staff.full_name}</strong> <small class="text-secondary">${lib.formatBirthdayDisplay(staff.date_of_birth, lang)}</small></span>
-      <span class="text-nowrap">${staff.days_until_birthday === 0 ? "🎂" : `${staff.days_until_birthday} ${lang === "pt" ? "dias" : "days"}`}</span>
+      <button type="button" class="btn btn-link p-0 text-start staff-birthday-link" data-action="view" data-type="staffProfile" data-id="${staff.id}">
+        <strong>${staff.full_name}</strong>
+        <small class="text-secondary d-block">${lib.formatBirthdayDisplay(staff.date_of_birth, lang)}</small>
+      </button>
+      <span class="text-nowrap staff-birthday-days">${staff.days_until_birthday === 0 ? "🎂" : `${staff.days_until_birthday} ${lang === "pt" ? "dias" : "days"}`}</span>
     </li>`).join("")}</ul>`;
 }
 
@@ -7038,26 +7181,30 @@ function staffBirthdayFilterBar(staffList) {
   const churches = relationalChurches().filter((church) => churchIds.includes(church.id));
   const statuses = window.CEStaffHr?.STAFF_STATUSES || [];
   return `
-    <div class="staff-birthday-filters row g-2 mb-3">
-      <div class="col-md-3">
+    <div class="staff-birthday-filters light-surface row g-2 mb-3 p-3">
+      <div class="col-md-4 col-lg-3">
+        <label class="form-label">${L("search")}</label>
+        <input class="form-control" type="search" data-staff-birthday-filter="search" value="${filters.search || ""}" placeholder="${L("staffFullName")}">
+      </div>
+      <div class="col-md-4 col-lg-2">
         <label class="form-label">${L("staffFilterBirthdayMonth")}</label>
         <select class="form-select" data-staff-birthday-filter="month">${monthFilterOptions(filters.month)}</select>
       </div>
-      <div class="col-md-3">
+      <div class="col-md-4 col-lg-2">
         <label class="form-label">${L("church")}</label>
         <select class="form-select" data-staff-birthday-filter="churchId">
           <option value="">${L("all")}</option>
           ${churches.map((church) => `<option value="${church.id}" ${filters.churchId === church.id ? "selected" : ""}>${churchOptionLabel(church)}</option>`).join("")}
         </select>
       </div>
-      <div class="col-md-3">
+      <div class="col-md-4 col-lg-2">
         <label class="form-label">${L("reqDepartment")}</label>
         <select class="form-select" data-staff-birthday-filter="department">
           <option value="">${L("all")}</option>
           ${departments.map((department) => `<option value="${department}" ${filters.department === department ? "selected" : ""}>${department}</option>`).join("")}
         </select>
       </div>
-      <div class="col-md-3">
+      <div class="col-md-4 col-lg-2">
         <label class="form-label">${L("status")}</label>
         <select class="form-select" data-staff-birthday-filter="status">
           <option value="">${L("all")}</option>
@@ -7065,6 +7212,30 @@ function staffBirthdayFilterBar(staffList) {
         </select>
       </div>
     </div>`;
+}
+
+function renderStaffBirthdaysTab(staffList, lib, access, stats) {
+  const visible = staffVisibleBirthdays(staffList, lib, access);
+  const sections = lib.getBirthdaySections(visible, staffHrPageState.birthdayFilters);
+  const canEdit = Boolean(access.can_edit);
+  return `
+    <div class="row g-3 mb-4">
+      ${metric("bi-balloon", L("staffBirthdaysToday"), stats.birthdaysToday, L("staffClickToView"), { clickable: true, clickAction: "birthdays-today" })}
+      ${metric("bi-gift", L("staffBirthdays"), stats.birthdays, L("staffClickToView"), { clickable: true, clickAction: "birthdays-month" })}
+      ${metric("bi-calendar-event", L("staffUpcomingBirthdays"), stats.upcomingBirthdays, L("staffClickToView"), { clickable: true, clickAction: "birthdays-upcoming" })}
+      ${metric("bi-person-check", L("staffActiveBirthdays"), stats.activeStaffBirthdays)}
+    </div>
+    ${staffBirthdayFilterBar(staffList)}
+    <div class="staff-birthday-sections">
+      ${staffBirthdaySection(L("staffBirthdaysToday"), sections.today, lib, { canEdit })}
+      ${staffBirthdaySection(L("staffUpcomingBirthdays"), sections.upcoming, lib, { canEdit })}
+      ${staffBirthdaySection(L("staffBirthdays"), sections.thisMonth, lib, { canEdit })}
+      ${staffBirthdaySection(L("staffPastBirthdaysThisMonth"), sections.pastThisMonth, lib, { canEdit })}
+    </div>`;
+}
+
+function staffMissingDobBadge() {
+  return `<span class="staff-missing-dob-badge">${L("staffMissingDateOfBirth")}</span>`;
 }
 
 function staffHrModuleTabs() {
@@ -7097,8 +7268,16 @@ function renderStaffHr() {
   const canSalary = lib.canViewSalary(activeUser);
   let tabContent = "";
 
+  const visibleBirthdays = staffVisibleBirthdays(staffList, lib, access);
+  const birthdayStats = {
+    birthdays: lib.birthdaysThisMonth(visibleBirthdays).length,
+    birthdaysToday: lib.birthdaysToday(visibleBirthdays).length,
+    upcomingBirthdays: lib.upcomingBirthdays(visibleBirthdays, 100, 365).length,
+    activeStaffBirthdays: visibleBirthdays.filter((staff) => staff.status === "Activo").length
+  };
+
   if (staffHrPageState.tab === "overview") {
-    const monthBirthdays = lib.birthdaysThisMonth(staffList).filter((staff) => lib.canViewBirthday(activeUser, staff, access));
+    const monthBirthdays = lib.sortByUpcomingBirthday(lib.birthdaysThisMonth(visibleBirthdays));
     tabContent = `
       <div class="row g-3 mb-4">
         ${metric("bi-people", L("staffTotal"), stats.total)}
@@ -7108,27 +7287,25 @@ function renderStaffHr() {
         ${metric("bi-clipboard-data", L("staffPendingEval"), stats.pendingEval)}
         ${metric("bi-cash", L("staffPendingPay"), stats.pendingPay)}
         ${metric("bi-laptop", L("staffAssignedEq"), stats.assignedEq)}
-        ${metric("bi-gift", L("staffBirthdays"), stats.birthdays)}
-        ${metric("bi-calendar-event", L("staffUpcomingBirthdays"), stats.upcomingBirthdays)}
+        ${metric("bi-gift", L("staffBirthdays"), birthdayStats.birthdays, L("staffClickToView"), { clickable: true, clickAction: "birthdays-month" })}
+        ${metric("bi-calendar-event", L("staffUpcomingBirthdays"), birthdayStats.upcomingBirthdays, L("staffClickToView"), { clickable: true, clickAction: "birthdays-upcoming" })}
       </div>
       <div class="row g-3">
         <div class="col-lg-6">
           <article class="panel glass-panel staff-birthday-panel light-surface p-3 h-100">
-            <h5 class="mb-3">${L("staffBirthdays")}</h5>
-            ${monthBirthdays.length ? dataTable(
-              [L("staffFullName"), L("staffBirthdayLabel"), L("staffAge"), L("actions")],
-              monthBirthdays.map((staff) => [
-                staff.full_name,
-                lib.formatBirthdayDisplay(staff.date_of_birth, lang),
-                staff.age ?? "-",
-                actionButtons([["view", "staffProfile", staff.id, L("viewProfile")]])
-              ])
-            ) : `<p class="text-secondary mb-0">${L("empty")}</p>`}
+            <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
+              <h5 class="mb-0">${L("staffBirthdays")}</h5>
+              <button type="button" class="btn btn-sm btn-outline-cyan" data-staff-tab="birthdays">${L("viewAll")}</button>
+            </div>
+            ${renderStaffBirthdayList(monthBirthdays, lib, { compact: true })}
           </article>
         </div>
         <div class="col-lg-6">
           <article class="panel glass-panel staff-birthday-panel light-surface p-3 h-100">
-            <h5 class="mb-3">${L("staffUpcomingBirthdays")}</h5>
+            <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
+              <h5 class="mb-0">${L("staffUpcomingBirthdays")}</h5>
+              <button type="button" class="btn btn-sm btn-outline-cyan" data-staff-metric="birthdays-upcoming">${L("viewAll")}</button>
+            </div>
             ${staffUpcomingBirthdaysPanel(staffList, lib, access)}
           </article>
         </div>
@@ -7136,30 +7313,14 @@ function renderStaffHr() {
   } else if (staffHrPageState.tab === "staff") {
     tabContent = `${access.can_create ? `<div class="d-flex justify-content-end mb-3"><button type="button" class="btn btn-ce-gold btn-touch" data-open-form="staffProfile">${L("add")}</button></div>` : ""}
       ${dataTable([L("staffFullName"), L("staffRoleTitle"), L("church"), L("reqDepartment"), L("staffEmploymentType"), L("status"), L("actions")],
-        staffList.map((s) => [s.full_name, s.role_title, churchName(s.church_id), s.department_name, s.employment_type, badge(s.status),
-          actionButtons([["view", "staffProfile", s.id, L("viewProfile")], ["edit", "staffProfile", s.id, L("edit")]])]))}`;
+        staffList.map((s) => {
+          const enriched = lib.enrichStaffProfile(s);
+          const nameCell = `${s.full_name}${!lib.hasDateOfBirth(enriched) ? ` ${staffMissingDobBadge()}` : ""}`;
+          return [nameCell, s.role_title, churchName(s.church_id), s.department_name, s.employment_type, badge(s.status),
+            actionButtons([["view", "staffProfile", s.id, L("viewProfile")], ["edit", "staffProfile", s.id, L("edit")]])];
+        }))}`;
   } else if (staffHrPageState.tab === "birthdays") {
-    const birthdayRows = lib.filterBirthdayList(staffList, staffHrPageState.birthdayFilters)
-      .filter((staff) => lib.canViewBirthday(activeUser, staff, access));
-    tabContent = `
-      ${staffBirthdayFilterBar(staffList)}
-      ${birthdayRows.length ? dataTable(
-        [L("staffFullName"), L("staffRoleTitle"), L("reqDepartment"), L("church"), L("dateOfBirth"), L("staffAge"), L("staffDaysUntilBirthday"), L("phone"), L("actions")],
-        birthdayRows.map((staff) => [
-          staff.full_name,
-          staff.role_title,
-          staff.department_name,
-          churchName(staff.church_id),
-          staff.date_of_birth,
-          staff.age ?? "-",
-          staff.days_until_birthday ?? "-",
-          staff.phone || staff.whatsapp || "-",
-          actionButtons([
-            ["staffMessage", "staffProfile", staff.id, L("staffSendMessage")],
-            ["view", "staffProfile", staff.id, L("viewProfile")]
-          ])
-        ])
-      ) : `<p class="text-secondary mb-0">${L("empty")}</p>`}`;
+    tabContent = renderStaffBirthdaysTab(staffList, lib, access, birthdayStats);
   } else if (staffHrPageState.tab === "departments") {
     tabContent = dataTable([L("name"), L("church"), L("staffSupervisor"), L("actions")],
       (state.departments || []).map((d) => [d.name, churchName(d.church_id), d.lead_name || "-", "-"]));
@@ -7200,12 +7361,21 @@ function renderStaffHr() {
         return [staff?.full_name || "-", d.document_type, d.expiry_date || "-", d.notes || "-"];
       }));
   } else {
-    tabContent = `<div class="module-grid">${[
-      [L("staffTotal"), stats.total],
-      [L("staffActive"), stats.active],
-      [L("staffPendingPay"), stats.pendingPay],
-      [L("staffBirthdays"), stats.birthdays]
-    ].map(([label, val]) => `<article class="record-card data-card"><span class="eyebrow">${L("staffTabReports")}</span><h3>${label}</h3><p class="mb-0">${val}</p></article>`).join("")}</div>`;
+    const monthBirthdays = lib.sortByUpcomingBirthday(lib.birthdaysThisMonth(visibleBirthdays));
+    tabContent = `
+      <div class="module-grid mb-4">${[
+        [L("staffTotal"), stats.total],
+        [L("staffActive"), stats.active],
+        [L("staffPendingPay"), stats.pendingPay],
+        [L("staffBirthdays"), birthdayStats.birthdays]
+      ].map(([label, val]) => `<article class="record-card data-card light-surface"><span class="eyebrow">${L("staffTabReports")}</span><h3>${label}</h3><p class="mb-0">${val}</p></article>`).join("")}</div>
+      <article class="panel glass-panel staff-birthday-panel light-surface p-3">
+        <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
+          <h5 class="mb-0">${L("staffBirthdays")}</h5>
+          <button type="button" class="btn btn-sm btn-ce-gold" data-staff-tab="birthdays">${L("staffTabBirthdays")}</button>
+        </div>
+        ${renderStaffBirthdayList(monthBirthdays, lib, { compact: true })}
+      </article>`;
   }
 
   setPageContent(`
@@ -7992,6 +8162,20 @@ document.addEventListener("click", (event) => {
     if (activeRoute === "requisitions") renderRequisitions();
     return;
   }
+  const staffMetricBtn = event.target.closest("[data-staff-metric]");
+  if (staffMetricBtn) {
+    const metricKey = staffMetricBtn.dataset.staffMetric;
+    if (metricKey === "birthdays-month") return openStaffBirthdaysModal("thisMonth");
+    if (metricKey === "birthdays-today") return openStaffBirthdaysModal("today");
+    if (metricKey === "birthdays-past") return openStaffBirthdaysModal("past");
+    if (metricKey === "birthdays-upcoming") {
+      staffHrPageState.tab = "birthdays";
+      if (activeRoute === "staffHr") renderStaffHr();
+      else setRoute("staffHr");
+      return;
+    }
+    return;
+  }
   const staffTabBtn = event.target.closest("[data-staff-tab]");
   if (staffTabBtn) {
     staffHrPageState.tab = staffTabBtn.dataset.staffTab || "overview";
@@ -8130,6 +8314,12 @@ document.addEventListener("input", (event) => {
   if (event.target.matches("[data-finance-source-filter]")) {
     financePageState.sourceFilter = event.target.value || "";
     if (activeRoute === "finance") renderFinance();
+    return;
+  }
+  const birthdaySearchFilter = event.target.dataset?.staffBirthdayFilter;
+  if (birthdaySearchFilter === "search" && activeRoute === "staffHr") {
+    staffHrPageState.birthdayFilters.search = event.target.value;
+    renderStaffHr();
     return;
   }
   const reportFilterKey = event.target.dataset?.financeReportFilter;

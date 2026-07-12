@@ -46,10 +46,14 @@ function ModuleHeroCard({ title, subtitle, icon = "bi-stars", eyebrow, modalType
 function SummaryCard(icon, label, value, hint = "", options = {}) {
   const col = options.colClass || "col-sm-6 col-xl-4 col-xxl-3";
   const tone = options.tone ? ` summary-card--${options.tone}` : "";
+  const clickable = options.clickable ? " summary-card--clickable" : "";
   const variant = options.variant || "light";
+  const clickAttrs = options.clickAction
+    ? ` data-staff-metric="${options.clickAction}" role="button" tabindex="0" aria-label="${label}"`
+    : "";
   return `
     <div class="${col}">
-      <article class="summary-card metric-card ${surfaceClass(variant)}${tone}">
+      <article class="summary-card metric-card ${surfaceClass(variant)}${tone}${clickable}"${clickAttrs}>
         <div class="summary-card-icon metric-icon"><i class="bi ${icon}"></i></div>
         <div class="summary-card-body">
           <span class="summary-card-label metric-label chart-label label">${label}</span>

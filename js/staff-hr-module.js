@@ -117,16 +117,43 @@
     return (list || []).map((item) => enrichStaffProfile(item));
   }
 
+  function hasDateOfBirth(staff) {
+    return Boolean(parseDateOnly(staff?.date_of_birth || staff?.data_de_aniversario || ""));
+  }
+
   function birthdaysThisMonth(list, refDate = new Date()) {
     const month = String(refDate.getMonth() + 1).padStart(2, "0");
-    return enrichStaffList(list).filter((s) => s.birthday_month === month);
+    return enrichStaffList(list).filter((s) => hasDateOfBirth(s) && s.birthday_month === month);
+  }
+
+  function birthdaysToday(list, refDate = new Date()) {
+    return enrichStaffList(list).filter((s) => hasDateOfBirth(s) && s.days_until_birthday === 0);
+  }
+
+  function pastBirthdaysThisMonth(list, refDate = new Date()) {
+    const month = String(refDate.getMonth() + 1).padStart(2, "0");
+    const day = refDate.getDate();
+    return enrichStaffList(list).filter((s) => {
+      if (!hasDateOfBirth(s) || s.birthday_month !== month) return false;
+      return Number(s.birthday_day) < day;
+    });
   }
 
   function upcomingBirthdays(list, limit = 10, withinDays = 60, refDate = new Date()) {
     return enrichStaffList(list)
-      .filter((s) => s.date_of_birth && s.days_until_birthday !== null && s.days_until_birthday <= withinDays)
+      .filter((s) => hasDateOfBirth(s) && s.days_until_birthday !== null && s.days_until_birthday > 0 && s.days_until_birthday <= withinDays)
       .sort((a, b) => (a.days_until_birthday ?? 999) - (b.days_until_birthday ?? 999))
       .slice(0, limit);
+  }
+
+  function sortByUpcomingBirthday(list) {
+    return [...list].sort((a, b) => {
+      const daysA = a.days_until_birthday ?? 999;
+      const daysB = b.days_until_birthday ?? 999;
+      if (daysA !== daysB) return daysA - daysB;
+      if (a.birthday_month !== b.birthday_month) return a.birthday_month.localeCompare(b.birthday_month);
+      return a.birthday_day.localeCompare(b.birthday_day);
+    });
   }
 
   function birthdaysInMonth(list, monthKey) {
@@ -135,16 +162,38 @@
     return enrichStaffList(list).filter((s) => s.birthday_month === month);
   }
 
-  function filterBirthdayList(list, filters = {}) {
-    let rows = enrichStaffList(list).filter((s) => s.date_of_birth);
+  function filterBirthdayList(list, filters = {}, refDate = new Date()) {
+    let rows = enrichStaffList(list).filter((s) => hasDateOfBirth(s));
+    const search = String(filters.search || "").trim().toLowerCase();
+    if (search) {
+      rows = rows.filter((s) => String(s.full_name || "").toLowerCase().includes(search));
+    }
     if (filters.month) rows = rows.filter((s) => s.birthday_month === String(filters.month).padStart(2, "0").slice(-2));
     if (filters.churchId) rows = rows.filter((s) => s.church_id === filters.churchId);
     if (filters.department) rows = rows.filter((s) => s.department_name === filters.department);
     if (filters.status) rows = rows.filter((s) => s.status === filters.status);
-    return rows.sort((a, b) => {
-      if (a.birthday_month !== b.birthday_month) return a.birthday_month.localeCompare(b.birthday_month);
-      return a.birthday_day.localeCompare(b.birthday_day);
-    });
+    return sortByUpcomingBirthday(rows);
+  }
+
+  function getBirthdaySections(list, filters = {}, refDate = new Date()) {
+    const rows = filterBirthdayList(list, filters, refDate);
+    const month = String(refDate.getMonth() + 1).padStart(2, "0");
+    const day = refDate.getDate();
+    return {
+      all: rows,
+      today: rows.filter((s) => s.days_until_birthday === 0),
+      upcoming: rows.filter((s) => s.days_until_birthday > 0),
+      thisMonth: rows.filter((s) => s.birthday_month === month),
+      pastThisMonth: rows.filter((s) => s.birthday_month === month && Number(s.birthday_day) < day)
+    };
+  }
+
+  function formatBirthdayDayMonth(dateOfBirth, lang = "pt") {
+    const parsed = parseDateOnly(dateOfBirth);
+    if (!parsed) return "-";
+    const locale = lang === "en" ? "en-US" : "pt-PT";
+    const month = new Intl.DateTimeFormat(locale, { month: "short" }).format(new Date(2026, parsed.month - 1, 1));
+    return `${String(parsed.day).padStart(2, "0")} ${month}`;
   }
 
   function formatBirthdayDisplay(dateOfBirth, lang = "pt") {
@@ -179,8 +228,10 @@
     const pendingEval = (performance || []).filter((p) => !p.evaluated_at).length;
     const pendingPay = (salaries || []).filter((s) => s.payment_status === "Pendente").length;
     const assignedEq = (equipment || []).filter((e) => e.status === "Activo").length;
-    const monthBirthdays = birthdaysThisMonth(enriched, refDate);
-    const upcoming = upcomingBirthdays(enriched, 100, 30, refDate);
+    const withDob = enriched.filter((s) => hasDateOfBirth(s));
+    const monthBirthdays = birthdaysThisMonth(withDob, refDate);
+    const todayBirthdays = birthdaysToday(withDob, refDate);
+    const upcoming = upcomingBirthdays(withDob, 100, 365, refDate);
     return {
       total: enriched.length,
       active,
@@ -190,7 +241,9 @@
       pendingPay,
       assignedEq,
       birthdays: monthBirthdays.length,
-      upcomingBirthdays: upcoming.length
+      birthdaysToday: todayBirthdays.length,
+      upcomingBirthdays: upcoming.length,
+      activeStaffBirthdays: withDob.filter((s) => s.status === "Activo").length
     };
   }
 
@@ -290,10 +343,16 @@
     canViewBirthday,
     scopeFilterStaff,
     getStaffEquipment,
+    hasDateOfBirth,
     birthdaysThisMonth,
+    birthdaysToday,
+    pastBirthdaysThisMonth,
     upcomingBirthdays,
     birthdaysInMonth,
     filterBirthdayList,
+    getBirthdaySections,
+    sortByUpcomingBirthday,
+    formatBirthdayDayMonth,
     enrichStaffProfile,
     enrichStaffList,
     calculateAge,
