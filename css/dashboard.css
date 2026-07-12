@@ -2857,6 +2857,26 @@ table,
   font-weight: 700;
 }
 
+.staff-birthday-panel {
+  border-radius: 0.85rem;
+  padding: 1rem 1.1rem;
+}
+
+.staff-birthday-panel h5 {
+  color: var(--text-dark, #0f172a);
+  font-weight: 700;
+}
+
+.staff-birthday-filters .form-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-dark, #0f172a);
+}
+
+.staff-birthday-shortlist li:last-child {
+  border-bottom: 0 !important;
+}
+
 .finance-segment-tabs {
   flex-wrap: wrap;
 }

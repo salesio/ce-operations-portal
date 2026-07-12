@@ -389,6 +389,15 @@
     return ["Super Admin", "Main Pastor", "Finance Head", "HR Manager"].includes(user?.role);
   }
 
+  function canViewStaffBirthday(user) {
+    if ((user?.department_permissions || []).includes("*")) return true;
+    return ["Super Admin", "Main Pastor", "HR Manager", "Department Head", "Church Pastor"].includes(user?.role);
+  }
+
+  function canViewSensitiveStaffData(user) {
+    return canViewSalary(user);
+  }
+
   window.CEAccessControl = {
     SHOW_LOCKED_MODULES,
     SENSITIVE_MODULES,
@@ -400,6 +409,8 @@
     canViewRoute,
     getNavItemState,
     canViewSalary,
+    canViewStaffBirthday,
+    canViewSensitiveStaffData,
     isSensitiveModule
   };
 })();

@@ -135,6 +135,31 @@ const TEXT = {
     staffTabEquipment: "Equipamentos Atribuídos",
     staffTabDocuments: "Documentos",
     staffTabReports: "Relatórios",
+    staffTabBirthdays: "Aniversários",
+    dateOfBirth: "Data de Nascimento",
+    staffUpcomingBirthdays: "Próximos Aniversários",
+    staffAge: "Idade",
+    staffDaysUntilBirthday: "Dias até ao Aniversário",
+    staffBirthdayLabel: "Aniversário",
+    staffFilterBirthdayMonth: "Mês de Aniversário",
+    staffSendMessage: "Enviar Mensagem",
+    staffSectionPersonal: "Dados Pessoais",
+    staffSectionMinisterial: "Dados Ministeriais / Profissionais",
+    staffSectionPayment: "Pagamento / Subsídio",
+    staffSectionDocuments: "Documentos & Observações",
+    maritalStatus: "Estado Civil",
+    emergencyContactName: "Nome do Contacto de Emergência",
+    emergencyContactPhone: "Telefone do Contacto de Emergência",
+    nationalIdNumber: "Nº do BI / Documento",
+    taxNumber: "NUIT",
+    profilePhoto: "Foto de Perfil",
+    bankName: "Banco",
+    bankAccountNumber: "Nº da Conta",
+    mobileMoneyNumber: "Número M-Pesa / E-Mola",
+    contractStartDate: "Data de Início do Contrato",
+    contractEndDate: "Data de Fim do Contrato",
+    probationEndDate: "Fim do Período Experimental",
+    bankOrMobileDetails: "Dados Bancários ou Mobile",
     staffTotal: "Total de Staff",
     staffActive: "Staff Activo",
     staffVolunteers: "Voluntários",
@@ -635,6 +660,31 @@ const TEXT = {
     staffTabEquipment: "Assigned Equipment",
     staffTabDocuments: "Documents",
     staffTabReports: "Reports",
+    staffTabBirthdays: "Birthdays",
+    dateOfBirth: "Date of Birth",
+    staffUpcomingBirthdays: "Upcoming Birthdays",
+    staffAge: "Age",
+    staffDaysUntilBirthday: "Days Until Birthday",
+    staffBirthdayLabel: "Birthday",
+    staffFilterBirthdayMonth: "Birthday Month",
+    staffSendMessage: "Send Message",
+    staffSectionPersonal: "Personal Details",
+    staffSectionMinisterial: "Ministerial / Professional Details",
+    staffSectionPayment: "Payment / Allowance",
+    staffSectionDocuments: "Documents & Notes",
+    maritalStatus: "Marital Status",
+    emergencyContactName: "Emergency Contact Name",
+    emergencyContactPhone: "Emergency Contact Phone",
+    nationalIdNumber: "ID Document Number",
+    taxNumber: "Tax Number",
+    profilePhoto: "Profile Photo",
+    bankName: "Bank",
+    bankAccountNumber: "Account Number",
+    mobileMoneyNumber: "M-Pesa / E-Mola Number",
+    contractStartDate: "Contract Start Date",
+    contractEndDate: "Contract End Date",
+    probationEndDate: "Probation End Date",
+    bankOrMobileDetails: "Bank or Mobile Details",
     staffTotal: "Total Staff",
     staffActive: "Active Staff",
     staffVolunteers: "Volunteers",
@@ -2334,7 +2384,7 @@ const givingCategories = [
 ];
 const paymentMethods = ["Dinheiro", "Cheque", "M-Pesa", "E-Mola", "Banco"];
 const serviceOptions = ["Domingo Manhã", "Domingo Tarde", "Quarta-Feira", "Sexta-Feira", "Programa Especial"];
-const treatmentOptions = ["Sr.", "Sra.", "Irmão", "Irmã", "Pastor", "Diácono", "Diaconisa"];
+const treatmentOptions = ["Sr.", "Sra.", "Irmão", "Irmã", "Pastor", "Pastora", "Diácono", "Diaconisa"];
 
 const prisonStatusOptions = ["Activo", "Inactivo"];
 const prisonServiceStatuses = ["Planeado", "Realizado", "Cancelado", "Relatório Submetido"];
@@ -2409,11 +2459,11 @@ const seedData = {
     { id: "req-7", request_number: "REQ-2026-0007", requested_by_user_id: "u-11", requested_by_name: "Marcelo Panguene", department_id: "dept-venue", department_name: "Venue Management", church_id: "church-hq", church_name: "National HQ - Christ Embassy Mozambique", requisition_type: "Equipamento", title: "Laptop para técnico de som", description: "Laptop dedicado para software de som digital.", justification: "Substituição de equipamento antigo.", estimated_amount: 62000, currency: "MZN", urgency: "Normal", needed_by_date: "2026-06-30", attachments: [], supplier_or_vendor: "IT Supplier", quotation_number: "QT-IT-08", reviewed_by: "Pastora Responsável Requisições", reviewed_at: "2026-06-20T10:00:00.000Z", review_notes: "Compra concluída e registada.", sent_to_main_pastor_at: "2026-06-21T10:00:00.000Z", approved_by: "Pastor Kene Ume", approved_at: "2026-06-22", approval_notes: "Aprovado.", rejected_by: "", rejected_at: "", rejection_reason: "", resources_released_by: "Finance Head Demo", resources_released_at: "2026-06-23T10:00:00.000Z", amount_released: 62000, finance_record_id: "fin-req-req-7", inventory_item_id: "inv-req-req-7", status: "Fechado", created_at: "2026-06-15T08:00:00.000Z", updated_at: "2026-06-28T10:00:00.000Z" }
   ],
   staffProfiles: [
-    { id: "staff-1", user_id: "u-5", full_name: "Flavia Moneedi Tivane", title: "Pastora", gender: "Feminino", phone: "860000101", whatsapp: "860000101", email: "flavia@ce-mozambique.org", church_id: "church-hq", church_name: "National HQ - Christ Embassy Mozambique", department_id: "dept-cell", department_name: "Ministério de Células", role_title: "Cell Ministry Head", supervisor_user_id: "u-17", supervisor_name: "Pastor Kene Ume", start_date: "2024-01-15", employment_type: "Full-time", salary_or_allowance: 45000, payment_frequency: "Mensal", payment_method: "Banco", bank_or_mobile_details: "BCI ****4521", status: "Activo", date_of_birth: "1990-03-14", notes: "", created_at: "2024-01-15", updated_at: "2026-07-10" },
-    { id: "staff-2", user_id: "u-4", full_name: "Angelica Amilcar Macuacua", title: "Irmã", gender: "Feminino", phone: "860000102", whatsapp: "860000102", email: "angelica@ce-mozambique.org", church_id: "church-hq", church_name: "National HQ - Christ Embassy Mozambique", department_id: "dept-cell", department_name: "Ministério de Células", role_title: "ALEC Coordinator", supervisor_user_id: "u-5", supervisor_name: "Pastora Flavia", start_date: "2023-06-01", employment_type: "Full-time", salary_or_allowance: 38000, payment_frequency: "Mensal", payment_method: "M-Pesa", bank_or_mobile_details: "86XXXXXXX", status: "Activo", date_of_birth: "1992-07-22", notes: "", created_at: "2023-06-01", updated_at: "2026-07-10" },
-    { id: "staff-3", user_id: "u-11", full_name: "Marcelo Moises Panguene", title: "Irmão", gender: "Masculino", phone: "860000103", whatsapp: "860000103", email: "marcelo.panguene@ce-mozambique.org", church_id: "church-hq", church_name: "National HQ - Christ Embassy Mozambique", department_id: "dept-venue", department_name: "Venue Management", role_title: "Venue Manager", supervisor_user_id: "u-17", supervisor_name: "Pastor Kene Ume", start_date: "2022-11-01", employment_type: "Full-time", salary_or_allowance: 52000, payment_frequency: "Mensal", payment_method: "Banco", bank_or_mobile_details: "BCI ****8832", status: "Activo", date_of_birth: "1988-11-05", notes: "", created_at: "2022-11-01", updated_at: "2026-07-10" },
+    { id: "staff-1", user_id: "u-5", full_name: "Flavia Moneedi Tivane", title: "Pastora", gender: "Feminino", phone: "860000101", whatsapp: "860000101", email: "flavia@ce-mozambique.org", church_id: "church-hq", church_name: "National HQ - Christ Embassy Mozambique", department_id: "dept-cell", department_name: "Ministério de Células", role_title: "Cell Ministry Head", supervisor_user_id: "u-17", supervisor_name: "Pastor Kene Ume", start_date: "2024-01-15", employment_type: "Full-time", salary_or_allowance: 45000, payment_frequency: "Mensal", payment_method: "Banco", bank_name: "BCI", bank_account_number: "****4521", bank_or_mobile_details: "BCI ****4521", marital_status: "Casado/a", address: "Maputo, KaMpfumo", contract_start_date: "2024-01-15", status: "Activo", date_of_birth: "1990-03-14", notes: "", created_at: "2024-01-15", updated_at: "2026-07-10" },
+    { id: "staff-2", user_id: "u-4", full_name: "Angelica Amilcar Macuacua", title: "Irmã", gender: "Feminino", phone: "860000102", whatsapp: "860000102", email: "angelica@ce-mozambique.org", church_id: "church-hq", church_name: "National HQ - Christ Embassy Mozambique", department_id: "dept-cell", department_name: "Ministério de Células", role_title: "ALEC Coordinator", supervisor_user_id: "u-5", supervisor_name: "Pastora Flavia", start_date: "2023-06-01", employment_type: "Full-time", salary_or_allowance: 38000, payment_frequency: "Mensal", payment_method: "M-Pesa", mobile_money_number: "860000102", bank_or_mobile_details: "86XXXXXXX", marital_status: "Solteiro/a", address: "Matola, Moçambique", status: "Activo", date_of_birth: "1992-07-22", notes: "", created_at: "2023-06-01", updated_at: "2026-07-10" },
+    { id: "staff-3", user_id: "u-11", full_name: "Marcelo Moises Panguene", title: "Irmão", gender: "Masculino", phone: "860000103", whatsapp: "860000103", email: "marcelo.panguene@ce-mozambique.org", church_id: "church-hq", church_name: "National HQ - Christ Embassy Mozambique", department_id: "dept-venue", department_name: "Venue Management", role_title: "Venue Manager", supervisor_user_id: "u-17", supervisor_name: "Pastor Kene Ume", start_date: "2022-11-01", employment_type: "Full-time", salary_or_allowance: 52000, payment_frequency: "Mensal", payment_method: "Banco", bank_name: "BCI", bank_account_number: "****8832", bank_or_mobile_details: "BCI ****8832", marital_status: "Casado/a", address: "Maputo, Moçambique", emergency_contact_name: "Maria Panguene", emergency_contact_phone: "860000203", status: "Activo", date_of_birth: "1988-11-05", notes: "", created_at: "2022-11-01", updated_at: "2026-07-10" },
     { id: "staff-4", user_id: "", full_name: "Laiza Teresa Chirindza", title: "Irmã", gender: "Feminino", phone: "860000104", whatsapp: "860000104", email: "laiza@ce-mozambique.org", church_id: "church-hq", church_name: "National HQ - Christ Embassy Mozambique", department_id: "dept-finance", department_name: "Finanças", role_title: "Finance Officer", supervisor_user_id: "u-15", supervisor_name: "Finance Head Demo", start_date: "2024-03-01", employment_type: "Full-time", salary_or_allowance: 40000, payment_frequency: "Mensal", payment_method: "E-Mola", bank_or_mobile_details: "87XXXXXXX", status: "Activo", date_of_birth: "1995-01-18", notes: "", created_at: "2024-03-01", updated_at: "2026-07-10" },
-    { id: "staff-5", user_id: "u-6", full_name: "Eduarda Paula Mnganhela", title: "Irmã", gender: "Feminino", phone: "860000105", whatsapp: "860000105", email: "eduarda@ce-mozambique.org", church_id: "church-hq", church_name: "National HQ - Christ Embassy Mozambique", department_id: "dept-cell", department_name: "Ministério de Células", role_title: "Final Coordinator", supervisor_user_id: "u-5", supervisor_name: "Pastora Flavia", start_date: "2023-09-01", employment_type: "Part-time", salary_or_allowance: 25000, payment_frequency: "Mensal", payment_method: "M-Pesa", bank_or_mobile_details: "", status: "Activo", date_of_birth: "1993-09-09", notes: "", created_at: "2023-09-01", updated_at: "2026-07-10" },
+    { id: "staff-5", user_id: "u-6", full_name: "Eduarda Paula Mnganhela", title: "Irmã", gender: "Feminino", phone: "860000105", whatsapp: "860000105", email: "eduarda@ce-mozambique.org", church_id: "church-hq", church_name: "National HQ - Christ Embassy Mozambique", department_id: "dept-cell", department_name: "Ministério de Células", role_title: "Final Coordinator", supervisor_user_id: "u-5", supervisor_name: "Pastora Flavia", start_date: "2023-09-01", employment_type: "Part-time", salary_or_allowance: 25000, payment_frequency: "Mensal", payment_method: "M-Pesa", bank_or_mobile_details: "86XXXXXXX", bank_name: "M-Pesa", mobile_money_number: "860000105", marital_status: "Solteiro/a", address: "Maputo, Moçambique", emergency_contact_name: "Paula Mnganhela", emergency_contact_phone: "860000199", national_id_number: "BI-****5521", nuit: "NUIT-****882", contract_start_date: "2023-09-01", contract_end_date: "", probation_end_date: "2023-12-01", status: "Activo", date_of_birth: "1993-07-15", notes: "", created_at: "2023-09-01", updated_at: "2026-07-10" },
     { id: "staff-6", user_id: "u-3", full_name: "Janet Baptista Ngoca", title: "Irmã", gender: "Feminino", phone: "860000106", whatsapp: "860000106", email: "janet.marquele@ce-mozambique.org", church_id: "church-hq", church_name: "National HQ - Christ Embassy Mozambique", department_id: "dept-programs", department_name: "Programas", role_title: "Ministry Coordinator", supervisor_user_id: "u-17", supervisor_name: "Pastor Kene Ume", start_date: "2022-05-01", employment_type: "Full-time", salary_or_allowance: 42000, payment_frequency: "Mensal", payment_method: "Banco", bank_or_mobile_details: "", status: "Activo", date_of_birth: "1987-12-02", notes: "", created_at: "2022-05-01", updated_at: "2026-07-10" },
     { id: "staff-7", user_id: "u-18", full_name: "Pastora Responsável Requisições", title: "Pastora", gender: "Feminino", phone: "860000107", whatsapp: "860000107", email: "requisitions@ce-mozambique.org", church_id: "church-hq", church_name: "National HQ - Christ Embassy Mozambique", department_id: "dept-programs", department_name: "Programas", role_title: "Requisition Officer", supervisor_user_id: "u-17", supervisor_name: "Pastor Kene Ume", start_date: "2024-06-01", employment_type: "Full-time", salary_or_allowance: 36000, payment_frequency: "Mensal", payment_method: "Banco", bank_or_mobile_details: "", status: "Activo", date_of_birth: "1991-05-20", notes: "Responsável por organizar requisições.", created_at: "2024-06-01", updated_at: "2026-07-10" },
     { id: "staff-8", user_id: "u-7", full_name: "Cell Leader Demo", title: "Irmão", gender: "Masculino", phone: "860000108", whatsapp: "860000108", email: "cellleader@ce-mozambique.org", church_id: "church-hq", church_name: "National HQ - Christ Embassy Mozambique", department_id: "dept-cell", department_name: "Ministério de Células", role_title: "Cell Leader", supervisor_user_id: "u-5", supervisor_name: "Pastora Flavia", start_date: "2025-01-01", employment_type: "Voluntário", salary_or_allowance: 0, payment_frequency: "Nenhum", payment_method: "Nenhum", bank_or_mobile_details: "", status: "Activo", date_of_birth: "1998-08-30", notes: "", created_at: "2025-01-01", updated_at: "2026-07-10" }
@@ -2715,7 +2765,11 @@ const churchPageState = {
   filters: { search: "", province: "", city: "", type: "", status: "", information_status: "" }
 };
 const requisitionsPageState = { tab: "overview" };
-const staffHrPageState = { tab: "overview", selectedStaffId: "" };
+const staffHrPageState = {
+  tab: "overview",
+  selectedStaffId: "",
+  birthdayFilters: { month: "", churchId: "", department: "", status: "" }
+};
 
 function L(key) {
   return TEXT[lang]?.[key] || TEXT.en[key] || key;
@@ -2750,6 +2804,29 @@ function loadState() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(seedData));
     return structuredClone(seedData);
   }
+}
+
+function normalizeStaffProfileRecord(seed = {}, saved = {}) {
+  const merged = { ...structuredClone(seed || {}), ...saved };
+  const withDefaults = {
+    marital_status: merged.marital_status || "Por Confirmar",
+    address: merged.address || "",
+    emergency_contact_name: merged.emergency_contact_name || "",
+    emergency_contact_phone: merged.emergency_contact_phone || "",
+    national_id_number: merged.national_id_number || "",
+    nuit: merged.nuit || "",
+    bank_name: merged.bank_name || "",
+    bank_account_number: merged.bank_account_number || "",
+    mobile_money_number: merged.mobile_money_number || "",
+    contract_start_date: merged.contract_start_date || merged.start_date || "",
+    contract_end_date: merged.contract_end_date || "",
+    probation_end_date: merged.probation_end_date || "",
+    profile_photo: merged.profile_photo || "",
+    bank_or_mobile_details: merged.bank_or_mobile_details || "",
+    date_of_birth: merged.date_of_birth || merged.data_de_aniversario || "",
+    ...merged
+  };
+  return window.CEStaffHr?.enrichStaffProfile ? window.CEStaffHr.enrichStaffProfile(withDefaults) : withDefaults;
 }
 
 function normalizeState(saved) {
@@ -2831,13 +2908,23 @@ function normalizeState(saved) {
   merged.contributors = Array.isArray(merged.contributors) ? merged.contributors : structuredClone(seedData.contributors || []);
   merged.publicGivingSubmissions = Array.isArray(merged.publicGivingSubmissions) ? merged.publicGivingSubmissions : structuredClone(seedData.publicGivingSubmissions || []);
   merged.foundationStudents = (merged.foundationStudents || []).map((student) => migrateFoundationStudent(student));
-  ["departments", "requisitions", "staffProfiles", "staffSalaries", "staffPerformance", "staffAttendance", "staffDocuments"].forEach((key) => {
+  ["departments", "requisitions", "staffSalaries", "staffPerformance", "staffAttendance", "staffDocuments"].forEach((key) => {
     merged[key] = Array.isArray(merged[key]) ? merged[key] : structuredClone(seedData[key] || []);
     const seedItems = seedData[key] || [];
     const savedIds = new Set(merged[key].map((item) => item.id));
     seedItems.forEach((item) => {
       if (!savedIds.has(item.id)) merged[key].push(structuredClone(item));
     });
+  });
+  const seedStaff = seedData.staffProfiles || [];
+  const savedStaff = Array.isArray(merged.staffProfiles) ? merged.staffProfiles : [];
+  const savedStaffIds = new Set(savedStaff.map((item) => item.id));
+  seedStaff.forEach((item) => {
+    if (!savedStaffIds.has(item.id)) savedStaff.push(structuredClone(item));
+  });
+  merged.staffProfiles = savedStaff.map((item) => {
+    const seedItem = seedStaff.find((seed) => seed.id === item.id) || {};
+    return normalizeStaffProfileRecord(seedItem, item);
   });
   return merged;
 }
@@ -6855,10 +6942,136 @@ function renderRequisitions() {
   `);
 }
 
+function monthFilterOptions(selected = "") {
+  const locale = lang === "en" ? "en-US" : "pt-PT";
+  return [`<option value="">${L("all")}</option>`,
+    ...Array.from({ length: 12 }, (_, index) => {
+      const month = String(index + 1).padStart(2, "0");
+      const label = new Intl.DateTimeFormat(locale, { month: "long" }).format(new Date(2026, index, 1));
+      return `<option value="${month}" ${selected === month ? "selected" : ""}>${label}</option>`;
+    })
+  ].join("");
+}
+
+function staffProfileFieldValue(name, record, lib, access) {
+  const canBirthday = lib.canViewBirthday(activeUser, record, access);
+  const canSalary = lib.canViewSalary(activeUser);
+  let value = record[name];
+  if (name === "church_id") return churchName(record.church_id);
+  if (name === "salary_or_allowance") return canSalary ? money(value) : L("staffSalaryHidden");
+  if (["national_id_number", "nuit", "bank_name", "bank_account_number", "mobile_money_number", "bank_or_mobile_details"].includes(name)) {
+    return lib.maskSensitive(value, activeUser);
+  }
+  if (name === "date_of_birth") {
+    if (!canBirthday) return "•••••";
+    if (!value) return "-";
+    const birthday = lib.formatBirthdayDisplay(value, lang);
+    const age = record.age != null ? ` · ${L("staffAge")}: ${record.age}` : "";
+    return `${value} · ${L("staffBirthdayLabel")}: ${birthday}${age}`;
+  }
+  if (value === "" || value == null) return "-";
+  return value;
+}
+
+function staffProfileDetailRow(label, value) {
+  return `<div><span>${label}</span><strong>${value ?? "-"}</strong></div>`;
+}
+
+function renderStaffProfileForm(record = {}, mode = "edit") {
+  const lib = window.CEStaffHr;
+  const canSalary = lib?.canViewSalary(activeUser);
+  const sections = lib?.staffProfileSections(canSalary) || [];
+  const enriched = lib?.enrichStaffProfile(record) || record;
+  return sections.map((section) => {
+    const fields = section.fields.map((field) => fieldControl(field, enriched)).join("");
+    return typeof FormSection === "function"
+      ? FormSection(L(section.titleKey), fields, "", "light")
+      : `<div class="col-12"><h5>${L(section.titleKey)}</h5><div class="row g-3">${fields}</div></div>`;
+  }).join("");
+}
+
+function openStaffProfileView(id) {
+  const lib = window.CEStaffHr;
+  const access = lib.resolveAccess(activeUser);
+  const record = getCollection("staffProfile").find((item) => item.id === id);
+  if (!record) return;
+  const enriched = lib.enrichStaffProfile(record);
+  const canBirthday = lib.canViewBirthday(activeUser, enriched, access);
+  const canSalary = lib.canViewSalary(activeUser);
+  const sections = lib.staffProfileSections(canSalary);
+  const birthdayBlock = canBirthday && enriched.date_of_birth ? `
+    <div class="col-12 staff-birthday-panel light-surface">
+      <p class="mb-1"><strong>${L("dateOfBirth")}:</strong> ${enriched.date_of_birth}</p>
+      <p class="mb-1"><strong>${L("staffBirthdayLabel")}:</strong> ${lib.formatBirthdayDisplay(enriched.date_of_birth, lang)}</p>
+      ${enriched.age != null ? `<p class="mb-0"><strong>${L("staffAge")}:</strong> ${enriched.age}</p>` : ""}
+    </div>` : "";
+  const detailSections = sections.map((section) => {
+    const rows = section.fields.map(([name, labelKey]) =>
+      staffProfileDetailRow(L(labelKey), staffProfileFieldValue(name, enriched, lib, access))
+    ).join("");
+    const body = `<div class="col-12"><div class="detail-grid">${rows}</div></div>`;
+    return typeof FormSection === "function"
+      ? FormSection(L(section.titleKey), body, "", "light")
+      : `<div class="col-12"><h5>${L(section.titleKey)}</h5>${body}</div>`;
+  }).join("");
+  byId("modalEyebrow").textContent = L("viewProfile");
+  byId("modalTitle").textContent = enriched.full_name || L("staffHr");
+  byId("modalFields").innerHTML = birthdayBlock + detailSections;
+  modalType = null;
+  bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
+}
+
+function staffUpcomingBirthdaysPanel(staffList, lib, access) {
+  const upcoming = lib.upcomingBirthdays(staffList, 5, 30).filter((staff) => lib.canViewBirthday(activeUser, staff, access));
+  if (!upcoming.length) return `<p class="text-secondary mb-0">${L("empty")}</p>`;
+  return `<ul class="staff-birthday-shortlist list-unstyled mb-0">${upcoming.map((staff) => `
+    <li class="d-flex justify-content-between align-items-center gap-2 py-2 border-bottom border-light-subtle">
+      <span><strong>${staff.full_name}</strong> <small class="text-secondary">${lib.formatBirthdayDisplay(staff.date_of_birth, lang)}</small></span>
+      <span class="text-nowrap">${staff.days_until_birthday === 0 ? "🎂" : `${staff.days_until_birthday} ${lang === "pt" ? "dias" : "days"}`}</span>
+    </li>`).join("")}</ul>`;
+}
+
+function staffBirthdayFilterBar(staffList) {
+  const filters = staffHrPageState.birthdayFilters;
+  const departments = [...new Set(staffList.map((staff) => staff.department_name).filter(Boolean))].sort();
+  const churchIds = [...new Set(staffList.map((staff) => staff.church_id).filter(Boolean))];
+  const churches = relationalChurches().filter((church) => churchIds.includes(church.id));
+  const statuses = window.CEStaffHr?.STAFF_STATUSES || [];
+  return `
+    <div class="staff-birthday-filters row g-2 mb-3">
+      <div class="col-md-3">
+        <label class="form-label">${L("staffFilterBirthdayMonth")}</label>
+        <select class="form-select" data-staff-birthday-filter="month">${monthFilterOptions(filters.month)}</select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">${L("church")}</label>
+        <select class="form-select" data-staff-birthday-filter="churchId">
+          <option value="">${L("all")}</option>
+          ${churches.map((church) => `<option value="${church.id}" ${filters.churchId === church.id ? "selected" : ""}>${churchOptionLabel(church)}</option>`).join("")}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">${L("reqDepartment")}</label>
+        <select class="form-select" data-staff-birthday-filter="department">
+          <option value="">${L("all")}</option>
+          ${departments.map((department) => `<option value="${department}" ${filters.department === department ? "selected" : ""}>${department}</option>`).join("")}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">${L("status")}</label>
+        <select class="form-select" data-staff-birthday-filter="status">
+          <option value="">${L("all")}</option>
+          ${statuses.map((status) => `<option value="${status}" ${filters.status === status ? "selected" : ""}>${status}</option>`).join("")}
+        </select>
+      </div>
+    </div>`;
+}
+
 function staffHrModuleTabs() {
   const tabs = [
     ["overview", L("staffTabOverview")],
     ["staff", L("staffTabStaff")],
+    ["birthdays", L("staffTabBirthdays")],
     ["departments", L("staffTabDepartments")],
     ["roles", L("staffTabRoles")],
     ["salaries", L("staffTabSalaries")],
@@ -6885,6 +7098,7 @@ function renderStaffHr() {
   let tabContent = "";
 
   if (staffHrPageState.tab === "overview") {
+    const monthBirthdays = lib.birthdaysThisMonth(staffList).filter((staff) => lib.canViewBirthday(activeUser, staff, access));
     tabContent = `
       <div class="row g-3 mb-4">
         ${metric("bi-people", L("staffTotal"), stats.total)}
@@ -6895,12 +7109,57 @@ function renderStaffHr() {
         ${metric("bi-cash", L("staffPendingPay"), stats.pendingPay)}
         ${metric("bi-laptop", L("staffAssignedEq"), stats.assignedEq)}
         ${metric("bi-gift", L("staffBirthdays"), stats.birthdays)}
+        ${metric("bi-calendar-event", L("staffUpcomingBirthdays"), stats.upcomingBirthdays)}
+      </div>
+      <div class="row g-3">
+        <div class="col-lg-6">
+          <article class="panel glass-panel staff-birthday-panel light-surface p-3 h-100">
+            <h5 class="mb-3">${L("staffBirthdays")}</h5>
+            ${monthBirthdays.length ? dataTable(
+              [L("staffFullName"), L("staffBirthdayLabel"), L("staffAge"), L("actions")],
+              monthBirthdays.map((staff) => [
+                staff.full_name,
+                lib.formatBirthdayDisplay(staff.date_of_birth, lang),
+                staff.age ?? "-",
+                actionButtons([["view", "staffProfile", staff.id, L("viewProfile")]])
+              ])
+            ) : `<p class="text-secondary mb-0">${L("empty")}</p>`}
+          </article>
+        </div>
+        <div class="col-lg-6">
+          <article class="panel glass-panel staff-birthday-panel light-surface p-3 h-100">
+            <h5 class="mb-3">${L("staffUpcomingBirthdays")}</h5>
+            ${staffUpcomingBirthdaysPanel(staffList, lib, access)}
+          </article>
+        </div>
       </div>`;
   } else if (staffHrPageState.tab === "staff") {
     tabContent = `${access.can_create ? `<div class="d-flex justify-content-end mb-3"><button type="button" class="btn btn-ce-gold btn-touch" data-open-form="staffProfile">${L("add")}</button></div>` : ""}
       ${dataTable([L("staffFullName"), L("staffRoleTitle"), L("church"), L("reqDepartment"), L("staffEmploymentType"), L("status"), L("actions")],
         staffList.map((s) => [s.full_name, s.role_title, churchName(s.church_id), s.department_name, s.employment_type, badge(s.status),
           actionButtons([["view", "staffProfile", s.id, L("viewProfile")], ["edit", "staffProfile", s.id, L("edit")]])]))}`;
+  } else if (staffHrPageState.tab === "birthdays") {
+    const birthdayRows = lib.filterBirthdayList(staffList, staffHrPageState.birthdayFilters)
+      .filter((staff) => lib.canViewBirthday(activeUser, staff, access));
+    tabContent = `
+      ${staffBirthdayFilterBar(staffList)}
+      ${birthdayRows.length ? dataTable(
+        [L("staffFullName"), L("staffRoleTitle"), L("reqDepartment"), L("church"), L("dateOfBirth"), L("staffAge"), L("staffDaysUntilBirthday"), L("phone"), L("actions")],
+        birthdayRows.map((staff) => [
+          staff.full_name,
+          staff.role_title,
+          staff.department_name,
+          churchName(staff.church_id),
+          staff.date_of_birth,
+          staff.age ?? "-",
+          staff.days_until_birthday ?? "-",
+          staff.phone || staff.whatsapp || "-",
+          actionButtons([
+            ["staffMessage", "staffProfile", staff.id, L("staffSendMessage")],
+            ["view", "staffProfile", staff.id, L("viewProfile")]
+          ])
+        ])
+      ) : `<p class="text-secondary mb-0">${L("empty")}</p>`}`;
   } else if (staffHrPageState.tab === "departments") {
     tabContent = dataTable([L("name"), L("church"), L("staffSupervisor"), L("actions")],
       (state.departments || []).map((d) => [d.name, churchName(d.church_id), d.lead_name || "-", "-"]));
@@ -7024,7 +7283,19 @@ function labelFor(key) {
     referencia_da_transaccao: L("transactionReference"), recebido_por: L("receivedBy"), verificado_por: L("verifiedBy"), observacoes: L("observations"),
     imagem_do_envelope: L("envelopeImage"), imagem_envelope_ou_pop: L("envelopeImage"), verified_at: L("verifiedAt"), comentario_verificacao: L("verificationComment"),
     motivo_rejeicao: L("rejectionReason"), created_at: L("createdAt"), church_id: L("church"), whatsapp: L("whatsapp"), igreja: L("church"),
-    source_type: L("sourceType"), member_id: "Member ID", contributor_id: "Contributor ID", first_timer_id: "First Timer ID", partner_id: "Partner ID"
+    source_type: L("sourceType"), member_id: "Member ID", contributor_id: "Contributor ID", first_timer_id: "First Timer ID", partner_id: "Partner ID",
+    full_name: L("staffFullName"), title: L("treatment"), gender: L("gender"), date_of_birth: L("dateOfBirth"),
+    birthday_month: L("staffFilterBirthdayMonth"), birthday_day: L("staffBirthdayLabel"), age: L("staffAge"),
+    next_birthday: L("staffUpcomingBirthdays"), days_until_birthday: L("staffDaysUntilBirthday"),
+    marital_status: L("maritalStatus"), address: L("address"),
+    emergency_contact_name: L("emergencyContactName"), emergency_contact_phone: L("emergencyContactPhone"),
+    national_id_number: L("nationalIdNumber"), nuit: L("taxNumber"), profile_photo: L("profilePhoto"),
+    bank_name: L("bankName"), bank_account_number: L("bankAccountNumber"), mobile_money_number: L("mobileMoneyNumber"),
+    contract_start_date: L("contractStartDate"), contract_end_date: L("contractEndDate"), probation_end_date: L("probationEndDate"),
+    role_title: L("staffRoleTitle"), department_name: L("reqDepartment"), supervisor_name: L("staffSupervisor"),
+    start_date: L("staffStartDate"), employment_type: L("staffEmploymentType"),
+    salary_or_allowance: L("staffSalary"), payment_frequency: L("staffPaymentFreq"), payment_method: L("method"),
+    bank_or_mobile_details: L("bankOrMobileDetails"), notes: L("notes"), phone: L("phone"), email: L("email")
   };
   return map[key] || key.replaceAll("_", " ");
 }
@@ -7139,6 +7410,18 @@ function openForm(type, id = null) {
   if (type === "foundationStudent") return openFoundationStudentForm(id);
   if (type === "church") return openChurchDrawer(id ? "form" : "form", id);
   if (type === "finance" && id) return openFinanceDrawer("edit", id);
+  if (type === "staffProfile") {
+    modalMode = id ? "edit" : "create";
+    modalType = type;
+    modalRecordId = id;
+    const record = id ? getCollection(type).find((item) => item.id === id) : {};
+    byId("modalEyebrow").textContent = modalMode === "edit" ? L("edit") : L("add");
+    byId("modalTitle").textContent = formTitle(type);
+    byId("modalFields").innerHTML = renderStaffProfileForm(record, modalMode);
+    bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
+    requestAnimationFrame(() => mountRelationalControls(byId("entryForm")));
+    return;
+  }
   modalMode = id ? "edit" : "create";
   modalType = type;
   modalRecordId = id;
@@ -7276,19 +7559,43 @@ function submitForm(form) {
     return;
   }
   if (modalType === "staffProfile") {
-    schema.forEach(([name, , inputType]) => {
+    const staffLib = window.CEStaffHr;
+    const canSalary = staffLib?.canViewSalary(activeUser);
+    const staffSchema = (staffLib?.staffProfileSections(canSalary) || []).flatMap((section) => section.fields);
+    staffSchema.forEach(([name, , inputType]) => {
       if (inputType === "checkbox") data[name] = new FormData(form).has(name);
     });
     enrichRecordChurchFields(data);
     data.church_name = churchName(data.church_id);
-    data.salary_or_allowance = Number(data.salary_or_allowance || 0);
+    if (canSalary) data.salary_or_allowance = Number(data.salary_or_allowance || 0);
     const today = new Date().toISOString().slice(0, 10);
     if (modalMode === "edit") {
       const index = state.staffProfiles.findIndex((item) => item.id === modalRecordId);
-      state.staffProfiles[index] = { ...state.staffProfiles[index], ...data, updated_at: today };
+      state.staffProfiles[index] = staffLib.enrichStaffProfile({ ...state.staffProfiles[index], ...data, updated_at: today });
     } else {
       state.staffProfiles = state.staffProfiles || [];
-      state.staffProfiles.push({ id: `staff-${Date.now()}`, user_id: "", created_at: today, updated_at: today, bank_or_mobile_details: "", date_of_birth: "", ...data });
+      state.staffProfiles.push(staffLib.enrichStaffProfile({
+        id: `staff-${Date.now()}`,
+        user_id: "",
+        created_at: today,
+        updated_at: today,
+        bank_or_mobile_details: "",
+        date_of_birth: "",
+        marital_status: "Por Confirmar",
+        address: "",
+        emergency_contact_name: "",
+        emergency_contact_phone: "",
+        national_id_number: "",
+        nuit: "",
+        bank_name: "",
+        bank_account_number: "",
+        mobile_money_number: "",
+        contract_start_date: "",
+        contract_end_date: "",
+        probation_end_date: "",
+        profile_photo: "",
+        ...data
+      }));
     }
     saveState(`${modalMode} staffProfile`);
     bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide();
@@ -7374,6 +7681,7 @@ function submitForm(form) {
 function openView(type, id) {
   if (type === "church") return openChurchDrawer("view", id);
   if (type === "finance") return openFinanceDrawer("view", id);
+  if (type === "staffProfile") return openStaffProfileView(id);
   if (type === "foundationStudent") {
     const record = getCollection(type).find((item) => item.id === id);
     byId("modalEyebrow").textContent = L("view");
@@ -7457,6 +7765,17 @@ function quickAction(action, type, id) {
     return setRoute("cellCellsList");
   }
   if (action === "updateReport") return alert(`${L("updateCellReport")}: ${id}`);
+  if (action === "staffMessage" && type === "staffProfile") {
+    const record = (state.staffProfiles || []).find((item) => item.id === id);
+    if (!record) return;
+    const phone = String(record.whatsapp || record.phone || "").replace(/\D/g, "");
+    if (!phone) return alert(lang === "pt" ? "Sem contacto disponível." : "No contact available.");
+    const message = lang === "pt"
+      ? `Feliz aniversário, ${record.full_name}! Que Deus abençoe o seu dia especial.`
+      : `Happy birthday, ${record.full_name}! May God bless your special day.`;
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, "_blank", "noopener");
+    return;
+  }
   if (action === "view") return openView(type, id);
   if (action === "status" && type === "church") return openChurchDrawer("status", id);
   if (action === "export" && type === "church") return alert(`${L("exportChurch")}: ${churchName(id)}`);
@@ -7837,6 +8156,12 @@ document.addEventListener("input", (event) => {
     }
     return;
   }
+  const birthdayFilterInput = event.target.dataset?.staffBirthdayFilter;
+  if (birthdayFilterInput && activeRoute === "staffHr") {
+    staffHrPageState.birthdayFilters[birthdayFilterInput] = event.target.value;
+    renderStaffHr();
+    return;
+  }
   const filter = event.target.dataset?.churchFilter;
   if (!filter || activeRoute !== "churches") return;
   churchPageState.filters[filter] = event.target.value;
@@ -7892,6 +8217,12 @@ document.addEventListener("change", (event) => {
       }
       syncChurchServiceTimesJson();
     }
+    return;
+  }
+  const birthdayFilterSelect = event.target.dataset?.staffBirthdayFilter;
+  if (birthdayFilterSelect && activeRoute === "staffHr") {
+    staffHrPageState.birthdayFilters[birthdayFilterSelect] = event.target.value;
+    renderStaffHr();
     return;
   }
   const filter = event.target.dataset?.churchFilter;
