@@ -203,8 +203,61 @@ const TEXT = {
     sourcePublicWebsite: "Site Público",
     sourceDashboard: "Dashboard",
     sourceImported: "Importado",
-    financeTabAll: "Todos os Registos",
+    financeTabOverview: "Visão Geral",
+    financeTabEntries: "Lançamentos",
     financeTabPublic: "Submissões Públicas",
+    financeTabVerification: "Verificação",
+    financeTabReports: "Relatórios",
+    financeTabPartners: "Parceiros em Destaque",
+    financeTabExports: "Exportações",
+    financeTabAll: "Todos os Registos",
+    financeReportsSection: "Relatórios Financeiros",
+    financeReportsHint: "Análise detalhada por período, categoria, braço de parceria e contribuinte.",
+    financeTotalReceived: "Total Recebido",
+    financeTotalVerified: "Total Verificado",
+    financeTotalPending: "Total Pendente",
+    financeTotalRejected: "Total Rejeitado",
+    financeContributionCount: "Nº de Contribuições",
+    financeUniqueContributors: "Contribuintes Únicos",
+    financeAverageContribution: "Média por Contribuição",
+    financeReportByCategory: "Relatório por Categoria",
+    financeReportByPartnershipArm: "Relatório por Braço de Parceria",
+    financeReportByIndividual: "Relatório por Indivíduo",
+    financeReportTithe: "Dízimo",
+    financeReportOfferings: "Ofertas",
+    financeReportPartnerships: "Parcerias",
+    financeReportFirstfruits: "Primícias",
+    financeReportSeed: "Semente de Fé",
+    financeReportOther: "Outros",
+    financeChartBar: "Barras",
+    financeChartDonut: "Circular",
+    financePartnersPerArm: "Parceiros por Braço",
+    financeActivePartners: "Parceiros Activos",
+    financeGrowthVsPrev: "Crescimento vs mês anterior",
+    financeFeaturedPartners: "Parceiros em Destaque",
+    financeExportCsv: "Exportar CSV",
+    financeExportJson: "Exportar JSON",
+    financeExportHint: "Exportar os dados filtrados do período seleccionado.",
+    financeVerificationQueue: "Fila de Verificação",
+    financeVerificationHint: "Contribuições pendentes de verificação pela equipa de Finanças.",
+    financePeriodToday: "Hoje",
+    financePeriodWeek: "Esta Semana",
+    financePeriodMonth: "Este Mês",
+    financePeriodQuarter: "Este Trimestre",
+    financePeriodYear: "Este Ano",
+    financePeriodCustom: "Intervalo Personalizado",
+    financeAllChurches: "Todas as Igrejas",
+    financeAllCategories: "Todas as Categorias",
+    financeAllTypes: "Todos os Tipos",
+    financeAllArms: "Todos os Braços",
+    financeAllMethods: "Todos os Métodos",
+    financeAllStatuses: "Todos os Estados",
+    financeAllSources: "Todas as Origens",
+    financeContributorSearch: "Contribuinte / telefone",
+    financeContributionType: "Tipo de Contribuição",
+    financePartnershipArm: "Braço de Parceria",
+    financeSelectContributor: "Seleccionar contribuinte",
+    financeNoChartData: "Sem dados para o período seleccionado.",
     viewSubmission: "Ver Submissão",
     viewProof: "Ver Comprovativo",
     publicSubmission: "Submissão Pública",
@@ -514,8 +567,61 @@ const TEXT = {
     sourcePublicWebsite: "Public Website",
     sourceDashboard: "Dashboard",
     sourceImported: "Imported",
-    financeTabAll: "All Records",
+    financeTabOverview: "Overview",
+    financeTabEntries: "Entries",
     financeTabPublic: "Public Submissions",
+    financeTabVerification: "Verification",
+    financeTabReports: "Reports",
+    financeTabPartners: "Featured Partners",
+    financeTabExports: "Exports",
+    financeTabAll: "All Records",
+    financeReportsSection: "Financial Reports",
+    financeReportsHint: "Detailed analysis by period, category, partnership arm and contributor.",
+    financeTotalReceived: "Total Received",
+    financeTotalVerified: "Total Verified",
+    financeTotalPending: "Total Pending",
+    financeTotalRejected: "Total Rejected",
+    financeContributionCount: "Contributions",
+    financeUniqueContributors: "Unique Contributors",
+    financeAverageContribution: "Average per Contribution",
+    financeReportByCategory: "Report by Category",
+    financeReportByPartnershipArm: "Report by Partnership Arm",
+    financeReportByIndividual: "Report by Individual",
+    financeReportTithe: "Tithe",
+    financeReportOfferings: "Offerings",
+    financeReportPartnerships: "Partnerships",
+    financeReportFirstfruits: "Firstfruits",
+    financeReportSeed: "Seed of Faith",
+    financeReportOther: "Other",
+    financeChartBar: "Bar",
+    financeChartDonut: "Donut",
+    financePartnersPerArm: "Partners per Arm",
+    financeActivePartners: "Active Partners",
+    financeGrowthVsPrev: "Growth vs previous month",
+    financeFeaturedPartners: "Featured Partners",
+    financeExportCsv: "Export CSV",
+    financeExportJson: "Export JSON",
+    financeExportHint: "Export filtered data for the selected period.",
+    financeVerificationQueue: "Verification Queue",
+    financeVerificationHint: "Contributions pending verification by the Finance team.",
+    financePeriodToday: "Today",
+    financePeriodWeek: "This Week",
+    financePeriodMonth: "This Month",
+    financePeriodQuarter: "This Quarter",
+    financePeriodYear: "This Year",
+    financePeriodCustom: "Custom Range",
+    financeAllChurches: "All Churches",
+    financeAllCategories: "All Categories",
+    financeAllTypes: "All Types",
+    financeAllArms: "All Arms",
+    financeAllMethods: "All Methods",
+    financeAllStatuses: "All Statuses",
+    financeAllSources: "All Sources",
+    financeContributorSearch: "Contributor / phone",
+    financeContributionType: "Contribution Type",
+    financePartnershipArm: "Partnership Arm",
+    financeSelectContributor: "Select contributor",
+    financeNoChartData: "No data for the selected period.",
     viewSubmission: "View Submission",
     viewProof: "View Proof",
     publicSubmission: "Public Submission",
@@ -1948,7 +2054,12 @@ const FOUNDATION_STATUS_MAP = {
   Graduated: "Graduado",
   "Certificate Issued": "Certificado Emitido"
 };
-const givingCategories = ["Dízimo", "Ofertas", "Acção de Graças", "Primícias", "Semente de Fé", "Ofertas Especiais", "Rapsódia de Realidades", "Loveworld SAT", "Escola de Cura", "Projecto de Construção de Igreja", "Projecto da Igreja", "Alcançar Moçambique", "Missões no Interior das Cidades", "Outros"];
+const givingCategories = [
+  "Dízimo", "Ofertas", "Acção de Graças", "Primícias", "Semente de Fé", "Ofertas Especiais", "Outros",
+  "Escola de Cura", "Rapsódia de Realidades", "Loveworld SAT", "Construtores de Visão",
+  "Missões de Cidades do Interior", "Alcançar Moçambique", "Projecto da Igreja",
+  "Projecto de Construção de Igreja", "Rapsódias das Crianças", "Mandato de Célula", "Outros Braços"
+];
 const paymentMethods = ["Dinheiro", "Cheque", "M-Pesa", "E-Mola", "Banco"];
 const serviceOptions = ["Domingo Manhã", "Domingo Tarde", "Quarta-Feira", "Sexta-Feira", "Programa Especial"];
 const treatmentOptions = ["Sr.", "Sra.", "Irmão", "Irmã", "Pastor", "Diácono", "Diaconisa"];
@@ -2052,8 +2163,14 @@ const seedData = {
   contributors: [],
   publicGivingSubmissions: [],
   finance: [
-    { id: "fin-1", source_type: "contributor", contributor_id: "contrib-fin-1", member_id: "", first_timer_id: "", partner_id: "", nome: "Ana", apelido: "Mabunda", telefone: "874520011", whatsapp: "874520011", email: "", endereco: "Maputo", celula: "Cell Central", igreja: "National HQ - Christ Embassy Mozambique", church_id: "church-hq", categoria_da_contribuicao: "Dízimo", metodo_de_pagamento: "M-Pesa", valor: 7500, referencia_da_transaccao: "MP463900298", data: "2026-07-05", imagem_envelope_ou_pop: "", imagem_do_envelope: "", observacoes: "", estado: FINANCE_STATUS_VERIFIED, recebido_por: "Admin Principal", verificado_por: "Admin Principal", verified_at: "2026-07-05T10:30:00.000Z", comentario_verificacao: "Pagamento confirmado no M-Pesa.", motivo_rejeicao: "", created_at: "2026-07-05T09:15:00.000Z", created_by: "Admin Principal", updated_by: "Admin Principal", updated_at: "2026-07-05" },
-    { id: "fin-2", source_type: "partner", contributor_id: "", member_id: "", first_timer_id: "", partner_id: "part-1", nome: "Carlos", apelido: "Muianga", telefone: "866877389", whatsapp: "866877389", email: "carlos@example.com", endereco: "Online", celula: "Virtual", igreja: "CE Mozambique Online Church", church_id: "church-virtual", categoria_da_contribuicao: "Loveworld SAT", metodo_de_pagamento: "Banco", valor: 4200, referencia_da_transaccao: "BCI-17596091110001", data: "2026-07-02", imagem_envelope_ou_pop: "", imagem_do_envelope: "", observacoes: "Aguardar confirmação bancária.", estado: FINANCE_STATUS_PENDING, recebido_por: "Admin Principal", verificado_por: "", verified_at: "", comentario_verificacao: "", motivo_rejeicao: "", created_at: "2026-07-02T14:20:00.000Z", created_by: "Admin Principal", updated_by: "Admin Principal", updated_at: "2026-07-02" }
+    { id: "fin-1", source_type: "contributor", contributor_id: "contrib-fin-1", member_id: "", first_timer_id: "", partner_id: "", nome: "Ana", apelido: "Mabunda", telefone: "874520011", whatsapp: "874520011", email: "", endereco: "Maputo", celula: "Cell Central", grupo_de_celula: "Grupo Central", igreja: "National HQ - Christ Embassy Mozambique", church_id: "church-hq", categoria_da_contribuicao: "Dízimo", metodo_de_pagamento: "M-Pesa", valor: 7500, referencia_da_transaccao: "MP463900298", data: "2026-07-05", imagem_envelope_ou_pop: "", imagem_do_envelope: "", observacoes: "", estado: FINANCE_STATUS_VERIFIED, recebido_por: "Admin Principal", verificado_por: "Admin Principal", verified_at: "2026-07-05T10:30:00.000Z", comentario_verificacao: "Pagamento confirmado no M-Pesa.", motivo_rejeicao: "", created_at: "2026-07-05T09:15:00.000Z", created_by: "Admin Principal", updated_by: "Admin Principal", updated_at: "2026-07-05" },
+    { id: "fin-2", source_type: "partner", contributor_id: "", member_id: "", first_timer_id: "", partner_id: "part-1", nome: "Carlos", apelido: "Muianga", telefone: "866877389", whatsapp: "866877389", email: "carlos@example.com", endereco: "Online", celula: "Virtual", igreja: "CE Mozambique Online Church", church_id: "church-virtual", categoria_da_contribuicao: "Loveworld SAT", metodo_de_pagamento: "Banco", valor: 4200, referencia_da_transaccao: "BCI-17596091110001", data: "2026-07-02", imagem_envelope_ou_pop: "", imagem_do_envelope: "", observacoes: "Aguardar confirmação bancária.", estado: FINANCE_STATUS_PENDING, recebido_por: "Admin Principal", verificado_por: "", verified_at: "", comentario_verificacao: "", motivo_rejeicao: "", created_at: "2026-07-02T14:20:00.000Z", created_by: "Admin Principal", updated_by: "Admin Principal", updated_at: "2026-07-02" },
+    { id: "fin-3", source_type: "contributor", contributor_id: "contrib-fin-2", nome: "João", apelido: "Nhaca", telefone: "845551122", celula: "Cell Mavalane", grupo_de_celula: "Grupo Matola", church_id: "church-hq", categoria_da_contribuicao: "Ofertas", metodo_de_pagamento: "M-Pesa", valor: 2500, data: "2026-07-08", estado: FINANCE_STATUS_VERIFIED, verificado_por: "Admin Principal", verified_at: "2026-07-08T11:00:00.000Z", created_at: "2026-07-08T10:00:00.000Z", created_by: "Admin Principal", updated_by: "Admin Principal", updated_at: "2026-07-08" },
+    { id: "fin-4", source_type: "partner", partner_id: "part-2", nome: "Helena", apelido: "Cossa", telefone: "843332211", celula: "Cell Central", church_id: "church-hq", categoria_da_contribuicao: "Escola de Cura", metodo_de_pagamento: "E-Mola", valor: 5000, data: "2026-07-09", estado: FINANCE_STATUS_VERIFIED, verificado_por: "Admin Principal", verified_at: "2026-07-09T12:00:00.000Z", created_at: "2026-07-09T09:00:00.000Z", created_by: "Admin Principal", updated_by: "Admin Principal", updated_at: "2026-07-09" },
+    { id: "fin-5", source_type: "partner", partner_id: "part-3", nome: "Miguel", apelido: "Tembe", telefone: "861112233", celula: "Cell Central", church_id: "church-matola", categoria_da_contribuicao: "Rapsódia de Realidades", metodo_de_pagamento: "M-Pesa", valor: 3000, data: "2026-07-10", estado: FINANCE_STATUS_VERIFIED, verificado_por: "Admin Principal", verified_at: "2026-07-10T08:30:00.000Z", created_at: "2026-07-10T08:00:00.000Z", created_by: "Admin Principal", updated_by: "Admin Principal", updated_at: "2026-07-10" },
+    { id: "fin-6", source_type: "contributor", nome: "Sofia", apelido: "Macuacua", telefone: "872223344", celula: "Cell Mavalane", church_id: "church-hq", categoria_da_contribuicao: "Primícias", metodo_de_pagamento: "Banco", valor: 1800, data: "2026-06-15", estado: FINANCE_STATUS_VERIFIED, verificado_por: "Admin Principal", verified_at: "2026-06-15T14:00:00.000Z", created_at: "2026-06-15T13:00:00.000Z", created_by: "Admin Principal", updated_by: "Admin Principal", updated_at: "2026-06-15" },
+    { id: "fin-7", source_type: "partner", partner_id: "part-4", nome: "Carlos", apelido: "Muianga", telefone: "866877389", celula: "Virtual", church_id: "church-virtual", categoria_da_contribuicao: "Construtores de Visão", metodo_de_pagamento: "Banco", valor: 10000, data: "2026-06-20", estado: FINANCE_STATUS_VERIFIED, verificado_por: "Admin Principal", verified_at: "2026-06-21T09:00:00.000Z", created_at: "2026-06-20T16:00:00.000Z", created_by: "Admin Principal", updated_by: "Admin Principal", updated_at: "2026-06-21" },
+    { id: "fin-8", source_type: "contributor", nome: "Rosa", apelido: "Jossias", telefone: "845667788", celula: "Cell Central", church_id: "church-beira", categoria_da_contribuicao: "Alcançar Moçambique", metodo_de_pagamento: "M-Pesa", valor: 1500, data: "2026-07-11", estado: FINANCE_STATUS_PENDING, created_at: "2026-07-11T07:00:00.000Z", created_by: "Admin Principal", updated_by: "Admin Principal", updated_at: "2026-07-11" }
   ],
   cells: [
     { id: "cell-1", church_id: "church-hq", group_cell_id: "group-1", nome_da_celula: "Cell Central", lider_id: "m-1", lider: "Pastor Kene Ume", area: "Maputo", membros: ["m-1", "m-2"], presencas: [{ data: "2026-07-05", total: 18 }, { data: "2026-06-28", total: 16 }], almas_ganhas: [{ data: "2026-07-05", total: 3 }], limite_crescimento: 20 },
@@ -2246,7 +2363,27 @@ let churchFormServiceTimes = [];
 let financeDrawerMode = null;
 let financeDrawerRecordId = null;
 let financeContributorUI = { query: "", results: [], activeIndex: -1, open: false, linked: null };
-const financePageState = { tab: "all", sourceFilter: "" };
+const financePageState = {
+  tab: "overview",
+  sourceFilter: "",
+  reportChartMode: "bar",
+  selectedContributor: "",
+  reportFilters: {
+    period: "month",
+    dateFrom: "",
+    dateTo: "",
+    churchId: "",
+    category: "",
+    contributionType: "",
+    partnershipArm: "",
+    method: "",
+    status: "",
+    source: "",
+    contributor: "",
+    cell: "",
+    cellGroup: ""
+  }
+};
 const churchPageState = {
   view: localStorage.getItem(CHURCH_VIEW_KEY) || "cards",
   filters: { search: "", province: "", city: "", type: "", status: "", information_status: "" }
@@ -2572,7 +2709,7 @@ function migrateFinanceRecord(record) {
     "Included in Report": FINANCE_STATUS_INCLUDED
   };
   const churchId = record.church_id || "";
-  return {
+  const migrated = {
     ...record,
     estado: legacyStatus[record.estado] || record.estado || FINANCE_STATUS_PENDING,
     recebido_por: record.recebido_por || "",
@@ -2600,6 +2737,123 @@ function migrateFinanceRecord(record) {
     data_da_transferencia: record.data_da_transferencia || record.data || "",
     created_at: record.created_at || record.updated_at || record.data || ""
   };
+  return typeof enrichFinanceRecord === "function" ? enrichFinanceRecord(migrated) : migrated;
+}
+
+function getScopedFinanceList() {
+  return scoped(state.finance).map((record) => migrateFinanceRecord(record));
+}
+
+function getFinanceReportLabels() {
+  return {
+    period: L("date"),
+    periodToday: L("financePeriodToday"),
+    periodWeek: L("financePeriodWeek"),
+    periodMonth: L("financePeriodMonth"),
+    periodQuarter: L("financePeriodQuarter"),
+    periodYear: L("financePeriodYear"),
+    periodCustom: L("financePeriodCustom"),
+    from: L("from"),
+    to: L("to"),
+    church: L("church"),
+    allChurches: L("financeAllChurches"),
+    category: L("category"),
+    allCategories: L("financeAllCategories"),
+    contributionType: L("financeContributionType"),
+    allTypes: L("financeAllTypes"),
+    partnershipArm: L("financePartnershipArm"),
+    allArms: L("financeAllArms"),
+    method: L("method"),
+    allMethods: L("financeAllMethods"),
+    status: L("status"),
+    allStatuses: L("financeAllStatuses"),
+    source: L("sourceType"),
+    allSources: L("financeAllSources"),
+    sourceDashboard: L("sourceDashboard"),
+    sourcePublic: L("sourcePublicWebsite"),
+    sourceImported: L("sourceImported"),
+    contributor: L("contributor"),
+    contributorPlaceholder: L("financeContributorSearch"),
+    cell: L("cell"),
+    cellGroup: L("cellGroup")
+  };
+}
+
+function financeModuleTabs() {
+  const tabs = [
+    ["overview", L("financeTabOverview")],
+    ["entries", L("financeTabEntries")],
+    ["public", L("financeTabPublic")],
+    ["verification", L("financeTabVerification")],
+    ["reports", L("financeTabReports")],
+    ["partners", L("financeTabPartners")],
+    ["exports", L("financeTabExports")]
+  ];
+  return `<div class="tab-strip module-tab-strip finance-module-tabs mb-3">${tabs.map(([key, label]) =>
+    `<button type="button" class="${financePageState.tab === key ? "active" : ""}" data-finance-tab="${key}">${label}</button>`
+  ).join("")}</div>`;
+}
+
+function financeReportStatsCards(stats) {
+  return `
+    <div class="row g-3 summary-cards-row finance-report-stats">
+      ${metric("bi-cash-stack", L("financeTotalReceived"), money(stats.totalReceived), L("finance"))}
+      ${metric("bi-patch-check", L("financeTotalVerified"), money(stats.totalVerified), L("verified"))}
+      ${metric("bi-hourglass", L("financeTotalPending"), money(stats.totalPending), L("pendingVerification"))}
+      ${metric("bi-x-circle", L("financeTotalRejected"), money(stats.totalRejected), L("rejected"))}
+      ${metric("bi-receipt", L("financeContributionCount"), stats.contributionCount, L("finance"))}
+      ${metric("bi-people", L("financeUniqueContributors"), stats.uniqueContributors, L("contributor"))}
+      ${metric("bi-calculator", L("financeAverageContribution"), money(stats.averageContribution), L("amount"))}
+    </div>`;
+}
+
+function financeContributorProfileHtml(profile) {
+  if (!profile) return `<p class="text-secondary">${L("financeSelectContributor")}</p>`;
+  const cats = [...profile.categories].join(", ");
+  const arms = [...profile.arms].join(", ");
+  return `
+    <article class="finance-contributor-profile glass-panel">
+      <div class="finance-contributor-profile-head">
+        <div>
+          <span class="eyebrow">${L("contributor")}</span>
+          <h3 class="h5 mb-0">${profile.name}</h3>
+        </div>
+        <strong class="finance-contributor-total">${money(profile.total)}</strong>
+      </div>
+      <div class="church-detail-grid mt-3">
+        <div><span>${L("phone")}</span><strong>${profile.phone}</strong></div>
+        <div><span>${L("church")}</span><strong>${churchName(profile.church_id)}</strong></div>
+        <div><span>${L("cell")}</span><strong>${profile.celula}</strong></div>
+        <div><span>${L("cellGroup")}</span><strong>${profile.grupo_de_celula}</strong></div>
+        <div><span>${L("financeContributionCount")}</span><strong>${profile.count}</strong></div>
+        <div><span>${L("category")}</span><strong>${cats || "-"}</strong></div>
+        ${arms ? `<div class="col-12"><span>${L("financePartnershipArm")}</span><strong>${arms}</strong></div>` : ""}
+      </div>
+    </article>`;
+}
+
+function financePartnersArmCards(armDetails) {
+  if (!armDetails.length) return `<p class="finance-chart-empty">${L("financeNoChartData")}</p>`;
+  return `<div class="row g-3">${armDetails.map((row) => `
+    <div class="col-md-6 col-xl-4">
+      <article class="finance-partner-arm-card glass-panel h-100">
+        <div class="finance-partner-arm-head">
+          <h3 class="h6 mb-1">${row.arm}</h3>
+          <span class="finance-growth-badge ${row.growth >= 0 ? "is-up" : "is-down"}">${row.growthLabel}</span>
+        </div>
+        <div class="finance-partner-arm-metrics">
+          <div><span>${L("amount")}</span><strong>${money(row.total)}</strong></div>
+          <div><span>${L("financePartnersPerArm")}</span><strong>${row.partnerCount}</strong></div>
+        </div>
+        <div class="finance-partner-arm-list">
+          <span class="eyebrow">${L("financeActivePartners")}</span>
+          ${row.activePartners.slice(0, 4).map((p) => `
+            <button type="button" class="finance-partner-chip" data-finance-select-contributor="${p.key}">
+              <span>${p.name}</span><strong>${money(p.total)}</strong>
+            </button>`).join("") || `<span class="small text-secondary">-</span>`}
+        </div>
+      </article>
+    </div>`).join("")}</div>`;
 }
 
 function financeOriginKey(record) {
@@ -4711,73 +4965,193 @@ function renderFinance() {
     }
   }
 
-  let list = scoped(state.finance).map((record) => migrateFinanceRecord(record));
+  window.paymentMethods = paymentMethods;
+  window.financeStatuses = financeStatuses;
+
+  const allList = getScopedFinanceList();
+  const filters = financePageState.reportFilters;
+  const filteredList = typeof filterFinanceRecords === "function"
+    ? filterFinanceRecords(allList, filters)
+    : allList;
+  const prevRange = typeof getPreviousPeriodRange === "function"
+    ? getPreviousPeriodRange(filters.period, filters.dateFrom, filters.dateTo)
+    : { from: "", to: "" };
+  const previousList = prevRange.from && typeof filterFinanceRecords === "function"
+    ? filterFinanceRecords(allList, { ...filters, period: "custom", dateFrom: prevRange.from, dateTo: prevRange.to })
+    : [];
+
+  let list = filteredList;
   if (financePageState.sourceFilter) {
     list = list.filter((record) => financeOriginKey(record) === financePageState.sourceFilter);
   }
 
-  const today = list.filter((f) => f.data === new Date().toISOString().slice(0, 10)).reduce((sum, f) => sum + Number(f.valor || 0), 0);
+  const stats = typeof computeFinanceReportStats === "function"
+    ? computeFinanceReportStats(list)
+    : { totalReceived: 0, totalVerified: 0, totalPending: 0, totalRejected: 0, contributionCount: 0, uniqueContributors: 0, averageContribution: 0 };
+
+  const today = allList.filter((f) => f.data === new Date().toISOString().slice(0, 10)).reduce((sum, f) => sum + Number(f.valor || 0), 0);
   const monthKey = new Date().toISOString().slice(0, 7);
-  const month = list.filter((f) => f.data?.startsWith(monthKey)).reduce((sum, f) => sum + Number(f.valor || 0), 0);
-  const categoryFilter = `<select class="form-select" aria-label="${L("category")}"><option value="">${L("category")}</option>${givingCategories.map((c) => `<option>${c}</option>`).join("")}</select>`;
-  const methodFilter = `<select class="form-select" aria-label="${L("method")}"><option value="">${L("method")}</option>${paymentMethods.map((m) => `<option>${m}</option>`).join("")}</select>`;
-  const sourceFilter = `<select class="form-select" data-finance-source-filter aria-label="${L("sourceType")}">
-    <option value="">${L("all")} — ${L("sourceType")}</option>
-    <option value="public_website" ${financePageState.sourceFilter === "public_website" ? "selected" : ""}>${L("sourcePublicWebsite")}</option>
-    <option value="dashboard" ${financePageState.sourceFilter === "dashboard" ? "selected" : ""}>${L("sourceDashboard")}</option>
-    <option value="imported" ${financePageState.sourceFilter === "imported" ? "selected" : ""}>${L("sourceImported")}</option>
-  </select>`;
-  const financeTabs = `<div class="tab-strip module-tab-strip mb-3">
-    <button type="button" class="${financePageState.tab === "all" ? "active" : ""}" data-finance-tab="all">${L("financeTabAll")}</button>
-    <button type="button" class="${financePageState.tab === "public" ? "active" : ""}" data-finance-tab="public">${L("financeTabPublic")}</button>
-  </div>`;
+  const month = allList.filter((f) => f.data?.startsWith(monthKey)).reduce((sum, f) => sum + Number(f.valor || 0), 0);
   const publicRows = getScopedPublicSubmissionRows();
-  const recordsTable = financePageState.tab === "public"
-    ? dataTable(
-      [L("contributor"), L("category"), L("amount"), L("method"), L("date"), L("church"), L("sourceType"), L("status"), L("actions")],
-      publicRows.map((row) => [
-        row.submission.nome_completo || fullName(row.records[0] || {}),
-        row.categories || "-",
-        money(row.total),
-        row.submission.metodo_de_pagamento || row.records[0]?.metodo_de_pagamento || "-",
-        row.submission.data_da_transferencia || row.records[0]?.data || "-",
-        row.submission.igreja_nome || churchName(row.records[0]?.church_id),
-        financeOriginBadge(row.records[0] || {}),
-        badge(row.status),
-        publicSubmissionActions(row.submission.submission_group_id, row.records)
-      ])
-    )
-    : dataTable(
-      [L("contributor"), L("category"), L("method"), L("amount"), L("date"), L("church"), L("sourceType"), L("status"), L("actions")],
-      list.map((f) => [
-        fullName(f), f.categoria_da_contribuicao, f.metodo_de_pagamento, money(f.valor), f.data, churchName(f.church_id),
-        financeOriginBadge(f), badge(f.estado), financeActions(f.id, f)
-      ])
-    );
+  const pendingList = allList.filter((f) => statusKey(f.estado) === "pendingVerification");
+  const contributorProfiles = typeof computeContributorProfiles === "function" ? computeContributorProfiles(list) : [];
+  const selectedProfile = contributorProfiles.find((p) => p.key === financePageState.selectedContributor) || contributorProfiles[0] || null;
+  if (!financePageState.selectedContributor && selectedProfile) financePageState.selectedContributor = selectedProfile.key;
+
+  const categoryRows = typeof groupFinanceByBucket === "function"
+    ? groupFinanceByBucket(list, (key) => L(key))
+    : [];
+  const armRows = typeof groupFinanceByPartnershipArm === "function" ? groupFinanceByPartnershipArm(list) : [];
+  const armDetails = typeof computePartnershipArmDetails === "function"
+    ? computePartnershipArmDetails(list, previousList, (g) => `${g >= 0 ? "+" : ""}${g}%`)
+    : [];
+
+  const categoryChart = financePageState.reportChartMode === "donut" && typeof financeDonutChart === "function"
+    ? financeDonutChart(L("financeReportByCategory"), categoryRows, L("financeNoChartData"))
+    : typeof financeBarChart === "function"
+      ? financeBarChart(L("financeReportByCategory"), categoryRows, L("financeNoChartData"))
+      : chartCard(L("financeReportByCategory"), categoryRows);
+
+  const armChart = typeof financeBarChart === "function"
+    ? financeBarChart(L("financeReportByPartnershipArm"), armRows, L("financeNoChartData"))
+    : chartCard(L("financeReportByPartnershipArm"), armRows);
+
+  const reportFiltersHtml = typeof financeReportFilterBar === "function"
+    ? financeReportFilterBar(filters, scoped(state.churches), getFinanceReportLabels())
+    : "";
+
+  const chartModeToggle = `<div class="finance-chart-mode-toggle view-toggle" role="group">
+    <button type="button" class="${financePageState.reportChartMode === "bar" ? "active" : ""}" data-finance-chart-mode="bar"><i class="bi bi-bar-chart"></i> ${L("financeChartBar")}</button>
+    <button type="button" class="${financePageState.reportChartMode === "donut" ? "active" : ""}" data-finance-chart-mode="donut"><i class="bi bi-pie-chart"></i> ${L("financeChartDonut")}</button>
+  </div>`;
+
+  const entriesTable = dataTable(
+    [L("contributor"), L("category"), L("financeContributionType"), L("method"), L("amount"), L("date"), L("church"), L("sourceType"), L("status"), L("actions")],
+    list.map((f) => [
+      f.contributor_name || fullName(f),
+      f.contribution_category,
+      f.contribution_group || "-",
+      f.metodo_de_pagamento,
+      money(f.valor),
+      f.data,
+      churchName(f.church_id),
+      financeOriginBadge(f),
+      badge(f.estado),
+      financeActions(f.id, f)
+    ])
+  );
+
+  const publicTable = dataTable(
+    [L("contributor"), L("category"), L("amount"), L("method"), L("date"), L("church"), L("sourceType"), L("status"), L("actions")],
+    publicRows.map((row) => [
+      row.submission.nome_completo || fullName(row.records[0] || {}),
+      row.categories || "-",
+      money(row.total),
+      row.submission.metodo_de_pagamento || row.records[0]?.metodo_de_pagamento || "-",
+      row.submission.data_da_transferencia || row.records[0]?.data || "-",
+      row.submission.igreja_nome || churchName(row.records[0]?.church_id),
+      financeOriginBadge(row.records[0] || {}),
+      badge(row.status),
+      publicSubmissionActions(row.submission.submission_group_id, row.records)
+    ])
+  );
+
+  const verificationTable = dataTable(
+    [L("contributor"), L("category"), L("amount"), L("method"), L("date"), L("church"), L("sourceType"), L("actions")],
+    pendingList.map((f) => [
+      f.contributor_name || fullName(f),
+      f.contribution_category,
+      money(f.valor),
+      f.metodo_de_pagamento,
+      f.data,
+      churchName(f.church_id),
+      financeOriginBadge(f),
+      financeActions(f.id, f)
+    ])
+  );
+
+  const contributorOptions = contributorProfiles.slice(0, 30).map((p) =>
+    `<option value="${p.key}" ${financePageState.selectedContributor === p.key ? "selected" : ""}>${p.name} — ${money(p.total)}</option>`
+  ).join("");
+
+  let tabContent = "";
+  if (financePageState.tab === "overview") {
+    tabContent = `
+      ${moduleSection(L("financeOverviewSection"), L("financeOverviewHint"), "bi-speedometer2", "", `
+        <div class="row g-3 summary-cards-row">
+          ${metric("bi-calendar-day", L("totalToday"), money(today), L("finance"))}
+          ${metric("bi-calendar3", L("totalThisMonth"), money(month), L("thisMonth"))}
+          ${metric("bi-hourglass", L("pendingVerification"), pendingList.length, L("needsAction"))}
+          ${metric("bi-patch-check", L("verified"), allList.filter((f) => statusKey(f.estado) === "verified").length, L("status"))}
+          ${metric("bi-globe2", L("financeTabPublic"), publicRows.filter((row) => statusKey(row.status) === "pendingVerification").length, L("sourcePublicWebsite"))}
+        </div>`)}
+      ${moduleSection(L("financeAnalyticsSection"), L("financeAnalyticsHint"), "bi-pie-chart", "", `
+        <div class="row g-4">
+          <div class="col-xl-4">${chartCard(L("byCategory"), groupSum(allList, "contribution_category", "valor"))}</div>
+          <div class="col-xl-4">${chartCard(L("byChurch"), groupSum(allList.map((f) => ({ ...f, igreja: churchName(f.church_id) })), "igreja", "valor"))}</div>
+          <div class="col-xl-4">${chartCard(L("byPaymentMethod"), groupSum(allList, "metodo_de_pagamento", "valor"))}</div>
+        </div>`)}`;
+  } else if (financePageState.tab === "entries") {
+    tabContent = moduleSection(L("financeRecordsSection"), L("financeRecordsHint"), "bi-table", "", `
+      <article class="panel glass-panel mb-0">${entriesTable}</article>`);
+  } else if (financePageState.tab === "public") {
+    tabContent = moduleSection(L("financeTabPublic"), L("financeRecordsHint"), "bi-globe2", "", `
+      <article class="panel glass-panel mb-0">${publicTable}</article>`);
+  } else if (financePageState.tab === "verification") {
+    tabContent = moduleSection(L("financeVerificationQueue"), L("financeVerificationHint"), "bi-shield-check", "", `
+      <article class="panel glass-panel mb-0">${verificationTable}</article>`);
+  } else if (financePageState.tab === "reports") {
+    tabContent = `
+      ${moduleSection(L("financeReportsSection"), L("financeReportsHint"), "bi-graph-up", "", `
+        ${reportFiltersHtml}
+        ${financeReportStatsCards(stats)}
+        <div class="d-flex justify-content-end mb-3">${chartModeToggle}</div>
+        <div class="row g-4 mb-4">
+          <div class="col-xl-6">${categoryChart}</div>
+          <div class="col-xl-6">${armChart}</div>
+        </div>
+        <div class="row g-4">
+          <div class="col-xl-5">
+            <article class="panel glass-panel h-100">
+              <div class="panel-head"><h3 class="panel-title">${L("financeReportByIndividual")}</h3></div>
+              <select class="form-select mb-3" data-finance-select-contributor aria-label="${L("financeSelectContributor")}">
+                <option value="">${L("financeSelectContributor")}</option>
+                ${contributorOptions}
+              </select>
+              ${financeContributorProfileHtml(selectedProfile)}
+            </article>
+          </div>
+          <div class="col-xl-7">
+            <article class="panel glass-panel h-100">
+              <div class="panel-head"><h3 class="panel-title">${L("financeReportByPartnershipArm")}</h3></div>
+              ${financePartnersArmCards(armDetails)}
+            </article>
+          </div>
+        </div>`)}`;
+  } else if (financePageState.tab === "partners") {
+    tabContent = moduleSection(L("financeFeaturedPartners"), L("financeReportsHint"), "bi-stars", "", `
+      ${reportFiltersHtml}
+      ${financePartnersArmCards(armDetails)}
+      <div class="row g-4 mt-1">
+        <div class="col-12">${armChart}</div>
+      </div>`);
+  } else if (financePageState.tab === "exports") {
+    tabContent = moduleSection(L("financeTabExports"), L("financeExportHint"), "bi-download", "", `
+      ${reportFiltersHtml}
+      ${financeReportStatsCards(stats)}
+      <div class="finance-export-actions d-flex flex-wrap gap-3 mt-3">
+        <button type="button" class="btn btn-ce-gold" data-finance-export="csv"><i class="bi bi-filetype-csv me-2"></i>${L("financeExportCsv")}</button>
+        <button type="button" class="btn btn-outline-cyan" data-finance-export="json"><i class="bi bi-braces me-2"></i>${L("financeExportJson")}</button>
+      </div>
+      <p class="small text-secondary mt-3 mb-0">${list.length} ${L("financeContributionCount").toLowerCase()} · ${money(stats.totalReceived)}</p>`);
+  }
 
   setPageContent(`
     ${sectionHeader(L("finance"), L("financeSubtitle"), "finance", "bi-cash-coin")}
-    ${moduleSection(L("financeOverviewSection"), L("financeOverviewHint"), "bi-speedometer2", "", `
-      <div class="row g-3 summary-cards-row">
-        ${metric("bi-calendar-day", L("totalToday"), money(today), L("finance"))}
-        ${metric("bi-calendar3", L("totalThisMonth"), money(month), L("thisMonth"))}
-        ${metric("bi-hourglass", L("pendingVerification"), list.filter((f) => statusKey(f.estado) === "pendingVerification").length, L("needsAction"))}
-        ${metric("bi-patch-check", L("verified"), list.filter((f) => statusKey(f.estado) === "verified").length, L("status"))}
-        ${metric("bi-x-circle", L("rejected"), list.filter((f) => statusKey(f.estado) === "rejected").length, L("status"))}
-        ${metric("bi-globe2", L("financeTabPublic"), publicRows.filter((row) => statusKey(row.status) === "pendingVerification").length, L("sourcePublicWebsite"))}
-      </div>`)}
-    ${moduleSection(L("financeAnalyticsSection"), L("financeAnalyticsHint"), "bi-pie-chart", "", `
-      <div class="row g-4">
-        <div class="col-xl-4">${chartCard(L("byCategory"), groupSum(list, "categoria_da_contribuicao", "valor"))}</div>
-        <div class="col-xl-4">${chartCard(L("byChurch"), groupSum(list.map((f) => ({ ...f, igreja: churchName(f.church_id) })), "igreja", "valor"))}</div>
-        <div class="col-xl-4">${chartCard(L("byPaymentMethod"), groupSum(list, "metodo_de_pagamento", "valor"))}</div>
-      </div>`)}
-    ${moduleSection(L("financeRecordsSection"), L("financeRecordsHint"), "bi-table", "", `
-      <article class="panel glass-panel mb-0">
-        ${financeTabs}
-        ${filterBar({ extraFields: `${sourceFilter}${categoryFilter}${methodFilter}`, statusOptions: financeStatuses })}
-        ${recordsTable}
-      </article>`)}
+    <article class="panel glass-panel mb-4">
+      ${financeModuleTabs()}
+      ${tabContent}
+    </article>
   `);
 }
 
@@ -6318,7 +6692,37 @@ document.addEventListener("click", (event) => {
   }
   const financeTabBtn = event.target.closest("[data-finance-tab]");
   if (financeTabBtn) {
-    financePageState.tab = financeTabBtn.dataset.financeTab || "all";
+    financePageState.tab = financeTabBtn.dataset.financeTab || "overview";
+    if (activeRoute === "finance") renderFinance();
+    return;
+  }
+  const financeChartModeBtn = event.target.closest("[data-finance-chart-mode]");
+  if (financeChartModeBtn) {
+    financePageState.reportChartMode = financeChartModeBtn.dataset.financeChartMode || "bar";
+    if (activeRoute === "finance") renderFinance();
+    return;
+  }
+  const financeExportBtn = event.target.closest("[data-finance-export]");
+  if (financeExportBtn) {
+    const list = typeof filterFinanceRecords === "function"
+      ? filterFinanceRecords(getScopedFinanceList(), financePageState.reportFilters)
+      : getScopedFinanceList();
+    if (financeExportBtn.dataset.financeExport === "csv" && typeof exportFinanceCsv === "function") {
+      exportFinanceCsv(list, `ce-finance-${new Date().toISOString().slice(0, 10)}.csv`);
+    } else if (financeExportBtn.dataset.financeExport === "json") {
+      const blob = new Blob([JSON.stringify(list, null, 2)], { type: "application/json" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `ce-finance-${new Date().toISOString().slice(0, 10)}.json`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    }
+    return;
+  }
+  const financeContributorBtn = event.target.closest("[data-finance-select-contributor]");
+  if (financeContributorBtn) {
+    financePageState.selectedContributor = financeContributorBtn.dataset.financeSelectContributor || "";
+    financePageState.tab = "reports";
     if (activeRoute === "finance") renderFinance();
     return;
   }
@@ -6387,6 +6791,17 @@ document.addEventListener("input", (event) => {
   }
   if (event.target.matches("[data-finance-source-filter]")) {
     financePageState.sourceFilter = event.target.value || "";
+    if (activeRoute === "finance") renderFinance();
+    return;
+  }
+  const reportFilterKey = event.target.dataset?.financeReportFilter;
+  if (reportFilterKey) {
+    financePageState.reportFilters[reportFilterKey] = event.target.value || "";
+    if (activeRoute === "finance") renderFinance();
+    return;
+  }
+  if (event.target.matches("[data-finance-select-contributor]")) {
+    financePageState.selectedContributor = event.target.value || "";
     if (activeRoute === "finance") renderFinance();
     return;
   }
