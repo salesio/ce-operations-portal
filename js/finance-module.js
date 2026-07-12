@@ -266,7 +266,7 @@ function computeContributorProfiles(records) {
 function financeDonutChart(title, rows, emptyLabel) {
   const total = rows.reduce((sum, [, v]) => sum + Number(v || 0), 0);
   if (!total) {
-    return `<article class="${FINANCE_CHART_SURFACE}"><div class="panel-head"><h3 class="panel-title"><i class="bi bi-pie-chart me-2 text-info"></i>${title}</h3></div><p class="finance-chart-empty">${emptyLabel}</p></article>`;
+    return `<article class="${FINANCE_CHART_SURFACE}"><div class="panel-head"><h3 class="panel-title chart-title card-title"><i class="bi bi-pie-chart me-2 text-info"></i>${title}</h3></div><p class="finance-chart-empty">${emptyLabel}</p></article>`;
   }
   const colors = ["#22d3ee", "#d7ad45", "#60a5fa", "#34d399", "#f472b6", "#a78bfa", "#fb923c", "#94a3b8"];
   let cursor = 0;
@@ -281,13 +281,13 @@ function financeDonutChart(title, rows, emptyLabel) {
   const legend = segments.map((s) => `
     <div class="finance-donut-legend-item">
       <span class="finance-donut-swatch" style="background:${s.color}"></span>
-      <span class="finance-donut-legend-label">${s.label}</span>
+      <span class="finance-donut-legend-label chart-label">${s.label}</span>
       <strong>${Math.round(s.pct)}%</strong>
       <span class="finance-donut-legend-value">${Number(s.value).toLocaleString()}</span>
     </div>`).join("");
   return `
     <article class="${FINANCE_CHART_SURFACE}">
-      <div class="panel-head"><h3 class="panel-title"><i class="bi bi-pie-chart me-2 text-info"></i>${title}</h3></div>
+      <div class="panel-head"><h3 class="panel-title chart-title card-title"><i class="bi bi-pie-chart me-2 text-info"></i>${title}</h3></div>
       <div class="finance-donut-wrap">
         <div class="finance-donut" style="background:conic-gradient(${gradient})">
           <div class="finance-donut-hole"><strong>${total.toLocaleString()}</strong><span>MT</span></div>
@@ -302,12 +302,12 @@ function financeBarChart(title, rows, emptyLabel) {
   const bars = rows.length && rows.some(([, v]) => Number(v) > 0)
     ? rows.map(([label, value]) => `
       <div class="chart-row finance-chart-row">
-        <span class="finance-chart-label" title="${label}">${label}</span>
+        <span class="finance-chart-label chart-label" title="${label}">${label}</span>
         <div class="chart-track"><div class="chart-fill finance-chart-fill" style="width:${Math.max(4, Math.round((Number(value) / max) * 100))}%"></div></div>
-        <strong class="finance-chart-value">${Number(value).toLocaleString()}</strong>
+        <strong class="finance-chart-value chart-value bar-value amount-value">${Number(value).toLocaleString()}</strong>
       </div>`).join("")
     : `<p class="finance-chart-empty">${emptyLabel}</p>`;
-  return `<article class="${FINANCE_CHART_SURFACE}"><div class="panel-head"><h3 class="panel-title"><i class="bi bi-bar-chart me-2 text-info"></i>${title}</h3></div><div class="chart-bars">${bars}</div></article>`;
+  return `<article class="${FINANCE_CHART_SURFACE}"><div class="panel-head"><h3 class="panel-title chart-title card-title"><i class="bi bi-bar-chart me-2 text-info"></i>${title}</h3></div><div class="chart-bars">${bars}</div></article>`;
 }
 
 function exportFinanceCsv(records, filename) {
@@ -532,7 +532,7 @@ function filterPartnerProfiles(profiles, filters = {}) {
 
 function financeLineChart(title, rows, emptyLabel, color = FINANCE_CHART_COLORS.gold) {
   if (!rows.length || !rows.some(([, v]) => Number(v) > 0)) {
-    return `<article class="${FINANCE_CHART_SURFACE}"><div class="panel-head"><h3 class="panel-title"><i class="bi bi-graph-up me-2 text-warning"></i>${title}</h3></div><p class="finance-chart-empty">${emptyLabel}</p></article>`;
+    return `<article class="${FINANCE_CHART_SURFACE}"><div class="panel-head"><h3 class="panel-title chart-title card-title"><i class="bi bi-graph-up me-2 text-warning"></i>${title}</h3></div><p class="finance-chart-empty">${emptyLabel}</p></article>`;
   }
   const max = Math.max(...rows.map(([, v]) => Number(v)), 1);
   const width = 100;
@@ -550,7 +550,7 @@ function financeLineChart(title, rows, emptyLabel, color = FINANCE_CHART_COLORS.
   }).join("");
   return `
     <article class="${FINANCE_CHART_SURFACE}">
-      <div class="panel-head"><h3 class="panel-title"><i class="bi bi-graph-up me-2" style="color:${color}"></i>${title}</h3></div>
+      <div class="panel-head"><h3 class="panel-title chart-title card-title"><i class="bi bi-graph-up me-2" style="color:${color}"></i>${title}</h3></div>
       <div class="finance-line-chart">
         <svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" class="finance-line-svg" aria-hidden="true">
           <polygon class="finance-line-area" points="${areaPoints}" fill="${color}" fill-opacity="0.12"></polygon>
@@ -566,12 +566,12 @@ function financeHBarChart(title, rows, emptyLabel, color = FINANCE_CHART_COLORS.
   const bars = rows.length && rows.some(([, v]) => Number(v) > 0)
     ? rows.slice(0, 10).map(([label, value]) => `
       <div class="finance-hbar-row">
-        <span class="finance-hbar-label" title="${label}">${label}</span>
+        <span class="finance-hbar-label chart-label" title="${label}">${label}</span>
         <div class="finance-hbar-track"><div class="finance-hbar-fill" style="width:${Math.max(4, Math.round((Number(value) / max) * 100))}%;background:linear-gradient(90deg, ${color}99, ${color})"></div></div>
-        <strong class="finance-hbar-value">${Number(value).toLocaleString()}</strong>
+        <strong class="finance-hbar-value chart-value bar-value amount-value">${Number(value).toLocaleString()}</strong>
       </div>`).join("")
     : `<p class="finance-chart-empty">${emptyLabel}</p>`;
-  return `<article class="${FINANCE_CHART_SURFACE}"><div class="panel-head"><h3 class="panel-title"><i class="bi bi-bar-chart-steps me-2" style="color:${color}"></i>${title}</h3></div><div class="finance-hbar-chart">${bars}</div></article>`;
+  return `<article class="${FINANCE_CHART_SURFACE}"><div class="panel-head"><h3 class="panel-title chart-title card-title"><i class="bi bi-bar-chart-steps me-2" style="color:${color}"></i>${title}</h3></div><div class="finance-hbar-chart">${bars}</div></article>`;
 }
 
 function financeChurchBarChart(title, churchRows, emptyLabel) {
@@ -592,12 +592,12 @@ function financeSemanticBarChart(title, rows, tone = "cyan", emptyLabel) {
   const bars = rows.length && rows.some(([, v]) => Number(v) > 0)
     ? rows.map(([label, value]) => `
       <div class="chart-row finance-chart-row">
-        <span class="finance-chart-label" title="${label}">${label}</span>
+        <span class="finance-chart-label chart-label" title="${label}">${label}</span>
         <div class="chart-track"><div class="chart-fill finance-chart-fill" style="width:${Math.max(4, Math.round((Number(value) / max) * 100))}%;background:linear-gradient(90deg, ${color}88, ${color})"></div></div>
-        <strong class="finance-chart-value">${Number(value).toLocaleString()}</strong>
+        <strong class="finance-chart-value chart-value bar-value amount-value">${Number(value).toLocaleString()}</strong>
       </div>`).join("")
     : `<p class="finance-chart-empty">${emptyLabel}</p>`;
-  return `<article class="${FINANCE_CHART_SURFACE}"><div class="panel-head"><h3 class="panel-title"><i class="bi bi-bar-chart me-2" style="color:${color}"></i>${title}</h3></div><div class="chart-bars">${bars}</div></article>`;
+  return `<article class="${FINANCE_CHART_SURFACE}"><div class="panel-head"><h3 class="panel-title chart-title card-title"><i class="bi bi-bar-chart me-2" style="color:${color}"></i>${title}</h3></div><div class="chart-bars">${bars}</div></article>`;
 }
 
 function exportFinanceExcel(records, filename, sheetName = "Finance") {

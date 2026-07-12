@@ -52,9 +52,9 @@ function SummaryCard(icon, label, value, hint = "", options = {}) {
       <article class="summary-card metric-card ${surfaceClass(variant)}${tone}">
         <div class="summary-card-icon metric-icon"><i class="bi ${icon}"></i></div>
         <div class="summary-card-body">
-          <span class="summary-card-label chart-label">${label}</span>
-          <strong class="summary-card-value">${value}</strong>
-          ${hint ? `<small class="summary-card-hint meta-text">${hint}</small>` : ""}
+          <span class="summary-card-label metric-label chart-label label">${label}</span>
+          <strong class="summary-card-value metric-value">${value}</strong>
+          ${hint ? `<small class="summary-card-hint meta-text subtitle">${hint}</small>` : ""}
         </div>
       </article>
     </div>`;
@@ -214,7 +214,7 @@ function ChartPanel(title, content, options = {}) {
   const variant = options.variant || "light";
   return `
     <article class="chart-card glass-panel ${surfaceClass(variant)} h-100 ${options.className || ""}">
-      <div class="panel-head"><h3 class="panel-title"><i class="bi bi-activity me-2 text-info"></i>${title}</h3></div>
+      <div class="panel-head"><h3 class="panel-title chart-title card-title"><i class="bi bi-activity me-2 text-info"></i>${title}</h3></div>
       ${content}
     </article>`;
 }
@@ -223,18 +223,18 @@ function DashboardSection({ title, subtitle = "", icon = "bi-grid", linkRoute = 
   return ModuleSection({ title, subtitle, icon, linkRoute, linkLabel, content, className: `dashboard-section ${className}`.trim() });
 }
 
-function ModuleSection({ title, subtitle = "", icon = "bi-grid", linkRoute = "", linkLabel = "", content = "", className = "module-section" } = {}) {
+function ModuleSection({ title, subtitle = "", icon = "bi-grid", linkRoute = "", linkLabel = "", content = "", className = "module-section", variant = "dark" } = {}) {
   const link = linkRoute
     ? `<a class="btn btn-sm btn-outline-cyan btn-touch module-section-link" href="#${linkRoute}" data-route="${linkRoute}">${linkLabel || uiT("viewAll", "Ver Tudo")}<i class="bi bi-arrow-right-short ms-1"></i></a>`
     : "";
   return `
-    <section class="${className} dark-surface">
+    <section class="${className} ${surfaceClass(variant)}">
       <header class="module-section-head dashboard-section-head">
         <div class="module-section-copy dashboard-section-copy">
           <span class="module-section-icon dashboard-section-icon" aria-hidden="true"><i class="bi ${icon}"></i></span>
           <div>
-            <h3 class="module-section-title dashboard-section-title">${title}</h3>
-            ${subtitle ? `<p class="module-section-subtitle dashboard-section-subtitle card-subtitle">${subtitle}</p>` : ""}
+            <h3 class="module-section-title dashboard-section-title chart-title">${title}</h3>
+            ${subtitle ? `<p class="module-section-subtitle dashboard-section-subtitle card-subtitle subtitle">${subtitle}</p>` : ""}
           </div>
         </div>
         ${link}

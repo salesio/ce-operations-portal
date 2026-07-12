@@ -14,6 +14,10 @@
   --text-dark: #061329;
   --text-dark-muted: #4F647A;
   --text-strong: #020817;
+  --label-on-light: #475569;
+  --label-on-light-alt: #334155;
+  --subtitle-on-light: #64748B;
+  --value-on-light: #020817;
   --gold: #F5C755;
   --gold-dark: #A77400;
   --cyan: #22D3EE;
@@ -891,11 +895,12 @@ table,
 
 .metric-card span {
   display: block;
-  color: var(--muted);
+  color: var(--label-on-light);
   font-size: 0.76rem;
   font-weight: 900;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  opacity: 1;
 }
 
 .metric-card strong {
@@ -908,7 +913,8 @@ table,
 }
 
 .metric-card small {
-  color: var(--muted);
+  color: var(--subtitle-on-light);
+  opacity: 1;
 }
 
 .chart-bars {
@@ -2548,8 +2554,9 @@ table,
   margin: 0;
   padding: 1.5rem 1rem;
   text-align: center;
-  color: rgba(248, 251, 255, 0.55);
+  color: var(--subtitle-on-light);
   font-size: 0.88rem;
+  opacity: 1;
 }
 
 .finance-donut-wrap {
@@ -2572,7 +2579,7 @@ table,
   position: absolute;
   inset: 22%;
   border-radius: 50%;
-  background: var(--bg-panel, #0d1f3d);
+  background: #F8FBFD;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2583,14 +2590,15 @@ table,
 
 .finance-donut-hole strong {
   font-size: 0.95rem;
-  color: #fff;
+  color: var(--value-on-light);
 }
 
 .finance-donut-hole span {
   font-size: 0.62rem;
-  color: rgba(248, 251, 255, 0.55);
+  color: var(--subtitle-on-light);
   text-transform: uppercase;
   letter-spacing: 0.08em;
+  opacity: 1;
 }
 
 .finance-donut-legend {
@@ -2613,10 +2621,11 @@ table,
 }
 
 .finance-donut-legend-label {
-  color: rgba(248, 251, 255, 0.78);
+  color: var(--label-on-light-alt);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  opacity: 1;
 }
 
 .finance-donut-legend-value {
@@ -3141,11 +3150,12 @@ table,
 
 .summary-card-label {
   display: block;
-  color: var(--muted);
+  color: var(--label-on-light);
   font-size: 0.72rem;
   font-weight: 900;
   letter-spacing: 0.09em;
   text-transform: uppercase;
+  opacity: 1;
 }
 
 .summary-card-value {
@@ -3156,7 +3166,8 @@ table,
 }
 
 .summary-card-hint {
-  color: var(--muted);
+  color: var(--subtitle-on-light);
+  opacity: 1;
 }
 
 .filter-toolbar {
@@ -4078,9 +4089,9 @@ section.ops-hero {
 .dashboard-section {
   margin-bottom: var(--section-gap);
   padding: var(--card-pad);
-  border: 1px solid rgba(34, 211, 238, 0.14);
+  border: 1px solid rgba(34, 211, 238, 0.22);
   border-radius: 1.25rem;
-  background: linear-gradient(145deg, rgba(7, 19, 38, 0.42), rgba(9, 32, 60, 0.28));
+  background: linear-gradient(145deg, rgba(7, 19, 38, 0.92), rgba(10, 32, 56, 0.86));
   box-shadow: 0 20px 48px rgba(0, 0, 0, 0.22);
 }
 
@@ -4276,9 +4287,9 @@ section.ops-hero {
 .dashboard-section {
   margin-bottom: var(--section-gap);
   padding: var(--card-pad);
-  border: 1px solid rgba(34, 211, 238, 0.14);
+  border: 1px solid rgba(34, 211, 238, 0.22);
   border-radius: 1.25rem;
-  background: linear-gradient(145deg, rgba(7, 19, 38, 0.42), rgba(9, 32, 60, 0.28));
+  background: linear-gradient(145deg, rgba(7, 19, 38, 0.92), rgba(10, 32, 56, 0.86));
   box-shadow: 0 20px 48px rgba(0, 0, 0, 0.22);
 }
 
@@ -5079,4 +5090,194 @@ textarea:focus-visible,
 .tab-strip button.is-locked::before,
 .tab-strip button:disabled .bi-lock {
   margin-right: 0.25rem;
+}
+
+/* ============================================================
+   Global Contrast System v5 — light cards inside dark sections
+   ============================================================ */
+
+.light-surface,
+.surface-light {
+  color: var(--text-dark);
+}
+
+.light-surface h1,
+.light-surface h2,
+.light-surface h3,
+.light-surface .card-title,
+.light-surface .chart-title,
+.light-surface .panel-title,
+.light-surface .data-card-title {
+  color: var(--value-on-light) !important;
+  opacity: 1 !important;
+}
+
+.light-surface .label,
+.light-surface .metric-label,
+.light-surface .summary-card-label,
+.light-surface .chart-label,
+.light-surface .muted,
+.light-surface .subtitle,
+.light-surface .meta-text,
+.light-surface .card-subtitle {
+  color: var(--label-on-light) !important;
+  opacity: 1 !important;
+}
+
+.light-surface .summary-card-hint,
+.light-surface .subtitle.meta-text {
+  color: var(--subtitle-on-light) !important;
+  opacity: 1 !important;
+}
+
+.light-surface .chart-value,
+.light-surface .bar-value,
+.light-surface .amount-value,
+.light-surface .metric-value,
+.light-surface .summary-card-value,
+.light-surface .finance-chart-value,
+.light-surface .finance-hbar-value,
+.light-surface .chart-row strong {
+  color: var(--value-on-light) !important;
+  font-weight: 800 !important;
+  opacity: 1 !important;
+}
+
+.light-surface .finance-chart-label,
+.light-surface .finance-hbar-label,
+.light-surface .chart-row span,
+.light-surface .finance-donut-legend-label {
+  color: var(--label-on-light-alt) !important;
+  opacity: 1 !important;
+}
+
+/* Light cards nested inside dark module sections (Finanças, etc.) */
+.dark-surface .light-surface,
+.dark-surface .surface-light,
+.module-section .light-surface,
+.module-section .summary-card,
+.module-section .metric-card,
+.module-section .chart-card.light-surface,
+.module-section-body .light-surface {
+  color: var(--text-dark) !important;
+}
+
+.module-section .summary-card,
+.module-section .metric-card,
+.module-section .chart-card.light-surface,
+.module-section .glass-panel.light-surface {
+  background: linear-gradient(145deg, #F8FBFD 0%, #E8F4FA 100%);
+  border: 1px solid rgba(34, 211, 238, 0.18);
+}
+
+.dark-surface .light-surface .label,
+.dark-surface .light-surface .metric-label,
+.dark-surface .light-surface .summary-card-label,
+.dark-surface .light-surface .chart-label,
+.dark-surface .light-surface .muted,
+.dark-surface .light-surface .meta-text,
+.dark-surface .light-surface .card-subtitle,
+.dark-surface .light-surface .subtitle,
+.module-section .light-surface .summary-card-label,
+.module-section .light-surface .chart-label,
+.module-section .light-surface .metric-label,
+.module-section .summary-card .summary-card-label,
+.module-section .chart-card .finance-chart-label,
+.module-section .chart-card .chart-row span {
+  color: var(--label-on-light) !important;
+  opacity: 1 !important;
+}
+
+.dark-surface .light-surface .summary-card-hint,
+.module-section .summary-card .summary-card-hint {
+  color: var(--subtitle-on-light) !important;
+  opacity: 1 !important;
+}
+
+.dark-surface .light-surface .panel-title,
+.dark-surface .light-surface .chart-title,
+.dark-surface .light-surface .card-title,
+.dark-surface .light-surface h3,
+.dark-surface .light-surface .metric-value,
+.dark-surface .light-surface .summary-card-value,
+.dark-surface .light-surface .finance-chart-value,
+.dark-surface .light-surface .finance-hbar-value,
+.dark-surface .light-surface .chart-value,
+.dark-surface .light-surface .bar-value,
+.dark-surface .light-surface .amount-value,
+.module-section .light-surface .panel-title,
+.module-section .summary-card .summary-card-value,
+.module-section .chart-card .finance-chart-value,
+.module-section .chart-card .chart-row strong {
+  color: var(--value-on-light) !important;
+  font-weight: 800 !important;
+  opacity: 1 !important;
+}
+
+.dark-surface .light-surface .finance-chart-label,
+.dark-surface .light-surface .finance-hbar-label,
+.dark-surface .light-surface .chart-row span,
+.module-section .chart-card .finance-hbar-label {
+  color: var(--label-on-light-alt) !important;
+  opacity: 1 !important;
+}
+
+.light-surface .finance-chart-empty,
+.module-section .chart-card .finance-chart-empty {
+  color: var(--subtitle-on-light) !important;
+  opacity: 1 !important;
+}
+
+.light-surface .finance-donut-hole,
+.module-section .chart-card .finance-donut-hole {
+  background: #F8FBFD !important;
+}
+
+.light-surface .finance-donut-hole strong,
+.module-section .chart-card .finance-donut-hole strong {
+  color: var(--value-on-light) !important;
+}
+
+.light-surface .finance-donut-hole span,
+.light-surface .finance-donut-legend-value,
+.module-section .chart-card .finance-donut-hole span {
+  color: var(--subtitle-on-light) !important;
+  opacity: 1 !important;
+}
+
+.light-surface .finance-donut-legend-label,
+.module-section .chart-card .finance-donut-legend-label {
+  color: var(--label-on-light-alt) !important;
+  opacity: 1 !important;
+}
+
+/* Section headers stay light on dark glass shell */
+.module-section-title,
+.dashboard-section-title {
+  color: #FFFFFF;
+  opacity: 1;
+}
+
+.module-section-subtitle,
+.dashboard-section-subtitle {
+  color: #D7E3F5;
+  opacity: 1;
+}
+
+/* Dark-only chart cards (no light-surface) */
+.dark-surface .finance-chart-card:not(.light-surface) .finance-chart-empty,
+.card-glass-dark .finance-chart-empty {
+  color: var(--text-muted);
+}
+
+.dark-surface .finance-chart-card:not(.light-surface) .finance-donut-hole {
+  background: var(--bg-panel);
+}
+
+.dark-surface .finance-chart-card:not(.light-surface) .finance-donut-hole strong {
+  color: #FFFFFF;
+}
+
+.dark-surface .finance-chart-card:not(.light-surface) .finance-donut-legend-label {
+  color: var(--text-muted);
 }

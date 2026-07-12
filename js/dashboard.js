@@ -4866,9 +4866,9 @@ function metric(icon, label, value, hint = "", options = {}) {
       <article class="metric-card summary-card light-surface">
         <div class="metric-icon summary-card-icon"><i class="bi ${icon}"></i></div>
         <div class="summary-card-body">
-          <span class="summary-card-label">${label}</span>
-          <strong class="summary-card-value">${value}</strong>
-          ${hint ? `<small class="summary-card-hint">${hint}</small>` : ""}
+          <span class="summary-card-label metric-label chart-label label">${label}</span>
+          <strong class="summary-card-value metric-value">${value}</strong>
+          ${hint ? `<small class="summary-card-hint meta-text subtitle">${hint}</small>` : ""}
         </div>
       </article>
     </div>`;
@@ -5033,7 +5033,7 @@ function chartCard(title, rows) {
       <div class="chart-row">
         <span class="chart-label finance-chart-label">${label}</span>
         <div class="chart-track"><div class="chart-fill finance-chart-fill" style="width:${Math.max(5, Math.round((Number(value) / max) * 100))}%"></div></div>
-        <strong class="finance-chart-value">${value}</strong>
+        <strong class="finance-chart-value chart-value bar-value amount-value">${value}</strong>
       </div>`).join("") : EmptyState({ compact: true, title: L("empty"), icon: "bi-bar-chart", variant: "light" });
   if (typeof ChartPanel === "function") return ChartPanel(title, `<div class="chart-bars">${bars}</div>`, { variant: "light" });
   return `<article class="chart-card glass-panel light-surface h-100"><div class="panel-head"><h3 class="panel-title"><i class="bi bi-activity me-2 text-info"></i>${title}</h3></div><div class="chart-bars">${bars}</div></article>`;
