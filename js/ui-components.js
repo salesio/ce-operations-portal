@@ -92,6 +92,21 @@ function FilterToolbar(options = {}) {
     </div>`;
 }
 
+function TabButton(label, options = {}) {
+  const { active = false, className = "", attrs = "", disabled = false } = options;
+  const disabledAttr = disabled ? " disabled" : "";
+  const lock = disabled ? `<i class="bi bi-lock-fill me-1" aria-hidden="true"></i>` : "";
+  return `<button type="button" class="tab-button ${active ? "active" : ""} ${className}" ${attrs}${disabledAttr}>${lock}${label}</button>`;
+}
+
+function ModuleTabs(buttonsHtml = "", options = {}) {
+  const className = options.className || "";
+  const surface = options.variant ? surfaceClass(options.variant) : "";
+  const aria = options.ariaLabel || uiT("moduleNavigation", "Navegação do módulo");
+  const classes = ["module-tabs", "tab-strip", "module-tab-strip", surface, className].filter(Boolean).join(" ");
+  return `<nav class="${classes}" role="tablist" aria-label="${aria}">${buttonsHtml}</nav>`;
+}
+
 function ViewToggle(activeView = "table", labels = {}) {
   const cardsLabel = labels.cards || uiT("cardsView", "Cartões");
   const tableLabel = labels.table || uiT("tableView", "Tabela");
@@ -300,6 +315,8 @@ function FollowUpCard(person) {
 const PageShellComponent = PageShell;
 const ModuleHeroCardComponent = ModuleHeroCard;
 const SummaryCardComponent = SummaryCard;
+const TabButtonComponent = TabButton;
+const ModuleTabsComponent = ModuleTabs;
 const FilterToolbarComponent = FilterToolbar;
 const DataCardComponent = DataCard;
 const DataTableComponent = DataTable;

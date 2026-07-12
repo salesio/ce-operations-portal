@@ -471,6 +471,7 @@ const TEXT = {
     transferred: "Transferido",
     rejected: "Rejeitado",
     viewMode: "Modo de visualização",
+    moduleNavigation: "Navegação do módulo",
     membersByChurch: "Por Igreja",
     wantFoundation: "Querem Escola de Fundação",
     visitScheduled: "Visita Marcada",
@@ -970,6 +971,7 @@ const TEXT = {
     transferred: "Transferred",
     rejected: "Rejected",
     viewMode: "View mode",
+    moduleNavigation: "Module navigation",
     membersByChurch: "By Church",
     wantFoundation: "Want Foundation School",
     visitScheduled: "Visit Scheduled",
@@ -3310,6 +3312,23 @@ function buildFinanceExportHtml(reportType, list, stats, churchRows, partnerProf
   return summary + body;
 }
 
+function moduleTabButton(label, { active = false, attrs = "" } = {}) {
+  if (typeof TabButton === "function") return TabButton(label, { active, attrs });
+  return `<button type="button" class="tab-button ${active ? "active" : ""}" ${attrs}>${label}</button>`;
+}
+
+function moduleTabsNav(buttonsHtml, className = "") {
+  if (typeof ModuleTabs === "function") return ModuleTabs(buttonsHtml, { className });
+  return `<nav class="module-tabs tab-strip module-tab-strip ${className}" role="tablist" aria-label="${L("moduleNavigation")}">${buttonsHtml}</nav>`;
+}
+
+function moduleScrollTabs(items, activeIndex = 0) {
+  const buttons = items.map(([label, target], index) =>
+    moduleTabButton(label, { active: index === activeIndex, attrs: `data-scroll="${target}"` })
+  ).join("");
+  return moduleTabsNav(buttons);
+}
+
 function financeModuleTabs() {
   const tabs = [
     ["overview", L("financeTabOverview")],
@@ -3320,9 +3339,9 @@ function financeModuleTabs() {
     ["partners", L("financeTabPartners")],
     ["exports", L("financeTabExports")]
   ];
-  return `<div class="tab-strip module-tab-strip finance-module-tabs mb-3">${tabs.map(([key, label]) =>
-    `<button type="button" class="${financePageState.tab === key ? "active" : ""}" data-finance-tab="${key}">${label}</button>`
-  ).join("")}</div>`;
+  return moduleTabsNav(tabs.map(([key, label]) =>
+    moduleTabButton(label, { active: financePageState.tab === key, attrs: `data-finance-tab="${key}"` })
+  ).join(""), "finance-module-tabs");
 }
 
 function financeReportStatsCards(stats) {
@@ -5494,14 +5513,14 @@ function renderFoundation() {
   const students = scoped(state.foundationStudents).map((student) => migrateFoundationStudent(student));
   setPageContent(`
     ${moduleNavShell("foundationSchool", { title: L("foundationSchool"), subtitle: L("foundationSubtitle"), modalType: "foundationStudent", icon: "bi-mortarboard" },
-      `<div class="tab-strip module-tab-strip">${[
+      moduleScrollTabs([
         [L("pendingEnrolments"), "panel-foundationPending"],
         [L("enrolledStudents"), "panel-foundationStudents"],
         [L("classesAttendance"), "panel-foundationStudents"],
         [L("exams"), "panel-foundationStudents"],
         [L("graduation"), "panel-foundationStudents"],
         [L("certificates"), "panel-foundationStudents"]
-      ].map(([tab, target], index) => `<button type="button" class="${index === 0 ? "active" : ""}" data-scroll="${target}">${tab}</button>`).join("")}</div>`
+      ])
     )}
     <div class="row g-3 mb-4 summary-cards-row">
       ${metric("bi-hourglass-split", L("pendingEnrolments"), pending.length, L("needsAction"))}
@@ -5813,9 +5832,9 @@ function renderFinance() {
 
   setPageContent(`
     ${sectionHeader(L("finance"), L("financeSubtitle"), "finance", "bi-cash-coin")}
-    <article class="panel glass-panel mb-4">
+    <article class="panel glass-panel module-content-card mb-4">
       ${financeModuleTabs()}
-      ${tabContent}
+      <div class="tab-content-panel">${tabContent}</div>
     </article>
   `);
 }
@@ -5823,11 +5842,11 @@ function renderFinance() {
 function renderSacraments() {
   setPageContent( `
     ${moduleNavShell("sacraments", { title: L("sacraments"), subtitle: L("sacramentsSubtitle"), icon: "bi-droplet" },
-      `<div class="tab-strip module-tab-strip">
-        <button type="button" class="active" data-scroll="panel-baptism">${L("baptismTab")}</button>
-        <button type="button" data-scroll="panel-marriage">${L("marriageTab")}</button>
-        <button type="button" data-scroll="panel-baby">${L("babyTab")}</button>
-      </div>`
+      moduleScrollTabs([
+        [L("baptismTab"), "panel-baptism"],
+        [L("marriageTab"), "panel-marriage"],
+        [L("babyTab"), "panel-baby"]
+      ])
     )}
     <div class="row g-4">
       <div class="col-xl-4">${sacramentPanel("baptism", L("baptismTab"), scoped(state.sacraments.baptisms), ["nome", "apelido", "telefone", "data_do_baptismo", "estado"])}</div>
@@ -6356,14 +6375,14 @@ function renderPrisonMinistry() {
   const thisWeekServices = services.filter((service) => service.data >= "2026-07-06" && service.data <= "2026-07-12");
   setPageContent( `
     ${moduleNavShell("prisonMinistry", { title: L("prisonMinistry"), subtitle: L("prisonMinistrySubtitle"), modalType: "prisonService", icon: "bi-shield-lock" },
-      `<div class="tab-strip module-tab-strip">${[
+      moduleScrollTabs([
         [L("cellOverview"), "content"],
         [L("prisonsLocations"), "panel-prisonLocation"],
         [L("prisonServices"), "panel-prisonService"],
         [L("foundationSchool"), "panel-prisonFoundation"],
         [L("weeklyAgenda"), "panel-prisonAgenda"],
         [L("ministryReports"), "panel-prisonReport"]
-      ].map(([tab, target], index) => `<button type="button" class="${index === 0 ? "active" : ""}" data-scroll="${target}">${tab}</button>`).join("")}</div>`
+      ])
     )}
     <div class="row g-3 mb-4">
       ${metric("bi-building-lock", L("activePrisons"), prisons.filter((item) => statusKey(item.estado) === "active").length, L("prisonsLocations"))}
@@ -6397,7 +6416,9 @@ function venueDepartmentTabs(active) {
   ];
   const allowed = new Set(allowedVenueTabs());
   const tabs = allTabs.filter(([, , tab]) => allowed.has(tab));
-  return `<div class="department-tabs module-tab-strip">${tabs.map(([route, label, tab]) => `<button type="button" class="${active === tab ? "active" : ""}" data-route="${route}">${L(label)}</button>`).join("")}</div>`;
+  return moduleTabsNav(tabs.map(([route, label, tab]) =>
+    moduleTabButton(L(label), { active: active === tab, attrs: `data-route="${route}"` })
+  ).join(""), "department-tabs");
 }
 
 function venueDepartments() {
@@ -6518,7 +6539,7 @@ function renderMinistryMaterials() {
   const monthSales = sales.filter((item) => item.data?.startsWith("2026-07"));
   setPageContent( `
     ${moduleNavShell("ministryMaterials", { title: L("ministryMaterials"), subtitle: L("materialsSubtitle"), modalType: "materialSale", icon: "bi-journal-richtext" },
-      `<div class="tab-strip module-tab-strip">${[
+      moduleScrollTabs([
         [L("cellOverview"), "content"],
         [L("catalogue"), "panel-materialCatalogue"],
         [L("sales"), "panel-materialSale"],
@@ -6526,7 +6547,7 @@ function renderMinistryMaterials() {
         [L("weeklyStock"), "panel-materialStock"],
         [L("freeDistributionFunds"), "panel-materialFund"],
         [L("ministryReports"), "panel-materialReport"]
-      ].map(([tab, target], index) => `<button type="button" class="${index === 0 ? "active" : ""}" data-scroll="${target}">${tab}</button>`).join("")}</div>`
+      ])
     )}
     <div class="row g-3 mb-4">
       ${metric("bi-cash-stack", L("soldThisMonth"), money(monthSales.reduce((sum, item) => sum + Number(item.valor || 0), 0)), L("thisMonth"))}
@@ -6624,7 +6645,7 @@ function renderFevo(activeTab = "overview") {
     firstTimers: reports.reduce((sum, item) => sum + Number(item.ft_in_church || 0), 0)
   };
   const navHtml = moduleNavShell("fevo", { title: L("fevo"), subtitle: L("fevoSubtitle"), modalType: "fevoReport", icon: "bi-compass" },
-    `<div class="department-tabs module-tab-strip">${[
+    moduleTabsNav([
       ["cellOverview", "fevo", "overview"],
       ["weeklyConfiguration", "fevoConfigRoute", "config"],
       ["followUp", "fevoFollowUpRoute", "followup"],
@@ -6634,7 +6655,9 @@ function renderFevo(activeTab = "overview") {
       ["groupsWithoutReport", "fevoNoReportsRoute", "noReports"],
       ["weeklyReports", "fevoWeeklyReportsRoute", "weeklyReports"],
       ["analysis", "fevoAnalysisRoute", "analysis"]
-    ].map(([key, route, tab]) => `<button type="button" class="${activeTab === tab ? "active" : ""}" data-route="${route}">${L(key)}</button>`).join("")}</div>`
+    ].map(([key, route, tab]) =>
+      moduleTabButton(L(key), { active: activeTab === tab, attrs: `data-route="${route}"` })
+    ).join(""), "department-tabs fevo-module-tabs")
   );
   const overviewSection = show("analysis") ? moduleSection(L("fevoOverviewSection"), L("fevoOverviewHint"), "bi-compass", "fevo", `
     <div class="row g-3 summary-cards-row">
@@ -6763,9 +6786,9 @@ function requisitionsModuleTabs() {
     ["released", L("reqTabReleased")],
     ["history", L("reqTabHistory")]
   ];
-  return `<div class="tab-strip module-tab-strip requisitions-module-tabs mb-3">${tabs.map(([key, label]) =>
-    `<button type="button" class="${requisitionsPageState.tab === key ? "active" : ""}" data-requisition-tab="${key}">${label}</button>`
-  ).join("")}</div>`;
+  return moduleTabsNav(tabs.map(([key, label]) =>
+    moduleTabButton(label, { active: requisitionsPageState.tab === key, attrs: `data-requisition-tab="${key}"` })
+  ).join(""), "requisitions-module-tabs");
 }
 
 function requisitionActionLabel(action) {
@@ -6825,9 +6848,9 @@ function renderRequisitions() {
 
   setPageContent(`
     ${sectionHeader(L("requisitions"), L("requisitionsSubtitle"), "requisition", "bi-clipboard-check")}
-    <article class="panel glass-panel mb-4">
+    <article class="panel glass-panel module-content-card mb-4">
       ${requisitionsModuleTabs()}
-      ${tabContent}
+      <div class="tab-content-panel">${tabContent}</div>
     </article>
   `);
 }
@@ -6845,9 +6868,9 @@ function staffHrModuleTabs() {
     ["documents", L("staffTabDocuments")],
     ["reports", L("staffTabReports")]
   ];
-  return `<div class="tab-strip module-tab-strip staff-hr-module-tabs mb-3">${tabs.map(([key, label]) =>
-    `<button type="button" class="${staffHrPageState.tab === key ? "active" : ""}" data-staff-tab="${key}">${label}</button>`
-  ).join("")}</div>`;
+  return moduleTabsNav(tabs.map(([key, label]) =>
+    moduleTabButton(label, { active: staffHrPageState.tab === key, attrs: `data-staff-tab="${key}"` })
+  ).join(""), "staff-hr-module-tabs");
 }
 
 function renderStaffHr() {
@@ -6928,9 +6951,9 @@ function renderStaffHr() {
 
   setPageContent(`
     ${sectionHeader(L("staffHr"), L("staffHrSubtitle"), "staffProfile", "bi-people-fill")}
-    <article class="panel glass-panel mb-4">
+    <article class="panel glass-panel module-content-card mb-4">
       ${staffHrModuleTabs()}
-      ${tabContent}
+      <div class="tab-content-panel">${tabContent}</div>
     </article>
   `);
 }
@@ -7550,7 +7573,7 @@ document.addEventListener("click", (event) => {
   if (lockedRoute) return;
   const scrollButton = event.target.closest("[data-scroll]");
   if (scrollButton) {
-    scrollButton.closest(".department-tabs, .tab-strip")?.querySelectorAll("button").forEach((button) => button.classList.toggle("active", button === scrollButton));
+    scrollButton.closest(".department-tabs, .tab-strip, .module-tabs")?.querySelectorAll("button").forEach((button) => button.classList.toggle("active", button === scrollButton));
     const scrollTarget = scrollButton.dataset.scroll;
     scrollContentTo(scrollTarget);
     triggerScrollTabParallax(scrollTarget);

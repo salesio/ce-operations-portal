@@ -1109,13 +1109,20 @@ table,
 .tab-strip {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.55rem;
+  align-items: center;
+  gap: 10px;
 }
 
-.tab-strip button {
+.tab-strip button,
+.tab-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 18px;
+  line-height: 1;
   border: 1px solid var(--tab-inactive-border);
   border-radius: 999px;
-  padding: 0.56rem 0.9rem;
   color: var(--tab-inactive-color);
   background: var(--tab-inactive-bg);
   font-size: 0.78rem;
@@ -1142,7 +1149,7 @@ table,
 }
 
 .module-nav-shell {
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
 }
 
 .module-nav-sticky {
@@ -1217,9 +1224,11 @@ table,
 }
 
 .module-nav-panel .department-tabs,
-.module-nav-panel .tab-strip.module-tab-strip {
+.module-nav-panel .tab-strip.module-tab-strip,
+.module-nav-panel .module-tabs {
   margin: 0;
-  padding: 0.72rem 0.95rem 0.7rem;
+  padding: 14px 18px 18px;
+  gap: 10px;
   border: 1px solid rgba(32, 215, 255, 0.16);
   border-top: 1px solid rgba(13, 23, 48, 0.08);
   border-radius: 0 0 1rem 1rem;
@@ -1281,23 +1290,30 @@ table,
   background: linear-gradient(135deg, var(--gold-soft), var(--gold));
 }
 
-.module-tab-strip {
-  margin-bottom: 0 !important;
+.module-tab-strip,
+.module-tabs {
+  align-items: center;
 }
 
 .department-tabs {
   display: flex;
-  gap: 0.55rem;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
   overflow-x: auto;
-  padding: 0.18rem 0 0.55rem;
   scrollbar-width: thin;
 }
 
 .department-tabs button {
   flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 18px;
+  line-height: 1;
   border: 1px solid rgba(32, 215, 255, 0.24);
-  border-radius: 0.85rem;
-  padding: 0.72rem 0.92rem;
+  border-radius: 999px;
   color: rgba(248, 251, 255, 0.76);
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(32, 215, 255, 0.05));
@@ -2519,7 +2535,6 @@ table,
 /* Finance reports v2 */
 .finance-module-tabs {
   flex-wrap: wrap;
-  gap: 0.35rem;
 }
 
 .finance-report-filters {
@@ -5280,4 +5295,98 @@ textarea:focus-visible,
 
 .dark-surface .finance-chart-card:not(.light-surface) .finance-donut-legend-label {
   color: var(--text-muted);
+}
+
+/* ============================================================
+   Module Tabs v6 — spacing, alignment, content separation
+   ============================================================ */
+
+.module-tabs,
+.tab-strip.module-tab-strip,
+.department-tabs.module-tab-strip,
+nav.module-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 18px 18px;
+  margin-bottom: 20px;
+}
+
+/* Tabs inside content cards (Finanças, Staff, Requisições, etc.) */
+.module-content-card > .module-tabs,
+.glass-panel.module-content-card > .module-tabs,
+.glass-panel.module-content-card > .tab-strip.module-tab-strip {
+  margin-bottom: 20px;
+  border-bottom: 1px solid rgba(34, 211, 238, 0.12);
+}
+
+.tab-content-panel {
+  padding: 0 18px 20px;
+}
+
+.module-tabs + .tab-content-panel,
+.module-tabs + .module-section,
+.module-tabs + .content-section,
+.module-tabs + .panel-section,
+.tab-strip.module-tab-strip + .tab-content-panel {
+  margin-top: 0;
+}
+
+/* Sticky module nav — tabs attach to hero; shell provides gap to content */
+.module-nav-panel .module-tabs,
+.module-nav-panel .tab-strip.module-tab-strip,
+.module-nav-panel .department-tabs.module-tab-strip {
+  margin-bottom: 0;
+  padding: 14px 18px 18px;
+}
+
+.module-nav-shell + .row,
+.module-nav-shell + .summary-cards-row,
+.module-nav-shell + .tab-content-panel,
+.module-nav-shell + .module-section {
+  margin-top: 0;
+}
+
+.tab-button,
+.tab-strip .tab-button,
+.module-tabs .tab-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 18px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.tab-strip button.active,
+.tab-strip button:hover:not(:disabled),
+.tab-button.active,
+.tab-button:hover:not(:disabled) {
+  color: var(--text-dark);
+}
+
+@media (max-width: 767.98px) {
+  .module-tabs,
+  .tab-strip.module-tab-strip,
+  .department-tabs.module-tab-strip {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 8px;
+    padding: 14px 14px 16px;
+    margin-bottom: 16px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tab-strip button,
+  .department-tabs button,
+  .tab-button {
+    min-height: 40px;
+    flex: 0 0 auto;
+  }
+
+  .tab-content-panel {
+    padding: 0 14px 16px;
+  }
 }
