@@ -46,11 +46,23 @@ function ModuleHeroCard({ title, subtitle, icon = "bi-stars", eyebrow, modalType
 function SummaryCard(icon, label, value, hint = "", options = {}) {
   const col = options.colClass || "col-sm-6 col-xl-4 col-xxl-3";
   const tone = options.tone ? ` summary-card--${options.tone}` : "";
-  const clickable = options.clickable ? " summary-card--clickable" : "";
   const variant = options.variant || "light";
-  const clickAttrs = options.clickAction
-    ? ` data-staff-metric="${options.clickAction}" role="button" tabindex="0" aria-label="${label}"`
+  const disabled = Boolean(options.disabled);
+  const isClickable = !disabled && Boolean(options.isClickable || options.clickable);
+  const clickable = isClickable ? " summary-card--clickable" : "";
+  const filterJson = options.filterPayload
+    ? encodeURIComponent(JSON.stringify(options.filterPayload))
     : "";
+  const aria = options.ariaLabel || label;
+  const title = options.tooltip || (isClickable ? aria : "");
+  const clickAttrs = isClickable
+    ? ` data-summary-card="1" data-summary-module="${options.module || ""}" data-summary-target-tab="${options.targetTab || ""}" data-summary-route="${options.route || ""}" data-summary-modal="${options.modalType || options.modal || ""}" data-summary-scroll="${options.scrollTo || ""}" data-summary-filters="${filterJson}" data-summary-disabled="${disabled}" role="button" tabindex="0" aria-label="${aria}"${title ? ` title="${title}"` : ""}`
+    : disabled
+      ? ` aria-disabled="true"`
+      : options.clickAction
+        ? ` data-staff-metric="${options.clickAction}" role="button" tabindex="0" aria-label="${aria}"`
+        : "";
+  const hintText = hint || (isClickable ? uiT("clickToView", "Click to view") : "");
   return `
     <div class="${col}">
       <article class="summary-card metric-card ${surfaceClass(variant)}${tone}${clickable}"${clickAttrs}>
@@ -58,7 +70,7 @@ function SummaryCard(icon, label, value, hint = "", options = {}) {
         <div class="summary-card-body">
           <span class="summary-card-label metric-label chart-label label">${label}</span>
           <strong class="summary-card-value metric-value">${value}</strong>
-          ${hint ? `<small class="summary-card-hint meta-text subtitle">${hint}</small>` : ""}
+          ${hintText ? `<small class="summary-card-hint meta-text subtitle">${hintText}</small>` : ""}
         </div>
       </article>
     </div>`;

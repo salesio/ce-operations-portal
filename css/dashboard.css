@@ -2896,6 +2896,50 @@ table,
   font-weight: 600;
 }
 
+.summary-filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.65rem;
+  padding: 0.65rem 0.85rem;
+  margin-bottom: 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(34, 211, 238, 0.22);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.summary-filter-chips-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.summary-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(34, 211, 238, 0.14);
+  border: 1px solid rgba(34, 211, 238, 0.32);
+  color: #044e63;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.summary-filter-clear {
+  margin-left: auto;
+}
+
+.summary-card--clickable:focus-visible {
+  outline: 2px solid rgba(212, 175, 55, 0.65);
+  outline-offset: 2px;
+}
+
+.summary-card[aria-disabled="true"] {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
 .staff-birthday-sections {
   display: grid;
   gap: 1rem;

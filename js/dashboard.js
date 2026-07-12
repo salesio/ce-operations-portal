@@ -144,6 +144,10 @@ const TEXT = {
     staffMissingDateOfBirth: "Data de Nascimento em Falta",
     staffBirthdayDayMonth: "Dia / Mês",
     staffClickToView: "Clique para ver",
+    clickToView: "Clique para ver",
+    appliedFilter: "Filtro aplicado",
+    clearFilters: "Limpar filtros",
+    noResultsFound: "Nenhum resultado encontrado",
     staffAge: "Idade",
     staffDaysUntilBirthday: "Dias até ao Aniversário",
     staffBirthdayLabel: "Aniversário",
@@ -675,6 +679,10 @@ const TEXT = {
     staffMissingDateOfBirth: "Missing Date of Birth",
     staffBirthdayDayMonth: "Day / Month",
     staffClickToView: "Click to view",
+    clickToView: "Click to view",
+    appliedFilter: "Applied filter",
+    clearFilters: "Clear filters",
+    noResultsFound: "No results found",
     staffAge: "Age",
     staffDaysUntilBirthday: "Days Until Birthday",
     staffBirthdayLabel: "Birthday",
@@ -2776,12 +2784,29 @@ const churchPageState = {
   view: localStorage.getItem(CHURCH_VIEW_KEY) || "cards",
   filters: { search: "", province: "", city: "", type: "", status: "", information_status: "" }
 };
-const requisitionsPageState = { tab: "overview" };
+const requisitionsPageState = { tab: "overview", cardFilter: {} };
 const staffHrPageState = {
   tab: "overview",
   selectedStaffId: "",
-  birthdayFilters: { month: "", churchId: "", department: "", status: "", search: "" }
+  birthdayFilters: { month: "", churchId: "", department: "", status: "", search: "" },
+  cardFilters: { staff: {}, salaries: {}, performance: {}, equipment: {} }
 };
+const foundationPageState = { panel: "", filter: {} };
+const firstTimersPageState = { filter: {} };
+const followUpPageState = { filter: {} };
+const fevoPageState = { filter: {} };
+const venuePageState = { route: "venueInventory", filter: {} };
+const sacramentsPageState = { panel: "", filter: {} };
+window.staffHrPageState = staffHrPageState;
+window.financePageState = financePageState;
+window.churchPageState = churchPageState;
+window.requisitionsPageState = requisitionsPageState;
+window.foundationPageState = foundationPageState;
+window.firstTimersPageState = firstTimersPageState;
+window.followUpPageState = followUpPageState;
+window.fevoPageState = fevoPageState;
+window.venuePageState = venuePageState;
+window.sacramentsPageState = sacramentsPageState;
 
 function L(key) {
   return TEXT[lang]?.[key] || TEXT.en[key] || key;
@@ -4977,10 +5002,92 @@ function filterBar(options = {}) {
     </div>`;
 }
 
+function sm(icon, label, value, module, action = {}) {
+  const nav = window.CESummaryCardNav;
+  const opts = nav?.buildOptions
+    ? nav.buildOptions(module, { ...action, label })
+    : { ...action, module, label, hint: action.hint ?? L("clickToView") };
+  return metric(icon, label, value, opts.hint || "", opts);
+}
+
+function summaryFilterChips(module) {
+  return window.CESummaryCardNav?.renderFilterChips?.(module) || "";
+}
+
+function noResultsHtml() {
+  if (typeof EmptyState === "function") {
+    return EmptyState({ icon: "bi-inbox", title: L("noResultsFound"), compact: true, variant: "light" });
+  }
+  return `<p class="text-secondary mb-0">${L("noResultsFound")}</p>`;
+}
+
+function applyStaffCardFilters(list, filters = {}) {
+  let rows = [...list];
+  if (filters.status) rows = rows.filter((item) => item.status === filters.status);
+  if (filters.employment_type) rows = rows.filter((item) => item.employment_type === filters.employment_type);
+  if (filters.has_salary) rows = rows.filter((item) => Number(item.salary_or_allowance || 0) > 0);
+  return rows;
+}
+
+function applyStaffSalaryCardFilters(salaries, staffList, filters = {}) {
+  let rows = [...salaries];
+  if (filters.payment_status) rows = rows.filter((item) => item.payment_status === filters.payment_status);
+  if (filters.has_salary) {
+    const ids = new Set(staffList.filter((s) => Number(s.salary_or_allowance || 0) > 0).map((s) => s.id));
+    rows = rows.filter((item) => ids.has(item.staff_id));
+  }
+  return rows;
+}
+
+function applyStaffPerformanceCardFilters(list, filters = {}) {
+  if (!filters.pending_eval) return list;
+  return list.filter((item) => !item.evaluated_at);
+}
+
+function applyFirstTimerCardFilters(list, filters = {}) {
+  let rows = [...list];
+  if (filters.followup) rows = rows.filter((p) => statusKey(p.estado_do_seguimento) === filters.followup);
+  if (filters.quer_escola_de_fundacao) rows = rows.filter((p) => p.quer_escola_de_fundacao);
+  if (filters.became_member) rows = rows.filter((p) => statusKey(p.estado_do_seguimento) === "becameMember");
+  if (filters.sent_to_cell) rows = rows.filter((p) => ["Sent to Cell", "Enrolled in Foundation School"].includes(p.estado_do_seguimento));
+  return rows;
+}
+
+function applyFoundationCardFilters(students, filters = {}) {
+  let rows = [...students];
+  if (filters.estado) rows = rows.filter((s) => statusKey(s.estado) === filters.estado);
+  if (filters.graduated) rows = rows.filter((s) => s.graduado);
+  if (filters.certificate_issued) rows = rows.filter((s) => s.certificado_emitido);
+  return rows;
+}
+
+function applySacramentCardFilters(records, filters = {}) {
+  let rows = [...records];
+  if (filters.status) rows = rows.filter((r) => statusKey(r.estado || r.status) === filters.status || r.estado === filters.status);
+  if (filters.pending) rows = rows.filter((r) => ["Pending", "Pendente", "Rascunho"].includes(r.estado));
+  if (filters.completed) rows = rows.filter((r) => ["Completed", "Realizado", "Certificate Issued", "Concluído"].includes(r.estado));
+  return rows;
+}
+
+function applyVenueInventoryCardFilters(list, filters = {}) {
+  let rows = [...list];
+  if (filters.estado) rows = rows.filter((item) => item.estado === filters.estado);
+  if (filters.assigned) rows = rows.filter((item) => item.estado === "Activo");
+  return rows;
+}
+
 function metric(icon, label, value, hint = "", options = {}) {
   if (typeof SummaryCard === "function") return SummaryCard(icon, label, value, hint, options);
-  const clickable = options.clickable ? " summary-card--clickable" : "";
-  const clickAttrs = options.clickAction ? ` data-staff-metric="${options.clickAction}" role="button" tabindex="0" aria-label="${label}"` : "";
+  const disabled = Boolean(options.disabled);
+  const isClickable = !disabled && Boolean(options.isClickable || options.clickable);
+  const clickable = isClickable ? " summary-card--clickable" : "";
+  const filterJson = options.filterPayload ? encodeURIComponent(JSON.stringify(options.filterPayload)) : "";
+  const hintText = hint || (isClickable ? L("clickToView") : "");
+  const clickAttrs = isClickable
+    ? ` data-summary-card="1" data-summary-module="${options.module || ""}" data-summary-target-tab="${options.targetTab || ""}" data-summary-route="${options.route || ""}" data-summary-modal="${options.modalType || ""}" data-summary-scroll="${options.scrollTo || ""}" data-summary-filters="${filterJson}" role="button" tabindex="0" aria-label="${options.ariaLabel || label}"`
+    : options.clickAction
+      ? ` data-staff-metric="${options.clickAction}" role="button" tabindex="0" aria-label="${label}"`
+      : "";
   return `
     <div class="col-sm-6 col-xl-4 col-xxl-3">
       <article class="metric-card summary-card light-surface${clickable}"${clickAttrs}>
@@ -4988,7 +5095,7 @@ function metric(icon, label, value, hint = "", options = {}) {
         <div class="summary-card-body">
           <span class="summary-card-label metric-label chart-label label">${label}</span>
           <strong class="summary-card-value metric-value">${value}</strong>
-          ${hint ? `<small class="summary-card-hint meta-text subtitle">${hint}</small>` : ""}
+          ${hintText ? `<small class="summary-card-hint meta-text subtitle">${hintText}</small>` : ""}
         </div>
       </article>
     </div>`;
@@ -5210,23 +5317,29 @@ function renderFirstTimerCard(person) {
 function renderFirstTimers() {
   const list = scoped(state.firstTimers);
   const view = modulePageState.firstTimers.view;
-  const tableRows = list.map((p) => [
-    fullName(p), p.telefone, churchName(p.church_id), p.culto, yesNo(p.nasceu_de_novo), yesNo(p.quer_escola_de_fundacao), badge(p.estado_do_seguimento),
-    firstTimerActions(p.id)
-  ]);
-  const cardsHtml = list.map((p) => renderFirstTimerCard(p)).join("");
   setPageContent(`
     ${sectionHeader(L("firstTimers"), L("firstTimerSubtitle"), "firstTimer", "bi-person-heart")}
     <div class="row g-3 mb-4 summary-cards-row">
-      ${metric("bi-person-heart", L("totalFirstTimers"), list.length, L("visitorsCaptured"))}
-      ${metric("bi-hourglass-split", L("pending"), list.filter((p) => statusKey(p.estado_do_seguimento) === "pending").length, L("needsAction"))}
-      ${metric("bi-check2-circle", L("contacted"), list.filter((p) => statusKey(p.estado_do_seguimento) === "contacted").length, L("followUp"))}
-      ${metric("bi-mortarboard", L("wantFoundation"), list.filter((p) => p.quer_escola_de_fundacao).length, L("foundationSchool"))}
-      ${metric("bi-person-check", L("becameMember"), list.filter((p) => statusKey(p.estado_do_seguimento) === "becameMember").length, L("members"))}
+      ${sm("bi-person-heart", L("totalFirstTimers"), list.length, "firstTimers", { filterPayload: {} })}
+      ${sm("bi-hourglass-split", L("pending"), list.filter((p) => statusKey(p.estado_do_seguimento) === "pending").length, "firstTimers", { filterPayload: { followup: "pending" } })}
+      ${sm("bi-check2-circle", L("contacted"), list.filter((p) => statusKey(p.estado_do_seguimento) === "contacted").length, "firstTimers", { filterPayload: { followup: "contacted" } })}
+      ${sm("bi-mortarboard", L("wantFoundation"), list.filter((p) => p.quer_escola_de_fundacao).length, "firstTimers", { filterPayload: { quer_escola_de_fundacao: true } })}
+      ${sm("bi-person-check", L("becameMember"), list.filter((p) => statusKey(p.estado_do_seguimento) === "becameMember").length, "firstTimers", { filterPayload: { became_member: true } })}
     </div>
+    ${summaryFilterChips("firstTimers")}
     <article class="panel glass-panel">
       ${filterBar({ viewToggle: ViewToggle(view), statusOptions: followupStatuses })}
-      ${view === "cards" ? DataCardsGrid(cardsHtml) : dataTable([L("name"), L("phone"), L("church"), L("service"), L("bornAgain"), L("foundation"), L("status"), L("actions")], tableRows)}
+      ${(() => {
+        const filtered = applyFirstTimerCardFilters(list, firstTimersPageState.filter);
+        const fTableRows = filtered.map((p) => [
+          fullName(p), p.telefone, churchName(p.church_id), p.culto, yesNo(p.nasceu_de_novo), yesNo(p.quer_escola_de_fundacao), badge(p.estado_do_seguimento),
+          firstTimerActions(p.id)
+        ]);
+        const fCardsHtml = filtered.map((p) => renderFirstTimerCard(p)).join("");
+        return view === "cards"
+          ? (filtered.length ? DataCardsGrid(fCardsHtml) : noResultsHtml())
+          : (filtered.length ? dataTable([L("name"), L("phone"), L("church"), L("service"), L("bornAgain"), L("foundation"), L("status"), L("actions")], fTableRows) : noResultsHtml());
+      })()}
     </article>
   `);
 }
@@ -5250,21 +5363,25 @@ function renderFollowUpKanban(list) {
 function renderFollowUp() {
   const list = scoped(state.firstTimers);
   const view = modulePageState.followUp.view;
+  const filtered = applyFirstTimerCardFilters(list, followUpPageState.filter);
   setPageContent(`
     ${sectionHeader(L("followUp"), L("followupSubtitle"), null, "bi-telephone-outbound")}
     <div class="row g-3 mb-4 summary-cards-row">
-      ${metric("bi-hourglass-split", L("pending"), list.filter((p) => statusKey(p.estado_do_seguimento) === "pending").length, L("needsAction"))}
-      ${metric("bi-check2-circle", L("contacted"), list.filter((p) => statusKey(p.estado_do_seguimento) === "contacted").length, L("followUp"))}
-      ${metric("bi-telephone-x", L("noAnswer"), list.filter((p) => statusKey(p.estado_do_seguimento) === "noAnswer").length, L("followUp"))}
-      ${metric("bi-calendar-check", L("visitScheduled"), list.filter((p) => statusKey(p.estado_do_seguimento) === "interested").length, L("followUp"))}
-      ${metric("bi-person-check", L("becameMember"), list.filter((p) => statusKey(p.estado_do_seguimento) === "becameMember").length, L("members"))}
+      ${sm("bi-hourglass-split", L("pending"), list.filter((p) => statusKey(p.estado_do_seguimento) === "pending").length, "followUp", { filterPayload: { followup: "pending" } })}
+      ${sm("bi-check2-circle", L("contacted"), list.filter((p) => statusKey(p.estado_do_seguimento) === "contacted").length, "followUp", { filterPayload: { followup: "contacted" } })}
+      ${sm("bi-telephone-x", L("noAnswer"), list.filter((p) => statusKey(p.estado_do_seguimento) === "noAnswer").length, "followUp", { filterPayload: { followup: "noAnswer" } })}
+      ${sm("bi-calendar-check", L("visitScheduled"), list.filter((p) => statusKey(p.estado_do_seguimento) === "interested").length, "followUp", { filterPayload: { followup: "interested" } })}
+      ${sm("bi-diagram-3", L("sentToCell"), list.filter((p) => ["Sent to Cell", "Enrolled in Foundation School"].includes(p.estado_do_seguimento)).length, "followUp", { filterPayload: { sent_to_cell: true } })}
     </div>
+    ${summaryFilterChips("followUp")}
     <article class="panel glass-panel">
       ${filterBar({ month: false, viewToggle: `<div class="view-toggle" role="group"><button type="button" class="view-toggle-btn ${view === "kanban" ? "active" : ""}" data-followup-view="kanban"><i class="bi bi-kanban"></i><span>Kanban</span></button><button type="button" class="view-toggle-btn ${view === "table" ? "active" : ""}" data-followup-view="table"><i class="bi bi-table"></i><span>${L("tableView")}</span></button></div>` })}
-      ${view === "kanban" ? renderFollowUpKanban(list) : dataTable([L("name"), L("phone"), L("counselor"), L("cellInterest"), L("counseling"), L("status"), L("actions")], list.map((p) => [
-        fullName(p), p.telefone, p.conselheiro_responsavel, yesNo(p.interesse_em_celula), yesNo(p.quer_aconselhamento), badge(p.estado_do_seguimento),
-        actionButtons([["view", "firstTimer", p.id, L("view")], ["followup", "firstTimer", p.id, L("updateFollowup")]])
-      ]))}
+      ${view === "kanban"
+        ? renderFollowUpKanban(filtered.length ? filtered : list)
+        : (filtered.length ? dataTable([L("name"), L("phone"), L("counselor"), L("cellInterest"), L("counseling"), L("status"), L("actions")], filtered.map((p) => [
+          fullName(p), p.telefone, p.conselheiro_responsavel, yesNo(p.interesse_em_celula), yesNo(p.quer_aconselhamento), badge(p.estado_do_seguimento),
+          actionButtons([["view", "firstTimer", p.id, L("view")], ["followup", "firstTimer", p.id, L("updateFollowup")]])
+        ])) : noResultsHtml())}
     </article>
   `);
 }
@@ -5624,13 +5741,14 @@ function renderFoundation() {
       ])
     )}
     <div class="row g-3 mb-4 summary-cards-row">
-      ${metric("bi-hourglass-split", L("pendingEnrolments"), pending.length, L("needsAction"))}
-      ${metric("bi-person-plus", L("enrolledInCourse"), students.filter((s) => statusKey(s.estado) === "enrolled").length, L("foundationSchool"))}
-      ${metric("bi-book", L("inProgress"), students.filter((s) => statusKey(s.estado) === "inProgress").length, L("status"))}
-      ${metric("bi-clipboard-check", L("readyForExam"), students.filter((s) => statusKey(s.estado) === "readyForExam").length, L("exams"))}
-      ${metric("bi-award", L("graduations"), students.filter((s) => s.graduado).length, L("graduation"))}
-      ${metric("bi-patch-check", L("certificatesIssued"), students.filter((s) => s.certificado_emitido).length, L("certificates"))}
+      ${sm("bi-hourglass-split", L("pendingEnrolments"), pending.length, "foundation", { scrollTo: "panel-foundationPending" })}
+      ${sm("bi-person-plus", L("enrolledInCourse"), students.filter((s) => statusKey(s.estado) === "enrolled").length, "foundation", { scrollTo: "panel-foundationStudents", filterPayload: { estado: "enrolled" } })}
+      ${sm("bi-book", L("inProgress"), students.filter((s) => statusKey(s.estado) === "inProgress").length, "foundation", { scrollTo: "panel-foundationStudents", filterPayload: { estado: "inProgress" } })}
+      ${sm("bi-clipboard-check", L("readyForExam"), students.filter((s) => statusKey(s.estado) === "readyForExam").length, "foundation", { scrollTo: "panel-foundationStudents", filterPayload: { estado: "readyForExam" } })}
+      ${sm("bi-award", L("graduations"), students.filter((s) => s.graduado).length, "foundation", { scrollTo: "panel-foundationStudents", filterPayload: { graduated: true } })}
+      ${sm("bi-patch-check", L("certificatesIssued"), students.filter((s) => s.certificado_emitido).length, "foundation", { scrollTo: "panel-foundationStudents", filterPayload: { certificate_issued: true } })}
     </div>
+    ${summaryFilterChips("foundation")}
     <div class="row g-4">
       <div class="col-xl-4">
         <article id="panel-foundationPending" class="panel h-100">
@@ -5643,7 +5761,7 @@ function renderFoundation() {
       <div class="col-xl-8">
         <article id="panel-foundationStudents" class="panel">
           ${filterBar()}
-          ${dataTable([L("student"), L("church"), L("cell"), L("classes"), L("exam"), L("practical"), L("status"), L("progress"), L("actions")], students.map((s) => [
+          ${dataTable([L("student"), L("church"), L("cell"), L("classes"), L("exam"), L("practical"), L("status"), L("progress"), L("actions")], applyFoundationCardFilters(students, foundationPageState.filter).map((s) => [
             fullName(s), churchName(s.church_id), s.celula, `${s.completed_classes}/7`, s.nota_exame || "-", yesNo(s.pratica_evangelismo), badge(s.estado), foundationClassProgressCell(s),
             actionButtons([["view", "foundationStudent", s.id, L("view")], ["edit", "foundationStudent", s.id, L("edit")], ["markClass", "foundationStudent", s.id, L("markClass")], ["score", "foundationStudent", s.id, L("launchScore")], ["graduate", "foundationStudent", s.id, L("graduate")]])
           ]))}
@@ -5821,16 +5939,18 @@ function renderFinance() {
     : "";
   const privacyBanner = `<div class="finance-privacy-banner mb-3"><i class="bi bi-shield-lock me-2"></i>${L("financePrivacyNotice")}</div>`;
 
+  const financeChips = summaryFilterChips("finance");
   let tabContent = "";
   if (financePageState.tab === "overview") {
     tabContent = `
       ${moduleSection(L("financeOverviewSection"), L("financeOverviewHint"), "bi-speedometer2", "", `
         <div class="row g-3 summary-cards-row">
-          ${metric("bi-calendar-day", L("totalToday"), money(today), L("finance"))}
-          ${metric("bi-calendar3", L("totalThisMonth"), money(month), L("thisMonth"))}
-          ${metric("bi-hourglass", L("pendingVerification"), pendingList.length, L("needsAction"))}
-          ${metric("bi-patch-check", L("verified"), allList.filter((f) => statusKey(f.estado) === "verified").length, L("status"))}
-          ${metric("bi-globe2", L("financeTabPublic"), publicRows.filter((row) => statusKey(row.status) === "pendingVerification").length, L("sourcePublicWebsite"))}
+          ${sm("bi-calendar-day", L("totalToday"), money(today), "finance", { targetTab: "entries", filterPayload: { period: "today", dateFrom: new Date().toISOString().slice(0, 10), dateTo: new Date().toISOString().slice(0, 10) } })}
+          ${sm("bi-calendar3", L("totalThisMonth"), money(month), "finance", { targetTab: "reports", filterPayload: { period: "month" } })}
+          ${sm("bi-hourglass", L("pendingVerification"), pendingList.length, "finance", { targetTab: "verification", filterPayload: { status: FINANCE_STATUS_PENDING } })}
+          ${sm("bi-patch-check", L("verified"), allList.filter((f) => statusKey(f.estado) === "verified").length, "finance", { targetTab: "entries", filterPayload: { status: FINANCE_STATUS_VERIFIED } })}
+          ${sm("bi-globe2", L("financeTabPublic"), publicRows.filter((row) => statusKey(row.status) === "pendingVerification").length, "finance", { targetTab: "public", filterPayload: { source: "public_website" } })}
+          ${sm("bi-x-circle", L("financeTotalRejected"), allList.filter((f) => statusKey(f.estado) === "rejected").length, "finance", { targetTab: "entries", filterPayload: { status: FINANCE_STATUS_REJECTED } })}
         </div>`)}
       ${moduleSection(L("financeAnalyticsSection"), L("financeAnalyticsHint"), "bi-pie-chart", "", `
         <div class="row g-4">
@@ -5840,13 +5960,13 @@ function renderFinance() {
         </div>`)}`;
   } else if (financePageState.tab === "entries") {
     tabContent = moduleSection(L("financeRecordsSection"), L("financeRecordsHint"), "bi-table", "", `
-      <article class="panel glass-panel mb-0">${entriesTable}</article>`);
+      ${financeChips}<article class="panel glass-panel mb-0">${entriesTable}</article>`);
   } else if (financePageState.tab === "public") {
     tabContent = moduleSection(L("financeTabPublic"), L("financeRecordsHint"), "bi-globe2", "", `
-      <article class="panel glass-panel mb-0">${publicTable}</article>`);
+      ${financeChips}<article class="panel glass-panel mb-0">${publicTable}</article>`);
   } else if (financePageState.tab === "verification") {
     tabContent = moduleSection(L("financeVerificationQueue"), L("financeVerificationHint"), "bi-shield-check", "", `
-      <article class="panel glass-panel mb-0">${verificationTable}</article>`);
+      ${financeChips}<article class="panel glass-panel mb-0">${verificationTable}</article>`);
   } else if (financePageState.tab === "reports") {
     tabContent = `
       ${moduleSection(L("financeReportsSection"), L("financeReportsHint"), "bi-graph-up", "", `
@@ -5941,6 +6061,12 @@ function renderFinance() {
 }
 
 function renderSacraments() {
+  const baptisms = scoped(state.sacraments.baptisms);
+  const marriages = scoped(state.sacraments.marriages);
+  const babies = scoped(state.sacraments.babies);
+  const allSacraments = [...baptisms, ...marriages, ...babies];
+  const pendingCount = allSacraments.filter((r) => ["Pending", "Pendente"].includes(r.estado)).length;
+  const completedCount = allSacraments.filter((r) => ["Completed", "Realizado", "Certificate Issued"].includes(r.estado)).length;
   setPageContent( `
     ${moduleNavShell("sacraments", { title: L("sacraments"), subtitle: L("sacramentsSubtitle"), icon: "bi-droplet" },
       moduleScrollTabs([
@@ -5949,10 +6075,18 @@ function renderSacraments() {
         [L("babyTab"), "panel-baby"]
       ])
     )}
+    <div class="row g-3 mb-4 summary-cards-row">
+      ${sm("bi-droplet", L("baptismTab"), baptisms.length, "sacraments", { scrollTo: "panel-baptism" })}
+      ${sm("bi-heart", L("marriageTab"), marriages.length, "sacraments", { scrollTo: "panel-marriage" })}
+      ${sm("bi-emoji-smile", L("babyTab"), babies.length, "sacraments", { scrollTo: "panel-baby" })}
+      ${sm("bi-hourglass-split", L("pending"), pendingCount, "sacraments", { filterPayload: { pending: true } })}
+      ${sm("bi-check-circle", L("completed"), completedCount, "sacraments", { filterPayload: { completed: true } })}
+    </div>
+    ${summaryFilterChips("sacraments")}
     <div class="row g-4">
-      <div class="col-xl-4">${sacramentPanel("baptism", L("baptismTab"), scoped(state.sacraments.baptisms), ["nome", "apelido", "telefone", "data_do_baptismo", "estado"])}</div>
-      <div class="col-xl-4">${sacramentPanel("marriage", L("marriageTab"), scoped(state.sacraments.marriages), ["nome_do_noivo", "nome_da_noiva", "data_do_casamento", "estado"])}</div>
-      <div class="col-xl-4">${sacramentPanel("baby", L("babyTab"), scoped(state.sacraments.babies), ["nome_da_crianca", "telefone_dos_pais", "data_da_dedicacao", "estado"])}</div>
+      <div class="col-xl-4">${sacramentPanel("baptism", L("baptismTab"), applySacramentCardFilters(baptisms, sacramentsPageState.filter), ["nome", "apelido", "telefone", "data_do_baptismo", "estado"])}</div>
+      <div class="col-xl-4">${sacramentPanel("marriage", L("marriageTab"), applySacramentCardFilters(marriages, sacramentsPageState.filter), ["nome_do_noivo", "nome_da_noiva", "data_do_casamento", "estado"])}</div>
+      <div class="col-xl-4">${sacramentPanel("baby", L("babyTab"), applySacramentCardFilters(babies, sacramentsPageState.filter), ["nome_da_crianca", "telefone_dos_pais", "data_da_dedicacao", "estado"])}</div>
     </div>
   `);
 }
@@ -6046,12 +6180,13 @@ function renderChurches() {
   setPageContent( `
     ${sectionHeader(L("churches"), L("churchesSubtitle"), "church", "bi-building")}
     <div class="row g-3 mb-4">
-      ${metric("bi-building", L("totalChurches"), allChurches.length, L("churches"))}
-      ${metric("bi-check-circle", L("activeChurches"), activeCount, L("status"))}
-      ${metric("bi-broadcast", L("onlineVirtualChurches"), onlineCount, L("churchTypeOnline"))}
-      ${metric("bi-geo-alt", L("provincesCovered"), provinces.size, L("Province"))}
-      ${metric("bi-flag", L("infoToConfirm"), confirmCount, L("informationStatus"))}
+      ${sm("bi-building", L("totalChurches"), allChurches.length, "churches", { filterPayload: {} })}
+      ${sm("bi-check-circle", L("activeChurches"), activeCount, "churches", { filterPayload: { status: "Activa" } })}
+      ${sm("bi-broadcast", L("onlineVirtualChurches"), onlineCount, "churches", { filterPayload: { type: "Igreja Online" } })}
+      ${sm("bi-geo-alt", L("provincesCovered"), provinces.size, "churches", { scrollTo: "churches-filter-grid" })}
+      ${sm("bi-flag", L("infoToConfirm"), confirmCount, "churches", { filterPayload: { information_status: "Por Confirmar" } })}
     </div>
+    ${summaryFilterChips("churches")}
     <div class="churches-toolbar">
       <div class="churches-view-toggle" role="group" aria-label="${L("churches")}">
         <button type="button" class="${churchPageState.view === "cards" ? "active" : ""}" data-church-view="cards">${L("cardsView")}</button>
@@ -6059,7 +6194,7 @@ function renderChurches() {
       </div>
       <button type="button" class="btn btn-ce-gold" data-open-church-form="create"><i class="bi bi-plus-lg me-2"></i>${L("addChurch")}</button>
     </div>
-    <div class="churches-filter-grid">
+    <div class="churches-filter-grid" id="churches-filter-grid">
       <input class="form-control" type="search" data-church-filter="search" value="${filters.search}" placeholder="${L("search")}" aria-label="${L("search")}">
       ${churchFilterSelect("province", L("filterProvince"), churchFilterOptions("province"), filters.province)}
       ${churchFilterSelect("city", L("filterCity"), churchFilterOptions("city"), filters.city)}
@@ -6591,16 +6726,17 @@ function renderVenueInventory(activeTab = "overview") {
   const navHtml = moduleNavShell("venueInventory", { title: L("venueInventory"), subtitle: L("venueInventorySubtitle"), modalType: addType, icon: "bi-box-seam" }, venueDepartmentTabs(activeTab));
   const bodyHtml = `
     ${show("overview") ? `<div class="row g-3 mb-4">
-      ${metric("bi-box-seam", L("totalItems"), inventory.length, L("generalInventory"))}
-      ${metric("bi-check-circle", L("goodEquipment"), goodItems.length, L("status"))}
-      ${metric("bi-exclamation-triangle", L("damagedEquipment"), damagedItems.length, L("needsAction"))}
-      ${metric("bi-tools", L("inRepair"), inventory.filter((item) => item.estado === "Em Reparação").length, L("maintenanceRepairs"))}
-      ${metric("bi-laptop", L("assignedStaffEquipment"), staffEquipment.filter((item) => item.estado === "Activo").length, L("staffEquipment"))}
-      ${metric("bi-cart-plus", L("acquisitions2026"), acquisitions.length, money(acquisitionValue))}
-      ${metric("bi-arrow-left-right", L("pendingMovements"), pendingMovements.length, L("loansMovements"))}
-      ${metric("bi-building", L("activeSpaces"), venues.filter((item) => item.estado === "Activo").length, L("venuesRooms"))}
-      ${metric("bi-clipboard-check", L("pendingChecklists"), pendingChecklists.length, L("serviceChecklist"))}
+      ${sm("bi-box-seam", L("totalItems"), inventory.length, "venue", { route: "venueInventoryGeneral" })}
+      ${sm("bi-check-circle", L("goodEquipment"), goodItems.length, "venue", { route: "venueInventoryGeneral", filterPayload: { estado: "Bom" } })}
+      ${sm("bi-exclamation-triangle", L("damagedEquipment"), damagedItems.length, "venue", { route: "venueInventoryGeneral", filterPayload: { estado: "Mau" } })}
+      ${sm("bi-tools", L("inRepair"), inventory.filter((item) => item.estado === "Em Reparação").length, "venue", { route: "venueInventoryMaintenance", filterPayload: { estado: "Em Reparação" } })}
+      ${sm("bi-laptop", L("assignedStaffEquipment"), staffEquipment.filter((item) => item.estado === "Activo").length, "venue", { route: "venueInventoryStaff", filterPayload: { assigned: true } })}
+      ${sm("bi-cart-plus", L("acquisitions2026"), acquisitions.length, "venue", { route: "venueInventoryAcquisitions" })}
+      ${sm("bi-arrow-left-right", L("pendingMovements"), pendingMovements.length, "venue", { route: "venueInventoryMovements" })}
+      ${sm("bi-building", L("activeSpaces"), venues.filter((item) => item.estado === "Activo").length, "venue", { route: "venueInventorySpaces" })}
+      ${sm("bi-clipboard-check", L("pendingChecklists"), pendingChecklists.length, "venue", { route: "venueInventoryChecklist" })}
     </div>
+    ${summaryFilterChips("venue")}
     <div class="row g-4 mb-4">
       <div class="col-xl-4">${chartCard(L("itemsByCategory"), groupCount(inventory, "categoria"))}</div>
       <div class="col-xl-4">${chartCard(L("itemsByStatus"), groupCount(inventory, "estado"))}</div>
@@ -6609,7 +6745,7 @@ function renderVenueInventory(activeTab = "overview") {
       <div class="col-xl-4">${chartCard(L("acquisitionsByMonth"), acquisitions.map((item) => [item.data_de_compra_ou_entrada?.slice(0, 7) || "-", Number(item.valor_total || 0)]))}</div>
     </div>` : ""}
     <div class="row g-4">
-      ${show("inventory") ? `<div class="col-12">${venueModulePanel("inventoryItem", L("generalInventory"), canManageVenue() ? "inventoryItem" : null, [L("itemName"), L("category"), L("quantity"), L("location"), L("responsibleDepartment"), L("church"), L("unitValue"), L("totalValue"), L("status"), L("actions")], inventory.map((item) => [item.nome_do_item, item.categoria, item.quantidade, item.localizacao, item.departamento_responsavel, churchName(item.church_id), money(item.valor_unitario), money(item.valor_total), badge(item.estado), venueRecordActions("inventoryItem", item.id)]), { allowAdd: canManageVenue() })}</div>` : ""}
+      ${show("inventory") ? `<div class="col-12">${summaryFilterChips("venue")}${venueModulePanel("inventoryItem", L("generalInventory"), canManageVenue() ? "inventoryItem" : null, [L("itemName"), L("category"), L("quantity"), L("location"), L("responsibleDepartment"), L("church"), L("unitValue"), L("totalValue"), L("status"), L("actions")], applyVenueInventoryCardFilters(inventory, venuePageState.filter).map((item) => [item.nome_do_item, item.categoria, item.quantidade, item.localizacao, item.departamento_responsavel, churchName(item.church_id), money(item.valor_unitario), money(item.valor_total), badge(item.estado), venueRecordActions("inventoryItem", item.id)]), { allowAdd: canManageVenue() })}</div>` : ""}
       ${show("acquisitions") ? `<div class="col-12">${venueModulePanel("venueAcquisition", L("newAcquisitions"), canManageVenue() ? "venueAcquisition" : null, [L("itemCode"), L("description"), L("category"), L("quantity"), L("purchaseEntryDate"), L("supplier"), L("receivedBy"), L("totalValue"), L("status"), L("actions")], acquisitions.map((item) => [item.codigo_do_item, item.descricao, item.categoria, item.quantidade, item.data_de_compra_ou_entrada, item.fornecedor, item.recebido_por, money(item.valor_total), badge(item.estado), venueRecordActions("venueAcquisition", item.id)]), { allowAdd: canManageVenue() })}</div>` : ""}
       ${show("staff") ? `<div class="col-12">${venueModulePanel("venueStaffEquipment", L("staffEquipment"), canManageVenue() ? "venueStaffEquipment" : null, [L("staffName"), L("department"), L("church"), L("device"), L("model"), L("deliveryDate"), L("currentCondition"), L("signatureConfirmed"), L("status"), L("actions")], staffEquipment.map((item) => [item.nome_do_funcionario, item.departamento, churchName(item.church_id), item.dispositivo, item.modelo, item.data_de_entrega, item.estado_actual, yesNo(item.assinatura_confirmada), badge(item.estado), venueRecordActions("venueStaffEquipment", item.id)]), { allowAdd: canManageVenue() })}</div>` : ""}
       ${show("maintenance") ? `<div class="col-12">${venueModulePanel("venueMaintenance", L("maintenanceRepairs"), canManageVenue() ? "venueMaintenance" : null, [L("item"), L("category"), L("quantity"), L("reportedProblem"), L("repairCost"), L("technicianResponsible"), L("sentDate"), L("returnedDate"), L("status"), L("actions")], maintenance.map((item) => [item.item, item.categoria, item.quantidade, item.problema_reportado, money(item.custo_da_reparacao), item.tecnico_ou_responsavel, item.data_de_envio, item.data_de_retorno, badge(item.estado), venueRecordActions("venueMaintenance", item.id)]), { allowAdd: canManageVenue() })}</div>` : ""}
@@ -6762,19 +6898,20 @@ function renderFevo(activeTab = "overview") {
   );
   const overviewSection = show("analysis") ? moduleSection(L("fevoOverviewSection"), L("fevoOverviewHint"), "bi-compass", "fevo", `
     <div class="row g-3 summary-cards-row">
-      ${metric("bi-collection", L("totalGroups"), groups.size, L("fevoFull"))}
-      ${metric("bi-diagram-3", L("totalCells"), totals.cells, L("cellMinistry"))}
-      ${metric("bi-people", L("totalMembers"), totals.members, L("members"))}
-      ${metric("bi-person-badge", L("leadersPresent"), totals.leadersPresent, L("thisMonth"))}
-      ${metric("bi-person-check", L("membersPresent"), totals.membersPresent, L("thisMonth"))}
-      ${metric("bi-telephone-outbound", L("soulsContacted"), totals.soulsContacted, L("followUp"))}
-      ${metric("bi-megaphone", L("soulsEvangelized"), totals.soulsEvangelized, L("evangelism"))}
-      ${metric("bi-house-heart", L("soulsVisited"), totals.soulsVisited, L("visitation"))}
-      ${metric("bi-stars", L("newConverts"), totals.newConverts, L("newConverts"))}
-      ${metric("bi-calendar-heart", L("daysOfPrayer"), totals.prayerDays, L("prayer"))}
-      ${metric("bi-person-heart", L("ftInChurch"), totals.firstTimers, L("firstTimers"))}
-      ${metric("bi-exclamation-triangle", L("groupsWithoutReport"), noReports.length, L("needsAction"))}
-    </div>`) : "";
+      ${sm("bi-collection", L("totalGroups"), groups.size, "fevo", { route: "fevoWeeklyReportsRoute" })}
+      ${sm("bi-diagram-3", L("totalCells"), totals.cells, "fevo", { route: "fevoWeeklyReportsRoute" })}
+      ${sm("bi-people", L("totalMembers"), totals.members, "fevo", { route: "fevoWeeklyReportsRoute" })}
+      ${sm("bi-person-badge", L("leadersPresent"), totals.leadersPresent, "fevo", { route: "fevoWeeklyReportsRoute" })}
+      ${sm("bi-person-check", L("membersPresent"), totals.membersPresent, "fevo", { route: "fevoWeeklyReportsRoute" })}
+      ${sm("bi-telephone-outbound", L("soulsContacted"), totals.soulsContacted, "fevo", { route: "fevoFollowUpRoute", filterPayload: { souls_contacted: true } })}
+      ${sm("bi-megaphone", L("soulsEvangelized"), totals.soulsEvangelized, "fevo", { route: "fevoEvangelismRoute" })}
+      ${sm("bi-house-heart", L("soulsVisited"), totals.soulsVisited, "fevo", { route: "fevoVisitationRoute" })}
+      ${sm("bi-stars", L("newConverts"), totals.newConverts, "fevo", { route: "fevoEvangelismRoute" })}
+      ${sm("bi-calendar-heart", L("daysOfPrayer"), totals.prayerDays, "fevo", { route: "fevoPrayerRoute" })}
+      ${sm("bi-person-heart", L("ftInChurch"), totals.firstTimers, "fevo", { route: "fevoWeeklyReportsRoute" })}
+      ${sm("bi-exclamation-triangle", L("groupsWithoutReport"), noReports.length, "fevo", { route: "fevoNoReportsRoute", filterPayload: { status: "Pendente" } })}
+    </div>
+    ${summaryFilterChips("fevo")}`) : "";
   const analyticsSection = show("analysis") ? moduleSection(L("fevoAnalyticsSection"), L("fevoAnalyticsHint"), "bi-bar-chart-line", "", `
     <div class="row g-4">
       <div class="col-xl-4">${chartCard(L("activitiesByWeek"), groupCount(reports, "activity_type"))}</div>
@@ -6921,15 +7058,16 @@ function renderRequisitions() {
   if (requisitionsPageState.tab === "overview") {
     tabContent = `
       <div class="row g-3 mb-4">
-        ${metric("bi-hourglass-split", L("reqPending"), stats.pending)}
-        ${metric("bi-search", L("reqInReview"), stats.review)}
-        ${metric("bi-person-badge", L("reqAwaitingPastor"), stats.pastoral)}
-        ${metric("bi-check-circle", L("reqApprovedMonth"), stats.approvedMonth)}
-        ${metric("bi-x-circle", L("reqRejected"), stats.rejected)}
-        ${metric("bi-cash-stack", L("reqReleased"), stats.released)}
-        ${metric("bi-graph-up", L("reqApprovedValue"), money(stats.approvedTotal))}
-        ${metric("bi-clock-history", L("reqPendingValue"), money(stats.pendingValue))}
+        ${sm("bi-hourglass-split", L("reqPending"), stats.pending, "requisitions", { targetTab: "received", filterPayload: { status_group: "pending" } })}
+        ${sm("bi-search", L("reqInReview"), stats.review, "requisitions", { targetTab: "review" })}
+        ${sm("bi-person-badge", L("reqAwaitingPastor"), stats.pastoral, "requisitions", { targetTab: "pastoral" })}
+        ${sm("bi-check-circle", L("reqApprovedMonth"), stats.approvedMonth, "requisitions", { targetTab: "approved" })}
+        ${sm("bi-x-circle", L("reqRejected"), stats.rejected, "requisitions", { targetTab: "rejected" })}
+        ${sm("bi-cash-stack", L("reqReleased"), stats.released, "requisitions", { targetTab: "released" })}
+        ${sm("bi-graph-up", L("reqApprovedValue"), money(stats.approvedTotal), "requisitions", { targetTab: "approved" })}
+        ${sm("bi-clock-history", L("reqPendingValue"), money(stats.pendingValue), "requisitions", { targetTab: "received", filterPayload: { pending_value: true } })}
       </div>
+      ${summaryFilterChips("requisitions")}
       ${dataTable([L("reqNumber"), L("reqTitle"), L("reqDepartment"), L("reqType"), L("reqEstimated"), L("status"), L("actions")],
         scoped.slice(0, 8).map((r) => [r.request_number, r.title, r.department_name, r.requisition_type, money(r.estimated_amount), badge(r.status), requisitionActionButtons(r)]))}`;
   } else if (requisitionsPageState.tab === "new") {
@@ -6940,11 +7078,14 @@ function renderRequisitions() {
       <p class="text-secondary">${L("reqTabNew")} — ${L("requisitionsSubtitle")}</p>`
       : `<div class="finance-privacy-banner"><i class="bi bi-shield-lock"></i><span>${L("accessDeniedText")}</span></div>`;
   } else {
-    const filtered = lib.filterByTab(scoped, requisitionsPageState.tab);
-    tabContent = dataTable(
+    let filtered = lib.filterByTab(scoped, requisitionsPageState.tab);
+    if (requisitionsPageState.cardFilter?.pending_value) {
+      filtered = filtered.filter((r) => ["Submetido", "Em Revisão", "Rascunho"].includes(r.status) && Number(r.estimated_amount || 0) > 0);
+    }
+    tabContent = `${summaryFilterChips("requisitions")}${filtered.length ? dataTable(
       [L("reqNumber"), L("reqTitle"), L("reqDepartment"), L("reqUrgency"), L("reqNeededBy"), L("reqEstimated"), L("status"), L("actions")],
       filtered.map((r) => [r.request_number, r.title, r.department_name, r.urgency, r.needed_by_date || "-", money(r.estimated_amount), badge(r.status), requisitionActionButtons(r)])
-    );
+    ) : noResultsHtml()}`;
   }
 
   setPageContent(`
@@ -7220,10 +7361,10 @@ function renderStaffBirthdaysTab(staffList, lib, access, stats) {
   const canEdit = Boolean(access.can_edit);
   return `
     <div class="row g-3 mb-4">
-      ${metric("bi-balloon", L("staffBirthdaysToday"), stats.birthdaysToday, L("staffClickToView"), { clickable: true, clickAction: "birthdays-today" })}
-      ${metric("bi-gift", L("staffBirthdays"), stats.birthdays, L("staffClickToView"), { clickable: true, clickAction: "birthdays-month" })}
-      ${metric("bi-calendar-event", L("staffUpcomingBirthdays"), stats.upcomingBirthdays, L("staffClickToView"), { clickable: true, clickAction: "birthdays-upcoming" })}
-      ${metric("bi-person-check", L("staffActiveBirthdays"), stats.activeStaffBirthdays)}
+      ${sm("bi-balloon", L("staffBirthdaysToday"), stats.birthdaysToday, "staffHr", { modalType: "today" })}
+      ${sm("bi-gift", L("staffBirthdays"), stats.birthdays, "staffHr", { modalType: "thisMonth" })}
+      ${sm("bi-calendar-event", L("staffUpcomingBirthdays"), stats.upcomingBirthdays, "staffHr", { targetTab: "birthdays", filterPayload: { upcoming: true } })}
+      ${sm("bi-person-check", L("staffActiveBirthdays"), stats.activeStaffBirthdays, "staffHr", { targetTab: "staff", filterPayload: { status: "Activo", has_dob: true } })}
     </div>
     ${staffBirthdayFilterBar(staffList)}
     <div class="staff-birthday-sections">
@@ -7278,17 +7419,18 @@ function renderStaffHr() {
 
   if (staffHrPageState.tab === "overview") {
     const monthBirthdays = lib.sortByUpcomingBirthday(lib.birthdaysThisMonth(visibleBirthdays));
+    const currentMonth = String(new Date().getMonth() + 1).padStart(2, "0");
     tabContent = `
       <div class="row g-3 mb-4">
-        ${metric("bi-people", L("staffTotal"), stats.total)}
-        ${metric("bi-person-check", L("staffActive"), stats.active)}
-        ${metric("bi-heart", L("staffVolunteers"), stats.volunteers)}
-        ${metric("bi-wallet2", L("staffWithSalary"), stats.withPay)}
-        ${metric("bi-clipboard-data", L("staffPendingEval"), stats.pendingEval)}
-        ${metric("bi-cash", L("staffPendingPay"), stats.pendingPay)}
-        ${metric("bi-laptop", L("staffAssignedEq"), stats.assignedEq)}
-        ${metric("bi-gift", L("staffBirthdays"), birthdayStats.birthdays, L("staffClickToView"), { clickable: true, clickAction: "birthdays-month" })}
-        ${metric("bi-calendar-event", L("staffUpcomingBirthdays"), birthdayStats.upcomingBirthdays, L("staffClickToView"), { clickable: true, clickAction: "birthdays-upcoming" })}
+        ${sm("bi-people", L("staffTotal"), stats.total, "staffHr", { targetTab: "staff", filterPayload: {} })}
+        ${sm("bi-person-check", L("staffActive"), stats.active, "staffHr", { targetTab: "staff", filterPayload: { status: "Activo" } })}
+        ${sm("bi-heart", L("staffVolunteers"), stats.volunteers, "staffHr", { targetTab: "staff", filterPayload: { employment_type: "Voluntário" } })}
+        ${sm("bi-wallet2", L("staffWithSalary"), stats.withPay, "staffHr", { targetTab: "salaries", filterPayload: { has_salary: true } })}
+        ${sm("bi-clipboard-data", L("staffPendingEval"), stats.pendingEval, "staffHr", { targetTab: "performance", filterPayload: { pending_eval: true } })}
+        ${sm("bi-cash", L("staffPendingPay"), stats.pendingPay, "staffHr", { targetTab: "salaries", filterPayload: { payment_status: "Pendente" } })}
+        ${sm("bi-laptop", L("staffAssignedEq"), stats.assignedEq, "staffHr", { targetTab: "equipment", filterPayload: { assigned: true } })}
+        ${sm("bi-gift", L("staffBirthdays"), birthdayStats.birthdays, "staffHr", { targetTab: "birthdays", filterPayload: { birthday_month: currentMonth } })}
+        ${sm("bi-calendar-event", L("staffUpcomingBirthdays"), birthdayStats.upcomingBirthdays, "staffHr", { targetTab: "birthdays", filterPayload: { upcoming: true } })}
       </div>
       <div class="row g-3">
         <div class="col-lg-6">
@@ -7311,16 +7453,17 @@ function renderStaffHr() {
         </div>
       </div>`;
   } else if (staffHrPageState.tab === "staff") {
-    tabContent = `${access.can_create ? `<div class="d-flex justify-content-end mb-3"><button type="button" class="btn btn-ce-gold btn-touch" data-open-form="staffProfile">${L("add")}</button></div>` : ""}
-      ${dataTable([L("staffFullName"), L("staffRoleTitle"), L("church"), L("reqDepartment"), L("staffEmploymentType"), L("status"), L("actions")],
-        staffList.map((s) => {
+    const filteredStaff = applyStaffCardFilters(staffList, staffHrPageState.cardFilters?.staff || {});
+    tabContent = `${summaryFilterChips("staffHr")}${access.can_create ? `<div class="d-flex justify-content-end mb-3"><button type="button" class="btn btn-ce-gold btn-touch" data-open-form="staffProfile">${L("add")}</button></div>` : ""}
+      ${filteredStaff.length ? dataTable([L("staffFullName"), L("staffRoleTitle"), L("church"), L("reqDepartment"), L("staffEmploymentType"), L("status"), L("actions")],
+        filteredStaff.map((s) => {
           const enriched = lib.enrichStaffProfile(s);
           const nameCell = `${s.full_name}${!lib.hasDateOfBirth(enriched) ? ` ${staffMissingDobBadge()}` : ""}`;
           return [nameCell, s.role_title, churchName(s.church_id), s.department_name, s.employment_type, badge(s.status),
             actionButtons([["view", "staffProfile", s.id, L("viewProfile")], ["edit", "staffProfile", s.id, L("edit")]])];
-        }))}`;
+        })) : noResultsHtml()}`;
   } else if (staffHrPageState.tab === "birthdays") {
-    tabContent = renderStaffBirthdaysTab(staffList, lib, access, birthdayStats);
+    tabContent = `${summaryFilterChips("staffHr")}${renderStaffBirthdaysTab(staffList, lib, access, birthdayStats)}`;
   } else if (staffHrPageState.tab === "departments") {
     tabContent = dataTable([L("name"), L("church"), L("staffSupervisor"), L("actions")],
       (state.departments || []).map((d) => [d.name, churchName(d.church_id), d.lead_name || "-", "-"]));
@@ -7328,20 +7471,23 @@ function renderStaffHr() {
     const roles = [...new Set(staffList.map((s) => s.role_title))];
     tabContent = dataTable([L("staffRoleTitle"), L("staffTotal")], roles.map((r) => [r, staffList.filter((s) => s.role_title === r).length]));
   } else if (staffHrPageState.tab === "salaries") {
-    tabContent = `${!canSalary ? `<div class="finance-privacy-banner mb-3"><i class="bi bi-shield-lock"></i><span>${L("staffPrivacyBanner")}</span></div>` : ""}
-      ${dataTable([L("staffFullName"), L("date"), L("staffSalary"), L("amount"), L("status"), L("actions")],
-        salaries.map((sal) => {
+    const filteredSalaries = applyStaffSalaryCardFilters(salaries, staffList, staffHrPageState.cardFilters?.salaries || {});
+    tabContent = `${summaryFilterChips("staffHr")}${!canSalary ? `<div class="finance-privacy-banner mb-3"><i class="bi bi-shield-lock"></i><span>${L("staffPrivacyBanner")}</span></div>` : ""}
+      ${filteredSalaries.length ? dataTable([L("staffFullName"), L("date"), L("staffSalary"), L("amount"), L("status"), L("actions")],
+        filteredSalaries.map((sal) => {
           const staff = staffList.find((s) => s.id === sal.staff_id) || state.staffProfiles.find((s) => s.id === sal.staff_id);
           return [staff?.full_name || "-", sal.month, canSalary ? money(sal.net_amount) : L("staffSalaryHidden"), money(canSalary ? sal.net_amount : 0), badge(sal.payment_status),
             actionButtons([["view", "staffSalary", sal.id, L("view")]])];
-        }))}`;
+        })) : noResultsHtml()}`;
   } else if (staffHrPageState.tab === "performance") {
-    tabContent = dataTable([L("staffFullName"), L("date"), L("progress"), L("status"), L("actions")],
-      (state.staffPerformance || []).filter((p) => staffList.some((s) => s.id === p.staff_id)).map((p) => {
+    const perfBase = (state.staffPerformance || []).filter((p) => staffList.some((s) => s.id === p.staff_id));
+    const perfRows = applyStaffPerformanceCardFilters(perfBase, staffHrPageState.cardFilters?.performance || {});
+    tabContent = `${summaryFilterChips("staffHr")}${perfRows.length ? dataTable([L("staffFullName"), L("date"), L("progress"), L("status"), L("actions")],
+      perfRows.map((p) => {
         const staff = staffList.find((s) => s.id === p.staff_id);
         return [staff?.full_name || "-", p.evaluation_period, p.overall_score ? `${p.overall_score}/10` : "-", badge(p.evaluated_at ? L("verified") : L("pendingVerification")),
           actionButtons([["view", "staffPerformance", p.id, L("view")]])];
-      }));
+      })) : noResultsHtml()}`;
   } else if (staffHrPageState.tab === "attendance") {
     tabContent = dataTable([L("staffFullName"), L("date"), L("church"), L("status"), L("notes")],
       (state.staffAttendance || []).filter((a) => staffList.some((s) => s.id === a.staff_id)).map((a) => {
