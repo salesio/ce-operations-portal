@@ -334,6 +334,19 @@ const TEXT = {
     staffVolunteers: "Voluntários",
     staffWithSalary: "Staff com Salário/Subsídio",
     staffPendingEval: "Avaliações Pendentes",
+    evaluate: "Avaliar",
+    evaluationPeriod: "Período de Avaliação",
+    punctualityScore: "Pontualidade",
+    taskCompletionScore: "Conclusão de Tarefas",
+    reportSubmissionScore: "Entrega de Relatórios",
+    teamworkScore: "Trabalho em Equipa",
+    supervisorRating: "Avaliação do Supervisor",
+    overallScore: "Pontuação Geral",
+    strengths: "Pontos Fortes",
+    areasToImprove: "Áreas a Melhorar",
+    actionPlan: "Plano de Acção",
+    evaluatedBy: "Avaliado Por",
+    evaluatedAt: "Data da Avaliação",
     staffPendingPay: "Pagamentos Pendentes",
     staffAssignedEq: "Equipamentos Atribuídos",
     staffBirthdays: "Aniversariantes do Mês",
@@ -1029,6 +1042,19 @@ const TEXT = {
     staffVolunteers: "Volunteers",
     staffWithSalary: "Staff with Salary/Allowance",
     staffPendingEval: "Pending Evaluations",
+    evaluate: "Evaluate",
+    evaluationPeriod: "Evaluation Period",
+    punctualityScore: "Punctuality",
+    taskCompletionScore: "Task Completion",
+    reportSubmissionScore: "Report Submission",
+    teamworkScore: "Teamwork",
+    supervisorRating: "Supervisor Rating",
+    overallScore: "Overall Score",
+    strengths: "Strengths",
+    areasToImprove: "Areas to Improve",
+    actionPlan: "Action Plan",
+    evaluatedBy: "Evaluated By",
+    evaluatedAt: "Evaluation Date",
     staffPendingPay: "Pending Payments",
     staffAssignedEq: "Assigned Equipment",
     staffBirthdays: "Birthdays This Month",
@@ -8844,8 +8870,12 @@ function renderStaffHr() {
     tabContent = `${summaryFilterChips("staffHr")}${perfRows.length ? dataTable([L("staffFullName"), L("date"), L("progress"), L("status"), L("actions")],
       perfRows.map((p) => {
         const staff = staffList.find((s) => s.id === p.staff_id);
+        const canEditPerformance = Boolean(access.can_edit);
+        const editLabel = p.evaluated_at ? L("edit") : L("evaluate");
+        const actions = [["view", "staffPerformance", p.id, L("view")]];
+        if (canEditPerformance) actions.push(["edit", "staffPerformance", p.id, editLabel]);
         return [staff?.full_name || "-", p.evaluation_period, p.overall_score ? `${p.overall_score}/10` : "-", badge(p.evaluated_at ? L("verified") : L("pendingVerification")),
-          actionButtons([["view", "staffPerformance", p.id, L("view")]])];
+          actionButtons(actions)];
       })) : noResultsHtml()}`;
   } else if (staffHrPageState.tab === "attendance") {
     tabContent = dataTable([L("staffFullName"), L("date"), L("church"), L("status"), L("notes")],
@@ -9213,6 +9243,11 @@ function labelFor(key) {
     start_date: L("staffStartDate"), employment_type: L("staffEmploymentType"),
     salary_or_allowance: L("staffSalary"), payment_frequency: L("staffPaymentFreq"), payment_method: L("method"),
     bank_or_mobile_details: L("bankOrMobileDetails"), notes: L("notes"), phone: L("phone"), email: L("email")
+    , staff_id: L("staffFullName"), evaluation_period: L("evaluationPeriod"), punctuality_score: L("punctualityScore"),
+    task_completion_score: L("taskCompletionScore"), report_submission_score: L("reportSubmissionScore"),
+    teamwork_score: L("teamworkScore"), supervisor_rating: L("supervisorRating"), overall_score: L("overallScore"),
+    strengths: L("strengths"), areas_to_improve: L("areasToImprove"), action_plan: L("actionPlan"),
+    evaluated_by: L("evaluatedBy"), evaluated_at: L("evaluatedAt")
   };
   return map[key] || key.replaceAll("_", " ");
 }
@@ -9269,7 +9304,22 @@ const formSchemas = {
   venueSpace: [["nome_do_espaco", "spaceName"], ["localizacao", "location"], ["church_id", "church", "church"], ["capacidade", "capacity", "number"], ["tipo", "spaceType", "select", venueTypes], ["equipamentos_fixos", "fixedEquipment", "textarea"], ["responsavel", "responsible"], ["estado", "status", "select", venueStatuses], ["observacoes", "observations", "textarea"]],
   venueChecklist: [["data_do_culto", "serviceDate", "date"], ["church_id", "church", "church"], ["espaco", "space"], ["tipo_de_culto_ou_evento", "serviceEventType"], ["som_verificado", "soundChecked", "checkbox"], ["luzes_verificadas", "lightsChecked", "checkbox"], ["ac_verificado", "acChecked", "checkbox"], ["projector_verificado", "projectorChecked", "checkbox"], ["cadeiras_organizadas", "chairsOrganized", "checkbox"], ["pulpito_pronto", "pulpitReady", "checkbox"], ["cameras_prontas", "camerasReady", "checkbox"], ["microfones_prontos", "microphonesReady", "checkbox"], ["limpeza_feita", "cleaningDone", "checkbox"], ["responsavel", "responsible"], ["estado", "status", "select", checklistStatuses], ["observacoes", "observations", "textarea"]],
   requisition: [["title", "reqTitle"], ["requisition_type", "reqType", "select", (window.CERequisitions?.TYPES || [])], ["department_name", "reqDepartment"], ["church_id", "church", "church"], ["description", "reqDescription", "textarea"], ["justification", "reqJustification", "textarea"], ["estimated_amount", "reqEstimated", "number"], ["urgency", "reqUrgency", "select", (window.CERequisitions?.URGENCY || [])], ["needed_by_date", "reqNeededBy", "date"], ["supplier_or_vendor", "reqSupplier"], ["quotation_number", "reqQuotation"]],
-  staffProfile: [["full_name", "staffFullName"], ["title", "treatment", "select", treatmentOptions], ["gender", "gender", "select", ["Feminino", "Masculino"]], ["phone", "phone"], ["whatsapp", "whatsapp"], ["email", "email", "email"], ["church_id", "church", "church"], ["department_name", "reqDepartment"], ["role_title", "staffRoleTitle"], ["supervisor_name", "staffSupervisor"], ["start_date", "staffStartDate", "date"], ["employment_type", "staffEmploymentType", "select", (window.CEStaffHr?.EMPLOYMENT_TYPES || [])], ["salary_or_allowance", "staffSalary", "number"], ["payment_frequency", "staffPaymentFreq", "select", (window.CEStaffHr?.PAYMENT_FREQUENCIES || [])], ["payment_method", "method", "select", paymentMethods], ["status", "status", "select", (window.CEStaffHr?.STAFF_STATUSES || [])], ["notes", "notes", "textarea"]]
+  staffProfile: [["full_name", "staffFullName"], ["title", "treatment", "select", treatmentOptions], ["gender", "gender", "select", ["Feminino", "Masculino"]], ["phone", "phone"], ["whatsapp", "whatsapp"], ["email", "email", "email"], ["church_id", "church", "church"], ["department_name", "reqDepartment"], ["role_title", "staffRoleTitle"], ["supervisor_name", "staffSupervisor"], ["start_date", "staffStartDate", "date"], ["employment_type", "staffEmploymentType", "select", (window.CEStaffHr?.EMPLOYMENT_TYPES || [])], ["salary_or_allowance", "staffSalary", "number"], ["payment_frequency", "staffPaymentFreq", "select", (window.CEStaffHr?.PAYMENT_FREQUENCIES || [])], ["payment_method", "method", "select", paymentMethods], ["status", "status", "select", (window.CEStaffHr?.STAFF_STATUSES || [])], ["notes", "notes", "textarea"]],
+  staffPerformance: [
+    ["staff_id", "staffFullName", "staffSelect"],
+    ["evaluation_period", "evaluationPeriod"],
+    ["punctuality_score", "punctualityScore", "number"],
+    ["task_completion_score", "taskCompletionScore", "number"],
+    ["report_submission_score", "reportSubmissionScore", "number"],
+    ["teamwork_score", "teamworkScore", "number"],
+    ["supervisor_rating", "supervisorRating", "number"],
+    ["overall_score", "overallScore", "readonly"],
+    ["strengths", "strengths", "textarea"],
+    ["areas_to_improve", "areasToImprove", "textarea"],
+    ["action_plan", "actionPlan", "textarea"],
+    ["evaluated_by", "evaluatedBy", "readonly"],
+    ["evaluated_at", "evaluatedAt", "readonly"]
+  ]
 };
 
 function getCollection(type) {
@@ -9356,7 +9406,7 @@ function openForm(type, id = null) {
 }
 
 function formTitle(type) {
-  const map = { firstTimer: L("firstTimers"), member: L("members"), foundationStudent: L("foundationSchool"), finance: L("finance"), church: L("churches"), cell: L("cellLeadership"), user: L("usersRoles"), requisition: L("requisitions"), staffProfile: L("staffHr"), baptism: L("baptismTab"), marriage: L("marriageTab"), baby: L("babyTab"), fevoConfig: L("weeklyConfiguration"), fevoReport: L("weeklyReports"), fevoNoReport: L("groupsWithoutReport"), fevoWeeklyReport: L("weeklyReports"), prisonLocation: L("prisonsLocations"), prisonService: L("prisonServices"), prisonFoundation: L("foundationSchool"), prisonAgenda: L("weeklyAgenda"), prisonReport: L("ministryReports"), materialCatalogue: L("catalogue"), materialSale: L("sales"), materialDistribution: L("churchDistribution"), materialStock: L("weeklyStock"), materialFund: L("freeDistributionFunds"), materialReport: L("ministryReports"), alecRegistration: L("alecRegistration"), alecScore: L("alecScores"), churchReport: L("churchReports"), cellReport: L("cellReports"), cellLeader: L("cellLeaders"), cellEvaluation: L("cellEvaluation"), finalValidation: L("finalValidation"), inventoryItem: L("generalInventory"), venueAcquisition: L("newAcquisitions"), venueStaffEquipment: L("staffEquipment"), venueMaintenance: L("maintenanceRepairs"), venueMovement: L("loansMovements"), venueSpace: L("venuesRooms"), venueChecklist: L("serviceChecklist") };
+  const map = { firstTimer: L("firstTimers"), member: L("members"), foundationStudent: L("foundationSchool"), finance: L("finance"), church: L("churches"), cell: L("cellLeadership"), user: L("usersRoles"), requisition: L("requisitions"), staffProfile: L("staffHr"), staffPerformance: L("staffTabPerformance"), baptism: L("baptismTab"), marriage: L("marriageTab"), baby: L("babyTab"), fevoConfig: L("weeklyConfiguration"), fevoReport: L("weeklyReports"), fevoNoReport: L("groupsWithoutReport"), fevoWeeklyReport: L("weeklyReports"), prisonLocation: L("prisonsLocations"), prisonService: L("prisonServices"), prisonFoundation: L("foundationSchool"), prisonAgenda: L("weeklyAgenda"), prisonReport: L("ministryReports"), materialCatalogue: L("catalogue"), materialSale: L("sales"), materialDistribution: L("churchDistribution"), materialStock: L("weeklyStock"), materialFund: L("freeDistributionFunds"), materialReport: L("ministryReports"), alecRegistration: L("alecRegistration"), alecScore: L("alecScores"), churchReport: L("churchReports"), cellReport: L("cellReports"), cellLeader: L("cellLeaders"), cellEvaluation: L("cellEvaluation"), finalValidation: L("finalValidation"), inventoryItem: L("generalInventory"), venueAcquisition: L("newAcquisitions"), venueStaffEquipment: L("staffEquipment"), venueMaintenance: L("maintenanceRepairs"), venueMovement: L("loansMovements"), venueSpace: L("venuesRooms"), venueChecklist: L("serviceChecklist") };
   return map[type] || type;
 }
 
@@ -9409,6 +9459,12 @@ function fieldControl([name, labelKey, inputType = "text", options = []], record
   }
   if (inputType === "cellSelect") {
     return `<div class="col-md-6"><label class="form-label">${label}</label><select name="${name}" class="form-select"><option value="">${L("all")}</option>${state.cells.map((c) => `<option value="${c.id}" ${value === c.id ? "selected" : ""}>${c.nome_da_celula}</option>`).join("")}</select></div>`;
+  }
+  if (inputType === "staffSelect") {
+    const staffLib = window.CEStaffHr;
+    const access = staffLib?.resolveAccess(activeUser) || { scope: "church" };
+    const staffList = staffLib?.scopeFilterStaff(state.staffProfiles || [], activeUser, access) || state.staffProfiles || [];
+    return `<div class="col-md-6"><label class="form-label">${label}</label><select name="${name}" class="form-select">${staffList.map((staff) => `<option value="${staff.id}" ${value === staff.id ? "selected" : ""}>${staff.full_name}</option>`).join("")}</select></div>`;
   }
   if (inputType === "select") {
     const selectOptions = Array.isArray(options) ? options : [];
@@ -9516,6 +9572,35 @@ function submitForm(form) {
     }
     saveState(`${modalMode} staffProfile`);
     bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide();
+    if (activeRoute === "staffHr") renderStaffHr();
+    return;
+  }
+  if (modalType === "staffPerformance") {
+    const scoreFields = ["punctuality_score", "task_completion_score", "report_submission_score", "teamwork_score", "supervisor_rating"];
+    scoreFields.forEach((field) => {
+      data[field] = Math.max(0, Math.min(10, Number(data[field] || 0)));
+    });
+    const total = scoreFields.reduce((sum, field) => sum + Number(data[field] || 0), 0);
+    data.overall_score = Number((total / scoreFields.length).toFixed(1));
+    data.evaluated_by = activeUser.name;
+    data.evaluated_at = new Date().toISOString().slice(0, 10);
+    data.updated_by = activeUser.name;
+    data.updated_at = data.evaluated_at;
+    if (modalMode === "edit") {
+      const index = state.staffPerformance.findIndex((item) => item.id === modalRecordId);
+      if (index >= 0) state.staffPerformance[index] = { ...state.staffPerformance[index], ...data };
+    } else {
+      state.staffPerformance = state.staffPerformance || [];
+      state.staffPerformance.push({
+        id: `perf-${Date.now()}`,
+        created_by: activeUser.name,
+        created_at: data.evaluated_at,
+        ...data
+      });
+    }
+    saveState(`${modalMode} staffPerformance`);
+    bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide();
+    staffHrPageState.tab = "performance";
     if (activeRoute === "staffHr") renderStaffHr();
     return;
   }
