@@ -3079,6 +3079,45 @@ const NAV_GROUPS = [
   { key: "admin", items: [["staffHr", "bi-people-fill", "staffHr"], ["users", "bi-person-lock", "usersRoles"], ["access", "bi-shield-lock", "accessControl"], ["settings", "bi-gear", "settings"], ["audit", "bi-journal-check", "auditLogs"]] }
 ];
 
+const SIDEBAR_FALLBACK_ICONS = {
+  dashboard: "bi-speedometer2",
+  churches: "bi-building",
+  members: "bi-people",
+  reports: "bi-bar-chart-line",
+  firstTimers: "bi-person-heart",
+  followUp: "bi-telephone-outbound",
+  foundation: "bi-mortarboard",
+  sacraments: "bi-droplet",
+  counseling: "bi-chat-heart",
+  fevo: "bi-compass",
+  finance: "bi-cash-coin",
+  partnership: "bi-stars",
+  programs: "bi-calendar-event",
+  media: "bi-camera-reels",
+  requisitions: "bi-clipboard-check",
+  venueInventory: "bi-box-seam",
+  cellPrison: "bi-shield-lock",
+  cellMaterials: "bi-journal-richtext",
+  staffHr: "bi-people-fill",
+  users: "bi-person-lock",
+  access: "bi-shield-lock",
+  settings: "bi-gear",
+  audit: "bi-journal-check",
+  cellLeadership: "bi-diagram-3"
+};
+
+const CELL_AREA_ICONS = {
+  alec: "bi-mortarboard",
+  cellMinistry: "bi-diagram-3",
+  cellReports: "bi-clipboard-data",
+  finalValidation: "bi-patch-check",
+  default: "bi-circle-square"
+};
+
+function sidebarIcon(icon, route = "") {
+  return icon || SIDEBAR_FALLBACK_ICONS[route] || "bi-circle-square";
+}
+
 const followupStatuses = ["Pending", "Contacted", "No Answer", "Interested", "Sent to Cell", "Enrolled in Foundation School", "Became Member", "Closed"];
 const memberStatuses = ["Active", "Inactive", "In Progress", "Transferred"];
 const FINANCE_STATUS_PENDING = "Pendente de Verifica��o";
@@ -6701,6 +6740,7 @@ function renderCellSidebarNav() {
             return `
               <div class="nav-cell-area ${areaExpanded ? "is-expanded" : ""} ${areaActive ? "has-active" : ""}" data-nav-group="${area.key}">
                 <button type="button" class="nav-cell-area-toggle" aria-expanded="${areaExpanded}" aria-label="${L("navGroupToggle")}: ${L(area.label)}">
+                  <i class="bi ${CELL_AREA_ICONS[area.key] || CELL_AREA_ICONS.default} nav-cell-area-icon" aria-hidden="true"></i>
                   <span>${L(area.label)}</span>
                   <i class="bi bi-chevron-down nav-cell-area-chevron" aria-hidden="true"></i>
                 </button>
@@ -6750,14 +6790,14 @@ function applySidebarCollapse(collapsed = isSidebarCollapsed()) {
 
 function renderShell() {
   byId("sidebarNav").innerHTML = NAV_GROUPS.map((group) => {
-    const items = group.items.map(([route, icon, label]) => ({ route, icon, label, nav: resolveRouteAccess(route) }))
+    const items = group.items.map(([route, icon, label]) => ({ route, icon: sidebarIcon(icon, route), label, nav: resolveRouteAccess(route) }))
       .filter((item) => item.nav.visible && (item.route !== "venueInventory" || canViewVenueModule()));
     if (!items.length && group.key !== "departments") return "";
     const expanded = isSidebarGroupExpanded(group.key);
     const cellNav = group.key === "departments" ? renderCellSidebarNav() : "";
     const navItems = items.map(({ route, icon, label, nav }) => `
       <button type="button" class="nav-item-btn ${nav.locked ? "is-locked" : ""}" ${nav.locked ? `data-locked-route="${route}" aria-disabled="true"` : `data-route="${route}" onclick="window.setRoute && window.setRoute('${route}'); return false;"`} title="${nav.locked ? L("navLockedTooltip") : L(label)}">
-        <i class="bi ${icon}"></i><span>${L(label)}</span>${nav.locked ? `<i class="bi bi-lock-fill nav-lock-icon" aria-hidden="true"></i>` : ""}
+        <i class="bi ${sidebarIcon(icon, route)}"></i><span>${L(label)}</span>${nav.locked ? `<i class="bi bi-lock-fill nav-lock-icon" aria-hidden="true"></i>` : ""}
       </button>
     `).join("");
     if (!navItems && !cellNav) return "";
