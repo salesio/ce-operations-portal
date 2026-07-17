@@ -1938,12 +1938,113 @@ table,
   color: var(--gold);
 }
 
+.foundation-compact-progress {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 12rem;
+  max-width: 16rem;
+}
+
+.foundation-compact-progress .foundation-progress-bar {
+  height: 0.45rem;
+  margin: 0;
+  background: rgba(13, 23, 48, 0.12);
+}
+
+.foundation-mini-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.foundation-mini-steps span {
+  width: 1.35rem;
+  height: 1.35rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(13, 23, 48, 0.1);
+  color: rgba(9, 22, 45, 0.65);
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+.foundation-mini-steps span.done {
+  background: linear-gradient(135deg, var(--cyan), var(--gold-soft));
+  color: #06101f;
+}
+
+.foundation-compact-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.45rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.foundation-compact-meta strong {
+  color: var(--ink);
+}
+
+.foundation-compact-meta span {
+  white-space: nowrap;
+}
+
+.foundation-score-entry {
+  display: grid;
+  grid-template-columns: minmax(4.2rem, 1fr) auto minmax(4.2rem, 1fr);
+  gap: 0.35rem;
+  align-items: center;
+  max-width: 11rem;
+}
+
+.foundation-score-entry span {
+  color: var(--muted);
+  font-weight: 900;
+}
+
+.foundation-attachment-field {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 11rem;
+}
+
+.foundation-attachment-link {
+  display: inline-flex;
+  align-items: center;
+  max-width: 13rem;
+  color: var(--royal);
+  font-size: 0.74rem;
+  font-weight: 900;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.foundation-attachment-link:hover {
+  color: var(--cyan);
+  text-decoration: underline;
+}
+
 .foundation-check-graduated input {
   accent-color: var(--gold-soft);
 }
 
 .foundation-check-certificate input {
   accent-color: var(--royal);
+}
+
+.readonly-user-field {
+  display: flex;
+  align-items: center;
+  min-height: 3rem;
+  color: var(--ink);
+  background: rgba(239, 249, 255, 0.92);
+  border-color: rgba(32, 215, 255, 0.3);
+  font-weight: 800;
+  cursor: default;
 }
 
 @media (max-width: 575.98px) {

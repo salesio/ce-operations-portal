@@ -103,7 +103,11 @@ function FilterToolbar(options = {}) {
       ${search ? `<div class="filter-toolbar-field filter-toolbar-search"><i class="bi bi-search"></i><input class="form-control" type="search" data-filter-search="${scope}" value="${options.searchValue || ""}" placeholder="${uiT("search", "Pesquisar")}" aria-label="${uiT("search", "Pesquisar")}"></div>` : ""}
       ${church ? `<select class="form-select" data-filter-church="${scope}" aria-label="${uiT("filterChurch", "Filtrar por Igreja")}"><option value="">${uiT("filterChurch", "Filtrar por Igreja")}</option>${(options.churches || []).map((c) => `<option value="${c.id || c}" ${selectedChurch === (c.id || c) ? "selected" : ""}>${c.church_name || c}</option>`).join("")}</select>` : ""}
       ${month ? `<input class="form-control" type="month" data-filter-month="${scope}" value="${options.monthValue || ""}" aria-label="${uiT("filterMonth", "Filtrar por Mes")}">` : ""}
-      ${status ? `<select class="form-select" data-filter-status="${scope}" aria-label="${uiT("filterStatus", "Filtrar por Estado")}"><option value="">${uiT("filterStatus", "Filtrar por Estado")}</option>${(options.statusOptions || []).map((s) => `<option value="${s}" ${selectedStatus === s ? "selected" : ""}>${s}</option>`).join("")}</select>` : ""}
+      ${status ? `<select class="form-select" data-filter-status="${scope}" aria-label="${uiT("filterStatus", "Filtrar por Estado")}"><option value="">${uiT("filterStatus", "Filtrar por Estado")}</option>${(options.statusOptions || []).map((item) => {
+        const value = typeof item === "object" ? item.value : item;
+        const label = typeof item === "object" ? item.label : item;
+        return `<option value="${value}" ${selectedStatus === value ? "selected" : ""}>${label}</option>`;
+      }).join("")}</select>` : ""}
       ${extraFields}
       ${viewToggle}
       <div class="filter-toolbar-actions">

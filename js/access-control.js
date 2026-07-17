@@ -262,6 +262,20 @@
         requisitions: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "all" }
       }
     },
+    "Foundation Teacher": {
+      modules: {
+        dashboard: { ...VIEW_ONLY, scope: "own" },
+        foundation: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "own" },
+        notifications: { ...VIEW_ONLY, scope: "own" }
+      }
+    },
+    "Foundation Assistant": {
+      modules: {
+        dashboard: { ...VIEW_ONLY, scope: "own" },
+        foundation: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "own" },
+        notifications: { ...VIEW_ONLY, scope: "own" }
+      }
+    },
     "Cell Ministry Head": {
       modules: {
         dashboard: { ...VIEW_ONLY, scope: "all" },
@@ -298,6 +312,10 @@
     firstTimers: "firstTimers",
     followUp: "followUp",
     foundation: "foundation",
+    foundation_teacher: "foundation",
+    foundation_assistant: "foundation",
+    foundation_rector: "foundation",
+    foundation_coordinator: "foundation",
     finance: "finance",
     financeHead: "finance",
     financeOfficer: "finance",
@@ -439,12 +457,16 @@
     const requisitionApprovalTabs = new Set(["review", "pastoral", "approved"]);
     const requisitionFinanceTabs = new Set(["released"]);
     const requisitionReportTabs = new Set(["reports", "history"]);
+    const foundationTeacherTabs = new Set(["overview", "classes", "students", "lessons", "soulWinning", "reports"]);
+    const foundationAssistantTabs = new Set(["overview", "classes", "students", "lessons"]);
     if (module === "finance" && financeSensitiveTabs.has(tab)) return Boolean(access.can_export || access.can_verify || access.can_approve);
     if (module === "finance" && financeVerificationTabs.has(tab)) return Boolean(access.can_verify || access.can_approve || access.can_release_resources);
     if (module === "staffHr" && staffSensitiveTabs.has(tab)) return Boolean(access.can_view_salary || access.can_edit || access.can_approve);
     if (module === "requisitions" && requisitionApprovalTabs.has(tab)) return Boolean(access.can_approve || access.can_verify || access.can_review || access.can_forward);
     if (module === "requisitions" && requisitionFinanceTabs.has(tab)) return Boolean(access.can_release_resources || access.can_verify);
     if (module === "requisitions" && requisitionReportTabs.has(tab)) return Boolean(access.can_export || access.can_approve || access.can_verify);
+    if (module === "foundation" && user?.role === "Foundation Teacher") return foundationTeacherTabs.has(tab);
+    if (module === "foundation" && user?.role === "Foundation Assistant") return foundationAssistantTabs.has(tab);
     return true;
   }
 

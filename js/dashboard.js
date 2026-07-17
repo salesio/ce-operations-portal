@@ -3142,7 +3142,7 @@ const givingCategories = [
   "Projecto de Constru��o de Igreja", "Raps�dias das Crian�as", "Mandato de C�lula", "Outros Bra�os"
 ];
 const paymentMethods = ["Dinheiro", "Cheque", "M-Pesa", "E-Mola", "Banco"];
-const serviceOptions = ["Domingo Manh�", "Domingo Tarde", "Quarta-Feira", "Sexta-Feira", "Programa Especial"];
+const serviceOptions = ["Domingo 1º Culto", "Domingo 2º Culto", "Domingo Culto Único", "Quarta-Feira", "Sexta-Feira", "Programa Especial"];
 const treatmentOptions = ["Sr.", "Sra.", "Irm�o", "Irm�", "Pastor", "Pastora", "Di�cono", "Diaconisa"];
 
 const prisonStatusOptions = ["Activo", "Inactivo"];
@@ -3209,7 +3209,9 @@ const seedData = {
     { id: "u-20", name: "Marcelo Panguene", email: "media.director@ce-mozambique.org", role: "Media Director", church_id: "church-hq", department_permissions: ["media"], assigned_department: "Mídia", assigned_staff_name: "Marcelo Panguene", can_view_all_churches: true },
     { id: "u-21", name: "Media Supervisor Demo", email: "media.supervisor@ce-mozambique.org", role: "Media Supervisor", church_id: "church-hq", department_permissions: ["media"], assigned_department: "Mídia", can_view_all_churches: true },
     { id: "u-22", name: "Técnico A", email: "media.member@ce-mozambique.org", role: "Media Team Member", church_id: "church-hq", department_permissions: ["mediaTeam"], assigned_department: "Mídia", assigned_staff_name: "Técnico A", can_view_all_churches: false },
-    { id: "u-23", name: "Head de Aconselhamento", email: "counseling.head@ce-mozambique.org", role: "Counseling Head", church_id: "church-hq", department_permissions: ["counseling", "followUp", "firstTimers", "reports"], can_view_all_churches: true }
+    { id: "u-23", name: "Head de Aconselhamento", email: "counseling.head@ce-mozambique.org", role: "Counseling Head", church_id: "church-hq", department_permissions: ["counseling", "followUp", "firstTimers", "reports"], can_view_all_churches: true },
+    { id: "u-24", name: "Professor Joao Mazive", email: "foundation.teacher@ce-mozambique.org", role: "Foundation Teacher", church_id: "church-hq", department_permissions: ["foundation_teacher"], assigned_foundation_teacher_id: "ftch-1", can_view_all_churches: false },
+    { id: "u-25", name: "Assistente da Escola de Fundacao", email: "foundation.assistant@ce-mozambique.org", role: "Foundation Assistant", church_id: "church-hq", department_permissions: ["foundation_assistant"], assigned_foundation_teacher_id: "ftch-3", can_view_all_churches: false }
   ],
   departments: [
     { id: "dept-finance", church_id: "church-hq", name: "Finanças", lead_name: "Finance Head Demo" },
@@ -3296,8 +3298,8 @@ const seedData = {
     { id: "church-virtual", church_id: "church-virtual", church_name: "CE Mozambique Online Church", public_name: "Igreja Embaixada de Cristo Online", type: "Igreja Online", province: "Online", city: "Online", district_or_area: "Virtual", address: "Transmiss�o online", pastor_in_charge: "Equipa de Media", phone_primary: "+258 86 877 389", phone_secondary: "", email: "online@embaixada-de-cristo.obiuba.com", facebook: "", instagram: "", youtube: "Christ Embassy Mozambique Online", service_times: defaultSeedServiceTimes("church-virtual", "Igreja Online"), parent_church_id: "church-hq", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2024-06-01", updated_at: "2026-07-10", attendance_last_4_weeks: [54, 61, 48, 57] }
   ],
   firstTimers: [
-    { id: "ft-1", tratamento: "Irm�", nome: "Aminata", apelido: "Chivinda", genero: "Feminino", data_de_nascimento: "1991-05-05", telefone: "848287179", whatsapp: "848287179", email: "", endereco: "Mavalane A", church_id: "church-hq", data_do_culto: "2026-07-05", culto: "Domingo Manh�", convidado_por: "Irm�o da igreja", nasceu_de_novo: false, quer_escola_de_fundacao: true, quer_aconselhamento: true, interesse_em_celula: true, celula_preferida: "Mavalane", estado_do_seguimento: "Pending", conselheiro_responsavel: "L�der de Aconselhamento", notas: "Exemplo baseado na ficha partilhada." },
-    { id: "ft-2", tratamento: "Sr.", nome: "Mateus", apelido: "Nhantumbo", genero: "Masculino", data_de_nascimento: "1998-11-12", telefone: "862720011", whatsapp: "862720011", email: "mateus@example.com", endereco: "Matola", church_id: "church-hq", data_do_culto: "2026-06-28", culto: "Domingo Manh�", convidado_por: "Cell Central", nasceu_de_novo: true, quer_escola_de_fundacao: true, quer_aconselhamento: false, interesse_em_celula: true, celula_preferida: "Cell Central", estado_do_seguimento: "Contacted", conselheiro_responsavel: "L�der de Aconselhamento", notas: "Quer integrar uma c�lula perto de casa." }
+    { id: "ft-1", tratamento: "Irm�", nome: "Aminata", apelido: "Chivinda", genero: "Feminino", data_de_nascimento: "1991-05-05", telefone: "848287179", whatsapp: "848287179", email: "", endereco: "Mavalane A", church_id: "church-hq", data_do_culto: "2026-07-05", culto: "Domingo 1º Culto", convidado_por: "Irm�o da igreja", nasceu_de_novo: false, quer_escola_de_fundacao: true, quer_aconselhamento: true, interesse_em_celula: true, celula_preferida: "Mavalane", estado_do_seguimento: "Pending", conselheiro_responsavel: "L�der de Aconselhamento", notas: "Exemplo baseado na ficha partilhada." },
+    { id: "ft-2", tratamento: "Sr.", nome: "Mateus", apelido: "Nhantumbo", genero: "Masculino", data_de_nascimento: "1998-11-12", telefone: "862720011", whatsapp: "862720011", email: "mateus@example.com", endereco: "Matola", church_id: "church-hq", data_do_culto: "2026-06-28", culto: "Domingo 1º Culto", convidado_por: "Cell Central", nasceu_de_novo: true, quer_escola_de_fundacao: true, quer_aconselhamento: false, interesse_em_celula: true, celula_preferida: "Cell Central", estado_do_seguimento: "Contacted", conselheiro_responsavel: "L�der de Aconselhamento", notas: "Quer integrar uma c�lula perto de casa." }
   ],
   followUps: [
     { id: "fu-1", first_timer_id: "ft-1", church_id: "church-hq", data_do_contacto: "2026-07-06", metodo: "WhatsApp", resultado: "Mensagem enviada", proximo_passo: "Confirmar presença no próximo culto", proxima_data_de_contacto: "2026-07-09", notas: "Aguardando resposta.", actualizado_por: "Líder de Aconselhamento" }
@@ -3610,6 +3612,98 @@ const seedData = {
   },
   auditLogs: [{ id: "audit-1", church_id: "church-hq", actor: "Admin Principal", action: "Created operations prototype", date: "2026-07-06" }]
 };
+
+const EC_CHURCH_DISPLAY_NAMES = {
+  "church-hq": "E.C. Maputo Central - Sede",
+  "church-matola": "E.C. Matola",
+  "church-khongolote": "E.C. Khongolote",
+  "church-choupal": "E.C. Choupal",
+  "church-malhazine": "E.C. Malhazine",
+  "church-beira": "E.C. Beira",
+  "church-nampula": "E.C. Nampula",
+  "church-tete": "E.C. Tete",
+  "church-virtual": "E.C. Online"
+};
+
+function ecChurchDisplayName(churchId = "", fallback = "") {
+  if (EC_CHURCH_DISPLAY_NAMES[churchId]) return EC_CHURCH_DISPLAY_NAMES[churchId];
+  const cleaned = cleanDisplayText(fallback || "")
+    .replace(/^National HQ\s*-\s*/i, "")
+    .replace(/^Igreja\s+/i, "")
+    .replace(/^Embaixada\s+de\s+Cristo\s+/i, "")
+    .replace(/^Christ\s+Embassy\s+/i, "")
+    .replace(/^E\.C\.\s*/i, "")
+    .replace(/\s*\/\s*Embaixada\s+de\s+Cristo\s+Mo[cç]ambique/i, "")
+    .trim();
+  if (!cleaned) return churchId || "-";
+  if (/^(Mo[cç]ambique|Mozambique)$/i.test(cleaned)) return "E.C. Moçambique";
+  return `E.C. ${cleaned}`;
+}
+
+function normalizeEcChurchLabelsInObject(record) {
+  if (!record || typeof record !== "object" || Array.isArray(record)) return record;
+  const churchId = record.church_id || record.id;
+  if (churchId && (record.church_name || record.public_name)) {
+    const label = ecChurchDisplayName(churchId, record.public_name || record.church_name);
+    if (record.church_name !== undefined) record.church_name = label;
+    if (record.public_name !== undefined) record.public_name = label;
+  }
+  if (record.igreja && String(record.igreja).match(/Embaixada de Cristo|Christ Embassy|National HQ|^E\.C\./i)) {
+    record.igreja = ecChurchDisplayName(record.church_id || record.igreja, record.igreja);
+  }
+  return record;
+}
+
+function normalizeEcChurchLabelsInTree(value, seen = new WeakSet()) {
+  if (!value || typeof value !== "object") return value;
+  if (seen.has(value)) return value;
+  seen.add(value);
+  if (Array.isArray(value)) {
+    value.forEach((item) => normalizeEcChurchLabelsInTree(item, seen));
+    return value;
+  }
+  normalizeEcChurchLabelsInObject(value);
+  Object.values(value).forEach((item) => normalizeEcChurchLabelsInTree(item, seen));
+  return value;
+}
+
+function normalizeServiceLabel(value = "") {
+  const text = cleanDisplayText(value).trim();
+  const lowered = text.toLowerCase();
+  if (!text) return text;
+  if (lowered.includes("domingo") && (lowered.includes("manh") || lowered.includes("1") || lowered.includes("primeiro"))) return "Domingo 1º Culto";
+  if (lowered.includes("domingo") && (lowered.includes("tarde") || lowered.includes("2") || lowered.includes("segundo"))) return "Domingo 2º Culto";
+  if (lowered.includes("domingo") && (lowered.includes("único") || lowered.includes("unico") || lowered === "domingo")) return "Domingo Culto Único";
+  if (/domingo\s*-\s*1/i.test(text)) return "Domingo 1º Culto";
+  if (/domingo\s*-\s*2/i.test(text)) return "Domingo 2º Culto";
+  return text;
+}
+
+function normalizeServiceLabelsInObject(record) {
+  if (!record || typeof record !== "object" || Array.isArray(record)) return record;
+  ["culto", "service_name", "tipo_de_culto_ou_evento", "worship_service", "service"].forEach((key) => {
+    if (record[key]) record[key] = normalizeServiceLabel(record[key]);
+  });
+  if (record.name && /Turma Domingo/i.test(record.name)) {
+    record.name = cleanDisplayText(record.name)
+      .replace(/Domingo Manh[ãa�]+/i, "Domingo 1º Culto")
+      .replace(/Domingo Tarde/i, "Domingo 2º Culto");
+  }
+  return record;
+}
+
+function normalizeServiceLabelsInTree(value, seen = new WeakSet()) {
+  if (!value || typeof value !== "object") return value;
+  if (seen.has(value)) return value;
+  seen.add(value);
+  if (Array.isArray(value)) {
+    value.forEach((item) => normalizeServiceLabelsInTree(item, seen));
+    return value;
+  }
+  normalizeServiceLabelsInObject(value);
+  Object.values(value).forEach((item) => normalizeServiceLabelsInTree(item, seen));
+  return value;
+}
 
 let lang = localStorage.getItem(LANG_KEY) || "pt";
 let state = loadState();
@@ -4170,6 +4264,17 @@ function cleanDisplayText(value) {
       // Keep the original and continue with the replacement table below.
     }
   }
+  text = text
+    .replace(/Irm�/g, "Irmã")
+    .replace(/Irm�o/g, "Irmão")
+    .replace(/Jo�o/g, "João")
+    .replace(/Manh�/g, "Manhã")
+    .replace(/L�der/g, "Líder")
+    .replace(/Portugu�s/g, "Português")
+    .replace(/Ter�a/g, "Terça")
+    .replace(/Fam�lia/g, "Família")
+    .replace(/sens�vel/g, "sensível")
+    .replace(/c�lula/gi, (match) => match[0] === "C" ? "Célula" : "célula");
   const replacements = [
     [/�{2}es/g, "ções"], [/�{2}o/g, "ção"], [/�{2}a/g, "ça"],
     [/Manuten�+o/gi, "Manutenção"], [/Repara�+es/gi, "Reparações"], [/Invent�rio/gi, "Inventário"],
@@ -4203,6 +4308,14 @@ function cleanDisplayText(value) {
     text = text.replace(pattern, replacement);
   });
   return text;
+}
+
+function escapeAttr(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
 
 function cleanRenderedText(root = document) {
@@ -4259,8 +4372,9 @@ function loadState() {
     }
     return normalized;
   } catch {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(seedData));
-    return structuredClone(seedData);
+    const fallback = normalizeState(structuredClone(seedData));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(fallback));
+    return structuredClone(fallback);
   }
 }
 
@@ -4408,6 +4522,8 @@ function normalizeState(saved) {
     }
   });
   merged.churches = savedChurches.length ? savedChurches : seedChurches;
+  normalizeEcChurchLabelsInTree(merged);
+  normalizeServiceLabelsInTree(merged);
   const seedFinance = seedData.finance.map((record) => migrateFinanceRecord(structuredClone(record), merged.churches));
   const savedFinance = (merged.finance || []).map((record) => migrateFinanceRecord(record, merged.churches));
   const savedFinanceIds = new Set(savedFinance.map((record) => record.id));
@@ -4436,6 +4552,8 @@ function normalizeState(saved) {
     const seedItem = seedStaff.find((seed) => seed.id === item.id) || {};
     return normalizeStaffProfileRecord(seedItem, item);
   });
+  normalizeEcChurchLabelsInTree(merged);
+  normalizeServiceLabelsInTree(merged);
   return merged;
 }
 
@@ -4676,7 +4794,7 @@ function venueReportName(report) {
 }
 
 function fullName(record) {
-  return `${record.tratamento ? `${record.tratamento} ` : ""}${record.nome || ""} ${record.apelido || ""}`.trim();
+  return cleanDisplayText(`${record.tratamento ? `${record.tratamento} ` : ""}${record.nome || ""} ${record.apelido || ""}`.trim());
 }
 
 function migrateChurchRecord(church) {
@@ -4685,6 +4803,7 @@ function migrateChurchRecord(church) {
   const legacyStatus = { Active: "Activa", Inactive: "Inactiva" };
   const churchId = church.id || church.church_id;
   const churchType = legacyType[church.type] || church.type || "Igreja Local";
+  const displayName = ecChurchDisplayName(churchId, church.public_name || church.church_name);
   const normalized = typeof normalizeLocationValues === "function"
     ? normalizeLocationValues(church.province, church.city)
     : { province: church.province, city: church.city };
@@ -4692,7 +4811,8 @@ function migrateChurchRecord(church) {
     ...church,
     id: churchId,
     church_id: church.church_id || churchId,
-    public_name: church.public_name || church.church_name || "",
+    church_name: displayName,
+    public_name: displayName,
     province: normalized.province || church.province || "",
     city: normalized.city || church.city || "",
     district_or_area: church.district_or_area || church.city || "",
@@ -4715,7 +4835,7 @@ function migrateChurchRecord(church) {
 
 function churchNameFromList(id, churches = []) {
   const church = churches.find((item) => item.id === id || item.church_id === id);
-  return church?.public_name || church?.church_name || id || "-";
+  return ecChurchDisplayName(id, church?.public_name || church?.church_name || id || "-");
 }
 
 function churchName(id) {
@@ -6544,6 +6664,29 @@ function statusKey(status) {
 }
 
 function statusText(status) {
+  if (lang === "en") {
+    const foundationLabels = {
+      "Inscrito": "Enrolled",
+      "Em Curso": "In Progress",
+      "Aulas Concluídas": "Lessons Completed",
+      "Pronto para Exame": "Ready for Exam",
+      "Exame Realizado": "Exam Completed",
+      "Aprovado": "Passed",
+      "Pronto para Graduação": "Ready for Graduation",
+      "Graduado": "Graduated",
+      "Certificado Emitido": "Certificate Issued",
+      "Inactivo": "Inactive",
+      "Reprovado": "Failed",
+      "Pendente": "Pending",
+      "Confirmado": "Confirmed",
+      "Reportado": "Reported",
+      "Rejeitado": "Rejected",
+      "Precisa Rever": "Needs Review",
+      "Activo": "Active",
+      "Em Treinamento": "In Training"
+    };
+    if (foundationLabels[status]) return foundationLabels[status];
+  }
   if (status === "Activa") return lang === "pt" ? "Activa" : "Active";
   if (status === "Inactiva") return lang === "pt" ? "Inactiva" : "Inactive";
   if (status === "Por Confirmar") return L("toConfirm");
@@ -6641,11 +6784,13 @@ function fallbackCanViewModule(user = activeUser, module = "dashboard") {
   if (role === "Counseling Head") return ["counseling", "followUp", "firstTimers", "reports", "notifications"].includes(module);
   if (role === "Counselor") return ["counseling", "followUp", "notifications"].includes(module);
   if (role === "Follow-Up Coordinator") return ["followUp", "firstTimers", "counseling", "reports", "notifications"].includes(module);
+  if (role === "Foundation Teacher" || role === "Foundation Assistant") return ["foundation", "notifications"].includes(module);
   if (role === "Media Director" || role === "Media Supervisor") return ["media", "reports", "venueInventory", "programs", "notifications"].includes(module);
   if (role === "Media Team Member") return ["media", "notifications"].includes(module);
   if (role === "Department Head") return ["members", "firstTimers", "followUp", "reports", "requisitions", "staffHr", "venueInventory", "cell", "fevo"].includes(module);
   if (role === "Staff Member") return ["requisitions", "venueInventory", "staffHr", "notifications"].includes(module);
   const legacyModuleKeys = {
+    foundation: ["foundation", "foundation_teacher", "foundation_assistant", "foundation_rector", "foundation_coordinator"],
     finance: ["finance", "financeHead", "financeOfficer", "financeVerify", "financeViewer"],
     staffHr: ["staffHr"],
     requisitions: ["requisitions"],
@@ -7145,7 +7290,10 @@ function sectionHeader(title, subtitle, modalType, icon = "bi-stars", { compact 
 
 function filterBar(options = {}) {
   const opts = typeof options === "object" && options !== null ? options : {};
-  const statusOptionsHtml = (opts.statusOptions || []).map((status) => `<option value="${status}">${status}</option>`).join("");
+  const normalizedStatusOptions = (opts.statusOptions || []).map((status) => (
+    typeof status === "object" ? status : { value: status, label: statusText(status) }
+  ));
+  const statusOptionsHtml = normalizedStatusOptions.map((status) => `<option value="${status.value}">${status.label}</option>`).join("");
   if (typeof FilterToolbar === "function") {
     return FilterToolbar({
       search: opts.search !== false,
@@ -7155,7 +7303,7 @@ function filterBar(options = {}) {
       exportBtn: opts.exportBtn !== false,
       applyBtn: opts.applyBtn !== false,
       churches: state.churches,
-      statusOptions: opts.statusOptions || [],
+      statusOptions: normalizedStatusOptions,
       filterScope: opts.filterScope || "generic",
       searchValue: opts.searchValue || "",
       churchValue: opts.churchValue || "",
@@ -8021,6 +8169,83 @@ function renderFoundationScoreForm(record) {
   `;
 }
 
+function renderFoundationTeacherForm(record = {}, mode = "edit") {
+  const teacher = { status: "Activo", subjects_or_lessons_allowed: [], ...record };
+  const readonly = mode === "view" ? "disabled" : "";
+  const statusOptions = ["Activo", "Inactivo", "Em Treinamento"].map((status) => `<option value="${status}" ${teacher.status === status ? "selected" : ""}>${status}</option>`).join("");
+  const lessons = Array.from({ length: 7 }, (_, i) => {
+    const n = i + 1;
+    const checked = teacher.can_teach_all_lessons || (teacher.subjects_or_lessons_allowed || []).map(Number).includes(n);
+    return `<label class="foundation-class-toggle"><input type="checkbox" name="lesson_${n}" ${checked ? "checked" : ""} ${readonly}><span>${FS("lesson")} ${n}</span></label>`;
+  }).join("");
+  return `
+    ${foundationSectionTitle(FS("foundationTabTeachers"))}
+    <div class="col-md-6"><label class="form-label">${L("fullName")}</label><input name="full_name" class="form-control" value="${teacher.full_name || ""}" ${readonly} required></div>
+    <div class="col-md-6"><label class="form-label">${L("title")}</label><input name="title" class="form-control" value="${teacher.title || ""}" ${readonly}></div>
+    <div class="col-md-6"><label class="form-label">${L("phone")}</label><input name="phone" class="form-control" value="${teacher.phone || ""}" ${readonly}></div>
+    <div class="col-md-6"><label class="form-label">WhatsApp</label><input name="whatsapp" class="form-control" value="${teacher.whatsapp || ""}" ${readonly}></div>
+    <div class="col-md-6"><label class="form-label">${L("email")}</label><input name="email" type="email" class="form-control" value="${teacher.email || ""}" ${readonly}></div>
+    ${churchSelect("church_id", L("church"), teacher, { ...relationalFormOptions(), showInfoCard: true, readonly: mode === "view" })}
+    <div class="col-md-6"><label class="form-label">${L("status")}</label><select name="status" class="form-select" ${readonly}>${statusOptions}</select></div>
+    <div class="col-md-6 d-flex align-items-end"><label class="form-check"><input name="can_teach_all_lessons" type="checkbox" class="form-check-input" ${teacher.can_teach_all_lessons ? "checked" : ""} ${readonly}> <span class="form-check-label">${FS("canTeachAll")}</span></label></div>
+    ${foundationSectionTitle(FS("lessonsAllowed"))}
+    <div class="col-12"><div class="foundation-class-grid">${lessons}</div></div>
+    <div class="col-md-6"><label class="form-label">${L("availability")}</label><input name="availability" class="form-control" value="${teacher.availability || ""}" ${readonly}></div>
+    <div class="col-md-6"><label class="form-label">${L("staffHr")}</label><input name="staff_id" class="form-control" value="${teacher.staff_id || ""}" ${readonly} placeholder="staff_id futuro"></div>
+    <div class="col-12"><label class="form-label">${L("notes")}</label><textarea name="notes" class="form-control" rows="3" ${readonly}>${teacher.notes || ""}</textarea></div>
+  `;
+}
+
+function openFoundationTeacherForm(id = null, mode = "edit") {
+  ensureFoundationData();
+  modalMode = id ? "edit" : "create";
+  modalType = mode === "view" ? null : "foundationTeacher";
+  modalRecordId = id;
+  const record = id ? (state.foundationTeachers || []).find((item) => item.id === id) : {};
+  byId("modalEyebrow").textContent = mode === "view" ? L("view") : (id ? L("edit") : L("add"));
+  byId("modalTitle").textContent = FS("foundationTabTeachers");
+  byId("modalFields").innerHTML = renderFoundationTeacherForm(record, mode);
+  bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
+  requestAnimationFrame(() => mountRelationalControls(byId("entryForm")));
+}
+
+function collectFoundationTeacherPayload(form, base = {}) {
+  const formData = new FormData(form);
+  const data = Object.fromEntries(formData.entries());
+  const canTeachAll = formData.has("can_teach_all_lessons");
+  const lessons = Array.from({ length: 7 }, (_, i) => i + 1).filter((n) => canTeachAll || formData.has(`lesson_${n}`));
+  const churchId = data.church_id || base.church_id || state.foundationSchoolSettings?.default_church_id || "church-hq";
+  return {
+    ...base,
+    ...data,
+    church_id: churchId,
+    church_name: churchName(churchId),
+    can_teach_all_lessons: canTeachAll,
+    subjects_or_lessons_allowed: canTeachAll ? [1, 2, 3, 4, 5, 6, 7] : lessons,
+    updated_at: new Date().toISOString().slice(0, 10)
+  };
+}
+
+function submitFoundationTeacher(form) {
+  ensureFoundationData();
+  const collection = state.foundationTeachers || (state.foundationTeachers = []);
+  if (modalMode === "edit") {
+    const index = collection.findIndex((item) => item.id === modalRecordId);
+    if (index >= 0) collection[index] = collectFoundationTeacherPayload(form, collection[index]);
+  } else {
+    collection.push(collectFoundationTeacherPayload(form, {
+      id: `ftch-${Date.now()}`,
+      user_id: "",
+      created_at: new Date().toISOString().slice(0, 10)
+    }));
+  }
+  foundationAudit(modalMode === "edit" ? "teacher_updated" : "teacher_created", "foundationTeacher", modalRecordId || collection.at(-1)?.id || "", "", "", activeUser?.name || "Admin Principal");
+  saveState(`${modalMode === "edit" ? "Updated" : "Created"} Foundation School teacher`);
+  bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide();
+  foundationPageState.tab = "teachers";
+  setRoute(activeRoute);
+}
+
 function openFoundationStudentForm(id = null) {
   modalMode = id ? "edit" : "create";
   modalType = "foundationStudent";
@@ -8362,11 +8587,20 @@ function ensureFoundationData() {
     state.foundationTeachers = [
       { id: "ftch-rector", user_id: "u-foundation-rector", staff_id: "", full_name: "Pastor Coordenador", title: FS("rector"), phone: "862270000", whatsapp: "862270000", email: "foundation.rector@ce-mozambique.org", church_id: hq, church_name: churchLabel, status: "Activo", subjects_or_lessons_allowed: [1, 2, 3, 4, 5, 6, 7], can_teach_all_lessons: true, availability: "Domingo e Quarta", notes: "Reitor da Escola de Fundação", created_at: "2026-07-01", updated_at: today },
       { id: "ftch-coordinator", user_id: "u-foundation-coordinator", staff_id: "", full_name: "Irmã Coordenadora", title: FS("coordinator"), phone: "866220111", whatsapp: "866220111", email: "foundation.coord@ce-mozambique.org", church_id: hq, church_name: churchLabel, status: "Activo", subjects_or_lessons_allowed: [1, 2, 3, 4, 5, 6, 7], can_teach_all_lessons: true, availability: "Todos os cultos", notes: "Coordena inscrições, turmas e exames.", created_at: "2026-07-01", updated_at: today },
-      { id: "ftch-1", user_id: "u-foundation-teacher-1", staff_id: "staff-1", full_name: "Professor João", title: "Professor", phone: "846001001", whatsapp: "846001001", email: "joao.foundation@ce-mozambique.org", church_id: hq, church_name: churchLabel, status: "Activo", subjects_or_lessons_allowed: [1, 2, 3], can_teach_all_lessons: false, availability: "Domingo manhã", notes: "", created_at: "2026-07-01", updated_at: today },
+      { id: "ftch-1", user_id: "u-24", staff_id: "staff-1", full_name: "Professor João", title: "Professor", phone: "846001001", whatsapp: "846001001", email: "foundation.teacher@ce-mozambique.org", church_id: hq, church_name: churchLabel, status: "Activo", subjects_or_lessons_allowed: [1, 2, 3], can_teach_all_lessons: false, availability: "Domingo manhã", notes: "", created_at: "2026-07-01", updated_at: today },
       { id: "ftch-2", user_id: "u-foundation-teacher-2", staff_id: "staff-2", full_name: "Professora Ana", title: "Professora", phone: "846001002", whatsapp: "846001002", email: "ana.foundation@ce-mozambique.org", church_id: hq, church_name: churchLabel, status: "Activo", subjects_or_lessons_allowed: [4, 5], can_teach_all_lessons: false, availability: "Quarta e Sexta", notes: "Responsável por Aula 4 e ganhar almas.", created_at: "2026-07-01", updated_at: today },
-      { id: "ftch-3", user_id: "u-foundation-teacher-3", staff_id: "staff-3", full_name: "Professor Carlos", title: "Professor", phone: "846001003", whatsapp: "846001003", email: "carlos.foundation@ce-mozambique.org", church_id: hq, church_name: churchLabel, status: "Em Treinamento", subjects_or_lessons_allowed: [6, 7], can_teach_all_lessons: false, availability: "Sábado", notes: "", created_at: "2026-07-01", updated_at: today }
+      { id: "ftch-3", user_id: "u-25", staff_id: "staff-3", full_name: "Professor Carlos", title: "Professor", phone: "846001003", whatsapp: "846001003", email: "foundation.assistant@ce-mozambique.org", church_id: hq, church_name: churchLabel, status: "Em Treinamento", subjects_or_lessons_allowed: [6, 7], can_teach_all_lessons: false, availability: "Sábado", notes: "", created_at: "2026-07-01", updated_at: today }
     ];
   }
+  const teacherUserMap = {
+    "ftch-1": { user_id: "u-24", email: "foundation.teacher@ce-mozambique.org" },
+    "ftch-3": { user_id: "u-25", email: "foundation.assistant@ce-mozambique.org" }
+  };
+  (state.foundationTeachers || []).forEach((teacher) => {
+    if (!teacherUserMap[teacher.id]) return;
+    teacher.user_id = teacherUserMap[teacher.id].user_id;
+    teacher.email = teacherUserMap[teacher.id].email;
+  });
   if (!state.foundationSchoolSettings) {
     state.foundationSchoolSettings = {
       rector_user_id: "u-foundation-rector",
@@ -8375,6 +8609,7 @@ function ensureFoundationData() {
       coordinator_name: "Irmã Coordenadora",
       default_church_id: hq,
       passing_score_per_lesson: 50,
+      lesson_test_max_score: 25,
       final_exam_passing_score: 50,
       require_all_7_lessons: true,
       require_lesson_tests: true,
@@ -8384,11 +8619,12 @@ function ensureFoundationData() {
       updated_at: today
     };
   }
+  state.foundationSchoolSettings.lesson_test_max_score = Number(state.foundationSchoolSettings.lesson_test_max_score || 25);
   if (!Array.isArray(state.foundationClassGroups)) {
     state.foundationClassGroups = [
       { id: "fcg-2026-q3-hq", name: "Turma 1 - 3º Trimestre 2026", church_id: hq, church_name: churchLabel, quarter: "3º Trimestre", year: 2026, start_date: "2026-07-05", expected_graduation_date: "2026-09-27", main_teacher_id: "ftch-1", main_teacher_name: "Professor João", assistant_teacher_id: "ftch-2", assistant_teacher_name: "Professora Ana", rector_id: "ftch-rector", rector_name: "Pastor Coordenador", status: "Em Curso", notes: "Turma principal de Maputo.", created_at: "2026-07-01", updated_at: today },
       { id: "fcg-2026-q3-matola", name: "Turma Matola - 3º Trimestre 2026", church_id: "church-matola", church_name: churchName("church-matola"), quarter: "3º Trimestre", year: 2026, start_date: "2026-07-12", expected_graduation_date: "2026-10-04", main_teacher_id: "ftch-2", main_teacher_name: "Professora Ana", assistant_teacher_id: "ftch-3", assistant_teacher_name: "Professor Carlos", rector_id: "ftch-rector", rector_name: "Pastor Coordenador", status: "Aberta", notes: "", created_at: "2026-07-01", updated_at: today },
-      { id: "fcg-2026-q2-hq", name: "Turma Domingo Manhã - 2º Trimestre 2026", church_id: hq, church_name: churchLabel, quarter: "2º Trimestre", year: 2026, start_date: "2026-04-05", expected_graduation_date: "2026-06-28", main_teacher_id: "ftch-coordinator", main_teacher_name: "Irmã Coordenadora", assistant_teacher_id: "ftch-1", assistant_teacher_name: "Professor João", rector_id: "ftch-rector", rector_name: "Pastor Coordenador", status: "Pronta para Exame", notes: "Alunos em fase final.", created_at: "2026-04-01", updated_at: today }
+      { id: "fcg-2026-q2-hq", name: "Turma Domingo 1º Culto - 2º Trimestre 2026", church_id: hq, church_name: churchLabel, quarter: "2º Trimestre", year: 2026, start_date: "2026-04-05", expected_graduation_date: "2026-06-28", main_teacher_id: "ftch-coordinator", main_teacher_name: "Irmã Coordenadora", assistant_teacher_id: "ftch-1", assistant_teacher_name: "Professor João", rector_id: "ftch-rector", rector_name: "Pastor Coordenador", status: "Pronta para Exame", notes: "Alunos em fase final.", created_at: "2026-04-01", updated_at: today }
     ];
   }
   state.foundationStudents = (state.foundationStudents || []).map((student, index) => foundationNormalizeStudent(student, index));
@@ -8470,8 +8706,87 @@ function foundationNormalizeStudent(student, index = 0) {
   return record;
 }
 
+function foundationDefaultLessonMaxScore() {
+  return Number(state.foundationSchoolSettings?.lesson_test_max_score || 25);
+}
+
+function foundationLessonScorePercent(obtained, maxScore) {
+  const max = Number(maxScore || foundationDefaultLessonMaxScore());
+  if (!max) return "";
+  const value = Number(obtained);
+  if (obtained === "" || obtained === undefined || Number.isNaN(value)) return "";
+  return Math.round((value / max) * 100);
+}
+
+function foundationNormalizeLessonRecord(record = {}) {
+  const maxScore = Number(record.test_score_max || record.max_score || foundationDefaultLessonMaxScore());
+  let obtained = record.test_score_obtained ?? record.score_obtained ?? "";
+  if ((obtained === "" || obtained === undefined) && record.test_score !== "" && record.test_score !== undefined) {
+    obtained = Math.round((Number(record.test_score || 0) / 100) * maxScore);
+  }
+  const percent = foundationLessonScorePercent(obtained, maxScore);
+  return {
+    ...record,
+    test_score_obtained: obtained === "" || obtained === undefined ? "" : Number(obtained),
+    test_score_max: maxScore,
+    test_score: percent,
+    test_attachment_name: record.test_attachment_name || record.attachment_name || "",
+    test_attachment_type: record.test_attachment_type || record.attachment_type || "",
+    test_attachment_data_url: record.test_attachment_data_url || record.attachment_data_url || "",
+    test_passed: percent !== "" ? percent >= Number(state.foundationSchoolSettings?.passing_score_per_lesson || 50) : false
+  };
+}
+
+function foundationLessonScoreLabel(lesson = {}) {
+  const record = foundationNormalizeLessonRecord(lesson);
+  if (record.test_score_obtained === "" || record.test_score_obtained === undefined) return "-";
+  return `${record.test_score_obtained}/${record.test_score_max} (${record.test_score}%)`;
+}
+
+function foundationAttachmentLink(lesson = {}) {
+  if (!lesson.test_attachment_data_url) return "";
+  const label = lesson.test_attachment_name || (lang === "pt" ? "Teste corrigido" : "Corrected test");
+  return `<a class="foundation-attachment-link" href="${lesson.test_attachment_data_url}" target="_blank" rel="noopener" download="${label}"><i class="bi bi-paperclip me-1"></i>${label}</a>`;
+}
+
+function readFoundationAttachment(selector) {
+  const input = document.querySelector(selector);
+  const file = input?.files?.[0];
+  if (!file) return Promise.resolve(null);
+  const accepted = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
+  if (!accepted.includes(file.type)) {
+    alert(lang === "pt" ? "Anexe apenas imagem JPG/PNG/WEBP ou PDF." : "Attach only JPG/PNG/WEBP image or PDF.");
+    return Promise.resolve(null);
+  }
+  if (file.size > 3 * 1024 * 1024) {
+    alert(lang === "pt" ? "O ficheiro deve ter no máximo 3MB neste protótipo." : "The file must be 3MB or less in this prototype.");
+    return Promise.resolve(null);
+  }
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve({ name: file.name, type: file.type, dataUrl: reader.result });
+    reader.onerror = () => resolve(null);
+    reader.readAsDataURL(file);
+  });
+}
+
+function readFoundationTestAttachment(studentId) {
+  return readFoundationAttachment(`[data-foundation-row-field="attachment"][data-student-id="${studentId}"]`);
+}
+
+function foundationExamAttachmentLink(exam = {}) {
+  if (!exam.exam_attachment_data_url) return "";
+  const label = exam.exam_attachment_name || (lang === "pt" ? "Exame corrigido" : "Corrected exam");
+  return `<a class="foundation-attachment-link" href="${exam.exam_attachment_data_url}" target="_blank" rel="noopener" download="${label}"><i class="bi bi-paperclip me-1"></i>${label}</a>`;
+}
+
+function readFoundationExamAttachment(studentId) {
+  return readFoundationAttachment(`[data-foundation-exam-attachment="${studentId}"]`);
+}
+
 function ensureFoundationLessonRecords() {
   if (!Array.isArray(state.foundationLessonProgress)) state.foundationLessonProgress = [];
+  state.foundationLessonProgress = state.foundationLessonProgress.map((record) => foundationNormalizeLessonRecord(record));
   const existing = new Set(state.foundationLessonProgress.map((item) => `${item.student_id}-${item.lesson_number}`));
   (state.foundationStudents || []).forEach((student) => {
     const s = migrateFoundationStudent(student);
@@ -8497,8 +8812,13 @@ function ensureFoundationLessonRecords() {
         lesson_completed: attended,
         lesson_completed_by: attended ? "Admin Principal" : "",
         lesson_completed_at: attended ? new Date().toISOString() : "",
-        test_score: attended ? (55 + ((n * 7) % 35)) : "",
+        test_score_obtained: attended ? Math.min(25, Math.max(13, Math.round((25 * (55 + ((n * 7) % 35))) / 100))) : "",
+        test_score_max: foundationDefaultLessonMaxScore(),
+        test_score: attended ? foundationLessonScorePercent(Math.min(25, Math.max(13, Math.round((25 * (55 + ((n * 7) % 35))) / 100))), foundationDefaultLessonMaxScore()) : "",
         test_passed: attended,
+        test_attachment_name: "",
+        test_attachment_type: "",
+        test_attachment_data_url: "",
         test_marked_by: attended ? "Admin Principal" : "",
         test_marked_at: attended ? new Date().toISOString() : "",
         notes: "",
@@ -8537,6 +8857,12 @@ function ensureFoundationSoulWinning() {
 
 function ensureFoundationFinalExams() {
   if (!Array.isArray(state.foundationFinalExams)) state.foundationFinalExams = [];
+  state.foundationFinalExams = state.foundationFinalExams.map((exam) => ({
+    ...exam,
+    exam_attachment_name: exam.exam_attachment_name || "",
+    exam_attachment_type: exam.exam_attachment_type || "",
+    exam_attachment_data_url: exam.exam_attachment_data_url || ""
+  }));
   const existing = new Set(state.foundationFinalExams.map((item) => item.student_id));
   foundationReadyForExamStudents().forEach((student) => {
     if (existing.has(student.id) || !Number(student.nota_exame || student.final_exam_score || 0)) return;
@@ -8565,13 +8891,39 @@ function foundationTeacherById(id) {
   return (state.foundationTeachers || []).find((teacher) => teacher.id === id) || {};
 }
 
+function foundationPermissions() {
+  const grants = activeUser?.department_permissions || [];
+  return Array.isArray(grants) ? grants : Object.keys(grants).filter((key) => grants[key]);
+}
+
+function activeFoundationTeacherProfile() {
+  const assignedId = activeUser?.assigned_foundation_teacher_id || "";
+  return (state.foundationTeachers || []).find((teacher) =>
+    teacher.id === assignedId ||
+    teacher.user_id === activeUser?.id ||
+    String(teacher.email || "").toLowerCase() === String(activeUser?.email || "").toLowerCase()
+  ) || {};
+}
+
+function foundationCanViewAllClasses() {
+  const role = String(activeUser?.role || "").toLowerCase();
+  const perms = foundationPermissions();
+  return role.includes("admin") ||
+    role.includes("church pastor") ||
+    activeUser?.can_view_all_churches ||
+    perms.includes("*") ||
+    perms.includes("foundation") ||
+    perms.includes("foundation_rector") ||
+    perms.includes("foundation_coordinator");
+}
+
 function foundationLessonRecords(studentId) {
   return (state.foundationLessonProgress || []).filter((item) => item.student_id === studentId);
 }
 
 function foundationPassedLessonTests(studentId) {
   const pass = Number(state.foundationSchoolSettings?.passing_score_per_lesson || 50);
-  return foundationLessonRecords(studentId).filter((item) => item.attended && Number(item.test_score || 0) >= pass);
+  return foundationLessonRecords(studentId).map((item) => foundationNormalizeLessonRecord(item)).filter((item) => item.attended && Number(item.test_score || 0) >= pass);
 }
 
 function foundationSoulWinningForStudent(studentId) {
@@ -8580,20 +8932,21 @@ function foundationSoulWinningForStudent(studentId) {
 
 function foundationCanManage(area = "overview") {
   const role = String(activeUser?.role || "").toLowerCase();
-  const perms = activeUser?.department_permissions || {};
-  if (role.includes("admin") || activeUser?.can_view_all_churches) return true;
-  if (perms.foundation_rector || perms.foundation_coordinator) return true;
-  if (area === "lessons" && (perms.foundation_teacher || perms.foundation_assistant)) return true;
-  return true;
+  const perms = foundationPermissions();
+  if (foundationCanViewAllClasses()) return true;
+  const teacherTabs = new Set(["overview", "classes", "students", "lessons", "soulWinning", "reports"]);
+  const assistantTabs = new Set(["overview", "classes", "students", "lessons"]);
+  if (perms.includes("foundation_teacher") || role.includes("foundation teacher")) return teacherTabs.has(area);
+  if (perms.includes("foundation_assistant") || role.includes("foundation assistant")) return assistantTabs.has(area);
+  return false;
 }
 
 function foundationScopedClassGroups() {
-  if (foundationCanManage("all")) return state.foundationClassGroups || [];
-  const userId = activeUser?.id;
+  if (foundationCanViewAllClasses()) return state.foundationClassGroups || [];
+  const profile = activeFoundationTeacherProfile();
+  if (!profile.id) return [];
   return (state.foundationClassGroups || []).filter((group) => {
-    const main = foundationTeacherById(group.main_teacher_id);
-    const assistant = foundationTeacherById(group.assistant_teacher_id);
-    return main.user_id === userId || assistant.user_id === userId || group.church_id === activeUser?.church_id;
+    return group.main_teacher_id === profile.id || group.assistant_teacher_id === profile.id;
   });
 }
 
@@ -8642,9 +8995,32 @@ function foundationStudentLessonChips(student) {
     const n = i + 1;
     const lesson = records.find((item) => Number(item.lesson_number) === n) || {};
     const done = lesson.attended || student.class_attendance?.[`class_${n}`];
-    const score = lesson.test_score !== "" && lesson.test_score !== undefined ? `${lesson.test_score}%` : "-";
+    const score = lesson.test_score !== "" && lesson.test_score !== undefined ? foundationLessonScoreLabel(lesson) : "-";
     return `<span class="foundation-lesson-chip ${done ? "done" : "pending"}" title="${FOUNDATION_LESSON_TITLES[i]}">${FS("lesson")} ${n}<small>${done ? score : FS("notStarted")}</small>${n === 4 ? `<em>${FS("soulWinning")}</em>` : ""}</span>`;
   }).join("")}</div>`;
+}
+
+function foundationStudentCompactProgress(student) {
+  const record = migrateFoundationStudent(student);
+  const soul = foundationSoulWinningForStudent(record.id);
+  const tests = foundationPassedLessonTests(record.id).length;
+  return `
+    <div class="foundation-compact-progress">
+      ${foundationProgressBar(record.class_progress_percent)}
+      <div class="foundation-mini-steps" aria-label="${L("progress")}">
+        ${Array.from({ length: 7 }, (_, i) => {
+          const n = i + 1;
+          const done = !!record.class_attendance?.[`class_${n}`];
+          return `<span class="${done ? "done" : ""}" title="${FS("lesson")} ${n}${n === 4 ? ` - ${FS("soulWinning")}` : ""}">${n}</span>`;
+        }).join("")}
+      </div>
+      <div class="foundation-compact-meta">
+        <strong>${record.class_progress_percent}%</strong>
+        <span>${tests}/7 ${FS("lessonTest")}</span>
+        ${soul.status ? `<span>${FS("soulWinning")}: ${statusText(soul.status)}</span>` : ""}
+      </div>
+    </div>
+  `;
 }
 
 function foundationAudit(action, entityType, entityId, oldValue, newValue, notes = "") {
@@ -8692,6 +9068,7 @@ function foundationSettingsPanel() {
   return moduleSection(FS("foundationSettings"), `${FS("rector")}: ${settings.rector_name || "-"} · ${FS("coordinator")}: ${settings.coordinator_name || "-"}`, "bi-sliders", "", `
     ${dataTable([FS("lessonTest"), FS("score"), L("required"), L("status")], [
       [FS("lessonTest"), `${settings.passing_score_per_lesson || 50}%`, yesNo(settings.require_lesson_tests), badge(L("active"))],
+      [lang === "pt" ? "Valor máximo por teste" : "Maximum score per test", `${settings.lesson_test_max_score || 25}`, yesNo(true), badge(L("active"))],
       [FS("finalExam"), `${settings.final_exam_passing_score || 50}%`, yesNo(true), badge(L("active"))],
       [`${FS("lesson")} 4 - ${FS("soulWinning")}`, "-", yesNo(settings.require_soul_winning_for_lesson_4), badge(L("active"))],
       [L("classesAttendance"), "1-7", yesNo(settings.require_all_7_lessons), badge(settings.allow_lessons_in_random_order ? L("active") : L("inactive"))]
@@ -8743,6 +9120,13 @@ function renderFoundationClasses() {
 function renderFoundationStudents(students) {
   return `
     <article class="panel" id="panel-foundation-students">
+      <div class="panel-header-row mb-3">
+        <div>
+          <h3 class="panel-title">${FS("foundationTabStudents")}</h3>
+          <p class="text-secondary mb-0">${lang === "pt" ? "Normalmente os alunos vêm do fluxo de Primeira Vez." : "Students normally come from the First Timers flow."}</p>
+        </div>
+        ${foundationCanViewAllClasses() ? `<button type="button" class="btn btn-outline-cyan btn-touch action-secondary" data-open-form="foundationStudent"><i class="bi bi-plus-lg me-1"></i>${L("add")}</button>` : ""}
+      </div>
       ${filterBar({ filterScope: "foundation", statusOptions: foundationStatuses, searchValue: foundationPageState.filter.search || "", churchValue: foundationPageState.filter.churchId || "", statusValue: foundationPageState.filter.estado || "" })}
       ${dataTable([FS("foundationTabStudents"), FS("classGroup"), L("church"), L("cell"), L("status"), L("progress"), FS("lessonTest"), FS("soulWinning"), L("actions")], applyFoundationCardFilters(students, foundationPageState.filter).map((s) => [
         fullName(s),
@@ -8750,7 +9134,7 @@ function renderFoundationStudents(students) {
         churchName(s.church_id),
         s.celula || s.cell_name || "-",
         badge(s.estado || s.status),
-        `${foundationClassProgressCell(s)}${foundationStudentLessonChips(s)}`,
+        foundationStudentCompactProgress(s),
         `${foundationPassedLessonTests(s.id).length}/7`,
         badge(foundationSoulWinningForStudent(s.id).status || (s.pratica_evangelismo ? "Confirmado" : "Pendente")),
         actionButtons([["view", "foundationStudent", s.id, L("view")], ["edit", "foundationStudent", s.id, L("edit")], ["markClass", "foundationStudent", s.id, FS("markAttendance")], ["score", "foundationStudent", s.id, FS("enterScore")], ["graduate", "foundationStudent", s.id, L("graduate")]])
@@ -8774,13 +9158,14 @@ function renderFoundationLessons(students) {
         <input class="form-control" name="date" type="date" value="${ctx.date || new Date().toISOString().slice(0, 10)}" data-foundation-lesson-field>
         <button type="button" class="btn btn-ce-gold btn-touch" data-foundation-save-all><i class="bi bi-check2-circle me-1"></i>${FS("massProgress")}</button>
       </form>
-      ${dataTable([FS("foundationTabStudents"), FS("attendance"), FS("score"), L("status"), L("notes"), L("actions")], groupStudents.map((student) => {
-        const lesson = foundationLessonRecords(student.id).find((item) => Number(item.lesson_number) === lessonNumber) || {};
+      ${dataTable([FS("foundationTabStudents"), FS("attendance"), FS("score"), lang === "pt" ? "Teste corrigido" : "Corrected test", L("status"), L("notes"), L("actions")], groupStudents.map((student) => {
+        const lesson = foundationNormalizeLessonRecord(foundationLessonRecords(student.id).find((item) => Number(item.lesson_number) === lessonNumber) || {});
         const passed = Number(lesson.test_score || 0) >= Number(state.foundationSchoolSettings?.passing_score_per_lesson || 50);
         return [
           `<strong>${fullName(student)}</strong><small class="d-block text-secondary">${student.class_group_name || ""}</small>`,
           `<label class="form-check mb-0"><input type="checkbox" class="form-check-input" data-foundation-row-field="attended" data-student-id="${student.id}" ${lesson.attended ? "checked" : ""}> ${FS("present")}</label>`,
-          `<input type="number" min="0" max="100" class="form-control form-control-sm" data-foundation-row-field="score" data-student-id="${student.id}" value="${lesson.test_score ?? ""}" placeholder="${FS("score")}">`,
+          `<div class="foundation-score-entry"><input type="number" min="0" step="0.5" class="form-control form-control-sm" data-foundation-row-field="scoreObtained" data-student-id="${student.id}" value="${lesson.test_score_obtained ?? ""}" placeholder="${lang === "pt" ? "Obtido" : "Obtained"}"><span>/</span><input type="number" min="1" step="0.5" class="form-control form-control-sm" data-foundation-row-field="scoreMax" data-student-id="${student.id}" value="${lesson.test_score_max || foundationDefaultLessonMaxScore()}" placeholder="${lang === "pt" ? "Máx." : "Max"}"></div><small class="d-block text-secondary mt-1">${foundationLessonScoreLabel(lesson)}</small>`,
+          `<div class="foundation-attachment-field"><input type="file" class="form-control form-control-sm" data-foundation-row-field="attachment" data-student-id="${student.id}" accept="image/*,application/pdf">${foundationAttachmentLink(lesson) || `<small class="d-block text-secondary mt-1">${lang === "pt" ? "Imagem ou PDF" : "Image or PDF"}</small>`}</div>`,
           badge(lesson.attended ? (lesson.test_score !== "" ? (passed ? FS("passed") : FS("failed")) : FS("lessonCompleted")) : FS("notStarted")),
           `<input class="form-control form-control-sm" data-foundation-row-field="notes" data-student-id="${student.id}" value="${lesson.notes || ""}" placeholder="${L("notes")}">`,
           `<button type="button" class="action-btn" data-foundation-save-row="${student.id}">${FS("saveProgress")}</button>`
@@ -8794,7 +9179,7 @@ function renderFoundationFinalExam() {
   const ready = foundationReadyForExamStudents();
   const exams = state.foundationFinalExams || [];
   return moduleSection(FS("finalExam"), FS("finalExamHint"), "bi-clipboard-check", "", `
-    ${dataTable([FS("foundationTabStudents"), FS("classGroup"), FS("progress"), FS("score"), L("status"), L("actions")], [...ready, ...foundationStudentsForGroup().filter((s) => s.final_exam_passed || s.aprovado)].map((student) => {
+    ${dataTable([FS("foundationTabStudents"), FS("classGroup"), FS("progress"), FS("score"), lang === "pt" ? "Exame corrigido" : "Corrected exam", L("status"), L("actions")], [...ready, ...foundationStudentsForGroup().filter((s) => s.final_exam_passed || s.aprovado)].map((student) => {
       const exam = exams.find((item) => item.student_id === student.id) || {};
       const score = Number(exam.score || student.final_exam_score || student.nota_exame || 0);
       return [
@@ -8802,6 +9187,7 @@ function renderFoundationFinalExam() {
         student.class_group_name || "-",
         `${getFoundationCompletedClasses(student)}/7`,
         `<input type="number" min="0" max="100" class="form-control form-control-sm" data-foundation-exam-score="${student.id}" value="${score || ""}" placeholder="${FS("score")}">`,
+        `<div class="foundation-attachment-field"><input type="file" class="form-control form-control-sm" data-foundation-exam-attachment="${student.id}" accept="image/*,application/pdf">${foundationExamAttachmentLink(exam) || `<small class="d-block text-secondary mt-1">${lang === "pt" ? "Imagem ou PDF" : "Image or PDF"}</small>`}</div>`,
         badge(score ? (score >= Number(state.foundationSchoolSettings?.final_exam_passing_score || 50) ? FS("passed") : FS("failed")) : FS("studentsReadyForExam")),
         `<button type="button" class="action-btn" data-foundation-save-exam="${student.id}">${FS("enterScore")}</button>`
       ];
@@ -8831,7 +9217,11 @@ function renderFoundationSoulWinning() {
 function renderFoundationTeachers() {
   const teachers = state.foundationTeachers || [];
   return moduleSection(FS("foundationTabTeachers"), `${FS("rector")}: ${state.foundationSchoolSettings?.rector_name || "-"} · ${FS("coordinator")}: ${state.foundationSchoolSettings?.coordinator_name || "-"}`, "bi-person-workspace", "", `
-    ${dataTable([FS("foundationTabTeachers"), L("phone"), L("church"), FS("lessonsAllowed"), FS("assignedClasses"), FS("testsEntered"), L("status")], teachers.map((teacher) => {
+    <div class="panel-header-row mb-3">
+      <div></div>
+      <button type="button" class="btn btn-ce-gold btn-touch" data-foundation-teacher-add><i class="bi bi-plus-lg me-1"></i>${L("add")}</button>
+    </div>
+    ${dataTable([FS("foundationTabTeachers"), L("phone"), L("church"), FS("lessonsAllowed"), FS("assignedClasses"), FS("testsEntered"), L("status"), L("actions")], teachers.map((teacher) => {
       const classes = (state.foundationClassGroups || []).filter((group) => group.main_teacher_id === teacher.id || group.assistant_teacher_id === teacher.id);
       const lessons = (state.foundationLessonProgress || []).filter((item) => item.teacher_id === teacher.id && item.test_score !== "");
       return [
@@ -8841,7 +9231,8 @@ function renderFoundationTeachers() {
         teacher.can_teach_all_lessons ? FS("canTeachAll") : (teacher.subjects_or_lessons_allowed || []).map((n) => `${FS("lesson")} ${n}`).join(", "),
         classes.length,
         lessons.length,
-        badge(teacher.status)
+        badge(teacher.status),
+        actionButtons([["view", "foundationTeacher", teacher.id, L("view")], ["edit", "foundationTeacher", teacher.id, L("edit")]])
       ];
     }))}
   `);
@@ -8896,7 +9287,7 @@ function renderFoundationActiveTab(students, pending) {
   return renderFoundationOverview(students, pending);
 }
 
-function saveFoundationLessonRow(studentId) {
+async function saveFoundationLessonRow(studentId) {
   const ctx = foundationPageState.lesson;
   const lessonNumber = Number(ctx.lessonNumber || 1);
   let record = (state.foundationLessonProgress || []).find((item) => item.student_id === studentId && Number(item.lesson_number) === lessonNumber);
@@ -8905,11 +9296,16 @@ function saveFoundationLessonRow(studentId) {
     state.foundationLessonProgress.push(record);
   }
   const attended = document.querySelector(`[data-foundation-row-field="attended"][data-student-id="${studentId}"]`)?.checked || false;
-  const scoreValue = document.querySelector(`[data-foundation-row-field="score"][data-student-id="${studentId}"]`)?.value || "";
+  const scoreObtainedValue = document.querySelector(`[data-foundation-row-field="scoreObtained"][data-student-id="${studentId}"]`)?.value || "";
+  const scoreMaxValue = document.querySelector(`[data-foundation-row-field="scoreMax"][data-student-id="${studentId}"]`)?.value || foundationDefaultLessonMaxScore();
   const notes = document.querySelector(`[data-foundation-row-field="notes"][data-student-id="${studentId}"]`)?.value || "";
+  const attachment = await readFoundationTestAttachment(studentId);
   const teacher = foundationTeacherById(ctx.teacherId) || {};
   const now = new Date().toISOString();
-  const oldValue = JSON.stringify({ attended: record.attended, score: record.test_score });
+  const oldValue = JSON.stringify({ attended: record.attended, score: record.test_score, attachment: record.test_attachment_name || "" });
+  const scoreMax = Number(scoreMaxValue || foundationDefaultLessonMaxScore());
+  const scoreObtained = scoreObtainedValue === "" ? "" : Number(scoreObtainedValue);
+  const scorePercent = foundationLessonScorePercent(scoreObtained, scoreMax);
   record.class_group_id = ctx.classGroupId || record.class_group_id;
   record.lesson_date = ctx.date || record.lesson_date || now.slice(0, 10);
   record.teacher_id = ctx.teacherId || record.teacher_id;
@@ -8920,10 +9316,19 @@ function saveFoundationLessonRow(studentId) {
   record.lesson_completed = attended;
   record.lesson_completed_by = attended ? (activeUser?.name || "Admin Principal") : "";
   record.lesson_completed_at = attended ? now : "";
-  record.test_score = scoreValue === "" ? "" : Number(scoreValue);
-  record.test_passed = scoreValue !== "" ? Number(scoreValue) >= Number(state.foundationSchoolSettings?.passing_score_per_lesson || 50) : false;
-  record.test_marked_by = scoreValue !== "" ? (activeUser?.name || "Admin Principal") : "";
-  record.test_marked_at = scoreValue !== "" ? now : "";
+  record.test_score_obtained = scoreObtained;
+  record.test_score_max = scoreMax;
+  record.test_score = scorePercent;
+  record.test_passed = scorePercent !== "" ? Number(scorePercent) >= Number(state.foundationSchoolSettings?.passing_score_per_lesson || 50) : false;
+  record.test_marked_by = scorePercent !== "" ? (activeUser?.name || "Admin Principal") : "";
+  record.test_marked_at = scorePercent !== "" ? now : "";
+  if (attachment) {
+    record.test_attachment_name = attachment.name;
+    record.test_attachment_type = attachment.type;
+    record.test_attachment_data_url = attachment.dataUrl;
+    record.test_attachment_uploaded_by = activeUser?.name || "Admin Principal";
+    record.test_attachment_uploaded_at = now;
+  }
   record.notes = notes;
   record.updated_at = now.slice(0, 10);
   const studentIndex = (state.foundationStudents || []).findIndex((student) => student.id === studentId);
@@ -8932,13 +9337,14 @@ function saveFoundationLessonRow(studentId) {
     attendance[`class_${lessonNumber}`] = attended;
     state.foundationStudents[studentIndex] = applyFoundationCalculations({ ...state.foundationStudents[studentIndex], class_attendance: attendance, updated_at: now.slice(0, 10) }, true);
   }
-  foundationAudit("lesson_progress_updated", "foundationLessonProgress", record.id, oldValue, JSON.stringify({ attended, score: record.test_score }), `${FS("lesson")} ${lessonNumber} - ${fullName((state.foundationStudents || []).find((s) => s.id === studentId) || {})}`);
+  foundationAudit("lesson_progress_updated", "foundationLessonProgress", record.id, oldValue, JSON.stringify({ attended, score: foundationLessonScoreLabel(record), attachment: record.test_attachment_name || "" }), `${FS("lesson")} ${lessonNumber} - ${fullName((state.foundationStudents || []).find((s) => s.id === studentId) || {})}`);
 }
 
-function saveFoundationExam(studentId) {
+async function saveFoundationExam(studentId) {
   const input = document.querySelector(`[data-foundation-exam-score="${studentId}"]`);
   const score = Number(input?.value || 0);
   const passed = score >= Number(state.foundationSchoolSettings?.final_exam_passing_score || 50);
+  const attachment = await readFoundationExamAttachment(studentId);
   let exam = (state.foundationFinalExams || []).find((item) => item.student_id === studentId);
   if (!exam) {
     exam = { id: `ffe-${studentId}-${Date.now()}`, student_id: studentId, created_at: new Date().toISOString().slice(0, 10) };
@@ -8950,12 +9356,19 @@ function saveFoundationExam(studentId) {
   exam.marked_by_user_id = activeUser?.id || "u-1";
   exam.marked_by_name = activeUser?.name || "Admin Principal";
   exam.marked_at = now;
+  if (attachment) {
+    exam.exam_attachment_name = attachment.name;
+    exam.exam_attachment_type = attachment.type;
+    exam.exam_attachment_data_url = attachment.dataUrl;
+    exam.exam_attachment_uploaded_by = activeUser?.name || "Admin Principal";
+    exam.exam_attachment_uploaded_at = now;
+  }
   exam.updated_at = now.slice(0, 10);
   const index = (state.foundationStudents || []).findIndex((student) => student.id === studentId);
   if (index >= 0) {
     state.foundationStudents[index] = applyFoundationCalculations({ ...state.foundationStudents[index], final_exam_score: score, nota_exame: score, final_exam_passed: passed, aprovado: passed, estado: passed ? "Aprovado" : "Reprovado", updated_at: now.slice(0, 10) }, false);
   }
-  foundationAudit("final_exam_updated", "foundationFinalExam", exam.id, "", JSON.stringify({ score, passed }), fullName((state.foundationStudents || []).find((s) => s.id === studentId) || {}));
+  foundationAudit("final_exam_updated", "foundationFinalExam", exam.id, "", JSON.stringify({ score, passed, attachment: exam.exam_attachment_name || "" }), fullName((state.foundationStudents || []).find((s) => s.id === studentId) || {}));
 }
 
 function renderFoundation() {
@@ -8963,7 +9376,7 @@ function renderFoundation() {
   const pending = foundationPending();
   const students = foundationStudentsForGroup();
   setPageContent(`
-    ${moduleNavShell("foundationSchool", { title: L("foundationSchool"), subtitle: L("foundationSubtitle"), modalType: "foundationStudent", icon: "bi-mortarboard" }, foundationTabNav())}
+    ${moduleNavShell("foundationSchool", { title: L("foundationSchool"), subtitle: L("foundationSubtitle"), icon: "bi-mortarboard" }, foundationTabNav())}
     ${summaryFilterChips("foundation")}
     <div id="foundation-active-panel">${renderFoundationActiveTab(students, pending)}</div>
   `);
@@ -9314,13 +9727,19 @@ function renderSacraments() {
   const allSacraments = [...baptisms, ...marriages, ...babies];
   const pendingCount = allSacraments.filter((r) => ["Pending", "Pendente"].includes(r.estado)).length;
   const completedCount = allSacraments.filter((r) => ["Completed", "Realizado", "Certificate Issued"].includes(r.estado)).length;
+  const sacramentPanels = [
+    { key: "panel-baptism", type: "baptism", title: L("baptismTab"), records: baptisms, keys: ["nome", "apelido", "telefone", "data_do_baptismo", "estado"] },
+    { key: "panel-marriage", type: "marriage", title: L("marriageTab"), records: marriages, keys: ["nome_do_noivo", "nome_da_noiva", "data_do_casamento", "estado"] },
+    { key: "panel-baby", type: "baby", title: L("babyTab"), records: babies, keys: ["nome_da_crianca", "telefone_dos_pais", "data_da_dedicacao", "estado"] }
+  ];
+  const activePanelKey = sacramentsPageState.panel || "panel-baptism";
+  const activeIndex = Math.max(0, sacramentPanels.findIndex((panel) => panel.key === activePanelKey));
+  const activePanel = sacramentPanels[activeIndex] || sacramentPanels[0];
   setPageContent( `
     ${moduleNavShell("sacraments", { title: L("sacraments"), subtitle: L("sacramentsSubtitle"), icon: "bi-droplet" },
-      moduleScrollTabs([
-        [L("baptismTab"), "panel-baptism"],
-        [L("marriageTab"), "panel-marriage"],
-        [L("babyTab"), "panel-baby"]
-      ])
+      moduleTabsNav(sacramentPanels.map((panel, index) =>
+        moduleTabButton(panel.title, { active: index === activeIndex, attrs: `data-sacrament-tab="${panel.key}"` })
+      ).join(""))
     )}
     <div class="row g-3 mb-4 summary-cards-row">
       ${sm("bi-droplet", L("baptismTab"), baptisms.length, "sacraments", { scrollTo: "panel-baptism" })}
@@ -9331,9 +9750,7 @@ function renderSacraments() {
     </div>
     ${summaryFilterChips("sacraments")}
     <div class="row g-4">
-      <div class="col-xl-4">${sacramentPanel("baptism", L("baptismTab"), applySacramentCardFilters(baptisms, sacramentsPageState.filter), ["nome", "apelido", "telefone", "data_do_baptismo", "estado"])}</div>
-      <div class="col-xl-4">${sacramentPanel("marriage", L("marriageTab"), applySacramentCardFilters(marriages, sacramentsPageState.filter), ["nome_do_noivo", "nome_da_noiva", "data_do_casamento", "estado"])}</div>
-      <div class="col-xl-4">${sacramentPanel("baby", L("babyTab"), applySacramentCardFilters(babies, sacramentsPageState.filter), ["nome_da_crianca", "telefone_dos_pais", "data_da_dedicacao", "estado"])}</div>
+      <div class="col-12">${sacramentPanel(activePanel.type, activePanel.title, applySacramentCardFilters(activePanel.records, sacramentsPageState.filter), activePanel.keys)}</div>
     </div>
     ${moduleSection(L("rptSacramentsTitle"), L("rptSacramentsHint"), "bi-graph-up", "", renderDomainReportsPanel("sacraments", { module: "sacraments", showTitle: false }))}
   `);
@@ -9348,7 +9765,12 @@ function sacramentPanel(type, title, records, keys) {
       </div>
       ${dataTable([...keys.map((key) => labelFor(key)), L("actions")], records.map((record) => [
         ...keys.map((key) => key === "estado" ? badge(record[key]) : record[key]),
-        actionButtons([["view", type, record.id, L("view")], ["edit", type, record.id, L("edit")]])
+        actionButtons([
+          ["view", type, record.id, L("view")],
+          ["edit", type, record.id, L("edit")],
+          ["status", type, record.id, L("updateStatus")],
+          ["delete", type, record.id, L("delete")]
+        ])
       ]))}
     </article>
   `;
@@ -11910,6 +12332,7 @@ function actionModuleForType(type) {
     firstTimer: "firstTimers",
     member: "members",
     foundationStudent: "foundation",
+    foundationTeacher: "foundation",
     foundationMarkClass: "foundation",
     foundationScore: "foundation",
     finance: "finance",
@@ -12360,6 +12783,7 @@ function getCollection(type) {
   if (type === "firstTimer") return state.firstTimers;
   if (type === "member") return state.members;
   if (type === "foundationStudent") return state.foundationStudents;
+  if (type === "foundationTeacher") return state.foundationTeachers || [];
   if (type === "finance") return state.finance;
   if (type === "church") return state.churches;
   if (type === "cell") return state.cells;
@@ -12549,6 +12973,15 @@ function fieldControl([name, labelKey, inputType = "text", options = []], record
   if (inputType === "file" || inputType === "file-optional") {
     const optional = inputType === "file-optional" ? ` <span class="field-optional">(${L("optional")})</span>` : "";
     return `<div class="col-12"><label class="form-label">${label}${optional}</label><input name="${name}" type="file" class="form-control" accept="image/*,.pdf"></div>`;
+  }
+  if (inputType === "currentUser") {
+    const display = cleanDisplayText(activeUser?.name || value || "Admin Principal");
+    return `
+      <div class="col-md-6">
+        <label class="form-label">${label}</label>
+        <div class="form-control readonly-user-field" aria-readonly="true">${display}</div>
+        <input type="hidden" name="${name}" value="${escapeAttr(display)}">
+      </div>`;
   }
   if (inputType === "readonly") {
     let display = value || "-";
@@ -12815,6 +13248,7 @@ function openView(type, id) {
     modalType = null;
     return bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
   }
+  if (type === "foundationTeacher") return openFoundationTeacherForm(id, "view");
   const record = getCollection(type).find((item) => item.id === id);
   byId("modalEyebrow").textContent = L("view");
   byId("modalTitle").textContent = formTitle(type);
@@ -12848,16 +13282,21 @@ function openFollowup(id) {
     ["proxima_data_de_contacto", "nextContactDate", "date"],
     ["estado_do_seguimento", "followupState", "select", followupStatuses],
     ["notas", "notes", "textarea"],
-    ["actualizado_por", "updatedBy"]
-  ].map((field) => fieldControl(field, { actualizado_por: activeUser.name })).join("");
+    ["actualizado_por", "updatedBy", "currentUser"]
+  ].map((field) => fieldControl(field, { actualizado_por: activeUser?.name || "Admin Principal" })).join("");
   bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
 }
 
 function submitFollowup(form) {
   const data = Object.fromEntries(new FormData(form).entries());
+  data.actualizado_por = activeUser?.name || "Admin Principal";
+  data.updated_by = data.actualizado_por;
+  data.updated_at = new Date().toISOString().slice(0, 10);
   const person = state.firstTimers.find((item) => item.id === modalRecordId);
   if (person) {
     person.estado_do_seguimento = data.estado_do_seguimento || person.estado_do_seguimento;
+    person.updated_by = data.updated_by;
+    person.updated_at = data.updated_at;
     state.followUps.push({ id: `fu-${Date.now()}`, first_timer_id: person.id, church_id: person.church_id, ...data });
     saveState(`Updated follow-up for ${fullName(person)}`);
   }
@@ -12869,6 +13308,10 @@ function quickAction(action, type, id) {
   if (!canRenderAction(action, type)) {
     alert(L("noPermissionArea"));
     return;
+  }
+  if (type === "foundationTeacher") {
+    if (action === "view") return openFoundationTeacherForm(id, "view");
+    if (action === "edit") return openFoundationTeacherForm(id, "edit");
   }
   if (type === "financeApprovedReq") {
     const disb = window.CEFinanceDisbursements;
@@ -12937,6 +13380,19 @@ function quickAction(action, type, id) {
     return;
   }
   if (action === "view") return openView(type, id);
+  if (action === "delete") {
+    const collection = getCollection(type);
+    const index = collection.findIndex((item) => item.id === id);
+    if (index < 0) return;
+    const title = formTitle(type);
+    const message = lang === "pt"
+      ? `Tem certeza que deseja apagar este registo de ${title}?`
+      : `Are you sure you want to delete this ${title} record?`;
+    if (!window.confirm(message)) return;
+    collection.splice(index, 1);
+    saveState(`Deleted ${type} ${id}`);
+    return setRoute(activeRoute);
+  }
   if (action === "open" && type === "streamingChannel") {
     const channel = getCollection(type).find((item) => item.id === id);
     const url = mediaChannelUrl(channel);
@@ -13097,7 +13553,7 @@ function enrollFirstTimer(id) {
   renderFoundation();
 }
 
-document.addEventListener("click", (event) => {
+document.addEventListener("click", async (event) => {
   const langButton = event.target.closest("[data-lang]");
   if (langButton) return applyLanguage(langButton.dataset.lang);
   const groupToggle = event.target.closest(".nav-group-toggle");
@@ -13163,6 +13619,14 @@ document.addEventListener("click", (event) => {
     counselingPageState.filter = {};
     if (activeRoute !== "counseling") return setRoute("counseling");
     return renderCounseling();
+  }
+  const sacramentTab = event.target.closest("[data-sacrament-tab]");
+  if (sacramentTab) {
+    sacramentsPageState.panel = sacramentTab.dataset.sacramentTab || "panel-baptism";
+    if (activeRoute !== "sacraments") return setRoute("sacraments");
+    renderSacraments();
+    requestAnimationFrame(() => scrollContentTo("panel-" + (sacramentsPageState.panel || "panel-baptism").replace("panel-", "")));
+    return;
   }
   const logoutButton = event.target.closest("#logoutBtn");
   if (logoutButton) {
@@ -13471,22 +13935,27 @@ document.addEventListener("click", (event) => {
     if (activeRoute === "foundation") renderFoundation();
     return;
   }
+  if (event.target.closest("[data-foundation-teacher-add]")) {
+    return openFoundationTeacherForm();
+  }
   const foundationSaveRowBtn = event.target.closest("[data-foundation-save-row]");
   if (foundationSaveRowBtn) {
-    saveFoundationLessonRow(foundationSaveRowBtn.dataset.foundationSaveRow);
+    await saveFoundationLessonRow(foundationSaveRowBtn.dataset.foundationSaveRow);
     saveState("Updated Foundation School lesson progress");
     if (activeRoute === "foundation") renderFoundation();
     return;
   }
   if (event.target.closest("[data-foundation-save-all]")) {
-    document.querySelectorAll("[data-foundation-save-row]").forEach((button) => saveFoundationLessonRow(button.dataset.foundationSaveRow));
+    for (const button of document.querySelectorAll("[data-foundation-save-row]")) {
+      await saveFoundationLessonRow(button.dataset.foundationSaveRow);
+    }
     saveState("Updated Foundation School lesson progress in bulk");
     if (activeRoute === "foundation") renderFoundation();
     return;
   }
   const foundationExamBtn = event.target.closest("[data-foundation-save-exam]");
   if (foundationExamBtn) {
-    saveFoundationExam(foundationExamBtn.dataset.foundationSaveExam);
+    await saveFoundationExam(foundationExamBtn.dataset.foundationSaveExam);
     saveState("Updated Foundation School final exam");
     if (activeRoute === "foundation") renderFoundation();
     return;
@@ -13524,6 +13993,7 @@ byId("entryForm")?.addEventListener("submit", (event) => {
   event.preventDefault();
   if (modalType === "followup") return submitFollowup(event.target);
   if (modalType === "foundationStudent") return submitFoundationStudent(event.target);
+  if (modalType === "foundationTeacher") return submitFoundationTeacher(event.target);
   if (modalType === "foundationMarkClass") return submitFoundationMarkClass(event.target);
   if (modalType === "foundationScore") return submitFoundationScore(event.target);
   if (modalType) submitForm(event.target);
