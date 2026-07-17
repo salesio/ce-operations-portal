@@ -251,7 +251,7 @@
       staffHr: "staffHr",
       finance: "finance",
       churches: "churches",
-      foundation: "foundationSchool",
+      foundation: "foundation",
       firstTimers: "firstTimers",
       followUp: "followUp",
       counseling: "counseling",
@@ -336,11 +336,12 @@
   function applyFoundation(payload) {
     const store = window.foundationPageState;
     if (!store) return;
+    if (payload.tab) store.tab = payload.tab;
     if (payload.scrollTo) store.panel = payload.scrollTo;
     store.filter = { ...store.filter, ...(payload.filterPayload || {}) };
-    if (payload.scrollTo) {
+    if (payload.tab || payload.scrollTo) {
       rerenderModule("foundation");
-      scrollToPanel(payload.scrollTo);
+      if (payload.scrollTo) scrollToPanel(payload.scrollTo);
       return false;
     }
     return true;

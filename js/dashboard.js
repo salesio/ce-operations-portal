@@ -3817,7 +3817,14 @@ const staffHrPageState = {
   birthdayFilters: { month: "", churchId: "", department: "", status: "", search: "" },
   cardFilters: { staff: {}, salaries: {}, performance: {}, equipment: {} }
 };
-const foundationPageState = { panel: "", filter: {} };
+const foundationPageState = {
+  tab: "overview",
+  panel: "",
+  filter: {},
+  lesson: { classGroupId: "", lessonNumber: "1", teacherId: "", status: "", date: new Date().toISOString().slice(0, 10) },
+  exam: { classGroupId: "", status: "" },
+  graduation: { classGroupId: "", status: "" }
+};
 const firstTimersPageState = { filter: {} };
 const followUpPageState = { filter: {} };
 const counselingPageState = { tab: "overview", filter: {} };
@@ -8126,7 +8133,7 @@ function submitFoundationScore(form) {
   setRoute(activeRoute);
 }
 
-function renderFoundation() {
+function renderFoundationLegacy() {
   const pending = foundationPending();
   const students = scoped(state.foundationStudents).map((student) => migrateFoundationStudent(student));
   setPageContent(`
@@ -8180,6 +8187,792 @@ function foundationPending() {
 function foundationProgress(student) {
   return migrateFoundationStudent(student).class_progress_percent;
 }
+
+const FOUNDATION_LESSON_TITLES = [
+  "A Nova Criação",
+  "O Espírito Santo",
+  "A Palavra de Deus",
+  "Evangelismo e Ganhar Almas",
+  "Crescimento Cristão",
+  "Vida de Oração",
+  "Ministério e Serviço"
+];
+
+const FOUNDATION_TABS = [
+  ["overview", "foundationTabOverview"],
+  ["enrolments", "foundationTabEnrolments"],
+  ["classes", "foundationTabClasses"],
+  ["students", "foundationTabStudents"],
+  ["lessons", "foundationTabLessonsTests"],
+  ["finalExam", "foundationTabFinalExam"],
+  ["soulWinning", "foundationTabSoulWinning"],
+  ["teachers", "foundationTabTeachers"],
+  ["graduation", "foundationTabGraduation"],
+  ["reports", "foundationTabReports"]
+];
+
+const FOUNDATION_TEXT = {
+  pt: {
+    foundationTabOverview: "Visão Geral",
+    foundationTabEnrolments: "Inscrições",
+    foundationTabClasses: "Turmas",
+    foundationTabStudents: "Alunos",
+    foundationTabLessonsTests: "Aulas & Testes",
+    foundationTabFinalExam: "Exame Final",
+    foundationTabSoulWinning: "Ganhar Almas",
+    foundationTabTeachers: "Professores",
+    foundationTabGraduation: "Graduação",
+    foundationTabReports: "Relatórios",
+    enrolledStudentsCount: "Alunos Inscritos",
+    activeClassGroups: "Turmas Activas",
+    activeTeachers: "Professores Activos",
+    lessonsThisWeek: "Aulas Dadas Esta Semana",
+    pendingTests: "Testes Pendentes",
+    studentsReadyForExam: "Alunos Prontos para Exame",
+    studentsReadyForGraduation: "Alunos Prontos para Graduação",
+    graduatesQuarter: "Graduados no Trimestre",
+    pendingCertificates: "Certificados Pendentes",
+    rector: "Reitor",
+    coordinator: "Coordenador",
+    classGroup: "Turma",
+    mainTeacher: "Professor Principal",
+    assistantTeacher: "Professor Assistente",
+    lessonsAllowed: "Aulas permitidas",
+    canTeachAll: "Ensina todas",
+    lesson: "Aula",
+    lessonTest: "Teste da Aula",
+    attendance: "Presença",
+    markAttendance: "Marcar Presença",
+    enterScore: "Lançar Nota",
+    responsibleTeacher: "Professor Responsável",
+    recordedBy: "Registado por",
+    recordedAt: "Data do Registo",
+    readyForGraduation: "Pronto para Graduação",
+    soulWinning: "Ganhar Almas",
+    finalExam: "Exame Final",
+    saveProgress: "Guardar progresso",
+    massProgress: "Guardar progresso da aula",
+    present: "Presente",
+    score: "Nota",
+    passed: "Aprovado",
+    failed: "Reprovado",
+    missing: "Falta",
+    notStarted: "Não iniciada",
+    lessonCompleted: "Aula Concluída",
+    testEntered: "Teste lançado",
+    assignedClasses: "Turmas atribuídas",
+    studentsTaught: "Alunos acompanhados",
+    testsEntered: "Testes lançados",
+    activityLogs: "Logs de actividade",
+    expectedGraduation: "Graduação prevista",
+    averageProgress: "Progresso médio",
+    soulWinningPending: "Ganhar almas pendente",
+    confirmedBy: "Confirmado por",
+    graduationBatch: "Lote de Graduação",
+    issueCertificate: "Emitir Certificado",
+    lessonScoresByClass: "Notas por aula",
+    teacherPerformance: "Performance dos professores",
+    studentsByStatus: "Alunos por estado",
+    progressByClass: "Progresso por turma",
+    quickLessonEntry: "Lançamento rápido de aulas e testes",
+    foundationSettings: "Configurações da Escola de Fundação",
+    finalExamHint: "Apenas alunos com 7 aulas, testes lançados e Aula 4 confirmada ficam prontos para exame.",
+    graduationHint: "Aprovação no exame final prepara o aluno para graduação e emissão de certificado.",
+    noFoundationAccess: "Sem permissão para gerir esta área da Escola de Fundação."
+  },
+  en: {
+    foundationTabOverview: "Overview",
+    foundationTabEnrolments: "Enrolments",
+    foundationTabClasses: "Classes",
+    foundationTabStudents: "Students",
+    foundationTabLessonsTests: "Lessons & Tests",
+    foundationTabFinalExam: "Final Exam",
+    foundationTabSoulWinning: "Soul Winning",
+    foundationTabTeachers: "Teachers",
+    foundationTabGraduation: "Graduation",
+    foundationTabReports: "Reports",
+    enrolledStudentsCount: "Enrolled Students",
+    activeClassGroups: "Active Classes",
+    activeTeachers: "Active Teachers",
+    lessonsThisWeek: "Lessons This Week",
+    pendingTests: "Pending Tests",
+    studentsReadyForExam: "Students Ready for Exam",
+    studentsReadyForGraduation: "Students Ready for Graduation",
+    graduatesQuarter: "Graduates This Quarter",
+    pendingCertificates: "Pending Certificates",
+    rector: "Rector",
+    coordinator: "Coordinator",
+    classGroup: "Class Group",
+    mainTeacher: "Main Teacher",
+    assistantTeacher: "Assistant Teacher",
+    lessonsAllowed: "Lessons allowed",
+    canTeachAll: "Can teach all",
+    lesson: "Lesson",
+    lessonTest: "Lesson Test",
+    attendance: "Attendance",
+    markAttendance: "Mark Attendance",
+    enterScore: "Enter Score",
+    responsibleTeacher: "Responsible Teacher",
+    recordedBy: "Recorded By",
+    recordedAt: "Recorded At",
+    readyForGraduation: "Ready for Graduation",
+    soulWinning: "Soul Winning",
+    finalExam: "Final Exam",
+    saveProgress: "Save progress",
+    massProgress: "Save lesson progress",
+    present: "Present",
+    score: "Score",
+    passed: "Passed",
+    failed: "Failed",
+    missing: "Absent",
+    notStarted: "Not started",
+    lessonCompleted: "Lesson Completed",
+    testEntered: "Test Entered",
+    assignedClasses: "Assigned Classes",
+    studentsTaught: "Students Taught",
+    testsEntered: "Tests Entered",
+    activityLogs: "Activity Logs",
+    expectedGraduation: "Expected Graduation",
+    averageProgress: "Average Progress",
+    soulWinningPending: "Soul winning pending",
+    confirmedBy: "Confirmed By",
+    graduationBatch: "Graduation Batch",
+    issueCertificate: "Issue Certificate",
+    lessonScoresByClass: "Lesson scores",
+    teacherPerformance: "Teacher Performance",
+    studentsByStatus: "Students by status",
+    progressByClass: "Progress by class",
+    quickLessonEntry: "Quick lesson and test entry",
+    foundationSettings: "Foundation School Settings",
+    finalExamHint: "Only students with 7 lessons, tests entered and Lesson 4 confirmed are ready for exam.",
+    graduationHint: "Final exam approval prepares the student for graduation and certificate issue.",
+    noFoundationAccess: "You do not have permission to manage this Foundation School area."
+  }
+};
+
+function FS(key) {
+  return cleanDisplayText(FOUNDATION_TEXT[lang]?.[key] || FOUNDATION_TEXT.en[key] || L(key));
+}
+
+function ensureFoundationData() {
+  const today = new Date().toISOString().slice(0, 10);
+  const hq = state.churches?.[0]?.id || "church-hq";
+  const churchLabel = churchName(hq);
+  if (!Array.isArray(state.foundationTeachers)) {
+    state.foundationTeachers = [
+      { id: "ftch-rector", user_id: "u-foundation-rector", staff_id: "", full_name: "Pastor Coordenador", title: FS("rector"), phone: "862270000", whatsapp: "862270000", email: "foundation.rector@ce-mozambique.org", church_id: hq, church_name: churchLabel, status: "Activo", subjects_or_lessons_allowed: [1, 2, 3, 4, 5, 6, 7], can_teach_all_lessons: true, availability: "Domingo e Quarta", notes: "Reitor da Escola de Fundação", created_at: "2026-07-01", updated_at: today },
+      { id: "ftch-coordinator", user_id: "u-foundation-coordinator", staff_id: "", full_name: "Irmã Coordenadora", title: FS("coordinator"), phone: "866220111", whatsapp: "866220111", email: "foundation.coord@ce-mozambique.org", church_id: hq, church_name: churchLabel, status: "Activo", subjects_or_lessons_allowed: [1, 2, 3, 4, 5, 6, 7], can_teach_all_lessons: true, availability: "Todos os cultos", notes: "Coordena inscrições, turmas e exames.", created_at: "2026-07-01", updated_at: today },
+      { id: "ftch-1", user_id: "u-foundation-teacher-1", staff_id: "staff-1", full_name: "Professor João", title: "Professor", phone: "846001001", whatsapp: "846001001", email: "joao.foundation@ce-mozambique.org", church_id: hq, church_name: churchLabel, status: "Activo", subjects_or_lessons_allowed: [1, 2, 3], can_teach_all_lessons: false, availability: "Domingo manhã", notes: "", created_at: "2026-07-01", updated_at: today },
+      { id: "ftch-2", user_id: "u-foundation-teacher-2", staff_id: "staff-2", full_name: "Professora Ana", title: "Professora", phone: "846001002", whatsapp: "846001002", email: "ana.foundation@ce-mozambique.org", church_id: hq, church_name: churchLabel, status: "Activo", subjects_or_lessons_allowed: [4, 5], can_teach_all_lessons: false, availability: "Quarta e Sexta", notes: "Responsável por Aula 4 e ganhar almas.", created_at: "2026-07-01", updated_at: today },
+      { id: "ftch-3", user_id: "u-foundation-teacher-3", staff_id: "staff-3", full_name: "Professor Carlos", title: "Professor", phone: "846001003", whatsapp: "846001003", email: "carlos.foundation@ce-mozambique.org", church_id: hq, church_name: churchLabel, status: "Em Treinamento", subjects_or_lessons_allowed: [6, 7], can_teach_all_lessons: false, availability: "Sábado", notes: "", created_at: "2026-07-01", updated_at: today }
+    ];
+  }
+  if (!state.foundationSchoolSettings) {
+    state.foundationSchoolSettings = {
+      rector_user_id: "u-foundation-rector",
+      rector_name: "Pastor Coordenador",
+      coordinator_user_id: "u-foundation-coordinator",
+      coordinator_name: "Irmã Coordenadora",
+      default_church_id: hq,
+      passing_score_per_lesson: 50,
+      final_exam_passing_score: 50,
+      require_all_7_lessons: true,
+      require_lesson_tests: true,
+      require_soul_winning_for_lesson_4: true,
+      allow_lessons_in_random_order: true,
+      created_at: "2026-07-01",
+      updated_at: today
+    };
+  }
+  if (!Array.isArray(state.foundationClassGroups)) {
+    state.foundationClassGroups = [
+      { id: "fcg-2026-q3-hq", name: "Turma 1 - 3º Trimestre 2026", church_id: hq, church_name: churchLabel, quarter: "3º Trimestre", year: 2026, start_date: "2026-07-05", expected_graduation_date: "2026-09-27", main_teacher_id: "ftch-1", main_teacher_name: "Professor João", assistant_teacher_id: "ftch-2", assistant_teacher_name: "Professora Ana", rector_id: "ftch-rector", rector_name: "Pastor Coordenador", status: "Em Curso", notes: "Turma principal de Maputo.", created_at: "2026-07-01", updated_at: today },
+      { id: "fcg-2026-q3-matola", name: "Turma Matola - 3º Trimestre 2026", church_id: "church-matola", church_name: churchName("church-matola"), quarter: "3º Trimestre", year: 2026, start_date: "2026-07-12", expected_graduation_date: "2026-10-04", main_teacher_id: "ftch-2", main_teacher_name: "Professora Ana", assistant_teacher_id: "ftch-3", assistant_teacher_name: "Professor Carlos", rector_id: "ftch-rector", rector_name: "Pastor Coordenador", status: "Aberta", notes: "", created_at: "2026-07-01", updated_at: today },
+      { id: "fcg-2026-q2-hq", name: "Turma Domingo Manhã - 2º Trimestre 2026", church_id: hq, church_name: churchLabel, quarter: "2º Trimestre", year: 2026, start_date: "2026-04-05", expected_graduation_date: "2026-06-28", main_teacher_id: "ftch-coordinator", main_teacher_name: "Irmã Coordenadora", assistant_teacher_id: "ftch-1", assistant_teacher_name: "Professor João", rector_id: "ftch-rector", rector_name: "Pastor Coordenador", status: "Pronta para Exame", notes: "Alunos em fase final.", created_at: "2026-04-01", updated_at: today }
+    ];
+  }
+  state.foundationStudents = (state.foundationStudents || []).map((student, index) => foundationNormalizeStudent(student, index));
+  if (state.foundationStudents.length < 15) {
+    const sampleNames = ["Aminata Chivinda", "João Nhaca", "Maria Zitha", "Carlos Mucavele", "Elisa Macamo", "Pedro Ndlovu", "Helena Cossa", "Marta Bila", "Samuel Dlamini", "Rosa Manjate", "Edson Tembe", "Celina Mabunda", "David Sithole", "Ana Muianga", "Mateus Zandamela"];
+    sampleNames.slice(state.foundationStudents.length).forEach((name, index) => {
+      const group = state.foundationClassGroups[index % state.foundationClassGroups.length];
+      const completed = Math.min(7, (index % 8));
+      const attendance = defaultFoundationAttendance();
+      for (let n = 1; n <= completed; n += 1) attendance[`class_${n}`] = true;
+      state.foundationStudents.push(foundationNormalizeStudent({
+        id: `fs-mock-${index + 1}`,
+        first_timer_id: "",
+        member_id: "",
+        class_group_id: group.id,
+        class_group_name: group.name,
+        nome: name.split(" ")[0],
+        apelido: name.split(" ").slice(1).join(" "),
+        full_name: name,
+        telefone: `86${String(2270000 + index).padStart(7, "0")}`,
+        whatsapp: "",
+        email: "",
+        church_id: group.church_id,
+        church_name: group.church_name,
+        cell_group_id: "",
+        cell_group_name: "",
+        cell_id: "",
+        cell_name: "",
+        celula: index % 2 ? "Célula Central" : "Célula Mavalane",
+        enrollment_date: "2026-07-06",
+        quarter: group.quarter,
+        year: group.year,
+        class_attendance: attendance,
+        nota_exame: completed === 7 ? (index % 3 === 0 ? 78 : 0) : 0,
+        final_exam_score: completed === 7 ? (index % 3 === 0 ? 78 : 0) : 0,
+        aprovado: completed === 7 && index % 3 === 0,
+        pratica_evangelismo: completed >= 4 && index % 4 !== 0,
+        numero_de_almas_ganhas: completed >= 4 ? index % 5 : 0,
+        graduado: completed === 7 && index % 5 === 0,
+        certificado_emitido: completed === 7 && index % 6 === 0,
+        status: "",
+        estado: "",
+        notes: "",
+        created_at: "2026-07-06",
+        updated_at: today
+      }, index));
+    });
+  }
+  ensureFoundationLessonRecords();
+  ensureFoundationSoulWinning();
+  ensureFoundationFinalExams();
+  if (!Array.isArray(state.foundationAuditLogs)) state.foundationAuditLogs = [];
+}
+
+function foundationNormalizeStudent(student, index = 0) {
+  const group = (state.foundationClassGroups || [])[index % Math.max(1, (state.foundationClassGroups || []).length)] || {};
+  const record = applyFoundationCalculations({
+    ...student,
+    class_group_id: student.class_group_id || group.id || "",
+    class_group_name: student.class_group_name || group.name || "",
+    full_name: student.full_name || fullName(student),
+    church_id: student.church_id || group.church_id || "church-hq",
+    church_name: student.church_name || churchName(student.church_id || group.church_id || "church-hq"),
+    enrollment_date: student.enrollment_date || student.created_at || new Date().toISOString().slice(0, 10),
+    quarter: student.quarter || group.quarter || "3º Trimestre",
+    year: student.year || group.year || 2026,
+    final_exam_score: Number(student.final_exam_score || student.nota_exame || 0),
+    final_exam_passed: !!student.final_exam_passed || !!student.aprovado,
+    soul_winning_completed: !!student.soul_winning_completed || !!student.pratica_evangelismo,
+    souls_won_count: Number(student.souls_won_count || student.numero_de_almas_ganhas || 0),
+    graduated: !!student.graduated || !!student.graduado,
+    certificate_issued: !!student.certificate_issued || !!student.certificado_emitido
+  }, true);
+  record.status = record.status || record.estado;
+  record.completed_lessons_count = record.completed_classes;
+  record.lesson_progress_percent = record.class_progress_percent;
+  record.passed_lesson_tests_count = foundationPassedLessonTests(record.id).length;
+  record.ready_for_graduation = record.final_exam_passed || record.aprovado;
+  return record;
+}
+
+function ensureFoundationLessonRecords() {
+  if (!Array.isArray(state.foundationLessonProgress)) state.foundationLessonProgress = [];
+  const existing = new Set(state.foundationLessonProgress.map((item) => `${item.student_id}-${item.lesson_number}`));
+  (state.foundationStudents || []).forEach((student) => {
+    const s = migrateFoundationStudent(student);
+    for (let n = 1; n <= 7; n += 1) {
+      const key = `${s.id}-${n}`;
+      if (existing.has(key)) continue;
+      const group = foundationClassGroupById(s.class_group_id);
+      const teacherId = n === 4 ? "ftch-2" : (group.main_teacher_id || "ftch-1");
+      const teacher = foundationTeacherById(teacherId);
+      const attended = !!s.class_attendance[`class_${n}`];
+      state.foundationLessonProgress.push({
+        id: `flp-${s.id}-${n}`,
+        student_id: s.id,
+        class_group_id: s.class_group_id || "",
+        lesson_number: n,
+        lesson_title: FOUNDATION_LESSON_TITLES[n - 1],
+        lesson_date: attended ? "2026-07-12" : "",
+        teacher_id: teacherId,
+        teacher_name: teacher.full_name || "",
+        attended,
+        attendance_marked_by: attended ? "Admin Principal" : "",
+        attendance_marked_at: attended ? new Date().toISOString() : "",
+        lesson_completed: attended,
+        lesson_completed_by: attended ? "Admin Principal" : "",
+        lesson_completed_at: attended ? new Date().toISOString() : "",
+        test_score: attended ? (55 + ((n * 7) % 35)) : "",
+        test_passed: attended,
+        test_marked_by: attended ? "Admin Principal" : "",
+        test_marked_at: attended ? new Date().toISOString() : "",
+        notes: "",
+        created_at: "2026-07-01",
+        updated_at: new Date().toISOString().slice(0, 10)
+      });
+    }
+  });
+}
+
+function ensureFoundationSoulWinning() {
+  if (!Array.isArray(state.foundationSoulWinning)) state.foundationSoulWinning = [];
+  const existing = new Set(state.foundationSoulWinning.map((item) => item.student_id));
+  (state.foundationStudents || []).forEach((student) => {
+    const s = migrateFoundationStudent(student);
+    if (!s.class_attendance.class_4 || existing.has(s.id)) return;
+    state.foundationSoulWinning.push({
+      id: `fsw-${s.id}`,
+      student_id: s.id,
+      class_group_id: s.class_group_id || "",
+      lesson_number: 4,
+      activity_date: "2026-07-14",
+      souls_won_count: Number(s.numero_de_almas_ganhas || s.souls_won_count || 0),
+      location: "Maputo",
+      report_summary: "Exercício prático submetido pelo aluno.",
+      confirmed_by_teacher_id: s.pratica_evangelismo ? "ftch-2" : "",
+      confirmed_by_teacher_name: s.pratica_evangelismo ? "Professora Ana" : "",
+      confirmed_at: s.pratica_evangelismo ? new Date().toISOString() : "",
+      status: s.pratica_evangelismo ? "Confirmado" : "Pendente",
+      notes: "",
+      created_at: "2026-07-14",
+      updated_at: new Date().toISOString().slice(0, 10)
+    });
+  });
+}
+
+function ensureFoundationFinalExams() {
+  if (!Array.isArray(state.foundationFinalExams)) state.foundationFinalExams = [];
+  const existing = new Set(state.foundationFinalExams.map((item) => item.student_id));
+  foundationReadyForExamStudents().forEach((student) => {
+    if (existing.has(student.id) || !Number(student.nota_exame || student.final_exam_score || 0)) return;
+    state.foundationFinalExams.push({
+      id: `ffe-${student.id}`,
+      student_id: student.id,
+      class_group_id: student.class_group_id,
+      exam_date: "2026-07-15",
+      score: Number(student.nota_exame || student.final_exam_score || 0),
+      passed: Number(student.nota_exame || student.final_exam_score || 0) >= (state.foundationSchoolSettings?.final_exam_passing_score || 50),
+      marked_by_user_id: activeUser?.id || "u-1",
+      marked_by_name: activeUser?.name || "Admin Principal",
+      marked_at: new Date().toISOString(),
+      notes: "",
+      created_at: "2026-07-15",
+      updated_at: new Date().toISOString().slice(0, 10)
+    });
+  });
+}
+
+function foundationClassGroupById(id) {
+  return (state.foundationClassGroups || []).find((group) => group.id === id) || {};
+}
+
+function foundationTeacherById(id) {
+  return (state.foundationTeachers || []).find((teacher) => teacher.id === id) || {};
+}
+
+function foundationLessonRecords(studentId) {
+  return (state.foundationLessonProgress || []).filter((item) => item.student_id === studentId);
+}
+
+function foundationPassedLessonTests(studentId) {
+  const pass = Number(state.foundationSchoolSettings?.passing_score_per_lesson || 50);
+  return foundationLessonRecords(studentId).filter((item) => item.attended && Number(item.test_score || 0) >= pass);
+}
+
+function foundationSoulWinningForStudent(studentId) {
+  return (state.foundationSoulWinning || []).find((item) => item.student_id === studentId) || {};
+}
+
+function foundationCanManage(area = "overview") {
+  const role = String(activeUser?.role || "").toLowerCase();
+  const perms = activeUser?.department_permissions || {};
+  if (role.includes("admin") || activeUser?.can_view_all_churches) return true;
+  if (perms.foundation_rector || perms.foundation_coordinator) return true;
+  if (area === "lessons" && (perms.foundation_teacher || perms.foundation_assistant)) return true;
+  return true;
+}
+
+function foundationScopedClassGroups() {
+  if (foundationCanManage("all")) return state.foundationClassGroups || [];
+  const userId = activeUser?.id;
+  return (state.foundationClassGroups || []).filter((group) => {
+    const main = foundationTeacherById(group.main_teacher_id);
+    const assistant = foundationTeacherById(group.assistant_teacher_id);
+    return main.user_id === userId || assistant.user_id === userId || group.church_id === activeUser?.church_id;
+  });
+}
+
+function foundationStudentsForGroup(groupId = "") {
+  const allowedGroups = new Set(foundationScopedClassGroups().map((group) => group.id));
+  return scoped(state.foundationStudents || [], "foundation").map((student, index) => foundationNormalizeStudent(student, index)).filter((student) => {
+    if (groupId && student.class_group_id !== groupId) return false;
+    return !student.class_group_id || allowedGroups.has(student.class_group_id);
+  });
+}
+
+function foundationReadyForExamStudents() {
+  return foundationStudentsForGroup().filter((student) => {
+    const lessonRecords = foundationLessonRecords(student.id);
+    const testsOk = !state.foundationSchoolSettings?.require_lesson_tests || lessonRecords.filter((item) => item.attended && item.test_score !== "").length >= 7;
+    const lessonsOk = getFoundationCompletedClasses(student) >= 7;
+    const soulOk = !state.foundationSchoolSettings?.require_soul_winning_for_lesson_4 || foundationSoulWinningForStudent(student.id).status === "Confirmado" || student.pratica_evangelismo;
+    return lessonsOk && testsOk && soulOk && !student.final_exam_passed && !student.aprovado;
+  });
+}
+
+function foundationReadyForGraduationStudents() {
+  return foundationStudentsForGroup().filter((student) => (student.final_exam_passed || student.aprovado) && !(student.graduated || student.graduado));
+}
+
+function foundationTabNav() {
+  return moduleTabsNav(FOUNDATION_TABS.map(([key, labelKey]) => moduleTabButton(FS(labelKey), {
+    active: foundationPageState.tab === key,
+    attrs: `data-foundation-tab="${key}" onclick="window.setFoundationTab && window.setFoundationTab('${key}'); return false;"`
+  })).join(""));
+}
+
+function foundationSelectOptions(list, valueKey = "id", labelKey = "name", selected = "") {
+  return list.map((item) => `<option value="${item[valueKey]}" ${String(item[valueKey]) === String(selected) ? "selected" : ""}>${item[labelKey] || item.full_name || item.name}</option>`).join("");
+}
+
+function foundationClassProgressForGroup(groupId) {
+  const rows = foundationStudentsForGroup(groupId);
+  if (!rows.length) return 0;
+  return Math.round(rows.reduce((sum, item) => sum + foundationProgress(item), 0) / rows.length);
+}
+
+function foundationStudentLessonChips(student) {
+  const records = foundationLessonRecords(student.id);
+  return `<div class="foundation-class-grid">${Array.from({ length: 7 }, (_, i) => {
+    const n = i + 1;
+    const lesson = records.find((item) => Number(item.lesson_number) === n) || {};
+    const done = lesson.attended || student.class_attendance?.[`class_${n}`];
+    const score = lesson.test_score !== "" && lesson.test_score !== undefined ? `${lesson.test_score}%` : "-";
+    return `<span class="foundation-lesson-chip ${done ? "done" : "pending"}" title="${FOUNDATION_LESSON_TITLES[i]}">${FS("lesson")} ${n}<small>${done ? score : FS("notStarted")}</small>${n === 4 ? `<em>${FS("soulWinning")}</em>` : ""}</span>`;
+  }).join("")}</div>`;
+}
+
+function foundationAudit(action, entityType, entityId, oldValue, newValue, notes = "") {
+  if (!Array.isArray(state.foundationAuditLogs)) state.foundationAuditLogs = [];
+  state.foundationAuditLogs.unshift({
+    id: `fal-${Date.now()}`,
+    entity_type: entityType,
+    entity_id: entityId,
+    action,
+    old_value: oldValue,
+    new_value: newValue,
+    performed_by_user_id: activeUser?.id || "u-1",
+    performed_by_name: activeUser?.name || "Admin Principal",
+    performed_at: new Date().toISOString(),
+    notes
+  });
+}
+
+function renderFoundationOverview(students, pending) {
+  const groups = foundationScopedClassGroups();
+  const readyExam = foundationReadyForExamStudents();
+  const readyGrad = foundationReadyForGraduationStudents();
+  const pendingTests = (state.foundationLessonProgress || []).filter((item) => item.attended && item.test_score === "").length;
+  const certificates = students.filter((s) => (s.graduated || s.graduado) && !(s.certificate_issued || s.certificado_emitido));
+  return `
+    <div class="row g-3 mb-4 summary-cards-row">
+      ${sm("bi-person-plus", FS("enrolledStudentsCount"), students.length, "foundation", { tab: "students" })}
+      ${sm("bi-collection", FS("activeClassGroups"), groups.filter((g) => !["Concluída", "Cancelada"].includes(g.status)).length, "foundation", { tab: "classes" })}
+      ${sm("bi-person-workspace", FS("activeTeachers"), (state.foundationTeachers || []).filter((t) => t.status === "Activo").length, "foundation", { tab: "teachers" })}
+      ${sm("bi-calendar-check", FS("lessonsThisWeek"), (state.foundationLessonProgress || []).filter((l) => l.attended).length, "foundation", { tab: "lessons" })}
+      ${sm("bi-hourglass-split", FS("pendingTests"), pendingTests, "foundation", { tab: "lessons", filterPayload: { pendingTests: true } })}
+      ${sm("bi-clipboard-check", FS("studentsReadyForExam"), readyExam.length, "foundation", { tab: "finalExam" })}
+      ${sm("bi-award", FS("studentsReadyForGraduation"), readyGrad.length, "foundation", { tab: "graduation" })}
+      ${sm("bi-patch-check", FS("pendingCertificates"), certificates.length, "foundation", { tab: "graduation", filterPayload: { certificates: "pending" } })}
+    </div>
+    <div class="row g-4">
+      <div class="col-xl-7">${foundationSettingsPanel()}</div>
+      <div class="col-xl-5">${foundationAuditPanel()}</div>
+    </div>
+  `;
+}
+
+function foundationSettingsPanel() {
+  const settings = state.foundationSchoolSettings || {};
+  return moduleSection(FS("foundationSettings"), `${FS("rector")}: ${settings.rector_name || "-"} · ${FS("coordinator")}: ${settings.coordinator_name || "-"}`, "bi-sliders", "", `
+    ${dataTable([FS("lessonTest"), FS("score"), L("required"), L("status")], [
+      [FS("lessonTest"), `${settings.passing_score_per_lesson || 50}%`, yesNo(settings.require_lesson_tests), badge(L("active"))],
+      [FS("finalExam"), `${settings.final_exam_passing_score || 50}%`, yesNo(true), badge(L("active"))],
+      [`${FS("lesson")} 4 - ${FS("soulWinning")}`, "-", yesNo(settings.require_soul_winning_for_lesson_4), badge(L("active"))],
+      [L("classesAttendance"), "1-7", yesNo(settings.require_all_7_lessons), badge(settings.allow_lessons_in_random_order ? L("active") : L("inactive"))]
+    ])}
+  `);
+}
+
+function foundationAuditPanel() {
+  const logs = (state.foundationAuditLogs || []).slice(0, 6);
+  return moduleSection(FS("activityLogs"), L("clickToView"), "bi-clock-history", "", logs.length ? `
+    <div class="d-grid gap-2">${logs.map((log) => `<div class="record-card"><strong>${log.action}</strong><p class="text-secondary mb-1">${log.performed_by_name} · ${new Date(log.performed_at).toLocaleString()}</p><small>${log.notes || log.entity_type}</small></div>`).join("")}</div>
+  ` : EmptyState({ compact: true, title: L("empty") }));
+}
+
+function renderFoundationEnrolments(pending) {
+  return `
+    <article class="panel" id="panel-foundation-enrolments">
+      <div class="panel-header-row"><h3 class="panel-title">${FS("foundationTabEnrolments")}</h3><button type="button" class="btn btn-ce-gold btn-touch" data-open-form="foundationStudent"><i class="bi bi-plus-lg me-1"></i>${L("add")}</button></div>
+      <div class="row g-3 mt-1">
+        ${pending.length ? pending.map((p) => `<div class="col-md-6 col-xl-4"><div class="record-card h-100"><strong>${fullName(p)}</strong><p class="text-secondary mb-2">${p.telefone || "-"} · ${churchName(p.church_id)}</p><button class="btn btn-sm btn-ce-gold" data-enroll="${p.id}">${L("enrolStudent")}</button></div></div>`).join("") : `<div class="col-12">${EmptyState({ compact: true, title: L("empty") })}</div>`}
+      </div>
+    </article>
+  `;
+}
+
+function renderFoundationClasses() {
+  const groups = foundationScopedClassGroups();
+  return `
+    <article class="panel" id="panel-foundation-classes">
+      <div class="panel-header-row"><h3 class="panel-title">${FS("foundationTabClasses")}</h3><button type="button" class="btn btn-outline-cyan action-secondary btn-touch" data-foundation-export="classes"><i class="bi bi-download me-1"></i>${L("export")}</button></div>
+      <div class="row g-3 mt-1">
+        ${groups.map((group) => `
+          <div class="col-xl-4 col-md-6">
+            <div class="record-card h-100">
+              <div class="d-flex justify-content-between gap-2"><strong>${group.name}</strong>${badge(group.status)}</div>
+              <p class="text-secondary mb-2">${group.church_name || churchName(group.church_id)} · ${group.quarter} ${group.year}</p>
+              <p class="mb-1"><strong>${FS("mainTeacher")}:</strong> ${group.main_teacher_name || "-"}</p>
+              <p class="mb-1"><strong>${FS("assistantTeacher")}:</strong> ${group.assistant_teacher_name || "-"}</p>
+              <p class="mb-2"><strong>${FS("expectedGraduation")}:</strong> ${group.expected_graduation_date || "-"}</p>
+              ${foundationProgressBar(foundationClassProgressForGroup(group.id), "mb-2")}
+              <small>${FS("averageProgress")}: ${foundationClassProgressForGroup(group.id)}%</small>
+            </div>
+          </div>`).join("")}
+      </div>
+    </article>
+  `;
+}
+
+function renderFoundationStudents(students) {
+  return `
+    <article class="panel" id="panel-foundation-students">
+      ${filterBar({ filterScope: "foundation", statusOptions: foundationStatuses, searchValue: foundationPageState.filter.search || "", churchValue: foundationPageState.filter.churchId || "", statusValue: foundationPageState.filter.estado || "" })}
+      ${dataTable([FS("foundationTabStudents"), FS("classGroup"), L("church"), L("cell"), L("status"), L("progress"), FS("lessonTest"), FS("soulWinning"), L("actions")], applyFoundationCardFilters(students, foundationPageState.filter).map((s) => [
+        fullName(s),
+        s.class_group_name || foundationClassGroupById(s.class_group_id).name || "-",
+        churchName(s.church_id),
+        s.celula || s.cell_name || "-",
+        badge(s.estado || s.status),
+        `${foundationClassProgressCell(s)}${foundationStudentLessonChips(s)}`,
+        `${foundationPassedLessonTests(s.id).length}/7`,
+        badge(foundationSoulWinningForStudent(s.id).status || (s.pratica_evangelismo ? "Confirmado" : "Pendente")),
+        actionButtons([["view", "foundationStudent", s.id, L("view")], ["edit", "foundationStudent", s.id, L("edit")], ["markClass", "foundationStudent", s.id, FS("markAttendance")], ["score", "foundationStudent", s.id, FS("enterScore")], ["graduate", "foundationStudent", s.id, L("graduate")]])
+      ]))}
+    </article>
+  `;
+}
+
+function renderFoundationLessons(students) {
+  const ctx = foundationPageState.lesson;
+  if (!ctx.classGroupId) ctx.classGroupId = foundationScopedClassGroups()[0]?.id || "";
+  const groupStudents = foundationStudentsForGroup(ctx.classGroupId);
+  const lessonNumber = Number(ctx.lessonNumber || 1);
+  return `
+    <article class="panel" id="panel-foundation-lessons">
+      <div class="panel-header-row"><div><h3 class="panel-title">${FS("quickLessonEntry")}</h3><p class="text-secondary mb-0">${FS("recordedBy")}: ${activeUser?.name || "Admin Principal"}</p></div></div>
+      <form class="filter-toolbar filter-bar mb-4" data-foundation-lesson-context>
+        <select class="form-select" name="classGroupId" data-foundation-lesson-field><option value="">${FS("classGroup")}</option>${foundationSelectOptions(foundationScopedClassGroups(), "id", "name", ctx.classGroupId)}</select>
+        <select class="form-select" name="lessonNumber" data-foundation-lesson-field>${Array.from({ length: 7 }, (_, i) => `<option value="${i + 1}" ${String(ctx.lessonNumber) === String(i + 1) ? "selected" : ""}>${FS("lesson")} ${i + 1} - ${FOUNDATION_LESSON_TITLES[i]}</option>`).join("")}</select>
+        <select class="form-select" name="teacherId" data-foundation-lesson-field><option value="">${FS("responsibleTeacher")}</option>${foundationSelectOptions(state.foundationTeachers || [], "id", "full_name", ctx.teacherId)}</select>
+        <input class="form-control" name="date" type="date" value="${ctx.date || new Date().toISOString().slice(0, 10)}" data-foundation-lesson-field>
+        <button type="button" class="btn btn-ce-gold btn-touch" data-foundation-save-all><i class="bi bi-check2-circle me-1"></i>${FS("massProgress")}</button>
+      </form>
+      ${dataTable([FS("foundationTabStudents"), FS("attendance"), FS("score"), L("status"), L("notes"), L("actions")], groupStudents.map((student) => {
+        const lesson = foundationLessonRecords(student.id).find((item) => Number(item.lesson_number) === lessonNumber) || {};
+        const passed = Number(lesson.test_score || 0) >= Number(state.foundationSchoolSettings?.passing_score_per_lesson || 50);
+        return [
+          `<strong>${fullName(student)}</strong><small class="d-block text-secondary">${student.class_group_name || ""}</small>`,
+          `<label class="form-check mb-0"><input type="checkbox" class="form-check-input" data-foundation-row-field="attended" data-student-id="${student.id}" ${lesson.attended ? "checked" : ""}> ${FS("present")}</label>`,
+          `<input type="number" min="0" max="100" class="form-control form-control-sm" data-foundation-row-field="score" data-student-id="${student.id}" value="${lesson.test_score ?? ""}" placeholder="${FS("score")}">`,
+          badge(lesson.attended ? (lesson.test_score !== "" ? (passed ? FS("passed") : FS("failed")) : FS("lessonCompleted")) : FS("notStarted")),
+          `<input class="form-control form-control-sm" data-foundation-row-field="notes" data-student-id="${student.id}" value="${lesson.notes || ""}" placeholder="${L("notes")}">`,
+          `<button type="button" class="action-btn" data-foundation-save-row="${student.id}">${FS("saveProgress")}</button>`
+        ];
+      }))}
+    </article>
+  `;
+}
+
+function renderFoundationFinalExam() {
+  const ready = foundationReadyForExamStudents();
+  const exams = state.foundationFinalExams || [];
+  return moduleSection(FS("finalExam"), FS("finalExamHint"), "bi-clipboard-check", "", `
+    ${dataTable([FS("foundationTabStudents"), FS("classGroup"), FS("progress"), FS("score"), L("status"), L("actions")], [...ready, ...foundationStudentsForGroup().filter((s) => s.final_exam_passed || s.aprovado)].map((student) => {
+      const exam = exams.find((item) => item.student_id === student.id) || {};
+      const score = Number(exam.score || student.final_exam_score || student.nota_exame || 0);
+      return [
+        fullName(student),
+        student.class_group_name || "-",
+        `${getFoundationCompletedClasses(student)}/7`,
+        `<input type="number" min="0" max="100" class="form-control form-control-sm" data-foundation-exam-score="${student.id}" value="${score || ""}" placeholder="${FS("score")}">`,
+        badge(score ? (score >= Number(state.foundationSchoolSettings?.final_exam_passing_score || 50) ? FS("passed") : FS("failed")) : FS("studentsReadyForExam")),
+        `<button type="button" class="action-btn" data-foundation-save-exam="${student.id}">${FS("enterScore")}</button>`
+      ];
+    }))}
+  `);
+}
+
+function renderFoundationSoulWinning() {
+  const rows = state.foundationSoulWinning || [];
+  return moduleSection(FS("soulWinning"), `${FS("lesson")} 4`, "bi-stars", "", `
+    ${dataTable([FS("foundationTabStudents"), FS("classGroup"), L("date"), L("location"), FS("soulWinning"), FS("confirmedBy"), L("status"), L("actions")], rows.map((item) => {
+      const student = (state.foundationStudents || []).find((s) => s.id === item.student_id) || {};
+      return [
+        fullName(student),
+        foundationClassGroupById(item.class_group_id).name || "-",
+        item.activity_date || "-",
+        item.location || "-",
+        item.souls_won_count || 0,
+        item.confirmed_by_teacher_name || "-",
+        badge(item.status),
+        `<button type="button" class="action-btn" data-foundation-confirm-soul="${item.id}">${L("confirm") || "Confirmar"}</button>`
+      ];
+    }))}
+  `);
+}
+
+function renderFoundationTeachers() {
+  const teachers = state.foundationTeachers || [];
+  return moduleSection(FS("foundationTabTeachers"), `${FS("rector")}: ${state.foundationSchoolSettings?.rector_name || "-"} · ${FS("coordinator")}: ${state.foundationSchoolSettings?.coordinator_name || "-"}`, "bi-person-workspace", "", `
+    ${dataTable([FS("foundationTabTeachers"), L("phone"), L("church"), FS("lessonsAllowed"), FS("assignedClasses"), FS("testsEntered"), L("status")], teachers.map((teacher) => {
+      const classes = (state.foundationClassGroups || []).filter((group) => group.main_teacher_id === teacher.id || group.assistant_teacher_id === teacher.id);
+      const lessons = (state.foundationLessonProgress || []).filter((item) => item.teacher_id === teacher.id && item.test_score !== "");
+      return [
+        `<strong>${teacher.full_name}</strong><small class="d-block text-secondary">${teacher.title || ""}</small>`,
+        teacher.phone || "-",
+        teacher.church_name || churchName(teacher.church_id),
+        teacher.can_teach_all_lessons ? FS("canTeachAll") : (teacher.subjects_or_lessons_allowed || []).map((n) => `${FS("lesson")} ${n}`).join(", "),
+        classes.length,
+        lessons.length,
+        badge(teacher.status)
+      ];
+    }))}
+  `);
+}
+
+function renderFoundationGraduation() {
+  const ready = foundationReadyForGraduationStudents();
+  const graduated = foundationStudentsForGroup().filter((s) => s.graduated || s.graduado);
+  return moduleSection(FS("foundationTabGraduation"), FS("graduationHint"), "bi-award", "", `
+    ${dataTable([FS("foundationTabStudents"), FS("classGroup"), FS("score"), FS("graduationBatch"), L("status"), L("actions")], [...ready, ...graduated].map((student) => [
+      fullName(student),
+      student.class_group_name || "-",
+      student.final_exam_score || student.nota_exame || "-",
+      student.graduation_batch || student.graduation_date || "-",
+      badge(student.graduated || student.graduado ? L("graduated") : FS("readyForGraduation")),
+      actionButtons([["graduate", "foundationStudent", student.id, L("graduate")], ["edit", "foundationStudent", student.id, FS("issueCertificate")]])
+    ]))}
+  `);
+}
+
+function renderFoundationReports(students) {
+  const byStatus = Object.entries(students.reduce((acc, student) => {
+    const key = student.estado || student.status || "Inscrito";
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {}));
+  const teacherRows = (state.foundationTeachers || []).map((teacher) => {
+    const lessonRows = (state.foundationLessonProgress || []).filter((item) => item.teacher_id === teacher.id && item.attended);
+    const scores = lessonRows.map((item) => Number(item.test_score || 0)).filter(Boolean);
+    return [teacher.full_name, lessonRows.length, new Set(lessonRows.map((item) => item.student_id)).size, scores.length, scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : "-", (state.foundationClassGroups || []).filter((group) => group.main_teacher_id === teacher.id || group.assistant_teacher_id === teacher.id).length];
+  });
+  return `
+    ${moduleSection(FS("studentsByStatus"), L("reports"), "bi-bar-chart", "", dataTable([L("status"), L("total")], byStatus.map(([status, total]) => [badge(status), total])))}
+    ${moduleSection(FS("progressByClass"), L("reports"), "bi-graph-up", "", dataTable([FS("classGroup"), L("church"), FS("averageProgress"), FS("enrolledStudentsCount")], foundationScopedClassGroups().map((group) => [group.name, group.church_name || churchName(group.church_id), `${foundationClassProgressForGroup(group.id)}%`, foundationStudentsForGroup(group.id).length])))}
+    ${moduleSection(FS("teacherPerformance"), L("reports"), "bi-person-check", "", dataTable([FS("foundationTabTeachers"), FS("lessonsThisWeek"), FS("studentsTaught"), FS("testsEntered"), L("average"), FS("assignedClasses")], teacherRows))}
+    ${renderDomainReportsPanel("foundation", { module: "foundation", showTitle: false })}
+  `;
+}
+
+function renderFoundationActiveTab(students, pending) {
+  const tab = foundationPageState.tab || "overview";
+  if (!foundationCanManage(tab)) return `<article class="panel">${EmptyState({ compact: true, title: FS("noFoundationAccess") })}</article>`;
+  if (tab === "enrolments") return renderFoundationEnrolments(pending);
+  if (tab === "classes") return renderFoundationClasses();
+  if (tab === "students") return renderFoundationStudents(students);
+  if (tab === "lessons") return renderFoundationLessons(students);
+  if (tab === "finalExam") return renderFoundationFinalExam();
+  if (tab === "soulWinning") return renderFoundationSoulWinning();
+  if (tab === "teachers") return renderFoundationTeachers();
+  if (tab === "graduation") return renderFoundationGraduation();
+  if (tab === "reports") return renderFoundationReports(students);
+  return renderFoundationOverview(students, pending);
+}
+
+function saveFoundationLessonRow(studentId) {
+  const ctx = foundationPageState.lesson;
+  const lessonNumber = Number(ctx.lessonNumber || 1);
+  let record = (state.foundationLessonProgress || []).find((item) => item.student_id === studentId && Number(item.lesson_number) === lessonNumber);
+  if (!record) {
+    record = { id: `flp-${studentId}-${lessonNumber}`, student_id: studentId, class_group_id: ctx.classGroupId, lesson_number: lessonNumber, lesson_title: FOUNDATION_LESSON_TITLES[lessonNumber - 1], created_at: new Date().toISOString().slice(0, 10) };
+    state.foundationLessonProgress.push(record);
+  }
+  const attended = document.querySelector(`[data-foundation-row-field="attended"][data-student-id="${studentId}"]`)?.checked || false;
+  const scoreValue = document.querySelector(`[data-foundation-row-field="score"][data-student-id="${studentId}"]`)?.value || "";
+  const notes = document.querySelector(`[data-foundation-row-field="notes"][data-student-id="${studentId}"]`)?.value || "";
+  const teacher = foundationTeacherById(ctx.teacherId) || {};
+  const now = new Date().toISOString();
+  const oldValue = JSON.stringify({ attended: record.attended, score: record.test_score });
+  record.class_group_id = ctx.classGroupId || record.class_group_id;
+  record.lesson_date = ctx.date || record.lesson_date || now.slice(0, 10);
+  record.teacher_id = ctx.teacherId || record.teacher_id;
+  record.teacher_name = teacher.full_name || record.teacher_name || "";
+  record.attended = attended;
+  record.attendance_marked_by = attended ? (activeUser?.name || "Admin Principal") : "";
+  record.attendance_marked_at = attended ? now : "";
+  record.lesson_completed = attended;
+  record.lesson_completed_by = attended ? (activeUser?.name || "Admin Principal") : "";
+  record.lesson_completed_at = attended ? now : "";
+  record.test_score = scoreValue === "" ? "" : Number(scoreValue);
+  record.test_passed = scoreValue !== "" ? Number(scoreValue) >= Number(state.foundationSchoolSettings?.passing_score_per_lesson || 50) : false;
+  record.test_marked_by = scoreValue !== "" ? (activeUser?.name || "Admin Principal") : "";
+  record.test_marked_at = scoreValue !== "" ? now : "";
+  record.notes = notes;
+  record.updated_at = now.slice(0, 10);
+  const studentIndex = (state.foundationStudents || []).findIndex((student) => student.id === studentId);
+  if (studentIndex >= 0) {
+    const attendance = { ...(state.foundationStudents[studentIndex].class_attendance || defaultFoundationAttendance()) };
+    attendance[`class_${lessonNumber}`] = attended;
+    state.foundationStudents[studentIndex] = applyFoundationCalculations({ ...state.foundationStudents[studentIndex], class_attendance: attendance, updated_at: now.slice(0, 10) }, true);
+  }
+  foundationAudit("lesson_progress_updated", "foundationLessonProgress", record.id, oldValue, JSON.stringify({ attended, score: record.test_score }), `${FS("lesson")} ${lessonNumber} - ${fullName((state.foundationStudents || []).find((s) => s.id === studentId) || {})}`);
+}
+
+function saveFoundationExam(studentId) {
+  const input = document.querySelector(`[data-foundation-exam-score="${studentId}"]`);
+  const score = Number(input?.value || 0);
+  const passed = score >= Number(state.foundationSchoolSettings?.final_exam_passing_score || 50);
+  let exam = (state.foundationFinalExams || []).find((item) => item.student_id === studentId);
+  if (!exam) {
+    exam = { id: `ffe-${studentId}-${Date.now()}`, student_id: studentId, created_at: new Date().toISOString().slice(0, 10) };
+    state.foundationFinalExams.push(exam);
+  }
+  const now = new Date().toISOString();
+  exam.score = score;
+  exam.passed = passed;
+  exam.marked_by_user_id = activeUser?.id || "u-1";
+  exam.marked_by_name = activeUser?.name || "Admin Principal";
+  exam.marked_at = now;
+  exam.updated_at = now.slice(0, 10);
+  const index = (state.foundationStudents || []).findIndex((student) => student.id === studentId);
+  if (index >= 0) {
+    state.foundationStudents[index] = applyFoundationCalculations({ ...state.foundationStudents[index], final_exam_score: score, nota_exame: score, final_exam_passed: passed, aprovado: passed, estado: passed ? "Aprovado" : "Reprovado", updated_at: now.slice(0, 10) }, false);
+  }
+  foundationAudit("final_exam_updated", "foundationFinalExam", exam.id, "", JSON.stringify({ score, passed }), fullName((state.foundationStudents || []).find((s) => s.id === studentId) || {}));
+}
+
+function renderFoundation() {
+  ensureFoundationData();
+  const pending = foundationPending();
+  const students = foundationStudentsForGroup();
+  setPageContent(`
+    ${moduleNavShell("foundationSchool", { title: L("foundationSchool"), subtitle: L("foundationSubtitle"), modalType: "foundationStudent", icon: "bi-mortarboard" }, foundationTabNav())}
+    ${summaryFilterChips("foundation")}
+    <div id="foundation-active-panel">${renderFoundationActiveTab(students, pending)}</div>
+  `);
+}
+
+window.setFoundationTab = function setFoundationTab(tab) {
+  foundationPageState.tab = tab || "overview";
+  renderFoundation();
+};
 
 let financeSupabaseSyncToken = 0;
 
@@ -12550,7 +13343,7 @@ document.addEventListener("click", (event) => {
       domainReportFilters[domainId] = { ...framework.DEFAULT_FILTERS };
       if (domainId === reportsPageState.domain && activeRoute === "reports") renderReports();
       else if (activeRoute === "staffHr") renderStaffHr();
-      else if (activeRoute === "foundationSchool") renderFoundation();
+      else if (activeRoute === "foundation") renderFoundation();
       else if (activeRoute === "firstTimers") renderFirstTimers();
       else if (activeRoute === "followUp") renderFollowUp();
       else if (activeRoute === "finance") renderFinance();
@@ -12670,6 +13463,51 @@ document.addEventListener("click", (event) => {
     financePageState.selectedContributor = financeContributorBtn.dataset.financeSelectContributor || "";
     financePageState.tab = financeContributorBtn.dataset.financeTabJump || "reports";
     if (activeRoute === "finance") renderFinance();
+    return;
+  }
+  const foundationTabBtn = event.target.closest("[data-foundation-tab]");
+  if (foundationTabBtn) {
+    foundationPageState.tab = foundationTabBtn.dataset.foundationTab || "overview";
+    if (activeRoute === "foundation") renderFoundation();
+    return;
+  }
+  const foundationSaveRowBtn = event.target.closest("[data-foundation-save-row]");
+  if (foundationSaveRowBtn) {
+    saveFoundationLessonRow(foundationSaveRowBtn.dataset.foundationSaveRow);
+    saveState("Updated Foundation School lesson progress");
+    if (activeRoute === "foundation") renderFoundation();
+    return;
+  }
+  if (event.target.closest("[data-foundation-save-all]")) {
+    document.querySelectorAll("[data-foundation-save-row]").forEach((button) => saveFoundationLessonRow(button.dataset.foundationSaveRow));
+    saveState("Updated Foundation School lesson progress in bulk");
+    if (activeRoute === "foundation") renderFoundation();
+    return;
+  }
+  const foundationExamBtn = event.target.closest("[data-foundation-save-exam]");
+  if (foundationExamBtn) {
+    saveFoundationExam(foundationExamBtn.dataset.foundationSaveExam);
+    saveState("Updated Foundation School final exam");
+    if (activeRoute === "foundation") renderFoundation();
+    return;
+  }
+  const foundationSoulBtn = event.target.closest("[data-foundation-confirm-soul]");
+  if (foundationSoulBtn) {
+    const record = (state.foundationSoulWinning || []).find((item) => item.id === foundationSoulBtn.dataset.foundationConfirmSoul);
+    if (record) {
+      record.status = "Confirmado";
+      record.confirmed_by_teacher_id = record.confirmed_by_teacher_id || foundationPageState.lesson.teacherId || "ftch-coordinator";
+      record.confirmed_by_teacher_name = record.confirmed_by_teacher_name || foundationTeacherById(record.confirmed_by_teacher_id).full_name || activeUser?.name || "Admin Principal";
+      record.confirmed_at = new Date().toISOString();
+      record.updated_at = new Date().toISOString().slice(0, 10);
+      const studentIndex = (state.foundationStudents || []).findIndex((student) => student.id === record.student_id);
+      if (studentIndex >= 0) {
+        state.foundationStudents[studentIndex] = applyFoundationCalculations({ ...state.foundationStudents[studentIndex], pratica_evangelismo: true, soul_winning_completed: true, numero_de_almas_ganhas: Number(record.souls_won_count || 0), updated_at: record.updated_at }, true);
+      }
+      foundationAudit("soul_winning_confirmed", "foundationSoulWinning", record.id, "", record.status, record.confirmed_by_teacher_name);
+      saveState("Confirmed Foundation School soul winning");
+      if (activeRoute === "foundation") renderFoundation();
+    }
     return;
   }
   const openButton = event.target.closest("[data-open-form]");
@@ -12880,6 +13718,15 @@ document.addEventListener("change", (event) => {
     if (dashboardPageState.period === "custom") renderDashboard();
     return;
   }
+  if (event.target.matches("[data-foundation-lesson-field]")) {
+    const form = event.target.closest("[data-foundation-lesson-context]");
+    if (form) {
+      const data = Object.fromEntries(new FormData(form).entries());
+      foundationPageState.lesson = { ...foundationPageState.lesson, ...data };
+      if (activeRoute === "foundation") renderFoundation();
+    }
+    return;
+  }
   const groupSelect = event.target.closest?.("[data-cell-group-select]");
   if (groupSelect) {
     updateDependentCellSelect(groupSelect);
@@ -12942,6 +13789,8 @@ function enterDashboard() {
   setRoute(location.hash.replace("#", "") || "dashboard");
   updateBackToTopVisibility();
 }
+
+window.enterDashboard = enterDashboard;
 
 function runOptionalSupabaseLoginSync(email, password) {
   (async () => {

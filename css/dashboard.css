@@ -1896,6 +1896,48 @@ table,
   background: rgba(32, 215, 255, 0.12);
 }
 
+.foundation-lesson-chip {
+  display: flex;
+  min-height: 4.2rem;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.15rem;
+  padding: 0.65rem 0.7rem;
+  border: 1px solid rgba(32, 215, 255, 0.18);
+  border-radius: 0.85rem;
+  background: rgba(13, 23, 48, 0.08);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.foundation-lesson-chip.done {
+  border-color: rgba(32, 215, 255, 0.38);
+  background: linear-gradient(135deg, rgba(32, 215, 255, 0.2), rgba(255, 210, 89, 0.24));
+}
+
+.foundation-lesson-chip.pending {
+  color: rgba(9, 22, 45, 0.62);
+}
+
+.foundation-lesson-chip small,
+.foundation-lesson-chip em {
+  display: block;
+  color: inherit;
+  font-size: 0.66rem;
+  font-style: normal;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.foundation-lesson-chip em {
+  color: var(--gold);
+}
+
 .foundation-check-graduated input {
   accent-color: var(--gold-soft);
 }
