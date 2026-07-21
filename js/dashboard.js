@@ -2024,7 +2024,20 @@ function formatServiceTimeDetail(record) {
 }
 
 Object.assign(TEXT.pt, {
-  cellLeadership: "Células & Liderança",
+  submitCellReport: "Submeter Relatório de Célula",
+  weeklyCellReportPublic: "Relatório Semanal de Célula",
+  weeklyCellReportPublicHint: "Preencha os dados do encontro da sua célula. O relatório será enviado para revisão do Ministério de Células.",
+  backToLogin: "Voltar ao Login",
+  submitAnotherReport: "Submeter outro relatório",
+  reportSubmittedSuccess: "Relatório submetido com sucesso.",
+  reportSubmittedThanks: "Obrigado. O relatório da sua célula foi enviado para revisão do Ministério de Células.",
+  cannotFindCell: "Não encontro a minha célula",
+  confirmAccurate: "Confirmo que as informações submetidas são verdadeiras.",
+  submitReport: "Submeter Relatório",
+  publicReportNumber: "Número do relatório",
+  reportNeedsReview: "Precisa Revisão",
+  sendToFinance: "Enviar para Finanças",
+  requestCorrection: "Pedir Correção",  cellLeadership: "Células & Liderança",
   cellOverview: "Vis�o Geral",
   cellCells: "Células",
   cellLeaders: "Líderes",
@@ -2128,7 +2141,20 @@ Object.assign(TEXT.pt, {
 });
 
 Object.assign(TEXT.pt, {
-  alecFull: "ALEC - Academia de Liderança da Embaixada de Cristo",
+  submitCellReport: "Submeter Relatório de Célula",
+  weeklyCellReportPublic: "Relatório Semanal de Célula",
+  weeklyCellReportPublicHint: "Preencha os dados do encontro da sua célula. O relatório será enviado para revisão do Ministério de Células.",
+  backToLogin: "Voltar ao Login",
+  submitAnotherReport: "Submeter outro relatório",
+  reportSubmittedSuccess: "Relatório submetido com sucesso.",
+  reportSubmittedThanks: "Obrigado. O relatório da sua célula foi enviado para revisão do Ministério de Células.",
+  cannotFindCell: "Não encontro a minha célula",
+  confirmAccurate: "Confirmo que as informações submetidas são verdadeiras.",
+  submitReport: "Submeter Relatório",
+  publicReportNumber: "Número do relatório",
+  reportNeedsReview: "Precisa Revisão",
+  sendToFinance: "Enviar para Finanças",
+  requestCorrection: "Pedir Correção",  alecFull: "ALEC - Academia de Liderança da Embaixada de Cristo",
   alecRegistration: "Cadastro ALEC",
   alecScores: "Pauta ALEC",
   churchReports: "Relatórios de Igreja",
@@ -2212,7 +2238,20 @@ Object.assign(TEXT.pt, {
 });
 
 Object.assign(TEXT.pt, {
-  fevo: "F.E.V.O",
+  submitCellReport: "Submeter Relatório de Célula",
+  weeklyCellReportPublic: "Relatório Semanal de Célula",
+  weeklyCellReportPublicHint: "Preencha os dados do encontro da sua célula. O relatório será enviado para revisão do Ministério de Células.",
+  backToLogin: "Voltar ao Login",
+  submitAnotherReport: "Submeter outro relatório",
+  reportSubmittedSuccess: "Relatório submetido com sucesso.",
+  reportSubmittedThanks: "Obrigado. O relatório da sua célula foi enviado para revisão do Ministério de Células.",
+  cannotFindCell: "Não encontro a minha célula",
+  confirmAccurate: "Confirmo que as informações submetidas são verdadeiras.",
+  submitReport: "Submeter Relatório",
+  publicReportNumber: "Número do relatório",
+  reportNeedsReview: "Precisa Revisão",
+  sendToFinance: "Enviar para Finanças",
+  requestCorrection: "Pedir Correção",  fevo: "F.E.V.O",
   fevoFull: "Acompanhamento, Evangeliza��o, Visita��o e Ora��o",
   fevoSubtitle: "Equipas semanais rotativas para acompanhamento, evangeliza��o, visita��o e ora��o, coordenadas por Sister Cassandra.",
   weeklyConfiguration: "Configura��o Semanal",
@@ -2370,7 +2409,20 @@ Object.assign(TEXT.pt, {
 });
 
 Object.assign(TEXT.pt, {
-  venueInventory: "Gest�o de Espa�os & Invent�rio",
+  submitCellReport: "Submeter Relatório de Célula",
+  weeklyCellReportPublic: "Relatório Semanal de Célula",
+  weeklyCellReportPublicHint: "Preencha os dados do encontro da sua célula. O relatório será enviado para revisão do Ministério de Células.",
+  backToLogin: "Voltar ao Login",
+  submitAnotherReport: "Submeter outro relatório",
+  reportSubmittedSuccess: "Relatório submetido com sucesso.",
+  reportSubmittedThanks: "Obrigado. O relatório da sua célula foi enviado para revisão do Ministério de Células.",
+  cannotFindCell: "Não encontro a minha célula",
+  confirmAccurate: "Confirmo que as informações submetidas são verdadeiras.",
+  submitReport: "Submeter Relatório",
+  publicReportNumber: "Número do relatório",
+  reportNeedsReview: "Precisa Revisão",
+  sendToFinance: "Enviar para Finanças",
+  requestCorrection: "Pedir Correção",  venueInventory: "Gest�o de Espa�os & Invent�rio",
   venueInventoryShort: "Espaços & Inventário",
   venueInventorySubtitle: "Invent�rio, equipamentos do staff, manuten��o, movimenta��es, espa�os e checklists de culto sob responsabilidade de Marcelo Panguene.",
   generalInventory: "Inventário Geral",
@@ -4250,7 +4302,21 @@ Object.assign(TEXT.en, {
   mediaCameraFour: "Camera Operator 4",
   mediaCameraPolicy: "Mondays use 2 camera operators. Other services should be scheduled with 4 camera operators.",
   mondayCameraDisabled: "Not used on Monday",
-  print: "Print"
+  print: "Print",
+  submitCellReport: "Submit Cell Report",
+  weeklyCellReportPublic: "Weekly Cell Report",
+  weeklyCellReportPublicHint: "Fill in your cell meeting details. The report will be sent to Cell Ministry for review.",
+  backToLogin: "Back to Login",
+  submitAnotherReport: "Submit another report",
+  reportSubmittedSuccess: "Report submitted successfully.",
+  reportSubmittedThanks: "Thank you. Your cell report was sent to Cell Ministry for review.",
+  cannotFindCell: "I cannot find my cell",
+  confirmAccurate: "I confirm that the submitted information is accurate.",
+  submitReport: "Submit Report",
+  publicReportNumber: "Report number",
+  reportNeedsReview: "Needs Review",
+  sendToFinance: "Send to Finance",
+  requestCorrection: "Request Correction"
 });
 
 function cleanDisplayText(value) {
@@ -4477,6 +4543,7 @@ function normalizeState(saved) {
   if (!Array.isArray(merged.cellLeadership.actionPlans)) {
     merged.cellLeadership.actionPlans = structuredClone(seedData.cellLeadership.actionPlans || []);
   }
+  merged.cellReportSubmissions = Array.isArray(merged.cellReportSubmissions) ? merged.cellReportSubmissions : [];
   ["cellGroups", "cellRegistry"].forEach((key) => {
     const seedItems = seedData[key] || [];
     const savedItems = merged[key] || [];
@@ -4579,6 +4646,521 @@ function cellGroupName(idOrName) {
 
 function cellName(idOrName) {
   return (state.cellRegistry || []).find((cell) => cell.id === idOrName || cell.cell_name === idOrName)?.cell_name || idOrName || "";
+}
+
+function cellReportPublicText(key) {
+  const labels = {
+    pt: {
+      cell: "Célula",
+      cellIdentity: "Identificação da Célula",
+      meeting: "Encontro",
+      participation: "Participação",
+      spiritual: "Actividade Espiritual",
+      offering: "Oferta",
+      status: "Estado",
+      confirm: "Confirmar",
+      reportWeek: "Semana do relatório",
+      meetingDate: "Data do encontro",
+      church: "Igreja",
+      cellGroup: "Grupo de Célula",
+      cellName: "Nome da Célula",
+      manualCellName: "Nome da célula",
+      leaderName: "Nome do Líder",
+      leaderPhone: "Telefone / WhatsApp do Líder",
+      meetingType: "Tipo de encontro",
+      meetingLocation: "Local do encontro",
+      startTime: "Hora de início",
+      endTime: "Hora de fim",
+      topic: "Tema/assunto da reunião",
+      lessonShared: "Palavra/estudo partilhado",
+      meetingNotes: "Observações do encontro",
+      attendance: "Assistência - Membros presentes",
+      firstTimers: "Primeira Vez / Visitantes",
+      newConverts: "Novos Convertidos",
+      contacted: "Pessoas contactadas",
+      absent: "Pessoas ausentes importantes",
+      childrenYouth: "Crianças/Jovens",
+      soulsWon: "Almas ganhas",
+      peoplePrayed: "Pessoas que receberam oração",
+      testimonies: "Testemunhos",
+      referredFollowUp: "Pessoas encaminhadas para Acompanhamento",
+      interestedFoundation: "Interessadas na Escola de Fundação",
+      pastoralVisit: "Precisam de visita pastoral",
+      prayerRequests: "Pedidos de oração",
+      offeringGiven: "Houve oferta?",
+      offeringAmount: "Valor da oferta",
+      paymentMethod: "Método de entrega",
+      paymentReference: "Referência da transacção",
+      proof: "Comprovativo opcional",
+      financeNotes: "Observações financeiras",
+      cellHealth: "Estado geral da célula",
+      challenges: "Desafios encontrados",
+      needs: "Necessidades da célula",
+      leaderComments: "Comentários do líder",
+      required: "Preencha os campos obrigatórios antes de submeter.",
+      duplicate: "Já existe um relatório submetido para esta célula nesta semana. Pode submeter, mas será marcado para revisão.",
+      next: "Próximo",
+      previous: "Anterior"
+    },
+    en: {
+      cell: "Cell",
+      cellIdentity: "Cell Identification",
+      meeting: "Meeting",
+      participation: "Participation",
+      spiritual: "Spiritual Activity",
+      offering: "Offering",
+      status: "Status",
+      confirm: "Confirm",
+      reportWeek: "Report week",
+      meetingDate: "Meeting date",
+      church: "Church",
+      cellGroup: "Cell Group",
+      cellName: "Cell Name",
+      manualCellName: "Cell name",
+      leaderName: "Leader Name",
+      leaderPhone: "Leader Phone / WhatsApp",
+      meetingType: "Meeting type",
+      meetingLocation: "Meeting location",
+      startTime: "Start time",
+      endTime: "End time",
+      topic: "Meeting topic",
+      lessonShared: "Word/study shared",
+      meetingNotes: "Meeting notes",
+      attendance: "Attendance - Members present",
+      firstTimers: "First Timers / Visitors",
+      newConverts: "New Converts",
+      contacted: "People contacted",
+      absent: "Important absent members",
+      childrenYouth: "Children/Youth",
+      soulsWon: "Souls won",
+      peoplePrayed: "People prayed for",
+      testimonies: "Testimonies",
+      referredFollowUp: "People referred to Follow-Up",
+      interestedFoundation: "Interested in Foundation School",
+      pastoralVisit: "Need pastoral visit",
+      prayerRequests: "Prayer requests",
+      offeringGiven: "Was there an offering?",
+      offeringAmount: "Offering amount",
+      paymentMethod: "Delivery method",
+      paymentReference: "Transaction reference",
+      proof: "Optional proof",
+      financeNotes: "Finance notes",
+      cellHealth: "General cell status",
+      challenges: "Challenges",
+      needs: "Cell needs",
+      leaderComments: "Leader comments",
+      required: "Fill in all required fields before submitting.",
+      duplicate: "A report already exists for this cell and week. You can submit, but it will be marked for review.",
+      next: "Next",
+      previous: "Previous"
+    }
+  };
+  return labels[lang]?.[key] || labels.en[key] || key;
+}
+
+function publicCellReportSelectOptions(items, valueKey, labelKey, selected = "", placeholder = "") {
+  return `<option value="">${placeholder}</option>${items.map((item) => `<option value="${escapeAttr(item[valueKey])}" ${String(item[valueKey]) === String(selected) ? "selected" : ""}>${escapeAttr(item[labelKey])}</option>`).join("")}`;
+}
+
+function publicCellReportSelectedCell() {
+  const groupId = byId("publicCellGroup")?.value || "";
+  const cellId = byId("publicCell")?.value || "";
+  return (state.cellRegistry || []).find((cell) => cell.id === cellId && (!groupId || cell.group_id === groupId)) || null;
+}
+
+function renderPublicCellReportForm(successRecord = null) {
+  const root = byId("publicCellReportView");
+  if (!root) return;
+  const churches = state.churches || [];
+  const groups = state.cellGroups || [];
+  const registry = state.cellRegistry || [];
+  const today = new Date().toISOString().slice(0, 10);
+  if (successRecord) {
+    root.innerHTML = `
+      <section class="public-report-card public-report-success">
+        <img src="https://embaixada-de-cristo.obiuba.com/assets/web/logo-ce.png" alt="Christ Embassy Mozambique" class="public-report-logo">
+        <span class="eyebrow">${L("weeklyCellReportPublic")}</span>
+        <h1>${L("reportSubmittedSuccess")}</h1>
+        <p>${L("reportSubmittedThanks")}</p>
+        <div class="public-confirm-grid">
+          <div><span>${L("publicReportNumber")}</span><strong>${escapeAttr(successRecord.id)}</strong></div>
+          <div><span>${cellReportPublicText("reportWeek")}</span><strong>${escapeAttr(successRecord.report_week)}</strong></div>
+          <div><span>${cellReportPublicText("cellName")}</span><strong>${escapeAttr(successRecord.cell_name)}</strong></div>
+          <div><span>${L("date")}</span><strong>${new Date(successRecord.created_at).toLocaleString()}</strong></div>
+        </div>
+        <div class="d-grid gap-2 d-sm-flex mt-4">
+          <button type="button" class="btn btn-ce-gold btn-touch" data-submit-another-cell-report>${L("submitAnotherReport")}</button>
+          <button type="button" class="btn btn-outline-cyan btn-touch" data-back-login>${L("backToLogin")}</button>
+        </div>
+      </section>`;
+    return;
+  }
+  root.innerHTML = `
+    <section class="public-report-card">
+      <div class="public-report-head">
+        <img src="https://embaixada-de-cristo.obiuba.com/assets/web/logo-ce.png" alt="Christ Embassy Mozambique" class="public-report-logo">
+        <div>
+          <span class="eyebrow">Christ Embassy Mozambique</span>
+          <h1>${L("weeklyCellReportPublic")}</h1>
+          <p>${L("weeklyCellReportPublicHint")}</p>
+        </div>
+      </div>
+      <form id="publicCellReportForm" class="public-report-form" novalidate>
+        <input type="text" name="website" class="public-honeypot" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <div class="public-stepper" aria-label="${L("weeklyCellReportPublic")}">
+          ${["cellIdentity", "meeting", "participation", "offering", "status", "confirm"].map((key, index) => `<button type="button" class="${index === 0 ? "active" : ""}" data-public-step-jump="${index}"><span>${index + 1}</span>${cellReportPublicText(key)}</button>`).join("")}
+        </div>
+        <div class="public-form-alert d-none" data-public-form-alert></div>
+        <section class="public-form-step active" data-public-step="0">
+          <h2>${cellReportPublicText("cellIdentity")}</h2>
+          <div class="row g-3">
+            <div class="col-md-6"><label class="form-label">${cellReportPublicText("reportWeek")} *</label><input name="report_week" class="form-control" value="${today}" required></div>
+            <div class="col-md-6"><label class="form-label">${cellReportPublicText("meetingDate")} *</label><input name="meeting_date" type="date" class="form-control" value="${today}" required></div>
+            <div class="col-md-6"><label class="form-label">${cellReportPublicText("church")} *</label><select id="publicCellChurch" name="church_id" class="form-select" required>${publicCellReportSelectOptions(churches, "id", "public_name", "", cellReportPublicText("church"))}</select></div>
+            <div class="col-md-6"><label class="form-label">${cellReportPublicText("cellGroup")} *</label><select id="publicCellGroup" name="cell_group_id" class="form-select" required>${publicCellReportSelectOptions(groups, "id", "group_name", "", cellReportPublicText("cellGroup"))}</select></div>
+            <div class="col-md-6"><label class="form-label">${cellReportPublicText("cellName")} *</label><select id="publicCell" name="cell_id" class="form-select" required><option value="">${cellReportPublicText("cellName")}</option></select></div>
+            <div class="col-md-6 d-flex align-items-end"><label class="form-check"><input id="publicMissingCell" name="missing_cell" type="checkbox" class="form-check-input"> <span class="form-check-label">${L("cannotFindCell")}</span></label></div>
+            <div class="col-md-6 d-none" data-manual-cell-wrap><label class="form-label">${cellReportPublicText("manualCellName")} *</label><input name="manual_cell_name" class="form-control"></div>
+            <div class="col-md-6"><label class="form-label">${cellReportPublicText("leaderName")} *</label><input id="publicLeaderName" name="leader_name" class="form-control" required></div>
+            <div class="col-md-6"><label class="form-label">${cellReportPublicText("leaderPhone")} *</label><input id="publicLeaderPhone" name="leader_phone" class="form-control" required></div>
+          </div>
+        </section>
+        <section class="public-form-step" data-public-step="1">
+          <h2>${cellReportPublicText("meeting")}</h2>
+          <div class="row g-3">
+            <div class="col-md-6"><label class="form-label">${cellReportPublicText("meetingType")} *</label><select name="meeting_type" class="form-select" required>${["Presencial", "Online", "Híbrido", "Outro"].map((item) => `<option>${item}</option>`).join("")}</select></div>
+            <div class="col-md-6"><label class="form-label">${cellReportPublicText("meetingLocation")}</label><input name="meeting_location" class="form-control"></div>
+            <div class="col-md-6"><label class="form-label">${cellReportPublicText("startTime")}</label><input name="start_time" type="time" class="form-control"></div>
+            <div class="col-md-6"><label class="form-label">${cellReportPublicText("endTime")}</label><input name="end_time" type="time" class="form-control"></div>
+            <div class="col-md-6"><label class="form-label">${cellReportPublicText("topic")}</label><input name="topic" class="form-control"></div>
+            <div class="col-12"><label class="form-label">${cellReportPublicText("lessonShared")}</label><textarea name="lesson_shared" class="form-control" rows="3"></textarea></div>
+            <div class="col-12"><label class="form-label">${cellReportPublicText("meetingNotes")}</label><textarea name="meeting_notes" class="form-control" rows="3"></textarea></div>
+          </div>
+        </section>
+        <section class="public-form-step" data-public-step="2">
+          <h2>${cellReportPublicText("participation")}</h2>
+          <div class="row g-3">
+            ${[
+              ["attendance_count", "attendance", true],
+              ["first_timers_count", "firstTimers"],
+              ["new_converts_count", "newConverts"],
+              ["contacted_people_count", "contacted"],
+              ["absent_members_count", "absent"],
+              ["children_youth_count", "childrenYouth"],
+              ["souls_won_count", "soulsWon"],
+              ["people_prayed_for_count", "peoplePrayed"],
+              ["referred_to_follow_up_count", "referredFollowUp"],
+              ["interested_in_foundation_school_count", "interestedFoundation"],
+              ["needs_pastoral_visit_count", "pastoralVisit"]
+            ].map(([name, key, required]) => `<div class="col-md-4"><label class="form-label">${cellReportPublicText(key)}${required ? " *" : ""}</label><input name="${name}" type="number" min="0" class="form-control" value="0" ${required ? "required" : ""}></div>`).join("")}
+            <div class="col-md-6"><label class="form-label">${cellReportPublicText("testimonies")}</label><textarea name="testimonies" class="form-control" rows="3"></textarea></div>
+            <div class="col-md-6"><label class="form-label">${cellReportPublicText("prayerRequests")}</label><textarea name="prayer_requests" class="form-control" rows="3"></textarea></div>
+          </div>
+        </section>
+        <section class="public-form-step" data-public-step="3">
+          <h2>${cellReportPublicText("offering")}</h2>
+          <div class="row g-3">
+            <div class="col-md-4"><label class="form-label">${cellReportPublicText("offeringGiven")}</label><select name="offering_given" class="form-select" data-offering-given><option value="false">${L("no")}</option><option value="true">${L("yes")}</option></select></div>
+            <div class="col-md-4"><label class="form-label">${cellReportPublicText("offeringAmount")}</label><input name="offering_amount" type="number" min="0" class="form-control" value="0"></div>
+            <div class="col-md-4"><label class="form-label">Moeda</label><input name="currency" class="form-control" value="MZN"></div>
+            <div class="col-md-6"><label class="form-label">${cellReportPublicText("paymentMethod")}</label><select name="payment_method" class="form-select">${["Dinheiro", "M-Pesa", "E-Mola", "Banco", "Outro"].map((item) => `<option>${item}</option>`).join("")}</select></div>
+            <div class="col-md-6"><label class="form-label">${cellReportPublicText("paymentReference")}</label><input name="payment_reference" class="form-control"></div>
+            <div class="col-md-6"><label class="form-label">${cellReportPublicText("proof")}</label><input name="proof_file" type="file" class="form-control" accept="image/*,.pdf"></div>
+            <div class="col-md-6"><label class="form-label">${cellReportPublicText("financeNotes")}</label><textarea name="finance_notes" class="form-control" rows="3"></textarea></div>
+          </div>
+        </section>
+        <section class="public-form-step" data-public-step="4">
+          <h2>${cellReportPublicText("status")}</h2>
+          <div class="row g-3">
+            <div class="col-md-6"><label class="form-label">${cellReportPublicText("cellHealth")} *</label><select name="cell_health_status" class="form-select" required>${["Saudável", "Estável", "Precisa de Acompanhamento", "Precisa de Visita Pastoral", "Pronta para Multiplicar", "Sem encontro esta semana"].map((item) => `<option>${item}</option>`).join("")}</select></div>
+            <div class="col-md-6"><label class="form-label">${cellReportPublicText("challenges")}</label><textarea name="challenges" class="form-control" rows="3"></textarea></div>
+            <div class="col-md-6"><label class="form-label">${cellReportPublicText("needs")}</label><textarea name="needs" class="form-control" rows="3"></textarea></div>
+            <div class="col-md-6"><label class="form-label">${cellReportPublicText("leaderComments")}</label><textarea name="leader_comments" class="form-control" rows="3"></textarea></div>
+          </div>
+        </section>
+        <section class="public-form-step" data-public-step="5">
+          <h2>${cellReportPublicText("confirm")}</h2>
+          <label class="form-check public-confirm-check"><input name="confirmation" type="checkbox" class="form-check-input" required> <span class="form-check-label">${L("confirmAccurate")}</span></label>
+        </section>
+        <div class="public-form-actions">
+          <button type="button" class="btn btn-outline-cyan btn-touch" data-public-prev disabled>${cellReportPublicText("previous")}</button>
+          <button type="button" class="btn btn-outline-light btn-touch" data-back-login>${L("backToLogin")}</button>
+          <button type="button" class="btn btn-ce-gold btn-touch" data-public-next>${cellReportPublicText("next")}</button>
+          <button type="submit" class="btn btn-ce-gold btn-touch d-none" data-public-submit>${L("submitReport")}</button>
+        </div>
+      </form>
+    </section>`;
+  updatePublicCellReportDependentSelects();
+}
+
+function setPublicCellReportStep(index) {
+  const steps = [...document.querySelectorAll("[data-public-step]")];
+  const stepButtons = [...document.querySelectorAll("[data-public-step-jump]")];
+  const safeIndex = Math.max(0, Math.min(index, steps.length - 1));
+  steps.forEach((step, i) => step.classList.toggle("active", i === safeIndex));
+  stepButtons.forEach((button, i) => button.classList.toggle("active", i === safeIndex));
+  const prev = document.querySelector("[data-public-prev]");
+  const next = document.querySelector("[data-public-next]");
+  const submit = document.querySelector("[data-public-submit]");
+  if (prev) prev.disabled = safeIndex === 0;
+  next?.classList.toggle("d-none", safeIndex === steps.length - 1);
+  submit?.classList.toggle("d-none", safeIndex !== steps.length - 1);
+}
+
+function updatePublicCellReportDependentSelects() {
+  const groupId = byId("publicCellGroup")?.value || "";
+  const cellSelect = byId("publicCell");
+  if (!cellSelect) return;
+  const cells = (state.cellRegistry || []).filter((cell) => !groupId || cell.group_id === groupId);
+  const previous = cellSelect.value;
+  cellSelect.innerHTML = `<option value="">${cellReportPublicText("cellName")}</option>${cells.map((cell) => `<option value="${escapeAttr(cell.id)}">${escapeAttr(cell.cell_name)}</option>`).join("")}`;
+  if (cells.some((cell) => cell.id === previous)) cellSelect.value = previous;
+  updatePublicCellLeaderFields();
+}
+
+function updatePublicCellLeaderFields() {
+  const cell = publicCellReportSelectedCell();
+  const leader = (state.cellLeadership?.leaders || []).find((item) => item.celula === cell?.cell_name || item.leader_id === cell?.leader_id);
+  const name = cell?.leader_name || leader?.nome_completo || "";
+  const phone = leader?.contacto || cell?.leader_phone || "";
+  if (name && byId("publicLeaderName")) byId("publicLeaderName").value = name;
+  if (phone && byId("publicLeaderPhone")) byId("publicLeaderPhone").value = phone;
+}
+
+function showPublicCellReport(successRecord = null) {
+  byId("loginView")?.classList.add("d-none");
+  byId("appView")?.classList.add("d-none");
+  byId("publicCellReportView")?.classList.remove("d-none");
+  renderPublicCellReportForm(successRecord);
+}
+
+function showLoginView() {
+  byId("publicCellReportView")?.classList.add("d-none");
+  byId("appView")?.classList.add("d-none");
+  byId("loginView")?.classList.remove("d-none");
+  history.replaceState(null, "", "#login");
+}
+
+function collectPublicCellReport(form) {
+  const data = new FormData(form);
+  const now = new Date().toISOString();
+  const church = (state.churches || []).find((item) => item.id === data.get("church_id")) || {};
+  const group = (state.cellGroups || []).find((item) => item.id === data.get("cell_group_id")) || {};
+  const selectedCell = (state.cellRegistry || []).find((item) => item.id === data.get("cell_id")) || {};
+  const manualCell = data.get("missing_cell") === "on";
+  const offeringAmount = Number(data.get("offering_amount") || 0);
+  const offeringGiven = data.get("offering_given") === "true" || offeringAmount > 0;
+  const existing = (state.cellReportSubmissions || []).some((item) => item.report_week === data.get("report_week") && item.cell_group_id === data.get("cell_group_id") && item.cell_id === data.get("cell_id"));
+  const missingReference = offeringAmount > 0 && !String(data.get("payment_reference") || "").trim();
+  const health = String(data.get("cell_health_status") || "");
+  const needsReview = manualCell || existing || missingReference || health.includes("Acompanhamento") || health.includes("Pastoral");
+  const id = `cell-sub-${Date.now()}`;
+  return {
+    id,
+    report_week: data.get("report_week"),
+    meeting_date: data.get("meeting_date"),
+    church_id: church.id || data.get("church_id"),
+    church_name: church.public_name || church.church_name || "",
+    cell_group_id: group.id || data.get("cell_group_id"),
+    cell_group_name: group.group_name || "",
+    cell_id: manualCell ? "" : selectedCell.id || data.get("cell_id"),
+    cell_name: manualCell ? String(data.get("manual_cell_name") || "").trim() : selectedCell.cell_name || "",
+    leader_name: String(data.get("leader_name") || "").trim(),
+    leader_phone: String(data.get("leader_phone") || "").trim(),
+    meeting_type: data.get("meeting_type"),
+    meeting_location: data.get("meeting_location"),
+    start_time: data.get("start_time"),
+    end_time: data.get("end_time"),
+    topic: data.get("topic"),
+    lesson_shared: data.get("lesson_shared"),
+    meeting_notes: data.get("meeting_notes"),
+    attendance_count: Number(data.get("attendance_count") || 0),
+    first_timers_count: Number(data.get("first_timers_count") || 0),
+    new_converts_count: Number(data.get("new_converts_count") || 0),
+    contacted_people_count: Number(data.get("contacted_people_count") || 0),
+    absent_members_count: Number(data.get("absent_members_count") || 0),
+    children_youth_count: Number(data.get("children_youth_count") || 0),
+    souls_won_count: Number(data.get("souls_won_count") || 0),
+    people_prayed_for_count: Number(data.get("people_prayed_for_count") || 0),
+    testimonies: data.get("testimonies"),
+    referred_to_follow_up_count: Number(data.get("referred_to_follow_up_count") || 0),
+    interested_in_foundation_school_count: Number(data.get("interested_in_foundation_school_count") || 0),
+    needs_pastoral_visit_count: Number(data.get("needs_pastoral_visit_count") || 0),
+    prayer_requests: data.get("prayer_requests"),
+    offering_given: offeringGiven,
+    offering_amount: offeringAmount,
+    currency: data.get("currency") || "MZN",
+    payment_method: data.get("payment_method"),
+    payment_reference: data.get("payment_reference"),
+    proof_file_url: data.get("proof_file")?.name || "",
+    finance_review_status: offeringAmount > 0 ? "Pending Finance Review" : "Not Applicable",
+    cell_health_status: health,
+    challenges: data.get("challenges"),
+    needs: data.get("needs"),
+    leader_comments: data.get("leader_comments"),
+    submitted_by_type: "Cell Leader Public Form",
+    submitted_from: "login_public_button",
+    submitter_ip: "frontend-prototype",
+    submitter_device: navigator.userAgent,
+    status: needsReview ? "Pending Review" : "Submitted",
+    estado: needsReview ? "Submetido" : "Submetido",
+    needs_review: needsReview,
+    possible_duplicate: existing,
+    reviewed_by: "",
+    reviewed_at: "",
+    validated_by: "",
+    validated_at: "",
+    created_at: now,
+    updated_at: now
+  };
+}
+
+function cellReportSubmissionToInternalReport(submission) {
+  return {
+    id: submission.id,
+    church_id: submission.church_id,
+    created_by: submission.leader_name,
+    updated_by: submission.leader_name,
+    created_at: submission.created_at,
+    updated_at: submission.updated_at,
+    status: submission.status,
+    semana: submission.report_week,
+    data_inicio: submission.report_week,
+    data_fim: submission.meeting_date,
+    meeting_date: submission.meeting_date,
+    cell_group_id: submission.cell_group_id,
+    group_name: submission.cell_group_name,
+    celula: submission.cell_name,
+    cell_id: submission.cell_id,
+    nome_do_lider: submission.leader_name,
+    leader_phone: submission.leader_phone,
+    att: submission.attendance_count,
+    ft: submission.first_timers_count,
+    nc: submission.new_converts_count,
+    oferta: submission.offering_amount,
+    rs: submission.souls_won_count,
+    observacoes: submission.leader_comments || submission.meeting_notes || "",
+    cell_health_status: submission.cell_health_status,
+    needs_review: submission.needs_review,
+    possible_duplicate: submission.possible_duplicate,
+    finance_review_status: submission.finance_review_status,
+    submetido_por: submission.submitted_by_type,
+    avaliado_por: "",
+    validado_por: "",
+    estado: submission.status === "Validated" ? "Validado" : submission.status === "Approved" ? "Aprovado" : "Submetido"
+  };
+}
+
+function submitPublicCellReport(form) {
+  const alert = form.querySelector("[data-public-form-alert]");
+  const data = new FormData(form);
+  const lastSubmitAt = Number(localStorage.getItem("ce-public-cell-report-last-submit") || 0);
+  if (Date.now() - lastSubmitAt < 15000) {
+    if (alert) {
+      alert.textContent = lang === "pt" ? "Aguarde alguns segundos antes de submeter novamente." : "Please wait a few seconds before submitting again.";
+      alert.classList.remove("d-none");
+    }
+    return;
+  }
+  const missingCell = data.get("missing_cell") === "on";
+  const requiredOk = data.get("report_week") && data.get("meeting_date") && data.get("church_id") && data.get("cell_group_id") && (data.get("cell_id") || data.get("manual_cell_name")) && data.get("leader_name") && data.get("leader_phone") && data.get("meeting_type") && data.get("attendance_count") !== "" && data.get("cell_health_status") && data.get("confirmation") === "on";
+  const offeringAmount = Number(data.get("offering_amount") || 0);
+  const offeringGiven = data.get("offering_given") === "true";
+  if (data.get("website")) return;
+  if (!requiredOk || Number(data.get("attendance_count")) < 0 || offeringAmount < 0 || (offeringGiven && offeringAmount <= 0) || (missingCell && !String(data.get("manual_cell_name") || "").trim())) {
+    if (alert) {
+      alert.textContent = cellReportPublicText("required");
+      alert.classList.remove("d-none");
+    }
+    return;
+  }
+  const submission = collectPublicCellReport(form);
+  localStorage.setItem("ce-public-cell-report-last-submit", String(Date.now()));
+  state.cellReportSubmissions = Array.isArray(state.cellReportSubmissions) ? state.cellReportSubmissions : [];
+  state.cellReportSubmissions.unshift(submission);
+  state.cellLeadership.cellReports = Array.isArray(state.cellLeadership.cellReports) ? state.cellLeadership.cellReports : [];
+  state.cellLeadership.cellReports.unshift(cellReportSubmissionToInternalReport(submission));
+  createNotification({
+    title: lang === "pt" ? "Novo relatório de célula submetido" : "New cell report submitted",
+    message: lang === "pt" ? `O líder ${submission.leader_name} submeteu relatório da célula ${submission.cell_name} para a semana ${submission.report_week}.` : `${submission.leader_name} submitted the ${submission.cell_name} cell report for week ${submission.report_week}.`,
+    module: "cell_ministry",
+    entity_type: "cellReportSubmission",
+    entity_id: submission.id,
+    recipient_role: "Cell Ministry Head",
+    recipient_church_id: submission.church_id,
+    action_url: "cellReceivedReports",
+    action_label: L("view")
+  });
+  if (submission.offering_amount > 0) {
+    createNotification({
+      title: lang === "pt" ? "Relatório de célula com oferta" : "Cell report with offering",
+      message: lang === "pt" ? "Relatório de célula com oferta aguardando revisão financeira." : "A cell report with offering is waiting for finance review.",
+      module: "finance",
+      entity_type: "cellReportSubmission",
+      entity_id: submission.id,
+      recipient_role: "Finance Head",
+      recipient_church_id: submission.church_id,
+      action_url: "cellReceivedReports",
+      action_label: L("view")
+    });
+  }
+  saveState("Public cell report submitted");
+  showPublicCellReport(submission);
+}
+
+function updateCellReportReviewAction(action, reportId) {
+  const reports = state.cellLeadership?.cellReports || [];
+  const report = reports.find((item) => item.id === reportId);
+  if (!report) return;
+  const now = new Date().toISOString();
+  const statusMap = {
+    approve: ["Approved", "Aprovado"],
+    correction: ["Needs Correction", "Precisa Correção"],
+    validate: ["Validated", "Validado"],
+    reject: ["Rejected", "Rejeitado"],
+    finance: [report.status || "Pending Review", report.estado || "Submetido"],
+    followup: ["Under Review", "Em Avaliação"],
+    pastoral: ["Under Review", "Em Avaliação"]
+  };
+  const [status, estado] = statusMap[action] || [report.status, report.estado];
+  report.status = status;
+  report.estado = estado;
+  report.updated_at = now;
+  report.updated_by = activeUser?.name || "Admin Principal";
+  if (action === "approve") {
+    report.avaliado_por = activeUser?.name || "Pastora Flavia";
+    report.reviewed_by = report.avaliado_por;
+    report.reviewed_at = now;
+  }
+  if (action === "validate") {
+    report.validado_por = activeUser?.name || "Sister Eduarda";
+    report.validated_by = report.validado_por;
+    report.validated_at = now;
+  }
+  if (action === "finance") {
+    report.finance_review_status = "Pending Finance Review";
+  }
+  if (action === "followup") {
+    report.needs_review = true;
+    report.cell_health_status = report.cell_health_status || "Precisa de Acompanhamento";
+  }
+  if (action === "pastoral") {
+    report.needs_review = true;
+    report.cell_health_status = "Precisa de Visita Pastoral";
+  }
+  const submission = (state.cellReportSubmissions || []).find((item) => item.id === reportId);
+  if (submission) {
+    submission.status = report.status;
+    submission.updated_at = now;
+    submission.reviewed_by = report.reviewed_by || submission.reviewed_by;
+    submission.reviewed_at = report.reviewed_at || submission.reviewed_at;
+    submission.validated_by = report.validated_by || submission.validated_by;
+    submission.validated_at = report.validated_at || submission.validated_at;
+    submission.finance_review_status = report.finance_review_status || submission.finance_review_status;
+    submission.needs_review = report.needs_review;
+  }
+  saveState(`Cell report ${action}`);
+  setRoute(activeRoute);
 }
 
 function getCellGroupsForChurch(churchId = "") {
@@ -10978,6 +11560,58 @@ function cellModalType(activeTab) {
   return map[activeTab] || null;
 }
 
+function cellReportReviewActions(report) {
+  const actions = [
+    ["view", report.id, L("view")],
+    ["approve", report.id, L("approve")],
+    ["correction", report.id, L("requestCorrection")],
+    ["validate", report.id, L("validated")],
+    ["reject", report.id, L("reject")]
+  ];
+  if (Number(report.oferta || report.offering_amount || 0) > 0) actions.push(["finance", report.id, L("sendToFinance")]);
+  if (report.needs_review || String(report.cell_health_status || "").includes("Acompanhamento")) actions.push(["followup", report.id, L("followUp")]);
+  if (String(report.cell_health_status || "").includes("Pastoral")) actions.push(["pastoral", report.id, lang === "pt" ? "Visita Pastoral" : "Pastoral Visit"]);
+  return `<div class="action-buttons">${actions.map(([action, id, label]) => `<button type="button" class="action-btn" data-cell-report-action="${action}" data-cell-report-id="${id}">${label}</button>`).join("")}</div>`;
+}
+
+function cellReportRows(reports) {
+  return reports.map((item) => [
+    item.semana || item.report_week || "-",
+    item.meeting_date || item.data_fim || item.created_at?.slice?.(0, 10) || "-",
+    cellGroupName(item.cell_group_id || item.group_name) || item.group_name || "-",
+    item.celula || item.cell_name || "-",
+    item.nome_do_lider || item.leader_name || "-",
+    item.att ?? item.attendance_count ?? 0,
+    item.ft ?? item.first_timers_count ?? 0,
+    item.nc ?? item.new_converts_count ?? 0,
+    money(item.oferta || item.offering_amount || 0),
+    item.cell_health_status || "-",
+    badge(item.estado || item.status),
+    item.needs_review ? badge(L("yes")) : badge(L("no")),
+    item.created_at ? new Date(item.created_at).toLocaleString() : "-",
+    cellReportReviewActions(item)
+  ]);
+}
+
+function cellReportHeaders() {
+  return [
+    L("week"),
+    L("date"),
+    L("cellGroups"),
+    L("cell"),
+    L("leaderName"),
+    "ATT",
+    "FT",
+    "NC",
+    L("offering"),
+    lang === "pt" ? "Estado da Célula" : "Cell Status",
+    L("status"),
+    L("reportNeedsReview"),
+    lang === "pt" ? "Submetido em" : "Submitted at",
+    L("actions")
+  ];
+}
+
 function renderCellMinistry(activeTab = "alecOverview") {
   const leadership = state.cellLeadership || seedData.cellLeadership;
   const registry = scopedNested(state.cellRegistry || []);
@@ -11079,7 +11713,7 @@ function renderCellMinistry(activeTab = "alecOverview") {
         ${metric("bi-person-heart", L("totalFirstTime"), totalFt, L("firstTimers"))}
         ${metric("bi-stars", L("totalNewConverts"), totalNc, L("newConverts"))}
       </div>
-      <div class="row g-4"><div class="col-12">${modulePanel("cellReport", L("weeklyCellReport"), "cellReport", [L("week"), L("cell"), L("leaderName"), "ATT", "FT", "NC", "OF.", "RS", L("status"), L("actions")], cellReports.map((item) => [item.semana, item.celula, item.nome_do_lider, item.att, item.ft, item.nc, money(item.oferta), item.rs, badge(item.estado), backendActions("cellReport", item.id)]), true)}</div></div>`;
+      <div class="row g-4"><div class="col-12">${modulePanel("cellReport", L("weeklyCellReport"), "cellReport", cellReportHeaders(), cellReportRows(cellReports), true)}</div></div>`;
   } else if (activeTab === "consolidation") {
     bodyHtml = `
       <div class="row g-3 mb-4">
@@ -11099,7 +11733,7 @@ function renderCellMinistry(activeTab = "alecOverview") {
       alecRegistration: () => modulePanel("alecRegistration", L("alecRegistration"), "alecRegistration", [L("fullName"), L("contact"), L("church"), L("cell"), L("cellLeaderName"), L("didFoundation"), L("isLeader"), L("status"), L("actions")], alecRegistrations.map((item) => [item.nome_completo, item.contacto, churchName(item.igreja), item.celula, item.nome_do_lider_de_celula, yesNo(item.fez_escola_de_fundacao), yesNo(item.e_lider), badge(item.estado), backendActions("alecRegistration", item.id)]), true),
       alecScores: () => modulePanel("alecScore", L("alecScores"), "alecScore", [L("fullName"), L("church"), L("cell"), L("phase1Average"), L("phase2Average"), L("finalAverage"), L("finished"), L("status"), L("progress"), L("actions")], alecScores.map((item) => [item.nome_completo, churchName(item.igreja), item.celula, alecPhaseAverage(item, 1), alecPhaseAverage(item, 2), alecFinalAverage(item), yesNo(item.terminou), badge(item.estado), alecProgress(item), backendActions("alecScore", item.id)]), true),
       churchReports: () => modulePanel("churchReport", L("churchReports"), "churchReport", [L("week"), L("worshipService"), L("cell"), L("leaderName"), "ATT", "FT", "NC", "RS", L("status"), L("actions")], churchReports.map((item) => [item.semana, item.culto, item.celula, item.nome_do_lider, item.att, item.ft, item.nc, item.rs, badge(item.estado), backendActions("churchReport", item.id)]), true),
-      receivedReports: () => modulePanel("cellReport", L("receivedReports"), "cellReport", [L("week"), L("cell"), L("leaderName"), "ATT", "FT", "NC", "OF.", "RS", L("status"), L("actions")], cellReports.map((item) => [item.semana, item.celula, item.nome_do_lider, item.att, item.ft, item.nc, money(item.oferta), item.rs, badge(item.estado), backendActions("cellReport", item.id)]), true),
+      receivedReports: () => modulePanel("cellReport", L("receivedReports"), "cellReport", cellReportHeaders(), cellReportRows(cellReports), true),
       cellEvaluation: () => modulePanel("cellEvaluation", L("cellEvaluation"), "cellEvaluation", [L("reports"), L("evaluator"), L("evaluationDate"), L("classification"), L("needsFollowup"), L("recommendedAction"), L("status"), L("actions")], evaluations.map((item) => [item.report_id, item.avaliador, item.data_da_avaliacao, badge(item.classificacao), yesNo(item.precisa_followup), item.acao_recomendada, badge(item.estado), backendActions("cellEvaluation", item.id)]), true),
       cellLeaders: () => modulePanel("cellLeader", L("cellLeaders"), "cellLeader", [L("fullName"), L("contact"), L("church"), L("cell"), L("actualLeader"), L("cameFromAlec"), L("alecFinished"), L("supervisor"), L("status"), L("actions")], leaders.map((item) => [item.nome_completo, item.contacto, churchName(item.igreja), item.celula, yesNo(item.e_lider_actual), yesNo(item.veio_do_alec), yesNo(item.alec_concluido), item.supervisor, badge(item.estado), backendActions("cellLeader", item.id)]), true),
       finalValidation: () => modulePanel("finalValidation", L("finalValidation"), "finalValidation", [L("reports"), L("validatedBy"), L("date"), L("decision"), L("finalStatus"), L("actions")], validations.map((item) => [item.report_id, item.validado_por, item.data_validacao, badge(item.decisao), badge(item.estado_final), backendActions("finalValidation", item.id)]), true)
@@ -15302,7 +15936,8 @@ function enterDashboard() {
   renderShell();
   syncTopbarHeight();
   applyBackToTopLabel();
-  setRoute(location.hash.replace("#", "") || "dashboard");
+  const requestedRoute = location.hash.replace("#", "");
+  setRoute(requestedRoute === "submit-cell-report" || requestedRoute === "login" ? "dashboard" : requestedRoute || "dashboard");
   updateBackToTopVisibility();
 }
 
@@ -15335,11 +15970,71 @@ byId("loginForm")?.addEventListener("submit", (event) => {
   runOptionalSupabaseLoginSync(email, password);
 });
 
+document.addEventListener("click", (event) => {
+  if (event.target.closest("[data-public-cell-report]")) {
+    history.replaceState(null, "", "#submit-cell-report");
+    showPublicCellReport();
+    return;
+  }
+  if (event.target.closest("[data-back-login]")) {
+    showLoginView();
+    return;
+  }
+  if (event.target.closest("[data-submit-another-cell-report]")) {
+    history.replaceState(null, "", "#submit-cell-report");
+    showPublicCellReport();
+    return;
+  }
+  const stepJump = event.target.closest("[data-public-step-jump]");
+  if (stepJump) {
+    setPublicCellReportStep(Number(stepJump.dataset.publicStepJump || 0));
+    return;
+  }
+  if (event.target.closest("[data-public-prev]")) {
+    const current = [...document.querySelectorAll("[data-public-step]")].findIndex((step) => step.classList.contains("active"));
+    setPublicCellReportStep(current - 1);
+    return;
+  }
+  if (event.target.closest("[data-public-next]")) {
+    const current = [...document.querySelectorAll("[data-public-step]")].findIndex((step) => step.classList.contains("active"));
+    setPublicCellReportStep(current + 1);
+  }
+  const cellReportAction = event.target.closest("[data-cell-report-action]");
+  if (cellReportAction) {
+    updateCellReportReviewAction(cellReportAction.dataset.cellReportAction, cellReportAction.dataset.cellReportId);
+  }
+});
+
+byId("publicCellReportView")?.addEventListener("change", (event) => {
+  if (event.target.matches("#publicCellGroup")) updatePublicCellReportDependentSelects();
+  if (event.target.matches("#publicCell")) updatePublicCellLeaderFields();
+  if (event.target.matches("#publicMissingCell")) {
+    const checked = event.target.checked;
+    document.querySelector("[data-manual-cell-wrap]")?.classList.toggle("d-none", !checked);
+    byId("publicCell")?.toggleAttribute("disabled", checked);
+  }
+});
+
+byId("publicCellReportView")?.addEventListener("submit", (event) => {
+  if (!event.target.matches("#publicCellReportForm")) return;
+  event.preventDefault();
+  submitPublicCellReport(event.target);
+});
+
 window.addEventListener("resize", syncTopbarHeight);
 
 window.addEventListener("hashchange", () => {
+  const route = location.hash.replace("#", "");
+  if (route === "submit-cell-report") {
+    showPublicCellReport();
+    return;
+  }
+  if (route === "login") {
+    showLoginView();
+    return;
+  }
   if (byId("appView")?.classList.contains("d-none")) return;
-  setRoute(location.hash.replace("#", "") || "dashboard");
+  setRoute(route || "dashboard");
 });
 
 byId("menuToggle")?.addEventListener("click", () => {
@@ -15370,5 +16065,6 @@ applyLanguage(lang);
 applySidebarCollapse();
 applyBackToTopLabel();
 updateBackToTopVisibility();
+if (location.hash.replace("#", "") === "submit-cell-report") showPublicCellReport();
 
 const ServiceTimesEditor = renderChurchServiceTimesEditor;

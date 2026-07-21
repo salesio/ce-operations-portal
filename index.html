@@ -39,9 +39,17 @@
         </div>
         <button class="btn btn-ce-gold btn-lg" type="submit" data-login-enter onclick="if (window.enterDashboard) { window.enterDashboard(); return false; }" data-i18n="login.submit">Entrar no Dashboard</button>
       </form>
+      <div class="login-public-action">
+        <button class="btn btn-outline-cyan btn-lg w-100" type="button" data-public-cell-report>
+          <i class="bi bi-clipboard-data me-2" aria-hidden="true"></i>
+          <span data-i18n="submitCellReport">Submeter Relatório de Célula</span>
+        </button>
+      </div>
       <p class="small text-white-50 mt-3 mb-0" data-i18n="login.note">Prototipo frontend-first. Autenticacao real e base de dados entram na proxima fase.</p>
     </section>
   </main>
+
+  <main id="publicCellReportView" class="public-report-shell d-none" aria-live="polite"></main>
 
   <div id="appView" class="ops-shell d-none">
     <aside class="ops-sidebar">
