@@ -5112,6 +5112,10 @@ function updateCellReportReviewAction(action, reportId) {
   const reports = state.cellLeadership?.cellReports || [];
   const report = reports.find((item) => item.id === reportId);
   if (!report) return;
+  if (action === "view") {
+    openCellReportDetails(reportId);
+    return;
+  }
   const now = new Date().toISOString();
   const statusMap = {
     approve: ["Approved", "Aprovado"],
@@ -5139,6 +5143,19 @@ function updateCellReportReviewAction(action, reportId) {
   }
   if (action === "finance") {
     report.finance_review_status = "Pending Finance Review";
+    report.finance_sent_at = now;
+    report.finance_sent_by = activeUser?.name || "Admin Principal";
+    createNotification({
+      title: lang === "pt" ? "Oferta de célula enviada para Finanças" : "Cell offering sent to Finance",
+      message: lang === "pt" ? `A oferta reportada da célula ${report.celula || report.cell_name || "-"} foi encaminhada para revisão financeira.` : `The reported offering for ${report.celula || report.cell_name || "-"} was sent for finance review.`,
+      module: "finance",
+      entity_type: "cellReport",
+      entity_id: report.id,
+      recipient_role: "Finance Head",
+      recipient_church_id: report.church_id,
+      action_url: "finance",
+      action_label: L("view")
+    });
   }
   if (action === "followup") {
     report.needs_review = true;
@@ -5161,6 +5178,61 @@ function updateCellReportReviewAction(action, reportId) {
   }
   saveState(`Cell report ${action}`);
   setRoute(activeRoute);
+}
+
+function openCellReportDetails(reportId) {
+  const report = (state.cellLeadership?.cellReports || []).find((item) => item.id === reportId) || {};
+  const submission = (state.cellReportSubmissions || []).find((item) => item.id === reportId) || {};
+  const source = { ...submission, ...report };
+  const details = [
+    [L("week"), source.report_week || source.semana],
+    [L("date"), source.meeting_date || source.data_fim],
+    [L("church"), churchName(source.church_id)],
+    [L("cellGroups"), source.cell_group_name || cellGroupName(source.cell_group_id) || source.group_name],
+    [L("cell"), source.cell_name || source.celula],
+    [L("leaderName"), source.leader_name || source.nome_do_lider],
+    [L("phone"), source.leader_phone],
+    [lang === "pt" ? "Tipo de encontro" : "Meeting Type", source.meeting_type],
+    [lang === "pt" ? "Local do encontro" : "Meeting Location", source.meeting_location],
+    [lang === "pt" ? "Horário" : "Time", [source.start_time, source.end_time].filter(Boolean).join(" - ")],
+    [lang === "pt" ? "Tema" : "Topic", source.topic],
+    [lang === "pt" ? "Palavra/estudo" : "Lesson Shared", source.lesson_shared],
+    ["ATT", source.attendance_count ?? source.att],
+    ["FT", source.first_timers_count ?? source.ft],
+    ["NC", source.new_converts_count ?? source.nc],
+    [lang === "pt" ? "Almas ganhas" : "Souls Won", source.souls_won_count ?? source.rs],
+    [lang === "pt" ? "Oferta reportada" : "Reported Offering", money(source.offering_amount || source.oferta || 0)],
+    [lang === "pt" ? "Revisão financeira" : "Finance Review", source.finance_review_status || "Not Applicable"],
+    [lang === "pt" ? "Estado da célula" : "Cell Status", source.cell_health_status],
+    [L("status"), source.estado || source.status],
+    [L("reportNeedsReview"), yesNo(source.needs_review)],
+    [lang === "pt" ? "Submetido por" : "Submitted By", source.submitted_by_type || source.submetido_por],
+    [lang === "pt" ? "Submetido em" : "Submitted At", source.created_at ? new Date(source.created_at).toLocaleString() : ""],
+    [L("notes"), source.meeting_notes || source.observacoes],
+    [lang === "pt" ? "Testemunhos" : "Testimonies", source.testimonies],
+    [lang === "pt" ? "Pedidos de oração" : "Prayer Requests", source.prayer_requests],
+    [lang === "pt" ? "Desafios" : "Challenges", source.challenges],
+    [lang === "pt" ? "Necessidades" : "Needs", source.needs],
+    [lang === "pt" ? "Comentários do líder" : "Leader Comments", source.leader_comments]
+  ];
+  byId("modalEyebrow").textContent = L("view");
+  byId("modalTitle").textContent = lang === "pt" ? "Detalhes do Relatório de Célula" : "Cell Report Details";
+  byId("modalFields").innerHTML = `
+    <div class="col-12">
+      <div class="detail-grid">
+        ${details.filter(([, value]) => value !== undefined && value !== null && value !== "").map(([label, value]) => `<div><span>${escapeAttr(label)}</span><strong>${escapeAttr(value)}</strong></div>`).join("")}
+      </div>
+    </div>
+    <div class="col-12">
+      <div class="alert alert-info mb-0">
+        ${lang === "pt"
+          ? "Nota: ofertas reportadas por células ficam pendentes de revisão financeira. O botão de finanças apenas encaminha a oferta para conferência; não confirma receita automaticamente."
+          : "Note: reported cell offerings remain pending finance review. The finance button only sends the offering for checking; it does not verify income automatically."}
+      </div>
+    </div>
+  `;
+  modalType = null;
+  bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
 }
 
 function getCellGroupsForChurch(churchId = "") {
@@ -11568,7 +11640,7 @@ function cellReportReviewActions(report) {
     ["validate", report.id, L("validated")],
     ["reject", report.id, L("reject")]
   ];
-  if (Number(report.oferta || report.offering_amount || 0) > 0) actions.push(["finance", report.id, L("sendToFinance")]);
+  if (Number(report.oferta || report.offering_amount || 0) > 0) actions.push(["finance", report.id, lang === "pt" ? "Enviar oferta para Finanças" : "Send offering to Finance"]);
   if (report.needs_review || String(report.cell_health_status || "").includes("Acompanhamento")) actions.push(["followup", report.id, L("followUp")]);
   if (String(report.cell_health_status || "").includes("Pastoral")) actions.push(["pastoral", report.id, lang === "pt" ? "Visita Pastoral" : "Pastoral Visit"]);
   return `<div class="action-buttons">${actions.map(([action, id, label]) => `<button type="button" class="action-btn" data-cell-report-action="${action}" data-cell-report-id="${id}">${label}</button>`).join("")}</div>`;
