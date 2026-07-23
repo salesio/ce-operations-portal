@@ -63,6 +63,11 @@ export function createSupabaseProvider(): DataProvider {
     "cell_report_submissions",
     "media_technicians",
     "media_schedules",
+    "inventory_items",
+    "inventory_movements",
+    "inventory_maintenance",
+    "venue_spaces",
+    "service_checklists",
   ];
 
   const map = Object.fromEntries(
@@ -99,6 +104,11 @@ export function createSupabaseProvider(): DataProvider {
     cellReportSubmissions: map.cell_report_submissions as EntityRepository<never>,
     mediaTechnicians: map.media_technicians as EntityRepository<never>,
     mediaSchedules: map.media_schedules as EntityRepository<never>,
+    inventoryItems: map.inventory_items as EntityRepository<never>,
+    inventoryMovements: map.inventory_movements as EntityRepository<never>,
+    inventoryMaintenance: map.inventory_maintenance as EntityRepository<never>,
+    venueSpaces: map.venue_spaces as EntityRepository<never>,
+    serviceChecklists: map.service_checklists as EntityRepository<never>,
     collection(name) {
       return map[name];
     },

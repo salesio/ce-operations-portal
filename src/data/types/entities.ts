@@ -1277,6 +1277,286 @@ export interface MediaSchedule {
   createdAt: IsoDateTime;
 }
 
+// ---------------------------------------------------------------------------
+// Venue & Inventory Management
+// ---------------------------------------------------------------------------
+
+/** Physical inventory item — English model + PT UI aliases for dual-map. */
+export interface InventoryItem {
+  id: EntityId;
+  item_code?: string | null;
+  name?: string | null;
+  description?: string | null;
+  /** PT UI */
+  nome_do_item?: string | null;
+  categoria?: string | null;
+
+  category?: string | null;
+  subcategory?: string | null;
+  brand?: string | null;
+  model?: string | null;
+  serial_number?: string | null;
+
+  quantity?: number | null;
+  quantidade?: number | null;
+  unit?: string | null;
+
+  church_id?: EntityId | null;
+  church_name?: string | null;
+  igreja?: string | null;
+
+  department_id?: EntityId | null;
+  department_name?: string | null;
+  departamento_responsavel?: string | null;
+
+  space_id?: EntityId | null;
+  space_name?: string | null;
+  localizacao?: string | null;
+
+  assigned_to_user_id?: EntityId | null;
+  assigned_to_name?: string | null;
+  assigned_to_role?: string | null;
+
+  acquisition_source?: string | null;
+  acquisition_date?: IsoDate | null;
+  data_de_entrada?: IsoDate | null;
+  acquisition_cost?: number | null;
+  valor_unitario?: number | null;
+  valor_total?: number | null;
+  currency?: string | null;
+
+  requisition_id?: EntityId | null;
+  request_number?: string | null;
+  finance_disbursement_id?: EntityId | null;
+  draft_from_requisition?: boolean | null;
+
+  supplier_name?: string | null;
+  warranty_start?: IsoDate | null;
+  warranty_end?: IsoDate | null;
+
+  /** English: Available | Assigned | Under Maintenance | Damaged | Pending Registration | … */
+  status?: string | null;
+  /** PT UI estado (Bom, Mau, Em Reparação, Pendente de Registo, …) */
+  estado?: string | null;
+  condition?: string | null;
+
+  location_notes?: string | null;
+  usage_notes?: string | null;
+  observacoes?: string | null;
+
+  photo_url?: string | null;
+  attachment_urls?: string[] | null;
+
+  created_by?: string | null;
+  created_by_name?: string | null;
+  updated_by?: string | null;
+  created_at?: IsoDate | IsoDateTime;
+  updated_at?: IsoDate | IsoDateTime;
+}
+
+export interface InventoryMovement {
+  id: EntityId;
+  item_id?: EntityId | null;
+  item_code?: string | null;
+  item_name?: string | null;
+  /** PT UI */
+  item?: string | null;
+
+  movement_type?: string | null;
+
+  from_church_id?: EntityId | null;
+  from_church_name?: string | null;
+  from_space_id?: EntityId | null;
+  from_space_name?: string | null;
+  from_user_id?: EntityId | null;
+  from_user_name?: string | null;
+  origem?: string | null;
+
+  to_church_id?: EntityId | null;
+  to_church_name?: string | null;
+  to_space_id?: EntityId | null;
+  to_space_name?: string | null;
+  to_user_id?: EntityId | null;
+  to_user_name?: string | null;
+  destino?: string | null;
+
+  quantity?: number | null;
+  quantidade?: number | null;
+
+  reason?: string | null;
+  notes?: string | null;
+  observacoes?: string | null;
+
+  movement_date?: IsoDate | null;
+  data_de_saida?: IsoDate | null;
+  data_prevista_de_retorno?: IsoDate | null;
+  data_real_de_retorno?: IsoDate | null;
+
+  performed_by_user_id?: EntityId | null;
+  performed_by_name?: string | null;
+  pessoa_responsavel?: string | null;
+  departamento_solicitante?: string | null;
+
+  approved_by_user_id?: EntityId | null;
+  approved_by_name?: string | null;
+  aprovado_por?: string | null;
+  approved_at?: IsoDateTime | null;
+
+  status?: string | null;
+  estado?: string | null;
+  estado_ao_sair?: string | null;
+  estado_ao_voltar?: string | null;
+
+  church_id?: EntityId | null;
+  created_by?: string | null;
+  updated_by?: string | null;
+  created_at?: IsoDate | IsoDateTime;
+  updated_at?: IsoDate | IsoDateTime;
+}
+
+export interface InventoryMaintenanceRecord {
+  id: EntityId;
+  item_id?: EntityId | null;
+  item_code?: string | null;
+  item_name?: string | null;
+  /** PT UI */
+  item?: string | null;
+  categoria?: string | null;
+  quantidade?: number | null;
+
+  issue_title?: string | null;
+  issue_description?: string | null;
+  problema_reportado?: string | null;
+
+  reported_by_user_id?: EntityId | null;
+  reported_by_name?: string | null;
+  reported_at?: IsoDateTime | null;
+
+  assigned_to_user_id?: EntityId | null;
+  assigned_to_name?: string | null;
+  tecnico_ou_responsavel?: string | null;
+
+  repair_vendor?: string | null;
+  estimated_cost?: number | null;
+  actual_cost?: number | null;
+  custo_da_reparacao?: number | null;
+  currency?: string | null;
+
+  status?: string | null;
+  estado?: string | null;
+  priority?: string | null;
+
+  started_at?: IsoDate | IsoDateTime | null;
+  completed_at?: IsoDate | IsoDateTime | null;
+  data_de_envio?: IsoDate | null;
+  data_de_retorno?: IsoDate | null;
+  estado_antes?: string | null;
+  estado_depois?: string | null;
+
+  resolution_notes?: string | null;
+  observacoes?: string | null;
+  attachment_urls?: string[] | null;
+
+  church_id?: EntityId | null;
+  created_by?: string | null;
+  updated_by?: string | null;
+  created_at?: IsoDate | IsoDateTime;
+  updated_at?: IsoDate | IsoDateTime;
+}
+
+export interface VenueSpace {
+  id: EntityId;
+  church_id?: EntityId | null;
+  church_name?: string | null;
+  igreja?: string | null;
+
+  name?: string | null;
+  nome_do_espaco?: string | null;
+  description?: string | null;
+  localizacao?: string | null;
+
+  space_type?: string | null;
+  tipo?: string | null;
+  capacity?: number | null;
+  capacidade?: number | null;
+
+  responsible_user_id?: EntityId | null;
+  responsible_name?: string | null;
+  responsavel?: string | null;
+
+  status?: string | null;
+  estado?: string | null;
+  notes?: string | null;
+  observacoes?: string | null;
+  equipamentos_fixos?: string | null;
+
+  created_by?: string | null;
+  updated_by?: string | null;
+  created_at?: IsoDate | IsoDateTime;
+  updated_at?: IsoDate | IsoDateTime;
+}
+
+export interface ServiceChecklist {
+  id: EntityId;
+  church_id?: EntityId | null;
+  church_name?: string | null;
+  igreja?: string | null;
+
+  service_name?: string | null;
+  service_date?: IsoDate | null;
+  data_do_culto?: IsoDate | null;
+  service_time?: string | null;
+  checklist_type?: string | null;
+  tipo_de_culto_ou_evento?: string | null;
+  espaco?: string | null;
+  space_id?: EntityId | null;
+  space_name?: string | null;
+
+  responsible_user_id?: EntityId | null;
+  responsible_name?: string | null;
+  responsavel?: string | null;
+
+  sound_ready?: boolean | null;
+  microphones_ready?: boolean | null;
+  cameras_ready?: boolean | null;
+  streaming_ready?: boolean | null;
+  projector_ready?: boolean | null;
+  lights_ready?: boolean | null;
+  ac_ready?: boolean | null;
+  chairs_ready?: boolean | null;
+  pulpit_ready?: boolean | null;
+  cleaning_ready?: boolean | null;
+  instruments_ready?: boolean | null;
+  power_backup_ready?: boolean | null;
+
+  /** PT UI checkboxes */
+  som_verificado?: boolean | null;
+  microfones_prontos?: boolean | null;
+  cameras_prontas?: boolean | null;
+  projector_verificado?: boolean | null;
+  luzes_verificadas?: boolean | null;
+  ac_verificado?: boolean | null;
+  cadeiras_organizadas?: boolean | null;
+  pulpito_pronto?: boolean | null;
+  limpeza_feita?: boolean | null;
+
+  issues_found?: string | null;
+  actions_taken?: string | null;
+  observacoes?: string | null;
+
+  status?: string | null;
+  estado?: string | null;
+
+  completed_by_user_id?: EntityId | null;
+  completed_by_name?: string | null;
+  completed_at?: IsoDateTime | null;
+
+  created_by?: string | null;
+  updated_by?: string | null;
+  created_at?: IsoDate | IsoDateTime;
+  updated_at?: IsoDate | IsoDateTime;
+}
+
 /** Map of collection names used by repositories / adapters. */
 export type EntityCollectionName =
   | "users"
@@ -1301,4 +1581,9 @@ export type EntityCollectionName =
   | "cell_leaders"
   | "cell_report_submissions"
   | "media_technicians"
-  | "media_schedules";
+  | "media_schedules"
+  | "inventory_items"
+  | "inventory_movements"
+  | "inventory_maintenance"
+  | "venue_spaces"
+  | "service_checklists";

@@ -17,13 +17,18 @@ import type {
   FoundationStudent,
   FoundationTeacher,
   FoundationTestSubmission,
+  InventoryItem,
+  InventoryMaintenanceRecord,
+  InventoryMovement,
   MediaSchedule,
   MediaTechnician,
   Member,
   Notification,
   Requisition,
   RequisitionTimelineEvent,
+  ServiceChecklist,
   User,
+  VenueSpace,
 } from "../types/entities";
 import type {
   DataProvider,
@@ -51,6 +56,11 @@ function storageKeyFor(key: EntityCollectionName): string {
   if (key === "finance_disbursements") return `${STORAGE_PREFIX}finance-disbursements`;
   if (key === "requisitions") return `${STORAGE_PREFIX}requisitions`;
   if (key === "requisition_timeline") return `${STORAGE_PREFIX}requisition-timeline`;
+  if (key === "inventory_items") return `${STORAGE_PREFIX}inventory-items`;
+  if (key === "inventory_movements") return `${STORAGE_PREFIX}inventory-movements`;
+  if (key === "inventory_maintenance") return `${STORAGE_PREFIX}inventory-maintenance`;
+  if (key === "venue_spaces") return `${STORAGE_PREFIX}venue-spaces`;
+  if (key === "service_checklists") return `${STORAGE_PREFIX}service-checklists`;
   return STORAGE_PREFIX + key;
 }
 
@@ -155,6 +165,12 @@ export function createLocalStorageProvider(): DataProvider {
   );
   const mediaTechnicians = createPersistedRepository<MediaTechnician>("media_technicians");
   const mediaSchedules = createPersistedRepository<MediaSchedule>("media_schedules");
+  const inventoryItems = createPersistedRepository<InventoryItem>("inventory_items");
+  const inventoryMovements = createPersistedRepository<InventoryMovement>("inventory_movements");
+  const inventoryMaintenance =
+    createPersistedRepository<InventoryMaintenanceRecord>("inventory_maintenance");
+  const venueSpaces = createPersistedRepository<VenueSpace>("venue_spaces");
+  const serviceChecklists = createPersistedRepository<ServiceChecklist>("service_checklists");
 
   const map: Record<EntityCollectionName, EntityRepository<unknown>> = {
     users: users as EntityRepository<unknown>,
@@ -180,6 +196,11 @@ export function createLocalStorageProvider(): DataProvider {
     cell_report_submissions: cellReportSubmissions as EntityRepository<unknown>,
     media_technicians: mediaTechnicians as EntityRepository<unknown>,
     media_schedules: mediaSchedules as EntityRepository<unknown>,
+    inventory_items: inventoryItems as EntityRepository<unknown>,
+    inventory_movements: inventoryMovements as EntityRepository<unknown>,
+    inventory_maintenance: inventoryMaintenance as EntityRepository<unknown>,
+    venue_spaces: venueSpaces as EntityRepository<unknown>,
+    service_checklists: serviceChecklists as EntityRepository<unknown>,
   };
 
   return {
@@ -210,6 +231,11 @@ export function createLocalStorageProvider(): DataProvider {
     cellReportSubmissions,
     mediaTechnicians,
     mediaSchedules,
+    inventoryItems,
+    inventoryMovements,
+    inventoryMaintenance,
+    venueSpaces,
+    serviceChecklists,
     collection(name) {
       return map[name];
     },

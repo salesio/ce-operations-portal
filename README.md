@@ -22,7 +22,7 @@ npm run test:requisitions-data    # smoke: requisitions workflow + finance disbu
 
 The UI still uses **localStorage mock** for most modules. Typed adapters live under `src/data/`.
 
-**Pilots already on the data layer:** Churches, Members, First Timers, Follow-Up, Foundation School, Cell Ministry, Finance, **Requisitions & Approvals**  
+**Pilots already on the data layer:** Churches, Members, First Timers, Follow-Up, Foundation School, Cell Ministry, Finance, Requisitions & Approvals, **Venue & Inventory**  
 (`VITE_DATA_SOURCE=mock|local|api|supabase` — default `mock`).
 
 **Escola de Fundação (functional):** full tabs (overview → reports), 20+ teachers at HQ, delivery modes (in-person / online / home / prison), lesson sessions & attendance, online tests 1–7 (mock Forms; 20×6+10), soul winning (lesson 4), physical final exam + attachment prep, grading 40/60, audit log. No real Google API / scan app / Postgres yet.
@@ -33,7 +33,9 @@ The UI still uses **localStorage mock** for most modules. Typed adapters live un
 
 **Partnerships / Parcerias:** analytics layer on **verified** partnership financeRecords (no duplicate ledger). Loveworld SAT is a partnership arm, not a department. Sidebar: Finanças → Parcerias.
 
-**Requisitions & Approvals:** data-layer dual-write + workflow (Officer reviews → Main Pastor approves → Finance releases). Approval prepares **expense** disbursement only; no auto-verified income. Inventory is placeholder status only.
+**Requisitions & Approvals:** data-layer dual-write + workflow (Officer reviews → Main Pastor approves → Finance releases). Approval prepares **expense** disbursement only; no auto-verified income. Equipment/material may be sent to **Venue Inventory** after release.
+
+**Venue & Inventory (pilot):** inventory items, movements, maintenance, venue spaces, and service checklists via data layer + `CEVenueInventory` bridge. Items can come from approved requisitions (`request_number` linked). Inventory never creates finance income/expense — Finance stays the source of values/releases.
 
 **Public Cell Report Form (leaders, no admin login):**
 - Button on the **login screen** only: *Submeter Relatório de Célula* → `#cell-report-submit`

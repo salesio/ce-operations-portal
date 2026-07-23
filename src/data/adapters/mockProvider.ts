@@ -16,13 +16,18 @@ import type {
   FoundationStudent,
   FoundationTeacher,
   FoundationTestSubmission,
+  InventoryItem,
+  InventoryMaintenanceRecord,
+  InventoryMovement,
   MediaSchedule,
   MediaTechnician,
   Member,
   Notification,
   Requisition,
   RequisitionTimelineEvent,
+  ServiceChecklist,
   User,
+  VenueSpace,
 } from "../types/entities";
 import type { DataProvider, EntityRepository } from "../types/repository";
 import { createMemoryRepository } from "./memoryRepo";
@@ -41,6 +46,11 @@ import { FINANCE_RECORDS_SEED } from "../seeds/financeRecordsSeed";
 import { PUBLIC_GIVING_SUBMISSIONS_SEED } from "../seeds/publicGivingSubmissionsSeed";
 import { FINANCE_DISBURSEMENTS_SEED } from "../seeds/financeDisbursementsSeed";
 import { REQUISITIONS_SEED, REQUISITION_TIMELINE_SEED } from "../seeds/requisitionsSeed";
+import { INVENTORY_ITEMS_SEED } from "../seeds/inventoryItemsSeed";
+import { INVENTORY_MOVEMENTS_SEED } from "../seeds/inventoryMovementsSeed";
+import { INVENTORY_MAINTENANCE_SEED } from "../seeds/inventoryMaintenanceSeed";
+import { VENUE_SPACES_SEED } from "../seeds/venueSpacesSeed";
+import { SERVICE_CHECKLISTS_SEED } from "../seeds/serviceChecklistsSeed";
 
 const sampleUser: User = {
   id: "user-admin-mock",
@@ -105,6 +115,21 @@ export function createMockProvider(): DataProvider {
   );
   const mediaTechnicians = createMemoryRepository<MediaTechnician>([]);
   const mediaSchedules = createMemoryRepository<MediaSchedule>([]);
+  const inventoryItems = createMemoryRepository<InventoryItem>(
+    INVENTORY_ITEMS_SEED.map((r) => ({ ...r })),
+  );
+  const inventoryMovements = createMemoryRepository<InventoryMovement>(
+    INVENTORY_MOVEMENTS_SEED.map((r) => ({ ...r })),
+  );
+  const inventoryMaintenance = createMemoryRepository<InventoryMaintenanceRecord>(
+    INVENTORY_MAINTENANCE_SEED.map((r) => ({ ...r })),
+  );
+  const venueSpaces = createMemoryRepository<VenueSpace>(
+    VENUE_SPACES_SEED.map((r) => ({ ...r })),
+  );
+  const serviceChecklists = createMemoryRepository<ServiceChecklist>(
+    SERVICE_CHECKLISTS_SEED.map((r) => ({ ...r })),
+  );
 
   const map: Record<EntityCollectionName, EntityRepository<unknown>> = {
     users: users as EntityRepository<unknown>,
@@ -130,6 +155,11 @@ export function createMockProvider(): DataProvider {
     cell_report_submissions: cellReportSubmissions as EntityRepository<unknown>,
     media_technicians: mediaTechnicians as EntityRepository<unknown>,
     media_schedules: mediaSchedules as EntityRepository<unknown>,
+    inventory_items: inventoryItems as EntityRepository<unknown>,
+    inventory_movements: inventoryMovements as EntityRepository<unknown>,
+    inventory_maintenance: inventoryMaintenance as EntityRepository<unknown>,
+    venue_spaces: venueSpaces as EntityRepository<unknown>,
+    service_checklists: serviceChecklists as EntityRepository<unknown>,
   };
 
   return {
@@ -159,6 +189,11 @@ export function createMockProvider(): DataProvider {
     cellReportSubmissions,
     mediaTechnicians,
     mediaSchedules,
+    inventoryItems,
+    inventoryMovements,
+    inventoryMaintenance,
+    venueSpaces,
+    serviceChecklists,
     collection(name) {
       return map[name];
     },

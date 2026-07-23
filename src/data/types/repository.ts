@@ -17,13 +17,18 @@ import type {
   FoundationStudent,
   FoundationTeacher,
   FoundationTestSubmission,
+  InventoryItem,
+  InventoryMaintenanceRecord,
+  InventoryMovement,
   MediaSchedule,
   MediaTechnician,
   Member,
   Notification,
   Requisition,
   RequisitionTimelineEvent,
+  ServiceChecklist,
   User,
+  VenueSpace,
 }
 
 /** Result wrapper so adapters can return soft failures without throwing. */
@@ -83,6 +88,11 @@ export interface DataProvider {
   cellReportSubmissions: EntityRepository<CellReportSubmission>;
   mediaTechnicians: EntityRepository<MediaTechnician>;
   mediaSchedules: EntityRepository<MediaSchedule>;
+  inventoryItems: EntityRepository<InventoryItem>;
+  inventoryMovements: EntityRepository<InventoryMovement>;
+  inventoryMaintenance: EntityRepository<InventoryMaintenanceRecord>;
+  venueSpaces: EntityRepository<VenueSpace>;
+  serviceChecklists: EntityRepository<ServiceChecklist>;
 
   /** Escape hatch for progressive module adapters. */
   collection(name: EntityCollectionName): EntityRepository<unknown>;

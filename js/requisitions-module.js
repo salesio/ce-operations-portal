@@ -318,32 +318,58 @@
         state.venueInventory = state.venueInventory || {};
         state.venueInventory.inventory = Array.isArray(state.venueInventory.inventory) ? state.venueInventory.inventory : [];
         const invId = `inv-req-${record.id}`;
-        if (!state.venueInventory.inventory.some((i) => i.id === invId)) {
-          state.venueInventory.inventory.push({
-            id: invId,
-            church_id: record.church_id,
-            created_by: user.name,
-            updated_by: user.name,
-            created_at: today,
-            updated_at: today,
-            status: "Pendente de Registo",
-            nome_do_item: record.title,
-            categoria: record.requisition_type === "Equipamento" ? "Informática" : "Outros",
-            quantidade: 1,
-            estado: "Pendente de Registo",
-            localizacao: "A definir",
-            departamento_responsavel: record.department_name,
-            igreja: record.church_id,
-            data_de_entrada: today,
-            valor_unitario: record.released_amount || record.amount_released || record.approved_amount || record.estimated_amount || 0,
-            valor_total: record.released_amount || record.amount_released || record.approved_amount || record.estimated_amount || 0,
-            serial_number: "",
-            observacoes: record.description || `Rascunho via requisi��o ${record.request_number}`,
-            requisition_id: record.id,
-            draft_from_requisition: true
-          });
+        const amount = record.released_amount || record.amount_released || record.approved_amount || record.estimated_amount || 0;
+        const pendingItem = {
+          id: invId,
+          church_id: record.church_id,
+          church_name: record.church_name || "",
+          created_by: user.name,
+          created_by_name: user.name,
+          updated_by: user.name,
+          created_at: today,
+          updated_at: today,
+          status: "Pending Registration",
+          name: record.title,
+          nome_do_item: record.title,
+          category: record.requisition_type === "Equipamento" ? "IT / Computers" : "Other",
+          categoria: record.requisition_type === "Equipamento" ? "Informática" : "Outros",
+          quantity: 1,
+          quantidade: 1,
+          estado: "Pendente de Registo",
+          condition: "New",
+          localizacao: "A definir",
+          department_name: record.department_name,
+          departamento_responsavel: record.department_name,
+          igreja: record.church_id,
+          data_de_entrada: today,
+          acquisition_date: today,
+          acquisition_source: "Requisition",
+          acquisition_cost: amount,
+          valor_unitario: amount,
+          valor_total: amount,
+          currency: record.currency || "MZN",
+          serial_number: "",
+          observacoes: record.description || `Pendente de registo — requisição ${record.request_number}`,
+          requisition_id: record.id,
+          request_number: record.request_number || "",
+          finance_disbursement_id: record.finance_disbursement_id || "",
+          draft_from_requisition: true
+        };
+        if (!state.venueInventory.inventory.some((i) => i.id === invId || i.requisition_id === record.id)) {
+          state.venueInventory.inventory.push(pendingItem);
         }
+        // Dual-write to venue inventory data layer (soft-fail)
+        try {
+          const vi = window.CEVenueInventory || window.CEDataLayer?.venueInventory;
+          if (vi?.createInventoryItem) void vi.createInventoryItem(pendingItem);
+          else if (vi?.dualWriteRecord) void vi.dualWriteRecord("inventoryItem", "create", pendingItem);
+        } catch (_) {}
         record.inventory_item_id = invId;
+        record.inventory_required = true;
+        record.inventory_status = "Awaiting Inventory";
+        record.status = record.status === "Comprado" || record.status === "Purchased"
+          ? record.status
+          : "Enviada para Inventário";
         record.sent_to_inventory_at = now;
         appendAuditLog(record, { action: "sentToInventory", by: user.name, by_user_id: user.id, at: now });
         break;

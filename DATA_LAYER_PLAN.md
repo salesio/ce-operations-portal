@@ -16,6 +16,7 @@
 | **Cell Ministry / Células & Liderança** | Groups, cells, leaders, reports via `cellMinistryRepository` + bridge |
 | **Finance / Finanças** | Records, public giving submissions, disbursements via `financeRepository` + bridge |
 | **Requisitions & Approvals** | Workflow + timeline via `requisitionsRepository`; approved → financeDisbursement (expense) |
+| **Venue & Inventory** | Items, movements, maintenance, spaces, checklists via `venueInventoryRepository` + bridge |
 
 **Other modules** still use the classic `dashboard.js` localStorage blob only.  
 **Nothing is abandoned:** open http://localhost:5173 and the app still works.
@@ -706,7 +707,7 @@ npm run dev
 3. Main Pastor → Approve / Reject / Return  
 4. On **Approve** → `finance_status = Awaiting Release` + `createFinanceDisbursement` (**expense**, never income)  
 5. Finance Head releases → Partially Released / Released (may create expense `financeRecord` on full release)  
-6. Optional inventory placeholder → Sent to Inventory (full inventory module later)
+6. Optional → Sent to Inventory → **Venue Inventory** registers physical item (`request_number` linked)
 
 ### Code
 
@@ -721,7 +722,7 @@ npm run dev
 
 - Resources release is **expense**, never income  
 - No verified expense without Finance action  
-- Inventory fields prepared; full inventory not migrated  
+- Inventory registration is physical goods only (no auto finance record)  
 - PostgreSQL direct = future  
 - Cache buster: `?v=20260723-requisitions-data-v1`
 
@@ -732,5 +733,70 @@ npm run build
 npm run test:requisitions-data
 npm run test:finance-data   # regression
 # Manual: create → submit → review → send pastor → approve → finance release
+# VITE_DATA_SOURCE=local + F5
+```
+
+---
+
+## Pilot migration: Venue & Inventory
+
+**Status: live (pilot)** — dual-write / hydrate; UI remains in `js/dashboard.js` (`renderVenueInventory`).
+
+### Local keys
+
+| Collection | Key |
+|------------|-----|
+| Inventory items | `ce-data-layer:inventory-items` |
+| Movements | `ce-data-layer:inventory-movements` |
+| Maintenance | `ce-data-layer:inventory-maintenance` |
+| Venue spaces | `ce-data-layer:venue-spaces` |
+| Service checklists | `ce-data-layer:service-checklists` |
+
+### Domain rules
+
+- **Inventory** manages physical goods, spaces, maintenance, staff equipment, and service checklists  
+- Items may originate from **Requisitions** after finance resource release (`acquisition_source = Requisition`, keep `request_number`)  
+- **Finance** remains the source of truth for amounts / disbursements  
+- Inventory **never** creates income or expense records  
+- PostgreSQL direct = future phase  
+
+### Flow
+
+```
+Requisition approved → Finance releases resources
+  → if material/equipment/repair → Sent to Inventory (Pending Registration)
+  → Venue Manager registers item → Available / Assigned
+  → movements, maintenance, disposal
+  → reports show inventory state
+```
+
+### Code
+
+| Piece | Role |
+|-------|------|
+| `src/data/repositories/venueInventoryRepository.ts` | Aggregator: items, movements, maintenance, spaces, checklists |
+| Seeds | `inventoryItemsSeed`, `inventoryMovementsSeed`, `inventoryMaintenanceSeed`, `venueSpacesSeed`, `serviceChecklistsSeed` |
+| `js/venue-inventory-data-bridge.js` | Dual-write + pure-JS fallback (`CEVenueInventory`) |
+| UI | `renderVenueInventory` + dual-write on form save + hydrate on enter |
+
+### Globals
+
+```js
+window.CEVenueInventory = { listInventoryItems, createInventoryItem, … }
+window.CEDataLayer.venueInventory / inventoryItems / inventoryMovements /
+  inventoryMaintenance / venueSpaces / serviceChecklists
+```
+
+Cache buster: `?v=20260723-venue-inventory-data-v1`
+
+### How to test Venue Inventory
+
+```bash
+npm run build
+npm run test:venue-inventory-data
+npm run test:requisitions-data   # regression
+npm run test:finance-data        # regression
+# Manual: Espaços & Inventário → create item → assign → maintenance → checklist
+# Register from requisition on Novas Aquisições
 # VITE_DATA_SOURCE=local + F5
 ```

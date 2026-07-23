@@ -775,7 +775,7 @@ export async function markSentToInventory(
     await appendTimeline(id, {
       event_type: "sent_to_inventory",
       title: "Enviada para Inventário",
-      description: "Placeholder — inventário completo em fase futura",
+      description: "Enviada para inventário — registo pendente no módulo Espaços & Inventário",
       old_status: old || "",
       new_status: "Enviada para Inventário",
       performed_by_name: actor.name || "",

@@ -14600,18 +14600,79 @@ function renderVenueInventory(activeTab = "overview") {
 
   const venue = state.venueInventory || seedData.venueInventory;
   const inventory = scopedVenueDepartment(venue.inventory, "departamento_responsavel");
-  const acquisitions = scopedNested(venue.acquisitions);
+  let acquisitions = scopedNested(venue.acquisitions);
   const staffEquipment = scopedVenueStaff(venue.staffEquipment);
   const maintenance = scopedNested(venue.maintenance);
   const movements = scopedVenueDepartment(venue.movements, "departamento_solicitante");
   const venues = scopedNested(venue.venues);
   const checklists = scopedNested(venue.checklists);
   const reports = scopedNested(venue.reports || []);
-  const goodItems = inventory.filter((item) => item.estado === "Bom");
-  const damagedItems = inventory.filter((item) => ["Mau", "Em Repara��o"].includes(item.estado));
-  const acquisitionValue = acquisitions.reduce((sum, item) => sum + Number(item.valor_total || 0), 0);
-  const pendingMovements = movements.filter((item) => ["Solicitado", "Aprovado", "Em Uso"].includes(item.estado));
-  const pendingChecklists = checklists.filter((item) => item.estado !== "Pronto");
+
+  // Pending registration from inventory + requisitions (when CERequisitions available)
+  const pendingRegItems = inventory.filter(
+    (item) =>
+      /pendente de registo|pending registration|awaiting/i.test(String(item.estado || item.status || "")) ||
+      item.draft_from_requisition
+  );
+  let pendingRequisitions = [];
+  try {
+    if (window.CERequisitionsData?.getRequisitionsPendingInventory) {
+      // sync snapshot from state when async API not needed
+    }
+    pendingRequisitions = (state.requisitions || []).filter(
+      (r) =>
+        r.inventory_required &&
+        (/awaiting|pending|enviada para invent/i.test(String(r.inventory_status || r.status || "")) ||
+          (["Recursos Liberados", "Comprado", "Resources Released", "Purchased"].includes(r.status) &&
+            !r.inventory_item_id))
+    );
+  } catch (_) {}
+
+  // Merge pending requisitions into acquisitions view when not already registered
+  if (pendingRequisitions.length) {
+    const existingReqIds = new Set(
+      (acquisitions || []).map((a) => a.requisition_id).filter(Boolean)
+    );
+    pendingRequisitions.forEach((r) => {
+      if (existingReqIds.has(r.id)) return;
+      acquisitions = [
+        ...acquisitions,
+        {
+          id: `acq-req-${r.id}`,
+          church_id: r.church_id,
+          codigo_do_item: r.request_number || r.id,
+          descricao: r.title,
+          categoria: r.requisition_type || "Outros",
+          quantidade: 1,
+          serial_number: "",
+          estado: "Pendente de Registo",
+          status: "Pending Registration",
+          data_de_compra_ou_entrada: (r.resources_released_at || r.updated_at || "").slice(0, 10),
+          valor_unitario: r.released_amount || r.amount_released || r.approved_amount || r.estimated_amount || 0,
+          valor_total: r.released_amount || r.amount_released || r.approved_amount || r.estimated_amount || 0,
+          fornecedor: r.supplier_name || r.supplier_or_vendor || "",
+          recebido_por: "",
+          comprovativo_ou_factura: r.request_number || "",
+          observacoes: r.description || "",
+          requisition_id: r.id,
+          request_number: r.request_number,
+          draft_from_requisition: true,
+        },
+      ];
+    });
+  }
+
+  const goodItems = inventory.filter((item) => item.estado === "Bom" || item.status === "Available" || item.status === "In Use");
+  const damagedItems = inventory.filter((item) => /Mau|Damaged|danific/i.test(String(item.estado || item.status || "")));
+  const underMaint = inventory.filter((item) => /Repara|Maintenance|manuten/i.test(String(item.estado || item.status || "")));
+  const assignedItems = inventory.filter((item) => item.assigned_to_user_id || item.assigned_to_name || /Atribu|Assigned/i.test(String(item.status || item.estado || "")));
+  const availableItems = inventory.filter((item) => /Available|Bom|Dispon/i.test(String(item.status || item.estado || "")) && !item.assigned_to_user_id);
+  const inventoryValue = inventory.reduce((sum, item) => sum + Number(item.valor_total || item.acquisition_cost || 0), 0);
+  const thisMonth = new Date().toISOString().slice(0, 7);
+  const newAcqThisMonth = acquisitions.filter((a) => String(a.data_de_compra_ou_entrada || "").startsWith(thisMonth));
+  const pendingMovements = movements.filter((item) => ["Solicitado", "Aprovado", "Em Uso", "Pending"].includes(item.estado || item.status));
+  const pendingChecklists = checklists.filter((item) => !/Pronto|Completed|Conclu/i.test(String(item.estado || item.status || "")));
+  const attentionChecklists = checklists.filter((item) => /Parcial|Attention|Aten/i.test(String(item.estado || item.status || "")));
   const addType = canManageVenue() ? "inventoryItem" : null;
   const show = (...tabs) => tabs.some((tab) => allowedVenueTabs().includes(tab)) && (activeTab === "overview" || tabs.includes(activeTab));
 
@@ -14619,14 +14680,17 @@ function renderVenueInventory(activeTab = "overview") {
   const bodyHtml = `
     ${show("overview") ? `<div class="row g-3 mb-4">
       ${sm("bi-box-seam", L("totalItems"), inventory.length, "venue", { route: "venueInventoryGeneral" })}
-      ${sm("bi-check-circle", L("goodEquipment"), goodItems.length, "venue", { route: "venueInventoryGeneral", filterPayload: { estado: "Bom" } })}
+      ${sm("bi-check-circle", L("goodEquipment") || "Disponíveis", availableItems.length || goodItems.length, "venue", { route: "venueInventoryGeneral", filterPayload: { estado: "Bom" } })}
+      ${sm("bi-person-check", L("assignedStaffEquipment") || "Atribuídos", assignedItems.length || staffEquipment.filter((item) => item.estado === "Activo").length, "venue", { route: "venueInventoryStaff", filterPayload: { assigned: true } })}
       ${sm("bi-exclamation-triangle", L("damagedEquipment"), damagedItems.length, "venue", { route: "venueInventoryGeneral", filterPayload: { estado: "Mau" } })}
-      ${sm("bi-tools", L("inRepair"), inventory.filter((item) => item.estado === "Em Repara��o").length, "venue", { route: "venueInventoryMaintenance", filterPayload: { estado: "Em Repara��o" } })}
-      ${sm("bi-laptop", L("assignedStaffEquipment"), staffEquipment.filter((item) => item.estado === "Activo").length, "venue", { route: "venueInventoryStaff", filterPayload: { assigned: true } })}
-      ${sm("bi-cart-plus", L("acquisitions2026"), acquisitions.length, "venue", { route: "venueInventoryAcquisitions" })}
+      ${sm("bi-tools", L("inRepair"), underMaint.length, "venue", { route: "venueInventoryMaintenance" })}
+      ${sm("bi-hourglass-split", "Pendentes de Registo", pendingRegItems.length + pendingRequisitions.length, "venue", { route: "venueInventoryAcquisitions" })}
+      ${sm("bi-cart-plus", L("acquisitions2026") || "Novas Aquisições", newAcqThisMonth.length || acquisitions.length, "venue", { route: "venueInventoryAcquisitions" })}
+      ${sm("bi-currency-exchange", "Valor Total", money(inventoryValue), "venue", { route: "venueInventoryReports" })}
       ${sm("bi-arrow-left-right", L("pendingMovements"), pendingMovements.length, "venue", { route: "venueInventoryMovements" })}
-      ${sm("bi-building", L("activeSpaces"), venues.filter((item) => item.estado === "Activo").length, "venue", { route: "venueInventorySpaces" })}
+      ${sm("bi-building", L("activeSpaces"), venues.filter((item) => /Activo|Available|In Use/i.test(String(item.estado || item.status || ""))).length, "venue", { route: "venueInventorySpaces" })}
       ${sm("bi-clipboard-check", L("pendingChecklists"), pendingChecklists.length, "venue", { route: "venueInventoryChecklist" })}
+      ${sm("bi-exclamation-circle", "Checklists c/ Atenção", attentionChecklists.length, "venue", { route: "venueInventoryChecklist" })}
     </div>
     ${summaryFilterChips("venue")}
     <div class="row g-4 mb-4">
@@ -14638,7 +14702,16 @@ function renderVenueInventory(activeTab = "overview") {
     </div>` : ""}
     <div class="row g-4">
       ${show("inventory") ? `<div class="col-12">${summaryFilterChips("venue")}${venueModulePanel("inventoryItem", L("generalInventory"), canManageVenue() ? "inventoryItem" : null, [L("itemName"), L("category"), L("quantity"), L("location"), L("responsibleDepartment"), L("church"), L("unitValue"), L("totalValue"), L("status"), L("actions")], applyVenueInventoryCardFilters(inventory, venuePageState.filter).map((item) => [item.nome_do_item, item.categoria, item.quantidade, item.localizacao, item.departamento_responsavel, churchName(item.church_id), money(item.valor_unitario), money(item.valor_total), badge(item.estado), venueRecordActions("inventoryItem", item.id)]), { allowAdd: canManageVenue() })}</div>` : ""}
-      ${show("acquisitions") ? `<div class="col-12">${venueModulePanel("venueAcquisition", L("newAcquisitions"), canManageVenue() ? "venueAcquisition" : null, [L("itemCode"), L("description"), L("category"), L("quantity"), L("purchaseEntryDate"), L("supplier"), L("receivedBy"), L("totalValue"), L("status"), L("actions")], acquisitions.map((item) => [item.codigo_do_item, item.descricao, item.categoria, item.quantidade, item.data_de_compra_ou_entrada, item.fornecedor, item.recebido_por, money(item.valor_total), badge(item.estado), venueRecordActions("venueAcquisition", item.id)]), { allowAdd: canManageVenue() })}</div>` : ""}
+      ${show("acquisitions") ? `<div class="col-12">${venueModulePanel("venueAcquisition", L("newAcquisitions"), canManageVenue() ? "venueAcquisition" : null, [L("itemCode"), L("description"), L("category"), L("quantity"), L("purchaseEntryDate"), L("supplier"), "Req #", L("totalValue"), L("status"), L("actions")], acquisitions.map((item) => {
+        const isPending = /pendente|pending|awaiting/i.test(String(item.estado || item.status || "")) || item.draft_from_requisition;
+        const actions = isPending && canManageVenue()
+          ? actionButtons([
+              ["view", "venueAcquisition", item.id, L("view")],
+              ["registerFromReq", "venueAcquisition", item.id, "Registar no Inventário"],
+            ])
+          : venueRecordActions("venueAcquisition", item.id);
+        return [item.codigo_do_item, item.descricao, item.categoria, item.quantidade, item.data_de_compra_ou_entrada, item.fornecedor, item.request_number || item.comprovativo_ou_factura || "—", money(item.valor_total), badge(item.estado), actions];
+      }), { allowAdd: canManageVenue() })}</div>` : ""}
       ${show("staff") ? `<div class="col-12">${venueModulePanel("venueStaffEquipment", L("staffEquipment"), canManageVenue() ? "venueStaffEquipment" : null, [L("staffName"), L("department"), L("church"), L("device"), L("model"), L("deliveryDate"), L("currentCondition"), L("signatureConfirmed"), L("status"), L("actions")], staffEquipment.map((item) => [item.nome_do_funcionario, item.departamento, churchName(item.church_id), item.dispositivo, item.modelo, item.data_de_entrega, item.estado_actual, yesNo(item.assinatura_confirmada), badge(item.estado), venueRecordActions("venueStaffEquipment", item.id)]), { allowAdd: canManageVenue() })}</div>` : ""}
       ${show("maintenance") ? `<div class="col-12">${venueModulePanel("venueMaintenance", L("maintenanceRepairs"), canManageVenue() ? "venueMaintenance" : null, [L("item"), L("category"), L("quantity"), L("reportedProblem"), L("repairCost"), L("technicianResponsible"), L("sentDate"), L("returnedDate"), L("status"), L("actions")], maintenance.map((item) => [item.item, item.categoria, item.quantidade, item.problema_reportado, money(item.custo_da_reparacao), item.tecnico_ou_responsavel, item.data_de_envio, item.data_de_retorno, badge(item.estado), venueRecordActions("venueMaintenance", item.id)]), { allowAdd: canManageVenue() })}</div>` : ""}
       ${show("movements") ? `<div class="col-12">${venueModulePanel("venueMovement", L("loansMovements"), canManageVenue() || canRequestVenueEquipment() ? "venueMovement" : null, [L("item"), L("quantity"), L("originPlace"), L("destination"), L("requestingDepartment"), L("responsiblePerson"), L("exitDate"), L("expectedReturnDate"), L("status"), L("actions")], movements.map((item) => [item.item, item.quantidade, item.origem, item.destino, item.departamento_solicitante, item.pessoa_responsavel, item.data_de_saida, item.data_prevista_de_retorno, badge(item.estado), venueRecordActions("venueMovement", item.id)]), { allowAdd: canManageVenue() || canRequestVenueEquipment() })}</div>` : ""}
@@ -17453,6 +17526,19 @@ async function submitForm(form) {
     saveState(`Updated ${modalType}`);
     void dualWriteCellMinistryRecord(modalType, "update", collection[index]);
     if (modalType === "finance") void dualWriteFinanceRecord("update", collection[index]);
+    if (
+      [
+        "inventoryItem",
+        "venueAcquisition",
+        "venueStaffEquipment",
+        "venueMaintenance",
+        "venueMovement",
+        "venueSpace",
+        "venueChecklist",
+      ].includes(modalType)
+    ) {
+      void dualWriteVenueInventoryRecord(modalType, "update", collection[index]);
+    }
   } else {
     const idPrefix = modalType.slice(0, 3);
     const nowIso = new Date().toISOString();
@@ -17544,10 +17630,66 @@ async function submitForm(form) {
       record.offering_given = true;
       record.offering_amount = Number(record.oferta || record.offering_amount || 0);
     }
+    if (modalType === "inventoryItem") {
+      record.name = record.nome_do_item || record.name;
+      record.category = record.categoria || record.category;
+      record.quantity = Number(record.quantidade || record.quantity || 1);
+      record.acquisition_source = record.acquisition_source || "Manual Entry";
+      record.acquisition_cost = Number(record.valor_unitario || record.acquisition_cost || 0);
+      record.status = record.status || "Available";
+      record.condition = record.condition || "Good";
+      if (!record.estado) record.estado = "Bom";
+    }
+    if (modalType === "venueStaffEquipment") {
+      record.name = record.modelo || record.dispositivo || record.name;
+      record.nome_do_item = record.name;
+      record.assigned_to_name = record.nome_do_funcionario || record.assigned_to_name;
+      record.department_name = record.departamento || record.department_name;
+      record.model = record.modelo || record.model;
+      record.serial_number = record.device_id || record.serial_number;
+      record.status = "Assigned";
+      record.estado = record.estado || "Activo";
+      record.category = "IT / Computers";
+      record.categoria = "Informática";
+      record.acquisition_source = "Manual Entry";
+    }
+    if (modalType === "venueChecklist") {
+      const flags = [
+        record.som_verificado,
+        record.luzes_verificadas,
+        record.ac_verificado,
+        record.projector_verificado,
+        record.cadeiras_organizadas,
+        record.pulpito_pronto,
+        record.cameras_prontas,
+        record.microfones_prontos,
+        record.limpeza_feita,
+      ];
+      if (flags.some((f) => f === false || f === "false" || f === 0)) {
+        record.status = "Requires Attention";
+        if (record.estado !== "Parcial") record.estado = "Parcial";
+      } else if (flags.every((f) => f === true || f === "true" || f === "on" || f === 1)) {
+        record.status = "Completed";
+        record.estado = "Pronto";
+      }
+    }
     collection.push(record);
     saveState(`Created ${modalType}`);
     void dualWriteCellMinistryRecord(modalType, "create", record);
     if (modalType === "finance") void dualWriteFinanceRecord("create", record);
+    if (
+      [
+        "inventoryItem",
+        "venueAcquisition",
+        "venueStaffEquipment",
+        "venueMaintenance",
+        "venueMovement",
+        "venueSpace",
+        "venueChecklist",
+      ].includes(modalType)
+    ) {
+      void dualWriteVenueInventoryRecord(modalType, "create", record);
+    }
   }
   bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide();
   form.reset();
@@ -17735,6 +17877,118 @@ function quickAction(action, type, id) {
         return setRoute(activeRoute);
       }
     }
+    return;
+  }
+  if (action === "registerFromReq" && (type === "venueAcquisition" || type === "inventoryItem")) {
+    if (!canManageVenue()) return;
+    const venue = state.venueInventory || {};
+    const acq = (venue.acquisitions || []).find((a) => a.id === id);
+    const invPending = (venue.inventory || []).find((i) => i.id === id || i.id === acq?.inventory_item_id);
+    const reqId = acq?.requisition_id || invPending?.requisition_id || (String(id).startsWith("acq-req-") ? String(id).replace("acq-req-", "") : "");
+    const req = (state.requisitions || []).find((r) => r.id === reqId);
+    const source = acq || invPending || req;
+    if (!source) return;
+
+    const vi = window.CEVenueInventory || window.CEDataLayer?.venueInventory;
+    const payload = {
+      id: invPending?.id || (req ? `inv-req-${req.id}` : `inv-${Date.now()}`),
+      name: acq?.descricao || invPending?.nome_do_item || invPending?.name || req?.title || "Item",
+      nome_do_item: acq?.descricao || invPending?.nome_do_item || req?.title || "Item",
+      description: acq?.observacoes || invPending?.observacoes || req?.description || "",
+      category: invPending?.category || "Other",
+      categoria: acq?.categoria || invPending?.categoria || req?.requisition_type || "Outros",
+      quantity: Number(acq?.quantidade || invPending?.quantidade || 1),
+      quantidade: Number(acq?.quantidade || invPending?.quantidade || 1),
+      church_id: acq?.church_id || invPending?.church_id || req?.church_id,
+      department_name: invPending?.department_name || req?.department_name || "",
+      departamento_responsavel: invPending?.departamento_responsavel || req?.department_name || "",
+      serial_number: acq?.serial_number || invPending?.serial_number || "",
+      item_code: acq?.codigo_do_item || invPending?.item_code || req?.request_number || "",
+      acquisition_source: "Requisition",
+      acquisition_date: acq?.data_de_compra_ou_entrada || new Date().toISOString().slice(0, 10),
+      data_de_entrada: acq?.data_de_compra_ou_entrada || new Date().toISOString().slice(0, 10),
+      acquisition_cost: Number(acq?.valor_unitario || invPending?.valor_unitario || req?.released_amount || 0),
+      valor_unitario: Number(acq?.valor_unitario || invPending?.valor_unitario || req?.released_amount || 0),
+      valor_total: Number(acq?.valor_total || invPending?.valor_total || req?.released_amount || 0),
+      currency: "MZN",
+      supplier_name: acq?.fornecedor || req?.supplier_name || "",
+      requisition_id: reqId || null,
+      request_number: acq?.request_number || invPending?.request_number || req?.request_number || "",
+      finance_disbursement_id: req?.finance_disbursement_id || invPending?.finance_disbursement_id || null,
+      status: "Available",
+      condition: "New",
+      estado: "Bom",
+      draft_from_requisition: false,
+      created_by: activeUser.name,
+      created_by_name: activeUser.name,
+      updated_by: activeUser.name,
+      updated_at: new Date().toISOString().slice(0, 10),
+    };
+
+    const finishLocal = (item) => {
+      state.venueInventory = state.venueInventory || {};
+      state.venueInventory.inventory = Array.isArray(state.venueInventory.inventory) ? state.venueInventory.inventory : [];
+      const idx = state.venueInventory.inventory.findIndex((i) => i.id === item.id || i.requisition_id === reqId);
+      if (idx >= 0) state.venueInventory.inventory[idx] = { ...state.venueInventory.inventory[idx], ...item };
+      else state.venueInventory.inventory.push(item);
+      if (acq) {
+        const aIdx = (state.venueInventory.acquisitions || []).findIndex((a) => a.id === acq.id);
+        if (aIdx >= 0) {
+          state.venueInventory.acquisitions[aIdx] = {
+            ...state.venueInventory.acquisitions[aIdx],
+            estado: "Bom",
+            status: "Available",
+            draft_from_requisition: false,
+            inventory_item_id: item.id,
+          };
+        }
+      }
+      if (req) {
+        req.inventory_item_id = item.id;
+        req.inventory_status = "Registered";
+        req.status = "Registered in Inventory";
+        req.updated_at = new Date().toISOString();
+        if (window.CERequisitions?.appendAuditLog) {
+          window.CERequisitions.appendAuditLog(req, {
+            action: "registeredInInventory",
+            by: activeUser.name,
+            by_user_id: activeUser.id,
+            at: new Date().toISOString(),
+          });
+        } else if (Array.isArray(req.audit_history)) {
+          req.audit_history.push({
+            action: "registeredInInventory",
+            by: activeUser.name,
+            at: new Date().toISOString(),
+          });
+        }
+        dualWriteRequisitionRecord("update", req);
+      }
+      saveState(`Registered inventory from requisition ${item.request_number || item.id}`);
+      alert(lang === "pt" ? "Item registado no inventário." : "Item registered in inventory.");
+      setRoute(activeRoute);
+    };
+
+    if (vi?.registerItemFromRequisition && req) {
+      void Promise.resolve(vi.registerItemFromRequisition(req, { name: activeUser.name, id: activeUser.id }))
+        .then((result) => {
+          if (result?.ok && result.data) finishLocal({ ...payload, ...result.data, id: result.data.id || payload.id });
+          else if (vi.createInventoryItem) {
+            return Promise.resolve(vi.createInventoryItem(payload)).then((r) => {
+              finishLocal(r?.ok && r.data ? { ...payload, ...r.data } : payload);
+            });
+          } else finishLocal(payload);
+        })
+        .catch(() => finishLocal(payload));
+      return;
+    }
+    if (vi?.createInventoryItem) {
+      void Promise.resolve(vi.createInventoryItem(payload))
+        .then((r) => finishLocal(r?.ok && r.data ? { ...payload, ...r.data } : payload))
+        .catch(() => finishLocal(payload));
+      return;
+    }
+    finishLocal(payload);
     return;
   }
   if (type === "requisition" && window.CERequisitions) {
@@ -18963,6 +19217,282 @@ function enterDashboard() {
       }
     })
     .catch((error) => console.warn("[CE Requisitions] background hydrate skipped", error));
+  Promise.resolve()
+    .then(() => hydrateVenueInventoryFromRepository())
+    .then((hydrated) => {
+      if (
+        hydrated &&
+        (activeRoute === "venueInventory" || String(activeRoute || "").startsWith("venueInventory")) &&
+        typeof renderVenueInventory === "function"
+      ) {
+        const routeToTab = {
+          venueInventory: "overview",
+          venueInventoryGeneral: "inventory",
+          venueInventoryAcquisitions: "acquisitions",
+          venueInventoryStaff: "staff",
+          venueInventoryMaintenance: "maintenance",
+          venueInventoryMovements: "movements",
+          venueInventorySpaces: "spaces",
+          venueInventoryChecklist: "checklist",
+          venueInventoryReports: "reports",
+        };
+        renderVenueInventory(routeToTab[activeRoute] || "overview");
+      }
+    })
+    .catch((error) => console.warn("[CE VenueInventory] background hydrate skipped", error));
+}
+
+function getVenueInventoryRepoSafe() {
+  return (
+    window.CEVenueInventory ||
+    window.CEDataLayer?.venueInventory ||
+    window.CEDataLayer?.inventoryItems ||
+    null
+  );
+}
+
+function dualWriteVenueInventoryRecord(modalType, mode, record) {
+  const bridge = window.CEVenueInventory || window.CEDataLayer?.venueInventory;
+  if (!bridge || !record) return;
+  if (typeof bridge.dualWriteRecord === "function") {
+    void bridge.dualWriteRecord(modalType, mode, record);
+    return;
+  }
+  const map = {
+    inventoryItem: ["createInventoryItem", "updateInventoryItem"],
+    venueAcquisition: ["createInventoryItem", "updateInventoryItem"],
+    venueStaffEquipment: ["createInventoryItem", "updateInventoryItem"],
+    venueMaintenance: ["createMaintenanceRecord", "updateMaintenanceRecord"],
+    venueMovement: ["createInventoryMovement", "updateInventoryMovement"],
+    venueSpace: ["createVenueSpace", "updateVenueSpace"],
+    venueChecklist: ["createServiceChecklist", "updateServiceChecklist"],
+  };
+  const pair = map[modalType];
+  if (!pair) return;
+  if (mode === "create" && bridge[pair[0]]) void bridge[pair[0]](record);
+  else if (mode === "update" && bridge[pair[1]]) void bridge[pair[1]](record.id, record);
+}
+
+function mapStaffEquipmentFromItem(item) {
+  if (!item) return null;
+  if (!item.assigned_to_user_id && !item.assigned_to_name) return null;
+  return {
+    id: item.id.startsWith("inv-staff-") ? item.id.replace("inv-", "staff-eq-") : `staff-eq-${item.id}`,
+    church_id: item.church_id,
+    created_by: item.created_by,
+    updated_by: item.updated_by,
+    created_at: item.created_at,
+    updated_at: item.updated_at,
+    status: "Activo",
+    estado: "Activo",
+    nome_do_funcionario: item.assigned_to_name || "",
+    departamento: item.department_name || item.departamento_responsavel || "",
+    igreja: item.church_id,
+    data_onboarding: item.acquisition_date || item.data_de_entrada || "",
+    dispositivo: item.category === "IT / Computers" || item.categoria === "Informática" ? "Laptop" : item.name || item.nome_do_item,
+    modelo: item.model || item.name || item.nome_do_item || "",
+    device_id: item.serial_number || item.item_code || "",
+    product_id: item.item_code || "",
+    data_de_entrega: item.acquisition_date || item.data_de_entrada || "",
+    estado_na_entrega: "Bom",
+    estado_actual: item.condition === "Good" || item.estado === "Bom" ? "Bom" : item.estado || "Bom",
+    responsavel_pela_entrega: item.created_by_name || item.created_by || "",
+    assinatura_confirmada: true,
+    data_de_devolucao: "",
+    observacoes: item.observacoes || "",
+    inventory_item_id: item.id,
+    assigned_to_user_id: item.assigned_to_user_id,
+  };
+}
+
+function mapAcquisitionFromItem(item) {
+  if (!item) return null;
+  const isPending =
+    /pending|pendente|awaiting/i.test(String(item.status || item.estado || "")) ||
+    item.draft_from_requisition;
+  const isNewAcq =
+    item.acquisition_source === "Requisition" ||
+    isPending ||
+    (item.acquisition_date || item.data_de_entrada || "").slice(0, 7) >= "2026-05";
+  if (!isNewAcq && !isPending) return null;
+  return {
+    id: item.id.startsWith("acq-") ? item.id : `acq-${item.id}`,
+    church_id: item.church_id,
+    created_by: item.created_by,
+    updated_by: item.updated_by,
+    created_at: item.created_at,
+    updated_at: item.updated_at,
+    status: item.status || item.estado || "Bom",
+    estado: item.estado || item.status || "Bom",
+    codigo_do_item: item.item_code || item.id,
+    descricao: item.name || item.nome_do_item || item.description || "",
+    categoria: item.categoria || item.category || "",
+    quantidade: item.quantidade || item.quantity || 1,
+    serial_number: item.serial_number || "",
+    data_de_compra_ou_entrada: item.acquisition_date || item.data_de_entrada || "",
+    valor_unitario: item.valor_unitario || item.acquisition_cost || 0,
+    valor_total: item.valor_total || item.acquisition_cost || 0,
+    fornecedor: item.supplier_name || "",
+    recebido_por: item.created_by_name || item.created_by || "",
+    comprovativo_ou_factura: item.request_number || "",
+    observacoes: item.observacoes || item.description || "",
+    requisition_id: item.requisition_id || "",
+    request_number: item.request_number || "",
+    inventory_item_id: item.id,
+    draft_from_requisition: !!item.draft_from_requisition,
+  };
+}
+
+async function hydrateVenueInventoryFromRepository() {
+  const repo = getVenueInventoryRepoSafe();
+  if (!repo) return false;
+  try {
+    let hydrated = false;
+    state.venueInventory = state.venueInventory || {
+      inventory: [],
+      acquisitions: [],
+      staffEquipment: [],
+      maintenance: [],
+      movements: [],
+      venues: [],
+      checklists: [],
+      reports: [],
+    };
+
+    if (typeof repo.listInventoryItems === "function") {
+      const result = await repo.listInventoryItems();
+      if (result?.ok && Array.isArray(result.data) && result.data.length) {
+        const prev = new Map((state.venueInventory.inventory || []).map((r) => [r.id, r]));
+        const byId = new Map();
+        result.data.forEach((row) => {
+          const previous = prev.get(row.id) || {};
+          const merged = {
+            ...row,
+            ...previous,
+            id: row.id,
+            nome_do_item: row.nome_do_item || row.name || previous.nome_do_item,
+            name: row.name || row.nome_do_item || previous.name,
+            categoria: row.categoria || row.category || previous.categoria,
+            quantidade: row.quantidade ?? row.quantity ?? previous.quantidade,
+            estado: row.estado || previous.estado || "Bom",
+            localizacao: row.localizacao || row.space_name || previous.localizacao,
+            departamento_responsavel:
+              row.departamento_responsavel || row.department_name || previous.departamento_responsavel,
+            valor_unitario: row.valor_unitario ?? row.acquisition_cost ?? previous.valor_unitario,
+            valor_total: row.valor_total ?? previous.valor_total,
+            serial_number: row.serial_number || previous.serial_number,
+            observacoes: row.observacoes || row.description || previous.observacoes,
+            requisition_id: row.requisition_id || previous.requisition_id,
+            request_number: row.request_number || previous.request_number,
+            status: row.status || previous.status,
+            condition: row.condition || previous.condition,
+            assigned_to_user_id: row.assigned_to_user_id || previous.assigned_to_user_id,
+            assigned_to_name: row.assigned_to_name || previous.assigned_to_name,
+          };
+          byId.set(row.id, merged);
+        });
+        prev.forEach((localRow, id) => {
+          if (!byId.has(id)) byId.set(id, localRow);
+        });
+        state.venueInventory.inventory = [...byId.values()];
+
+        // Sync staff equipment + acquisitions views from inventory items (non-destructive merge)
+        const staffFromItems = state.venueInventory.inventory
+          .map(mapStaffEquipmentFromItem)
+          .filter(Boolean);
+        if (staffFromItems.length) {
+          const prevStaff = new Map((state.venueInventory.staffEquipment || []).map((r) => [r.id, r]));
+          staffFromItems.forEach((s) => {
+            const previous = prevStaff.get(s.id) || prevStaff.get(`staff-eq-${s.inventory_item_id}`) || {};
+            prevStaff.set(s.id, { ...s, ...previous, id: s.id });
+          });
+          state.venueInventory.staffEquipment = [...prevStaff.values()];
+        }
+        const acqFromItems = state.venueInventory.inventory
+          .map(mapAcquisitionFromItem)
+          .filter(Boolean);
+        if (acqFromItems.length) {
+          const prevAcq = new Map((state.venueInventory.acquisitions || []).map((r) => [r.id, r]));
+          acqFromItems.forEach((a) => {
+            const previous = prevAcq.get(a.id) || {};
+            prevAcq.set(a.id, { ...a, ...previous, id: a.id });
+          });
+          state.venueInventory.acquisitions = [...prevAcq.values()];
+        }
+        hydrated = true;
+        console.info("[CE VenueInventory] hydrated items", state.venueInventory.inventory.length);
+      }
+    }
+
+    async function mergeList(listFn, key, mapRow) {
+      if (typeof listFn !== "function") return;
+      const result = await listFn();
+      if (!result?.ok || !Array.isArray(result.data) || !result.data.length) return;
+      const prev = new Map((state.venueInventory[key] || []).map((r) => [r.id, r]));
+      const byId = new Map();
+      result.data.forEach((row) => {
+        const previous = prev.get(row.id) || {};
+        const mapped = mapRow ? mapRow(row) : row;
+        byId.set(row.id, { ...mapped, ...previous, id: row.id });
+      });
+      prev.forEach((localRow, id) => {
+        if (!byId.has(id)) byId.set(id, localRow);
+      });
+      state.venueInventory[key] = [...byId.values()];
+      hydrated = true;
+    }
+
+    await mergeList(repo.listMaintenanceRecords?.bind(repo), "maintenance", (row) => ({
+      ...row,
+      item: row.item || row.item_name,
+      problema_reportado: row.problema_reportado || row.issue_description || row.issue_title,
+      custo_da_reparacao: row.custo_da_reparacao ?? row.actual_cost ?? row.estimated_cost,
+      tecnico_ou_responsavel: row.tecnico_ou_responsavel || row.assigned_to_name,
+      estado: row.estado || row.status,
+    }));
+    await mergeList(repo.listInventoryMovements?.bind(repo), "movements", (row) => ({
+      ...row,
+      item: row.item || row.item_name,
+      origem: row.origem || row.from_space_name,
+      destino: row.destino || row.to_space_name,
+      quantidade: row.quantidade ?? row.quantity,
+      estado: row.estado || row.status,
+    }));
+    await mergeList(repo.listVenueSpaces?.bind(repo), "venues", (row) => ({
+      ...row,
+      nome_do_espaco: row.nome_do_espaco || row.name,
+      capacidade: row.capacidade ?? row.capacity,
+      responsavel: row.responsavel || row.responsible_name,
+      estado: row.estado || row.status,
+      tipo: row.tipo || row.space_type,
+    }));
+    await mergeList(repo.listServiceChecklists?.bind(repo), "checklists", (row) => ({
+      ...row,
+      data_do_culto: row.data_do_culto || row.service_date,
+      tipo_de_culto_ou_evento: row.tipo_de_culto_ou_evento || row.service_name,
+      responsavel: row.responsavel || row.responsible_name,
+      estado: row.estado || row.status,
+      som_verificado: row.som_verificado ?? row.sound_ready,
+      luzes_verificadas: row.luzes_verificadas ?? row.lights_ready,
+      ac_verificado: row.ac_verificado ?? row.ac_ready,
+      projector_verificado: row.projector_verificado ?? row.projector_ready,
+      cadeiras_organizadas: row.cadeiras_organizadas ?? row.chairs_ready,
+      pulpito_pronto: row.pulpito_pronto ?? row.pulpit_ready,
+      cameras_prontas: row.cameras_prontas ?? row.cameras_ready,
+      microfones_prontos: row.microfones_prontos ?? row.microphones_ready,
+      limpeza_feita: row.limpeza_feita ?? row.cleaning_ready,
+    }));
+
+    if (hydrated) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (_) {}
+    }
+    return hydrated;
+  } catch (error) {
+    console.warn("[CE VenueInventory] hydrate failed", error);
+    return false;
+  }
 }
 
 async function hydrateRequisitionsFromRepository() {

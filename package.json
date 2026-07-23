@@ -14,6 +14,7 @@
     "test:finance-data": "node scripts/smoke-finance-data.mjs",
     "test:partnerships-data": "node scripts/smoke-partnerships-data.mjs",
     "test:requisitions-data": "node scripts/smoke-requisitions-data.mjs",
+    "test:venue-inventory-data": "node scripts/smoke-venue-inventory-data.mjs",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f",
