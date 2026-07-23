@@ -4,8 +4,17 @@
   "version": "0.2.0",
   "type": "module",
   "scripts": {
+    "dev": "vite --host 0.0.0.0 --port 5173",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0 --port 5173",
     "build:supabase": "vite build",
-    "dev:supabase": "vite build --watch"
+    "dev:supabase": "vite build --watch",
+    "test:public-cell-report": "node scripts/smoke-public-cell-report.mjs",
+    "test:e2e-cell-report": "node scripts/e2e-public-cell-report.mjs",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f",
+    "docker:reset": "docker compose down -v"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.8"

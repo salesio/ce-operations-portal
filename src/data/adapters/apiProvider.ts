@@ -1,0 +1,103 @@
+import type { EntityCollectionName, EntityId } from "../types/entities";
+import type {
+  DataProvider,
+  DataResult,
+  EntityRepository,
+  ListOptions,
+} from "../types/repository";
+import { getApiBaseUrl } from "../config";
+
+/**
+ * Placeholder REST/API provider for future Node/Express (or similar) backend
+ * backed by local Docker PostgreSQL.
+ *
+ * Not implemented yet — methods return a clear NOT_IMPLEMENTED result so the
+ * dashboard keeps using mock/localStorage UI paths.
+ */
+function createStubRepository<T>(collection: EntityCollectionName): EntityRepository<T> {
+  const notReady = <R>(): DataResult<R> => ({
+    ok: false,
+    error: `API provider not implemented for "${collection}". Set VITE_DATA_SOURCE=mock|local until the backend exists.`,
+    code: "NOT_IMPLEMENTED",
+  });
+
+  return {
+    async list(_options?: ListOptions) {
+      return notReady<T[]>();
+    },
+    async getById(_id: EntityId) {
+      return notReady<T | null>();
+    },
+    async create(_input: Partial<T>) {
+      return notReady<T>();
+    },
+    async update(_id: EntityId, _input: Partial<T>) {
+      return notReady<T>();
+    },
+    async remove(_id: EntityId) {
+      return notReady<boolean>();
+    },
+  };
+}
+
+export function createApiProvider(): DataProvider {
+  const names: EntityCollectionName[] = [
+    "users",
+    "churches",
+    "members",
+    "first_timers",
+    "follow_ups",
+    "foundation_students",
+    "foundation_teachers",
+    "foundation_class_groups",
+    "foundation_lesson_sessions",
+    "foundation_test_submissions",
+    "foundation_final_exams",
+    "finance_records",
+    "requisitions",
+    "notifications",
+    "cell_groups",
+    "cells",
+    "cell_leaders",
+    "cell_report_submissions",
+    "media_technicians",
+    "media_schedules",
+  ];
+
+  const map = Object.fromEntries(
+    names.map((n) => [n, createStubRepository(n)]),
+  ) as Record<EntityCollectionName, EntityRepository<unknown>>;
+
+  const baseUrl = getApiBaseUrl();
+
+  return {
+    name: "api",
+    description: baseUrl
+      ? `HTTP API placeholder (base: ${baseUrl}) — not wired yet.`
+      : "HTTP API placeholder — set VITE_API_BASE_URL when backend is ready.",
+    isReady: () => false,
+    users: map.users as EntityRepository<never>,
+    churches: map.churches as EntityRepository<never>,
+    members: map.members as EntityRepository<never>,
+    firstTimers: map.first_timers as EntityRepository<never>,
+    followUps: map.follow_ups as EntityRepository<never>,
+    foundationStudents: map.foundation_students as EntityRepository<never>,
+    foundationTeachers: map.foundation_teachers as EntityRepository<never>,
+    foundationClassGroups: map.foundation_class_groups as EntityRepository<never>,
+    foundationLessonSessions: map.foundation_lesson_sessions as EntityRepository<never>,
+    foundationTestSubmissions: map.foundation_test_submissions as EntityRepository<never>,
+    foundationFinalExams: map.foundation_final_exams as EntityRepository<never>,
+    financeRecords: map.finance_records as EntityRepository<never>,
+    requisitions: map.requisitions as EntityRepository<never>,
+    notifications: map.notifications as EntityRepository<never>,
+    cellGroups: map.cell_groups as EntityRepository<never>,
+    cells: map.cells as EntityRepository<never>,
+    cellLeaders: map.cell_leaders as EntityRepository<never>,
+    cellReportSubmissions: map.cell_report_submissions as EntityRepository<never>,
+    mediaTechnicians: map.media_technicians as EntityRepository<never>,
+    mediaSchedules: map.media_schedules as EntityRepository<never>,
+    collection(name) {
+      return map[name];
+    },
+  };
+}

@@ -384,7 +384,7 @@ const TEXT = {
     pendingFollowups: "Acompanhamentos Pendentes",
     totalFirstTimers: "Total de Primeira Vez",
     newConverts: "Novos Convertidos",
-    foundationEnrolments: "Inscri��es na Escola de Funda��o",
+    foundationEnrolments: "Inscrições na Escola de Fundação",
     graduations: "Graduações",
     activeCells: "Células Activas",
     baptisms: "Baptismos",
@@ -436,7 +436,7 @@ const TEXT = {
     fevoDataSection: "Registos da Semana",
     fevoDataHint: "Configurações, relatórios e acompanhamento por equipa.",
     firstTimerSubtitle: "Visitantes captados nos cultos e no acompanhamento.",
-    followupSubtitle: "Fluxo claro para acompanhar cada visitante at� integra��o.",
+    followupSubtitle: "Fluxo claro para acompanhar cada visitante até integração.",
     membersSubtitle: "Base de membros por igreja, célula, departamento e estado.",
     foundationSubtitle: "Inscrições pendentes, 7 aulas, notas, exame, prática e certificados.",
     financeSubtitle: "Envelope digital para dízimos, ofertas, parcerias e projectos.",
@@ -676,7 +676,7 @@ const TEXT = {
     noAnswer: "Sem Resposta",
     interested: "Interessado",
     sentToCell: "Encaminhado para Célula",
-    enrolledFoundation: "Inscrito na Escola de Funda��o",
+    enrolledFoundation: "Inscrito na Escola de Fundação",
     becameMember: "Tornou-se Membro",
     closed: "Fechado",
     inProgress: "Em Curso",
@@ -687,7 +687,7 @@ const TEXT = {
     viewMode: "Modo de visualiza��o",
     moduleNavigation: "Navega��o do m�dulo",
     membersByChurch: "Por Igreja",
-    wantFoundation: "Querem Escola de Funda��o",
+    wantFoundation: "Querem Escola de Fundação",
     visitScheduled: "Visita Marcada",
     nextContact: "Próximo Contacto",
     partiallyConfirmed: "Confirmado Parcialmente",
@@ -1787,7 +1787,7 @@ const STATUS_KEYS = {
   "Sent to Cell": "sentToCell",
   "Encaminhado para Célula": "sentToCell",
   "Enrolled in Foundation School": "enrolledFoundation",
-  "Inscrito na Escola de Funda��o": "enrolledFoundation",
+  "Inscrito na Escola de Fundação": "enrolledFoundation",
   "Became Member": "becameMember",
   "Tornou-se Membro": "becameMember",
   Closed: "closed",
@@ -2029,7 +2029,7 @@ Object.assign(TEXT.pt, {
   weeklyCellReportPublicHint: "Preencha os dados do encontro da sua célula. O relatório será enviado para revisão do Ministério de Células.",
   backToLogin: "Voltar ao Login",
   submitAnotherReport: "Submeter outro relatório",
-  reportSubmittedSuccess: "Relatório submetido com sucesso.",
+  reportSubmittedSuccess: "Relatório submetido com sucesso",
   reportSubmittedThanks: "Obrigado. O relatório da sua célula foi enviado para revisão do Ministério de Células.",
   cannotFindCell: "Não encontro a minha célula",
   confirmAccurate: "Confirmo que as informações submetidas são verdadeiras.",
@@ -2037,7 +2037,17 @@ Object.assign(TEXT.pt, {
   publicReportNumber: "Número do relatório",
   reportNeedsReview: "Precisa Revisão",
   sendToFinance: "Enviar para Finanças",
-  requestCorrection: "Pedir Correção",  cellLeadership: "Células & Liderança",
+  requestCorrection: "Pedir Correção",
+  cellOffering: "Oferta da Célula",
+  cellStatus: "Estado da Célula",
+  cellLeader: "Líder de Célula",
+  meetingDate: "Data do Encontro",
+  meetingType: "Tipo de Encontro",
+  soulsWonShort: "Almas Ganhas",
+  needsPastoralVisit: "Precisa de Visita Pastoral",
+  readyToMultiply: "Pronta para Multiplicar",
+  reportAlreadySubmittedWeek: "Já existe um relatório submetido para esta célula nesta semana",
+  cellLeadership: "Células & Liderança",
   cellOverview: "Vis�o Geral",
   cellCells: "Células",
   cellLeaders: "Líderes",
@@ -2146,7 +2156,7 @@ Object.assign(TEXT.pt, {
   weeklyCellReportPublicHint: "Preencha os dados do encontro da sua célula. O relatório será enviado para revisão do Ministério de Células.",
   backToLogin: "Voltar ao Login",
   submitAnotherReport: "Submeter outro relatório",
-  reportSubmittedSuccess: "Relatório submetido com sucesso.",
+  reportSubmittedSuccess: "Relatório submetido com sucesso",
   reportSubmittedThanks: "Obrigado. O relatório da sua célula foi enviado para revisão do Ministério de Células.",
   cannotFindCell: "Não encontro a minha célula",
   confirmAccurate: "Confirmo que as informações submetidas são verdadeiras.",
@@ -2154,7 +2164,8 @@ Object.assign(TEXT.pt, {
   publicReportNumber: "Número do relatório",
   reportNeedsReview: "Precisa Revisão",
   sendToFinance: "Enviar para Finanças",
-  requestCorrection: "Pedir Correção",  alecFull: "ALEC - Academia de Liderança da Embaixada de Cristo",
+  requestCorrection: "Pedir Correção",
+  alecFull: "ALEC - Academia de Liderança da Embaixada de Cristo",
   alecRegistration: "Cadastro ALEC",
   alecScores: "Pauta ALEC",
   churchReports: "Relatórios de Igreja",
@@ -2243,7 +2254,7 @@ Object.assign(TEXT.pt, {
   weeklyCellReportPublicHint: "Preencha os dados do encontro da sua célula. O relatório será enviado para revisão do Ministério de Células.",
   backToLogin: "Voltar ao Login",
   submitAnotherReport: "Submeter outro relatório",
-  reportSubmittedSuccess: "Relatório submetido com sucesso.",
+  reportSubmittedSuccess: "Relatório submetido com sucesso",
   reportSubmittedThanks: "Obrigado. O relatório da sua célula foi enviado para revisão do Ministério de Células.",
   cannotFindCell: "Não encontro a minha célula",
   confirmAccurate: "Confirmo que as informações submetidas são verdadeiras.",
@@ -2251,7 +2262,8 @@ Object.assign(TEXT.pt, {
   publicReportNumber: "Número do relatório",
   reportNeedsReview: "Precisa Revisão",
   sendToFinance: "Enviar para Finanças",
-  requestCorrection: "Pedir Correção",  fevo: "F.E.V.O",
+  requestCorrection: "Pedir Correção",
+  fevo: "F.E.V.O",
   fevoFull: "Acompanhamento, Evangeliza��o, Visita��o e Ora��o",
   fevoSubtitle: "Equipas semanais rotativas para acompanhamento, evangeliza��o, visita��o e ora��o, coordenadas por Sister Cassandra.",
   weeklyConfiguration: "Configura��o Semanal",
@@ -2327,11 +2339,11 @@ Object.assign(TEXT.pt, {
   cellReportsArea: "Relatórios de Células / Sister Eduarda",
   cellAlecOverview: "Vis�o Geral ALEC",
   cellMinistryOverview: "Vis�o Geral",
-  receivedReports: "Relatórios Recebidos",
+  receivedReports: "Submissões Semanais",
   cellPerformance: "Desempenho das Células",
   leadersAttention: "L�deres em Aten��o",
   actionPlan: "Plano de Ac��o",
-  weeklyCellReport: "Relatório Semanal",
+  weeklyCellReport: "Submissões Semanais",
   cellGroups: "Grupos de Células",
   cellCellsList: "Células",
   consolidation: "Consolida��o",
@@ -2339,6 +2351,15 @@ Object.assign(TEXT.pt, {
   viewCells: "Ver Células",
   updateCellReport: "Actualizar Relatório",
   needsReview: "Revis�o Pendente",
+  cellOffering: "Oferta da Célula",
+  cellStatus: "Estado da Célula",
+  cellLeader: "Líder de Célula",
+  meetingDate: "Data do Encontro",
+  meetingType: "Tipo de Encontro",
+  soulsWonShort: "Almas Ganhas",
+  needsPastoralVisit: "Precisa de Visita Pastoral",
+  readyToMultiply: "Pronta para Multiplicar",
+  reportAlreadySubmittedWeek: "Já existe um relatório submetido para esta célula nesta semana",
   importReview: "Nomes importados",
   growing: "Em Crescimento",
   inactive: "Inactivo",
@@ -2395,8 +2416,8 @@ Object.assign(TEXT.pt, {
   facebook: "Facebook",
   instagram: "Instagram",
   youtube: "YouTube",
-  applyGeneralDefault: "Aplicar Padr�o Geral",
-  applyHqDefault: "Aplicar Padr�o HQ",
+  applyGeneralDefault: "Aplicar Padrão Geral",
+  applyHqDefault: "Aplicar Padrão HQ",
   addServiceTime: "Adicionar Horário",
   dayOfWeek: "Dia da Semana",
   serviceName: "Nome do Culto",
@@ -2414,7 +2435,7 @@ Object.assign(TEXT.pt, {
   weeklyCellReportPublicHint: "Preencha os dados do encontro da sua célula. O relatório será enviado para revisão do Ministério de Células.",
   backToLogin: "Voltar ao Login",
   submitAnotherReport: "Submeter outro relatório",
-  reportSubmittedSuccess: "Relatório submetido com sucesso.",
+  reportSubmittedSuccess: "Relatório submetido com sucesso",
   reportSubmittedThanks: "Obrigado. O relatório da sua célula foi enviado para revisão do Ministério de Células.",
   cannotFindCell: "Não encontro a minha célula",
   confirmAccurate: "Confirmo que as informações submetidas são verdadeiras.",
@@ -2422,7 +2443,8 @@ Object.assign(TEXT.pt, {
   publicReportNumber: "Número do relatório",
   reportNeedsReview: "Precisa Revisão",
   sendToFinance: "Enviar para Finanças",
-  requestCorrection: "Pedir Correção",  venueInventory: "Gest�o de Espa�os & Invent�rio",
+  requestCorrection: "Pedir Correção",
+  venueInventory: "Gest�o de Espa�os & Invent�rio",
   venueInventoryShort: "Espaços & Inventário",
   venueInventorySubtitle: "Invent�rio, equipamentos do staff, manuten��o, movimenta��es, espa�os e checklists de culto sob responsabilidade de Marcelo Panguene.",
   generalInventory: "Inventário Geral",
@@ -2714,11 +2736,11 @@ Object.assign(TEXT.en, {
   cellReportsArea: "Cell Reports / Sister Eduarda",
   cellAlecOverview: "ALEC Overview",
   cellMinistryOverview: "Overview",
-  receivedReports: "Received Reports",
+  receivedReports: "Weekly Submissions",
   cellPerformance: "Cell Performance",
   leadersAttention: "Leaders Needing Attention",
   actionPlan: "Action Plan",
-  weeklyCellReport: "Weekly Report",
+  weeklyCellReport: "Weekly Submissions",
   cellGroups: "Cell Groups",
   cellCellsList: "Cells",
   consolidation: "Consolidation",
@@ -2726,6 +2748,15 @@ Object.assign(TEXT.en, {
   viewCells: "View Cells",
   updateCellReport: "Update Report",
   needsReview: "Needs Review",
+  cellOffering: "Cell Offering",
+  cellStatus: "Cell Status",
+  cellLeader: "Cell Leader",
+  meetingDate: "Meeting Date",
+  meetingType: "Meeting Type",
+  soulsWonShort: "Souls Won",
+  needsPastoralVisit: "Needs Pastoral Visit",
+  readyToMultiply: "Ready to Multiply",
+  reportAlreadySubmittedWeek: "A report has already been submitted for this cell this week",
   importReview: "Imported names",
   growing: "Growing",
   inactive: "Inactive",
@@ -3177,7 +3208,7 @@ const FINANCE_STATUS_VERIFIED = "Verificado";
 const FINANCE_STATUS_REJECTED = "Rejeitado";
 const FINANCE_STATUS_INCLUDED = "Incluído no Relatório";
 const financeStatuses = [FINANCE_STATUS_PENDING, FINANCE_STATUS_VERIFIED, FINANCE_STATUS_REJECTED, FINANCE_STATUS_INCLUDED];
-const foundationStatuses = ["Inscrito", "Em Curso", "Aulas e Testes Concluídos", "Ganhar Almas Pendente", "Pronto para Exame", "Exame Realizado", "Aprovado", "Pronto para Graduação", "Graduado", "Certificado Emitido", "Reprovado"];
+const foundationStatuses = ["Inscrito", "Em Curso", "Aulas e Testes Concluídos", "Ganhar Almas Pendente", "Pronto para Exame", "Exame Realizado", "Aprovado", "Pronto para Graduação", "Graduado", "Certificado Emitido", "Inactivo", "Reprovado"];
 const FOUNDATION_STATUS_MAP = {
   "Pending Enrolment": "Inscrito",
   Enrolled: "Inscrito",
@@ -3348,15 +3379,21 @@ const seedData = {
     { id: "church-khongolote", church_id: "church-khongolote", church_name: "Igreja Embaixada de Cristo Khongolote", public_name: "Embaixada de Cristo Khongolote", type: "Igreja Local", province: "Maputo Província", city: "Matola", district_or_area: "Khongolote", address: "Rua Licuacuanine, 648 – Khongolote, Matola", pastor_in_charge: "", phone_primary: "", phone_secondary: "", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("church-khongolote", "Igreja Local"), parent_church_id: "church-hq", status: "Activa", information_status: "Por Confirmar", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [32, 28, 30, 29] },
     { id: "church-choupal", church_id: "church-choupal", church_name: "Igreja Embaixada de Cristo Choupal", public_name: "Embaixada de Cristo Choupal", type: "Igreja Local", province: "Maputo Cidade", city: "KaMubukwana", district_or_area: "Choupal", address: "Choupal, Maputo", pastor_in_charge: "", phone_primary: "", phone_secondary: "", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("church-choupal", "Igreja Local"), parent_church_id: "church-hq", status: "Activa", information_status: "Por Confirmar", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [28, 30, 27, 31] },
     { id: "church-beira", church_id: "church-beira", church_name: "Igreja Embaixada de Cristo Beira", public_name: "Igreja Embaixada de Cristo Beira", type: "Igreja Local", province: "Sofala", city: "Beira", district_or_area: "Beira", address: "Por confirmar", pastor_in_charge: "", phone_primary: "", phone_secondary: "", email: "", facebook: "Igreja Embaixada de Cristo Beira", instagram: "@embaixada_de_cristo_beira", youtube: "", service_times: defaultSeedServiceTimes("church-beira", "Igreja Local"), parent_church_id: "church-hq", status: "Activa", information_status: "Por Confirmar", notes: "Endereço e contactos a confirmar com a igreja local.", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [40, 38, 42, 39] },
-    { id: "church-nampula", church_id: "church-nampula", church_name: "Igreja Embaixada de Cristo Nampula", public_name: "Embaixada De Cristo Nampula", type: "Igreja Local", province: "Nampula", city: "Nampula", district_or_area: "Muhala-Expans�o", address: "Terminal de Chapa Muhala-Expans�o, Paragem Igreja", pastor_in_charge: "Pastor Armando de Jesus", phone_primary: "", phone_secondary: "", email: "", facebook: "Embaixada De Cristo Nampula", instagram: "@embaixada_de_cristo.nampula", youtube: "", service_times: defaultSeedServiceTimes("church-nampula", "Igreja Local"), parent_church_id: "church-hq", status: "Activa", information_status: "Por Confirmar", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [36, 34, 35, 37] },
-    { id: "church-virtual", church_id: "church-virtual", church_name: "CE Mozambique Online Church", public_name: "Igreja Embaixada de Cristo Online", type: "Igreja Online", province: "Online", city: "Online", district_or_area: "Virtual", address: "Transmiss�o online", pastor_in_charge: "Equipa de Media", phone_primary: "+258 86 877 389", phone_secondary: "", email: "online@embaixada-de-cristo.obiuba.com", facebook: "", instagram: "", youtube: "Christ Embassy Mozambique Online", service_times: defaultSeedServiceTimes("church-virtual", "Igreja Online"), parent_church_id: "church-hq", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2024-06-01", updated_at: "2026-07-10", attendance_last_4_weeks: [54, 61, 48, 57] }
+    { id: "church-nampula", church_id: "church-nampula", church_name: "Igreja Embaixada de Cristo Nampula", public_name: "Embaixada De Cristo Nampula", type: "Igreja Local", province: "Nampula", city: "Nampula", district_or_area: "Muhala-Expansão", address: "Terminal de Chapa Muhala-Expansão, Paragem Igreja", pastor_in_charge: "Pastor Armando de Jesus", phone_primary: "", phone_secondary: "", email: "", facebook: "Embaixada De Cristo Nampula", instagram: "@embaixada_de_cristo.nampula", youtube: "", service_times: defaultSeedServiceTimes("church-nampula", "Igreja Local"), parent_church_id: "church-hq", status: "Activa", information_status: "Por Confirmar", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [36, 34, 35, 37] },
+    { id: "church-virtual", church_id: "church-virtual", church_name: "CE Mozambique Online Church", public_name: "Igreja Embaixada de Cristo Online", type: "Igreja Online", province: "Online", city: "Online", district_or_area: "Virtual", address: "Transmissão online", pastor_in_charge: "Equipa de Media", phone_primary: "+258 86 877 389", phone_secondary: "", email: "online@embaixada-de-cristo.obiuba.com", facebook: "", instagram: "", youtube: "Christ Embassy Mozambique Online", service_times: defaultSeedServiceTimes("church-virtual", "Igreja Online"), parent_church_id: "church-hq", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2024-06-01", updated_at: "2026-07-10", attendance_last_4_weeks: [54, 61, 48, 57] }
   ],
   firstTimers: [
-    { id: "ft-1", tratamento: "Irm�", nome: "Aminata", apelido: "Chivinda", genero: "Feminino", data_de_nascimento: "1991-05-05", telefone: "848287179", whatsapp: "848287179", email: "", endereco: "Mavalane A", church_id: "church-hq", data_do_culto: "2026-07-05", culto: "Domingo 1º Culto", convidado_por: "Irm�o da igreja", nasceu_de_novo: false, quer_escola_de_fundacao: true, quer_aconselhamento: true, interesse_em_celula: true, celula_preferida: "Mavalane", estado_do_seguimento: "Pending", conselheiro_responsavel: "L�der de Aconselhamento", notas: "Exemplo baseado na ficha partilhada." },
-    { id: "ft-2", tratamento: "Sr.", nome: "Mateus", apelido: "Nhantumbo", genero: "Masculino", data_de_nascimento: "1998-11-12", telefone: "862720011", whatsapp: "862720011", email: "mateus@example.com", endereco: "Matola", church_id: "church-hq", data_do_culto: "2026-06-28", culto: "Domingo 1º Culto", convidado_por: "Cell Central", nasceu_de_novo: true, quer_escola_de_fundacao: true, quer_aconselhamento: false, interesse_em_celula: true, celula_preferida: "Cell Central", estado_do_seguimento: "Contacted", conselheiro_responsavel: "L�der de Aconselhamento", notas: "Quer integrar uma c�lula perto de casa." }
+    { id: "ft-1", tratamento: "Irmã", nome: "Aminata", apelido: "Chivinda", genero: "Feminino", data_de_nascimento: "1991-05-05", telefone: "848287179", whatsapp: "848287179", email: "", endereco: "Mavalane A", church_id: "church-hq", church_name: "National HQ - Christ Embassy Mozambique", data_do_culto: "2026-07-05", culto: "Domingo 1º Culto", convidado_por: "Irmão da igreja", nasceu_de_novo: false, quer_escola_de_fundacao: true, quer_aconselhamento: true, interesse_em_celula: true, celula_preferida: "Mavalane", estado_do_seguimento: "Pending", conselheiro_responsavel: "Líder de Aconselhamento", notas: "Exemplo baseado na ficha partilhada." },
+    { id: "ft-2", tratamento: "Sr.", nome: "Mateus", apelido: "Nhantumbo", genero: "Masculino", data_de_nascimento: "1998-11-12", telefone: "862720011", whatsapp: "862720011", email: "mateus@example.com", endereco: "Matola", church_id: "church-hq", church_name: "National HQ - Christ Embassy Mozambique", data_do_culto: "2026-06-28", culto: "Domingo 1º Culto", convidado_por: "Cell Central", nasceu_de_novo: true, quer_escola_de_fundacao: true, quer_aconselhamento: false, interesse_em_celula: true, celula_preferida: "Cell Central", estado_do_seguimento: "Contacted", conselheiro_responsavel: "Líder de Aconselhamento", notas: "Quer integrar uma célula perto de casa." },
+    { id: "ft-3", tratamento: "Sra.", nome: "Helena", apelido: "Cossa", genero: "Feminino", data_de_nascimento: "1988-03-20", telefone: "843332211", whatsapp: "843332211", email: "", endereco: "Beira", church_id: "church-beira", church_name: "Igreja Embaixada de Cristo Beira", data_do_culto: "2026-07-12", culto: "Domingo 2º Culto", convidado_por: "Pastor local", nasceu_de_novo: true, quer_escola_de_fundacao: false, quer_aconselhamento: true, interesse_em_celula: false, celula_preferida: "", estado_do_seguimento: "Pending", conselheiro_responsavel: "Líder de Aconselhamento", notas: "Novo convertida — acompanhamento pendente." }
   ],
   followUps: [
-    { id: "fu-1", first_timer_id: "ft-1", church_id: "church-hq", data_do_contacto: "2026-07-06", metodo: "WhatsApp", resultado: "Mensagem enviada", proximo_passo: "Confirmar presença no próximo culto", proxima_data_de_contacto: "2026-07-09", notas: "Aguardando resposta.", actualizado_por: "Líder de Aconselhamento" }
+    { id: "fu-1", first_timer_id: "ft-1", person_type: "First Timer", full_name: "Irmã Aminata Chivinda", phone: "848287179", church_id: "church-hq", church_name: "National HQ - Christ Embassy Mozambique", responsible_name: "Líder de Aconselhamento", data_do_contacto: "2026-07-06", metodo: "WhatsApp", resultado: "Mensagem enviada", proximo_passo: "Confirmar presença no próximo culto", proxima_data_de_contacto: "2026-07-09", status: "Pending", notas: "Aguardando resposta.", actualizado_por: "Líder de Aconselhamento" },
+    { id: "fu-2", first_timer_id: "ft-1", person_type: "First Timer", full_name: "Irmã Aminata Chivinda", phone: "848287179", church_id: "church-hq", data_do_contacto: "2026-07-08", metodo: "Chamada", resultado: "Sem resposta — caixa postal", proxima_data_de_contacto: "2026-07-09", status: "No Response", notas: "Segunda tentativa.", actualizado_por: "Líder de Aconselhamento" },
+    { id: "fu-3", first_timer_id: "ft-2", person_type: "First Timer", full_name: "Sr. Mateus Nhantumbo", phone: "862720011", church_id: "church-hq", data_do_contacto: "2026-06-30", metodo: "WhatsApp", resultado: "Contactado — interessado na célula", proxima_data_de_contacto: "2026-07-05", status: "Contacted", notas: "Novo convertido — bom feedback.", actualizado_por: "Líder de Aconselhamento" },
+    { id: "fu-4", first_timer_id: "ft-2", person_type: "First Timer", full_name: "Sr. Mateus Nhantumbo", phone: "862720011", church_id: "church-hq", data_do_contacto: "2026-07-03", metodo: "Presencial", resultado: "Encaminhado para Escola de Fundação", status: "Sent to Foundation School", estado: "Enrolled in Foundation School", notas: "Inscrição na Escola de Fundação recomendada.", actualizado_por: "Líder de Aconselhamento" },
+    { id: "fu-5", first_timer_id: "ft-3", person_type: "First Timer", full_name: "Sra. Helena Cossa", phone: "843332211", church_id: "church-beira", church_name: "Igreja Embaixada de Cristo Beira", data_do_contacto: "2026-07-13", metodo: "Chamada", resultado: "Pendente — contacto inicial agendado", proxima_data_de_contacto: "2026-07-14", status: "Pending", notas: "Novo convertida — acompanhamento pendente.", actualizado_por: "Líder de Aconselhamento" },
+    { id: "fu-6", first_timer_id: "ft-2", person_type: "First Timer", full_name: "Sr. Mateus Nhantumbo", phone: "862720011", church_id: "church-hq", data_do_contacto: "2026-07-15", metodo: "Presencial", resultado: "Tornou-se membro da igreja", status: "Became Member", became_member: true, member_id: "m-2", notas: "Conversão para membro registada.", actualizado_por: "Admin Principal" }
   ],
   counseling: {
     requests: [
@@ -3384,8 +3421,8 @@ const seedData = {
     ]
   },
   members: [
-    { id: "m-1", tratamento: "Pastor", nome: "Kene", apelido: "Ume", telefone: "+258 86 227 0000", email: "", church_id: "church-hq", celula: "Sede", departamento: "Leadership", estado: "Active", data_de_entrada: "2024-01-01", origem: "Manual", notas: "" },
-    { id: "m-2", tratamento: "Irm�", nome: "Aminata", apelido: "Chivinda", telefone: "848287179", email: "", church_id: "church-hq", celula: "Mavalane", departamento: "Acompanhamento", estado: "In Progress", data_de_entrada: "2026-07-05", origem: "Primeira Vez", notas: "" }
+    { id: "m-1", tratamento: "Pastor", nome: "Kene", apelido: "Ume", telefone: "+258 86 227 0000", email: "", church_id: "church-hq", church_name: "National HQ - Christ Embassy Mozambique", celula: "Sede", departamento: "Leadership", estado: "Active", data_de_entrada: "2024-01-01", origem: "Manual", notas: "" },
+    { id: "m-2", tratamento: "Irmã", nome: "Aminata", apelido: "Chivinda", telefone: "848287179", email: "", church_id: "church-hq", church_name: "National HQ - Christ Embassy Mozambique", celula: "Mavalane", departamento: "Acompanhamento", estado: "In Progress", data_de_entrada: "2026-07-05", origem: "Primeira Vez", notas: "" }
   ],
   foundationStudents: [
     {
@@ -3969,7 +4006,9 @@ const foundationPageState = {
   tab: "overview",
   panel: "",
   filter: {},
-  lesson: { section: "attendance", classGroupId: "", lessonNumber: "1", teacherId: "", status: "", date: new Date().toISOString().slice(0, 10) },
+  teacherFilter: { search: "", churchId: "", status: "", role_type: "", deliveryMode: "", lesson: "", prisonOnly: false },
+  classFilter: { search: "", churchId: "", quarter: "", deliveryMode: "", teacherId: "", status: "" },
+  lesson: { section: "attendance", classGroupId: "", lessonNumber: "1", teacherId: "", status: "", date: new Date().toISOString().slice(0, 10), deliveryMode: "", locationId: "" },
   exam: { classGroupId: "", status: "" },
   graduation: { classGroupId: "", status: "" }
 };
@@ -4243,7 +4282,18 @@ Object.assign(TEXT.pt, {
   cellAlecOverview: "Visão Geral ALEC",
   cellMinistryOverview: "Visão Geral",
   cellReportsArea: "Relatórios de Células / Sister Eduarda",
-  receivedReports: "Relatórios Recebidos",
+  receivedReports: "Submissões Semanais",
+  weeklyCellReport: "Submissões Semanais",
+  cellOffering: "Oferta da Célula",
+  cellStatus: "Estado da Célula",
+  cellLeader: "Líder de Célula",
+  meetingDate: "Data do Encontro",
+  meetingType: "Tipo de Encontro",
+  soulsWonShort: "Almas Ganhas",
+  needsPastoralVisit: "Precisa de Visita Pastoral",
+  readyToMultiply: "Pronta para Multiplicar",
+  reportAlreadySubmittedWeek: "Já existe um relatório submetido para esta célula nesta semana",
+  reportSubmittedSuccess: "Relatório submetido com sucesso",
   cellEvaluation: "Avaliação",
   cellPerformance: "Desempenho das Células",
   leadersAttention: "Líderes em Atenção",
@@ -4308,7 +4358,7 @@ Object.assign(TEXT.en, {
   weeklyCellReportPublicHint: "Fill in your cell meeting details. The report will be sent to Cell Ministry for review.",
   backToLogin: "Back to Login",
   submitAnotherReport: "Submit another report",
-  reportSubmittedSuccess: "Report submitted successfully.",
+  reportSubmittedSuccess: "Report submitted successfully",
   reportSubmittedThanks: "Thank you. Your cell report was sent to Cell Ministry for review.",
   cannotFindCell: "I cannot find my cell",
   confirmAccurate: "I confirm that the submitted information is accurate.",
@@ -4316,7 +4366,19 @@ Object.assign(TEXT.en, {
   publicReportNumber: "Report number",
   reportNeedsReview: "Needs Review",
   sendToFinance: "Send to Finance",
-  requestCorrection: "Request Correction"
+  requestCorrection: "Request Correction",
+  cellOffering: "Cell Offering",
+  cellStatus: "Cell Status",
+  cellLeader: "Cell Leader",
+  meetingDate: "Meeting Date",
+  meetingType: "Meeting Type",
+  soulsWonShort: "Souls Won",
+  needsPastoralVisit: "Needs Pastoral Visit",
+  readyToMultiply: "Ready to Multiply",
+  needsFollowup: "Needs Follow-Up",
+  reportAlreadySubmittedWeek: "A report has already been submitted for this cell this week",
+  receivedReports: "Weekly Submissions",
+  weeklyCellReport: "Weekly Submissions"
 });
 
 function cleanDisplayText(value) {
@@ -4698,7 +4760,8 @@ function cellReportPublicText(key) {
       needs: "Necessidades da célula",
       leaderComments: "Comentários do líder",
       required: "Preencha os campos obrigatórios antes de submeter.",
-      duplicate: "Já existe um relatório submetido para esta célula nesta semana. Pode submeter, mas será marcado para revisão.",
+      duplicate: "Já existe um relatório submetido para esta célula nesta semana",
+      duplicateAllow: "Pode submeter mesmo assim — o relatório será marcado como possível duplicado.",
       next: "Próximo",
       previous: "Anterior"
     },
@@ -4750,7 +4813,8 @@ function cellReportPublicText(key) {
       needs: "Cell needs",
       leaderComments: "Leader comments",
       required: "Fill in all required fields before submitting.",
-      duplicate: "A report already exists for this cell and week. You can submit, but it will be marked for review.",
+      duplicate: "A report has already been submitted for this cell this week",
+      duplicateAllow: "You can still submit — the report will be marked as a possible duplicate.",
       next: "Next",
       previous: "Previous"
     }
@@ -4758,43 +4822,164 @@ function cellReportPublicText(key) {
   return labels[lang]?.[key] || labels.en[key] || key;
 }
 
+/** Same week + same group + same cell (id or manual name). Checks submissions + admin list. */
+function findPublicCellReportDuplicate({ reportWeek, cellGroupId, cellId, cellName, manualCell }) {
+  const week = String(reportWeek || "").trim();
+  const groupId = String(cellGroupId || "").trim();
+  const id = String(cellId || "").trim();
+  const name = String(cellName || "").trim().toLowerCase();
+  const pools = [
+    ...(state.cellReportSubmissions || []),
+    ...(state.cellLeadership?.cellReports || [])
+  ];
+  return pools.some((item) => {
+    const sameWeek = String(item.report_week || item.semana || "").trim() === week;
+    const sameGroup = String(item.cell_group_id || "").trim() === groupId;
+    if (!sameWeek || !sameGroup) return false;
+    if (manualCell || !id) {
+      return String(item.cell_name || item.celula || "").trim().toLowerCase() === name && !!name;
+    }
+    return String(item.cell_id || "").trim() === id;
+  });
+}
+
 function publicCellReportSelectOptions(items, valueKey, labelKey, selected = "", placeholder = "") {
-  return `<option value="">${placeholder}</option>${items.map((item) => `<option value="${escapeAttr(item[valueKey])}" ${String(item[valueKey]) === String(selected) ? "selected" : ""}>${escapeAttr(item[labelKey])}</option>`).join("")}`;
+  const labelOf = (item) => item[labelKey] || item.public_name || item.church_name || item.group_name || item.name || item.cell_name || item.id || "";
+  return `<option value="">${placeholder}</option>${(items || []).map((item) => `<option value="${escapeAttr(item[valueKey])}" ${String(item[valueKey]) === String(selected) ? "selected" : ""}>${escapeAttr(labelOf(item))}</option>`).join("")}`;
 }
 
 function publicCellReportSelectedCell() {
   const groupId = byId("publicCellGroup")?.value || "";
   const cellId = byId("publicCell")?.value || "";
-  return (state.cellRegistry || []).find((cell) => cell.id === cellId && (!groupId || cell.group_id === groupId)) || null;
+  return (state.cellRegistry || []).find((cell) =>
+    cell.id === cellId &&
+    (!groupId || cell.group_id === groupId || cell.cell_group_id === groupId || cell.group_cell_id === groupId)
+  ) || null;
 }
 
+function publicCellNumericField(name, label, { required = false, hint = "" } = {}) {
+  return `<div class="col-md-4 col-6">
+    <label class="form-label">${label}${required ? " *" : ""}</label>
+    ${hint ? `<small class="d-block text-secondary mb-1">${hint}</small>` : ""}
+    <input name="${name}" type="number" min="0" step="1" class="form-control" value="0" ${required ? "required" : ""}>
+  </div>`;
+}
+
+async function hydratePublicCellReportSources() {
+  // Prefer data layer when available; fall back to dashboard state.
+  try {
+    const churchApi = window.CEDataLayer?.churches || window.CEChurches || window.CESupabase;
+    if (churchApi?.listChurches) {
+      const result = await churchApi.listChurches();
+      if (result?.ok && Array.isArray(result.data) && result.data.length) {
+        const prev = new Map((state.churches || []).map((c) => [c.id, c]));
+        state.churches = result.data.map((row) => ({ ...(prev.get(row.id) || {}), ...row, id: row.id }));
+      }
+    }
+  } catch (error) {
+    console.warn("[CE CellReport public] churches hydrate skipped", error);
+  }
+  try {
+    const cellApi = window.CECellMinistry || window.CEDataLayer?.cellMinistry || window.CESupabase;
+    if (cellApi?.listCellGroups) {
+      const result = await cellApi.listCellGroups();
+      if (result?.ok && Array.isArray(result.data) && result.data.length) {
+        const prev = new Map((state.cellGroups || []).map((g) => [g.id, g]));
+        state.cellGroups = result.data.map((row) => ({
+          ...(prev.get(row.id) || {}),
+          ...row,
+          id: row.id,
+          group_name: row.group_name || row.name || prev.get(row.id)?.group_name
+        }));
+      }
+    }
+    if (cellApi?.listCells) {
+      const result = await cellApi.listCells();
+      if (result?.ok && Array.isArray(result.data) && result.data.length) {
+        const prev = new Map((state.cellRegistry || []).map((c) => [c.id, c]));
+        state.cellRegistry = result.data.map((row) => ({
+          ...(prev.get(row.id) || {}),
+          ...row,
+          id: row.id,
+          cell_name: row.cell_name || row.name || prev.get(row.id)?.cell_name,
+          group_id: row.group_id || row.cell_group_id || prev.get(row.id)?.group_id,
+          cell_group_id: row.cell_group_id || row.group_id || prev.get(row.id)?.cell_group_id
+        }));
+      }
+    }
+    if (cellApi?.listCellLeaders) {
+      const result = await cellApi.listCellLeaders();
+      if (result?.ok && Array.isArray(result.data) && result.data.length) {
+        state.cellLeadership = state.cellLeadership || {};
+        const prev = new Map((state.cellLeadership.leaders || []).map((l) => [l.id, l]));
+        state.cellLeadership.leaders = result.data.map((row) => ({
+          ...(prev.get(row.id) || {}),
+          ...row,
+          id: row.id,
+          nome_completo: row.nome_completo || row.full_name,
+          contacto: row.contacto || row.phone,
+          celula: row.celula || row.cell_name
+        }));
+      }
+    }
+  } catch (error) {
+    console.warn("[CE CellReport public] cell ministry hydrate skipped", error);
+  }
+}
+
+/**
+ * Public weekly cell report form (no admin login).
+ *
+ * Frontend-first protections (this phase):
+ * - honeypot field `website`
+ * - strong required + numeric + offering validation
+ * - session/localStorage rate limit (15s)
+ * - possible_duplicate + needs_review flags
+ *
+ * TODO (future backend / Supabase — do not implement now):
+ * - controlled public insert edge function / RPC
+ * - RLS policies for anonymous insert with validation
+ * - server-side validation of all fields
+ * - per-cell token or access code
+ * - unique shareable link per cell
+ * - no full admin authentication for leaders in this flow
+ */
 function renderPublicCellReportForm(successRecord = null) {
   const root = byId("publicCellReportView");
   if (!root) return;
   const churches = state.churches || [];
   const groups = state.cellGroups || [];
-  const registry = state.cellRegistry || [];
   const today = new Date().toISOString().slice(0, 10);
   if (successRecord) {
+    const submittedAt = successRecord.created_at
+      ? new Date(successRecord.created_at).toLocaleString()
+      : new Date().toLocaleString();
     root.innerHTML = `
       <section class="public-report-card public-report-success">
         <img src="https://embaixada-de-cristo.obiuba.com/assets/web/logo-ce.png" alt="Christ Embassy Mozambique" class="public-report-logo">
         <span class="eyebrow">${L("weeklyCellReportPublic")}</span>
+        <div class="public-success-badge mb-2"><i class="bi bi-check-circle-fill me-1"></i>${lang === "pt" ? "Enviado" : "Sent"}</div>
         <h1>${L("reportSubmittedSuccess")}</h1>
         <p>${L("reportSubmittedThanks")}</p>
         <div class="public-confirm-grid">
           <div><span>${L("publicReportNumber")}</span><strong>${escapeAttr(successRecord.id)}</strong></div>
-          <div><span>${cellReportPublicText("reportWeek")}</span><strong>${escapeAttr(successRecord.report_week)}</strong></div>
-          <div><span>${cellReportPublicText("cellName")}</span><strong>${escapeAttr(successRecord.cell_name)}</strong></div>
-          <div><span>${L("date")}</span><strong>${new Date(successRecord.created_at).toLocaleString()}</strong></div>
+          <div><span>${cellReportPublicText("reportWeek")}</span><strong>${escapeAttr(successRecord.report_week || "-")}</strong></div>
+          <div><span>${cellReportPublicText("cellName")}</span><strong>${escapeAttr(successRecord.cell_name || "-")}</strong></div>
+          <div><span>${lang === "pt" ? "Data de submissão" : "Submission date"}</span><strong>${escapeAttr(submittedAt)}</strong></div>
         </div>
+        ${successRecord.possible_duplicate ? `<p class="small mt-3 mb-0" style="color:#92400e;font-weight:800;">${cellReportPublicText("duplicate")}</p>` : ""}
         <div class="d-grid gap-2 d-sm-flex mt-4">
-          <button type="button" class="btn btn-ce-gold btn-touch" data-submit-another-cell-report>${L("submitAnotherReport")}</button>
-          <button type="button" class="btn btn-outline-cyan btn-touch" data-back-login>${L("backToLogin")}</button>
+          <button type="button" class="btn btn-ce-gold btn-touch" data-submit-another-cell-report>
+            <i class="bi bi-plus-circle me-1"></i>${L("submitAnotherReport")}
+          </button>
+          <button type="button" class="btn btn-outline-cyan btn-touch" data-back-login>
+            <i class="bi bi-box-arrow-left me-1"></i>${L("backToLogin")}
+          </button>
         </div>
       </section>`;
     return;
   }
+  const stepKeys = ["cellIdentity", "meeting", "participation", "spiritual", "offering", "status", "confirm"];
   root.innerHTML = `
     <section class="public-report-card">
       <div class="public-report-head">
@@ -4808,7 +4993,7 @@ function renderPublicCellReportForm(successRecord = null) {
       <form id="publicCellReportForm" class="public-report-form" novalidate>
         <input type="text" name="website" class="public-honeypot" tabindex="-1" autocomplete="off" aria-hidden="true">
         <div class="public-stepper" aria-label="${L("weeklyCellReportPublic")}">
-          ${["cellIdentity", "meeting", "participation", "offering", "status", "confirm"].map((key, index) => `<button type="button" class="${index === 0 ? "active" : ""}" data-public-step-jump="${index}"><span>${index + 1}</span>${cellReportPublicText(key)}</button>`).join("")}
+          ${stepKeys.map((key, index) => `<button type="button" class="${index === 0 ? "active" : ""}" data-public-step-jump="${index}"><span>${index + 1}</span>${cellReportPublicText(key)}</button>`).join("")}
         </div>
         <div class="public-form-alert d-none" data-public-form-alert></div>
         <section class="public-form-step active" data-public-step="0">
@@ -4828,7 +5013,7 @@ function renderPublicCellReportForm(successRecord = null) {
         <section class="public-form-step" data-public-step="1">
           <h2>${cellReportPublicText("meeting")}</h2>
           <div class="row g-3">
-            <div class="col-md-6"><label class="form-label">${cellReportPublicText("meetingType")} *</label><select name="meeting_type" class="form-select" required>${["Presencial", "Online", "Híbrido", "Outro"].map((item) => `<option>${item}</option>`).join("")}</select></div>
+            <div class="col-md-6"><label class="form-label">${cellReportPublicText("meetingType")} *</label><select name="meeting_type" class="form-select" required>${["Presencial", "Online", "Híbrido", "Outro"].map((item) => `<option value="${item}">${item}</option>`).join("")}</select></div>
             <div class="col-md-6"><label class="form-label">${cellReportPublicText("meetingLocation")}</label><input name="meeting_location" class="form-control"></div>
             <div class="col-md-6"><label class="form-label">${cellReportPublicText("startTime")}</label><input name="start_time" type="time" class="form-control"></div>
             <div class="col-md-6"><label class="form-label">${cellReportPublicText("endTime")}</label><input name="end_time" type="time" class="form-control"></div>
@@ -4839,58 +5024,147 @@ function renderPublicCellReportForm(successRecord = null) {
         </section>
         <section class="public-form-step" data-public-step="2">
           <h2>${cellReportPublicText("participation")}</h2>
+          <p class="text-secondary small mb-3">${lang === "pt" ? "ATT = Assistência · FT = Primeira Vez · NC = Novos Convertidos. Aceite 0 ou mais." : "ATT = Attendance · FT = First Timers · NC = New Converts. Accepts 0 or more."}</p>
           <div class="row g-3">
-            ${[
-              ["attendance_count", "attendance", true],
-              ["first_timers_count", "firstTimers"],
-              ["new_converts_count", "newConverts"],
-              ["contacted_people_count", "contacted"],
-              ["absent_members_count", "absent"],
-              ["children_youth_count", "childrenYouth"],
-              ["souls_won_count", "soulsWon"],
-              ["people_prayed_for_count", "peoplePrayed"],
-              ["referred_to_follow_up_count", "referredFollowUp"],
-              ["interested_in_foundation_school_count", "interestedFoundation"],
-              ["needs_pastoral_visit_count", "pastoralVisit"]
-            ].map(([name, key, required]) => `<div class="col-md-4"><label class="form-label">${cellReportPublicText(key)}${required ? " *" : ""}</label><input name="${name}" type="number" min="0" class="form-control" value="0" ${required ? "required" : ""}></div>`).join("")}
+            ${publicCellNumericField("attendance_count", cellReportPublicText("attendance"), { required: true, hint: "ATT" })}
+            ${publicCellNumericField("first_timers_count", cellReportPublicText("firstTimers"), { hint: "FT" })}
+            ${publicCellNumericField("new_converts_count", cellReportPublicText("newConverts"), { hint: "NC" })}
+            ${publicCellNumericField("contacted_people_count", cellReportPublicText("contacted"))}
+            ${publicCellNumericField("absent_members_count", cellReportPublicText("absent"))}
+            ${publicCellNumericField("children_youth_count", cellReportPublicText("childrenYouth"))}
+          </div>
+        </section>
+        <section class="public-form-step" data-public-step="3">
+          <h2>${cellReportPublicText("spiritual")}</h2>
+          <div class="row g-3">
+            ${publicCellNumericField("souls_won_count", cellReportPublicText("soulsWon"))}
+            ${publicCellNumericField("people_prayed_for_count", cellReportPublicText("peoplePrayed"))}
+            ${publicCellNumericField("referred_to_follow_up_count", cellReportPublicText("referredFollowUp"))}
+            ${publicCellNumericField("interested_in_foundation_school_count", cellReportPublicText("interestedFoundation"))}
+            ${publicCellNumericField("needs_pastoral_visit_count", cellReportPublicText("pastoralVisit"))}
             <div class="col-md-6"><label class="form-label">${cellReportPublicText("testimonies")}</label><textarea name="testimonies" class="form-control" rows="3"></textarea></div>
             <div class="col-md-6"><label class="form-label">${cellReportPublicText("prayerRequests")}</label><textarea name="prayer_requests" class="form-control" rows="3"></textarea></div>
           </div>
         </section>
-        <section class="public-form-step" data-public-step="3">
+        <section class="public-form-step" data-public-step="4">
           <h2>${cellReportPublicText("offering")}</h2>
+          <p class="text-secondary small mb-3">${lang === "pt" ? "A oferta reportada não vira receita verificada automaticamente — fica como «Pending Finance Review»." : "Reported offering does not become verified income automatically — it is marked Pending Finance Review."}</p>
           <div class="row g-3">
             <div class="col-md-4"><label class="form-label">${cellReportPublicText("offeringGiven")}</label><select name="offering_given" class="form-select" data-offering-given><option value="false">${L("no")}</option><option value="true">${L("yes")}</option></select></div>
             <div class="col-md-4"><label class="form-label">${cellReportPublicText("offeringAmount")}</label><input name="offering_amount" type="number" min="0" class="form-control" value="0"></div>
-            <div class="col-md-4"><label class="form-label">Moeda</label><input name="currency" class="form-control" value="MZN"></div>
-            <div class="col-md-6"><label class="form-label">${cellReportPublicText("paymentMethod")}</label><select name="payment_method" class="form-select">${["Dinheiro", "M-Pesa", "E-Mola", "Banco", "Outro"].map((item) => `<option>${item}</option>`).join("")}</select></div>
+            <div class="col-md-4"><label class="form-label">${lang === "pt" ? "Moeda" : "Currency"}</label><input name="currency" class="form-control" value="MZN"></div>
+            <div class="col-md-6"><label class="form-label">${cellReportPublicText("paymentMethod")}</label><select name="payment_method" class="form-select">${["Dinheiro", "M-Pesa", "E-Mola", "Banco", "Outro"].map((item) => `<option value="${item}">${item}</option>`).join("")}</select></div>
             <div class="col-md-6"><label class="form-label">${cellReportPublicText("paymentReference")}</label><input name="payment_reference" class="form-control"></div>
             <div class="col-md-6"><label class="form-label">${cellReportPublicText("proof")}</label><input name="proof_file" type="file" class="form-control" accept="image/*,.pdf"></div>
             <div class="col-md-6"><label class="form-label">${cellReportPublicText("financeNotes")}</label><textarea name="finance_notes" class="form-control" rows="3"></textarea></div>
           </div>
         </section>
-        <section class="public-form-step" data-public-step="4">
+        <section class="public-form-step" data-public-step="5">
           <h2>${cellReportPublicText("status")}</h2>
           <div class="row g-3">
-            <div class="col-md-6"><label class="form-label">${cellReportPublicText("cellHealth")} *</label><select name="cell_health_status" class="form-select" required>${["Saudável", "Estável", "Precisa de Acompanhamento", "Precisa de Visita Pastoral", "Pronta para Multiplicar", "Sem encontro esta semana"].map((item) => `<option>${item}</option>`).join("")}</select></div>
+            <div class="col-md-6"><label class="form-label">${cellReportPublicText("cellHealth")} *</label><select name="cell_health_status" class="form-select" required>${["Saudável", "Estável", "Precisa de Acompanhamento", "Precisa de Visita Pastoral", "Pronta para Multiplicar", "Sem Encontro Esta Semana"].map((item) => `<option value="${item}">${item}</option>`).join("")}</select></div>
             <div class="col-md-6"><label class="form-label">${cellReportPublicText("challenges")}</label><textarea name="challenges" class="form-control" rows="3"></textarea></div>
             <div class="col-md-6"><label class="form-label">${cellReportPublicText("needs")}</label><textarea name="needs" class="form-control" rows="3"></textarea></div>
             <div class="col-md-6"><label class="form-label">${cellReportPublicText("leaderComments")}</label><textarea name="leader_comments" class="form-control" rows="3"></textarea></div>
           </div>
         </section>
-        <section class="public-form-step" data-public-step="5">
+        <section class="public-form-step" data-public-step="6">
           <h2>${cellReportPublicText("confirm")}</h2>
+          <div class="public-confirm-summary record-card mb-3" data-public-confirm-summary>
+            <p class="text-secondary mb-0">${lang === "pt" ? "Revise os dados e confirme." : "Review the details and confirm."}</p>
+          </div>
           <label class="form-check public-confirm-check"><input name="confirmation" type="checkbox" class="form-check-input" required> <span class="form-check-label">${L("confirmAccurate")}</span></label>
         </section>
         <div class="public-form-actions">
           <button type="button" class="btn btn-outline-cyan btn-touch" data-public-prev disabled>${cellReportPublicText("previous")}</button>
-          <button type="button" class="btn btn-outline-light btn-touch" data-back-login>${L("backToLogin")}</button>
+          <button type="button" class="btn btn-outline-cyan btn-touch" data-back-login>${L("backToLogin")}</button>
           <button type="button" class="btn btn-ce-gold btn-touch" data-public-next>${cellReportPublicText("next")}</button>
           <button type="submit" class="btn btn-ce-gold btn-touch d-none" data-public-submit>${L("submitReport")}</button>
         </div>
       </form>
     </section>`;
   updatePublicCellReportDependentSelects();
+  setPublicCellReportStep(0);
+}
+
+function updatePublicCellReportConfirmSummary() {
+  const box = document.querySelector("[data-public-confirm-summary]");
+  const form = byId("publicCellReportForm");
+  if (!box || !form) return;
+  const data = new FormData(form);
+  const church = (state.churches || []).find((c) => c.id === data.get("church_id")) || {};
+  const group = (state.cellGroups || []).find((g) => g.id === data.get("cell_group_id")) || {};
+  const cell = publicCellReportSelectedCell();
+  const cellName = data.get("missing_cell") === "on"
+    ? String(data.get("manual_cell_name") || "").trim()
+    : (cell?.cell_name || "");
+  const offeringGiven = data.get("offering_given") === "true";
+  const offeringAmount = Number(data.get("offering_amount") || 0);
+  const offeringRow = offeringGiven
+    ? `<div><span>${cellReportPublicText("offeringAmount")}</span><strong>${escapeAttr(String(offeringAmount))} ${escapeAttr(data.get("currency") || "MZN")}</strong></div>`
+    : "";
+  box.innerHTML = `
+    <div class="public-confirm-grid">
+      <div><span>${cellReportPublicText("reportWeek")}</span><strong>${escapeAttr(data.get("report_week") || "-")}</strong></div>
+      <div><span>${cellReportPublicText("meetingDate")}</span><strong>${escapeAttr(data.get("meeting_date") || "-")}</strong></div>
+      <div><span>${cellReportPublicText("church")}</span><strong>${escapeAttr(church.public_name || church.church_name || "-")}</strong></div>
+      <div><span>${cellReportPublicText("cellGroup")}</span><strong>${escapeAttr(group.group_name || group.name || "-")}</strong></div>
+      <div><span>${cellReportPublicText("cellName")}</span><strong>${escapeAttr(cellName || "-")}</strong></div>
+      <div><span>${cellReportPublicText("leaderName")}</span><strong>${escapeAttr(data.get("leader_name") || "-")}</strong></div>
+      <div><span>${cellReportPublicText("attendance")} (ATT)</span><strong>${escapeAttr(data.get("attendance_count") || "0")}</strong></div>
+      <div><span>${cellReportPublicText("firstTimers")} (FT)</span><strong>${escapeAttr(data.get("first_timers_count") || "0")}</strong></div>
+      <div><span>${cellReportPublicText("newConverts")} (NC)</span><strong>${escapeAttr(data.get("new_converts_count") || "0")}</strong></div>
+      ${offeringRow}
+      <div><span>${cellReportPublicText("cellHealth")}</span><strong>${escapeAttr(data.get("cell_health_status") || "-")}</strong></div>
+    </div>`;
+}
+
+function validatePublicCellReportStep(stepIndex) {
+  const form = byId("publicCellReportForm");
+  const step = document.querySelector(`[data-public-step="${stepIndex}"]`);
+  const alertBox = form?.querySelector("[data-public-form-alert]");
+  if (!form || !step) return true;
+  const required = [...step.querySelectorAll("[required], input[name='manual_cell_name']")].filter((el) => {
+    if (el.name === "manual_cell_name") {
+      return form.querySelector("#publicMissingCell")?.checked;
+    }
+    if (el.name === "cell_id" && form.querySelector("#publicMissingCell")?.checked) return false;
+    if (el.disabled || el.closest(".d-none")) return false;
+    return true;
+  });
+  for (const el of required) {
+    if (el.type === "checkbox") {
+      if (!el.checked) {
+        if (alertBox) {
+          alertBox.textContent = cellReportPublicText("required");
+          alertBox.classList.remove("d-none");
+        }
+        el.focus();
+        return false;
+      }
+      continue;
+    }
+    if (String(el.value || "").trim() === "") {
+      if (alertBox) {
+        alertBox.textContent = cellReportPublicText("required");
+        alertBox.classList.remove("d-none");
+      }
+      el.focus();
+      return false;
+    }
+  }
+  if (stepIndex === 0) {
+    const missing = form.querySelector("#publicMissingCell")?.checked;
+    if (!missing && !form.querySelector("#publicCell")?.value) {
+      if (alertBox) {
+        alertBox.textContent = cellReportPublicText("required");
+        alertBox.classList.remove("d-none");
+      }
+      return false;
+    }
+  }
+  if (alertBox) alertBox.classList.add("d-none");
+  return true;
 }
 
 function setPublicCellReportStep(index) {
@@ -4905,33 +5179,66 @@ function setPublicCellReportStep(index) {
   if (prev) prev.disabled = safeIndex === 0;
   next?.classList.toggle("d-none", safeIndex === steps.length - 1);
   submit?.classList.toggle("d-none", safeIndex !== steps.length - 1);
+  if (safeIndex === steps.length - 1) updatePublicCellReportConfirmSummary();
+  document.querySelector(".public-report-card")?.scrollIntoView?.({ behavior: "smooth", block: "start" });
 }
 
 function updatePublicCellReportDependentSelects() {
-  const groupId = byId("publicCellGroup")?.value || "";
+  const churchId = byId("publicCellChurch")?.value || "";
+  const groupSelect = byId("publicCellGroup");
   const cellSelect = byId("publicCell");
+  if (groupSelect) {
+    const previousGroup = groupSelect.value;
+    const groups = (state.cellGroups || []).filter((group) => !churchId || group.church_id === churchId);
+    groupSelect.innerHTML = publicCellReportSelectOptions(groups, "id", "group_name", previousGroup, cellReportPublicText("cellGroup"));
+    if (!groups.some((g) => g.id === previousGroup)) groupSelect.value = "";
+  }
+  const groupId = byId("publicCellGroup")?.value || "";
   if (!cellSelect) return;
-  const cells = (state.cellRegistry || []).filter((cell) => !groupId || cell.group_id === groupId);
+  const cells = (state.cellRegistry || []).filter((cell) => {
+    const matchGroup = !groupId || cell.group_id === groupId || cell.cell_group_id === groupId || cell.group_cell_id === groupId;
+    const matchChurch = !churchId || cell.church_id === churchId;
+    return matchGroup && matchChurch;
+  });
   const previous = cellSelect.value;
-  cellSelect.innerHTML = `<option value="">${cellReportPublicText("cellName")}</option>${cells.map((cell) => `<option value="${escapeAttr(cell.id)}">${escapeAttr(cell.cell_name)}</option>`).join("")}`;
+  cellSelect.innerHTML = `<option value="">${cellReportPublicText("cellName")}</option>${cells.map((cell) => `<option value="${escapeAttr(cell.id)}">${escapeAttr(cell.cell_name || cell.name)}</option>`).join("")}`;
   if (cells.some((cell) => cell.id === previous)) cellSelect.value = previous;
+  else cellSelect.value = "";
   updatePublicCellLeaderFields();
 }
 
 function updatePublicCellLeaderFields() {
   const cell = publicCellReportSelectedCell();
-  const leader = (state.cellLeadership?.leaders || []).find((item) => item.celula === cell?.cell_name || item.leader_id === cell?.leader_id);
-  const name = cell?.leader_name || leader?.nome_completo || "";
-  const phone = leader?.contacto || cell?.leader_phone || "";
-  if (name && byId("publicLeaderName")) byId("publicLeaderName").value = name;
-  if (phone && byId("publicLeaderPhone")) byId("publicLeaderPhone").value = phone;
+  const leader = (state.cellLeadership?.leaders || []).find((item) =>
+    item.cell_id === cell?.id ||
+    item.celula === cell?.cell_name ||
+    item.cell_name === cell?.cell_name ||
+    item.leader_id === cell?.leader_id ||
+    item.id === cell?.leader_id
+  );
+  const name = cell?.leader_name || leader?.nome_completo || leader?.full_name || "";
+  const phone = cell?.leader_phone || leader?.contacto || leader?.phone || leader?.whatsapp || "";
+  if (byId("publicLeaderName") && name) byId("publicLeaderName").value = name;
+  if (byId("publicLeaderPhone") && phone) byId("publicLeaderPhone").value = phone;
 }
 
-function showPublicCellReport(successRecord = null) {
+async function showPublicCellReport(successRecord = null) {
   byId("loginView")?.classList.add("d-none");
   byId("appView")?.classList.add("d-none");
   byId("publicCellReportView")?.classList.remove("d-none");
+  if (!successRecord) {
+    try {
+      await hydratePublicCellReportSources();
+    } catch (error) {
+      console.warn("[CE CellReport public] hydrate failed", error);
+    }
+  }
   renderPublicCellReportForm(successRecord);
+}
+
+function isPublicCellReportRoute(route = "") {
+  const value = String(route || "").replace(/^#\/?/, "").replace(/^\//, "");
+  return value === "submit-cell-report" || value === "cell-report-submit" || value === "cell-report";
 }
 
 function showLoginView() {
@@ -4941,117 +5248,211 @@ function showLoginView() {
   history.replaceState(null, "", "#login");
 }
 
-function collectPublicCellReport(form) {
+function collectPublicCellReport(form, proofMeta = null) {
   const data = new FormData(form);
   const now = new Date().toISOString();
   const church = (state.churches || []).find((item) => item.id === data.get("church_id")) || {};
   const group = (state.cellGroups || []).find((item) => item.id === data.get("cell_group_id")) || {};
   const selectedCell = (state.cellRegistry || []).find((item) => item.id === data.get("cell_id")) || {};
   const manualCell = data.get("missing_cell") === "on";
-  const offeringAmount = Number(data.get("offering_amount") || 0);
-  const offeringGiven = data.get("offering_given") === "true" || offeringAmount > 0;
-  const existing = (state.cellReportSubmissions || []).some((item) => item.report_week === data.get("report_week") && item.cell_group_id === data.get("cell_group_id") && item.cell_id === data.get("cell_id"));
-  const missingReference = offeringAmount > 0 && !String(data.get("payment_reference") || "").trim();
+  // Offering: explicit "yes" and/or amount > 0 — never auto-post verified finance.
+  let offeringAmount = Math.max(0, Number(data.get("offering_amount") || 0));
+  let offeringGiven = data.get("offering_given") === "true" || offeringAmount > 0;
+  if (!offeringGiven) offeringAmount = 0;
+  const cellName = manualCell
+    ? String(data.get("manual_cell_name") || "").trim()
+    : (selectedCell.cell_name || selectedCell.name || "");
+  const cellId = manualCell ? "" : (selectedCell.id || data.get("cell_id") || "");
+  const existing = findPublicCellReportDuplicate({
+    reportWeek: data.get("report_week"),
+    cellGroupId: group.id || data.get("cell_group_id"),
+    cellId,
+    cellName,
+    manualCell
+  });
+  const missingReference = offeringGiven && offeringAmount > 0 && !String(data.get("payment_reference") || "").trim();
   const health = String(data.get("cell_health_status") || "");
+  // Manual cell always needs review
   const needsReview = manualCell || existing || missingReference || health.includes("Acompanhamento") || health.includes("Pastoral");
   const id = `cell-sub-${Date.now()}`;
+  const leaderName = String(data.get("leader_name") || "").trim();
+  const leaderPhone = String(data.get("leader_phone") || "").trim();
+  const proofFile = form.querySelector('[name="proof_file"]')?.files?.[0] || null;
   return {
     id,
     report_week: data.get("report_week"),
     meeting_date: data.get("meeting_date"),
-    church_id: church.id || data.get("church_id"),
+    church_id: church.id || data.get("church_id") || "",
     church_name: church.public_name || church.church_name || "",
-    cell_group_id: group.id || data.get("cell_group_id"),
-    cell_group_name: group.group_name || "",
-    cell_id: manualCell ? "" : selectedCell.id || data.get("cell_id"),
-    cell_name: manualCell ? String(data.get("manual_cell_name") || "").trim() : selectedCell.cell_name || "",
-    leader_name: String(data.get("leader_name") || "").trim(),
-    leader_phone: String(data.get("leader_phone") || "").trim(),
-    meeting_type: data.get("meeting_type"),
-    meeting_location: data.get("meeting_location"),
-    start_time: data.get("start_time"),
-    end_time: data.get("end_time"),
-    topic: data.get("topic"),
-    lesson_shared: data.get("lesson_shared"),
-    meeting_notes: data.get("meeting_notes"),
+    cell_group_id: group.id || data.get("cell_group_id") || "",
+    cell_group_name: group.group_name || group.name || "",
+    cell_id: cellId,
+    cell_name: cellName,
+    leader_id: selectedCell.leader_id || "",
+    leader_name: leaderName,
+    leader_phone: leaderPhone,
+    meeting_type: data.get("meeting_type") || "Presencial",
+    meeting_location: data.get("meeting_location") || "",
+    start_time: data.get("start_time") || "",
+    end_time: data.get("end_time") || "",
+    topic: data.get("topic") || "",
+    lesson_shared: data.get("lesson_shared") || "",
+    meeting_notes: data.get("meeting_notes") || "",
     attendance_count: Number(data.get("attendance_count") || 0),
+    att: Number(data.get("attendance_count") || 0),
     first_timers_count: Number(data.get("first_timers_count") || 0),
+    ft: Number(data.get("first_timers_count") || 0),
     new_converts_count: Number(data.get("new_converts_count") || 0),
+    nc: Number(data.get("new_converts_count") || 0),
     contacted_people_count: Number(data.get("contacted_people_count") || 0),
     absent_members_count: Number(data.get("absent_members_count") || 0),
     children_youth_count: Number(data.get("children_youth_count") || 0),
     souls_won_count: Number(data.get("souls_won_count") || 0),
+    rs: Number(data.get("souls_won_count") || 0),
     people_prayed_for_count: Number(data.get("people_prayed_for_count") || 0),
-    testimonies: data.get("testimonies"),
+    testimonies: data.get("testimonies") || "",
     referred_to_follow_up_count: Number(data.get("referred_to_follow_up_count") || 0),
     interested_in_foundation_school_count: Number(data.get("interested_in_foundation_school_count") || 0),
     needs_pastoral_visit_count: Number(data.get("needs_pastoral_visit_count") || 0),
-    prayer_requests: data.get("prayer_requests"),
+    prayer_requests: data.get("prayer_requests") || "",
     offering_given: offeringGiven,
     offering_amount: offeringAmount,
-    currency: data.get("currency") || "MZN",
-    payment_method: data.get("payment_method"),
-    payment_reference: data.get("payment_reference"),
-    proof_file_url: data.get("proof_file")?.name || "",
-    finance_review_status: offeringAmount > 0 ? "Pending Finance Review" : "Not Applicable",
+    oferta: offeringAmount,
+    currency: "MZN",
+    payment_method: offeringGiven ? (data.get("payment_method") || "") : "",
+    payment_reference: offeringGiven ? (data.get("payment_reference") || "") : "",
+    proof_file_name: proofMeta?.name || proofFile?.name || "",
+    proof_file_url: proofMeta?.dataUrl || "",
+    finance_notes: data.get("finance_notes") || "",
+    // CRITICAL: never auto-create verified finance income from this form.
+    // If offering_amount > 0 → Pending Finance Review; else Not Applicable.
+    finance_review_status: offeringAmount > 0 || offeringGiven ? "Pending Finance Review" : "Not Applicable",
     cell_health_status: health,
-    challenges: data.get("challenges"),
-    needs: data.get("needs"),
-    leader_comments: data.get("leader_comments"),
+    challenges: data.get("challenges") || "",
+    needs: data.get("needs") || "",
+    leader_comments: data.get("leader_comments") || "",
     submitted_by_type: "Cell Leader Public Form",
     submitted_from: "login_public_button",
-    submitter_ip: "frontend-prototype",
     submitter_device: navigator.userAgent,
     status: needsReview ? "Pending Review" : "Submitted",
-    estado: needsReview ? "Submetido" : "Submetido",
-    needs_review: needsReview,
-    possible_duplicate: existing,
+    estado: "Submetido",
+    needs_review: !!needsReview || !!manualCell,
+    possible_duplicate: !!existing,
     reviewed_by: "",
     reviewed_at: "",
     validated_by: "",
     validated_at: "",
+    created_by: leaderName,
+    updated_by: leaderName,
     created_at: now,
     updated_at: now
   };
+}
+
+function readPublicCellReportProof(form) {
+  const input = form.querySelector('[name="proof_file"]');
+  const file = input?.files?.[0];
+  if (!file) return Promise.resolve(null);
+  if (file.size > 3 * 1024 * 1024) {
+    return Promise.resolve({ name: file.name, dataUrl: "", tooLarge: true });
+  }
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve({ name: file.name, type: file.type, dataUrl: reader.result });
+    reader.onerror = () => resolve({ name: file.name, dataUrl: "" });
+    reader.readAsDataURL(file);
+  });
 }
 
 function cellReportSubmissionToInternalReport(submission) {
   return {
     id: submission.id,
     church_id: submission.church_id,
+    church_name: submission.church_name,
     created_by: submission.leader_name,
     updated_by: submission.leader_name,
     created_at: submission.created_at,
     updated_at: submission.updated_at,
     status: submission.status,
+    report_week: submission.report_week,
     semana: submission.report_week,
     data_inicio: submission.report_week,
     data_fim: submission.meeting_date,
     meeting_date: submission.meeting_date,
     cell_group_id: submission.cell_group_id,
+    cell_group_name: submission.cell_group_name,
     group_name: submission.cell_group_name,
     celula: submission.cell_name,
+    cell_name: submission.cell_name,
     cell_id: submission.cell_id,
     nome_do_lider: submission.leader_name,
+    leader_name: submission.leader_name,
     leader_phone: submission.leader_phone,
+    leader_id: submission.leader_id || "",
+    // Meeting
+    meeting_type: submission.meeting_type || "",
+    meeting_location: submission.meeting_location || "",
+    start_time: submission.start_time || "",
+    end_time: submission.end_time || "",
+    topic: submission.topic || "",
+    lesson_shared: submission.lesson_shared || "",
+    meeting_notes: submission.meeting_notes || "",
+    // Participation
     att: submission.attendance_count,
+    attendance_count: submission.attendance_count,
     ft: submission.first_timers_count,
+    first_timers_count: submission.first_timers_count,
     nc: submission.new_converts_count,
+    new_converts_count: submission.new_converts_count,
+    contacted_people_count: submission.contacted_people_count || 0,
+    absent_members_count: submission.absent_members_count || 0,
+    children_youth_count: submission.children_youth_count || 0,
+    // Offering / spiritual / health
     oferta: submission.offering_amount,
+    offering_amount: submission.offering_amount,
+    offering_given: submission.offering_given,
+    currency: submission.currency,
+    payment_method: submission.payment_method,
+    payment_reference: submission.payment_reference,
+    proof_file_url: submission.proof_file_url || "",
+    finance_notes: submission.finance_notes || "",
     rs: submission.souls_won_count,
+    souls_won_count: submission.souls_won_count,
+    people_prayed_for_count: submission.people_prayed_for_count,
+    testimonies: submission.testimonies,
+    prayer_requests: submission.prayer_requests,
+    referred_to_follow_up_count: submission.referred_to_follow_up_count,
+    interested_in_foundation_school_count: submission.interested_in_foundation_school_count,
+    needs_pastoral_visit_count: submission.needs_pastoral_visit_count,
     observacoes: submission.leader_comments || submission.meeting_notes || "",
+    leader_comments: submission.leader_comments,
+    challenges: submission.challenges,
+    needs: submission.needs,
     cell_health_status: submission.cell_health_status,
     needs_review: submission.needs_review,
     possible_duplicate: submission.possible_duplicate,
-    finance_review_status: submission.finance_review_status,
-    submetido_por: submission.submitted_by_type,
+    finance_review_status: submission.finance_review_status || "Not Applicable",
+    submitted_by_type: submission.submitted_by_type || "Cell Leader Public Form",
+    submitted_from: submission.submitted_from || "login_public_button",
+    submetido_por: submission.submitted_by_type || "Cell Leader Public Form",
+    submitter_device: submission.submitter_device || "",
     avaliado_por: "",
     validado_por: "",
-    estado: submission.status === "Validated" ? "Validado" : submission.status === "Approved" ? "Aprovado" : "Submetido"
+    // Keep both English status (badge) and PT estado for legacy filters.
+    estado:
+      submission.status === "Validated"
+        ? "Validado"
+        : submission.status === "Approved"
+          ? "Aprovado"
+          : submission.status === "Pending Review"
+            ? "Pendente de Revisão"
+            : submission.status === "Rejected"
+              ? "Rejeitado"
+              : "Submetido"
   };
 }
 
-function submitPublicCellReport(form) {
+async function submitPublicCellReport(form) {
   const alert = form.querySelector("[data-public-form-alert]");
   const data = new FormData(form);
   const lastSubmitAt = Number(localStorage.getItem("ce-public-cell-report-last-submit") || 0);
@@ -5062,50 +5463,235 @@ function submitPublicCellReport(form) {
     }
     return;
   }
-  const missingCell = data.get("missing_cell") === "on";
-  const requiredOk = data.get("report_week") && data.get("meeting_date") && data.get("church_id") && data.get("cell_group_id") && (data.get("cell_id") || data.get("manual_cell_name")) && data.get("leader_name") && data.get("leader_phone") && data.get("meeting_type") && data.get("attendance_count") !== "" && data.get("cell_health_status") && data.get("confirmation") === "on";
-  const offeringAmount = Number(data.get("offering_amount") || 0);
-  const offeringGiven = data.get("offering_given") === "true";
   if (data.get("website")) return;
-  if (!requiredOk || Number(data.get("attendance_count")) < 0 || offeringAmount < 0 || (offeringGiven && offeringAmount <= 0) || (missingCell && !String(data.get("manual_cell_name") || "").trim())) {
+
+  // Required identity fields
+  const missingCell = data.get("missing_cell") === "on";
+  const hasCell = missingCell
+    ? !!String(data.get("manual_cell_name") || "").trim()
+    : !!String(data.get("cell_id") || "").trim();
+  const identityOk =
+    !!String(data.get("report_week") || "").trim() &&
+    !!String(data.get("meeting_date") || "").trim() &&
+    !!String(data.get("church_id") || "").trim() &&
+    !!String(data.get("cell_group_id") || "").trim() &&
+    hasCell &&
+    !!String(data.get("leader_name") || "").trim() &&
+    !!String(data.get("leader_phone") || "").trim();
+
+  // Required operational fields: meeting type, attendance, cell health, final confirmation
+  const flowOk =
+    !!String(data.get("meeting_type") || "").trim() &&
+    data.get("attendance_count") !== "" &&
+    !!String(data.get("cell_health_status") || "").trim() &&
+    data.get("confirmation") === "on";
+
+  // All numeric fields must be >= 0
+  const numericNames = [
+    "attendance_count", "first_timers_count", "new_converts_count",
+    "contacted_people_count", "absent_members_count", "children_youth_count",
+    "souls_won_count", "people_prayed_for_count", "referred_to_follow_up_count",
+    "interested_in_foundation_school_count", "needs_pastoral_visit_count", "offering_amount"
+  ];
+  const numbersOk = numericNames.every((name) => {
+    const raw = data.get(name);
+    if (raw === null || raw === undefined || raw === "") return true;
+    const n = Number(raw);
+    return !Number.isNaN(n) && n >= 0;
+  });
+
+  // If offering_given = Yes, offering_amount is required (> 0)
+  const offeringGiven = data.get("offering_given") === "true";
+  const offeringAmount = Number(data.get("offering_amount") || 0);
+  const offeringOk = !offeringGiven || offeringAmount > 0;
+
+  if (!identityOk || !flowOk || !numbersOk || !offeringOk) {
     if (alert) {
-      alert.textContent = cellReportPublicText("required");
+      alert.textContent = !numbersOk
+        ? (lang === "pt" ? "Os valores numéricos devem ser 0 ou superiores." : "Numeric values must be 0 or greater.")
+        : !offeringOk
+          ? (lang === "pt" ? "Se houve oferta, o valor da oferta é obrigatório." : "If there was an offering, the amount is required.")
+          : cellReportPublicText("required");
       alert.classList.remove("d-none");
     }
     return;
   }
-  const submission = collectPublicCellReport(form);
+
+  // Section 12 — duplicate check (same week + group + cell); still allow submit
+  const cellNamePreview = missingCell
+    ? String(data.get("manual_cell_name") || "").trim()
+    : ((state.cellRegistry || []).find((c) => c.id === data.get("cell_id"))?.cell_name || "");
+  const isDuplicate = findPublicCellReportDuplicate({
+    reportWeek: data.get("report_week"),
+    cellGroupId: data.get("cell_group_id"),
+    cellId: missingCell ? "" : data.get("cell_id"),
+    cellName: cellNamePreview,
+    manualCell: missingCell
+  });
+  if (isDuplicate) {
+    if (alert) {
+      alert.textContent = `${cellReportPublicText("duplicate")} ${cellReportPublicText("duplicateAllow")}`;
+      alert.classList.remove("d-none");
+      alert.style.borderColor = "rgba(217, 119, 6, 0.45)";
+      alert.style.color = "#92400e";
+      alert.style.background = "#fef3c7";
+    }
+    const proceed = window.confirm(
+      `${cellReportPublicText("duplicate")}\n\n${cellReportPublicText("duplicateAllow")}`
+    );
+    if (!proceed) return;
+  }
+
+  const submitBtn = form.querySelector("[data-public-submit]");
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = lang === "pt" ? "A enviar…" : "Submitting…";
+  }
+  const proofMeta = await readPublicCellReportProof(form);
+  if (proofMeta?.tooLarge) {
+    if (alert) {
+      alert.textContent = lang === "pt" ? "Comprovativo demasiado grande (máx. 3MB). Remova o ficheiro ou escolha outro." : "Proof file too large (max 3MB). Remove it or choose another.";
+      alert.classList.remove("d-none");
+    }
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = L("submitReport");
+    }
+    return;
+  }
+  const submission = collectPublicCellReport(form, proofMeta);
+  // Ensure auto values match spec exactly
+  submission.submitted_by_type = "Cell Leader Public Form";
+  submission.submitted_from = "login_public_button";
+  submission.currency = "MZN";
+  submission.possible_duplicate = !!isDuplicate || !!submission.possible_duplicate;
+  if (submission.possible_duplicate) {
+    submission.status = "Pending Review";
+    submission.needs_review = true;
+  }
   localStorage.setItem("ce-public-cell-report-last-submit", String(Date.now()));
   state.cellReportSubmissions = Array.isArray(state.cellReportSubmissions) ? state.cellReportSubmissions : [];
-  state.cellReportSubmissions.unshift(submission);
+  state.cellLeadership = state.cellLeadership || {};
   state.cellLeadership.cellReports = Array.isArray(state.cellLeadership.cellReports) ? state.cellLeadership.cellReports : [];
-  state.cellLeadership.cellReports.unshift(cellReportSubmissionToInternalReport(submission));
+  // Prefer CECellMinistry.createCellReport / data layer; never block UI.
+  // Persist to state only after id is stable (sync submission + internal row).
+  try {
+    const repo = window.CECellMinistry || window.CEDataLayer?.cellMinistry || window.CEDataLayer?.cellReports;
+    if (repo?.createCellReport) {
+      const result = await repo.createCellReport(submission);
+      if (result && result.ok === false) {
+        console.warn("[CE CellReport public] createCellReport soft-fail", result);
+        void dualWriteCellMinistryRecord("cellReport", "create", submission);
+      } else if (result?.ok && result.data) {
+        if (result.data.id) submission.id = result.data.id;
+        if (result.data.finance_review_status) submission.finance_review_status = result.data.finance_review_status;
+        Object.assign(submission, {
+          status: result.data.status || submission.status,
+          finance_review_status: result.data.finance_review_status || submission.finance_review_status,
+          submitted_by_type: submission.submitted_by_type || result.data.submitted_by_type,
+          submitted_from: submission.submitted_from || result.data.submitted_from
+        });
+      }
+    } else {
+      void dualWriteCellMinistryRecord("cellReport", "create", submission);
+    }
+  } catch (error) {
+    console.warn("[CE CellReport public] create via data layer failed — local only", error);
+    void dualWriteCellMinistryRecord("cellReport", "create", submission);
+  }
+  const internalReport = cellReportSubmissionToInternalReport(submission);
+  // Newest first — remove any prior stub with same id then unshift
+  state.cellReportSubmissions = state.cellReportSubmissions.filter((item) => item.id !== submission.id);
+  state.cellLeadership.cellReports = state.cellLeadership.cellReports.filter((item) => item.id !== submission.id);
+  state.cellReportSubmissions.unshift(submission);
+  state.cellLeadership.cellReports.unshift(internalReport);
+  // Internal notifications (mock/data layer) — never block submission
+  try {
+    notifyPublicCellReportSubmitted(submission);
+  } catch (error) {
+    console.warn("[CE CellReport public] notification fallback — submit continues", error);
+  }
+  try {
+    saveState("Public cell report submitted");
+  } catch (error) {
+    // Public form may run before full admin session; still persist blob.
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (_) {}
+    console.warn("[CE CellReport public] saveState fallback", error);
+  }
+  showPublicCellReport(submission);
+}
+
+/** §17 — internal notifications for public cell report (safe if system incomplete). */
+function notifyPublicCellReportSubmitted(submission) {
+  if (typeof createNotification !== "function") {
+    console.info("[CE CellReport public] TODO: notification system not ready");
+    return;
+  }
+  const churchId = submission.church_id || "";
+  const leader = submission.leader_name || "-";
+  const cell = submission.cell_name || "-";
+  const week = submission.report_week || "-";
+  const title = lang === "pt" ? "Novo relatório de célula submetido" : "New cell report submitted";
+  const message = lang === "pt"
+    ? `O líder ${leader} submeteu relatório da célula ${cell} para a semana ${week}.`
+    : `Leader ${leader} submitted the ${cell} cell report for week ${week}.`;
+  // Pastora Flávia + Sister Eduarda
   createNotification({
-    title: lang === "pt" ? "Novo relatório de célula submetido" : "New cell report submitted",
-    message: lang === "pt" ? `O líder ${submission.leader_name} submeteu relatório da célula ${submission.cell_name} para a semana ${submission.report_week}.` : `${submission.leader_name} submitted the ${submission.cell_name} cell report for week ${submission.report_week}.`,
+    title,
+    message,
     module: "cell_ministry",
     entity_type: "cellReportSubmission",
     entity_id: submission.id,
-    recipient_role: "Cell Ministry Head",
-    recipient_church_id: submission.church_id,
     action_url: "cellReceivedReports",
-    action_label: L("view")
+    action_label: L("view"),
+    priority: "high",
+    type: "action_required",
+    recipients: [
+      { scope: "role", recipient_role: "Cell Ministry Head", recipient_church_id: churchId },
+      { scope: "role", recipient_role: "Final Coordinator", recipient_church_id: churchId },
+      { scope: "user", recipient_user_id: "u-5", recipient_church_id: churchId },
+      { scope: "user", recipient_user_id: "u-6", recipient_church_id: churchId }
+    ]
   });
-  if (submission.offering_amount > 0) {
+  if (Number(submission.offering_amount || 0) > 0 || submission.offering_given) {
     createNotification({
       title: lang === "pt" ? "Relatório de célula com oferta" : "Cell report with offering",
-      message: lang === "pt" ? "Relatório de célula com oferta aguardando revisão financeira." : "A cell report with offering is waiting for finance review.",
+      message: lang === "pt"
+        ? `A célula ${cell} submeteu relatório com oferta aguardando revisão financeira.`
+        : `Cell ${cell} submitted a report with an offering awaiting finance review.`,
       module: "finance",
       entity_type: "cellReportSubmission",
       entity_id: submission.id,
-      recipient_role: "Finance Head",
-      recipient_church_id: submission.church_id,
       action_url: "cellReceivedReports",
-      action_label: L("view")
+      action_label: L("view"),
+      priority: "normal",
+      recipients: [
+        { scope: "role", recipient_role: "Finance Head", recipient_church_id: churchId },
+        { scope: "role", recipient_role: "Cell Ministry Head", recipient_church_id: churchId },
+        { scope: "role", recipient_role: "Final Coordinator", recipient_church_id: churchId }
+      ]
     });
   }
-  saveState("Public cell report submitted");
-  showPublicCellReport(submission);
+  if (submission.needs_review || submission.possible_duplicate || /pastoral|acompanhamento/i.test(String(submission.cell_health_status || ""))) {
+    createNotification({
+      title: lang === "pt" ? "Relatório de célula precisa revisão" : "Cell report needs review",
+      message: lang === "pt"
+        ? `O relatório de ${cell} precisa de revisão (${submission.possible_duplicate ? "possível duplicado" : submission.cell_health_status || "needs_review"}).`
+        : `The report for ${cell} needs review (${submission.possible_duplicate ? "possible duplicate" : submission.cell_health_status || "needs_review"}).`,
+      module: "cell_ministry",
+      entity_type: "cellReportSubmission",
+      entity_id: submission.id,
+      action_url: "cellReceivedReports",
+      action_label: L("view"),
+      priority: "high",
+      recipients: [
+        { scope: "role", recipient_role: "Cell Ministry Head", recipient_church_id: churchId },
+        { scope: "role", recipient_role: "Final Coordinator", recipient_church_id: churchId }
+      ]
+    });
+  }
 }
 
 function updateCellReportReviewAction(action, reportId) {
@@ -5142,9 +5728,11 @@ function updateCellReportReviewAction(action, reportId) {
     report.validated_at = now;
   }
   if (action === "finance") {
+    // Placeholder only — does not create a verified finance receipt yet.
     report.finance_review_status = "Pending Finance Review";
     report.finance_sent_at = now;
     report.finance_sent_by = activeUser?.name || "Admin Principal";
+    if (Number(report.oferta || report.offering_amount || 0) > 0) report.offering_given = true;
     createNotification({
       title: lang === "pt" ? "Oferta de célula enviada para Finanças" : "Cell offering sent to Finance",
       message: lang === "pt" ? `A oferta reportada da célula ${report.celula || report.cell_name || "-"} foi encaminhada para revisão financeira.` : `The reported offering for ${report.celula || report.cell_name || "-"} was sent for finance review.`,
@@ -5158,12 +5746,16 @@ function updateCellReportReviewAction(action, reportId) {
     });
   }
   if (action === "followup") {
+    // Placeholder — marks follow-up need; full follow-up module link later.
     report.needs_review = true;
     report.cell_health_status = report.cell_health_status || "Precisa de Acompanhamento";
+    report.follow_up_flagged_at = now;
   }
   if (action === "pastoral") {
+    // Placeholder — marks pastoral visit need; pastoral visit queue later.
     report.needs_review = true;
     report.cell_health_status = "Precisa de Visita Pastoral";
+    report.pastoral_visit_flagged_at = now;
   }
   const submission = (state.cellReportSubmissions || []).find((item) => item.id === reportId);
   if (submission) {
@@ -5177,6 +5769,7 @@ function updateCellReportReviewAction(action, reportId) {
     submission.needs_review = report.needs_review;
   }
   saveState(`Cell report ${action}`);
+  void dualWriteCellMinistryRecord("cellReport", "update", report);
   setRoute(activeRoute);
 }
 
@@ -5200,6 +5793,9 @@ function openCellReportDetails(reportId) {
     ["ATT", source.attendance_count ?? source.att],
     ["FT", source.first_timers_count ?? source.ft],
     ["NC", source.new_converts_count ?? source.nc],
+    [lang === "pt" ? "Pessoas contactadas" : "People contacted", source.contacted_people_count],
+    [lang === "pt" ? "Ausentes importantes" : "Important absents", source.absent_members_count],
+    [lang === "pt" ? "Crianças/Jovens" : "Children/Youth", source.children_youth_count],
     [lang === "pt" ? "Almas ganhas" : "Souls Won", source.souls_won_count ?? source.rs],
     [lang === "pt" ? "Oferta reportada" : "Reported Offering", money(source.offering_amount || source.oferta || 0)],
     [lang === "pt" ? "Revisão financeira" : "Finance Review", source.finance_review_status || "Not Applicable"],
@@ -5207,6 +5803,8 @@ function openCellReportDetails(reportId) {
     [L("status"), source.estado || source.status],
     [L("reportNeedsReview"), yesNo(source.needs_review)],
     [lang === "pt" ? "Submetido por" : "Submitted By", source.submitted_by_type || source.submetido_por],
+    [lang === "pt" ? "Origem" : "Submitted From", source.submitted_from || ""],
+    [lang === "pt" ? "Possível duplicado" : "Possible Duplicate", yesNo(source.possible_duplicate)],
     [lang === "pt" ? "Submetido em" : "Submitted At", source.created_at ? new Date(source.created_at).toLocaleString() : ""],
     [L("notes"), source.meeting_notes || source.observacoes],
     [lang === "pt" ? "Testemunhos" : "Testimonies", source.testimonies],
@@ -5329,7 +5927,34 @@ function canAddChurch() {
 }
 
 function relationalChurches() {
-  return state.churches.map((church) => migrateChurchRecord(church));
+  // Prefer hydrated churches (from churchesRepository on login). Keeps local-created churches visible in selects.
+  return (state.churches || []).map((church) => migrateChurchRecord(church));
+}
+
+/** Refresh churches from data layer before opening forms that need church selects (First Timers, Members). */
+async function refreshChurchesFromRepositoryForForms() {
+  const repo = getChurchesRepoSafe();
+  if (!repo?.listChurches) return false;
+  try {
+    const result = await repo.listChurches();
+    if (!result?.ok || !Array.isArray(result.data) || !result.data.length) return false;
+    const previousById = new Map((state.churches || []).map((item) => [item.id, item]));
+    const merged = result.data.map((repoChurch) => {
+      const previous = previousById.get(repoChurch.id) || {};
+      return migrateChurchRecord({ ...previous, ...repoChurch });
+    });
+    // Keep any UI-only churches not yet in the repository
+    previousById.forEach((church, id) => {
+      if (!merged.some((item) => item.id === id)) merged.push(migrateChurchRecord(church));
+    });
+    state.churches = merged;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    console.info("[CE Churches] form refresh", state.churches.length, "churches");
+    return true;
+  } catch (error) {
+    console.warn("[CE Churches] form refresh failed — using state.churches", error);
+    return false;
+  }
 }
 
 function relationalFormOptions(extra = {}) {
@@ -5352,7 +5977,9 @@ function enrichRecordChurchFields(data) {
   const church = findChurchById(relationalChurches(), churchId);
   if (!church) return data;
   if (data.church_id) data.church_id = church.id;
-  if (!data.igreja) data.igreja = church.public_name || church.church_name;
+  const churchLabel = church.public_name || church.church_name;
+  if (!data.igreja) data.igreja = churchLabel;
+  if (!data.church_name) data.church_name = churchLabel;
   if (!data.province) data.province = church.province;
   if (!data.city) data.city = church.city;
   if (!data.district_or_area) data.district_or_area = church.district_or_area || "";
@@ -8026,10 +8653,42 @@ function applyStaffPerformanceCardFilters(list, filters = {}) {
 
 function applyFirstTimerCardFilters(list, filters = {}) {
   let rows = [...list];
-  if (filters.followup) rows = rows.filter((p) => statusKey(p.estado_do_seguimento) === filters.followup);
-  if (filters.quer_escola_de_fundacao) rows = rows.filter((p) => p.quer_escola_de_fundacao);
-  if (filters.became_member) rows = rows.filter((p) => statusKey(p.estado_do_seguimento) === "becameMember");
-  if (filters.sent_to_cell) rows = rows.filter((p) => ["Sent to Cell", "Enrolled in Foundation School"].includes(p.estado_do_seguimento));
+  const churchFilter = filters.churchId || filters.church_id || filters.church;
+  const cellFilter = filters.cell_id || filters.cellId;
+  const groupFilter = filters.cell_group_id || filters.cellGroupId;
+  const statusFilter = filters.followup || filters.status || filters.estado_do_seguimento;
+  const query = String(filters.q || filters.search || filters.query || "").trim().toLowerCase();
+
+  if (churchFilter) {
+    rows = rows.filter((p) => p.church_id === churchFilter || p.churchId === churchFilter);
+  }
+  if (cellFilter) {
+    rows = rows.filter((p) => p.cell_id === cellFilter);
+  }
+  if (groupFilter) {
+    rows = rows.filter((p) => p.cell_group_id === groupFilter);
+  }
+  if (statusFilter) {
+    rows = rows.filter((p) => statusKey(p.estado_do_seguimento || p.follow_up_status || p.status) === statusKey(statusFilter));
+  }
+  if (filters.quer_escola_de_fundacao || filters.wants_foundation_school) {
+    rows = rows.filter((p) => p.quer_escola_de_fundacao || p.wants_foundation_school || p.wantsFoundationSchool);
+  }
+  if (filters.born_again || filters.nasceu_de_novo) {
+    rows = rows.filter((p) => p.nasceu_de_novo || p.born_again || p.bornAgain);
+  }
+  if (filters.became_member) {
+    rows = rows.filter((p) => statusKey(p.estado_do_seguimento) === "becameMember" || p.converted_to_member);
+  }
+  if (filters.sent_to_cell) {
+    rows = rows.filter((p) => ["Sent to Cell", "Enrolled in Foundation School"].includes(p.estado_do_seguimento));
+  }
+  if (query) {
+    rows = rows.filter((p) =>
+      [p.nome, p.apelido, p.telefone, p.whatsapp, p.email, p.culto, p.endereco, p.celula, p.celula_preferida, p.conselheiro_responsavel, p.estado_do_seguimento]
+        .some((value) => String(value || "").toLowerCase().includes(query))
+    );
+  }
   return rows;
 }
 
@@ -8279,9 +8938,36 @@ function dashboardMetricCard(card) {
   });
 }
 
+/**
+ * First timers list for dashboard metrics.
+ * After login, state.firstTimers is hydrated from firstTimersRepository when available.
+ * Falls back to classic localStorage state if the repository is offline.
+ */
+function getDashboardFirstTimersList() {
+  const list = state.firstTimers || [];
+  if (window.CEFirstTimers || window.CEDataLayer?.firstTimers) {
+    // Repository path is active (hydrate already dual-writes into state).
+    return dashboardScope(list);
+  }
+  return dashboardScope(list);
+}
+
+function isFirstTimerBornAgain(person) {
+  return !!(person?.nasceu_de_novo || person?.born_again || person?.bornAgain);
+}
+
+function isFirstTimerWantsFoundation(person) {
+  return !!(person?.quer_escola_de_fundacao || person?.wants_foundation_school || person?.wantsFoundationSchool);
+}
+
+function isFirstTimerPendingFollowUp(person) {
+  const key = statusKey(person?.estado_do_seguimento || person?.follow_up_status || person?.status);
+  return key === "pending" || key === "pendingfollow-up" || key === "pendingfollowup" || key === "noanswer";
+}
+
 function getDashboardHeroAlert() {
   const role = activeUser.role || "";
-  const scopedFirstTimers = dashboardScope(state.firstTimers || []);
+  const scopedFirstTimers = getDashboardFirstTimersList();
   const scopedReqs = dashboardScope(state.requisitions || []);
   const notifications = typeof getVisibleNotifications === "function" ? getVisibleNotifications(activeUser).filter((n) => !n.is_read) : [];
   if (role === "Main Pastor") return { label: L("reqAwaitingPastor"), value: scopedReqs.filter((r) => /Pastor Principal|Enviado ao Pastor/.test(r.status || "")).length, hint: L("needsAction") };
@@ -8289,14 +8975,16 @@ function getDashboardHeroAlert() {
   if (role === "HR Manager") return { label: L("hrPendingHero"), value: (state.staffPerformance || []).filter((p) => /Pendente|Pending/.test(p.status || p.estado || "")).length, hint: L("staffHr") };
   if (role === "Requisition Officer") return { label: L("reqForReview"), value: scopedReqs.filter((r) => /Submetido|Revis/.test(r.status || "")).length, hint: L("requisitions") };
   if (role === "Staff Member") return { label: L("myPendingNotifications"), value: notifications.length, hint: L("notifications") };
-  return { label: L("pendingFollowups"), value: scopedFirstTimers.filter((p) => statusKey(p.estado_do_seguimento) === "pending").length, hint: L("needsAction") };
+  const pendingFromLogs = getDashboardFollowUpsList().filter((r) => isFollowUpPending(r)).length;
+  const pendingFromFirstTimers = scopedFirstTimers.filter((p) => isFirstTimerPendingFollowUp(p)).length;
+  return { label: L("pendingFollowups"), value: pendingFromLogs || pendingFromFirstTimers, hint: L("needsAction") };
 }
 
 function getDashboardCardsForUser(user = activeUser) {
   const range = dashboardDateRange();
   const currentQuarter = dashboardDateRange("quarter");
   const lastQuarter = previousQuarterRange();
-  const firstTimers = dashboardScope(state.firstTimers || []);
+  const firstTimers = getDashboardFirstTimersList();
   const finance = dashboardScope(state.finance || []).map((record) => migrateFinanceRecord(record));
   const students = dashboardScope(state.foundationStudents || []);
   const reqs = dashboardScope(state.requisitions || []);
@@ -8322,15 +9010,20 @@ function getDashboardCardsForUser(user = activeUser) {
   const myMediaAssignments = mediaSchedules.flatMap((schedule) => (schedule.assignments || [])
     .filter((assignment) => mediaTechnicianName(assignment.technician_id) === (user.assigned_staff_name || user.name))
     .map((assignment) => ({ ...assignment, schedule })));
+  const foundationInterestFromFirstTimers = firstTimers.filter((p) => isFirstTimerWantsFoundation(p)).length;
+  const foundationEnrolmentsValue = students.filter((s) => inDashboardRange(s, ["mes_de_inscricao", "created_at"], currentQuarter)).length
+    || foundationInterestFromFirstTimers;
   const cards = [
     { roles: ["Super Admin", "Main Pastor", "National Admin", "Church Pastor", "Viewer"], module: "firstTimers", icon: "bi-person-heart", title: L("totalFirstTimers"), value: periodFirstTimers.length, subtitle: L("visitorsCaptured"), periodLabel: range.label, filterPayload: { date_range: dashboardPageState.period, churchId: user.can_view_all_churches ? "" : user.church_id } },
-    { roles: ["Super Admin", "Main Pastor", "National Admin", "Church Pastor"], module: "firstTimers", icon: "bi-stars", title: L("newConverts"), value: periodFirstTimers.filter((p) => p.nasceu_de_novo).length, subtitle: L("bornAgainHint"), periodLabel: range.label, filterPayload: { born_again: true, date_range: dashboardPageState.period } },
-    { roles: ["Super Admin", "Main Pastor", "National Admin", "Church Pastor"], module: "foundation", icon: "bi-mortarboard", title: L("foundationEnrolments"), value: students.filter((s) => inDashboardRange(s, ["mes_de_inscricao", "created_at"], currentQuarter)).length, subtitle: L("activeEnrolments"), periodLabel: dashboardQuarterLabel(), filterPayload: { quarter: "current_quarter" } },
+    { roles: ["Super Admin", "Main Pastor", "National Admin", "Church Pastor"], module: "firstTimers", icon: "bi-stars", title: L("newConverts"), value: periodFirstTimers.filter((p) => isFirstTimerBornAgain(p)).length, subtitle: L("bornAgainHint"), periodLabel: range.label, filterPayload: { born_again: true, date_range: dashboardPageState.period } },
+    { roles: ["Super Admin", "Main Pastor", "National Admin", "Church Pastor"], module: "foundation", icon: "bi-mortarboard", title: L("foundationEnrolments"), value: foundationEnrolmentsValue, subtitle: students.length ? L("activeEnrolments") : L("wantFoundation"), periodLabel: dashboardQuarterLabel(), filterPayload: { quarter: "current_quarter", quer_escola_de_fundacao: !students.length } },
     { roles: ["Super Admin", "Main Pastor", "National Admin", "Church Pastor"], module: "foundation", targetTab: "graduations", icon: "bi-award", title: L("graduations"), value: students.filter((s) => s.graduado && inDashboardRange(s, ["updated_at", "created_at"], lastQuarter)).length, subtitle: L("completedGraduations"), periodLabel: lastQuarter.label, filterPayload: { quarter: "last_quarter", graduado: true } },
     { roles: ["Super Admin", "Main Pastor", "National Admin", "Church Pastor", "Department Head"], module: "cellMinistryOverview", icon: "bi-diagram-3", title: L("activeCells"), value: cells.filter((c) => statusKey(c.status || c.estado) === "active" || /Activo|Active/i.test(c.status || c.estado || "")).length || cells.length, subtitle: L("cellGrowth"), periodLabel: L("currentReport"), filterPayload: { status: "Activo" } },
     { roles: ["Super Admin", "Main Pastor", "National Admin", "Church Pastor"], module: "sacraments", icon: "bi-droplet", title: L("baptisms"), value: baptisms.filter((b) => inDashboardRange(b, ["baptism_date", "data"], dashboardDateRange("month"))).length, subtitle: L("sacraments"), periodLabel: L("thisMonth"), filterPayload: { type: "baptism", period: "month" } },
     { roles: ["Super Admin", "Main Pastor", "National Admin", "Finance Head", "Finance Officer", "Church Pastor"], module: "finance", icon: "bi-cash-coin", title: L("monthlyGiving"), value: money(monthFinance.reduce((sum, f) => sum + Number(f.valor || 0), 0)), subtitle: L("verifiedIncome"), periodLabel: L("thisMonth"), filterPayload: { period: "month", status: FINANCE_STATUS_VERIFIED } },
-    { roles: ["Super Admin", "Main Pastor", "National Admin", "Church Pastor"], module: "followUp", icon: "bi-telephone-outbound", title: L("pendingFollowups"), value: firstTimers.filter((p) => statusKey(p.estado_do_seguimento) === "pending").length, subtitle: L("needsAction"), periodLabel: L("now"), filterPayload: { followup: "pending" } },
+    { roles: ["Super Admin", "Main Pastor", "National Admin", "Church Pastor"], module: "followUp", icon: "bi-telephone-outbound", title: L("pendingFollowups"), value: (getDashboardFollowUpsList().filter((r) => isFollowUpPending(r)).length || firstTimers.filter((p) => isFirstTimerPendingFollowUp(p)).length), subtitle: L("needsAction"), periodLabel: L("now"), filterPayload: { followup: "pending" } },
+    { roles: ["Super Admin", "Main Pastor", "National Admin", "Church Pastor", "Follow-Up Coordinator"], module: "followUp", icon: "bi-exclamation-triangle", title: lang === "pt" ? "Acompanhamentos Atrasados" : "Overdue Follow-Ups", value: getDashboardFollowUpsList().filter((r) => isFollowUpOverdue(r)).length, subtitle: L("needsAction"), periodLabel: L("now"), filterPayload: { overdue: true } },
+    { roles: ["Super Admin", "Main Pastor", "National Admin", "Church Pastor", "Follow-Up Coordinator"], module: "followUp", icon: "bi-calendar-day", title: lang === "pt" ? "Acompanhamentos de Hoje" : "Today Follow-Ups", value: getDashboardFollowUpsList().filter((r) => isFollowUpToday(r)).length, subtitle: L("followUp"), periodLabel: L("now"), filterPayload: { today: true } },
     { roles: ["Super Admin", "Main Pastor", "National Admin", "Finance Head", "Requisition Officer"], module: "requisitions", icon: "bi-clipboard-check", title: L("approvedRequisitions"), value: reqs.filter((r) => r.approved_by && inDashboardRange(r, ["approved_at", "updated_at"], dashboardDateRange("month"))).length, subtitle: L("thisMonth"), periodLabel: L("thisMonth"), filterPayload: { status: "approved", period: "month" } },
     { roles: ["Super Admin", "Main Pastor", "Finance Head"], module: "finance", targetTab: "approvedRequisitions", icon: "bi-hourglass-split", title: L("finAwaitingRelease"), value: reqs.filter((r) => /Aguardando Libera/.test(r.finance_status || r.status || "")).length, subtitle: L("needsAction"), periodLabel: L("now"), filterPayload: { finance_status: "Aguardando Libera��o" } },
     { roles: ["Finance Head", "Finance Officer"], module: "finance", targetTab: "verification", icon: "bi-patch-question", title: L("pendingVerification"), value: finance.filter((f) => f.estado === FINANCE_STATUS_PENDING).length, subtitle: L("publicSubmissions"), periodLabel: L("now"), filterPayload: { status: FINANCE_STATUS_PENDING } },
@@ -8384,7 +9077,7 @@ function getDashboardCardsForUser(user = activeUser) {
 }
 
 function renderDashboard() {
-  const firstTimers = scoped(state.firstTimers);
+  const firstTimers = scoped(getDashboardFirstTimersList());
   const finance = scoped(state.finance);
   const cells = scoped(state.cells);
   const students = scoped(state.foundationStudents);
@@ -8517,10 +9210,10 @@ function renderFirstTimers() {
     ${sectionHeader(L("firstTimers"), L("firstTimerSubtitle"), "firstTimer", "bi-person-heart")}
     <div class="row g-3 mb-4 summary-cards-row">
       ${sm("bi-person-heart", L("totalFirstTimers"), list.length, "firstTimers", { filterPayload: {} })}
-      ${sm("bi-hourglass-split", L("pending"), list.filter((p) => statusKey(p.estado_do_seguimento) === "pending").length, "firstTimers", { filterPayload: { followup: "pending" } })}
+      ${sm("bi-hourglass-split", L("pending"), list.filter((p) => isFirstTimerPendingFollowUp(p)).length, "firstTimers", { filterPayload: { followup: "pending" } })}
       ${sm("bi-check2-circle", L("contacted"), list.filter((p) => statusKey(p.estado_do_seguimento) === "contacted").length, "firstTimers", { filterPayload: { followup: "contacted" } })}
-      ${sm("bi-mortarboard", L("wantFoundation"), list.filter((p) => p.quer_escola_de_fundacao).length, "firstTimers", { filterPayload: { quer_escola_de_fundacao: true } })}
-      ${sm("bi-person-check", L("becameMember"), list.filter((p) => statusKey(p.estado_do_seguimento) === "becameMember").length, "firstTimers", { filterPayload: { became_member: true } })}
+      ${sm("bi-mortarboard", L("wantFoundation"), list.filter((p) => isFirstTimerWantsFoundation(p)).length, "firstTimers", { filterPayload: { quer_escola_de_fundacao: true } })}
+      ${sm("bi-person-check", L("becameMember"), list.filter((p) => statusKey(p.estado_do_seguimento) === "becameMember" || p.converted_to_member).length, "firstTimers", { filterPayload: { became_member: true } })}
     </div>
     ${summaryFilterChips("firstTimers")}
     <article class="panel glass-panel">
@@ -8830,10 +9523,17 @@ function updateFoundationProgressPreview(form) {
   });
 }
 
+function foundationClassGroupOptions(selectedId = "") {
+  const groups = state.foundationClassGroups || [];
+  if (!groups.length) return `<option value="">${lang === "pt" ? "Sem turmas" : "No classes"}</option>`;
+  return `<option value="">${lang === "pt" ? "Seleccionar turma" : "Select class"}</option>${groups.map((g) => `<option value="${g.id}" ${g.id === selectedId ? "selected" : ""}>${g.name || g.id}</option>`).join("")}`;
+}
+
 function renderFoundationStudentForm(record = {}, mode = "edit") {
-  const student = migrateFoundationStudent(record);
+  const student = migrateFoundationStudentRecord(migrateFoundationStudent(record));
   const statusOptions = foundationStatuses.map((status) => `<option value="${status}" ${student.estado === status ? "selected" : ""}>${statusText(status)}</option>`).join("");
   const readonly = mode === "view" ? "disabled" : "";
+  // Churches come from state.churches (hydrated via churchesRepository)
   const churchField = churchSelect("church_id", L("church"), student, {
     ...relationalFormOptions(),
     showInfoCard: true,
@@ -8842,10 +9542,13 @@ function renderFoundationStudentForm(record = {}, mode = "edit") {
   });
   return `
     ${foundationSectionTitle(L("studentData"))}
+    <input type="hidden" name="first_timer_id" value="${student.first_timer_id || ""}">
+    <input type="hidden" name="member_id" value="${student.member_id || ""}">
     <div class="col-md-6"><label class="form-label">${L("name")}</label><input name="nome" class="form-control" value="${student.nome || ""}" ${readonly} required></div>
     <div class="col-md-6"><label class="form-label">${L("surname")}</label><input name="apelido" class="form-control" value="${student.apelido || ""}" ${readonly}></div>
     <div class="col-md-6"><label class="form-label">${L("phone")}</label><input name="telefone" class="form-control" value="${student.telefone || ""}" ${readonly}></div>
     ${churchField}
+    <div class="col-md-6"><label class="form-label">${lang === "pt" ? "Turma" : "Class group"}</label><select name="class_group_id" class="form-select" ${readonly}>${foundationClassGroupOptions(student.class_group_id || "")}</select></div>
     <div class="col-md-6"><label class="form-label">${L("cell")}</label><input name="celula" class="form-control" value="${student.celula || ""}" ${readonly}></div>
     <div class="col-md-6"><label class="form-label">${L("status")}</label><select name="estado" class="form-select" data-foundation-status ${readonly}>${statusOptions}</select><small class="form-hint d-block mt-1">${L("autoStatusHint")}</small></div>
     ${foundationSectionTitle(FS("deliveryMode"))}
@@ -8855,6 +9558,8 @@ function renderFoundationStudentForm(record = {}, mode = "edit") {
     <div class="col-md-6"><label class="form-label">${FS("onlineContact")}</label><input name="online_contact" class="form-control" value="${student.online_contact || ""}" ${readonly}></div>
     <div class="col-md-6 d-flex align-items-end"><label class="form-check"><input name="is_prison_ministry_student" type="checkbox" class="form-check-input" ${student.is_prison_ministry_student ? "checked" : ""} ${readonly}> <span class="form-check-label">${FS("prisonStudent")}</span></label></div>
     <div class="col-md-6 d-flex align-items-end"><label class="form-check"><input name="needs_home_visit_class" type="checkbox" class="form-check-input" ${student.needs_home_visit_class ? "checked" : ""} ${readonly}> <span class="form-check-label">${FS("needsHomeVisit")}</span></label></div>
+    <div class="col-md-6 d-flex align-items-end"><label class="form-check"><input name="can_attend_online" type="checkbox" class="form-check-input" ${student.can_attend_online ? "checked" : ""} ${readonly}> <span class="form-check-label">${lang === "pt" ? "Pode participar online" : "Can attend online"}</span></label></div>
+    <div class="col-md-6"><label class="form-label">${lang === "pt" ? "Centro penitenciário" : "Prison center"}</label><input name="prison_center_name" class="form-control" value="${student.prison_center_name || ""}" ${readonly}></div>
     <div class="col-12"><label class="form-label">${FS("homeAddress")}</label><input name="home_address" class="form-control" value="${student.home_address || ""}" ${readonly}></div>
     ${foundationSectionTitle(L("classProgress"))}
     <div class="col-12">${mode === "view" ? foundationProgressPreviewHtml(student) : foundationClassCheckboxes(student)}</div>
@@ -8914,12 +9619,13 @@ function foundationStudentLessonDetailHtml(student) {
 }
 
 function renderFoundationTeacherForm(record = {}, mode = "edit") {
-  const teacher = { status: "Activo", subjects_or_lessons_allowed: [], ...record };
+  const teacher = foundationNormalizeTeacherCapabilities({ status: "Activo", subjects_or_lessons_allowed: [], role_type: "Teacher", ...record });
   const readonly = mode === "view" ? "disabled" : "";
-  const statusOptions = ["Activo", "Inactivo", "Em Treinamento"].map((status) => `<option value="${status}" ${teacher.status === status ? "selected" : ""}>${status}</option>`).join("");
+  const statusOptions = FOUNDATION_TEACHER_STATUSES.map((status) => `<option value="${status.id}" ${teacher.status === status.id ? "selected" : ""}>${status[lang]}</option>`).join("");
+  const roleOptions = FOUNDATION_TEACHER_ROLES.map((role) => `<option value="${role.id}" ${teacher.role_type === role.id ? "selected" : ""}>${role[lang]}</option>`).join("");
   const lessons = Array.from({ length: 7 }, (_, i) => {
     const n = i + 1;
-    const checked = teacher.can_teach_all_lessons || (teacher.subjects_or_lessons_allowed || []).map(Number).includes(n);
+    const checked = teacher.can_teach_all_lessons || (teacher.can_teach_lessons || teacher.subjects_or_lessons_allowed || []).map(Number).includes(n);
     return `<label class="foundation-class-toggle"><input type="checkbox" name="lesson_${n}" ${checked ? "checked" : ""} ${readonly}><span>${FS("lesson")} ${n}</span></label>`;
   }).join("");
   const deliveryModes = FOUNDATION_DELIVERY_MODES.map((mode) => {
@@ -8933,6 +9639,7 @@ function renderFoundationTeacherForm(record = {}, mode = "edit") {
   return `
     ${foundationSectionTitle(FS("foundationTabTeachers"))}
     <div class="col-md-6"><label class="form-label">${L("fullName")}</label><input name="full_name" class="form-control" value="${teacher.full_name || ""}" ${readonly} required></div>
+    <div class="col-md-6"><label class="form-label">${FS("teacherRole")}</label><select name="role_type" class="form-select" ${readonly}>${roleOptions}</select></div>
     <div class="col-md-6"><label class="form-label">${L("title")}</label><input name="title" class="form-control" value="${teacher.title || ""}" ${readonly}></div>
     <div class="col-md-6"><label class="form-label">${L("phone")}</label><input name="phone" class="form-control" value="${teacher.phone || ""}" ${readonly}></div>
     <div class="col-md-6"><label class="form-label">WhatsApp</label><input name="whatsapp" class="form-control" value="${teacher.whatsapp || ""}" ${readonly}></div>
@@ -8966,6 +9673,143 @@ function openFoundationTeacherForm(id = null, mode = "edit") {
   requestAnimationFrame(() => mountRelationalControls(byId("entryForm")));
 }
 
+const FOUNDATION_CLASS_STATUSES = ["Aberta", "Em Curso", "Pronta para Exame", "Em Graduação", "Concluída", "Cancelada"];
+
+function renderFoundationClassForm(record = {}, mode = "edit") {
+  const readonly = mode === "view" ? "disabled" : "";
+  const group = {
+    name: "",
+    quarter: "3º Trimestre",
+    year: 2026,
+    delivery_mode: "in_person",
+    status: "Aberta",
+    ...record
+  };
+  const statusOptions = FOUNDATION_CLASS_STATUSES.map((s) => `<option value="${s}" ${group.status === s ? "selected" : ""}>${s}</option>`).join("");
+  const teacherOptions = foundationSelectOptions(state.foundationTeachers || [], "id", "full_name", group.main_teacher_id || "");
+  return `
+    ${foundationSectionTitle(FS("foundationTabClasses"))}
+    <div class="col-md-8"><label class="form-label">${lang === "pt" ? "Nome da turma" : "Class name"}</label><input name="name" class="form-control" value="${group.name || ""}" ${readonly} required placeholder="${lang === "pt" ? "Ex: Turma Sede — Presencial — 3º Trimestre 2026" : "e.g. HQ In-Person Class Q3 2026"}"></div>
+    <div class="col-md-4"><label class="form-label">${L("status")}</label><select name="status" class="form-select" ${readonly}>${statusOptions}</select></div>
+    ${churchSelect("church_id", L("church"), group, { ...relationalFormOptions(), showInfoCard: true, readonly: mode === "view" })}
+    <div class="col-md-4"><label class="form-label">${lang === "pt" ? "Trimestre" : "Quarter"}</label><input name="quarter" class="form-control" value="${group.quarter || ""}" ${readonly}></div>
+    <div class="col-md-4"><label class="form-label">${lang === "pt" ? "Ano" : "Year"}</label><input name="year" type="number" class="form-control" value="${group.year || 2026}" ${readonly}></div>
+    <div class="col-md-4"><label class="form-label">${FS("deliveryMode")}</label><select name="delivery_mode" class="form-select" ${readonly}>${foundationDeliveryOptions(group.delivery_mode || "in_person")}</select></div>
+    <div class="col-md-6"><label class="form-label">${FS("lessonLocation")}</label><select name="primary_location_id" class="form-select" ${readonly}><option value="">${FS("lessonLocation")}</option>${foundationLocationOptions(group.primary_location_id || "")}</select></div>
+    <div class="col-md-6"><label class="form-label">${FS("mainTeacher")}</label><select name="main_teacher_id" class="form-select" ${readonly}><option value="">${FS("mainTeacher")}</option>${teacherOptions}</select></div>
+    <div class="col-md-6"><label class="form-label">${lang === "pt" ? "Data de início" : "Start date"}</label><input name="start_date" type="date" class="form-control" value="${group.start_date || ""}" ${readonly}></div>
+    <div class="col-md-6"><label class="form-label">${FS("expectedGraduation")}</label><input name="expected_graduation_date" type="date" class="form-control" value="${group.expected_graduation_date || ""}" ${readonly}></div>
+    <div class="col-md-6"><label class="form-label">Zoom / Online platform</label><input name="online_platform" class="form-control" value="${group.online_platform || ""}" ${readonly}></div>
+    <div class="col-md-6"><label class="form-label">Online link</label><input name="online_link" class="form-control" value="${group.online_link || ""}" ${readonly}></div>
+    <div class="col-md-6"><label class="form-label">${lang === "pt" ? "Centro penitenciário" : "Prison center"}</label><input name="prison_center_name" class="form-control" value="${group.prison_center_name || ""}" ${readonly}></div>
+    <div class="col-12"><label class="form-label">${L("notes")}</label><textarea name="notes" class="form-control" rows="2" ${readonly}>${group.notes || ""}</textarea></div>
+  `;
+}
+
+function openFoundationClassForm(id = null, mode = "edit", defaults = {}) {
+  ensureFoundationData();
+  modalMode = id ? "edit" : "create";
+  modalType = mode === "view" ? null : "foundationClassGroup";
+  modalRecordId = id;
+  const existing = id ? (state.foundationClassGroups || []).find((item) => item.id === id) : null;
+  const record = existing || {
+    delivery_mode: defaults.delivery_mode || "in_person",
+    status: "Aberta",
+    quarter: "3º Trimestre",
+    year: 2026,
+    name: defaults.name || "",
+    primary_location_id: defaults.primary_location_id || (defaults.delivery_mode === "online" ? "fsloc-online-zoom" : defaults.delivery_mode === "home_visit" ? "fsloc-home-visit" : defaults.delivery_mode === "prison_ministry" ? "fsloc-prison-1" : "fsloc-hq-room-1"),
+    online_platform: defaults.delivery_mode === "online" ? "Zoom" : "",
+    online_link: defaults.delivery_mode === "online" ? "https://zoom.us/j/foundation-school" : ""
+  };
+  byId("modalEyebrow").textContent = mode === "view" ? L("view") : (id ? L("edit") : L("add"));
+  byId("modalTitle").textContent = FS("foundationTabClasses");
+  byId("modalFields").innerHTML = renderFoundationClassForm(record, mode);
+  bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
+  requestAnimationFrame(() => mountRelationalControls(byId("entryForm")));
+}
+
+/** Visible action strip used across Foundation tabs (not buried inside filter grids). */
+function foundationActionBar(buttons = []) {
+  if (!buttons.length) return "";
+  return `<div class="foundation-action-bar d-flex flex-wrap gap-2 align-items-center mb-3" role="toolbar" aria-label="${lang === "pt" ? "Acções da Escola de Fundação" : "Foundation School actions"}">
+    ${buttons.map((btn) => {
+      const variant = btn.variant || "btn-ce-gold";
+      const icon = btn.icon ? `<i class="bi ${btn.icon} me-1"></i>` : "";
+      const attrs = btn.attrs || "";
+      return `<button type="button" class="btn ${variant} btn-touch foundation-action-btn" ${attrs}>${icon}${btn.label}</button>`;
+    }).join("")}
+  </div>`;
+}
+
+function collectFoundationClassPayload(form, base = {}) {
+  const data = Object.fromEntries(new FormData(form).entries());
+  const churchId = data.church_id || base.church_id || state.foundationSchoolSettings?.default_church_id || "church-hq";
+  const loc = foundationLocationById(data.primary_location_id);
+  const teacher = foundationTeacherById(data.main_teacher_id);
+  const delivery = data.delivery_mode || base.delivery_mode || "in_person";
+  return {
+    ...base,
+    ...data,
+    church_id: churchId,
+    church_name: churchName(churchId),
+    year: Number(data.year || base.year || 2026),
+    delivery_mode: delivery,
+    primary_location_id: data.primary_location_id || loc.id || "",
+    primary_location_name: loc.name || data.primary_location_name || base.primary_location_name || "",
+    location_type: loc.location_type || base.location_type || (delivery === "online" ? "Online" : delivery === "home_visit" ? "Home" : delivery === "prison_ministry" ? "Prison Center" : "Church"),
+    prison_center_id: loc.prison_center_id || base.prison_center_id || "",
+    prison_center_name: data.prison_center_name || loc.prison_center_name || base.prison_center_name || "",
+    online_platform: data.online_platform || loc.online_platform || base.online_platform || "",
+    online_link: data.online_link || loc.online_link || base.online_link || "",
+    main_teacher_id: data.main_teacher_id || "",
+    main_teacher_name: teacher.full_name || base.main_teacher_name || "",
+    assistant_teacher_ids: Array.isArray(base.assistant_teacher_ids) ? base.assistant_teacher_ids : [],
+    rector_id: base.rector_id || "ftch-rector",
+    rector_name: base.rector_name || "Pastor Coordenador",
+    coordinator_id: base.coordinator_id || "ftch-coordinator",
+    coordinator_name: base.coordinator_name || "Irmã Coordenadora",
+    status: data.status || base.status || "Aberta",
+    updated_at: new Date().toISOString().slice(0, 10)
+  };
+}
+
+async function submitFoundationClass(form) {
+  ensureFoundationData();
+  const collection = state.foundationClassGroups || (state.foundationClassGroups = []);
+  if (modalMode === "edit") {
+    const index = collection.findIndex((item) => item.id === modalRecordId);
+    if (index >= 0) {
+      const previous = { ...collection[index] };
+      const next = collectFoundationClassPayload(form, collection[index]);
+      const repoResult = await persistFoundationClassViaRepository("update", next);
+      if (repoResult && repoResult.ok === false) {
+        collection[index] = previous;
+        alert(repoResult.error || (lang === "pt" ? "Não foi possível guardar os dados da Escola de Fundação. Tente novamente." : "Could not save Foundation School record."));
+        return;
+      }
+      collection[index] = repoResult?.data || next;
+    }
+  } else {
+    const created = collectFoundationClassPayload(form, {
+      id: `fcg-${Date.now()}`,
+      created_at: new Date().toISOString().slice(0, 10)
+    });
+    const repoResult = await persistFoundationClassViaRepository("create", created);
+    if (repoResult && repoResult.ok === false) {
+      alert(repoResult.error || (lang === "pt" ? "Não foi possível guardar os dados da Escola de Fundação. Tente novamente." : "Could not save Foundation School record."));
+      return;
+    }
+    collection.push(repoResult?.data || created);
+  }
+  ensureFoundationLessonSessions();
+  foundationAudit(modalMode === "edit" ? "class_group_updated" : "class_group_created", "foundationClassGroup", modalRecordId || collection.at(-1)?.id || "", "", "", activeUser?.name || "Admin Principal");
+  saveState(`${modalMode === "edit" ? "Updated" : "Created"} Foundation School class group`);
+  bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide();
+  foundationPageState.tab = "classes";
+  setRoute(activeRoute);
+}
+
 function collectFoundationTeacherPayload(form, base = {}) {
   const formData = new FormData(form);
   const data = Object.fromEntries(formData.entries());
@@ -8979,28 +9823,49 @@ function collectFoundationTeacherPayload(form, base = {}) {
     ...data,
     church_id: churchId,
     church_name: churchName(churchId),
+    role_type: data.role_type || base.role_type || "Teacher",
     can_teach_all_lessons: canTeachAll,
-    can_teach_lessons: lessons,
+    can_teach_lessons: canTeachAll ? [1, 2, 3, 4, 5, 6, 7] : lessons,
     subjects_or_lessons_allowed: canTeachAll ? [1, 2, 3, 4, 5, 6, 7] : lessons,
     delivery_modes_allowed: deliveryModes.length ? deliveryModes : ["in_person"],
     assigned_locations: assignedLocations.length ? assignedLocations : ["fsloc-hq-main"],
     max_classes_per_week: Number(data.max_classes_per_week || base.max_classes_per_week || 3),
+    is_prison_ministry_teacher: deliveryModes.includes("prison_ministry"),
+    can_teach_online: deliveryModes.includes("online"),
+    can_teach_home_visit: deliveryModes.includes("home_visit"),
+    can_teach_in_person: deliveryModes.includes("in_person") || !deliveryModes.length,
     updated_at: new Date().toISOString().slice(0, 10)
   });
 }
 
-function submitFoundationTeacher(form) {
+async function submitFoundationTeacher(form) {
   ensureFoundationData();
   const collection = state.foundationTeachers || (state.foundationTeachers = []);
   if (modalMode === "edit") {
     const index = collection.findIndex((item) => item.id === modalRecordId);
-    if (index >= 0) collection[index] = collectFoundationTeacherPayload(form, collection[index]);
+    if (index >= 0) {
+      const previous = { ...collection[index] };
+      const next = collectFoundationTeacherPayload(form, collection[index]);
+      const repoResult = await persistFoundationTeacherViaRepository("update", next);
+      if (repoResult && repoResult.ok === false) {
+        collection[index] = previous;
+        alert(repoResult.error || (lang === "pt" ? "Não foi possível guardar os dados da Escola de Fundação. Tente novamente." : "Could not save Foundation School record."));
+        return;
+      }
+      collection[index] = repoResult?.data || next;
+    }
   } else {
-    collection.push(collectFoundationTeacherPayload(form, {
+    const created = collectFoundationTeacherPayload(form, {
       id: `ftch-${Date.now()}`,
       user_id: "",
       created_at: new Date().toISOString().slice(0, 10)
-    }));
+    });
+    const repoResult = await persistFoundationTeacherViaRepository("create", created);
+    if (repoResult && repoResult.ok === false) {
+      alert(repoResult.error || (lang === "pt" ? "Não foi possível guardar os dados da Escola de Fundação. Tente novamente." : "Could not save Foundation School record."));
+      return;
+    }
+    collection.push(repoResult?.data || created);
   }
   foundationAudit(modalMode === "edit" ? "teacher_updated" : "teacher_created", "foundationTeacher", modalRecordId || collection.at(-1)?.id || "", "", "", activeUser?.name || "Admin Principal");
   saveState(`${modalMode === "edit" ? "Updated" : "Created"} Foundation School teacher`);
@@ -9013,12 +9878,18 @@ function openFoundationStudentForm(id = null) {
   modalMode = id ? "edit" : "create";
   modalType = "foundationStudent";
   modalRecordId = id;
-  const record = id ? getCollection("foundationStudent").find((item) => item.id === id) : {};
-  byId("modalEyebrow").textContent = modalMode === "edit" ? L("edit") : L("add");
-  byId("modalTitle").textContent = L("foundationSchool");
-  byId("modalFields").innerHTML = renderFoundationStudentForm(record, modalMode);
-  bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
-  requestAnimationFrame(() => mountRelationalControls(byId("entryForm")));
+  const show = () => {
+    const record = id ? getCollection("foundationStudent").find((item) => item.id === id) : {};
+    byId("modalEyebrow").textContent = modalMode === "edit" ? L("edit") : L("add");
+    byId("modalTitle").textContent = L("foundationSchool");
+    byId("modalFields").innerHTML = renderFoundationStudentForm(record, modalMode);
+    bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
+    requestAnimationFrame(() => mountRelationalControls(byId("entryForm")));
+  };
+  // Refresh churches (and ensure class groups present) so local-created churches appear in selects
+  Promise.resolve(refreshChurchesFromRepositoryForForms())
+    .catch((error) => console.warn("[CE Foundation] church refresh skipped", error))
+    .finally(show);
 }
 
 function openFoundationMarkClass(id) {
@@ -9057,17 +9928,32 @@ function collectFoundationStudentPayload(form, base = {}) {
   data.class_attendance = readFoundationAttendanceFromForm(form);
   data.nota_exame = Number(data.nota_exame || 0);
   data.numero_de_almas_ganhas = Number(data.numero_de_almas_ganhas || 0);
+  // Preserve links to First Timers / Members; resolve class group name
+  data.first_timer_id = data.first_timer_id || base.first_timer_id || "";
+  data.member_id = data.member_id || base.member_id || "";
+  const group = (state.foundationClassGroups || []).find((g) => g.id === data.class_group_id);
+  if (group) data.class_group_name = group.name || data.class_group_name || "";
+  if (data.church_id) data.church_name = churchName(data.church_id) || data.church_name || "";
   return applyFoundationCalculations({ ...base, ...data }, false);
 }
 
-function submitFoundationStudent(form) {
+async function submitFoundationStudent(form) {
   const collection = getCollection("foundationStudent");
   const today = new Date().toISOString().slice(0, 10);
   if (modalMode === "edit") {
     const index = collection.findIndex((item) => item.id === modalRecordId);
+    if (index < 0) return;
+    const previous = { ...collection[index] };
     const merged = collectFoundationStudentPayload(form, collection[index]);
     if (!form.elements.estado?.dataset.manualStatus) merged.estado = suggestFoundationStatus(merged);
-    collection[index] = { ...collection[index], ...merged, updated_at: today };
+    const next = migrateFoundationStudentRecord({ ...collection[index], ...merged, updated_at: today });
+    const repoResult = await persistFoundationStudentViaRepository("update", next);
+    if (repoResult && repoResult.ok === false) {
+      collection[index] = previous;
+      alert(repoResult.error || (lang === "pt" ? "Não foi possível guardar os dados da Escola de Fundação. Tente novamente." : "Could not save Foundation School record."));
+      return;
+    }
+    collection[index] = migrateFoundationStudentRecord(repoResult?.data || next);
   } else {
     const payload = collectFoundationStudentPayload(form, {
       id: `fs-${Date.now()}`,
@@ -9078,7 +9964,13 @@ function submitFoundationStudent(form) {
       updated_at: today
     });
     payload.estado = form.elements.estado?.dataset.manualStatus ? payload.estado : suggestFoundationStatus(payload);
-    collection.push(payload);
+    const created = migrateFoundationStudentRecord(payload);
+    const repoResult = await persistFoundationStudentViaRepository("create", created);
+    if (repoResult && repoResult.ok === false) {
+      alert(repoResult.error || (lang === "pt" ? "Não foi possível guardar os dados da Escola de Fundação. Tente novamente." : "Could not save Foundation School record."));
+      return;
+    }
+    collection.push(migrateFoundationStudentRecord(repoResult?.data || created));
   }
   saveState(`${modalMode === "edit" ? "Updated" : "Created"} foundation student`);
   bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide();
@@ -9086,26 +9978,35 @@ function submitFoundationStudent(form) {
   setRoute(activeRoute);
 }
 
-function submitFoundationMarkClass(form) {
+async function submitFoundationMarkClass(form) {
   const collection = getCollection("foundationStudent");
   const index = collection.findIndex((item) => item.id === modalRecordId);
   if (index < 0) return;
+  const previous = { ...collection[index] };
   const merged = applyFoundationCalculations({
     ...collection[index],
     class_attendance: readFoundationAttendanceFromForm(form),
     updated_at: new Date().toISOString().slice(0, 10)
   }, true);
-  collection[index] = merged;
+  const next = migrateFoundationStudentRecord(merged);
+  const repoResult = await persistFoundationStudentViaRepository("update", next);
+  if (repoResult && repoResult.ok === false) {
+    collection[index] = previous;
+    alert(repoResult.error || (lang === "pt" ? "Não foi possível guardar os dados da Escola de Fundação. Tente novamente." : "Could not save Foundation School record."));
+    return;
+  }
+  collection[index] = migrateFoundationStudentRecord(repoResult?.data || next);
   saveState("Updated foundation class attendance");
   bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide();
   form.reset();
   setRoute(activeRoute);
 }
 
-function submitFoundationScore(form) {
+async function submitFoundationScore(form) {
   const collection = getCollection("foundationStudent");
   const index = collection.findIndex((item) => item.id === modalRecordId);
   if (index < 0) return;
+  const previous = { ...collection[index] };
   const data = Object.fromEntries(new FormData(form).entries());
   ["pratica_evangelismo", "aprovado"].forEach((key) => {
     data[key] = new FormData(form).has(key);
@@ -9118,7 +10019,14 @@ function submitFoundationScore(form) {
     aprovado: data.aprovado,
     updated_at: new Date().toISOString().slice(0, 10)
   }, true);
-  collection[index] = merged;
+  const next = migrateFoundationStudentRecord(merged);
+  const repoResult = await persistFoundationStudentViaRepository("update", next);
+  if (repoResult && repoResult.ok === false) {
+    collection[index] = previous;
+    alert(repoResult.error || (lang === "pt" ? "Não foi possível guardar os dados da Escola de Fundação. Tente novamente." : "Could not save Foundation School record."));
+    return;
+  }
+  collection[index] = migrateFoundationStudentRecord(repoResult?.data || next);
   saveState("Updated foundation exam score");
   bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide();
   form.reset();
@@ -9197,11 +10105,25 @@ const FOUNDATION_TABS = [
   ["students", "foundationTabStudents"],
   ["lessons", "foundationTabLessonsAttendance"],
   ["onlineTests", "foundationTabOnlineTests"],
-  ["finalExam", "foundationTabFinalExam"],
   ["soulWinning", "foundationTabSoulWinning"],
+  ["finalExam", "foundationTabFinalExam"],
   ["teachers", "foundationTabTeachers"],
   ["graduation", "foundationTabGraduation"],
   ["reports", "foundationTabReports"]
+];
+
+const FOUNDATION_TEACHER_ROLES = [
+  { id: "Rector", pt: "Reitor", en: "Rector" },
+  { id: "Coordinator", pt: "Coordenador", en: "Coordinator" },
+  { id: "Teacher", pt: "Professor", en: "Teacher" },
+  { id: "Assistant Teacher", pt: "Professor Assistente", en: "Assistant Teacher" }
+];
+
+const FOUNDATION_TEACHER_STATUSES = [
+  { id: "Activo", pt: "Activo", en: "Active" },
+  { id: "Inactivo", pt: "Inactivo", en: "Inactive" },
+  { id: "Em Treinamento", pt: "Em Treinamento", en: "In Training" },
+  { id: "Indisponível", pt: "Indisponível", en: "Unavailable" }
 ];
 
 const FOUNDATION_DELIVERY_MODES = [
@@ -9253,12 +10175,21 @@ const FOUNDATION_TEXT = {
     enrolledStudentsCount: "Alunos Inscritos",
     activeClassGroups: "Turmas Activas",
     activeTeachers: "Professores Activos",
-    lessonsThisWeek: "Aulas Dadas Esta Semana",
+    lessonsThisWeek: "Aulas Esta Semana",
+    lessonsInPerson: "Aulas Presenciais",
+    lessonsOnline: "Aulas Online",
+    lessonsHomeVisit: "Aulas ao Domicílio",
+    lessonsPrison: "Aulas no Ministério Prisional",
     pendingTests: "Testes Pendentes",
+    onlineTestsReceived: "Testes Online Recebidos",
+    resultsToReview: "Resultados a Rever",
+    lesson4Pending: "Aula 4 Pendente",
+    examsWithoutAttachment: "Exames Físicos sem Anexo",
     studentsReadyForExam: "Alunos Prontos para Exame",
     studentsReadyForGraduation: "Alunos Prontos para Graduação",
     graduatesQuarter: "Graduados no Trimestre",
     pendingCertificates: "Certificados Pendentes",
+    teacherRole: "Função",
     rector: "Reitor",
     coordinator: "Coordenador",
     classGroup: "Turma",
@@ -9324,11 +10255,20 @@ const FOUNDATION_TEXT = {
     activeClassGroups: "Active Classes",
     activeTeachers: "Active Teachers",
     lessonsThisWeek: "Lessons This Week",
+    lessonsInPerson: "In-Person Lessons",
+    lessonsOnline: "Online Lessons",
+    lessonsHomeVisit: "Home Visit Lessons",
+    lessonsPrison: "Prison Ministry Lessons",
     pendingTests: "Pending Tests",
+    onlineTestsReceived: "Online Tests Received",
+    resultsToReview: "Results to Review",
+    lesson4Pending: "Lesson 4 Pending",
+    examsWithoutAttachment: "Physical Exams Without Attachment",
     studentsReadyForExam: "Students Ready for Exam",
     studentsReadyForGraduation: "Students Ready for Graduation",
     graduatesQuarter: "Graduates This Quarter",
     pendingCertificates: "Pending Certificates",
+    teacherRole: "Role",
     rector: "Rector",
     coordinator: "Coordinator",
     classGroup: "Class Group",
@@ -9540,8 +10480,16 @@ function foundationNormalizeTeacherCapabilities(teacher) {
     teacher.can_teach_home_visit ? "home_visit" : "",
     teacher.is_prison_ministry_teacher ? "prison_ministry" : ""
   ].filter(Boolean);
+  const roleFromTitle = /reitor|rector/i.test(String(teacher.title || ""))
+    ? "Rector"
+    : /coord/i.test(String(teacher.title || ""))
+      ? "Coordinator"
+      : /assist/i.test(String(teacher.title || ""))
+        ? "Assistant Teacher"
+        : "Teacher";
   return {
     ...teacher,
+    role_type: teacher.role_type || roleFromTitle,
     can_teach_lessons: lessonList.map(Number),
     subjects_or_lessons_allowed: lessonList.map(Number),
     delivery_modes_allowed: modes.length ? modes : ["in_person"],
@@ -9550,31 +10498,38 @@ function foundationNormalizeTeacherCapabilities(teacher) {
     is_prison_ministry_teacher: !!teacher.is_prison_ministry_teacher || modes.includes("prison_ministry"),
     can_teach_online: !!teacher.can_teach_online || modes.includes("online"),
     can_teach_home_visit: !!teacher.can_teach_home_visit || modes.includes("home_visit"),
-    can_teach_in_person: teacher.can_teach_in_person !== false && modes.includes("in_person")
+    can_teach_in_person: teacher.can_teach_in_person !== false && (modes.includes("in_person") || !modes.length)
   };
 }
 
 function ensureFoundationTeacherScale(hq, churchLabel) {
   state.foundationTeachers = (state.foundationTeachers || []).map((teacher) => foundationNormalizeTeacherCapabilities(teacher));
-  const targetCount = 24;
-  const firstNames = ["Ana", "Carlos", "Marta", "Edson", "Helena", "Samuel", "Rosa", "David", "Celina", "Mateus", "Sofia", "Miguel", "Alda", "Nelson", "Paula", "Tito", "Elisa", "João", "Lúcia", "Pedro", "Teresa", "Daniel"];
-  while ((state.foundationTeachers || []).length < targetCount) {
-    const index = state.foundationTeachers.length + 1;
-    const modeSet = index % 7 === 0 ? ["prison_ministry"] : index % 5 === 0 ? ["home_visit"] : index % 4 === 0 ? ["online"] : ["in_person"];
+  // Ensure HQ / Sede has 20+ teachers for operational reality
+  const hqTeachers = () => (state.foundationTeachers || []).filter((t) => t.church_id === hq);
+  const targetHqCount = 22;
+  const firstNames = ["Ana", "Carlos", "Marta", "Edson", "Helena", "Samuel", "Rosa", "David", "Celina", "Mateus", "Sofia", "Miguel", "Alda", "Nelson", "Paula", "Tito", "Elisa", "João", "Lúcia", "Pedro", "Teresa", "Daniel", "Fátima", "Rui"];
+  let index = state.foundationTeachers.length;
+  while (hqTeachers().length < targetHqCount) {
+    index += 1;
+    const modeSet = index % 7 === 0 ? ["prison_ministry"] : index % 5 === 0 ? ["home_visit"] : index % 4 === 0 ? ["online"] : index % 3 === 0 ? ["in_person", "online"] : ["in_person"];
     const location = modeSet.includes("prison_ministry") ? "fsloc-prison-1" : modeSet.includes("online") ? "fsloc-online-zoom" : modeSet.includes("home_visit") ? "fsloc-home-visit" : "fsloc-hq-room-1";
+    const lessonFocus = [((index - 1) % 7) + 1];
+    if (index % 6 === 0) lessonFocus.push(...[1, 2, 3, 4, 5, 6, 7]);
     state.foundationTeachers.push(foundationNormalizeTeacherCapabilities({
       id: `ftch-auto-${index}`,
       user_id: "",
       staff_id: "",
       full_name: `Professor ${firstNames[(index - 1) % firstNames.length]}`,
-      title: "Professor",
+      title: index % 11 === 0 ? "Professor Assistente" : "Professor",
+      role_type: index % 11 === 0 ? "Assistant Teacher" : "Teacher",
       phone: `84600${String(index).padStart(4, "0")}`,
       whatsapp: `84600${String(index).padStart(4, "0")}`,
       email: `foundation.teacher${index}@ce-mozambique.org`,
       church_id: hq,
       church_name: churchLabel,
-      status: "Activo",
-      subjects_or_lessons_allowed: [((index - 1) % 7) + 1],
+      status: index % 13 === 0 ? "Em Treinamento" : "Activo",
+      subjects_or_lessons_allowed: index % 6 === 0 ? [1, 2, 3, 4, 5, 6, 7] : lessonFocus,
+      can_teach_lessons: index % 6 === 0 ? [1, 2, 3, 4, 5, 6, 7] : lessonFocus,
       can_teach_all_lessons: index % 6 === 0,
       delivery_modes_allowed: modeSet,
       assigned_locations: [location],
@@ -9589,6 +10544,19 @@ function ensureFoundationTeacherScale(hq, churchLabel) {
       updated_at: new Date().toISOString().slice(0, 10)
     }));
   }
+  // Mark rector / coordinator roles
+  (state.foundationTeachers || []).forEach((teacher) => {
+    if (teacher.id === "ftch-rector") {
+      teacher.role_type = "Rector";
+      teacher.title = teacher.title || "Reitor";
+      teacher.can_teach_all_lessons = true;
+    }
+    if (teacher.id === "ftch-coordinator") {
+      teacher.role_type = "Coordinator";
+      teacher.title = teacher.title || "Coordenador";
+      teacher.can_teach_all_lessons = true;
+    }
+  });
 }
 
 function ensureFoundationClassGroupContexts(hq, churchLabel) {
@@ -9616,10 +10584,13 @@ function ensureFoundationClassGroupContexts(hq, churchLabel) {
       church_name: group.church_name || churchLabel
     };
   });
+  const onlineTeacher = (state.foundationTeachers || []).find((t) => (t.delivery_modes_allowed || []).includes("online") && t.role_type === "Teacher") || {};
+  const homeTeacher = (state.foundationTeachers || []).find((t) => (t.delivery_modes_allowed || []).includes("home_visit")) || {};
+  const prisonTeacher = (state.foundationTeachers || []).find((t) => t.is_prison_ministry_teacher || (t.delivery_modes_allowed || []).includes("prison_ministry")) || {};
   const templates = [
-    { id: "fcg-online-q3", name: "Turma Online - 3º Trimestre 2026", delivery_mode: "online", primary_location_id: "fsloc-online-zoom", main_teacher_id: "ftch-auto-4" },
-    { id: "fcg-home-q3", name: "Turma Domicílio - Família Assistida", delivery_mode: "home_visit", primary_location_id: "fsloc-home-visit", main_teacher_id: "ftch-auto-5" },
-    { id: "fcg-prison-q3", name: "Turma Ministério Prisional - 3º Trimestre 2026", delivery_mode: "prison_ministry", primary_location_id: "fsloc-prison-1", main_teacher_id: "ftch-auto-7" }
+    { id: "fcg-online-q3", name: "Turma Online — 3º Trimestre 2026", delivery_mode: "online", primary_location_id: "fsloc-online-zoom", main_teacher_id: onlineTeacher.id || "ftch-4" },
+    { id: "fcg-home-q3", name: "Turma Domicílio — Bairro Mavalane", delivery_mode: "home_visit", primary_location_id: "fsloc-home-visit", main_teacher_id: homeTeacher.id || "ftch-5" },
+    { id: "fcg-prison-q3", name: "Turma Ministério Prisional — Centro X", delivery_mode: "prison_ministry", primary_location_id: "fsloc-prison-1", main_teacher_id: prisonTeacher.id || "ftch-prison-lead" }
   ];
   templates.forEach((template) => {
     if (state.foundationClassGroups.some((group) => group.id === template.id)) return;
@@ -10174,6 +11145,10 @@ function ensureFoundationLessonSessions() {
       marked_by_user_id: activeUser?.id || "u-1",
       marked_by_name: record.attendance_marked_by || activeUser?.name || "Admin Principal",
       marked_at: record.attendance_marked_at || "",
+      teacher_id: record.teacher_id || session.teacher_id || "",
+      teacher_name: record.teacher_name || session.teacher_name || "",
+      delivery_mode: session.delivery_mode || record.delivery_mode || "",
+      location_name: session.location_name || record.location_name || "",
       notes: record.notes || ""
     });
   });
@@ -10288,9 +11263,13 @@ function ensureFoundationNotifications() {
   const examNoAttachment = (state.foundationFinalExams || []).find((item) => item.score && !(item.physical_exam_file_url || item.exam_attachment_data_url));
   if (examNoAttachment) add("fs-not-exam-scan-needed", FS("examNeedsAttachment"), lang === "pt" ? "Um exame final físico já tem nota mas ainda não tem scan/PDF anexado." : "A physical final exam has a score but no scan/PDF attached yet.", "foundationFinalExam", examNoAttachment.id, "high");
   const prisonSession = (state.foundationLessonSessions || []).find((item) => item.delivery_mode === "prison_ministry");
-  if (prisonSession) add("fs-not-prison-session", lang === "pt" ? "Aula prisional agendada" : "Prison lesson scheduled", lang === "pt" ? "Existe uma aula da Escola de FundaÃ§Ã£o ligada ao MinistÃ©rio Prisional para acompanhamento." : "A Foundation School lesson is linked to Prison Ministry for follow-up.", "foundationLessonSession", prisonSession.id, "normal");
+  if (prisonSession) add("fs-not-prison-session", lang === "pt" ? "Aula prisional agendada" : "Prison lesson scheduled", lang === "pt" ? "Existe uma aula da Escola de Fundação ligada ao Ministério Prisional para acompanhamento." : "A Foundation School lesson is linked to Prison Ministry for follow-up.", "foundationLessonSession", prisonSession.id, "normal");
   const onlineSession = (state.foundationLessonSessions || []).find((item) => item.delivery_mode === "online");
-  if (onlineSession) add("fs-not-online-session", lang === "pt" ? "Aula online agendada" : "Online lesson scheduled", lang === "pt" ? "Confirme link, professor e presenÃ§as da aula online da Escola de FundaÃ§Ã£o." : "Confirm link, teacher and attendance for the online Foundation School lesson.", "foundationLessonSession", onlineSession.id, "normal");
+  if (onlineSession) add("fs-not-online-session", lang === "pt" ? "Aula online agendada" : "Online lesson scheduled", lang === "pt" ? "Confirme link, professor e presenças da aula online da Escola de Fundação." : "Confirm link, teacher and attendance for the online Foundation School lesson.", "foundationLessonSession", onlineSession.id, "normal");
+  const homeSession = (state.foundationLessonSessions || []).find((item) => item.delivery_mode === "home_visit");
+  if (homeSession) add("fs-not-home-session", lang === "pt" ? "Aula ao domicílio agendada" : "Home visit lesson scheduled", lang === "pt" ? "Confirme professor, endereço e presenças da aula ao domicílio." : "Confirm teacher, address and attendance for the home visit lesson.", "foundationLessonSession", homeSession.id, "normal");
+  const soulPending = (state.foundationSoulWinning || []).find((item) => item.status === "Pendente" || item.status === "Reportado");
+  if (soulPending) add("fs-not-soul-pending", lang === "pt" ? "Aula 4 ganhar almas pendente" : "Lesson 4 soul winning pending", lang === "pt" ? "Há alunos com exercício de ganhar almas por confirmar." : "Students have soul-winning exercises pending confirmation.", "foundationSoulWinning", soulPending.id, "normal");
 }
 
 function foundationClassGroupById(id) {
@@ -10465,7 +11444,18 @@ function foundationSubmissionActions(item) {
 }
 
 function foundationLessonLinksPanel() {
-  return moduleSection(FS("testLinks"), lang === "pt" ? "Guarde aqui os links dos formulários online das aulas 1 a 7." : "Store the online form links for lessons 1 to 7 here.", "bi-link-45deg", "", `
+  return moduleSection(FS("testLinks"), lang === "pt" ? "Testes 1–7 são online (Google Forms). Sem upload físico. Testes 1–6 valem 20; teste 7 vale 10 (total 130)." : "Lessons 1–7 tests are online (Google Forms). No physical upload. Tests 1–6 worth 20; test 7 worth 10 (total 130).", "bi-link-45deg", "", `
+    <div class="alert alert-info border-0 mb-3 foundation-help-box" role="note">
+      <strong>${lang === "pt" ? "O que é isto?" : "What is this?"}</strong>
+      <ul class="mb-0 mt-1 small">
+        <li>${lang === "pt" ? "<strong>Link do formulário</strong> — URL real do Google Forms daquela aula (copiar / abrir). Os alunos fazem o teste online." : "<strong>Form link</strong> — real Google Forms URL for that lesson (copy / open). Students take the test online."}</li>
+        <li>${lang === "pt" ? "<strong>Simular resultado / Simular testes 1 a 7</strong> — só para <em>demonstração e testes do sistema</em>. Inventa notas mock (ex.: 75%) sem Google API. <strong>Não é o fluxo real de alunos</strong>; em produção as notas virão do Forms/Sheets ou importação." : "<strong>Simulate result / Simulate tests 1–7</strong> — for <em>demo and system testing only</em>. Creates mock scores without Google API. <strong>Not the real student flow</strong>; production scores will come from Forms/Sheets or import."}</li>
+        <li>${lang === "pt" ? "<strong>Importar resultados</strong> — botão preparado para o futuro (ainda mock)." : "<strong>Import results</strong> — future button (still mock)."}</li>
+      </ul>
+    </div>
+    ${foundationActionBar([
+      { label: lang === "pt" ? "Simular testes 1 a 7 (demo)" : "Simulate tests 1–7 (demo)", icon: "bi-magic", attrs: `data-foundation-simulate-all-tests` }
+    ])}
     ${dataTable([FS("lesson"), FS("formProvider"), FS("formLink"), FS("maxScore"), FS("passingScore"), L("status"), L("actions")], (state.foundationLessonOnlineTests || []).map((test) => [
       `${FS("lesson")} ${test.lesson_number}<small class="d-block text-secondary">${test.lesson_title || ""}</small>`,
       test.form_provider || "-",
@@ -10473,9 +11463,138 @@ function foundationLessonLinksPanel() {
       test.max_score,
       test.passing_score,
       badge(test.is_active ? L("active") : L("inactive")),
-      `<div class="d-flex flex-wrap gap-2"><a class="action-btn" href="${test.form_url || "#"}" target="_blank" rel="noopener">${FS("openForm")}</a><button type="button" class="action-btn" data-copy-text="${test.form_url || ""}">${FS("copyLink")}</button><button type="button" class="action-btn" data-foundation-import-results="${test.id}">${FS("importResults")}</button></div>`
+      `<div class="d-flex flex-wrap gap-2"><a class="action-btn" href="${test.form_url || "#"}" target="_blank" rel="noopener">${FS("openForm")}</a><button type="button" class="action-btn" data-copy-text="${test.form_url || ""}">${FS("copyLink")}</button><button type="button" class="action-btn" data-foundation-import-results="${test.id}">${FS("importResults")}</button><button type="button" class="action-btn" data-foundation-simulate-submission="${test.lesson_number}">${lang === "pt" ? "Simular (demo)" : "Simulate (demo)"}</button></div>`
     ]))}
   `);
+}
+
+function simulateFoundationOnlineTestSubmission(lessonNumber, studentOverride = null, { silent = false } = {}) {
+  ensureFoundationData();
+  const n = Number(lessonNumber || 1);
+  const student = studentOverride || foundationStudentsForGroup(foundationPageState.lesson?.classGroupId || "")[0] || foundationStudentsForGroup()[0] || (state.foundationStudents || [])[0];
+  if (!student) {
+    if (!silent) alert(lang === "pt" ? "Não há alunos para simular." : "No students available to simulate.");
+    return null;
+  }
+  const maxScore = getLessonMaxScore(n);
+  const score = Math.min(maxScore, Math.round(maxScore * 0.75));
+  const onlineTest = foundationOnlineTestByLesson(n);
+  const session = foundationSessionByContext(student.class_group_id, n) || {};
+  const existing = (state.foundationLessonTestSubmissions || []).find((item) => item.student_id === student.id && Number(item.lesson_number) === n);
+  const payload = normalizeFoundationSubmission({
+    id: existing?.id || `flts-sim-${student.id}-${n}-${Date.now()}`,
+    student_id: student.id,
+    student_name: fullName(student),
+    class_group_id: student.class_group_id,
+    class_group_name: student.class_group_name,
+    lesson_number: n,
+    lesson_title: FOUNDATION_LESSON_TITLES[n - 1],
+    delivery_mode: session.delivery_mode || student.assigned_delivery_mode || "in_person",
+    lesson_session_id: session.id || "",
+    teacher_id: session.teacher_id || "",
+    teacher_name: session.teacher_name || "",
+    location_id: session.location_id || student.assigned_location_id || "",
+    location_name: session.location_name || student.assigned_location_name || "",
+    form_id: onlineTest.id || `flot-${n}`,
+    form_url: onlineTest.form_url || "",
+    submission_id: `sim-${Date.now()}-${n}`,
+    submitted_at: new Date().toISOString(),
+    raw_student_name: fullName(student),
+    raw_phone: student.telefone || "",
+    raw_email: student.email || "",
+    score,
+    max_score: maxScore,
+    answers: [],
+    auto_matched: true,
+    match_confidence: 92,
+    matched_by: "Sistema",
+    matched_at: new Date().toISOString(),
+    review_status: "Auto Matched",
+    created_at: new Date().toISOString().slice(0, 10),
+    updated_at: new Date().toISOString().slice(0, 10)
+  });
+  if (existing) Object.assign(existing, payload);
+  else {
+    if (!Array.isArray(state.foundationLessonTestSubmissions)) state.foundationLessonTestSubmissions = [];
+    state.foundationLessonTestSubmissions.push(payload);
+  }
+  const studentIndex = (state.foundationStudents || []).findIndex((s) => s.id === student.id);
+  if (studentIndex >= 0) {
+    const attendance = { ...(state.foundationStudents[studentIndex].class_attendance || defaultFoundationAttendance()) };
+    attendance[`class_${n}`] = true;
+    state.foundationStudents[studentIndex] = applyFoundationCalculations({ ...state.foundationStudents[studentIndex], class_attendance: attendance }, true);
+  }
+  foundationAudit("online_test_simulated", "foundationLessonTestSubmission", payload.id, "", JSON.stringify({ score, maxScore, lesson: n }), fullName(student));
+  if (!silent) saveState("Simulated Foundation School online test result");
+  return payload;
+}
+
+function simulateFoundationAllOnlineTests(studentOverride = null) {
+  ensureFoundationData();
+  const student = studentOverride || foundationStudentsForGroup(foundationPageState.lesson?.classGroupId || "")[0] || foundationStudentsForGroup()[0] || (state.foundationStudents || [])[0];
+  if (!student) {
+    alert(lang === "pt" ? "Não há alunos para simular." : "No students available to simulate.");
+    return;
+  }
+  for (let n = 1; n <= 7; n += 1) simulateFoundationOnlineTestSubmission(n, student, { silent: true });
+  const summary = foundationLessonTestsSummary(student.id);
+  const studentIndex = (state.foundationStudents || []).findIndex((s) => s.id === student.id);
+  if (studentIndex >= 0) {
+    state.foundationStudents[studentIndex] = applyFoundationCalculations({ ...state.foundationStudents[studentIndex] }, true);
+    void persistFoundationStudentViaRepository("update", state.foundationStudents[studentIndex]);
+  }
+  foundationAudit("online_tests_1_to_7_simulated", "foundationStudent", student.id, "", JSON.stringify(summary), fullName(student));
+  saveState("Simulated Foundation School online tests 1–7");
+  return summary;
+}
+
+function createOrUpdateFoundationLessonSessionFromContext() {
+  ensureFoundationData();
+  const ctx = foundationPageState.lesson || {};
+  const classGroupId = ctx.classGroupId || foundationScopedClassGroups()[0]?.id || "";
+  if (!classGroupId) {
+    alert(lang === "pt" ? "Seleccione uma turma." : "Select a class group.");
+    return null;
+  }
+  const lessonNumber = Number(ctx.lessonNumber || 1);
+  const group = foundationClassGroupById(classGroupId);
+  const teacher = foundationTeacherById(ctx.teacherId || group.main_teacher_id);
+  const loc = foundationLocationById(ctx.locationId || group.primary_location_id);
+  let session = foundationSessionByContext(classGroupId, lessonNumber);
+  const now = new Date().toISOString();
+  if (!session) {
+    session = {
+      id: `fls-${classGroupId}-${lessonNumber}-${Date.now()}`,
+      class_group_id: classGroupId,
+      class_group_name: group.name || "",
+      lesson_number: lessonNumber,
+      lesson_title: FOUNDATION_LESSON_TITLES[lessonNumber - 1],
+      created_by: activeUser?.name || "Admin Principal",
+      created_at: now.slice(0, 10)
+    };
+    if (!Array.isArray(state.foundationLessonSessions)) state.foundationLessonSessions = [];
+    state.foundationLessonSessions.push(session);
+  }
+  session.class_group_id = classGroupId;
+  session.class_group_name = group.name || session.class_group_name || "";
+  session.lesson_number = lessonNumber;
+  session.lesson_title = FOUNDATION_LESSON_TITLES[lessonNumber - 1];
+  session.delivery_mode = ctx.deliveryMode || group.delivery_mode || "in_person";
+  session.location_id = ctx.locationId || group.primary_location_id || "";
+  session.location_name = loc.name || group.primary_location_name || "";
+  session.location_type = loc.location_type || group.location_type || "";
+  session.prison_center_id = loc.prison_center_id || group.prison_center_id || "";
+  session.prison_center_name = loc.prison_center_name || group.prison_center_name || "";
+  session.online_platform = loc.online_platform || group.online_platform || "";
+  session.online_link = loc.online_link || group.online_link || "";
+  session.lesson_date = ctx.date || session.lesson_date || now.slice(0, 10);
+  session.teacher_id = ctx.teacherId || group.main_teacher_id || "";
+  session.teacher_name = teacher.full_name || group.main_teacher_name || "";
+  session.status = session.status === "Realizada" ? session.status : "Agendada";
+  session.updated_at = now.slice(0, 10);
+  foundationAudit("lesson_session_created", "foundationLessonSession", session.id, "", JSON.stringify({ lesson: lessonNumber, class_group_id: classGroupId, delivery_mode: session.delivery_mode }), session.teacher_name || "");
+  saveState(`Created/updated Foundation School lesson session ${lessonNumber}`);
+  return session;
 }
 
 function foundationReceivedResultsPanel() {
@@ -10549,21 +11668,33 @@ function renderFoundationOverview(students, pending) {
   const pendingTests = (state.foundationLessonProgress || []).filter((item) => item.attended && !foundationBestLessonSubmission(item.student_id, item.lesson_number)).length;
   const certificates = students.filter((s) => (s.graduated || s.graduado) && !(s.certificate_issued || s.certificado_emitido));
   const sessions = state.foundationLessonSessions || [];
+  const submissions = state.foundationLessonTestSubmissions || [];
+  const resultsToReview = submissions.filter((item) => /Needs Review|Pending Review/i.test(item.review_status || "")).length;
+  const lesson4Pending = students.filter((s) => {
+    const soul = foundationSoulWinningForStudent(s.id);
+    const attended4 = !!(s.class_attendance && s.class_attendance.class_4);
+    return attended4 && soul.status !== "Confirmado" && !s.pratica_evangelismo;
+  }).length;
   const examsWithoutAttachment = (state.foundationFinalExams || []).filter((exam) => exam.score && !(exam.physical_exam_file_url || exam.exam_attachment_data_url));
+  const graduatedQuarter = students.filter((s) => (s.graduated || s.graduado) && String(s.graduation_date || s.updated_at || "").startsWith("2026")).length;
   return `
     <div class="row g-3 mb-4 summary-cards-row">
       ${sm("bi-person-plus", FS("enrolledStudentsCount"), students.length, "foundation", { tab: "students" })}
       ${sm("bi-collection", FS("activeClassGroups"), groups.filter((g) => !["Concluída", "Cancelada"].includes(g.status)).length, "foundation", { tab: "classes" })}
       ${sm("bi-person-workspace", FS("activeTeachers"), (state.foundationTeachers || []).filter((t) => t.status === "Activo").length, "foundation", { tab: "teachers" })}
-      ${sm("bi-calendar-check", FS("lessonsThisWeek"), (state.foundationLessonProgress || []).filter((l) => l.attended).length, "foundation", { tab: "lessons" })}
+      ${sm("bi-calendar-check", FS("lessonsThisWeek"), sessions.filter((s) => s.status === "Realizada" || s.status === "Concluída").length || (state.foundationLessonProgress || []).filter((l) => l.attended).length, "foundation", { tab: "lessons" })}
       ${sm("bi-building", FS("lessonsInPerson"), sessions.filter((s) => s.delivery_mode === "in_person").length, "foundation", { tab: "lessons" })}
       ${sm("bi-camera-video", FS("lessonsOnline"), sessions.filter((s) => s.delivery_mode === "online").length, "foundation", { tab: "lessons" })}
       ${sm("bi-house-heart", FS("lessonsHomeVisit"), sessions.filter((s) => s.delivery_mode === "home_visit").length, "foundation", { tab: "lessons" })}
       ${sm("bi-shield-check", FS("lessonsPrison"), sessions.filter((s) => s.delivery_mode === "prison_ministry").length, "foundation", { tab: "lessons" })}
+      ${sm("bi-inbox", FS("onlineTestsReceived"), submissions.length, "foundation", { tab: "onlineTests", filterPayload: { section: "submissions" } })}
+      ${sm("bi-eye", FS("resultsToReview"), resultsToReview, "foundation", { tab: "onlineTests", filterPayload: { section: "review" } })}
       ${sm("bi-hourglass-split", FS("pendingTests"), pendingTests, "foundation", { tab: "onlineTests", filterPayload: { pendingTests: true } })}
+      ${sm("bi-stars", FS("lesson4Pending"), lesson4Pending, "foundation", { tab: "soulWinning" })}
       ${sm("bi-clipboard-check", FS("studentsReadyForExam"), readyExam.length, "foundation", { tab: "finalExam" })}
       ${sm("bi-paperclip", FS("examsWithoutAttachment"), examsWithoutAttachment.length, "foundation", { tab: "finalExam" })}
       ${sm("bi-award", FS("studentsReadyForGraduation"), readyGrad.length, "foundation", { tab: "graduation" })}
+      ${sm("bi-mortarboard", FS("graduatesQuarter"), graduatedQuarter, "foundation", { tab: "graduation" })}
       ${sm("bi-patch-check", FS("pendingCertificates"), certificates.length, "foundation", { tab: "graduation", filterPayload: { certificates: "pending" } })}
     </div>
     <div class="row g-4">
@@ -10597,7 +11728,12 @@ function foundationAuditPanel() {
 function renderFoundationEnrolments(pending) {
   return `
     <article class="panel" id="panel-foundation-enrolments">
-      <div class="panel-header-row"><h3 class="panel-title">${FS("foundationTabEnrolments")}</h3><button type="button" class="btn btn-ce-gold btn-touch" data-open-form="foundationStudent"><i class="bi bi-plus-lg me-1"></i>${L("add")}</button></div>
+      <div class="panel-header-row d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+        <h3 class="panel-title mb-0">${FS("foundationTabEnrolments")}</h3>
+      </div>
+      ${foundationActionBar([
+        { label: lang === "pt" ? "Nova inscrição / aluno" : "New enrolment / student", icon: "bi-person-plus", attrs: `data-open-form="foundationStudent"` }
+      ])}
       <div class="row g-3 mt-1">
         ${pending.length ? pending.map((p) => `<div class="col-md-6 col-xl-4"><div class="record-card h-100"><strong>${fullName(p)}</strong><p class="text-secondary mb-2">${p.telefone || "-"} · ${churchName(p.church_id)}</p><button class="btn btn-sm btn-ce-gold" data-enroll="${p.id}">${L("enrolStudent")}</button></div></div>`).join("") : `<div class="col-12">${EmptyState({ compact: true, title: L("empty") })}</div>`}
       </div>
@@ -10605,13 +11741,57 @@ function renderFoundationEnrolments(pending) {
   `;
 }
 
+function applyFoundationClassFilters(list = []) {
+  const f = foundationPageState.classFilter || {};
+  let rows = [...list];
+  const q = String(f.search || "").trim().toLowerCase();
+  if (q) {
+    rows = rows.filter((g) => [g.name, g.main_teacher_name, g.primary_location_name, g.prison_center_name].some((v) => String(v || "").toLowerCase().includes(q)));
+  }
+  if (f.churchId) rows = rows.filter((g) => g.church_id === f.churchId);
+  if (f.quarter) rows = rows.filter((g) => String(g.quarter || "").includes(f.quarter) || String(g.year) === f.quarter);
+  if (f.deliveryMode) rows = rows.filter((g) => g.delivery_mode === f.deliveryMode);
+  if (f.teacherId) rows = rows.filter((g) => g.main_teacher_id === f.teacherId || (g.assistant_teacher_ids || []).includes(f.teacherId) || g.assistant_teacher_id === f.teacherId);
+  if (f.status) rows = rows.filter((g) => g.status === f.status);
+  return rows;
+}
+
 function renderFoundationClasses() {
-  const groups = foundationScopedClassGroups();
+  const groups = applyFoundationClassFilters(foundationScopedClassGroups());
+  const cf = foundationPageState.classFilter || {};
+  const quarters = [...new Set((state.foundationClassGroups || []).map((g) => g.quarter).filter(Boolean))];
+  const statuses = ["Aberta", "Em Curso", "Pronta para Exame", "Em Graduação", "Concluída", "Cancelada"];
   return `
     <article class="panel" id="panel-foundation-classes">
-      <div class="panel-header-row"><h3 class="panel-title">${FS("foundationTabClasses")}</h3><button type="button" class="btn btn-outline-cyan action-secondary btn-touch" data-foundation-export="classes"><i class="bi bi-download me-1"></i>${L("export")}</button></div>
+      <div class="panel-header-row d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+        <div>
+          <h3 class="panel-title mb-0">${FS("foundationTabClasses")}</h3>
+          <p class="text-secondary small mb-0">${lang === "pt" ? "Crie turmas presenciais, online, ao domicílio ou prisionais." : "Create in-person, online, home-visit or prison classes."}</p>
+        </div>
+      </div>
+      ${foundationActionBar([
+        { label: lang === "pt" ? "Nova turma" : "New class", icon: "bi-plus-lg", attrs: `data-foundation-class-add data-delivery-mode="in_person"` },
+        { label: lang === "pt" ? "Turma presencial" : "In-person class", icon: "bi-building", variant: "btn-outline-cyan", attrs: `data-foundation-class-add data-delivery-mode="in_person"` },
+        { label: lang === "pt" ? "Turma online" : "Online class", icon: "bi-camera-video", variant: "btn-outline-cyan", attrs: `data-foundation-class-add data-delivery-mode="online"` },
+        { label: lang === "pt" ? "Turma ao domicílio" : "Home-visit class", icon: "bi-house-heart", variant: "btn-outline-cyan", attrs: `data-foundation-class-add data-delivery-mode="home_visit"` },
+        { label: lang === "pt" ? "Turma prisional" : "Prison class", icon: "bi-shield-check", variant: "btn-outline-cyan", attrs: `data-foundation-class-add data-delivery-mode="prison_ministry"` },
+        { label: L("export"), icon: "bi-download", variant: "btn-outline-secondary", attrs: `data-foundation-export="classes"` }
+      ])}
+      <form class="filter-toolbar filter-bar mb-3" data-foundation-class-filters>
+        <input class="form-control" name="search" placeholder="${L("search") || "Search"}" value="${cf.search || ""}">
+        <select class="form-select" name="churchId"><option value="">${L("church")}</option>${(state.churches || []).map((c) => `<option value="${c.id}" ${cf.churchId === c.id ? "selected" : ""}>${c.church_name || c.public_name || c.id}</option>`).join("")}</select>
+        <select class="form-select" name="quarter"><option value="">${lang === "pt" ? "Trimestre" : "Quarter"}</option>${quarters.map((q) => `<option value="${q}" ${cf.quarter === q ? "selected" : ""}>${q}</option>`).join("")}</select>
+        <select class="form-select" name="deliveryMode"><option value="">${FS("deliveryMode")}</option>${FOUNDATION_DELIVERY_MODES.map((m) => `<option value="${m.id}" ${cf.deliveryMode === m.id ? "selected" : ""}>${m[lang]}</option>`).join("")}</select>
+        <select class="form-select" name="teacherId"><option value="">${FS("mainTeacher")}</option>${foundationSelectOptions(state.foundationTeachers || [], "id", "full_name", cf.teacherId)}</select>
+        <select class="form-select" name="status"><option value="">${L("status")}</option>${statuses.map((s) => `<option value="${s}" ${cf.status === s ? "selected" : ""}>${s}</option>`).join("")}</select>
+        <button type="submit" class="btn btn-outline-cyan btn-touch">${L("apply") || "Aplicar"}</button>
+      </form>
       <div class="row g-3 mt-1">
-        ${groups.map((group) => `
+        ${groups.length ? groups.map((group) => {
+          const studentCount = foundationStudentsForGroup(group.id).length;
+          const progress = foundationClassProgressForGroup(group.id);
+          const assistantNames = (group.assistant_teacher_ids || []).map((id) => foundationTeacherById(id).full_name).filter(Boolean).join(", ") || group.assistant_teacher_name || "-";
+          return `
           <div class="col-xl-4 col-md-6">
             <div class="record-card h-100">
               <div class="d-flex justify-content-between gap-2"><strong>${group.name}</strong>${badge(group.status)}</div>
@@ -10621,12 +11801,15 @@ function renderFoundationClasses() {
               ${group.prison_center_name ? `<p class="mb-1"><strong>${lang === "pt" ? "Centro" : "Center"}:</strong> ${group.prison_center_name}</p>` : ""}
               ${group.online_link ? `<p class="mb-1"><strong>Link:</strong> <a href="${group.online_link}" target="_blank" rel="noopener">${group.online_platform || "Online"}</a></p>` : ""}
               <p class="mb-1"><strong>${FS("mainTeacher")}:</strong> ${group.main_teacher_name || "-"}</p>
-              <p class="mb-1"><strong>${FS("assistantTeacher")}:</strong> ${group.assistant_teacher_name || "-"}</p>
+              <p class="mb-1"><strong>${FS("assistantTeacher")}:</strong> ${assistantNames}</p>
+              <p class="mb-1"><strong>${FS("enrolledStudentsCount")}:</strong> ${studentCount}</p>
               <p class="mb-2"><strong>${FS("expectedGraduation")}:</strong> ${group.expected_graduation_date || "-"}</p>
-              ${foundationProgressBar(foundationClassProgressForGroup(group.id), "mb-2")}
-              <small>${FS("averageProgress")}: ${foundationClassProgressForGroup(group.id)}%</small>
+              ${foundationProgressBar(progress, "mb-2")}
+              <small>${FS("averageProgress")}: ${progress}%</small>
+              <div class="mt-2"><button type="button" class="btn btn-sm btn-outline-cyan" data-foundation-class-edit="${group.id}"><i class="bi bi-pencil me-1"></i>${L("edit")}</button></div>
             </div>
-          </div>`).join("")}
+          </div>`;
+        }).join("") : `<div class="col-12">${EmptyState({ compact: true, title: L("empty") })}</div>`}
       </div>
     </article>
   `;
@@ -10635,13 +11818,15 @@ function renderFoundationClasses() {
 function renderFoundationStudents(students) {
   return `
     <article class="panel" id="panel-foundation-students">
-      <div class="panel-header-row mb-3">
+      <div class="panel-header-row mb-2">
         <div>
-          <h3 class="panel-title">${FS("foundationTabStudents")}</h3>
+          <h3 class="panel-title mb-0">${FS("foundationTabStudents")}</h3>
           <p class="text-secondary mb-0">${lang === "pt" ? "Normalmente os alunos vêm do fluxo de Primeira Vez." : "Students normally come from the First Timers flow."}</p>
         </div>
-        ${foundationCanViewAllClasses() ? `<button type="button" class="btn btn-outline-cyan btn-touch action-secondary" data-open-form="foundationStudent"><i class="bi bi-plus-lg me-1"></i>${L("add")}</button>` : ""}
       </div>
+      ${foundationActionBar([
+        { label: lang === "pt" ? "Adicionar aluno" : "Add student", icon: "bi-person-plus", attrs: `data-open-form="foundationStudent"` }
+      ])}
       ${filterBar({ filterScope: "foundation", statusOptions: foundationStatuses, searchValue: foundationPageState.filter.search || "", churchValue: foundationPageState.filter.churchId || "", statusValue: foundationPageState.filter.estado || "" })}
       ${dataTable([FS("foundationTabStudents"), FS("classGroup"), L("church"), L("cell"), L("status"), L("progress"), FS("lessonTest"), FS("soulWinning"), L("actions")], applyFoundationCardFilters(students, foundationPageState.filter).map((s) => [
         fullName(s),
@@ -10663,9 +11848,22 @@ function renderFoundationLessons(students) {
   if (!ctx.classGroupId) ctx.classGroupId = foundationScopedClassGroups()[0]?.id || "";
   const groupStudents = foundationStudentsForGroup(ctx.classGroupId);
   const lessonNumber = Number(ctx.lessonNumber || 1);
+  const currentSession = foundationSessionByContext(ctx.classGroupId, lessonNumber);
   return `
     <article class="panel" id="panel-foundation-lessons">
-      <div class="panel-header-row"><div><h3 class="panel-title">${FS("attendanceClasses")}</h3><p class="text-secondary mb-0">${FS("recordedBy")}: ${activeUser?.name || "Admin Principal"} · ${FS("onlineTests")}: ${lang === "pt" ? "os resultados vêm dos formulários" : "results come from forms"}</p></div></div>
+      <div class="panel-header-row mb-2">
+        <div>
+          <h3 class="panel-title mb-0">${FS("attendanceClasses")}</h3>
+          <p class="text-secondary mb-1">${FS("recordedBy")}: ${activeUser?.name || "Admin Principal"} · ${currentSession?.id ? `${lang === "pt" ? "Sessão" : "Session"}: ${currentSession.lesson_date || "-"} · ${foundationDeliveryLabel(currentSession.delivery_mode)}` : (lang === "pt" ? "Ainda sem registo desta aula." : "No lesson record yet.")}</p>
+          <p class="text-secondary small mb-0">${lang === "pt"
+            ? "Fluxo: 1) escolha turma + aula + formato + local + professor + data · 2) clique «Registar esta aula» para guardar quando a aula foi dada · 3) marque Presente e «Guardar presenças». A sessão é o registo da aula (quem ensinou, onde, quando) — a presença é quem dos alunos veio."
+            : "Flow: 1) pick class + lesson + format + location + teacher + date · 2) click «Register this lesson» to save when the lesson was held · 3) mark Present and save attendance. A session is the lesson event (who taught, where, when) — attendance is which students came."}</p>
+        </div>
+      </div>
+      ${foundationActionBar([
+        { label: lang === "pt" ? "Registar esta aula (sessão)" : "Register this lesson (session)", icon: "bi-calendar-plus", attrs: `data-foundation-create-session` },
+        { label: lang === "pt" ? "Guardar presenças em massa" : "Save attendance (bulk)", icon: "bi-check2-circle", variant: "btn-outline-cyan", attrs: `data-foundation-save-all` }
+      ])}
       <form class="filter-toolbar filter-bar mb-4" data-foundation-lesson-context>
         <select class="form-select" name="classGroupId" data-foundation-lesson-field><option value="">${FS("classGroup")}</option>${foundationSelectOptions(foundationScopedClassGroups(), "id", "name", ctx.classGroupId)}</select>
         <select class="form-select" name="lessonNumber" data-foundation-lesson-field>${Array.from({ length: 7 }, (_, i) => `<option value="${i + 1}" ${String(ctx.lessonNumber) === String(i + 1) ? "selected" : ""}>${FS("lesson")} ${i + 1} - ${FOUNDATION_LESSON_TITLES[i]}</option>`).join("")}</select>
@@ -10673,7 +11871,6 @@ function renderFoundationLessons(students) {
         <select class="form-select" name="locationId" data-foundation-lesson-field><option value="">${FS("lessonLocation")}</option>${foundationLocationOptions(ctx.locationId || foundationClassGroupById(ctx.classGroupId).primary_location_id || "")}</select>
         <select class="form-select" name="teacherId" data-foundation-lesson-field><option value="">${FS("responsibleTeacher")}</option>${foundationSelectOptions(state.foundationTeachers || [], "id", "full_name", ctx.teacherId)}</select>
         <input class="form-control" name="date" type="date" value="${ctx.date || new Date().toISOString().slice(0, 10)}" data-foundation-lesson-field>
-        <button type="button" class="btn btn-ce-gold btn-touch" data-foundation-save-all><i class="bi bi-check2-circle me-1"></i>${FS("massProgress")}</button>
       </form>
       ${dataTable([FS("foundationTabStudents"), FS("attendance"), FS("deliveryMode"), FS("onlineTestResult"), FS("soulWinning"), L("status"), L("notes"), L("actions")], groupStudents.map((student) => {
         const lesson = foundationNormalizeLessonRecord(foundationLessonRecords(student.id).find((item) => Number(item.lesson_number) === lessonNumber) || {});
@@ -10717,6 +11914,7 @@ function renderFoundationFinalExam() {
   const rows = [...ready, ...foundationStudentsForGroup().filter((s) => s.final_exam_passed || s.aprovado || Number(s.nota_exame || s.final_exam_score || 0) > 0)];
   const settings = foundationGradingSettings();
   return moduleSection(FS("physicalExam"), `${FS("finalExamHint")} ${FS("gradeFormulaHint")}`, "bi-clipboard-check", "", `
+    <p class="text-secondary small mb-3">${lang === "pt" ? "Use Lançar nota em cada linha. Anexe PDF/imagem no campo de anexo (único teste físico)." : "Use Enter score on each row. Attach PDF/image in the attachment field (only physical test)."}</p>
     ${dataTable([FS("foundationTabStudents"), FS("classGroup"), FS("lessonTestsTotal"), FS("score"), FS("attachmentStatus"), FS("correctedBy"), L("status"), L("actions")], rows.map((student) => {
       const exam = exams.find((item) => item.student_id === student.id) || {};
       const grade = foundationCourseGrade(student);
@@ -10737,7 +11935,10 @@ function renderFoundationFinalExam() {
 }
 function renderFoundationSoulWinning() {
   const rows = state.foundationSoulWinning || [];
-  return moduleSection(FS("soulWinning"), `${FS("lesson")} 4`, "bi-stars", "", `
+  return moduleSection(FS("soulWinning"), `${FS("lesson")} 4 — ${lang === "pt" ? "indique o número exacto de almas ganhas e confirme" : "enter the exact souls won count and confirm"}`, "bi-stars", "", `
+    ${foundationActionBar([
+      { label: lang === "pt" ? "Ir para Aula 4 (presenças)" : "Go to Lesson 4 (attendance)", icon: "bi-calendar-check", variant: "btn-outline-cyan", attrs: `data-foundation-tab="lessons" data-foundation-goto-lesson="4"` }
+    ])}
     ${dataTable([FS("foundationTabStudents"), FS("classGroup"), L("date"), L("location"), FS("soulWinning"), FS("confirmedBy"), L("status"), L("actions")], rows.map((item) => {
       const student = (state.foundationStudents || []).find((s) => s.id === item.student_id) || {};
       return [
@@ -10745,8 +11946,8 @@ function renderFoundationSoulWinning() {
         foundationClassGroupById(item.class_group_id).name || "-",
         item.activity_date || "-",
         item.location || "-",
-        item.souls_won_count || 0,
-        item.confirmed_by_teacher_name || "-",
+        `<input type="number" min="0" class="form-control form-control-sm" style="max-width:5rem" data-foundation-souls-count="${item.id}" value="${Number(item.souls_won_count || 0)}">`,
+        item.confirmed_by_teacher_name || item.confirmed_by || "-",
         badge(item.status),
         `<button type="button" class="action-btn" data-foundation-confirm-soul="${item.id}">${L("confirm") || "Confirmar"}</button>`
       ];
@@ -10754,23 +11955,54 @@ function renderFoundationSoulWinning() {
   `);
 }
 
+function applyFoundationTeacherFilters(list = []) {
+  const f = foundationPageState.teacherFilter || {};
+  let rows = [...list];
+  const q = String(f.search || "").trim().toLowerCase();
+  if (q) {
+    rows = rows.filter((t) => [t.full_name, t.phone, t.email, t.title, t.role_type].some((v) => String(v || "").toLowerCase().includes(q)));
+  }
+  if (f.churchId) rows = rows.filter((t) => t.church_id === f.churchId);
+  if (f.status) rows = rows.filter((t) => t.status === f.status);
+  if (f.role_type) rows = rows.filter((t) => t.role_type === f.role_type);
+  if (f.deliveryMode) rows = rows.filter((t) => (t.delivery_modes_allowed || []).includes(f.deliveryMode));
+  if (f.lesson) {
+    const n = Number(f.lesson);
+    rows = rows.filter((t) => t.can_teach_all_lessons || (t.can_teach_lessons || t.subjects_or_lessons_allowed || []).map(Number).includes(n));
+  }
+  if (f.prisonOnly) rows = rows.filter((t) => t.is_prison_ministry_teacher || (t.delivery_modes_allowed || []).includes("prison_ministry"));
+  return rows;
+}
+
 function renderFoundationTeachers() {
-  const teachers = state.foundationTeachers || [];
-  return moduleSection(FS("foundationTabTeachers"), `${FS("rector")}: ${state.foundationSchoolSettings?.rector_name || "-"} · ${FS("coordinator")}: ${state.foundationSchoolSettings?.coordinator_name || "-"}`, "bi-person-workspace", "", `
-    <div class="panel-header-row mb-3">
-      <div></div>
-      <button type="button" class="btn btn-ce-gold btn-touch" data-foundation-teacher-add><i class="bi bi-plus-lg me-1"></i>${L("add")}</button>
-    </div>
-    ${dataTable([FS("foundationTabTeachers"), L("phone"), L("church"), FS("lessonsAllowed"), FS("deliveryModesAllowed"), FS("assignedClasses"), FS("testsEntered"), L("status"), L("actions")], teachers.map((teacher) => {
-      const classes = (state.foundationClassGroups || []).filter((group) => group.main_teacher_id === teacher.id || group.assistant_teacher_id === teacher.id);
+  const teachers = applyFoundationTeacherFilters((state.foundationTeachers || []).map((t) => foundationNormalizeTeacherCapabilities(t)));
+  const tf = foundationPageState.teacherFilter || {};
+  return moduleSection(FS("foundationTabTeachers"), `${FS("rector")}: ${state.foundationSchoolSettings?.rector_name || "-"} · ${FS("coordinator")}: ${state.foundationSchoolSettings?.coordinator_name || "-"} · ${teachers.length} ${lang === "pt" ? "professores" : "teachers"}`, "bi-person-workspace", "", `
+    ${foundationActionBar([
+      { label: lang === "pt" ? "Adicionar professor" : "Add teacher", icon: "bi-person-plus", attrs: `data-foundation-teacher-add` }
+    ])}
+    <form class="filter-toolbar filter-bar mb-3" data-foundation-teacher-filters>
+      <input class="form-control" name="search" placeholder="${L("search") || "Search"}" value="${tf.search || ""}">
+      <select class="form-select" name="churchId"><option value="">${L("church")}</option>${(state.churches || []).map((c) => `<option value="${c.id}" ${tf.churchId === c.id ? "selected" : ""}>${c.church_name || c.public_name || c.id}</option>`).join("")}</select>
+      <select class="form-select" name="role_type"><option value="">${FS("teacherRole")}</option>${FOUNDATION_TEACHER_ROLES.map((r) => `<option value="${r.id}" ${tf.role_type === r.id ? "selected" : ""}>${r[lang]}</option>`).join("")}</select>
+      <select class="form-select" name="status"><option value="">${L("status")}</option>${FOUNDATION_TEACHER_STATUSES.map((s) => `<option value="${s.id}" ${tf.status === s.id ? "selected" : ""}>${s[lang]}</option>`).join("")}</select>
+      <select class="form-select" name="deliveryMode"><option value="">${FS("deliveryMode")}</option>${FOUNDATION_DELIVERY_MODES.map((m) => `<option value="${m.id}" ${tf.deliveryMode === m.id ? "selected" : ""}>${m[lang]}</option>`).join("")}</select>
+      <select class="form-select" name="lesson"><option value="">${FS("lesson")}</option>${[1, 2, 3, 4, 5, 6, 7].map((n) => `<option value="${n}" ${String(tf.lesson) === String(n) ? "selected" : ""}>${FS("lesson")} ${n}</option>`).join("")}</select>
+      <label class="form-check mb-0 align-self-center"><input type="checkbox" class="form-check-input" name="prisonOnly" ${tf.prisonOnly ? "checked" : ""}> <span class="form-check-label">${foundationDeliveryLabel("prison_ministry")}</span></label>
+      <button type="submit" class="btn btn-outline-cyan btn-touch">${L("apply") || "Aplicar"}</button>
+    </form>
+    ${dataTable([FS("foundationTabTeachers"), FS("teacherRole"), L("phone"), L("church"), FS("lessonsAllowed"), FS("deliveryModesAllowed"), FS("assignedClasses"), FS("testsEntered"), L("status"), L("actions")], teachers.map((teacher) => {
+      const classes = (state.foundationClassGroups || []).filter((group) => group.main_teacher_id === teacher.id || group.assistant_teacher_id === teacher.id || (group.assistant_teacher_ids || []).includes(teacher.id));
       const lessonStudentIds = new Set((state.foundationLessonProgress || []).filter((item) => item.teacher_id === teacher.id).map((item) => item.student_id));
       const lessons = (state.foundationLessonTestSubmissions || []).filter((item) => lessonStudentIds.has(item.student_id));
+      const roleLabel = (FOUNDATION_TEACHER_ROLES.find((r) => r.id === teacher.role_type) || {})[lang] || teacher.role_type || teacher.title || "";
       return [
         `<strong>${teacher.full_name}</strong><small class="d-block text-secondary">${teacher.title || ""}</small>`,
+        badge(roleLabel),
         teacher.phone || "-",
         teacher.church_name || churchName(teacher.church_id),
-        `<div class="d-flex flex-wrap gap-1">${(teacher.can_teach_all_lessons ? [1, 2, 3, 4, 5, 6, 7] : (teacher.subjects_or_lessons_allowed || [])).map((n) => badge(`${FS("lesson")} ${n}`)).join("")}</div>`,
-        `<div class="d-flex flex-wrap gap-1">${(teacher.delivery_modes_allowed || []).map((mode) => badge(foundationDeliveryLabel(mode))).join("")}</div>`,
+        `<div class="d-flex flex-wrap gap-1">${(teacher.can_teach_all_lessons ? [1, 2, 3, 4, 5, 6, 7] : (teacher.can_teach_lessons || teacher.subjects_or_lessons_allowed || [])).map((n) => badge(`${FS("lesson")} ${n}`)).join("")}</div>`,
+        `<div class="d-flex flex-wrap gap-1">${(teacher.delivery_modes_allowed || []).map((mode) => badge(foundationDeliveryLabel(mode))).join("")}${teacher.is_prison_ministry_teacher ? badge(foundationDeliveryLabel("prison_ministry")) : ""}</div>`,
         classes.length,
         lessons.length,
         badge(teacher.status),
@@ -10897,9 +12129,11 @@ async function saveFoundationLessonRow(studentId) {
   record.updated_at = now.slice(0, 10);
   const studentIndex = (state.foundationStudents || []).findIndex((student) => student.id === studentId);
   if (studentIndex >= 0) {
-    const attendance = { ...(state.foundationStudents[studentIndex].class_attendance || defaultFoundationAttendance()) };
-    attendance[`class_${lessonNumber}`] = attended;
-    state.foundationStudents[studentIndex] = applyFoundationCalculations({ ...state.foundationStudents[studentIndex], class_attendance: attendance, updated_at: now.slice(0, 10) }, true);
+    const attendanceMap = { ...(state.foundationStudents[studentIndex].class_attendance || defaultFoundationAttendance()) };
+    attendanceMap[`class_${lessonNumber}`] = attended;
+    state.foundationStudents[studentIndex] = applyFoundationCalculations({ ...state.foundationStudents[studentIndex], class_attendance: attendanceMap, updated_at: now.slice(0, 10) }, true);
+    // Dual-write progress so VITE_DATA_SOURCE=local survives refresh/hydrate
+    void persistFoundationStudentViaRepository("update", state.foundationStudents[studentIndex]);
   }
   let attendance = (state.foundationLessonAttendance || []).find((item) => item.lesson_session_id === session.id && item.student_id === studentId);
   if (!attendance) {
@@ -10912,8 +12146,12 @@ async function saveFoundationLessonRow(studentId) {
   attendance.marked_by_user_id = activeUser?.id || "u-1";
   attendance.marked_by_name = activeUser?.name || "Admin Principal";
   attendance.marked_at = now;
+  attendance.teacher_id = session.teacher_id || record.teacher_id || "";
+  attendance.teacher_name = session.teacher_name || record.teacher_name || "";
+  attendance.delivery_mode = session.delivery_mode || "";
+  attendance.location_name = session.location_name || "";
   attendance.notes = notes;
-  foundationAudit("lesson_attendance_updated", "foundationLessonAttendance", record.id, oldValue, JSON.stringify({ attended, lesson_date: record.lesson_date, teacher: record.teacher_name }), `${FS("lesson")} ${lessonNumber} - ${fullName((state.foundationStudents || []).find((s) => s.id === studentId) || {})}`);
+  foundationAudit("lesson_attendance_updated", "foundationLessonAttendance", record.id, oldValue, JSON.stringify({ attended, lesson_date: record.lesson_date, teacher: record.teacher_name, delivery_mode: session.delivery_mode, location: session.location_name }), `${FS("lesson")} ${lessonNumber} - ${fullName((state.foundationStudents || []).find((s) => s.id === studentId) || {})}`);
 }
 async function saveFoundationExam(studentId) {
   const input = document.querySelector(`[data-foundation-exam-score="${studentId}"]`);
@@ -10962,6 +12200,7 @@ async function saveFoundationExam(studentId) {
   const index = (state.foundationStudents || []).findIndex((student) => student.id === studentId);
   if (index >= 0) {
     state.foundationStudents[index] = applyFoundationCalculations({ ...state.foundationStudents[index], final_exam_score: score, nota_exame: score, final_exam_passed: passed, aprovado: passed, estado: passed ? "Aprovado" : "Reprovado", updated_at: now.slice(0, 10) }, true);
+    void persistFoundationStudentViaRepository("update", state.foundationStudents[index]);
   }
   foundationAudit("final_exam_updated", "foundationFinalExam", exam.id, "", JSON.stringify({ score, maxScore, percentage, passed, attachment: exam.physical_exam_file_name || "" }), fullName((state.foundationStudents || []).find((s) => s.id === studentId) || {}));
 }
@@ -11567,16 +12806,938 @@ function churchDetailGrid(church) {
     </section>`;
 }
 
-function submitChurchDrawer(form) {
+/**
+ * Resolve churches repository from any installed global.
+ * Safe for the classic dashboard.js runtime (no TS imports).
+ */
+function getChurchesRepoSafe() {
+  const repo =
+    window.CEDataLayer?.churches ||
+    window.CEChurches ||
+    (window.CESupabase?.createChurch ? window.CESupabase : null) ||
+    window.CESupabase?.repositories?.churches ||
+    window.CEData?.churches ||
+    null;
+
+  if (!repo) {
+    console.error("[CE Churches] repository unavailable", {
+      CEDataLayer: window.CEDataLayer,
+      CEChurches: window.CEChurches,
+      CESupabase: window.CESupabase,
+      CEData: window.CEData
+    });
+    return null;
+  }
+  return repo;
+}
+
+/**
+ * Persist via data-layer first; if missing/unavailable, keep classic localStorage path.
+ * Rule: repository → local state fallback → error only if both cannot apply.
+ */
+async function persistChurchViaRepository(mode, churchRecord) {
+  const repo = getChurchesRepoSafe();
+  if (!repo) {
+    console.warn("[CE Churches] no repo — using dashboard localStorage only");
+    return { ok: true, data: churchRecord, skipped: true, via: "local-state-fallback" };
+  }
+
+  try {
+    let result = null;
+    if (mode === "create" && typeof repo.createChurch === "function") {
+      result = await repo.createChurch(churchRecord);
+    } else if ((mode === "update" || mode === "status") && typeof repo.updateChurch === "function") {
+      result = await repo.updateChurch(churchRecord.id, churchRecord);
+    } else {
+      console.warn("[CE Churches] repo method missing for mode", mode, repo);
+      return { ok: true, data: churchRecord, skipped: true, via: "local-state-fallback" };
+    }
+
+    if (result && result.ok === false) {
+      const soft =
+        result.code === "UNAVAILABLE" ||
+        result.code === "NOT_IMPLEMENTED" ||
+        /indispon[ií]vel|not implemented/i.test(String(result.error || ""));
+      if (soft) {
+        console.warn("[CE Churches] repo soft-fail — keeping local save", result);
+        return { ok: true, data: churchRecord, skipped: true, via: "local-state-fallback", repoError: result };
+      }
+      return result;
+    }
+
+    console.info("[CE Churches] repo write ok", { mode, id: churchRecord?.id, via: "repository" });
+    return result || { ok: true, data: churchRecord };
+  } catch (error) {
+    console.warn("[CE Churches] repository write failed — local fallback", error);
+    // Do not block UI: classic path still writes state + localStorage below.
+    return { ok: true, data: churchRecord, skipped: true, via: "local-state-fallback", error: error?.message };
+  }
+}
+
+async function hydrateChurchesFromRepository() {
+  const repo = getChurchesRepoSafe();
+  if (!repo?.listChurches) return false;
+  try {
+    const result = await repo.listChurches();
+    if (!result?.ok || !Array.isArray(result.data) || !result.data.length) {
+      console.info("[CE Churches] hydrate skipped", result);
+      return false;
+    }
+    const previousById = new Map((state.churches || []).map((item) => [item.id, item]));
+    state.churches = result.data.map((repoChurch) => {
+      const previous = previousById.get(repoChurch.id) || {};
+      return migrateChurchRecord({ ...previous, ...repoChurch });
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    console.info("[CE Churches] hydrated", state.churches.length, "churches");
+    return true;
+  } catch (error) {
+    console.warn("[CE Churches] hydrate failed — keeping dashboard localStorage churches.", error);
+    return false;
+  }
+}
+
+/**
+ * Resolve members repository from installed globals (same pattern as Churches).
+ */
+function getMembersRepoSafe() {
+  const repo =
+    window.CEDataLayer?.members ||
+    window.CEMembers ||
+    (window.CESupabase?.createMember ? window.CESupabase : null) ||
+    window.CESupabase?.repositories?.members ||
+    window.CEData?.members ||
+    null;
+
+  if (!repo) {
+    console.error("[CE Members] repository unavailable", {
+      CEDataLayer: window.CEDataLayer,
+      CEMembers: window.CEMembers,
+      CESupabase: window.CESupabase,
+      CEData: window.CEData
+    });
+    return null;
+  }
+  return repo;
+}
+
+function migrateMemberRecord(member) {
+  if (!member) return member;
+  const churchId = member.church_id || member.churchId || "";
+  const churchLabel = member.church_name || member.igreja || churchName(churchId) || "";
+  const cellName = member.celula || member.cell_name || "";
+  return {
+    ...member,
+    id: member.id,
+    tratamento: member.tratamento || member.title || "",
+    nome: member.nome || member.first_name || "",
+    apelido: member.apelido || member.last_name || "",
+    telefone: member.telefone || member.phone || "",
+    whatsapp: member.whatsapp || member.telefone || member.phone || "",
+    email: member.email || "",
+    endereco: member.endereco || member.address || "",
+    church_id: churchId,
+    church_name: churchLabel,
+    igreja: member.igreja || churchLabel,
+    celula: cellName,
+    cell_id: member.cell_id || "",
+    cell_name: member.cell_name || cellName,
+    cell_group_id: member.cell_group_id || "",
+    cell_group_name: member.cell_group_name || "",
+    departamento: member.departamento || member.department_name || "",
+    department_id: member.department_id || "",
+    department_name: member.department_name || member.departamento || "",
+    estado: member.estado || member.status || "Active",
+    data_de_entrada: member.data_de_entrada || member.member_since || "",
+    origem: member.origem || member.source || "Manual",
+    notas: member.notas || member.notes || ""
+  };
+}
+
+/**
+ * Persist via data-layer first; if missing/unavailable, keep classic localStorage path.
+ */
+async function persistMemberViaRepository(mode, memberRecord) {
+  const repo = getMembersRepoSafe();
+  if (!repo) {
+    console.warn("[CE Members] no repo — using dashboard localStorage only");
+    return { ok: true, data: memberRecord, skipped: true, via: "local-state-fallback" };
+  }
+
+  try {
+    let result = null;
+    if (mode === "create" && typeof repo.createMember === "function") {
+      result = await repo.createMember(memberRecord);
+    } else if (mode === "update" && typeof repo.updateMember === "function") {
+      result = await repo.updateMember(memberRecord.id, memberRecord);
+    } else if (mode === "delete" && typeof repo.deleteMember === "function") {
+      result = await repo.deleteMember(memberRecord.id || memberRecord);
+    } else {
+      console.warn("[CE Members] repo method missing for mode", mode, repo);
+      return { ok: true, data: memberRecord, skipped: true, via: "local-state-fallback" };
+    }
+
+    if (result && result.ok === false) {
+      const soft =
+        result.code === "UNAVAILABLE" ||
+        result.code === "NOT_IMPLEMENTED" ||
+        /indispon[ií]vel|not implemented/i.test(String(result.error || ""));
+      if (soft) {
+        console.warn("[CE Members] repo soft-fail — keeping local save", result);
+        return { ok: true, data: memberRecord, skipped: true, via: "local-state-fallback", repoError: result };
+      }
+      return result;
+    }
+
+    console.info("[CE Members] repo write ok", { mode, id: memberRecord?.id, via: "repository" });
+    return result || { ok: true, data: memberRecord };
+  } catch (error) {
+    console.warn("[CE Members] repository write failed — local fallback", error);
+    return { ok: true, data: memberRecord, skipped: true, via: "local-state-fallback", error: error?.message };
+  }
+}
+
+async function hydrateMembersFromRepository() {
+  const repo = getMembersRepoSafe();
+  if (!repo?.listMembers) return false;
+  try {
+    const result = await repo.listMembers();
+    if (!result?.ok || !Array.isArray(result.data) || !result.data.length) {
+      console.info("[CE Members] hydrate skipped", result);
+      return false;
+    }
+    const previousById = new Map((state.members || []).map((item) => [item.id, item]));
+    state.members = result.data.map((repoMember) => {
+      const previous = previousById.get(repoMember.id) || {};
+      return migrateMemberRecord({ ...previous, ...repoMember });
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    console.info("[CE Members] hydrated", state.members.length, "members");
+    return true;
+  } catch (error) {
+    console.warn("[CE Members] hydrate failed — keeping dashboard localStorage members.", error);
+    return false;
+  }
+}
+
+/**
+ * Resolve first-timers repository from installed globals (same pattern as Members).
+ */
+function getFirstTimersRepoSafe() {
+  const repo =
+    window.CEDataLayer?.firstTimers ||
+    window.CEFirstTimers ||
+    (window.CESupabase?.createFirstTimer ? window.CESupabase : null) ||
+    window.CESupabase?.repositories?.firstTimers ||
+    window.CEData?.firstTimers ||
+    null;
+
+  if (!repo) {
+    console.error("[CE FirstTimers] repository unavailable", {
+      CEDataLayer: window.CEDataLayer,
+      CEFirstTimers: window.CEFirstTimers,
+      CESupabase: window.CESupabase,
+      CEData: window.CEData
+    });
+    return null;
+  }
+  return repo;
+}
+
+function migrateFirstTimerRecord(person) {
+  if (!person) return person;
+  const churchId = person.church_id || person.churchId || "";
+  const churchLabel = person.church_name || person.igreja || churchName(churchId) || "";
+  const asBool = (value) => value === true || value === "on" || value === "true" || value === 1 || value === "1";
+  const visitDate = person.data_do_culto || person.visit_date || person.serviceDate || "";
+  const serviceName = person.culto || person.service_name || person.serviceName || "";
+  const followUp = person.estado_do_seguimento || person.follow_up_status || person.followUpStatus || "Pending";
+  return {
+    ...person,
+    id: person.id,
+    tratamento: person.tratamento || person.title || "",
+    nome: person.nome || person.first_name || "",
+    apelido: person.apelido || person.last_name || "",
+    genero: person.genero || person.gender || "",
+    data_de_nascimento: person.data_de_nascimento || person.date_of_birth || person.dateOfBirth || "",
+    telefone: person.telefone || person.phone || "",
+    whatsapp: person.whatsapp || person.telefone || person.phone || "",
+    email: person.email || "",
+    endereco: person.endereco || person.address || person.neighbourhood || "",
+    church_id: churchId,
+    church_name: churchLabel,
+    igreja: person.igreja || churchLabel,
+    cell_group_id: person.cell_group_id || "",
+    cell_group_name: person.cell_group_name || "",
+    cell_id: person.cell_id || "",
+    cell_name: person.cell_name || person.celula || person.celula_preferida || "",
+    celula: person.celula || person.cell_name || person.celula_preferida || "",
+    celula_preferida: person.celula_preferida || person.celula || person.cell_name || "",
+    data_do_culto: visitDate,
+    visit_date: visitDate,
+    culto: serviceName,
+    service_name: serviceName,
+    convidado_por: person.convidado_por || person.invited_by || person.invitedBy || "",
+    invited_by: person.invited_by || person.convidado_por || person.invitedBy || "",
+    nasceu_de_novo: asBool(person.nasceu_de_novo ?? person.born_again ?? person.bornAgain),
+    born_again: asBool(person.born_again ?? person.nasceu_de_novo ?? person.bornAgain),
+    quer_escola_de_fundacao: asBool(person.quer_escola_de_fundacao ?? person.wants_foundation_school ?? person.wantsFoundationSchool),
+    wants_foundation_school: asBool(person.wants_foundation_school ?? person.quer_escola_de_fundacao ?? person.wantsFoundationSchool),
+    quer_aconselhamento: asBool(person.quer_aconselhamento ?? person.wants_counseling ?? person.wantsCounseling),
+    interesse_em_celula: asBool(person.interesse_em_celula ?? person.interested_in_cell ?? person.wantsCell),
+    interested_in_cell: asBool(person.interested_in_cell ?? person.interesse_em_celula ?? person.wantsCell),
+    estado_do_seguimento: followUp,
+    follow_up_status: person.follow_up_status || followUp,
+    status: person.status || followUp,
+    conselheiro_responsavel: person.conselheiro_responsavel || person.follow_up_responsible_name || "",
+    follow_up_responsible_name: person.follow_up_responsible_name || person.conselheiro_responsavel || "",
+    follow_up_responsible_id: person.follow_up_responsible_id || person.conselheiro_responsavel_id || "",
+    next_follow_up_date: person.next_follow_up_date || person.proxima_data_contacto || "",
+    converted_to_member: asBool(person.converted_to_member ?? person.convertida_em_membro),
+    member_id: person.member_id || "",
+    notas: person.notas || person.notes || ""
+  };
+}
+
+async function persistFirstTimerViaRepository(mode, personRecord) {
+  const repo = getFirstTimersRepoSafe();
+  if (!repo) {
+    console.warn("[CE FirstTimers] no repo — using dashboard localStorage only");
+    return { ok: true, data: personRecord, skipped: true, via: "local-state-fallback" };
+  }
+
+  try {
+    let result = null;
+    if (mode === "create" && typeof repo.createFirstTimer === "function") {
+      result = await repo.createFirstTimer(personRecord);
+    } else if (mode === "update" && typeof repo.updateFirstTimer === "function") {
+      result = await repo.updateFirstTimer(personRecord.id, personRecord);
+    } else if (mode === "delete" && typeof repo.deleteFirstTimer === "function") {
+      result = await repo.deleteFirstTimer(personRecord.id || personRecord);
+    } else {
+      console.warn("[CE FirstTimers] repo method missing for mode", mode, repo);
+      return { ok: true, data: personRecord, skipped: true, via: "local-state-fallback" };
+    }
+
+    if (result && result.ok === false) {
+      const soft =
+        result.code === "UNAVAILABLE" ||
+        result.code === "NOT_IMPLEMENTED" ||
+        /indispon[ií]vel|not implemented/i.test(String(result.error || ""));
+      if (soft) {
+        console.warn("[CE FirstTimers] repo soft-fail — keeping local save", result);
+        return { ok: true, data: personRecord, skipped: true, via: "local-state-fallback", repoError: result };
+      }
+      return result;
+    }
+
+    console.info("[CE FirstTimers] repo write ok", { mode, id: personRecord?.id, via: "repository" });
+    return result || { ok: true, data: personRecord };
+  } catch (error) {
+    console.warn("[CE FirstTimers] repository write failed — local fallback", error);
+    return { ok: true, data: personRecord, skipped: true, via: "local-state-fallback", error: error?.message };
+  }
+}
+
+async function hydrateFirstTimersFromRepository() {
+  const repo = getFirstTimersRepoSafe();
+  if (!repo?.listFirstTimers) return false;
+  try {
+    const result = await repo.listFirstTimers();
+    if (!result?.ok || !Array.isArray(result.data) || !result.data.length) {
+      console.info("[CE FirstTimers] hydrate skipped", result);
+      return false;
+    }
+    const previousById = new Map((state.firstTimers || []).map((item) => [item.id, item]));
+    state.firstTimers = result.data.map((repoPerson) => {
+      const previous = previousById.get(repoPerson.id) || {};
+      return migrateFirstTimerRecord({ ...previous, ...repoPerson });
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    console.info("[CE FirstTimers] hydrated", state.firstTimers.length, "first timers");
+    return true;
+  } catch (error) {
+    console.warn("[CE FirstTimers] hydrate failed — keeping dashboard localStorage first timers.", error);
+    return false;
+  }
+}
+
+function getFollowUpsRepoSafe() {
+  const repo =
+    window.CEDataLayer?.followUps ||
+    window.CEFollowUps ||
+    (window.CESupabase?.createFollowUp ? window.CESupabase : null) ||
+    window.CESupabase?.repositories?.followUps ||
+    null;
+  if (!repo) {
+    console.error("[CE FollowUps] repository unavailable", {
+      CEDataLayer: window.CEDataLayer,
+      CEFollowUps: window.CEFollowUps,
+      CESupabase: window.CESupabase
+    });
+    return null;
+  }
+  return repo;
+}
+
+function migrateFollowUpRecord(row) {
+  if (!row) return row;
+  const status = row.status || row.estado || "Pending";
+  return {
+    ...row,
+    id: row.id,
+    first_timer_id: row.first_timer_id || row.firstTimerId || "",
+    member_id: row.member_id || "",
+    person_type: row.person_type || (row.first_timer_id ? "First Timer" : "Other"),
+    full_name: row.full_name || row.fullName || "",
+    phone: row.phone || row.telefone || "",
+    telefone: row.telefone || row.phone || "",
+    whatsapp: row.whatsapp || row.phone || row.telefone || "",
+    email: row.email || "",
+    church_id: row.church_id || "",
+    church_name: row.church_name || churchName(row.church_id) || "",
+    cell_group_id: row.cell_group_id || "",
+    cell_group_name: row.cell_group_name || "",
+    cell_id: row.cell_id || "",
+    cell_name: row.cell_name || row.celula || "",
+    celula: row.celula || row.cell_name || "",
+    responsible_user_id: row.responsible_user_id || "",
+    responsible_name: row.responsible_name || row.actualizado_por || "",
+    actualizado_por: row.actualizado_por || row.responsible_name || "",
+    data_do_contacto: row.data_do_contacto || row.follow_up_date || "",
+    follow_up_date: row.follow_up_date || row.data_do_contacto || "",
+    metodo: row.metodo || row.contact_method || "",
+    contact_method: row.contact_method || row.metodo || "",
+    resultado: row.resultado || row.result || "",
+    result: row.result || row.resultado || "",
+    proximo_passo: row.proximo_passo || row.next_step || "",
+    next_step: row.next_step || row.proximo_passo || "",
+    proxima_data_de_contacto: row.proxima_data_de_contacto || row.next_follow_up_date || "",
+    next_follow_up_date: row.next_follow_up_date || row.proxima_data_de_contacto || "",
+    status,
+    estado: row.estado || status,
+    priority: row.priority || "Normal",
+    wants_foundation_school: !!(row.wants_foundation_school),
+    wants_counseling: !!(row.wants_counseling),
+    interested_in_cell: !!(row.interested_in_cell),
+    became_member: !!(row.became_member) || statusKey(status) === "becameMember",
+    notas: row.notas || row.notes || "",
+    notes: row.notes || row.notas || "",
+    timeline: Array.isArray(row.timeline) ? row.timeline : [],
+    counseling_request_id: row.counseling_request_id || ""
+  };
+}
+
+async function persistFollowUpViaRepository(mode, record) {
+  const repo = getFollowUpsRepoSafe();
+  if (!repo) {
+    console.warn("[CE FollowUps] no repo — using dashboard localStorage only");
+    return { ok: true, data: record, skipped: true, via: "local-state-fallback" };
+  }
+  try {
+    let result = null;
+    if (mode === "create" && typeof repo.createFollowUp === "function") {
+      result = await repo.createFollowUp(record);
+    } else if (mode === "update" && typeof repo.updateFollowUp === "function") {
+      result = await repo.updateFollowUp(record.id, record);
+    } else if (mode === "delete" && typeof repo.deleteFollowUp === "function") {
+      result = await repo.deleteFollowUp(record.id || record);
+    } else if (mode === "fromFirstTimer" && typeof repo.createFollowUpFromFirstTimer === "function") {
+      result = await repo.createFollowUpFromFirstTimer(record.first_timer_id, record);
+    } else {
+      console.warn("[CE FollowUps] repo method missing for mode", mode, repo);
+      return { ok: true, data: record, skipped: true, via: "local-state-fallback" };
+    }
+    if (result && result.ok === false) {
+      const soft =
+        result.code === "UNAVAILABLE" ||
+        result.code === "NOT_IMPLEMENTED" ||
+        /indispon[ií]vel|not implemented/i.test(String(result.error || ""));
+      if (soft) {
+        console.warn("[CE FollowUps] repo soft-fail — keeping local save", result);
+        return { ok: true, data: record, skipped: true, via: "local-state-fallback", repoError: result };
+      }
+      return result;
+    }
+    console.info("[CE FollowUps] repo write ok", { mode, id: record?.id, via: "repository" });
+    return result || { ok: true, data: record };
+  } catch (error) {
+    console.warn("[CE FollowUps] repository write failed — local fallback", error);
+    return { ok: true, data: record, skipped: true, via: "local-state-fallback", error: error?.message };
+  }
+}
+
+async function hydrateFollowUpsFromRepository() {
+  const repo = getFollowUpsRepoSafe();
+  if (!repo?.listFollowUps) return false;
+  try {
+    const result = await repo.listFollowUps();
+    if (!result?.ok || !Array.isArray(result.data) || !result.data.length) {
+      console.info("[CE FollowUps] hydrate skipped", result);
+      return false;
+    }
+    const previousById = new Map((state.followUps || []).map((item) => [item.id, item]));
+    state.followUps = result.data.map((repoRow) => {
+      const previous = previousById.get(repoRow.id) || {};
+      return migrateFollowUpRecord({ ...previous, ...repoRow });
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    console.info("[CE FollowUps] hydrated", state.followUps.length, "follow-ups");
+    return true;
+  } catch (error) {
+    console.warn("[CE FollowUps] hydrate failed — keeping dashboard localStorage follow-ups.", error);
+    return false;
+  }
+}
+
+function getDashboardFollowUpsList() {
+  return dashboardScope(state.followUps || []);
+}
+
+function isFollowUpPending(row) {
+  const key = statusKey(row?.status || row?.estado);
+  return key === "pending" || key === "noanswer" || key === "noresponse";
+}
+
+function isFollowUpOverdue(row) {
+  const key = statusKey(row?.status || row?.estado);
+  if (key === "closed" || key === "becamemember") return false;
+  const next = String(row?.proxima_data_de_contacto || row?.next_follow_up_date || "").slice(0, 10);
+  if (!next) return false;
+  return next < new Date().toISOString().slice(0, 10);
+}
+
+function isFollowUpToday(row) {
+  const today = new Date().toISOString().slice(0, 10);
+  const contact = String(row?.data_do_contacto || row?.follow_up_date || "").slice(0, 10);
+  const next = String(row?.proxima_data_de_contacto || row?.next_follow_up_date || "").slice(0, 10);
+  return contact === today || next === today;
+}
+
+function getFoundationSchoolRepoSafe() {
+  const repo =
+    window.CEDataLayer?.foundationSchool ||
+    window.CEFoundationSchool ||
+    (window.CESupabase?.createFoundationStudent ? window.CESupabase : null) ||
+    null;
+  if (!repo) {
+    console.error("[CE Foundation] repository unavailable", {
+      CEDataLayer: window.CEDataLayer,
+      CEFoundationSchool: window.CEFoundationSchool
+    });
+    return null;
+  }
+  return repo;
+}
+
+function migrateFoundationStudentRecord(student) {
+  if (!student) return student;
+  const full = student.full_name || [student.nome, student.apelido].filter(Boolean).join(" ").trim();
+  const classGroupId = student.class_group_id || "";
+  const classGroup =
+    (state.foundationClassGroups || []).find((g) => g.id === classGroupId) || null;
+  return {
+    ...student,
+    id: student.id,
+    // Preserve links to already-migrated domains (no auto conversion in this phase)
+    first_timer_id: student.first_timer_id || "",
+    member_id: student.member_id || "",
+    nome: student.nome || "",
+    apelido: student.apelido || "",
+    full_name: full,
+    telefone: student.telefone || student.phone || "",
+    phone: student.phone || student.telefone || "",
+    whatsapp: student.whatsapp || student.telefone || student.phone || "",
+    email: student.email || "",
+    church_id: student.church_id || student.churchId || "",
+    church_name: student.church_name || churchName(student.church_id) || "",
+    celula: student.celula || student.cell_name || "",
+    cell_id: student.cell_id || "",
+    cell_name: student.cell_name || student.celula || "",
+    cell_group_id: student.cell_group_id || "",
+    cell_group_name: student.cell_group_name || "",
+    class_group_id: classGroupId,
+    class_group_name: student.class_group_name || classGroup?.name || "",
+    estado: student.estado || student.status || "Em Curso",
+    status: student.status || student.estado || "Em Curso",
+    graduado: !!(student.graduado || student.graduated),
+    certificado_emitido: !!(student.certificado_emitido || student.certificate_issued),
+    nota_exame: Number(student.nota_exame || student.final_exam_score || 0),
+    completed_classes: Number(student.completed_classes || student.completed_lessons_count || 0),
+    class_progress_percent: Number(student.class_progress_percent || student.lesson_progress_percent || 0)
+  };
+}
+
+async function persistFoundationStudentViaRepository(mode, record) {
+  const repo = getFoundationSchoolRepoSafe();
+  if (!repo) {
+    console.warn("[CE Foundation] no repo — localStorage only");
+    return { ok: true, data: record, skipped: true, via: "local-state-fallback" };
+  }
+  try {
+    let result = null;
+    if (mode === "create" && (repo.createStudent || repo.createFoundationStudent)) {
+      result = await (repo.createStudent || repo.createFoundationStudent)(record);
+    } else if (mode === "update" && (repo.updateStudent || repo.updateFoundationStudent)) {
+      result = await (repo.updateStudent || repo.updateFoundationStudent)(record.id, record);
+    } else if (mode === "delete" && (repo.deleteStudent || repo.deleteFoundationStudent)) {
+      result = await (repo.deleteStudent || repo.deleteFoundationStudent)(record.id || record);
+    } else {
+      return { ok: true, data: record, skipped: true, via: "local-state-fallback" };
+    }
+    if (result && result.ok === false) {
+      const soft =
+        result.code === "UNAVAILABLE" ||
+        result.code === "NOT_IMPLEMENTED" ||
+        /indispon[ií]vel|not implemented/i.test(String(result.error || ""));
+      if (soft) {
+        console.warn("[CE Foundation] student soft-fail", result);
+        return { ok: true, data: record, skipped: true, via: "local-state-fallback", repoError: result };
+      }
+      return result;
+    }
+    console.info("[CE Foundation] student write ok", { mode, id: record?.id });
+    return result || { ok: true, data: record };
+  } catch (error) {
+    console.warn("[CE Foundation] student write failed — local fallback", error);
+    return { ok: true, data: record, skipped: true, via: "local-state-fallback", error: error?.message };
+  }
+}
+
+async function persistFoundationTeacherViaRepository(mode, record) {
+  const repo = getFoundationSchoolRepoSafe();
+  if (!repo) return { ok: true, data: record, skipped: true, via: "local-state-fallback" };
+  try {
+    let result = null;
+    if (mode === "create" && (repo.createTeacher || repo.createFoundationTeacher)) {
+      result = await (repo.createTeacher || repo.createFoundationTeacher)(record);
+    } else if (mode === "update" && (repo.updateTeacher || repo.updateFoundationTeacher)) {
+      result = await (repo.updateTeacher || repo.updateFoundationTeacher)(record.id, record);
+    } else {
+      return { ok: true, data: record, skipped: true, via: "local-state-fallback" };
+    }
+    if (result && result.ok === false) {
+      const soft = result.code === "UNAVAILABLE" || result.code === "NOT_IMPLEMENTED";
+      if (soft) return { ok: true, data: record, skipped: true, via: "local-state-fallback", repoError: result };
+      return result;
+    }
+    return result || { ok: true, data: record };
+  } catch (error) {
+    console.warn("[CE Foundation] teacher write failed — local fallback", error);
+    return { ok: true, data: record, skipped: true, via: "local-state-fallback", error: error?.message };
+  }
+}
+
+async function persistFoundationClassViaRepository(mode, record) {
+  const repo = getFoundationSchoolRepoSafe();
+  if (!repo) return { ok: true, data: record, skipped: true, via: "local-state-fallback" };
+  try {
+    let result = null;
+    if (mode === "create" && (repo.createClass || repo.createFoundationClass)) {
+      result = await (repo.createClass || repo.createFoundationClass)(record);
+    } else if (mode === "update" && (repo.updateClass || repo.updateFoundationClass)) {
+      result = await (repo.updateClass || repo.updateFoundationClass)(record.id, record);
+    } else {
+      return { ok: true, data: record, skipped: true, via: "local-state-fallback" };
+    }
+    if (result && result.ok === false) {
+      const soft =
+        result.code === "UNAVAILABLE" ||
+        result.code === "NOT_IMPLEMENTED" ||
+        /indispon[ií]vel|not implemented/i.test(String(result.error || ""));
+      if (soft) return { ok: true, data: record, skipped: true, via: "local-state-fallback", repoError: result };
+      return result;
+    }
+    return result || { ok: true, data: record };
+  } catch (error) {
+    console.warn("[CE Foundation] class write failed — local fallback", error);
+    return { ok: true, data: record, skipped: true, via: "local-state-fallback", error: error?.message };
+  }
+}
+
+async function hydrateFoundationSchoolFromRepository() {
+  const repo = getFoundationSchoolRepoSafe();
+  if (!repo) return false;
+  try {
+    let hydrated = false;
+    const listStudents = repo.listStudents || repo.listFoundationStudents;
+    if (typeof listStudents === "function") {
+      const result = await listStudents();
+      if (result?.ok && Array.isArray(result.data) && result.data.length) {
+        const prev = new Map((state.foundationStudents || []).map((s) => [s.id, s]));
+        // Prefer local blob progress (attendance, exam, grades) over potentially stale repo rows.
+        // New repo-only students still appear via empty previous.
+        const byId = new Map();
+        result.data.forEach((row) => {
+          const previous = prev.get(row.id) || {};
+          byId.set(row.id, migrateFoundationStudentRecord({ ...row, ...previous, id: row.id }));
+        });
+        prev.forEach((localRow, id) => {
+          if (!byId.has(id)) byId.set(id, migrateFoundationStudentRecord(localRow));
+        });
+        state.foundationStudents = [...byId.values()];
+        hydrated = true;
+        console.info("[CE Foundation] hydrated students", state.foundationStudents.length);
+      }
+    }
+    const listTeachers = repo.listTeachers || repo.listFoundationTeachers;
+    if (typeof listTeachers === "function") {
+      const result = await listTeachers();
+      if (result?.ok && Array.isArray(result.data) && result.data.length) {
+        const prev = new Map((state.foundationTeachers || []).map((t) => [t.id, t]));
+        const byId = new Map();
+        result.data.forEach((row) => {
+          byId.set(row.id, { ...(prev.get(row.id) || {}), ...row, id: row.id });
+        });
+        prev.forEach((localRow, id) => {
+          if (!byId.has(id)) byId.set(id, localRow);
+        });
+        state.foundationTeachers = [...byId.values()];
+        hydrated = true;
+        console.info("[CE Foundation] hydrated teachers", state.foundationTeachers.length);
+      }
+    }
+    const listClasses = repo.listClasses || repo.listFoundationClasses;
+    if (typeof listClasses === "function") {
+      const result = await listClasses();
+      if (result?.ok && Array.isArray(result.data) && result.data.length) {
+        const prev = new Map((state.foundationClassGroups || []).map((c) => [c.id, c]));
+        const byId = new Map();
+        result.data.forEach((row) => {
+          byId.set(row.id, { ...(prev.get(row.id) || {}), ...row, id: row.id });
+        });
+        prev.forEach((localRow, id) => {
+          if (!byId.has(id)) byId.set(id, localRow);
+        });
+        state.foundationClassGroups = [...byId.values()];
+        hydrated = true;
+        console.info("[CE Foundation] hydrated classes", state.foundationClassGroups.length);
+      }
+    }
+    if (hydrated) localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    return hydrated;
+  } catch (error) {
+    console.warn("[CE Foundation] hydrate failed — keeping localStorage foundation data.", error);
+    return false;
+  }
+}
+
+function getCellMinistryRepoSafe() {
+  return (
+    window.CEDataLayer?.cellMinistry ||
+    window.CECellMinistry ||
+    (window.CESupabase?.createCellGroup ? window.CESupabase : null) ||
+    null
+  );
+}
+
+async function dualWriteCellMinistryRecord(modalType, mode, record) {
+  const repo = getCellMinistryRepoSafe();
+  if (!repo || !record) return { ok: true, skipped: true };
+  try {
+    let result = null;
+    if (modalType === "cellGroup") {
+      if (mode === "create" && repo.createCellGroup) result = await repo.createCellGroup(record);
+      else if (mode === "update" && repo.updateCellGroup) result = await repo.updateCellGroup(record.id, record);
+    } else if (modalType === "cellRegistry" || modalType === "cell") {
+      const payload = {
+        ...record,
+        cell_name: record.cell_name || record.nome_da_celula || record.name,
+        cell_group_id: record.cell_group_id || record.group_id || record.group_cell_id,
+        group_id: record.group_id || record.cell_group_id
+      };
+      if (mode === "create" && repo.createCell) result = await repo.createCell(payload);
+      else if (mode === "update" && repo.updateCell) result = await repo.updateCell(record.id, payload);
+    } else if (modalType === "cellLeader") {
+      const payload = {
+        ...record,
+        full_name: record.full_name || record.nome_completo,
+        phone: record.phone || record.contacto,
+        cell_name: record.cell_name || record.celula
+      };
+      if (mode === "create" && repo.createCellLeader) result = await repo.createCellLeader(payload);
+      else if (mode === "update" && repo.updateCellLeader) result = await repo.updateCellLeader(record.id, payload);
+    } else if (modalType === "cellReport") {
+      const payload = {
+        ...record,
+        report_week: record.report_week || record.semana,
+        meeting_date: record.meeting_date || record.data_fim || record.data_inicio,
+        cell_name: record.cell_name || record.celula,
+        leader_name: record.leader_name || record.nome_do_lider,
+        attendance_count: Number(record.attendance_count ?? record.att ?? 0),
+        first_timers_count: Number(record.first_timers_count ?? record.ft ?? 0),
+        new_converts_count: Number(record.new_converts_count ?? record.nc ?? 0),
+        offering_amount: Number(record.offering_amount ?? record.oferta ?? 0),
+        souls_won_count: Number(record.souls_won_count ?? record.rs ?? 0),
+        status: record.status || record.estado
+      };
+      if (mode === "create" && repo.createCellReport) result = await repo.createCellReport(payload);
+      else if (mode === "update" && repo.updateCellReport) result = await repo.updateCellReport(record.id, payload);
+    }
+    if (result && result.ok === false) {
+      console.warn("[CE CellMinistry] dual-write soft-fail", result);
+      return { ok: true, skipped: true, repoError: result };
+    }
+    return result || { ok: true, data: record };
+  } catch (error) {
+    console.warn("[CE CellMinistry] dual-write failed — local fallback", error);
+    return { ok: true, skipped: true, error: error?.message };
+  }
+}
+
+async function hydrateCellMinistryFromRepository() {
+  const repo = getCellMinistryRepoSafe();
+  if (!repo) return false;
+  try {
+    let hydrated = false;
+    const listGroups = repo.listCellGroups;
+    if (typeof listGroups === "function") {
+      const result = await listGroups();
+      if (result?.ok && Array.isArray(result.data) && result.data.length) {
+        const prev = new Map((state.cellGroups || []).map((g) => [g.id, g]));
+        const byId = new Map();
+        result.data.forEach((row) => {
+          const previous = prev.get(row.id) || {};
+          byId.set(row.id, {
+            ...row,
+            ...previous,
+            id: row.id,
+            group_name: previous.group_name || row.group_name || row.name,
+            name: previous.name || row.name || row.group_name
+          });
+        });
+        prev.forEach((localRow, id) => {
+          if (!byId.has(id)) byId.set(id, localRow);
+        });
+        state.cellGroups = [...byId.values()];
+        hydrated = true;
+        console.info("[CE CellMinistry] hydrated groups", state.cellGroups.length);
+      }
+    }
+    const listCellsFn = repo.listCells;
+    if (typeof listCellsFn === "function") {
+      const result = await listCellsFn();
+      if (result?.ok && Array.isArray(result.data) && result.data.length) {
+        const prev = new Map((state.cellRegistry || []).map((c) => [c.id, c]));
+        const byId = new Map();
+        result.data.forEach((row) => {
+          const previous = prev.get(row.id) || {};
+          byId.set(row.id, {
+            ...row,
+            ...previous,
+            id: row.id,
+            cell_name: previous.cell_name || row.cell_name || row.name,
+            group_id: previous.group_id || row.group_id || row.cell_group_id,
+            cell_group_id: previous.cell_group_id || row.cell_group_id || row.group_id
+          });
+        });
+        prev.forEach((localRow, id) => {
+          if (!byId.has(id)) byId.set(id, localRow);
+        });
+        state.cellRegistry = [...byId.values()];
+        hydrated = true;
+        console.info("[CE CellMinistry] hydrated cells", state.cellRegistry.length);
+      }
+    }
+    const listLeaders = repo.listCellLeaders;
+    if (typeof listLeaders === "function") {
+      const result = await listLeaders();
+      if (result?.ok && Array.isArray(result.data) && result.data.length) {
+        state.cellLeadership = state.cellLeadership || {};
+        const prev = new Map((state.cellLeadership.leaders || []).map((l) => [l.id, l]));
+        const byId = new Map();
+        result.data.forEach((row) => {
+          const previous = prev.get(row.id) || {};
+          byId.set(row.id, {
+            ...row,
+            ...previous,
+            id: row.id,
+            nome_completo: previous.nome_completo || row.nome_completo || row.full_name,
+            contacto: previous.contacto || row.contacto || row.phone,
+            celula: previous.celula || row.celula || row.cell_name,
+            estado: previous.estado || row.estado || row.status
+          });
+        });
+        prev.forEach((localRow, id) => {
+          if (!byId.has(id)) byId.set(id, localRow);
+        });
+        state.cellLeadership.leaders = [...byId.values()];
+        hydrated = true;
+        console.info("[CE CellMinistry] hydrated leaders", state.cellLeadership.leaders.length);
+      }
+    }
+    const listReports = repo.listCellReports;
+    if (typeof listReports === "function") {
+      const result = await listReports();
+      if (result?.ok && Array.isArray(result.data) && result.data.length) {
+        state.cellLeadership = state.cellLeadership || {};
+        const prev = new Map((state.cellLeadership.cellReports || []).map((r) => [r.id, r]));
+        const byId = new Map();
+        result.data.forEach((row) => {
+          const previous = prev.get(row.id) || {};
+          const merged = {
+            ...row,
+            ...previous,
+            id: row.id,
+            semana: previous.semana || row.semana || row.report_week,
+            report_week: previous.report_week || row.report_week || previous.semana || row.semana,
+            celula: previous.celula || row.celula || row.cell_name,
+            cell_name: previous.cell_name || row.cell_name || previous.celula || row.celula,
+            nome_do_lider: previous.nome_do_lider || row.nome_do_lider || row.leader_name,
+            leader_name: previous.leader_name || row.leader_name || previous.nome_do_lider || row.nome_do_lider,
+            att: previous.att ?? row.att ?? row.attendance_count,
+            ft: previous.ft ?? row.ft ?? row.first_timers_count,
+            nc: previous.nc ?? row.nc ?? row.new_converts_count,
+            oferta: previous.oferta ?? row.oferta ?? row.offering_amount,
+            offering_amount: previous.offering_amount ?? row.offering_amount ?? previous.oferta ?? row.oferta,
+            offering_given: previous.offering_given ?? row.offering_given,
+            finance_review_status: previous.finance_review_status || row.finance_review_status || "Not Applicable",
+            submitted_by_type: previous.submitted_by_type || row.submitted_by_type || previous.submetido_por || row.submetido_por || "",
+            submitted_from: previous.submitted_from || row.submitted_from || "",
+            submetido_por: previous.submetido_por || row.submetido_por || previous.submitted_by_type || row.submitted_by_type || "",
+            needs_review: previous.needs_review ?? row.needs_review,
+            possible_duplicate: previous.possible_duplicate ?? row.possible_duplicate,
+            cell_health_status: previous.cell_health_status || row.cell_health_status || "",
+            estado: previous.estado || row.estado || row.status,
+            status: previous.status || row.status || row.estado
+          };
+          byId.set(row.id, merged);
+        });
+        prev.forEach((localRow, id) => {
+          if (!byId.has(id)) byId.set(id, localRow);
+        });
+        state.cellLeadership.cellReports = [...byId.values()];
+        state.cellReportSubmissions = state.cellLeadership.cellReports.map((r) => ({ ...r }));
+        hydrated = true;
+        console.info("[CE CellMinistry] hydrated reports", state.cellLeadership.cellReports.length);
+      }
+    }
+    if (hydrated) localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    return hydrated;
+  } catch (error) {
+    console.warn("[CE CellMinistry] hydrate failed — keeping localStorage cell data.", error);
+    return false;
+  }
+}
+
+async function submitChurchDrawer(form) {
   const data = Object.fromEntries(new FormData(form).entries());
   const today = new Date().toISOString().slice(0, 10);
   if (churchDrawerMode === "status" && churchDrawerRecordId) {
     const church = state.churches.find((item) => item.id === churchDrawerRecordId);
     if (!church) return;
+    const previous = { ...church };
     church.status = data.status || church.status;
     church.information_status = data.information_status || church.information_status;
     church.updated_by = activeUser.name;
     church.updated_at = today;
+    const repoResult = await persistChurchViaRepository("status", church);
+    if (repoResult && repoResult.ok === false) {
+      Object.assign(church, previous);
+      alert(repoResult.error || (lang === "pt" ? "Não foi possível actualizar o estado da igreja. Dados locais mantidos." : "Could not update church status. Existing data kept."));
+      return;
+    }
+    if (repoResult?.ok && repoResult.data) Object.assign(church, migrateChurchRecord(repoResult.data));
     saveState(`Updated church status ${church.church_name}`);
   } else {
     const service_times = collectChurchServiceTimesFromForm(form);
@@ -11591,23 +13752,37 @@ function submitChurchDrawer(form) {
     if (churchDrawerRecordId) {
       const index = state.churches.findIndex((item) => item.id === churchDrawerRecordId);
       if (index >= 0) {
-        state.churches[index] = { ...state.churches[index], ...payload, id: churchDrawerRecordId, church_id: churchDrawerRecordId };
+        const previous = { ...state.churches[index] };
+        const next = { ...state.churches[index], ...payload, id: churchDrawerRecordId, church_id: churchDrawerRecordId };
+        const repoResult = await persistChurchViaRepository("update", next);
+        if (repoResult && repoResult.ok === false) {
+          state.churches[index] = previous;
+          alert(repoResult.error || (lang === "pt" ? "Não foi possível actualizar a igreja. Dados locais mantidos." : "Could not update the church. Existing data kept."));
+          return;
+        }
+        state.churches[index] = migrateChurchRecord(repoResult?.data || next);
         saveState(`Updated church ${state.churches[index].church_name}`);
       }
     } else {
       const id = `church-${Date.now()}`;
-      const service_times = payload.service_times?.length
+      const serviceTimes = payload.service_times?.length
         ? payload.service_times.map((record, index) => normalizeServiceTimeRecord(record, id, index))
         : defaultSeedServiceTimes(id, payload.type);
-      state.churches.push({
+      const created = {
         ...payload,
         id,
         church_id: id,
-        service_times,
+        service_times: serviceTimes,
         created_by: activeUser.name,
         created_at: today,
         attendance_last_4_weeks: [0, 0, 0, 0]
-      });
+      };
+      const repoResult = await persistChurchViaRepository("create", created);
+      if (repoResult && repoResult.ok === false) {
+        alert(repoResult.error || (lang === "pt" ? "Não foi possível criar a igreja. Tente novamente." : "Could not create the church. Please try again."));
+        return;
+      }
+      state.churches.push(migrateChurchRecord(repoResult?.data || created));
       saveState(`Created church ${payload.church_name}`);
     }
   }
@@ -11633,6 +13808,8 @@ function cellModalType(activeTab) {
 }
 
 function cellReportReviewActions(report) {
+  // Internal review actions for weekly cell report submissions (public form + admin).
+  // Always show core actions so staff can process public submissions without hunting.
   const actions = [
     ["view", report.id, L("view")],
     ["approve", report.id, L("approve")],
@@ -11640,30 +13817,75 @@ function cellReportReviewActions(report) {
     ["validate", report.id, L("validated")],
     ["reject", report.id, L("reject")]
   ];
-  if (Number(report.oferta || report.offering_amount || 0) > 0) actions.push(["finance", report.id, lang === "pt" ? "Enviar oferta para Finanças" : "Send offering to Finance"]);
-  if (report.needs_review || String(report.cell_health_status || "").includes("Acompanhamento")) actions.push(["followup", report.id, L("followUp")]);
-  if (String(report.cell_health_status || "").includes("Pastoral")) actions.push(["pastoral", report.id, lang === "pt" ? "Visita Pastoral" : "Pastoral Visit"]);
-  return `<div class="action-buttons">${actions.map(([action, id, label]) => `<button type="button" class="action-btn" data-cell-report-action="${action}" data-cell-report-id="${id}">${label}</button>`).join("")}</div>`;
+  // Finance: placeholder only — marks Pending Finance Review, no verified income.
+  if (report.offering_given || Number(report.oferta || report.offering_amount || 0) > 0) {
+    actions.push(["finance", report.id, L("sendToFinance") || (lang === "pt" ? "Enviar para Finanças" : "Send to Finance")]);
+  }
+  // Follow-up / pastoral: soft placeholders that flag health + needs_review.
+  if (report.needs_review || /acompanhamento|follow/i.test(String(report.cell_health_status || ""))) {
+    actions.push(["followup", report.id, L("createFollowUp") || L("followUp")]);
+  }
+  if (/pastoral|visita/i.test(String(report.cell_health_status || "")) || Number(report.needs_pastoral_visit_count || 0) > 0) {
+    actions.push(["pastoral", report.id, lang === "pt" ? "Encaminhar Visita Pastoral" : "Forward Pastoral Visit"]);
+  }
+  return `<div class="action-buttons cell-report-actions">${actions.map(([action, id, label]) => {
+    const tone =
+      action === "approve" || action === "validate" ? "action-btn--approve" :
+      action === "reject" ? "action-btn--reject" :
+      action === "finance" ? "action-btn--primary" : "";
+    return `<button type="button" class="action-btn ${tone}" data-cell-report-action="${action}" data-cell-report-id="${escapeAttr(id)}">${label}</button>`;
+  }).join("")}</div>`;
+}
+
+function cellReportSourceBadge(item) {
+  const source = item.submitted_by_type || item.submetido_por || "";
+  const from = item.submitted_from || "";
+  if (/public form|cell leader public/i.test(source) || from === "login_public_button") {
+    return badge(lang === "pt" ? "Formulário público" : "Public form");
+  }
+  return source ? badge(source) : "-";
+}
+
+function sortCellReportsNewestFirst(reports) {
+  return [...(reports || [])].sort((a, b) => {
+    const ta = Date.parse(a.created_at || a.updated_at || a.meeting_date || 0) || 0;
+    const tb = Date.parse(b.created_at || b.updated_at || b.meeting_date || 0) || 0;
+    return tb - ta;
+  });
+}
+
+function isPublicCellFormReport(item) {
+  const source = String(item?.submitted_by_type || item?.submetido_por || "");
+  const from = String(item?.submitted_from || "");
+  return /public form|cell leader public/i.test(source) || from === "login_public_button";
 }
 
 function cellReportRows(reports) {
-  return reports.map((item) => [
-    item.semana || item.report_week || "-",
-    item.meeting_date || item.data_fim || item.created_at?.slice?.(0, 10) || "-",
-    churchName(item.church_id || item.igreja || item.church_name),
-    cellGroupName(item.cell_group_id || item.group_name) || item.group_name || "-",
-    item.celula || item.cell_name || "-",
-    item.nome_do_lider || item.leader_name || "-",
-    item.att ?? item.attendance_count ?? 0,
-    item.ft ?? item.first_timers_count ?? 0,
-    item.nc ?? item.new_converts_count ?? 0,
-    money(item.oferta || item.offering_amount || 0),
-    item.cell_health_status || "-",
-    badge(item.estado || item.status),
-    item.needs_review ? badge(L("yes")) : badge(L("no")),
-    item.created_at ? new Date(item.created_at).toLocaleString() : "-",
-    cellReportReviewActions(item)
-  ]);
+  return reports.map((item) => {
+    const offering = Number(item.oferta || item.offering_amount || 0);
+    const financeStatus = item.finance_review_status || (offering > 0 ? "Pending Finance Review" : "Not Applicable");
+    const statusLabel = cellReportStatusLabel(item);
+    const financeBadge = offering > 0 || item.offering_given
+      ? `<span class="badge-soft badge-finance-pending d-block mt-1">${escapeAttr(financeStatus)}</span>`
+      : "";
+    return [
+      item.semana || item.report_week || "-",
+      item.meeting_date || item.data_fim || item.created_at?.slice?.(0, 10) || "-",
+      churchName(item.church_id || item.igreja || item.church_name),
+      cellGroupName(item.cell_group_id || item.group_name) || item.cell_group_name || item.group_name || "-",
+      `${item.celula || item.cell_name || "-"}${item.possible_duplicate ? ` ${badge(lang === "pt" ? "Duplicado?" : "Duplicate?")}` : ""}`,
+      item.nome_do_lider || item.leader_name || "-",
+      item.att ?? item.attendance_count ?? 0,
+      item.ft ?? item.first_timers_count ?? 0,
+      item.nc ?? item.new_converts_count ?? 0,
+      `${money(offering)}${financeBadge}`,
+      item.cell_health_status || "-",
+      `${badge(statusLabel)}${item.needs_review ? ` ${badge(L("reportNeedsReview"))}` : ""}`,
+      cellReportSourceBadge(item),
+      item.created_at ? new Date(item.created_at).toLocaleString() : "-",
+      cellReportReviewActions(item)
+    ];
+  });
 }
 
 function cellReportHeaders() {
@@ -11671,19 +13893,26 @@ function cellReportHeaders() {
     L("week"),
     L("date"),
     L("church"),
-    L("cellGroups"),
+    L("cellGroup"),
     L("cell"),
-    L("leaderName"),
+    L("cellLeader"),
     "ATT",
     "FT",
     "NC",
-    L("offering"),
-    lang === "pt" ? "Estado da Célula" : "Cell Status",
+    L("cellOffering"),
+    L("cellStatus"),
     L("status"),
-    L("reportNeedsReview"),
+    lang === "pt" ? "Origem" : "Source",
     lang === "pt" ? "Submetido em" : "Submitted at",
     L("actions")
   ];
+}
+
+/** Prefer English status for public-form badges (Submitted / Pending Review); fall back to estado. */
+function cellReportStatusLabel(item) {
+  const status = String(item.status || "").trim();
+  if (status) return status;
+  return item.estado || "Submitted";
 }
 
 function cellReportRowAttrs(reports) {
@@ -11693,7 +13922,10 @@ function cellReportRowAttrs(reports) {
       church_name: item.church_name || churchName(item.church_id || item.igreja || item.church_name)
     });
     const statusValue = item.estado || item.status || "";
-    return ` data-filter-row data-filter-church-values="${escapeAttr(churchTokens)}" data-filter-status-values="${escapeAttr(`${statusKey(statusValue)} ${statusValue}`)}"`;
+    const finance = item.finance_review_status || "";
+    // Use data-* only (no class=) so mobile cards keep their own class attribute.
+    const publicMark = isPublicCellFormReport(item) ? ` data-public-cell-report="1"` : "";
+    return ` data-filter-row${publicMark} data-filter-church-values="${escapeAttr(churchTokens)}" data-filter-status-values="${escapeAttr(`${statusKey(statusValue)} ${statusValue}`)}" data-finance-review="${escapeAttr(finance)}" data-submitted-from="${escapeAttr(item.submitted_from || "")}"`;
   });
 }
 
@@ -11704,7 +13936,7 @@ function renderCellMinistry(activeTab = "alecOverview") {
   const alecRegistrations = scopedNested(leadership.alecRegistrations);
   const alecScores = scopedNested(leadership.alecScores);
   const churchReports = scopedNested(leadership.churchReports);
-  const cellReports = scopedNested(leadership.cellReports);
+  const cellReports = sortCellReportsNewestFirst(scopedNested(leadership.cellReports));
   const leaders = scopedNested(leadership.leaders);
   const evaluations = scopedNested(leadership.evaluations);
   const validations = scopedNested(leadership.validations);
@@ -11837,8 +14069,12 @@ function renderCellGroups() {
   const groups = scopedNested(state.cellGroups || []);
   const registry = scopedNested(state.cellRegistry || []);
   const statusOptions = [...new Set(registry.map((item) => item.status).filter(Boolean))].sort();
-  const navHtml = cellModuleHeader("cellGroups");
+  const navHtml = cellModuleHeader("cellGroups", { modalType: "cellGroup" });
   const bodyHtml = `
+    <div class="foundation-action-bar d-flex flex-wrap gap-2 mb-3">
+      <button type="button" class="btn btn-ce-gold btn-touch" data-open-form="cellGroup"><i class="bi bi-plus-lg me-1"></i>${lang === "pt" ? "Novo grupo de células" : "New cell group"}</button>
+      <button type="button" class="btn btn-outline-cyan btn-touch" data-open-form="cellRegistry"><i class="bi bi-diagram-3 me-1"></i>${lang === "pt" ? "Nova célula" : "New cell"}</button>
+    </div>
     ${filterBar({ search: true, church: true, month: false, status: true, statusOptions, exportBtn: true })}
     <div class="row g-3 mb-4">
       ${metric("bi-collection", L("totalGroupCells"), groups.length, L("cellGroups"))}
@@ -11922,7 +14158,7 @@ function renderCellCellsList() {
       item.status
     ].some((value) => String(value || "").toLowerCase().includes(query)));
   }
-  const navHtml = cellModuleHeader("cellCellsList");
+  const navHtml = cellModuleHeader("cellCellsList", { modalType: "cellRegistry" });
   const filterBanner = filterGroup ? `
     <div class="cell-filter-banner mb-3">
       <span>${L("filteredByGroup")}: <strong>${filterGroup.group_name}</strong></span>
@@ -11950,7 +14186,7 @@ function renderCellCellsList() {
       ${metric("bi-stars", L("totalNewConverts"), cells.reduce((sum, item) => sum + Number(item.new_converts || 0), 0), L("newConverts"))}
     </div>
     <div class="row g-4">
-      <div class="col-12">${modulePanel("cellRegistry", L("cellCellsList"), null, [L("cellName"), L("groupName"), L("leaderTitle"), L("leaderName"), L("attendance"), L("firstTimeShort"), L("newConvertsShort"), L("offering"), L("observation"), L("status"), L("actions")], cells.map((item) => [
+      <div class="col-12">${modulePanel("cellRegistry", L("cellCellsList"), "cellRegistry", [L("cellName"), L("groupName"), L("leaderTitle"), L("leaderName"), L("attendance"), L("firstTimeShort"), L("newConvertsShort"), L("offering"), L("observation"), L("status"), L("actions")], cells.map((item) => [
         item.cell_name,
         item.group_name,
         item.leader_title,
@@ -14387,7 +16623,7 @@ const formSchemas = {
   member: [
     ["tratamento", "treatment", "select", treatmentOptions], ["nome", "name"], ["apelido", "surname"], ["telefone", "phone"], ["email", "email", "email"],
     ["church_id", "church", "church", { showInfoCard: true, autofillFields: ["church_id", "province", "city", "district_or_area"], igrejaField: "igreja" }],
-    ["cell_group_id", "cellGroup", "cellGroupSelect"], ["cell_id", "cell", "cellRegistrySelect"], ["departamento", "department"], ["estado", "status", "select", memberStatuses], ["data_de_entrada", "entryDate", "date"], ["origem", "origin", "select", ["Primeira Vez", "Escola de Funda��o", "Transfer�ncia", "Manual"]], ["notas", "notes", "textarea"]
+    ["cell_group_id", "cellGroup", "cellGroupSelect"], ["cell_id", "cell", "cellRegistrySelect"], ["departamento", "department"], ["estado", "status", "select", memberStatuses], ["data_de_entrada", "entryDate", "date"], ["origem", "origin", "select", ["Primeira Vez", "Escola de Fundação", "Transferência", "Manual"]], ["notas", "notes", "textarea"]
   ],
   foundationStudent: [],
   finance: financeEntrySchema(),
@@ -14425,8 +16661,10 @@ const formSchemas = {
   alecRegistration: [["nome_completo", "fullName"], ["contacto", "contact"], ["igreja", "church", "church"], ["church_id", "church", "church"], ["celula", "cell"], ["nome_do_lider_de_celula", "cellLeaderName"], ["fez_escola_de_fundacao", "didFoundation", "checkbox"], ["e_lider", "isLeader", "checkbox"], ["motivo_de_fazer_alec", "alecReason", "textarea"], ["estado", "status", "select", alecRegistrationStatuses], ["observacoes", "observations", "textarea"]],
   alecScore: [["nome_completo", "fullName"], ["contacto", "contact"], ["igreja", "church", "church"], ["church_id", "church", "church"], ["celula", "cell"], ["fase_1_aula_1", "phase1", "number"], ["fase_1_aula_2", "phase1", "number"], ["fase_1_aula_3", "phase1", "number"], ["fase_1_aula_4", "phase1", "number"], ["fase_2_aula_1", "phase2", "number"], ["fase_2_aula_2", "phase2", "number"], ["fase_2_aula_3", "phase2", "number"], ["terminou", "finished", "checkbox"], ["faixa_certificado_pago", "certificateBandPaid", "checkbox"], ["certificado_emitido", "certificateIssued", "checkbox"], ["estado", "status", "select", alecScoreStatuses]],
   churchReport: [["semana", "week"], ["data_inicio", "startDate", "date"], ["data_fim", "endDate", "date"], ["culto", "worshipService", "select", ["Domingo", "Quarta-feira", "Outro"]], ["church_id", "church", "church"], ["celula", "cell"], ["titulo_do_lider", "leaderTitle"], ["nome_do_lider", "leaderName"], ["att", "attendance", "number"], ["ft", "firstTimeShort", "number"], ["nc", "newConvertsShort", "number"], ["rs", "RS", "number"], ["total_ft_reached", "totalFirstTime", "number"], ["comentarios", "comments", "textarea"], ["submetido_por", "submittedBy"], ["estado", "status", "select", churchReportStatuses]],
-  cellReport: [["semana", "week"], ["data_inicio", "startDate", "date"], ["data_fim", "endDate", "date"], ["church_id", "church", "church"], ["celula", "cell"], ["titulo_do_lider", "leaderTitle"], ["nome_do_lider", "leaderName"], ["att", "attendance", "number"], ["ft", "firstTimeShort", "number"], ["nc", "newConvertsShort", "number"], ["oferta", "offering", "number"], ["rs", "RS", "number"], ["observacoes", "observations", "textarea"], ["submetido_por", "submittedBy"], ["avaliado_por", "evaluatedBy"], ["validado_por", "validatedBy"], ["estado", "status", "select", cellReportStatuses]],
-  cellLeader: [["nome_completo", "fullName"], ["contacto", "contact"], ["titulo", "treatment"], ["igreja", "church", "church"], ["church_id", "church", "church"], ["celula", "cell"], ["e_lider_actual", "actualLeader", "checkbox"], ["veio_do_alec", "cameFromAlec", "checkbox"], ["alec_concluido", "alecFinished", "checkbox"], ["faixa_certificado_pago", "certificateBandPaid", "checkbox"], ["estado", "status", "select", cellLeaderStatuses], ["supervisor", "supervisor"], ["observacoes", "observations", "textarea"]],
+  cellGroup: [["group_name", "name"], ["church_id", "church", "church"], ["leader_name", "leaderName"], ["leader_phone", "phone"], ["status", "status", "select", ["Active", "Inactive", "Needs Review", "Closed", "Activo", "Inactivo"]], ["needs_review", "needsReview", "checkbox"], ["notes", "notes", "textarea"]],
+  cellRegistry: [["cell_name", "cell"], ["group_id", "cellGroup", "cellGroupSelect"], ["church_id", "church", "church"], ["leader_name", "leaderName"], ["leader_phone", "phone"], ["leader_title", "leaderTitle"], ["meeting_day", "weekday"], ["meeting_time", "time", "time"], ["meeting_type", "meetingType", "select", ["Presencial", "Online", "Híbrido", "Outro"]], ["meeting_location", "location"], ["status", "status", "select", ["Active", "Inactive", "Needs Review", "Activo", "Inactivo"]], ["needs_review", "needsReview", "checkbox"], ["notes", "notes", "textarea"]],
+  cellReport: [["semana", "week"], ["data_inicio", "startDate", "date"], ["data_fim", "endDate", "date"], ["report_week", "week"], ["meeting_date", "date", "date"], ["church_id", "church", "church"], ["cell_group_id", "cellGroup", "cellGroupSelect"], ["cell_id", "cell", "cellRegistrySelect"], ["celula", "cell"], ["titulo_do_lider", "leaderTitle"], ["nome_do_lider", "leaderName"], ["leader_phone", "phone"], ["att", "attendance", "number"], ["ft", "firstTimeShort", "number"], ["nc", "newConvertsShort", "number"], ["oferta", "offering", "number"], ["rs", "RS", "number"], ["cell_health_status", "cellHealth", "select", ["Saudável", "Estável", "Precisa de Acompanhamento", "Precisa de Visita Pastoral", "Pronta para Multiplicar", "Sem Encontro Esta Semana"]], ["observacoes", "observations", "textarea"], ["submetido_por", "submittedBy"], ["avaliado_por", "evaluatedBy"], ["validado_por", "validatedBy"], ["estado", "status", "select", cellReportStatuses]],
+  cellLeader: [["nome_completo", "fullName"], ["contacto", "contact"], ["titulo", "treatment"], ["igreja", "church", "church"], ["church_id", "church", "church"], ["cell_group_id", "cellGroup", "cellGroupSelect"], ["cell_id", "cell", "cellRegistrySelect"], ["celula", "cell"], ["e_lider_actual", "actualLeader", "checkbox"], ["veio_do_alec", "cameFromAlec", "checkbox"], ["alec_concluido", "alecFinished", "checkbox"], ["faixa_certificado_pago", "certificateBandPaid", "checkbox"], ["estado", "status", "select", cellLeaderStatuses], ["supervisor", "supervisor"], ["observacoes", "observations", "textarea"]],
   cellEvaluation: [["report_id", "reports"], ["avaliador", "evaluator"], ["data_da_avaliacao", "evaluationDate", "date"], ["classificacao", "classification", "select", classifications], ["pontos_fortes", "strengths", "textarea"], ["pontos_a_melhorar", "improvements", "textarea"], ["acao_recomendada", "recommendedAction", "textarea"], ["precisa_followup", "needsFollowup", "checkbox"], ["church_id", "church", "church"], ["estado", "status", "select", evaluationStatuses]],
   finalValidation: [["report_id", "reports"], ["validado_por", "validatedBy"], ["data_validacao", "date", "date"], ["decisao", "decision", "select", ["Validado", "Devolver para Corre��o", "Rejeitado"]], ["comentario_final", "finalComment", "textarea"], ["church_id", "church", "church"], ["estado_final", "finalStatus", "select", validationStatuses]],
   inventoryItem: [["nome_do_item", "itemName"], ["categoria", "category", "select", inventoryCategories], ["quantidade", "quantity", "number"], ["estado", "status", "select", inventoryStatuses], ["localizacao", "location"], ["departamento_responsavel", "responsibleDepartment"], ["church_id", "church", "church"], ["data_de_entrada", "entryDate", "date"], ["valor_unitario", "unitValue", "number"], ["valor_total", "totalValue", "number"], ["serial_number", "serialNumber"], ["observacoes", "observations", "textarea"]],
@@ -14470,6 +16708,8 @@ function getCollection(type) {
   if (type === "finance") return state.finance;
   if (type === "church") return state.churches;
   if (type === "cell") return state.cells;
+  if (type === "cellGroup") return state.cellGroups || [];
+  if (type === "cellRegistry") return state.cellRegistry || [];
   if (type === "user") return state.users;
   if (type === "requisition") return state.requisitions;
   if (type === "staffProfile") return state.staffProfiles;
@@ -14536,47 +16776,62 @@ function openForm(type, id = null) {
     return;
   }
   if (type === "foundationStudent") return openFoundationStudentForm(id);
+  if (type === "foundationTeacher") return openFoundationTeacherForm(id);
+  if (type === "foundationClassGroup") return openFoundationClassForm(id);
   if (type === "church") return openChurchDrawer(id ? "form" : "form", id);
   if (type === "finance" && id) return openFinanceDrawer("edit", id);
-  if (type === "staffProfile") {
+
+  const showEntryForm = () => {
+    if (type === "staffProfile") {
+      modalMode = id ? "edit" : "create";
+      modalType = type;
+      modalRecordId = id;
+      const record = id ? getCollection(type).find((item) => item.id === id) : {};
+      byId("modalEyebrow").textContent = modalMode === "edit" ? L("edit") : L("add");
+      byId("modalTitle").textContent = formTitle(type);
+      byId("modalFields").innerHTML = renderStaffProfileForm(record, modalMode);
+      bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
+      requestAnimationFrame(() => {
+        mountRelationalControls(byId("entryForm"));
+        cleanRenderedText(byId("entryModal"));
+      });
+      return;
+    }
     modalMode = id ? "edit" : "create";
     modalType = type;
     modalRecordId = id;
     const record = id ? getCollection(type).find((item) => item.id === id) : {};
     byId("modalEyebrow").textContent = modalMode === "edit" ? L("edit") : L("add");
-    byId("modalTitle").textContent = formTitle(type);
-    byId("modalFields").innerHTML = renderStaffProfileForm(record, modalMode);
+    byId("modalTitle").textContent = type === "finance" && !id ? L("addFinance") : formTitle(type);
+    if (type === "finance" && !id) {
+      byId("modalFields").innerHTML = renderFinanceAddForm(record);
+    } else if (type === "mediaSchedule") {
+      byId("modalFields").innerHTML = renderMediaScheduleForm(record || {});
+    } else {
+      const schema = type === "finance" ? getFinanceSchema("create") : formSchemas[type];
+      byId("modalFields").innerHTML = schema.map((field) => fieldControl(field, record)).join("");
+    }
     bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
     requestAnimationFrame(() => {
       mountRelationalControls(byId("entryForm"));
+      mountMediaScheduleFormControls(byId("entryForm"));
       cleanRenderedText(byId("entryModal"));
     });
+  };
+
+  // First Timers / Members: refresh churches from data layer so local-created churches appear in selects
+  if (type === "firstTimer" || type === "member") {
+    Promise.resolve(refreshChurchesFromRepositoryForForms())
+      .catch((error) => console.warn("[CE Forms] church refresh skipped", error))
+      .finally(showEntryForm);
     return;
   }
-  modalMode = id ? "edit" : "create";
-  modalType = type;
-  modalRecordId = id;
-  const record = id ? getCollection(type).find((item) => item.id === id) : {};
-  byId("modalEyebrow").textContent = modalMode === "edit" ? L("edit") : L("add");
-  byId("modalTitle").textContent = type === "finance" && !id ? L("addFinance") : formTitle(type);
-  if (type === "finance" && !id) {
-    byId("modalFields").innerHTML = renderFinanceAddForm(record);
-  } else if (type === "mediaSchedule") {
-    byId("modalFields").innerHTML = renderMediaScheduleForm(record || {});
-  } else {
-    const schema = type === "finance" ? getFinanceSchema("create") : formSchemas[type];
-    byId("modalFields").innerHTML = schema.map((field) => fieldControl(field, record)).join("");
-  }
-  bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
-  requestAnimationFrame(() => {
-    mountRelationalControls(byId("entryForm"));
-    mountMediaScheduleFormControls(byId("entryForm"));
-    cleanRenderedText(byId("entryModal"));
-  });
+
+  showEntryForm();
 }
 
 function formTitle(type) {
-  const map = { firstTimer: L("firstTimers"), member: L("members"), foundationStudent: L("foundationSchool"), finance: L("finance"), church: L("churches"), cell: L("cellLeadership"), user: L("usersRoles"), requisition: L("requisitions"), staffProfile: L("staffHr"), staffPerformance: L("staffTabPerformance"), baptism: L("baptismTab"), marriage: L("marriageTab"), baby: L("babyTab"), counselingRequest: L("newCounselingRequest"), counselor: L("counselingCounselors"), counselingAppointment: L("counselingAppointments"), counselingReferral: L("counselingReferrals"), counselingFeedback: L("counselingFeedbackReports"), fevoConfig: L("weeklyConfiguration"), fevoReport: L("weeklyReports"), fevoNoReport: L("groupsWithoutReport"), fevoWeeklyReport: L("weeklyReports"), prisonLocation: L("prisonsLocations"), prisonService: L("prisonServices"), prisonFoundation: L("foundationSchool"), prisonAgenda: L("weeklyAgenda"), prisonReport: L("ministryReports"), materialCatalogue: L("catalogue"), materialSale: L("sales"), materialDistribution: L("churchDistribution"), materialStock: L("weeklyStock"), materialFund: L("freeDistributionFunds"), materialReport: L("ministryReports"), alecRegistration: L("alecRegistration"), alecScore: L("alecScores"), churchReport: L("churchReports"), cellReport: L("cellReports"), cellLeader: L("cellLeaders"), cellEvaluation: L("cellEvaluation"), finalValidation: L("finalValidation"), inventoryItem: L("generalInventory"), venueAcquisition: L("newAcquisitions"), venueStaffEquipment: L("staffEquipment"), venueMaintenance: L("maintenanceRepairs"), venueMovement: L("loansMovements"), venueSpace: L("venuesRooms"), venueChecklist: L("serviceChecklist"), mediaTechnician: L("mediaTechnicalTeam"), mediaRole: L("mediaRolesFunctions"), mediaSchedule: L("mediaSchedules"), mediaService: L("mediaServicesPrograms"), streamingChannel: L("mediaStreamingChannels"), mediaEvaluation: L("mediaPerformanceEvaluation"), mediaAward: L("mediaAwards") };
+  const map = { firstTimer: L("firstTimers"), member: L("members"), foundationStudent: L("foundationSchool"), finance: L("finance"), church: L("churches"), cell: L("cellLeadership"), cellGroup: L("cellGroups"), cellRegistry: L("cellCellsList"), user: L("usersRoles"), requisition: L("requisitions"), staffProfile: L("staffHr"), staffPerformance: L("staffTabPerformance"), baptism: L("baptismTab"), marriage: L("marriageTab"), baby: L("babyTab"), counselingRequest: L("newCounselingRequest"), counselor: L("counselingCounselors"), counselingAppointment: L("counselingAppointments"), counselingReferral: L("counselingReferrals"), counselingFeedback: L("counselingFeedbackReports"), fevoConfig: L("weeklyConfiguration"), fevoReport: L("weeklyReports"), fevoNoReport: L("groupsWithoutReport"), fevoWeeklyReport: L("weeklyReports"), prisonLocation: L("prisonsLocations"), prisonService: L("prisonServices"), prisonFoundation: L("foundationSchool"), prisonAgenda: L("weeklyAgenda"), prisonReport: L("ministryReports"), materialCatalogue: L("catalogue"), materialSale: L("sales"), materialDistribution: L("churchDistribution"), materialStock: L("weeklyStock"), materialFund: L("freeDistributionFunds"), materialReport: L("ministryReports"), alecRegistration: L("alecRegistration"), alecScore: L("alecScores"), churchReport: L("churchReports"), cellReport: L("cellReports"), cellLeader: L("cellLeaders"), cellEvaluation: L("cellEvaluation"), finalValidation: L("finalValidation"), inventoryItem: L("generalInventory"), venueAcquisition: L("newAcquisitions"), venueStaffEquipment: L("staffEquipment"), venueMaintenance: L("maintenanceRepairs"), venueMovement: L("loansMovements"), venueSpace: L("venuesRooms"), venueChecklist: L("serviceChecklist"), mediaTechnician: L("mediaTechnicalTeam"), mediaRole: L("mediaRolesFunctions"), mediaSchedule: L("mediaSchedules"), mediaService: L("mediaServicesPrograms"), streamingChannel: L("mediaStreamingChannels"), mediaEvaluation: L("mediaPerformanceEvaluation"), mediaAward: L("mediaAwards") };
   return map[type] || type;
 }
 
@@ -14675,7 +16930,7 @@ function fieldControl([name, labelKey, inputType = "text", options = []], record
   return `<div class="col-md-6"><label class="form-label">${label}</label><input name="${name}" type="${inputType}" class="form-control" value="${value || ""}"></div>`;
 }
 
-function submitForm(form) {
+async function submitForm(form) {
   const schema = modalType === "finance" ? getFinanceSchema(modalMode === "edit" ? "edit" : "create") : formSchemas[modalType];
   const data = Object.fromEntries(new FormData(form).entries());
   if (!canRenderAction(modalMode === "edit" ? "edit" : "add", modalType)) {
@@ -14832,11 +17087,122 @@ function submitForm(form) {
   });
   enrichRecordChurchFields(data);
   enrichCellSelectionFields(data);
+
+  // Members pilot: dual-write via data layer (same pattern as Churches)
+  if (modalType === "member") {
+    const today = new Date().toISOString().slice(0, 10);
+    const nowIso = new Date().toISOString();
+    if (modalMode === "edit") {
+      const index = state.members.findIndex((item) => item.id === modalRecordId);
+      if (index < 0) return;
+      const previous = { ...state.members[index] };
+      const next = migrateMemberRecord({
+        ...state.members[index],
+        ...data,
+        id: modalRecordId,
+        updated_by: activeUser.name,
+        updated_at: today,
+        status: data.estado || data.status || state.members[index].estado
+      });
+      const repoResult = await persistMemberViaRepository("update", next);
+      if (repoResult && repoResult.ok === false) {
+        state.members[index] = previous;
+        alert(repoResult.error || (lang === "pt" ? "Não foi possível guardar o membro. Tente novamente." : "Could not save the member. Please try again."));
+        return;
+      }
+      state.members[index] = migrateMemberRecord(repoResult?.data || next);
+      saveState(`Updated member ${fullName(state.members[index])}`);
+    } else {
+      const created = migrateMemberRecord({
+        id: `m-${Date.now()}`,
+        church_id: data.church_id || activeUser.church_id,
+        created_by: activeUser.name,
+        updated_by: activeUser.name,
+        created_at: nowIso,
+        updated_at: today,
+        status: data.estado || "Active",
+        ...data
+      });
+      const repoResult = await persistMemberViaRepository("create", created);
+      if (repoResult && repoResult.ok === false) {
+        alert(repoResult.error || (lang === "pt" ? "Não foi possível guardar o membro. Tente novamente." : "Could not save the member. Please try again."));
+        return;
+      }
+      state.members.push(migrateMemberRecord(repoResult?.data || created));
+      saveState(`Created member ${fullName(created)}`);
+    }
+    bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide();
+    form.reset();
+    setRoute(activeRoute);
+    return;
+  }
+
+  // First Timers / Primeira Vez pilot
+  if (modalType === "firstTimer") {
+    const today = new Date().toISOString().slice(0, 10);
+    const nowIso = new Date().toISOString();
+    if (modalMode === "edit") {
+      const index = state.firstTimers.findIndex((item) => item.id === modalRecordId);
+      if (index < 0) return;
+      const previous = { ...state.firstTimers[index] };
+      const next = migrateFirstTimerRecord({
+        ...state.firstTimers[index],
+        ...data,
+        id: modalRecordId,
+        updated_by: activeUser.name,
+        updated_at: today
+      });
+      const repoResult = await persistFirstTimerViaRepository("update", next);
+      if (repoResult && repoResult.ok === false) {
+        state.firstTimers[index] = previous;
+        alert(repoResult.error || (lang === "pt" ? "Não foi possível guardar o registo de Primeira Vez. Tente novamente." : "Could not save the first timer. Please try again."));
+        return;
+      }
+      state.firstTimers[index] = migrateFirstTimerRecord(repoResult?.data || next);
+      saveState(`Updated first timer ${fullName(state.firstTimers[index])}`);
+    } else {
+      const created = migrateFirstTimerRecord({
+        id: `ft-${Date.now()}`,
+        church_id: data.church_id || activeUser.church_id,
+        created_by: activeUser.name,
+        updated_by: activeUser.name,
+        created_at: nowIso,
+        updated_at: today,
+        estado_do_seguimento: data.estado_do_seguimento || "Pending",
+        ...data
+      });
+      const repoResult = await persistFirstTimerViaRepository("create", created);
+      if (repoResult && repoResult.ok === false) {
+        alert(repoResult.error || (lang === "pt" ? "Não foi possível guardar o registo de Primeira Vez. Tente novamente." : "Could not save the first timer. Please try again."));
+        return;
+      }
+      state.firstTimers.push(migrateFirstTimerRecord(repoResult?.data || created));
+      saveState(`Created first timer ${fullName(created)}`);
+    }
+    bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide();
+    form.reset();
+    setRoute(activeRoute);
+    return;
+  }
+
   const collection = getCollection(modalType);
   if (modalMode === "edit") {
     const index = collection.findIndex((item) => item.id === modalRecordId);
     collection[index] = { ...collection[index], ...data, updated_by: activeUser.name, updated_at: new Date().toISOString().slice(0, 10), status: data.estado || data.status || collection[index].status };
+    if (modalType === "cellGroup") {
+      collection[index].group_name = collection[index].group_name || collection[index].name;
+      collection[index].name = collection[index].name || collection[index].group_name;
+      collection[index].church_name = churchName(collection[index].church_id);
+    }
+    if (modalType === "cellRegistry") {
+      const group = (state.cellGroups || []).find((g) => g.id === collection[index].group_id || g.id === collection[index].cell_group_id) || {};
+      collection[index].group_id = collection[index].group_id || collection[index].cell_group_id;
+      collection[index].cell_group_id = collection[index].cell_group_id || collection[index].group_id;
+      collection[index].group_name = group.group_name || group.name || collection[index].group_name;
+      collection[index].cell_name = collection[index].cell_name || collection[index].nome_da_celula;
+    }
     saveState(`Updated ${modalType}`);
+    void dualWriteCellMinistryRecord(modalType, "update", collection[index]);
   } else {
     const idPrefix = modalType.slice(0, 3);
     const nowIso = new Date().toISOString();
@@ -14901,8 +17267,27 @@ function submitForm(form) {
       record.almas_ganhas = [];
       record.membros = [];
     }
+    if (modalType === "cellGroup") {
+      record.group_name = record.group_name || record.name || "";
+      record.name = record.name || record.group_name;
+      record.church_name = churchName(record.church_id);
+    }
+    if (modalType === "cellRegistry") {
+      const group = (state.cellGroups || []).find((g) => g.id === record.group_id || g.id === record.cell_group_id) || {};
+      record.group_id = record.group_id || record.cell_group_id || "";
+      record.cell_group_id = record.cell_group_id || record.group_id || "";
+      record.group_name = group.group_name || group.name || record.group_name || "";
+      record.cell_group_name = record.group_name;
+      record.church_name = churchName(record.church_id);
+    }
+    if (modalType === "cellReport" && Number(record.oferta || record.offering_amount || 0) > 0) {
+      record.finance_review_status = record.finance_review_status || "Pending Finance Review";
+      record.offering_given = true;
+      record.offering_amount = Number(record.oferta || record.offering_amount || 0);
+    }
     collection.push(record);
     saveState(`Created ${modalType}`);
+    void dualWriteCellMinistryRecord(modalType, "create", record);
   }
   bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide();
   form.reset();
@@ -14948,8 +17333,16 @@ function detailGrid(record) {
 }
 
 function followupTimeline(firstTimerId) {
-  const logs = state.followUps.filter((item) => item.first_timer_id === firstTimerId);
-  return logs.length ? `<div class="timeline">${logs.map((log) => `<div><span>${log.data_do_contacto} - ${log.metodo}</span><strong>${log.resultado}</strong><p>${log.notas || ""}</p></div>`).join("")}</div>` : `<p class="text-secondary">${L("empty")}</p>`;
+  const logs = (state.followUps || [])
+    .filter((item) => item.first_timer_id === firstTimerId)
+    .map((item) => migrateFollowUpRecord(item));
+  if (!logs.length) return `<p class="text-secondary">${L("empty")}</p>`;
+  return `<div class="timeline">${logs.map((log) => {
+    const events = Array.isArray(log.timeline) && log.timeline.length
+      ? log.timeline.map((ev) => `<div class="timeline-event"><span>${(ev.performed_at || "").slice(0, 10)} — ${ev.title || ev.event_type}</span><strong>${ev.description || ""}</strong></div>`).join("")
+      : "";
+    return `<div><span>${log.data_do_contacto || ""} - ${log.metodo || log.contact_method || ""}</span><strong>${log.resultado || log.result || log.status || ""}</strong><p>${log.notas || log.notes || ""}</p>${events}</div>`;
+  }).join("")}</div>`;
 }
 
 function openFollowup(id) {
@@ -14970,17 +17363,79 @@ function openFollowup(id) {
   bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
 }
 
-function submitFollowup(form) {
+async function submitFollowup(form) {
   const data = Object.fromEntries(new FormData(form).entries());
   data.actualizado_por = activeUser?.name || "Admin Principal";
   data.updated_by = data.actualizado_por;
   data.updated_at = new Date().toISOString().slice(0, 10);
   const person = state.firstTimers.find((item) => item.id === modalRecordId);
   if (person) {
+    const previous = { ...person };
     person.estado_do_seguimento = data.estado_do_seguimento || person.estado_do_seguimento;
     person.updated_by = data.updated_by;
     person.updated_at = data.updated_at;
-    state.followUps.push({ id: `fu-${Date.now()}`, first_timer_id: person.id, church_id: person.church_id, ...data });
+    if (data.proxima_data_de_contacto) {
+      person.next_follow_up_date = data.proxima_data_de_contacto;
+      person.proxima_data_contacto = data.proxima_data_de_contacto;
+    }
+    const repoResult = await persistFirstTimerViaRepository("update", migrateFirstTimerRecord(person));
+    if (repoResult && repoResult.ok === false) {
+      Object.assign(person, previous);
+      alert(repoResult.error || (lang === "pt" ? "Não foi possível guardar o registo de Primeira Vez. Tente novamente." : "Could not save the first timer. Please try again."));
+      return;
+    }
+    if (repoResult?.ok && repoResult.data) Object.assign(person, migrateFirstTimerRecord(repoResult.data));
+
+    const followUpPayload = migrateFollowUpRecord({
+      id: `fu-${Date.now()}`,
+      first_timer_id: person.id,
+      person_type: "First Timer",
+      full_name: fullName(person),
+      phone: person.telefone,
+      whatsapp: person.whatsapp || person.telefone,
+      email: person.email || "",
+      church_id: person.church_id,
+      church_name: person.church_name || churchName(person.church_id),
+      cell_group_id: person.cell_group_id || "",
+      cell_group_name: person.cell_group_name || "",
+      cell_id: person.cell_id || "",
+      cell_name: person.cell_name || person.celula || person.celula_preferida || "",
+      responsible_name: data.actualizado_por,
+      actualizado_por: data.actualizado_por,
+      data_do_contacto: data.data_do_contacto || new Date().toISOString().slice(0, 10),
+      metodo: data.metodo || "",
+      resultado: data.resultado || "",
+      proximo_passo: data.proximo_passo || "",
+      proxima_data_de_contacto: data.proxima_data_de_contacto || "",
+      status: data.estado_do_seguimento || person.estado_do_seguimento || "Pending",
+      estado: data.estado_do_seguimento || person.estado_do_seguimento || "Pending",
+      wants_foundation_school: !!person.quer_escola_de_fundacao,
+      wants_counseling: !!person.quer_aconselhamento,
+      interested_in_cell: !!person.interesse_em_celula,
+      became_member: statusKey(data.estado_do_seguimento || "") === "becameMember",
+      notas: data.notas || "",
+      created_at: new Date().toISOString().slice(0, 10),
+      updated_at: data.updated_at
+    });
+
+    const fuResult = await persistFollowUpViaRepository("fromFirstTimer", followUpPayload);
+    if (fuResult && fuResult.ok === false) {
+      // Soft: still keep local log so UI is not blocked
+      console.error("[CE FollowUps] create from first timer failed", fuResult);
+      state.followUps.push(followUpPayload);
+    } else {
+      state.followUps.push(migrateFollowUpRecord(fuResult?.data || followUpPayload));
+    }
+
+    if (statusKey(followUpPayload.status) === "becameMember" && window.CEFollowUps?.markFollowUpBecameMember) {
+      const lastId = state.followUps[state.followUps.length - 1]?.id;
+      if (lastId) {
+        Promise.resolve(window.CEFollowUps.markFollowUpBecameMember(lastId)).catch((error) => {
+          console.warn("[CE FollowUps] mark became member skipped", error);
+        });
+      }
+    }
+
     saveState(`Updated follow-up for ${fullName(person)}`);
   }
   bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide();
@@ -15072,6 +17527,48 @@ function quickAction(action, type, id) {
       ? `Tem certeza que deseja apagar este registo de ${title}?`
       : `Are you sure you want to delete this ${title} record?`;
     if (!window.confirm(message)) return;
+    if (type === "member") {
+      const previous = collection[index];
+      Promise.resolve(persistMemberViaRepository("delete", previous))
+        .then((repoResult) => {
+          if (repoResult && repoResult.ok === false) {
+            alert(repoResult.error || (lang === "pt" ? "Não foi possível guardar o membro. Tente novamente." : "Could not save the member. Please try again."));
+            return;
+          }
+          const idx = state.members.findIndex((item) => item.id === id);
+          if (idx >= 0) state.members.splice(idx, 1);
+          saveState(`Deleted member ${id}`);
+          setRoute(activeRoute);
+        })
+        .catch((error) => {
+          console.error("[CE Members] delete failed", error);
+          collection.splice(index, 1);
+          saveState(`Deleted member ${id} (local fallback)`);
+          setRoute(activeRoute);
+        });
+      return;
+    }
+    if (type === "firstTimer") {
+      const previous = collection[index];
+      Promise.resolve(persistFirstTimerViaRepository("delete", previous))
+        .then((repoResult) => {
+          if (repoResult && repoResult.ok === false) {
+            alert(repoResult.error || (lang === "pt" ? "Não foi possível guardar o registo de Primeira Vez. Tente novamente." : "Could not save the first timer. Please try again."));
+            return;
+          }
+          const idx = state.firstTimers.findIndex((item) => item.id === id);
+          if (idx >= 0) state.firstTimers.splice(idx, 1);
+          saveState(`Deleted first timer ${id}`);
+          setRoute(activeRoute);
+        })
+        .catch((error) => {
+          console.error("[CE FirstTimers] delete failed", error);
+          collection.splice(index, 1);
+          saveState(`Deleted first timer ${id} (local fallback)`);
+          setRoute(activeRoute);
+        });
+      return;
+    }
     collection.splice(index, 1);
     saveState(`Deleted ${type} ${id}`);
     return setRoute(activeRoute);
@@ -15094,24 +17591,42 @@ function quickAction(action, type, id) {
   if (action === "followup" && type === "counselingFeedback") {
     const feedbackRecord = getCollection("counselingFeedback").find((item) => item.id === id);
     if (!feedbackRecord) return;
-    state.followUps.push({
+    const counselingFollowUp = migrateFollowUpRecord({
       id: `fu-counseling-${Date.now()}`,
       counseling_request_id: feedbackRecord.counseling_request_id,
+      person_type: "Other",
+      full_name: feedbackRecord.person_name || feedbackRecord.full_name || "",
       church_id: feedbackRecord.church_id,
+      church_name: churchName(feedbackRecord.church_id),
       data_do_contacto: new Date().toISOString().slice(0, 10),
       metodo: "WhatsApp",
+      contact_method: "WhatsApp",
       resultado: "Criado a partir de Aconselhamento",
       proximo_passo: feedbackRecord.next_step || L("createFollowUp"),
       proxima_data_de_contacto: feedbackRecord.follow_up_date || "",
+      status: "Pending",
       notas: "Origem: Aconselhamento",
-      actualizado_por: activeUser.name
+      actualizado_por: activeUser.name,
+      responsible_name: activeUser.name
     });
-    feedbackRecord.status = "Submetido";
-    feedbackRecord.updated_by = activeUser.name;
-    feedbackRecord.updated_at = new Date().toISOString().slice(0, 10);
-    saveState("Created follow-up from counseling");
-    alert(L("createFollowUp"));
-    return renderCounseling();
+    Promise.resolve(persistFollowUpViaRepository("create", counselingFollowUp))
+      .then((repoResult) => {
+        state.followUps.push(migrateFollowUpRecord(repoResult?.data || counselingFollowUp));
+        feedbackRecord.status = "Submetido";
+        feedbackRecord.updated_by = activeUser.name;
+        feedbackRecord.updated_at = new Date().toISOString().slice(0, 10);
+        saveState("Created follow-up from counseling");
+        alert(L("createFollowUp"));
+        renderCounseling();
+      })
+      .catch((error) => {
+        console.error("[CE FollowUps] counseling create failed", error);
+        state.followUps.push(counselingFollowUp);
+        saveState("Created follow-up from counseling (local)");
+        alert(L("createFollowUp"));
+        renderCounseling();
+      });
+    return;
   }
   if (action === "generate" && type === "mediaSchedule") return openForm("mediaSchedule", null);
   if (type && type.startsWith("media") && (action === "generate" || action === "open")) return alert(`${L("media")}: ${lang === "pt" ? "Prot�tipo frontend preparado para liga��o ao backend." : "Frontend prototype ready for backend connection."}`);
@@ -15232,8 +17747,18 @@ function enrollFirstTimer(id) {
     updated_at: new Date().toISOString().slice(0, 10)
   }, true));
   person.estado_do_seguimento = "Enrolled in Foundation School";
-  saveState(`Enrolled ${fullName(person)}`);
-  renderFoundation();
+  person.updated_at = new Date().toISOString().slice(0, 10);
+  Promise.resolve(persistFirstTimerViaRepository("update", migrateFirstTimerRecord(person)))
+    .then((repoResult) => {
+      if (repoResult?.ok && repoResult.data) Object.assign(person, migrateFirstTimerRecord(repoResult.data));
+      saveState(`Enrolled ${fullName(person)}`);
+      renderFoundation();
+    })
+    .catch((error) => {
+      console.warn("[CE FirstTimers] enroll status local-only", error);
+      saveState(`Enrolled ${fullName(person)}`);
+      renderFoundation();
+    });
 }
 
 document.addEventListener("click", async (event) => {
@@ -15639,6 +18164,12 @@ document.addEventListener("click", async (event) => {
     if (activeRoute === "foundation") renderFoundation();
     return;
   }
+  const simulateSubmissionBtn = event.target.closest("[data-foundation-simulate-submission]");
+  if (simulateSubmissionBtn) {
+    simulateFoundationOnlineTestSubmission(simulateSubmissionBtn.dataset.foundationSimulateSubmission);
+    if (activeRoute === "foundation") renderFoundation();
+    return;
+  }
   const confirmSubmissionBtn = event.target.closest("[data-foundation-confirm-submission]");
   if (confirmSubmissionBtn) {
     const record = (state.foundationLessonTestSubmissions || []).find((item) => item.id === confirmSubmissionBtn.dataset.foundationConfirmSubmission);
@@ -15705,6 +18236,51 @@ document.addEventListener("click", async (event) => {
   if (event.target.closest("[data-foundation-teacher-add]")) {
     return openFoundationTeacherForm();
   }
+  const foundationClassAddBtn = event.target.closest("[data-foundation-class-add]");
+  if (foundationClassAddBtn) {
+    const deliveryMode = foundationClassAddBtn.getAttribute("data-delivery-mode") || "in_person";
+    return openFoundationClassForm(null, "edit", { delivery_mode: deliveryMode });
+  }
+  const foundationClassEditBtn = event.target.closest("[data-foundation-class-edit]");
+  if (foundationClassEditBtn) {
+    return openFoundationClassForm(foundationClassEditBtn.getAttribute("data-foundation-class-edit"), "edit");
+  }
+  const foundationGotoLesson = event.target.closest("[data-foundation-goto-lesson]");
+  if (foundationGotoLesson) {
+    foundationPageState.tab = foundationGotoLesson.getAttribute("data-foundation-tab") || "lessons";
+    foundationPageState.lesson = {
+      ...foundationPageState.lesson,
+      lessonNumber: String(foundationGotoLesson.getAttribute("data-foundation-goto-lesson") || "4")
+    };
+    if (activeRoute === "foundation") renderFoundation();
+    return;
+  }
+  if (event.target.closest("[data-foundation-create-session]")) {
+    // Capture lesson context from the form if present before creating session
+    const form = document.querySelector("[data-foundation-lesson-context]");
+    if (form) {
+      const data = Object.fromEntries(new FormData(form).entries());
+      foundationPageState.lesson = { ...foundationPageState.lesson, ...data };
+    }
+    const session = createOrUpdateFoundationLessonSessionFromContext();
+    if (session) {
+      alert(lang === "pt"
+        ? `Aula ${session.lesson_number} registada (${foundationDeliveryLabel(session.delivery_mode)} · ${session.lesson_date || ""}).\n\nPróximo passo: marque «Presente» nos alunos e clique «Guardar presenças» ou «Guardar progresso».`
+        : `Lesson ${session.lesson_number} registered (${foundationDeliveryLabel(session.delivery_mode)} · ${session.lesson_date || ""}).\n\nNext: mark Present on students and click Save attendance / Save progress.`);
+    }
+    if (activeRoute === "foundation") renderFoundation();
+    return;
+  }
+  if (event.target.closest("[data-foundation-simulate-all-tests]")) {
+    const summary = simulateFoundationAllOnlineTests();
+    if (summary) {
+      alert(lang === "pt"
+        ? `Demo: testes 1–7 simulados para um aluno.\nTotal mock: ${summary.lesson_tests_total_score}/${summary.lesson_tests_max_score} (${summary.lesson_tests_percentage}%).\n\nIsto não vem do Google Forms — serve só para testar o cálculo e o ecrã. Em produção use os formulários reais / importação.`
+        : `Demo: tests 1–7 simulated for one student.\nMock total: ${summary.lesson_tests_total_score}/${summary.lesson_tests_max_score} (${summary.lesson_tests_percentage}%).\n\nThis is not from Google Forms — only for testing grades/UI. In production use real forms / import.`);
+    }
+    if (activeRoute === "foundation") renderFoundation();
+    return;
+  }
   const foundationSaveRowBtn = event.target.closest("[data-foundation-save-row]");
   if (foundationSaveRowBtn) {
     await saveFoundationLessonRow(foundationSaveRowBtn.dataset.foundationSaveRow);
@@ -15731,16 +18307,28 @@ document.addEventListener("click", async (event) => {
   if (foundationSoulBtn) {
     const record = (state.foundationSoulWinning || []).find((item) => item.id === foundationSoulBtn.dataset.foundationConfirmSoul);
     if (record) {
+      const soulsInput = document.querySelector(`[data-foundation-souls-count="${record.id}"]`);
+      const soulsCount = Number(soulsInput?.value ?? record.souls_won_count ?? 0);
+      record.souls_won_count = soulsCount;
       record.status = "Confirmado";
+      record.confirmed_by = activeUser?.name || "Admin Principal";
       record.confirmed_by_teacher_id = record.confirmed_by_teacher_id || foundationPageState.lesson.teacherId || "ftch-coordinator";
-      record.confirmed_by_teacher_name = record.confirmed_by_teacher_name || foundationTeacherById(record.confirmed_by_teacher_id).full_name || activeUser?.name || "Admin Principal";
+      record.confirmed_by_teacher_name = foundationTeacherById(record.confirmed_by_teacher_id).full_name || activeUser?.name || "Admin Principal";
       record.confirmed_at = new Date().toISOString();
       record.updated_at = new Date().toISOString().slice(0, 10);
       const studentIndex = (state.foundationStudents || []).findIndex((student) => student.id === record.student_id);
       if (studentIndex >= 0) {
-        state.foundationStudents[studentIndex] = applyFoundationCalculations({ ...state.foundationStudents[studentIndex], pratica_evangelismo: true, soul_winning_completed: true, numero_de_almas_ganhas: Number(record.souls_won_count || 0), updated_at: record.updated_at }, true);
+        state.foundationStudents[studentIndex] = applyFoundationCalculations({
+          ...state.foundationStudents[studentIndex],
+          pratica_evangelismo: true,
+          soul_winning_completed: true,
+          numero_de_almas_ganhas: soulsCount,
+          souls_won_count: soulsCount,
+          updated_at: record.updated_at
+        }, true);
+        void persistFoundationStudentViaRepository("update", state.foundationStudents[studentIndex]);
       }
-      foundationAudit("soul_winning_confirmed", "foundationSoulWinning", record.id, "", record.status, record.confirmed_by_teacher_name);
+      foundationAudit("soul_winning_confirmed", "foundationSoulWinning", record.id, "", JSON.stringify({ status: record.status, souls_won_count: soulsCount }), record.confirmed_by_teacher_name);
       saveState("Confirmed Foundation School soul winning");
       if (activeRoute === "foundation") renderFoundation();
     }
@@ -15761,6 +18349,7 @@ byId("entryForm")?.addEventListener("submit", (event) => {
   if (modalType === "followup") return submitFollowup(event.target);
   if (modalType === "foundationStudent") return submitFoundationStudent(event.target);
   if (modalType === "foundationTeacher") return submitFoundationTeacher(event.target);
+  if (modalType === "foundationClassGroup") return submitFoundationClass(event.target);
   if (modalType === "foundationMarkClass") return submitFoundationMarkClass(event.target);
   if (modalType === "foundationScore") return submitFoundationScore(event.target);
   if (modalType) submitForm(event.target);
@@ -15798,6 +18387,36 @@ document.addEventListener("submit", (event) => {
     const data = Object.fromEntries(new FormData(event.target).entries());
     financePageState.approvedReqFilters = { ...financePageState.approvedReqFilters, ...data };
     if (activeRoute === "finance") renderFinance();
+    return;
+  }
+  if (event.target.matches("[data-foundation-teacher-filters]")) {
+    event.preventDefault();
+    const form = event.target;
+    const data = Object.fromEntries(new FormData(form).entries());
+    foundationPageState.teacherFilter = {
+      search: data.search || "",
+      churchId: data.churchId || "",
+      status: data.status || "",
+      role_type: data.role_type || "",
+      deliveryMode: data.deliveryMode || "",
+      lesson: data.lesson || "",
+      prisonOnly: form.querySelector('[name="prisonOnly"]')?.checked || false
+    };
+    if (activeRoute === "foundation") renderFoundation();
+    return;
+  }
+  if (event.target.matches("[data-foundation-class-filters]")) {
+    event.preventDefault();
+    const data = Object.fromEntries(new FormData(event.target).entries());
+    foundationPageState.classFilter = {
+      search: data.search || "",
+      churchId: data.churchId || "",
+      quarter: data.quarter || "",
+      deliveryMode: data.deliveryMode || "",
+      teacherId: data.teacherId || "",
+      status: data.status || ""
+    };
+    if (activeRoute === "foundation") renderFoundation();
     return;
   }
   if (event.target.id === "financeDrawerForm") {
@@ -16024,8 +18643,50 @@ function enterDashboard() {
   syncTopbarHeight();
   applyBackToTopLabel();
   const requestedRoute = location.hash.replace("#", "");
-  setRoute(requestedRoute === "submit-cell-report" || requestedRoute === "login" ? "dashboard" : requestedRoute || "dashboard");
+  setRoute(isPublicCellReportRoute(requestedRoute) || requestedRoute === "login" ? "dashboard" : requestedRoute || "dashboard");
   updateBackToTopVisibility();
+  // Data-layer pilots: sync churches + members + first timers without blocking UI paint
+  Promise.resolve()
+    .then(() => hydrateChurchesFromRepository())
+    .then((hydrated) => {
+      if (hydrated && activeRoute === "churches") renderChurches();
+    })
+    .catch((error) => console.warn("[CE Churches] background hydrate skipped", error));
+  Promise.resolve()
+    .then(() => hydrateMembersFromRepository())
+    .then((hydrated) => {
+      if (hydrated && activeRoute === "members") renderMembers();
+    })
+    .catch((error) => console.warn("[CE Members] background hydrate skipped", error));
+  Promise.resolve()
+    .then(() => hydrateFirstTimersFromRepository())
+    .then((hydrated) => {
+      if (hydrated && (activeRoute === "firstTimers" || activeRoute === "followUp")) {
+        if (activeRoute === "firstTimers") renderFirstTimers();
+        else renderFollowUp();
+      }
+    })
+    .catch((error) => console.warn("[CE FirstTimers] background hydrate skipped", error));
+  Promise.resolve()
+    .then(() => hydrateFollowUpsFromRepository())
+    .then((hydrated) => {
+      if (hydrated && activeRoute === "followUp") renderFollowUp();
+    })
+    .catch((error) => console.warn("[CE FollowUps] background hydrate skipped", error));
+  Promise.resolve()
+    .then(() => hydrateFoundationSchoolFromRepository())
+    .then((hydrated) => {
+      if (hydrated && activeRoute === "foundation") {
+        if (typeof renderFoundation === "function") renderFoundation();
+      }
+    })
+    .catch((error) => console.warn("[CE Foundation] background hydrate skipped", error));
+  Promise.resolve()
+    .then(() => hydrateCellMinistryFromRepository())
+    .then((hydrated) => {
+      if (hydrated && String(activeRoute || "").startsWith("cell")) setRoute(activeRoute);
+    })
+    .catch((error) => console.warn("[CE CellMinistry] background hydrate skipped", error));
 }
 
 window.enterDashboard = enterDashboard;
@@ -16059,7 +18720,7 @@ byId("loginForm")?.addEventListener("submit", (event) => {
 
 document.addEventListener("click", (event) => {
   if (event.target.closest("[data-public-cell-report]")) {
-    history.replaceState(null, "", "#submit-cell-report");
+    history.replaceState(null, "", "#cell-report-submit");
     showPublicCellReport();
     return;
   }
@@ -16068,23 +18729,28 @@ document.addEventListener("click", (event) => {
     return;
   }
   if (event.target.closest("[data-submit-another-cell-report]")) {
-    history.replaceState(null, "", "#submit-cell-report");
+    history.replaceState(null, "", "#cell-report-submit");
     showPublicCellReport();
     return;
   }
   const stepJump = event.target.closest("[data-public-step-jump]");
-  if (stepJump) {
-    setPublicCellReportStep(Number(stepJump.dataset.publicStepJump || 0));
+  if (stepJump && byId("publicCellReportForm")) {
+    const target = Number(stepJump.dataset.publicStepJump || 0);
+    const current = [...document.querySelectorAll("[data-public-step]")].findIndex((step) => step.classList.contains("active"));
+    if (target > current && !validatePublicCellReportStep(current)) return;
+    setPublicCellReportStep(target);
     return;
   }
-  if (event.target.closest("[data-public-prev]")) {
+  if (event.target.closest("[data-public-prev]") && byId("publicCellReportForm")) {
     const current = [...document.querySelectorAll("[data-public-step]")].findIndex((step) => step.classList.contains("active"));
     setPublicCellReportStep(current - 1);
     return;
   }
-  if (event.target.closest("[data-public-next]")) {
+  if (event.target.closest("[data-public-next]") && byId("publicCellReportForm")) {
     const current = [...document.querySelectorAll("[data-public-step]")].findIndex((step) => step.classList.contains("active"));
+    if (!validatePublicCellReportStep(current)) return;
     setPublicCellReportStep(current + 1);
+    return;
   }
   const cellReportAction = event.target.closest("[data-cell-report-action]");
   if (cellReportAction) {
@@ -16093,12 +18759,21 @@ document.addEventListener("click", (event) => {
 });
 
 byId("publicCellReportView")?.addEventListener("change", (event) => {
+  if (event.target.matches("#publicCellChurch")) {
+    updatePublicCellReportDependentSelects();
+    return;
+  }
   if (event.target.matches("#publicCellGroup")) updatePublicCellReportDependentSelects();
   if (event.target.matches("#publicCell")) updatePublicCellLeaderFields();
   if (event.target.matches("#publicMissingCell")) {
     const checked = event.target.checked;
     document.querySelector("[data-manual-cell-wrap]")?.classList.toggle("d-none", !checked);
     byId("publicCell")?.toggleAttribute("disabled", checked);
+    byId("publicCell")?.toggleAttribute("required", !checked);
+  }
+  if (event.target.matches("[data-offering-given]")) {
+    const amount = document.querySelector("#publicCellReportForm [name='offering_amount']");
+    if (amount && event.target.value === "false") amount.value = "0";
   }
 });
 
@@ -16111,8 +18786,8 @@ byId("publicCellReportView")?.addEventListener("submit", (event) => {
 window.addEventListener("resize", syncTopbarHeight);
 
 window.addEventListener("hashchange", () => {
-  const route = location.hash.replace("#", "");
-  if (route === "submit-cell-report") {
+  const route = location.hash.replace("#", "").replace(/^\//, "");
+  if (isPublicCellReportRoute(route)) {
     showPublicCellReport();
     return;
   }
@@ -16152,6 +18827,6 @@ applyLanguage(lang);
 applySidebarCollapse();
 applyBackToTopLabel();
 updateBackToTopVisibility();
-if (location.hash.replace("#", "") === "submit-cell-report") showPublicCellReport();
+if (isPublicCellReportRoute(location.hash.replace("#", ""))) showPublicCellReport();
 
 const ServiceTimesEditor = renderChurchServiceTimesEditor;

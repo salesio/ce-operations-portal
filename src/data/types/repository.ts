@@ -1,0 +1,85 @@
+import type {
+  Cell,
+  CellGroup,
+  CellLeader,
+  CellReportSubmission,
+  Church,
+  EntityCollectionName,
+  EntityId,
+  FinanceRecord,
+  FirstTimer,
+  FollowUp,
+  FoundationClassGroup,
+  FoundationFinalExam,
+  FoundationLessonSession,
+  FoundationStudent,
+  FoundationTeacher,
+  FoundationTestSubmission,
+  MediaSchedule,
+  MediaTechnician,
+  Member,
+  Notification,
+  Requisition,
+  User,
+} from "./entities";
+
+/** Result wrapper so adapters can return soft failures without throwing. */
+export type DataResult<T> =
+  | { ok: true; data: T }
+  | { ok: false; error: string; code?: string };
+
+export type ListOptions = {
+  limit?: number;
+  offset?: number;
+  churchId?: EntityId;
+};
+
+/**
+ * Generic CRUD-ish repository for a single collection.
+ * Module migrations should implement real methods gradually.
+ */
+export interface EntityRepository<T> {
+  list(options?: ListOptions): Promise<DataResult<T[]>>;
+  getById(id: EntityId): Promise<DataResult<T | null>>;
+  create?(input: Partial<T>): Promise<DataResult<T>>;
+  update?(id: EntityId, input: Partial<T>): Promise<DataResult<T>>;
+  remove?(id: EntityId): Promise<DataResult<boolean>>;
+}
+
+/**
+ * Central data provider surface.
+ * Not every method is wired to the UI yet — this is the migration contract.
+ */
+export interface DataProvider {
+  readonly name: DataSourceName;
+  readonly description: string;
+
+  /** True when the provider is ready for real I/O (vs. stub). */
+  isReady(): boolean;
+
+  users: EntityRepository<User>;
+  churches: EntityRepository<Church>;
+  members: EntityRepository<Member>;
+  firstTimers: EntityRepository<FirstTimer>;
+  followUps: EntityRepository<FollowUp>;
+  foundationStudents: EntityRepository<FoundationStudent>;
+  foundationTeachers: EntityRepository<FoundationTeacher>;
+  foundationClassGroups: EntityRepository<FoundationClassGroup>;
+  foundationLessonSessions: EntityRepository<FoundationLessonSession>;
+  foundationTestSubmissions: EntityRepository<FoundationTestSubmission>;
+  foundationFinalExams: EntityRepository<FoundationFinalExam>;
+  financeRecords: EntityRepository<FinanceRecord>;
+  requisitions: EntityRepository<Requisition>;
+  notifications: EntityRepository<Notification>;
+  cellGroups: EntityRepository<CellGroup>;
+  cells: EntityRepository<Cell>;
+  cellLeaders: EntityRepository<CellLeader>;
+  cellReportSubmissions: EntityRepository<CellReportSubmission>;
+  mediaTechnicians: EntityRepository<MediaTechnician>;
+  mediaSchedules: EntityRepository<MediaSchedule>;
+
+  /** Escape hatch for progressive module adapters. */
+  collection(name: EntityCollectionName): EntityRepository<unknown>;
+}
+
+export type DataSourceName = "mock" | "local" | "api" | "supabase";
