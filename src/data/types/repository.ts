@@ -57,6 +57,14 @@ import type {
   PrisonRepresentative,
   PrisonService,
   PrisonWeeklyAgenda,
+  MaterialDistribution,
+  MaterialFund,
+  MaterialReport,
+  MaterialRequest,
+  MaterialSale,
+  MaterialStock,
+  MaterialStockMovement,
+  MinistryMaterial,
   Member,
   Notification,
   Requisition,
@@ -169,6 +177,14 @@ export interface DataProvider {
   prisonFollowUps: EntityRepository<PrisonFollowUp>;
   prisonReports: EntityRepository<PrisonReport>;
   prisonMaterialsRequests: EntityRepository<PrisonMaterialsRequest>;
+  ministryMaterialsCatalog: EntityRepository<MinistryMaterial>;
+  ministryMaterialsStock: EntityRepository<MaterialStock>;
+  ministryMaterialsStockMovements: EntityRepository<MaterialStockMovement>;
+  ministryMaterialsSales: EntityRepository<MaterialSale>;
+  ministryMaterialsDistributions: EntityRepository<MaterialDistribution>;
+  ministryMaterialsRequests: EntityRepository<MaterialRequest>;
+  ministryMaterialsFunds: EntityRepository<MaterialFund>;
+  ministryMaterialsReports: EntityRepository<MaterialReport>;
   inventoryItems: EntityRepository<InventoryItem>;
   inventoryMovements: EntityRepository<InventoryMovement>;
   inventoryMaintenance: EntityRepository<InventoryMaintenanceRecord>;

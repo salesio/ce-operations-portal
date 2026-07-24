@@ -3136,6 +3136,276 @@ export interface PrisonMaterialsRequest {
   updated_at?: IsoDate | IsoDateTime;
 }
 
+// ---------------------------------------------------------------------------
+// Ministry Materials / Materiais Ministeriais
+// ---------------------------------------------------------------------------
+
+/** category: Rhapsody | Bible | Book | Foundation School Material | … */
+export interface MinistryMaterial {
+  id: EntityId;
+  material_code?: string | null;
+  name?: string | null;
+  /** PT UI */
+  titulo_do_material?: string | null;
+  description?: string | null;
+  category?: string | null;
+  /** PT UI */
+  tipo?: string | null;
+  subcategory?: string | null;
+  language?: string | null;
+  unit_price?: number | null;
+  /** PT UI */
+  preco?: number | null;
+  currency?: string | null;
+  cost_price?: number | null;
+  is_free_distribution_allowed?: boolean | null;
+  is_sellable?: boolean | null;
+  is_digital?: boolean | null;
+  /** PT UI */
+  formato?: string | null;
+  autor_ou_origem?: string | null;
+  reorder_level?: number | null;
+  /** PT UI dual with reorder_level */
+  stock_minimo?: number | null;
+  /** Convenience dual with stock collection */
+  stock_actual?: number | null;
+  photo_url?: string | null;
+  church_id?: EntityId | null;
+  status?: string | null;
+  estado?: string | null;
+  notes?: string | null;
+  observacoes?: string | null;
+  created_at?: IsoDate | IsoDateTime;
+  updated_at?: IsoDate | IsoDateTime;
+}
+
+export interface MaterialStock {
+  id: EntityId;
+  material_id?: EntityId | null;
+  material_code?: string | null;
+  material_name?: string | null;
+  /** PT UI */
+  titulo_do_material?: string | null;
+  church_id?: EntityId | null;
+  church_name?: string | null;
+  location?: string | null;
+  storage_space_id?: EntityId | null;
+  storage_space_name?: string | null;
+  quantity_available?: number | null;
+  quantity_reserved?: number | null;
+  quantity_distributed?: number | null;
+  quantity_sold?: number | null;
+  reorder_level?: number | null;
+  /** Weekly snapshot dual-map (UI weeklyStock) */
+  semana_inicio?: IsoDate | null;
+  semana_fim?: IsoDate | null;
+  stock_inicial?: number | null;
+  entradas?: number | null;
+  saidas?: number | null;
+  stock_final?: number | null;
+  diferenca?: number | null;
+  status?: string | null;
+  estado?: string | null;
+  last_stock_update?: IsoDate | null;
+  notes?: string | null;
+  observacoes?: string | null;
+  created_at?: IsoDate | IsoDateTime;
+  updated_at?: IsoDate | IsoDateTime;
+}
+
+export interface MaterialStockMovement {
+  id: EntityId;
+  material_id?: EntityId | null;
+  material_name?: string | null;
+  movement_type?: string | null;
+  quantity?: number | null;
+  from_church_id?: EntityId | null;
+  from_church_name?: string | null;
+  from_location?: string | null;
+  to_church_id?: EntityId | null;
+  to_church_name?: string | null;
+  to_location?: string | null;
+  source_type?: string | null;
+  source_id?: EntityId | null;
+  performed_by_user_id?: EntityId | null;
+  performed_by_name?: string | null;
+  movement_date?: IsoDate | null;
+  notes?: string | null;
+  created_at?: IsoDate | IsoDateTime;
+  updated_at?: IsoDate | IsoDateTime;
+}
+
+export interface MaterialSale {
+  id: EntityId;
+  sale_number?: string | null;
+  material_id?: EntityId | null;
+  material_name?: string | null;
+  /** PT UI */
+  titulo_do_material?: string | null;
+  quantity?: number | null;
+  /** PT UI */
+  quantidade?: number | null;
+  unit_price?: number | null;
+  total_amount?: number | null;
+  /** PT UI */
+  valor?: number | null;
+  currency?: string | null;
+  buyer_type?: string | null;
+  buyer_name?: string | null;
+  /** PT UI */
+  comprador?: string | null;
+  buyer_phone?: string | null;
+  church_id?: EntityId | null;
+  church_name?: string | null;
+  /** PT UI */
+  igreja?: string | null;
+  payment_method?: string | null;
+  /** PT UI */
+  metodo_de_pagamento?: string | null;
+  payment_reference?: string | null;
+  pop_prova_de_pagamento?: string | null;
+  payment_status?: string | null;
+  /** Future Finance link — never auto-created */
+  finance_record_id?: EntityId | null;
+  sold_by_user_id?: EntityId | null;
+  sold_by_name?: string | null;
+  recebido_por?: string | null;
+  sale_date?: IsoDate | null;
+  /** PT UI */
+  data?: IsoDate | null;
+  semana_do_relatorio?: string | null;
+  status?: string | null;
+  estado?: string | null;
+  notes?: string | null;
+  observacoes?: string | null;
+  created_at?: IsoDate | IsoDateTime;
+  updated_at?: IsoDate | IsoDateTime;
+}
+
+export interface MaterialDistribution {
+  id: EntityId;
+  distribution_number?: string | null;
+  material_id?: EntityId | null;
+  material_name?: string | null;
+  titulo_do_material?: string | null;
+  quantity?: number | null;
+  quantidade?: number | null;
+  distribution_type?: string | null;
+  tipo_de_distribuicao?: string | null;
+  target_type?: string | null;
+  target_id?: EntityId | null;
+  target_name?: string | null;
+  church_id?: EntityId | null;
+  church_name?: string | null;
+  igreja_destinataria?: string | null;
+  prison_id?: EntityId | null;
+  prison_name?: string | null;
+  purpose?: string | null;
+  requested_by_user_id?: EntityId | null;
+  requested_by_name?: string | null;
+  approved_by_user_id?: EntityId | null;
+  approved_by_name?: string | null;
+  approved_at?: IsoDateTime | null;
+  distributed_by_user_id?: EntityId | null;
+  distributed_by_name?: string | null;
+  distributed_at?: IsoDateTime | null;
+  responsavel_pelo_envio?: string | null;
+  recebido_por?: string | null;
+  distribution_date?: IsoDate | null;
+  data?: IsoDate | null;
+  status?: string | null;
+  estado?: string | null;
+  notes?: string | null;
+  observacoes?: string | null;
+  created_at?: IsoDate | IsoDateTime;
+  updated_at?: IsoDate | IsoDateTime;
+}
+
+export interface MaterialRequest {
+  id: EntityId;
+  request_number?: string | null;
+  source?: string | null;
+  source_module?: string | null;
+  source_id?: EntityId | null;
+  material_id?: EntityId | null;
+  material_name?: string | null;
+  material_type?: string | null;
+  quantity_requested?: number | null;
+  quantity_approved?: number | null;
+  quantity_fulfilled?: number | null;
+  target_type?: string | null;
+  target_id?: EntityId | null;
+  target_name?: string | null;
+  church_id?: EntityId | null;
+  church_name?: string | null;
+  prison_id?: EntityId | null;
+  prison_name?: string | null;
+  needed_by_date?: IsoDate | null;
+  status?: string | null;
+  requested_by_user_id?: EntityId | null;
+  requested_by_name?: string | null;
+  approved_by_user_id?: EntityId | null;
+  approved_by_name?: string | null;
+  approved_at?: IsoDateTime | null;
+  fulfilled_by_user_id?: EntityId | null;
+  fulfilled_by_name?: string | null;
+  fulfilled_at?: IsoDateTime | null;
+  rejection_reason?: string | null;
+  notes?: string | null;
+  created_at?: IsoDate | IsoDateTime;
+  updated_at?: IsoDate | IsoDateTime;
+}
+
+export interface MaterialFund {
+  id: EntityId;
+  fund_number?: string | null;
+  source?: string | null;
+  related_sale_id?: EntityId | null;
+  related_distribution_id?: EntityId | null;
+  material_id?: EntityId | null;
+  material_name?: string | null;
+  amount?: number | null;
+  currency?: string | null;
+  payment_method?: string | null;
+  payment_reference?: string | null;
+  status?: string | null;
+  estado?: string | null;
+  /** Future Finance link — never auto-created */
+  finance_record_id?: EntityId | null;
+  received_by_user_id?: EntityId | null;
+  received_by_name?: string | null;
+  received_at?: IsoDate | IsoDateTime | null;
+  /** Campaign-style dual-map (UI freeFunds) */
+  campanha?: string | null;
+  valor_alvo?: number | null;
+  valor_levantado?: number | null;
+  materiais_a_distribuir?: string | null;
+  igrejas_beneficiadas?: string | null;
+  church_id?: EntityId | null;
+  notes?: string | null;
+  observacoes?: string | null;
+  created_at?: IsoDate | IsoDateTime;
+  updated_at?: IsoDate | IsoDateTime;
+}
+
+export interface MaterialReport {
+  id: EntityId;
+  report_number?: string | null;
+  name?: string | null;
+  category?: string | null;
+  period_start?: IsoDate | null;
+  period_end?: IsoDate | null;
+  quantity?: number | null;
+  amount?: number | null;
+  currency?: string | null;
+  church_id?: EntityId | null;
+  status?: string | null;
+  estado?: string | null;
+  notes?: string | null;
+  created_at?: IsoDate | IsoDateTime;
+  updated_at?: IsoDate | IsoDateTime;
+}
+
 /** Map of collection names used by repositories / adapters. */
 export type EntityCollectionName =
   | "users"
@@ -3196,6 +3466,14 @@ export type EntityCollectionName =
   | "prison_follow_ups"
   | "prison_reports"
   | "prison_materials_requests"
+  | "ministry_materials_catalog"
+  | "ministry_materials_stock"
+  | "ministry_materials_stock_movements"
+  | "ministry_materials_sales"
+  | "ministry_materials_distributions"
+  | "ministry_materials_requests"
+  | "ministry_materials_funds"
+  | "ministry_materials_reports"
   | "inventory_items"
   | "inventory_movements"
   | "inventory_maintenance"

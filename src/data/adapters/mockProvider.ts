@@ -56,6 +56,14 @@ import type {
   PrisonRepresentative,
   PrisonService,
   PrisonWeeklyAgenda,
+  MaterialDistribution,
+  MaterialFund,
+  MaterialReport,
+  MaterialRequest,
+  MaterialSale,
+  MaterialStock,
+  MaterialStockMovement,
+  MinistryMaterial,
   Member,
   Notification,
   Requisition,
@@ -142,6 +150,13 @@ import { PRISON_WEEKLY_AGENDAS_SEED } from "../seeds/prisonWeeklyAgendasSeed";
 import { PRISON_FOLLOW_UPS_SEED } from "../seeds/prisonFollowUpsSeed";
 import { PRISON_REPORTS_SEED } from "../seeds/prisonReportsSeed";
 import { PRISON_MATERIALS_REQUESTS_SEED } from "../seeds/prisonMaterialsRequestsSeed";
+import { MINISTRY_MATERIALS_CATALOG_SEED } from "../seeds/ministryMaterialsCatalogSeed";
+import { MINISTRY_MATERIALS_STOCK_SEED } from "../seeds/ministryMaterialsStockSeed";
+import { MINISTRY_MATERIALS_SALES_SEED } from "../seeds/ministryMaterialsSalesSeed";
+import { MINISTRY_MATERIALS_DISTRIBUTIONS_SEED } from "../seeds/ministryMaterialsDistributionsSeed";
+import { MINISTRY_MATERIALS_REQUESTS_SEED } from "../seeds/ministryMaterialsRequestsSeed";
+import { MINISTRY_MATERIALS_FUNDS_SEED } from "../seeds/ministryMaterialsFundsSeed";
+import { MINISTRY_MATERIALS_REPORTS_SEED } from "../seeds/ministryMaterialsReportsSeed";
 import type { AccessPermission, AccessRole, AuditLog, PermissionTemplate } from "../types/entities";
 
 /**
@@ -291,6 +306,28 @@ export function createMockProvider(): DataProvider {
   const prisonMaterialsRequests = createMemoryRepository<PrisonMaterialsRequest>(
     PRISON_MATERIALS_REQUESTS_SEED.map((r) => ({ ...r })),
   );
+  const ministryMaterialsCatalog = createMemoryRepository<MinistryMaterial>(
+    MINISTRY_MATERIALS_CATALOG_SEED.map((r) => ({ ...r })),
+  );
+  const ministryMaterialsStock = createMemoryRepository<MaterialStock>(
+    MINISTRY_MATERIALS_STOCK_SEED.map((r) => ({ ...r })),
+  );
+  const ministryMaterialsStockMovements = createMemoryRepository<MaterialStockMovement>([]);
+  const ministryMaterialsSales = createMemoryRepository<MaterialSale>(
+    MINISTRY_MATERIALS_SALES_SEED.map((r) => ({ ...r })),
+  );
+  const ministryMaterialsDistributions = createMemoryRepository<MaterialDistribution>(
+    MINISTRY_MATERIALS_DISTRIBUTIONS_SEED.map((r) => ({ ...r })),
+  );
+  const ministryMaterialsRequests = createMemoryRepository<MaterialRequest>(
+    MINISTRY_MATERIALS_REQUESTS_SEED.map((r) => ({ ...r })),
+  );
+  const ministryMaterialsFunds = createMemoryRepository<MaterialFund>(
+    MINISTRY_MATERIALS_FUNDS_SEED.map((r) => ({ ...r })),
+  );
+  const ministryMaterialsReports = createMemoryRepository<MaterialReport>(
+    MINISTRY_MATERIALS_REPORTS_SEED.map((r) => ({ ...r })),
+  );
   const inventoryItems = createMemoryRepository<InventoryItem>(
     INVENTORY_ITEMS_SEED.map((r) => ({ ...r })),
   );
@@ -391,6 +428,14 @@ export function createMockProvider(): DataProvider {
     prison_follow_ups: prisonFollowUps as EntityRepository<unknown>,
     prison_reports: prisonReports as EntityRepository<unknown>,
     prison_materials_requests: prisonMaterialsRequests as EntityRepository<unknown>,
+    ministry_materials_catalog: ministryMaterialsCatalog as EntityRepository<unknown>,
+    ministry_materials_stock: ministryMaterialsStock as EntityRepository<unknown>,
+    ministry_materials_stock_movements: ministryMaterialsStockMovements as EntityRepository<unknown>,
+    ministry_materials_sales: ministryMaterialsSales as EntityRepository<unknown>,
+    ministry_materials_distributions: ministryMaterialsDistributions as EntityRepository<unknown>,
+    ministry_materials_requests: ministryMaterialsRequests as EntityRepository<unknown>,
+    ministry_materials_funds: ministryMaterialsFunds as EntityRepository<unknown>,
+    ministry_materials_reports: ministryMaterialsReports as EntityRepository<unknown>,
     inventory_items: inventoryItems as EntityRepository<unknown>,
     inventory_movements: inventoryMovements as EntityRepository<unknown>,
     inventory_maintenance: inventoryMaintenance as EntityRepository<unknown>,
@@ -471,6 +516,14 @@ export function createMockProvider(): DataProvider {
     prisonFollowUps,
     prisonReports,
     prisonMaterialsRequests,
+    ministryMaterialsCatalog,
+    ministryMaterialsStock,
+    ministryMaterialsStockMovements,
+    ministryMaterialsSales,
+    ministryMaterialsDistributions,
+    ministryMaterialsRequests,
+    ministryMaterialsFunds,
+    ministryMaterialsReports,
     inventoryItems,
     inventoryMovements,
     inventoryMaintenance,

@@ -57,6 +57,14 @@ import type {
   PrisonRepresentative,
   PrisonService,
   PrisonWeeklyAgenda,
+  MaterialDistribution,
+  MaterialFund,
+  MaterialReport,
+  MaterialRequest,
+  MaterialSale,
+  MaterialStock,
+  MaterialStockMovement,
+  MinistryMaterial,
   Member,
   Notification,
   Requisition,
@@ -155,6 +163,16 @@ function storageKeyFor(key: EntityCollectionName): string {
   if (key === "prison_follow_ups") return `${STORAGE_PREFIX}prison-follow-ups`;
   if (key === "prison_reports") return `${STORAGE_PREFIX}prison-reports`;
   if (key === "prison_materials_requests") return `${STORAGE_PREFIX}prison-materials-requests`;
+  if (key === "ministry_materials_catalog") return `${STORAGE_PREFIX}ministry-materials-catalog`;
+  if (key === "ministry_materials_stock") return `${STORAGE_PREFIX}ministry-materials-stock`;
+  if (key === "ministry_materials_stock_movements")
+    return `${STORAGE_PREFIX}ministry-materials-stock-movements`;
+  if (key === "ministry_materials_sales") return `${STORAGE_PREFIX}ministry-materials-sales`;
+  if (key === "ministry_materials_distributions")
+    return `${STORAGE_PREFIX}ministry-materials-distributions`;
+  if (key === "ministry_materials_requests") return `${STORAGE_PREFIX}ministry-materials-requests`;
+  if (key === "ministry_materials_funds") return `${STORAGE_PREFIX}ministry-materials-funds`;
+  if (key === "ministry_materials_reports") return `${STORAGE_PREFIX}ministry-materials-reports`;
   return STORAGE_PREFIX + key;
 }
 
@@ -305,6 +323,22 @@ export function createLocalStorageProvider(): DataProvider {
   const prisonReports = createPersistedRepository<PrisonReport>("prison_reports");
   const prisonMaterialsRequests =
     createPersistedRepository<PrisonMaterialsRequest>("prison_materials_requests");
+  const ministryMaterialsCatalog =
+    createPersistedRepository<MinistryMaterial>("ministry_materials_catalog");
+  const ministryMaterialsStock =
+    createPersistedRepository<MaterialStock>("ministry_materials_stock");
+  const ministryMaterialsStockMovements =
+    createPersistedRepository<MaterialStockMovement>("ministry_materials_stock_movements");
+  const ministryMaterialsSales =
+    createPersistedRepository<MaterialSale>("ministry_materials_sales");
+  const ministryMaterialsDistributions =
+    createPersistedRepository<MaterialDistribution>("ministry_materials_distributions");
+  const ministryMaterialsRequests =
+    createPersistedRepository<MaterialRequest>("ministry_materials_requests");
+  const ministryMaterialsFunds =
+    createPersistedRepository<MaterialFund>("ministry_materials_funds");
+  const ministryMaterialsReports =
+    createPersistedRepository<MaterialReport>("ministry_materials_reports");
   const inventoryItems = createPersistedRepository<InventoryItem>("inventory_items");
   const inventoryMovements = createPersistedRepository<InventoryMovement>("inventory_movements");
   const inventoryMaintenance =
@@ -382,6 +416,14 @@ export function createLocalStorageProvider(): DataProvider {
     prison_follow_ups: prisonFollowUps as EntityRepository<unknown>,
     prison_reports: prisonReports as EntityRepository<unknown>,
     prison_materials_requests: prisonMaterialsRequests as EntityRepository<unknown>,
+    ministry_materials_catalog: ministryMaterialsCatalog as EntityRepository<unknown>,
+    ministry_materials_stock: ministryMaterialsStock as EntityRepository<unknown>,
+    ministry_materials_stock_movements: ministryMaterialsStockMovements as EntityRepository<unknown>,
+    ministry_materials_sales: ministryMaterialsSales as EntityRepository<unknown>,
+    ministry_materials_distributions: ministryMaterialsDistributions as EntityRepository<unknown>,
+    ministry_materials_requests: ministryMaterialsRequests as EntityRepository<unknown>,
+    ministry_materials_funds: ministryMaterialsFunds as EntityRepository<unknown>,
+    ministry_materials_reports: ministryMaterialsReports as EntityRepository<unknown>,
     inventory_items: inventoryItems as EntityRepository<unknown>,
     inventory_movements: inventoryMovements as EntityRepository<unknown>,
     inventory_maintenance: inventoryMaintenance as EntityRepository<unknown>,
@@ -463,6 +505,14 @@ export function createLocalStorageProvider(): DataProvider {
     prisonFollowUps,
     prisonReports,
     prisonMaterialsRequests,
+    ministryMaterialsCatalog,
+    ministryMaterialsStock,
+    ministryMaterialsStockMovements,
+    ministryMaterialsSales,
+    ministryMaterialsDistributions,
+    ministryMaterialsRequests,
+    ministryMaterialsFunds,
+    ministryMaterialsReports,
     inventoryItems,
     inventoryMovements,
     inventoryMaintenance,

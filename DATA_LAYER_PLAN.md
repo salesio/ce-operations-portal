@@ -1198,3 +1198,58 @@ npm run test:access-control-data
 # Manual: Ministério Prisional → prisão → agenda → serviço → relatório → fundação
 # VITE_DATA_SOURCE=local + F5
 ```
+
+---
+
+## Pilot migration: Ministry Materials
+
+**Status: live (pilot)** — dual-write / hydrate; UI remains in `js/dashboard.js` (`renderMinistryMaterials`, `state.ministryMaterials`).
+
+See also **[MINISTRY_MATERIALS_MODULE_PLAN.md](MINISTRY_MATERIALS_MODULE_PLAN.md)**.
+
+### Local keys
+
+| Collection | Key |
+|------------|-----|
+| Catalog | `ce-data-layer:ministry-materials-catalog` |
+| Stock | `ce-data-layer:ministry-materials-stock` |
+| Stock movements | `ce-data-layer:ministry-materials-stock-movements` |
+| Sales | `ce-data-layer:ministry-materials-sales` |
+| Distributions | `ce-data-layer:ministry-materials-distributions` |
+| Requests | `ce-data-layer:ministry-materials-requests` |
+| Funds | `ce-data-layer:ministry-materials-funds` |
+| Reports | `ce-data-layer:ministry-materials-reports` |
+
+### Domain rules
+
+- Ministry Materials uses the data layer (mock / local / api / supabase placeholders).
+- Stock, sales, distributions, requests and **internal funds** are own collections.
+- **Sales / funds do not create `financeRecord` automatically** (`finance_record_id` stays null).
+- Prison Ministry requests can be consumed with `source_id` preserved.
+- Stock is separate from Venue & Inventory (optional future `storage_space_id`).
+- Soft audit when Access Control exists.
+- Does not break Prison Ministry, Finance, Venue & Inventory, or Access Control.
+- PostgreSQL direct is a future phase.
+
+### Code
+
+| Piece | Role |
+|-------|------|
+| `src/data/repositories/ministryMaterialsRepository.ts` | Aggregator |
+| Seeds | catalog, stock, sales, distributions, requests, funds, reports |
+| `js/ministry-materials-data-bridge.js` | Dual-write + pure-JS fallback (`CEMinistryMaterials`) |
+| Dashboard | dual-write materialCatalogue/Sale/Distribution/Stock/Fund + hydrate |
+
+Cache buster: `?v=20260723-ministry-materials-data-v1`
+
+### How to test Ministry Materials
+
+```bash
+npm run build
+npm run test:ministry-materials-data
+npm run test:prison-ministry-data
+npm run test:finance-data
+npm run test:access-control-data
+# Manual: Materiais → catálogo → venda → fundo interno (sem finance) → distribuição → pedido prisional
+# VITE_DATA_SOURCE=local + F5
+```

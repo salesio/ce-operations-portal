@@ -17726,6 +17726,18 @@ async function submitForm(form) {
     ) {
       void dualWritePrisonMinistryRecord(modalType, "update", collection[index]);
     }
+    if (
+      [
+        "materialCatalogue",
+        "materialSale",
+        "materialDistribution",
+        "materialStock",
+        "materialFund",
+        "materialReport",
+      ].includes(modalType)
+    ) {
+      void dualWriteMinistryMaterialsRecord(modalType, "update", collection[index]);
+    }
   } else {
     const idPrefix = modalType.slice(0, 3);
     const nowIso = new Date().toISOString();
@@ -18057,6 +18069,65 @@ async function submitForm(form) {
         record.estado = record.estado || record.status || "Rascunho";
       }
       void dualWritePrisonMinistryRecord(modalType, "create", record);
+    }
+    if (
+      [
+        "materialCatalogue",
+        "materialSale",
+        "materialDistribution",
+        "materialStock",
+        "materialFund",
+        "materialReport",
+      ].includes(modalType)
+    ) {
+      if (modalType === "materialCatalogue") {
+        record.name = record.name || record.titulo_do_material || "";
+        record.titulo_do_material = record.titulo_do_material || record.name || "";
+        record.unit_price = record.unit_price ?? record.preco ?? 0;
+        record.preco = record.preco ?? record.unit_price ?? 0;
+        record.stock_actual = Number(record.stock_actual || 0);
+        record.stock_minimo = Number(record.stock_minimo || record.reorder_level || 0);
+        record.status = record.status || record.estado || "Active";
+        record.estado = record.estado || record.status || "Disponível";
+      }
+      if (modalType === "materialSale") {
+        record.material_name = record.material_name || record.titulo_do_material || "";
+        record.titulo_do_material = record.titulo_do_material || record.material_name || "";
+        record.quantity = Number(record.quantity ?? record.quantidade ?? 0);
+        record.quantidade = Number(record.quantidade ?? record.quantity ?? 0);
+        record.total_amount = Number(record.total_amount ?? record.valor ?? 0);
+        record.valor = Number(record.valor ?? record.total_amount ?? 0);
+        record.sale_date = record.sale_date || record.data || "";
+        record.data = record.data || record.sale_date || "";
+        record.finance_record_id = null;
+        record.status = record.status || record.estado || "Completed";
+        record.estado = record.estado || record.status || "Confirmado";
+      }
+      if (modalType === "materialDistribution") {
+        record.material_name = record.material_name || record.titulo_do_material || "";
+        record.titulo_do_material = record.titulo_do_material || record.material_name || "";
+        record.quantity = Number(record.quantity ?? record.quantidade ?? 0);
+        record.quantidade = Number(record.quantidade ?? record.quantity ?? 0);
+        record.distribution_date = record.distribution_date || record.data || "";
+        record.data = record.data || record.distribution_date || "";
+        record.status = record.status || record.estado || "Pending";
+        record.estado = record.estado || record.status || "Solicitado";
+      }
+      if (modalType === "materialStock") {
+        record.material_name = record.material_name || record.titulo_do_material || "";
+        record.titulo_do_material = record.titulo_do_material || record.material_name || "";
+        record.quantity_available =
+          record.quantity_available ?? record.stock_final ?? record.stock_actual ?? 0;
+        record.stock_final = record.stock_final ?? record.quantity_available ?? 0;
+      }
+      if (modalType === "materialFund") {
+        record.amount = Number(record.amount ?? record.valor_levantado ?? 0);
+        record.valor_levantado = Number(record.valor_levantado ?? record.amount ?? 0);
+        record.finance_record_id = null;
+        record.status = record.status || record.estado || "Recorded Internally";
+        record.estado = record.estado || record.status || "Activa";
+      }
+      void dualWriteMinistryMaterialsRecord(modalType, "create", record);
     }
   }
   bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide();
@@ -19669,6 +19740,19 @@ function enterDashboard() {
       }
     })
     .catch((error) => console.warn("[CE Prison] background hydrate skipped", error));
+
+  Promise.resolve()
+    .then(() => hydrateMinistryMaterialsFromRepository())
+    .then((hydrated) => {
+      if (
+        hydrated &&
+        (activeRoute === "ministryMaterials" || activeRoute === "cellMaterials") &&
+        typeof renderMinistryMaterials === "function"
+      ) {
+        renderMinistryMaterials();
+      }
+    })
+    .catch((error) => console.warn("[CE Materials] background hydrate skipped", error));
 }
 
 function dualWriteFevoRecord(modalType, mode, record) {
@@ -19708,6 +19792,152 @@ function dualWritePrisonMinistryRecord(modalType, mode, record) {
   if (!pair) return;
   if (mode === "create" && bridge[pair[0]]) void bridge[pair[0]](record);
   else if (mode === "update" && bridge[pair[1]]) void bridge[pair[1]](record.id, record);
+}
+
+function dualWriteMinistryMaterialsRecord(modalType, mode, record) {
+  const bridge = window.CEMinistryMaterials || window.CEDataLayer?.ministryMaterials;
+  if (!bridge || !record) return;
+  if (typeof bridge.dualWriteRecord === "function") {
+    void bridge.dualWriteRecord(modalType, mode, record);
+    return;
+  }
+  const map = {
+    materialCatalogue: ["createMaterial", "updateMaterial"],
+    materialSale: ["createMaterialSale", "updateMaterialSale"],
+    materialDistribution: ["createMaterialDistribution", "updateMaterialDistribution"],
+    materialStock: ["createMaterialStock", "updateMaterialStock"],
+    materialFund: ["createMaterialFund", "updateMaterialFund"],
+    materialReport: ["createMaterialReport", "createMaterialReport"],
+  };
+  const pair = map[modalType];
+  if (!pair) return;
+  if (mode === "create" && bridge[pair[0]]) void bridge[pair[0]](record);
+  else if (mode === "update" && bridge[pair[1]]) void bridge[pair[1]](record.id, record);
+}
+
+async function hydrateMinistryMaterialsFromRepository() {
+  const repo = window.CEMinistryMaterials || window.CEDataLayer?.ministryMaterials;
+  if (!repo?.listMaterialsCatalog) return false;
+  try {
+    let hydrated = false;
+    state.ministryMaterials =
+      state.ministryMaterials && !Array.isArray(state.ministryMaterials)
+        ? state.ministryMaterials
+        : structuredClone(seedData.ministryMaterials || {});
+
+    async function merge(listFn, key, mapRow) {
+      if (typeof listFn !== "function") return;
+      const result = await listFn();
+      if (!result?.ok || !Array.isArray(result.data) || !result.data.length) return;
+      const prev = new Map((state.ministryMaterials[key] || []).map((r) => [r.id, r]));
+      const byId = new Map();
+      result.data.forEach((row) => {
+        const previous = prev.get(row.id) || {};
+        const mapped = mapRow ? mapRow(row) : row;
+        byId.set(row.id, { ...mapped, ...previous, id: row.id });
+      });
+      prev.forEach((localRow, id) => {
+        if (!byId.has(id)) byId.set(id, localRow);
+      });
+      state.ministryMaterials[key] = [...byId.values()];
+      hydrated = true;
+    }
+
+    await merge(repo.listMaterialsCatalog?.bind(repo), "catalogue", (row) => ({
+      ...row,
+      titulo_do_material: row.titulo_do_material || row.name || "",
+      name: row.name || row.titulo_do_material || "",
+      tipo: row.tipo || row.category || "",
+      preco: row.preco ?? row.unit_price ?? 0,
+      unit_price: row.unit_price ?? row.preco ?? 0,
+      stock_actual: row.stock_actual ?? 0,
+      stock_minimo: row.stock_minimo ?? row.reorder_level ?? 0,
+      estado: row.estado || row.status || "Disponível",
+      status: row.status || row.estado || "Active",
+      observacoes: row.observacoes || row.notes || "",
+    }));
+
+    await merge(repo.listMaterialSales?.bind(repo), "sales", (row) => ({
+      ...row,
+      titulo_do_material: row.titulo_do_material || row.material_name || "",
+      quantidade: row.quantidade ?? row.quantity ?? 0,
+      valor: row.valor ?? row.total_amount ?? 0,
+      data: row.data || row.sale_date || "",
+      comprador: row.comprador || row.buyer_name || "",
+      metodo_de_pagamento: row.metodo_de_pagamento || row.payment_method || "",
+      estado: row.estado || row.status || "Confirmado",
+      status: row.status || row.estado || "Completed",
+      finance_record_id: row.finance_record_id ?? null,
+    }));
+
+    await merge(repo.listMaterialDistributions?.bind(repo), "distributions", (row) => ({
+      ...row,
+      titulo_do_material: row.titulo_do_material || row.material_name || "",
+      quantidade: row.quantidade ?? row.quantity ?? 0,
+      data: row.data || row.distribution_date || "",
+      igreja_destinataria: row.igreja_destinataria || row.target_id || "",
+      tipo_de_distribuicao: row.tipo_de_distribuicao || row.distribution_type || "",
+      estado: row.estado || row.status || "Solicitado",
+      status: row.status || row.estado || "Pending",
+    }));
+
+    await merge(repo.listMaterialStock?.bind(repo), "weeklyStock", (row) => ({
+      ...row,
+      titulo_do_material: row.titulo_do_material || row.material_name || "",
+      semana_inicio: row.semana_inicio || "",
+      semana_fim: row.semana_fim || "",
+      stock_inicial: row.stock_inicial ?? 0,
+      entradas: row.entradas ?? 0,
+      saidas: row.saidas ?? 0,
+      stock_final: row.stock_final ?? row.quantity_available ?? 0,
+      diferenca: row.diferenca ?? 0,
+      estado: row.estado || row.status || "Concluído",
+    }));
+
+    await merge(repo.listMaterialFunds?.bind(repo), "freeFunds", (row) => ({
+      ...row,
+      campanha: row.campanha || row.material_name || "Fundo de Materiais",
+      valor_alvo: row.valor_alvo ?? 0,
+      valor_levantado: row.valor_levantado ?? row.amount ?? 0,
+      amount: row.amount ?? row.valor_levantado ?? 0,
+      estado: row.estado || row.status || "Activa",
+      status: row.status || row.estado || "Recorded Internally",
+      finance_record_id: row.finance_record_id ?? null,
+    }));
+
+    await merge(repo.listMaterialReports?.bind(repo), "reports", (row) => ({
+      ...row,
+      name: row.name || "Relatório de Materiais",
+      quantity: row.quantity ?? 0,
+      amount: row.amount ?? 0,
+      status: row.status || row.estado || "Concluído",
+    }));
+
+    if (typeof repo.listMaterialRequests === "function") {
+      const reqs = await repo.listMaterialRequests();
+      if (reqs?.ok && Array.isArray(reqs.data)) {
+        state.ministryMaterials.requests = reqs.data;
+        hydrated = true;
+      }
+    }
+
+    if (hydrated) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (_) {}
+      console.info("[CE Materials] hydrated", {
+        catalogue: (state.ministryMaterials.catalogue || []).length,
+        sales: (state.ministryMaterials.sales || []).length,
+        distributions: (state.ministryMaterials.distributions || []).length,
+        stock: (state.ministryMaterials.weeklyStock || []).length,
+        funds: (state.ministryMaterials.freeFunds || []).length,
+      });
+    }
+    return hydrated;
+  } catch (error) {
+    console.warn("[CE Materials] hydrate failed", error);
+    return false;
+  }
 }
 
 async function hydratePrisonMinistryFromRepository() {
