@@ -6,11 +6,31 @@ import type {
   ListOptions,
 } from "../types/repository";
 import { getSupabaseClient, getSupabaseConfig } from "../../lib/supabaseClient";
+import {
+  getSupabaseConnectionInfo,
+  getSupabaseEnvConfig,
+} from "./supabase/supabaseConfig";
+import {
+  supabaseCreate,
+  supabaseDelete,
+  supabaseGetById,
+  supabaseList,
+  supabaseUpdate,
+} from "./supabase/supabaseRepositoryBase";
+import type {
+  SupabaseConnectionInfo,
+  SupabaseRow,
+  SupabaseTableName,
+} from "./supabase/supabaseTypes";
 
 /**
- * Placeholder Supabase provider for progressive migration.
- * Finance already has a parallel path via financeRepository + CESupabaseBridge.
- * Full table repositories are not implemented here yet.
+ * Placeholder Supabase provider for progressive migration (Backend Phase 1).
+ *
+ * - Domain module repositories stay on mock/local until explicit pilots.
+ * - Generic table helpers (list/get/create/update/delete) are prepared but
+ *   do not auto-wire UI modules.
+ * - Uses public anon key only (via foundation client when enabled).
+ * - Legacy finance bridge remains separate (src/lib/*).
  */
 function createStubRepository<T>(collection: EntityCollectionName): EntityRepository<T> {
   const notReady = <R>(): DataResult<R> => ({
@@ -38,119 +58,156 @@ function createStubRepository<T>(collection: EntityCollectionName): EntityReposi
   };
 }
 
-export function createSupabaseProvider(): DataProvider {
-  const names: EntityCollectionName[] = [
-    "users",
-    "churches",
-    "members",
-    "first_timers",
-    "follow_ups",
-    "foundation_students",
-    "foundation_teachers",
-    "foundation_class_groups",
-    "foundation_lesson_sessions",
-    "foundation_test_submissions",
-    "foundation_final_exams",
-    "finance_records",
-    "public_giving_submissions",
-    "finance_disbursements",
-    "requisitions",
-    "requisition_timeline",
-    "notifications",
-    "notification_templates",
-    "system_settings",
-    "global_categories",
-    "status_definitions",
-    "language_settings",
-    "notification_settings",
-    "ui_preferences",
-    "cell_groups",
-    "cells",
-    "cell_leaders",
-    "cell_report_submissions",
-    "media_technicians",
-    "media_schedules",
-    "media_roles",
-    "media_services",
-    "media_channels",
-    "media_performance",
-    "media_awards",
-    "counseling_requests",
-    "counseling_cases",
-    "counseling_appointments",
-    "counselors",
-    "counseling_feedback",
-    "counseling_referrals",
-    "baptisms",
-    "marriages",
-    "baby_dedications",
-    "sacrament_certificates",
-    "sacrament_documents",
-    "sacrament_appointments",
-    "fevo_weekly_configs",
-    "fevo_teams",
-    "fevo_activities",
-    "fevo_reports",
-    "fevo_missing_reports",
-    "fevo_follow_up_records",
-    "fevo_evangelism_records",
-    "fevo_visitation_records",
-    "fevo_prayer_records",
-    "prison_locations",
-    "prison_representatives",
-    "prison_services",
-    "prison_participants",
-    "prison_foundation_students",
-    "prison_weekly_agendas",
-    "prison_follow_ups",
-    "prison_reports",
-    "prison_materials_requests",
-    "ministry_materials_catalog",
-    "ministry_materials_stock",
-    "ministry_materials_stock_movements",
-    "ministry_materials_sales",
-    "ministry_materials_distributions",
-    "ministry_materials_requests",
-    "ministry_materials_funds",
-    "ministry_materials_reports",
-    "programs",
-    "program_sessions",
-    "program_teams",
-    "program_participants",
-    "program_registrations",
-    "program_resources",
-    "program_budgets",
-    "program_checklists",
-    "program_reports",
-    "inventory_items",
-    "inventory_movements",
-    "inventory_maintenance",
-    "venue_spaces",
-    "service_checklists",
-    "staff",
-    "staff_departments",
-    "staff_roles",
-    "staff_salaries",
-    "staff_performance",
-    "staff_documents",
-    "staff_attendance",
-    "roles",
-    "permissions",
-    "permission_templates",
-    "audit_logs",
-  ];
+export type SupabaseProviderExtras = {
+  getInfo: () => SupabaseConnectionInfo;
+  /** Generic table helpers — foundation only; not used by domain repos yet */
+  list: typeof supabaseList;
+  getById: typeof supabaseGetById;
+  create: typeof supabaseCreate;
+  update: typeof supabaseUpdate;
+  delete: typeof supabaseDelete;
+};
 
+const COLLECTION_NAMES: EntityCollectionName[] = [
+  "users",
+  "churches",
+  "members",
+  "first_timers",
+  "follow_ups",
+  "foundation_students",
+  "foundation_teachers",
+  "foundation_class_groups",
+  "foundation_lesson_sessions",
+  "foundation_test_submissions",
+  "foundation_final_exams",
+  "finance_records",
+  "public_giving_submissions",
+  "finance_disbursements",
+  "requisitions",
+  "requisition_timeline",
+  "notifications",
+  "notification_templates",
+  "system_settings",
+  "global_categories",
+  "status_definitions",
+  "language_settings",
+  "notification_settings",
+  "ui_preferences",
+  "cell_groups",
+  "cells",
+  "cell_leaders",
+  "cell_report_submissions",
+  "media_technicians",
+  "media_schedules",
+  "media_roles",
+  "media_services",
+  "media_channels",
+  "media_performance",
+  "media_awards",
+  "counseling_requests",
+  "counseling_cases",
+  "counseling_appointments",
+  "counselors",
+  "counseling_feedback",
+  "counseling_referrals",
+  "baptisms",
+  "marriages",
+  "baby_dedications",
+  "sacrament_certificates",
+  "sacrament_documents",
+  "sacrament_appointments",
+  "fevo_weekly_configs",
+  "fevo_teams",
+  "fevo_activities",
+  "fevo_reports",
+  "fevo_missing_reports",
+  "fevo_follow_up_records",
+  "fevo_evangelism_records",
+  "fevo_visitation_records",
+  "fevo_prayer_records",
+  "prison_locations",
+  "prison_representatives",
+  "prison_services",
+  "prison_participants",
+  "prison_foundation_students",
+  "prison_weekly_agendas",
+  "prison_follow_ups",
+  "prison_reports",
+  "prison_materials_requests",
+  "ministry_materials_catalog",
+  "ministry_materials_stock",
+  "ministry_materials_stock_movements",
+  "ministry_materials_sales",
+  "ministry_materials_distributions",
+  "ministry_materials_requests",
+  "ministry_materials_funds",
+  "ministry_materials_reports",
+  "programs",
+  "program_sessions",
+  "program_teams",
+  "program_participants",
+  "program_registrations",
+  "program_resources",
+  "program_budgets",
+  "program_checklists",
+  "program_reports",
+  "inventory_items",
+  "inventory_movements",
+  "inventory_maintenance",
+  "venue_spaces",
+  "service_checklists",
+  "staff",
+  "staff_departments",
+  "staff_roles",
+  "staff_salaries",
+  "staff_performance",
+  "staff_documents",
+  "staff_attendance",
+  "roles",
+  "permissions",
+  "permission_templates",
+  "audit_logs",
+];
+
+export function getSupabaseProviderInfo(): SupabaseConnectionInfo {
+  return getSupabaseConnectionInfo();
+}
+
+export function createSupabaseProvider(): DataProvider & SupabaseProviderExtras {
   const map = Object.fromEntries(
-    names.map((n) => [n, createStubRepository(n)]),
+    COLLECTION_NAMES.map((n) => [n, createStubRepository(n)]),
   ) as Record<EntityCollectionName, EntityRepository<unknown>>;
+
+  const foundationInfo = getSupabaseConnectionInfo();
+  const legacyCfg = getSupabaseConfig();
+  const envCfg = getSupabaseEnvConfig();
+
+  const description =
+    foundationInfo.status === "ready"
+      ? `Supabase foundation ready (${foundationInfo.urlHost || "configured"}) — domain repos still stubbed.`
+      : foundationInfo.status === "missing_env"
+        ? `Supabase enabled but env incomplete — ${foundationInfo.message}`
+        : "Supabase provider placeholder (disabled). Domain modules use mock/local.";
 
   return {
     name: "supabase",
-    description: "Supabase provider placeholder (finance bridge remains separate).",
+    description,
     isReady: () => {
-      const cfg = getSupabaseConfig();
-      return cfg.isConfigured && !!getSupabaseClient();
+      // Ready only when foundation flags + env OK AND legacy client can init.
+      // Domain collection methods still return NOT_IMPLEMENTED until pilots.
+      return (
+        foundationInfo.status === "ready" &&
+        envCfg.isConfigured &&
+        legacyCfg.isConfigured &&
+        !!getSupabaseClient()
+      );
     },
+    getInfo: getSupabaseProviderInfo,
+    list: supabaseList,
+    getById: supabaseGetById,
+    create: supabaseCreate,
+    update: supabaseUpdate,
+    delete: supabaseDelete,
     users: map.users as EntityRepository<never>,
     churches: map.churches as EntityRepository<never>,
     members: map.members as EntityRepository<never>,
@@ -254,3 +311,6 @@ export function createSupabaseProvider(): DataProvider {
     },
   };
 }
+
+// Re-export table helper types for pilots
+export type { SupabaseTableName, SupabaseRow };

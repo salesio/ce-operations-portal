@@ -1,42 +1,29 @@
 -- ============================================================================
--- CE Mozambique Operations Dashboard — local development schema (placeholder)
+-- CE Mozambique Operations Dashboard — Backend Phase 1 schema (foundation)
 -- ============================================================================
--- Applied automatically on first Postgres container boot via
--- docker-entrypoint-initdb.d (see docker-compose.yml).
+-- Applied on first Docker Postgres boot via docker-entrypoint-initdb.d.
+-- Supabase cloud: see supabase/migrations/ and SUPABASE_SETUP.md.
 --
--- This file intentionally stays lightweight. Full production/Supabase schema
--- lives in supabase/schema.sql and is managed separately.
---
--- Planned / future tables (stubs exist below; evolve gradually — see DATA_LAYER_PLAN.md):
---   users
---   churches
---   members
---   first_timers
---   follow_ups
---   foundation_students
---   foundation_class_groups   (also named foundation_classes historically)
---   foundation_teachers
---   foundation_lesson_sessions
---   foundation_test_submissions
---   foundation_final_exams
---   finance_records
---   requisitions
---   notifications
---   cell_groups
---   cells
---   cell_report_submissions
---   media_technicians
---   media_schedules
---
--- Application data access is prepared in src/data (VITE_DATA_SOURCE).
--- The browser does NOT query this DB directly yet.
+-- Browser NEVER connects here directly.
+-- Frontend uses VITE_DATA_SOURCE=mock|local until pilots migrate to supabase/api.
 -- ============================================================================
 
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- ---------------------------------------------------------------------------
--- Health / meta (proves the database was initialized)
+-- Helpers
 -- ---------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.update_updated_at_column()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$;
+
 CREATE TABLE IF NOT EXISTS public.schema_meta (
   key   text PRIMARY KEY,
   value text NOT NULL,
@@ -44,204 +31,391 @@ CREATE TABLE IF NOT EXISTS public.schema_meta (
 );
 
 INSERT INTO public.schema_meta (key, value)
-VALUES ('app', 'ce_dashboard'), ('env', 'docker_dev')
-ON CONFLICT (key) DO NOTHING;
+VALUES
+  ('app', 'ce_dashboard'),
+  ('env', 'docker_dev'),
+  ('backend_phase', '1_foundation')
+ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now();
 
 -- ---------------------------------------------------------------------------
--- Placeholder stubs (minimal structure for future migrations)
+-- CORE: roles
 -- ---------------------------------------------------------------------------
-
--- users (application accounts; may later map to Supabase auth.users)
-CREATE TABLE IF NOT EXISTS public.users (
-  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  email       text UNIQUE,
-  full_name   text,
-  role        text,
-  is_active   boolean NOT NULL DEFAULT true,
-  created_at  timestamptz NOT NULL DEFAULT now(),
-  updated_at  timestamptz NOT NULL DEFAULT now()
-);
-
--- churches
-CREATE TABLE IF NOT EXISTS public.churches (
-  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  name        text NOT NULL,
-  province    text,
-  city        text,
-  is_active   boolean NOT NULL DEFAULT true,
-  created_at  timestamptz NOT NULL DEFAULT now(),
-  updated_at  timestamptz NOT NULL DEFAULT now()
-);
-
--- members
-CREATE TABLE IF NOT EXISTS public.members (
-  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  church_id   uuid REFERENCES public.churches (id) ON DELETE SET NULL,
-  full_name   text NOT NULL,
-  phone       text,
-  email       text,
-  created_at  timestamptz NOT NULL DEFAULT now(),
-  updated_at  timestamptz NOT NULL DEFAULT now()
-);
-
--- first_timers
-CREATE TABLE IF NOT EXISTS public.first_timers (
-  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  church_id   uuid REFERENCES public.churches (id) ON DELETE SET NULL,
-  full_name   text NOT NULL,
-  phone       text,
-  notes       text,
-  created_at  timestamptz NOT NULL DEFAULT now(),
-  updated_at  timestamptz NOT NULL DEFAULT now()
-);
-
--- follow_ups
-CREATE TABLE IF NOT EXISTS public.follow_ups (
+CREATE TABLE IF NOT EXISTS public.roles (
   id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  first_timer_id  uuid REFERENCES public.first_timers (id) ON DELETE CASCADE,
-  status          text,
-  notes           text,
-  due_at          timestamptz,
+  name            text NOT NULL UNIQUE,
+  display_name    text,
+  level           integer DEFAULT 0,
+  default_scope   text DEFAULT 'church',
+  is_system_role  boolean NOT NULL DEFAULT false,
+  status          text NOT NULL DEFAULT 'Active',
+  metadata        jsonb NOT NULL DEFAULT '{}'::jsonb,
   created_at      timestamptz NOT NULL DEFAULT now(),
-  updated_at      timestamptz NOT NULL DEFAULT now()
+  updated_at      timestamptz NOT NULL DEFAULT now(),
+  created_by      uuid,
+  updated_by      uuid
 );
 
--- foundation_students
-CREATE TABLE IF NOT EXISTS public.foundation_students (
-  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  full_name   text NOT NULL,
-  church_id   uuid REFERENCES public.churches (id) ON DELETE SET NULL,
-  status      text,
-  created_at  timestamptz NOT NULL DEFAULT now(),
-  updated_at  timestamptz NOT NULL DEFAULT now()
+DROP TRIGGER IF EXISTS trg_roles_updated_at ON public.roles;
+CREATE TRIGGER trg_roles_updated_at
+  BEFORE UPDATE ON public.roles
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+-- ---------------------------------------------------------------------------
+-- CORE: churches
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.churches (
+  id                uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  church_name       text NOT NULL,
+  public_name       text,
+  type              text,
+  province          text,
+  city              text,
+  address           text,
+  pastor_in_charge  text,
+  phone_primary     text,
+  email             text,
+  service_times     jsonb NOT NULL DEFAULT '[]'::jsonb,
+  status            text NOT NULL DEFAULT 'Active',
+  metadata          jsonb NOT NULL DEFAULT '{}'::jsonb,
+  created_at        timestamptz NOT NULL DEFAULT now(),
+  updated_at        timestamptz NOT NULL DEFAULT now(),
+  created_by        uuid,
+  updated_by        uuid
 );
 
--- foundation_class_groups (cohorts / class groups)
-CREATE TABLE IF NOT EXISTS public.foundation_class_groups (
-  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  name        text NOT NULL,
-  sequence    int,
-  created_at  timestamptz NOT NULL DEFAULT now()
+-- Compatibility for older local schema that used "name"
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'churches' AND column_name = 'name'
+  ) AND NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'churches' AND column_name = 'church_name'
+  ) THEN
+    ALTER TABLE public.churches RENAME COLUMN name TO church_name;
+  END IF;
+EXCEPTION WHEN OTHERS THEN
+  NULL;
+END $$;
+
+DROP TRIGGER IF EXISTS trg_churches_updated_at ON public.churches;
+CREATE TRIGGER trg_churches_updated_at
+  BEFORE UPDATE ON public.churches
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+-- ---------------------------------------------------------------------------
+-- CORE: staff_members
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.staff_members (
+  id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  staff_code      text,
+  full_name       text NOT NULL,
+  phone           text,
+  email           text,
+  church_id       uuid REFERENCES public.churches (id) ON DELETE SET NULL,
+  department_id   uuid,
+  role_title      text,
+  supervisor_id   uuid,
+  status          text NOT NULL DEFAULT 'Active',
+  metadata        jsonb NOT NULL DEFAULT '{}'::jsonb,
+  created_at      timestamptz NOT NULL DEFAULT now(),
+  updated_at      timestamptz NOT NULL DEFAULT now(),
+  created_by      uuid,
+  updated_by      uuid
 );
 
--- Alias table name kept for older drafts (empty shell; prefer foundation_class_groups)
-CREATE TABLE IF NOT EXISTS public.foundation_classes (
-  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  name        text NOT NULL,
-  sequence    int,
-  created_at  timestamptz NOT NULL DEFAULT now()
+DROP TRIGGER IF EXISTS trg_staff_members_updated_at ON public.staff_members;
+CREATE TRIGGER trg_staff_members_updated_at
+  BEFORE UPDATE ON public.staff_members
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+-- ---------------------------------------------------------------------------
+-- CORE: users (app profile; auth_user_id maps to Supabase auth.users later)
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.users (
+  id                  uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  auth_user_id        uuid UNIQUE,
+  staff_id            uuid REFERENCES public.staff_members (id) ON DELETE SET NULL,
+  full_name           text,
+  email               text UNIQUE,
+  phone               text,
+  role_id             uuid REFERENCES public.roles (id) ON DELETE SET NULL,
+  church_id           uuid REFERENCES public.churches (id) ON DELETE SET NULL,
+  department_id       uuid,
+  status              text NOT NULL DEFAULT 'Active',
+  preferred_language  text DEFAULT 'pt',
+  last_login_at       timestamptz,
+  metadata            jsonb NOT NULL DEFAULT '{}'::jsonb,
+  created_at          timestamptz NOT NULL DEFAULT now(),
+  updated_at          timestamptz NOT NULL DEFAULT now(),
+  created_by          uuid,
+  updated_by          uuid
 );
 
--- foundation_teachers
-CREATE TABLE IF NOT EXISTS public.foundation_teachers (
-  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  full_name   text NOT NULL,
-  phone       text,
-  created_at  timestamptz NOT NULL DEFAULT now()
+DROP TRIGGER IF EXISTS trg_users_updated_at ON public.users;
+CREATE TRIGGER trg_users_updated_at
+  BEFORE UPDATE ON public.users
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+-- ---------------------------------------------------------------------------
+-- CORE: permissions
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.permissions (
+  id                      uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  role_id                 uuid REFERENCES public.roles (id) ON DELETE CASCADE,
+  module                  text NOT NULL,
+  can_view                boolean NOT NULL DEFAULT false,
+  can_create              boolean NOT NULL DEFAULT false,
+  can_edit                boolean NOT NULL DEFAULT false,
+  can_delete              boolean NOT NULL DEFAULT false,
+  can_approve             boolean NOT NULL DEFAULT false,
+  can_verify              boolean NOT NULL DEFAULT false,
+  can_release_resources   boolean NOT NULL DEFAULT false,
+  can_export              boolean NOT NULL DEFAULT false,
+  can_manage_settings     boolean NOT NULL DEFAULT false,
+  scope                   text DEFAULT 'church',
+  conditions              jsonb NOT NULL DEFAULT '{}'::jsonb,
+  is_sensitive            boolean NOT NULL DEFAULT false,
+  metadata                jsonb NOT NULL DEFAULT '{}'::jsonb,
+  created_at              timestamptz NOT NULL DEFAULT now(),
+  updated_at              timestamptz NOT NULL DEFAULT now()
 );
 
--- foundation_lesson_sessions
-CREATE TABLE IF NOT EXISTS public.foundation_lesson_sessions (
-  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  class_group_id uuid REFERENCES public.foundation_class_groups (id) ON DELETE SET NULL,
-  class_id    uuid REFERENCES public.foundation_classes (id) ON DELETE SET NULL,
-  held_at     timestamptz,
-  notes       text,
-  created_at  timestamptz NOT NULL DEFAULT now()
+CREATE INDEX IF NOT EXISTS idx_permissions_role_module ON public.permissions (role_id, module);
+
+DROP TRIGGER IF EXISTS trg_permissions_updated_at ON public.permissions;
+CREATE TRIGGER trg_permissions_updated_at
+  BEFORE UPDATE ON public.permissions
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+-- ---------------------------------------------------------------------------
+-- CORE: members
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.members (
+  id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  member_code     text,
+  full_name       text NOT NULL,
+  phone           text,
+  email           text,
+  church_id       uuid REFERENCES public.churches (id) ON DELETE SET NULL,
+  cell_group_id   uuid,
+  cell_id         uuid,
+  status          text NOT NULL DEFAULT 'Active',
+  metadata        jsonb NOT NULL DEFAULT '{}'::jsonb,
+  created_at      timestamptz NOT NULL DEFAULT now(),
+  updated_at      timestamptz NOT NULL DEFAULT now(),
+  created_by      uuid,
+  updated_by      uuid
 );
 
--- foundation_test_submissions
-CREATE TABLE IF NOT EXISTS public.foundation_test_submissions (
-  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  student_id  uuid REFERENCES public.foundation_students (id) ON DELETE CASCADE,
-  score       numeric,
-  submitted_at timestamptz,
-  created_at  timestamptz NOT NULL DEFAULT now()
+DROP TRIGGER IF EXISTS trg_members_updated_at ON public.members;
+CREATE TRIGGER trg_members_updated_at
+  BEFORE UPDATE ON public.members
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+-- ---------------------------------------------------------------------------
+-- CORE: first_timers
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.first_timers (
+  id                    uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  full_name             text NOT NULL,
+  phone                 text,
+  email                 text,
+  church_id             uuid REFERENCES public.churches (id) ON DELETE SET NULL,
+  visit_date            date,
+  born_again            boolean DEFAULT false,
+  foundation_interest   boolean DEFAULT false,
+  follow_up_status      text,
+  converted_to_member   boolean DEFAULT false,
+  member_id             uuid REFERENCES public.members (id) ON DELETE SET NULL,
+  status                text NOT NULL DEFAULT 'Active',
+  metadata              jsonb NOT NULL DEFAULT '{}'::jsonb,
+  created_at            timestamptz NOT NULL DEFAULT now(),
+  updated_at            timestamptz NOT NULL DEFAULT now(),
+  created_by            uuid,
+  updated_by            uuid
 );
 
--- foundation_final_exams
-CREATE TABLE IF NOT EXISTS public.foundation_final_exams (
-  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  student_id  uuid REFERENCES public.foundation_students (id) ON DELETE CASCADE,
-  score       numeric,
-  passed      boolean,
-  taken_at    timestamptz,
-  created_at  timestamptz NOT NULL DEFAULT now()
-);
+DROP TRIGGER IF EXISTS trg_first_timers_updated_at ON public.first_timers;
+CREATE TRIGGER trg_first_timers_updated_at
+  BEFORE UPDATE ON public.first_timers
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
--- finance_records
+-- ---------------------------------------------------------------------------
+-- PILOT: finance_records
+-- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.finance_records (
-  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  church_id   uuid REFERENCES public.churches (id) ON DELETE SET NULL,
-  category    text,
-  amount      numeric,
-  recorded_at date,
-  notes       text,
-  created_at  timestamptz NOT NULL DEFAULT now()
+  id                      uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  transaction_type        text,
+  contribution_group      text,
+  contribution_category   text,
+  partnership_arm_id      uuid,
+  partnership_arm_name    text,
+  contributor_name        text,
+  contributor_phone       text,
+  member_id               uuid REFERENCES public.members (id) ON DELETE SET NULL,
+  church_id               uuid REFERENCES public.churches (id) ON DELETE SET NULL,
+  cell_group_id           uuid,
+  cell_id                 uuid,
+  amount                  numeric(14, 2) DEFAULT 0,
+  currency                text DEFAULT 'MZN',
+  payment_method          text,
+  payment_reference       text,
+  payment_date            date,
+  status                  text NOT NULL DEFAULT 'Pending Verification',
+  source                  text,
+  verified_by             uuid,
+  verified_at             timestamptz,
+  metadata                jsonb NOT NULL DEFAULT '{}'::jsonb,
+  created_at              timestamptz NOT NULL DEFAULT now(),
+  updated_at              timestamptz NOT NULL DEFAULT now(),
+  created_by              uuid,
+  updated_by              uuid
 );
 
--- requisitions
-CREATE TABLE IF NOT EXISTS public.requisitions (
-  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  church_id   uuid REFERENCES public.churches (id) ON DELETE SET NULL,
-  title       text,
-  status      text,
-  amount      numeric,
-  created_at  timestamptz NOT NULL DEFAULT now(),
-  updated_at  timestamptz NOT NULL DEFAULT now()
+CREATE INDEX IF NOT EXISTS idx_finance_records_church ON public.finance_records (church_id);
+CREATE INDEX IF NOT EXISTS idx_finance_records_status ON public.finance_records (status);
+
+DROP TRIGGER IF EXISTS trg_finance_records_updated_at ON public.finance_records;
+CREATE TRIGGER trg_finance_records_updated_at
+  BEFORE UPDATE ON public.finance_records
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+-- ---------------------------------------------------------------------------
+-- PILOT: public_giving_submissions
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.public_giving_submissions (
+  id                          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  submission_group_id         text,
+  full_name                   text,
+  phone                       text,
+  email                       text,
+  church_id                   uuid REFERENCES public.churches (id) ON DELETE SET NULL,
+  cell_group_id               uuid,
+  cell_id                     uuid,
+  contributions               jsonb NOT NULL DEFAULT '[]'::jsonb,
+  total_amount                numeric(14, 2) DEFAULT 0,
+  currency                    text DEFAULT 'MZN',
+  payment_method              text,
+  payment_reference           text,
+  payment_date                date,
+  proof_file_url              text,
+  status                      text NOT NULL DEFAULT 'Pending Verification',
+  created_finance_record_ids  jsonb NOT NULL DEFAULT '[]'::jsonb,
+  metadata                    jsonb NOT NULL DEFAULT '{}'::jsonb,
+  created_at                  timestamptz NOT NULL DEFAULT now(),
+  updated_at                  timestamptz NOT NULL DEFAULT now(),
+  created_by                  uuid,
+  updated_by                  uuid
 );
 
--- notifications
+DROP TRIGGER IF EXISTS trg_public_giving_updated_at ON public.public_giving_submissions;
+CREATE TRIGGER trg_public_giving_updated_at
+  BEFORE UPDATE ON public.public_giving_submissions
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+-- ---------------------------------------------------------------------------
+-- PILOT: documents (storage metadata)
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.documents (
+  id                uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  module            text,
+  entity_type       text,
+  entity_id         uuid,
+  document_type     text,
+  file_url          text,
+  file_name         text,
+  storage_bucket    text,
+  storage_path      text,
+  status            text NOT NULL DEFAULT 'Uploaded',
+  uploaded_by       uuid,
+  verified_by       uuid,
+  verified_at       timestamptz,
+  metadata          jsonb NOT NULL DEFAULT '{}'::jsonb,
+  created_at        timestamptz NOT NULL DEFAULT now(),
+  updated_at        timestamptz NOT NULL DEFAULT now()
+);
+
+DROP TRIGGER IF EXISTS trg_documents_updated_at ON public.documents;
+CREATE TRIGGER trg_documents_updated_at
+  BEFORE UPDATE ON public.documents
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+-- ---------------------------------------------------------------------------
+-- CORE: notifications
+-- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.notifications (
-  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id     uuid REFERENCES public.users (id) ON DELETE CASCADE,
-  title       text,
-  body        text,
-  read_at     timestamptz,
-  created_at  timestamptz NOT NULL DEFAULT now()
+  id                        uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  title                     text,
+  message                   text,
+  type                      text DEFAULT 'info',
+  module                    text,
+  entity_type               text,
+  entity_id                 uuid,
+  priority                  text DEFAULT 'normal',
+  recipient_user_id         uuid,
+  recipient_role_id         uuid,
+  recipient_department_id   uuid,
+  recipient_church_id       uuid,
+  scope                     text DEFAULT 'national',
+  action_url                text,
+  is_read                   boolean NOT NULL DEFAULT false,
+  read_at                   timestamptz,
+  metadata                  jsonb NOT NULL DEFAULT '{}'::jsonb,
+  created_at                timestamptz NOT NULL DEFAULT now(),
+  updated_at                timestamptz NOT NULL DEFAULT now()
 );
 
--- cell_groups
-CREATE TABLE IF NOT EXISTS public.cell_groups (
-  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  church_id   uuid REFERENCES public.churches (id) ON DELETE SET NULL,
-  name        text NOT NULL,
-  created_at  timestamptz NOT NULL DEFAULT now()
+CREATE INDEX IF NOT EXISTS idx_notifications_recipient_user ON public.notifications (recipient_user_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_unread ON public.notifications (is_read) WHERE is_read = false;
+
+DROP TRIGGER IF EXISTS trg_notifications_updated_at ON public.notifications;
+CREATE TRIGGER trg_notifications_updated_at
+  BEFORE UPDATE ON public.notifications
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+-- ---------------------------------------------------------------------------
+-- CORE: audit_logs
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.audit_logs (
+  id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id         uuid,
+  user_name       text,
+  user_role       text,
+  module          text,
+  action          text,
+  entity_type     text,
+  entity_id       text,
+  entity_label    text,
+  old_value       jsonb,
+  new_value       jsonb,
+  description     text,
+  severity        text DEFAULT 'info',
+  metadata        jsonb NOT NULL DEFAULT '{}'::jsonb,
+  created_at      timestamptz NOT NULL DEFAULT now()
 );
 
--- cells
-CREATE TABLE IF NOT EXISTS public.cells (
-  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  group_id    uuid REFERENCES public.cell_groups (id) ON DELETE SET NULL,
-  name        text NOT NULL,
-  leader_name text,
-  created_at  timestamptz NOT NULL DEFAULT now()
-);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_module ON public.audit_logs (module);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_created ON public.audit_logs (created_at DESC);
 
--- cell_report_submissions
-CREATE TABLE IF NOT EXISTS public.cell_report_submissions (
-  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  cell_id     uuid REFERENCES public.cells (id) ON DELETE CASCADE,
-  week_of     date,
-  attendance  int,
-  notes       text,
-  created_at  timestamptz NOT NULL DEFAULT now()
-);
-
--- media_technicians
-CREATE TABLE IF NOT EXISTS public.media_technicians (
-  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  full_name   text NOT NULL,
-  phone       text,
-  created_at  timestamptz NOT NULL DEFAULT now()
-);
-
--- media_schedules
-CREATE TABLE IF NOT EXISTS public.media_schedules (
+-- ---------------------------------------------------------------------------
+-- CORE: system_settings
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.system_settings (
   id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  technician_id uuid REFERENCES public.media_technicians (id) ON DELETE SET NULL,
-  service_date  date,
-  role          text,
-  notes         text,
-  created_at    timestamptz NOT NULL DEFAULT now()
+  key           text NOT NULL UNIQUE,
+  value         jsonb NOT NULL DEFAULT 'null'::jsonb,
+  value_type    text DEFAULT 'string',
+  module        text DEFAULT 'global',
+  is_sensitive  boolean NOT NULL DEFAULT false,
+  is_system     boolean NOT NULL DEFAULT false,
+  metadata      jsonb NOT NULL DEFAULT '{}'::jsonb,
+  created_at    timestamptz NOT NULL DEFAULT now(),
+  updated_at    timestamptz NOT NULL DEFAULT now()
 );
+
+DROP TRIGGER IF EXISTS trg_system_settings_updated_at ON public.system_settings;
+CREATE TRIGGER trg_system_settings_updated_at
+  BEFORE UPDATE ON public.system_settings
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();

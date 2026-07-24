@@ -77,22 +77,59 @@ docker compose up -d
 # → http://localhost:5173
 ```
 
-### Supabase (database backend)
+### Backend/Supabase Foundation (Phase 1)
 
-PostgreSQL, auth, and file storage run on **Supabase** — not on GitHub Pages.
+The **frontend still uses mock/local** data sources. Supabase and API are **prepared but disabled** by default.
 
-See **[SUPABASE_SETUP.md](SUPABASE_SETUP.md)** for project creation, schema, RLS, storage, and env variables.
-
-Quick start:
+| Item | Location |
+|------|----------|
+| Core SQL schema / seed / RLS / storage notes | `database/` |
+| Supabase migrations & CLI example | `supabase/` |
+| Public client + generic helpers | `src/data/adapters/supabase/` |
+| REST client placeholder | `src/data/adapters/api/` |
+| Architecture & roadmap docs | `docs/backend/` |
 
 ```bash
 cp .env.example .env
-# fill VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY
+# Keep defaults for local/GitHub Pages:
+#   VITE_DATA_SOURCE=local   (or mock)
+#   VITE_ENABLE_SUPABASE=false
+#   VITE_ENABLE_REAL_AUTH=false
+# Never put SUPABASE_SERVICE_ROLE_KEY or DATABASE_URL into VITE_* / browser code.
+
+npm install
+npm run build
+npm run test:backend-foundation
+npm run test:data-layer-all
+npm run db:schema:check
+```
+
+Optional future flags (leave off until pilots):
+
+```env
+VITE_ENABLE_SUPABASE=true
+VITE_SUPABASE_URL=https://YOUR_REF.supabase.co
+VITE_SUPABASE_ANON_KEY=your_anon_key_only
+VITE_API_BASE_URL=http://localhost:4000
+```
+
+See **[docs/backend/BACKEND_ARCHITECTURE_PLAN.md](docs/backend/BACKEND_ARCHITECTURE_PLAN.md)**, **[docs/backend/MIGRATION_ROADMAP.md](docs/backend/MIGRATION_ROADMAP.md)**, and **[SUPABASE_SETUP.md](SUPABASE_SETUP.md)**.
+
+Without env variables, the dashboard keeps using **mock / localStorage** data.
+
+### Supabase (database backend — future pilots)
+
+PostgreSQL, auth, and file storage will run on **Supabase** (or an API → Postgres) — not on GitHub Pages.
+
+Quick start when cloud is ready:
+
+```bash
+cp .env.example .env
+# fill VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY (public only)
+# set VITE_ENABLE_SUPABASE=true only for client experiments
 npm install
 npm run build:supabase
 ```
-
-Without env variables, the dashboard keeps using **localStorage mock data**.
 
 ### Publishing updates
 

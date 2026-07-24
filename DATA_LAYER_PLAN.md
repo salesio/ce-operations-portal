@@ -1349,3 +1349,55 @@ npm run test:settings-notifications-data
 npm run test:data-layer-all
 ```
 
+---
+
+## Backend Phase 1 — Foundation
+
+**Status: prepared (no domain auto-migration)**
+
+This phase adds backend/API/Supabase **foundation only**. The app continues on:
+
+```env
+VITE_DATA_SOURCE=mock
+# or
+VITE_DATA_SOURCE=local
+```
+
+### What was added
+
+| Piece | Role |
+|-------|------|
+| `database/schema.sql` | Core + pilot tables (uuid, audit columns, triggers) |
+| `database/seed.sql` | Roles, HQ church, default settings (pt / MZN / Maputo) |
+| `database/rls.sql` | RLS principles + stubs (not forced) |
+| `database/storage.sql` | Bucket plan notes |
+| `src/data/adapters/supabase/*` | Public client, config, types, generic CRUD helpers |
+| `src/data/adapters/api/*` | Fetch wrapper, config, generic REST helpers |
+| `supabaseProvider` / `apiProvider` | Placeholders + `getInfo()` + generic methods |
+| `docs/backend/*` | Architecture, Auth, RLS, Storage, Migration roadmap |
+| Feature flags | `VITE_ENABLE_SUPABASE`, `REAL_AUTH`, `STORAGE`, `RLS` (default false) |
+
+### What was **not** done
+
+- No module switched off mock/local automatically  
+- No service role in frontend  
+- No browser → PostgreSQL  
+- No full real Auth across modules  
+- No production deploy  
+
+### Provider control
+
+`VITE_DATA_SOURCE` still selects the active provider.  
+`supabase` / `api` remain stubs for domain collections; foundation helpers exist for future pilots.
+
+### How to test foundation
+
+```bash
+npm run build
+npm run test:backend-foundation
+npm run db:schema:check
+npm run test:data-layer-all
+```
+
+See **[docs/backend/BACKEND_ARCHITECTURE_PLAN.md](docs/backend/BACKEND_ARCHITECTURE_PLAN.md)** and **[docs/backend/MIGRATION_ROADMAP.md](docs/backend/MIGRATION_ROADMAP.md)**.
+

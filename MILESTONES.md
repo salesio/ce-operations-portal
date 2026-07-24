@@ -19,9 +19,11 @@ Browser does **not** connect to PostgreSQL directly. Supabase/API = future phase
 | ministry-materials-flow-v1 | Ministry Materials | Done |
 | programs-events-flow-v1 | Programs & Events | Done |
 | settings-notifications-v1 | Settings + Notification Center | Done |
+| backend-foundation-v1 | Backend Phase 1 — schema, adapters, docs, env | Done |
 
 ## Storage model
 
 - Isolated keys: `ce-data-layer:*`
 - Dual-write bridges keep UI state + data layer in sync
 - localStorage is **pilot/dev only**
+- PostgreSQL / Supabase schema prepared under `database/` (not live for UI modules yet)

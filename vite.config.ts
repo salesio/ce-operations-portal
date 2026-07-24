@@ -15,6 +15,11 @@ export default defineConfig(({ mode, command }) => {
     "import.meta.env.VITE_SUPABASE_ANON_KEY": JSON.stringify(env.VITE_SUPABASE_ANON_KEY || ""),
     "import.meta.env.VITE_DATA_SOURCE": JSON.stringify(env.VITE_DATA_SOURCE || "mock"),
     "import.meta.env.VITE_API_BASE_URL": JSON.stringify(env.VITE_API_BASE_URL || ""),
+    "import.meta.env.VITE_APP_ENV": JSON.stringify(env.VITE_APP_ENV || "development"),
+    "import.meta.env.VITE_ENABLE_SUPABASE": JSON.stringify(env.VITE_ENABLE_SUPABASE || "false"),
+    "import.meta.env.VITE_ENABLE_REAL_AUTH": JSON.stringify(env.VITE_ENABLE_REAL_AUTH || "false"),
+    "import.meta.env.VITE_ENABLE_STORAGE": JSON.stringify(env.VITE_ENABLE_STORAGE || "false"),
+    "import.meta.env.VITE_ENABLE_RLS": JSON.stringify(env.VITE_ENABLE_RLS || "false"),
   };
 
   // Local / Docker development: serve the static dashboard.

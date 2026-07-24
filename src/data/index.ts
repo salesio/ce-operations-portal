@@ -1,13 +1,46 @@
 export type { DataSourceName, DataProvider, DataResult, EntityRepository, ListOptions } from "./types/repository";
 export type * from "./types/entities";
 
-export { getDataSource, getApiBaseUrl, listDataSources } from "./config";
+export {
+  getDataSource,
+  getApiBaseUrl,
+  getAppEnv,
+  getBackendFeatureFlags,
+  listDataSources,
+} from "./config";
 export { getDataProvider, resetDataProvider, getActiveDataSource } from "./dataProvider";
 
 export { createMockProvider } from "./adapters/mockProvider";
 export { createLocalStorageProvider } from "./adapters/localStorageProvider";
-export { createApiProvider } from "./adapters/apiProvider";
-export { createSupabaseProvider } from "./adapters/supabaseProvider";
+export { createApiProvider, getApiProviderInfo } from "./adapters/apiProvider";
+export {
+  createSupabaseProvider,
+  getSupabaseProviderInfo,
+} from "./adapters/supabaseProvider";
+
+/** Backend Phase 1 foundation helpers (not wired to domain modules) */
+export {
+  getSupabaseFoundationClient,
+  getSupabaseInfo,
+  resetSupabaseFoundationClient,
+  getSupabaseEnvConfig,
+} from "./adapters/supabase/supabaseClient";
+export {
+  supabaseList,
+  supabaseGetById,
+  supabaseCreate,
+  supabaseUpdate,
+  supabaseDelete,
+} from "./adapters/supabase/supabaseRepositoryBase";
+export { apiClient } from "./adapters/api/apiClient";
+export { getApiEnvConfig, getApiConnectionInfo } from "./adapters/api/apiConfig";
+export {
+  apiList,
+  apiGetById,
+  apiCreate,
+  apiUpdate,
+  apiDelete,
+} from "./adapters/api/apiRepositoryBase";
 
 export {
   listChurches,

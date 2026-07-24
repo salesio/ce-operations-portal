@@ -1,0 +1,59 @@
+# Migration Roadmap — Backend / Supabase / API
+
+localStorage / mock remain valid for **dev and prototype** until each domain pilot is explicitly moved.
+
+## Phase 1 — Backend foundation (current)
+
+- [x] `database/` schema, seed, rls, storage plans
+- [x] Supabase/API adapter foundation
+- [x] Env vars + feature flags
+- [x] Docs under `docs/backend/`
+- [x] Smoke: `test:backend-foundation`
+- [ ] No domain auto-migration
+
+## Phase 2 — Auth real + Users/Roles pilot
+
+- Supabase Auth + `users.auth_user_id`
+- Map roles/permissions to RLS helpers
+- Keep demo fallback until cutover
+
+## Phase 3 — Churches + Members pilot
+
+- First production-shaped tables over Supabase or API
+- Dual-read / dual-write period optional
+
+## Phase 4 — First Timers + Follow-Up
+
+- Visit conversion pipeline on remote store
+
+## Phase 5 — Finance + Public Giving + Storage proofs
+
+- Align with existing finance bridge
+- Private bucket `finance-proofs` + signed URLs
+
+## Phase 6 — Foundation School
+
+- Classes, students, exams, attachments
+
+## Phase 7 — Remaining modules by domain
+
+- Cells, Requisitions, Venue, Staff, Media, Counseling, Sacraments, FEVO, Prison, Materials, Programs, Settings/Notifications
+
+## Phase 8 — Reports + audit + notifications real-time
+
+- Aggregates, audit completeness, optional realtime channels
+
+## Phase 9 — VPS / API deploy
+
+- Optional self-hosted API + Postgres
+- `VITE_DATA_SOURCE=api` + hardened secrets
+
+---
+
+## Rules for every phase
+
+1. One domain pilot at a time  
+2. Do not remove mock/local until pilot green  
+3. Never put service role or `DATABASE_URL` in the browser  
+4. Run `npm run build` + `npm run test:data-layer-all` after changes  
+5. Document dual-write / hydrate for UI bridges  

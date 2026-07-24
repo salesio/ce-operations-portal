@@ -1,42 +1,36 @@
-# Database (local Docker PostgreSQL)
-
-This folder holds **local development** SQL for the Docker Compose Postgres service.
+# Database (local Docker PostgreSQL + foundation SQL)
 
 | File | Purpose |
 |------|---------|
-| `schema.sql` | Placeholder tables for future church ops domains |
-| `seed.sql` | Minimal sample rows for connectivity checks |
+| `schema.sql` | Backend Phase 1 core + pilot tables |
+| `seed.sql` | Dev roles, HQ church, default settings |
+| `rls.sql` | RLS principles / stubs (not fully enforced yet) |
+| `storage.sql` | Storage bucket plan notes |
 | `README.md` | This file |
 
-## When scripts run
+## Relation to app
 
-On **first** Postgres container start only, Docker mounts these into:
+- Browser uses **data layer** (`VITE_DATA_SOURCE=mock|local`) today.
+- This SQL is for **local Postgres** (Docker) and future **Supabase**.
+- **Never** point the browser at `DATABASE_URL` with a superuser password.
 
-`/docker-entrypoint-initdb.d/`
+## Docker init
 
-Re-running `docker compose up` does **not** re-apply them if the volume already exists.
-
-To re-initialize:
+On first container start, scripts under `/docker-entrypoint-initdb.d/` run once.
 
 ```bash
 docker compose down -v
 docker compose up -d
 ```
 
-## Connection
+## Connection (dev only)
 
-| From | Connection string |
-|------|-------------------|
-| Host (apps, GUI tools) | `postgresql://ce_admin:ce_dev_password@localhost:5433/ce_dashboard` |
-| Other Docker services | `postgresql://ce_admin:ce_dev_password@postgres:5432/ce_dashboard` |
+| From | URL |
+|------|-----|
+| Host | `postgresql://ce_admin:ce_dev_password@localhost:5433/ce_dashboard` |
+| Docker network | `postgresql://ce_admin:ce_dev_password@postgres:5432/ce_dashboard` |
 
-## Relation to Supabase
+## Supabase
 
-- **Local Docker Postgres** → this folder (`database/`)
-- **Supabase cloud schema** → `../supabase/schema.sql` + `SUPABASE_SETUP.md`
-
-The dashboard still works with **localStorage mock data** or Supabase; wiring the app to this local Postgres is a future step.
-
-## Planned tables
-
-See comments at the top of `schema.sql` for the full planned list (members, first timers, foundation school, finance, cells, media, etc.).
+Cloud migrations / seeds live under `../supabase/`.  
+Setup guide: `../SUPABASE_SETUP.md` and `../docs/backend/SUPABASE_SETUP_PLAN.md`.

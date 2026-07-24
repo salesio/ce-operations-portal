@@ -2,6 +2,23 @@ import type { DataSourceName } from "./types/repository";
 
 const VALID_SOURCES: DataSourceName[] = ["mock", "local", "api", "supabase"];
 
+function readViteEnv(name: string): string {
+  try {
+    const runtime =
+      typeof window !== "undefined"
+        ? (window as Window & { __CE_ENV__?: Record<string, string> }).__CE_ENV__?.[name]
+        : undefined;
+    const fromEnv = (import.meta.env as Record<string, string | undefined>)[name];
+    return String(runtime || fromEnv || "").trim();
+  } catch {
+    return "";
+  }
+}
+
+function flagTrue(name: string): boolean {
+  return /^(1|true|yes|on)$/i.test(readViteEnv(name));
+}
+
 function normalizeSource(raw: string | undefined | null): DataSourceName {
   const value = (raw || "mock").trim().toLowerCase();
   if (VALID_SOURCES.includes(value as DataSourceName)) {
@@ -35,6 +52,20 @@ export function getApiBaseUrl(): string {
     typeof window !== "undefined" ? window.__CE_ENV__?.VITE_API_BASE_URL : undefined;
   const fromEnv = import.meta.env.VITE_API_BASE_URL as string | undefined;
   return (runtime || fromEnv || "").trim().replace(/\/$/, "");
+}
+
+export function getAppEnv(): string {
+  return readViteEnv("VITE_APP_ENV") || "development";
+}
+
+/** Backend Phase 1 feature flags (all false by default). */
+export function getBackendFeatureFlags() {
+  return {
+    enableSupabase: flagTrue("VITE_ENABLE_SUPABASE"),
+    enableRealAuth: flagTrue("VITE_ENABLE_REAL_AUTH"),
+    enableStorage: flagTrue("VITE_ENABLE_STORAGE"),
+    enableRls: flagTrue("VITE_ENABLE_RLS"),
+  };
 }
 
 export function listDataSources(): DataSourceName[] {

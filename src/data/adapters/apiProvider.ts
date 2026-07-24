@@ -6,13 +6,22 @@ import type {
   ListOptions,
 } from "../types/repository";
 import { getApiBaseUrl } from "../config";
+import { apiClient } from "./api/apiClient";
+import { getApiConnectionInfo, getApiEnvConfig } from "./api/apiConfig";
+import {
+  apiCreate,
+  apiDelete,
+  apiGetById,
+  apiList,
+  apiUpdate,
+} from "./api/apiRepositoryBase";
 
 /**
  * Placeholder REST/API provider for future Node/Express (or similar) backend
- * backed by local Docker PostgreSQL.
+ * backed by local Docker PostgreSQL or hosted API.
  *
- * Not implemented yet — methods return a clear NOT_IMPLEMENTED result so the
- * dashboard keeps using mock/localStorage UI paths.
+ * Domain collections remain NOT_IMPLEMENTED until API pilots.
+ * Generic REST helpers + getInfo() are ready for foundation checks.
  */
 function createStubRepository<T>(collection: EntityCollectionName): EntityRepository<T> {
   const notReady = <R>(): DataResult<R> => ({
@@ -40,120 +49,151 @@ function createStubRepository<T>(collection: EntityCollectionName): EntityReposi
   };
 }
 
-export function createApiProvider(): DataProvider {
-  const names: EntityCollectionName[] = [
-    "users",
-    "churches",
-    "members",
-    "first_timers",
-    "follow_ups",
-    "foundation_students",
-    "foundation_teachers",
-    "foundation_class_groups",
-    "foundation_lesson_sessions",
-    "foundation_test_submissions",
-    "foundation_final_exams",
-    "finance_records",
-    "public_giving_submissions",
-    "finance_disbursements",
-    "requisitions",
-    "requisition_timeline",
-    "notifications",
-    "notification_templates",
-    "system_settings",
-    "global_categories",
-    "status_definitions",
-    "language_settings",
-    "notification_settings",
-    "ui_preferences",
-    "cell_groups",
-    "cells",
-    "cell_leaders",
-    "cell_report_submissions",
-    "media_technicians",
-    "media_schedules",
-    "media_roles",
-    "media_services",
-    "media_channels",
-    "media_performance",
-    "media_awards",
-    "counseling_requests",
-    "counseling_cases",
-    "counseling_appointments",
-    "counselors",
-    "counseling_feedback",
-    "counseling_referrals",
-    "baptisms",
-    "marriages",
-    "baby_dedications",
-    "sacrament_certificates",
-    "sacrament_documents",
-    "sacrament_appointments",
-    "fevo_weekly_configs",
-    "fevo_teams",
-    "fevo_activities",
-    "fevo_reports",
-    "fevo_missing_reports",
-    "fevo_follow_up_records",
-    "fevo_evangelism_records",
-    "fevo_visitation_records",
-    "fevo_prayer_records",
-    "prison_locations",
-    "prison_representatives",
-    "prison_services",
-    "prison_participants",
-    "prison_foundation_students",
-    "prison_weekly_agendas",
-    "prison_follow_ups",
-    "prison_reports",
-    "prison_materials_requests",
-    "ministry_materials_catalog",
-    "ministry_materials_stock",
-    "ministry_materials_stock_movements",
-    "ministry_materials_sales",
-    "ministry_materials_distributions",
-    "ministry_materials_requests",
-    "ministry_materials_funds",
-    "ministry_materials_reports",
-    "programs",
-    "program_sessions",
-    "program_teams",
-    "program_participants",
-    "program_registrations",
-    "program_resources",
-    "program_budgets",
-    "program_checklists",
-    "program_reports",
-    "inventory_items",
-    "inventory_movements",
-    "inventory_maintenance",
-    "venue_spaces",
-    "service_checklists",
-    "staff",
-    "staff_departments",
-    "staff_roles",
-    "staff_salaries",
-    "staff_performance",
-    "staff_documents",
-    "staff_attendance",
-    "roles",
-    "permissions",
-    "permission_templates",
-    "audit_logs",
-  ];
+export type ApiProviderInfo = ReturnType<typeof getApiConnectionInfo> & {
+  usingDatabaseUrlInBrowser: false;
+};
 
+export type ApiProviderExtras = {
+  getInfo: () => ApiProviderInfo;
+  client: typeof apiClient;
+  list: typeof apiList;
+  getById: typeof apiGetById;
+  create: typeof apiCreate;
+  update: typeof apiUpdate;
+  delete: typeof apiDelete;
+};
+
+const COLLECTION_NAMES: EntityCollectionName[] = [
+  "users",
+  "churches",
+  "members",
+  "first_timers",
+  "follow_ups",
+  "foundation_students",
+  "foundation_teachers",
+  "foundation_class_groups",
+  "foundation_lesson_sessions",
+  "foundation_test_submissions",
+  "foundation_final_exams",
+  "finance_records",
+  "public_giving_submissions",
+  "finance_disbursements",
+  "requisitions",
+  "requisition_timeline",
+  "notifications",
+  "notification_templates",
+  "system_settings",
+  "global_categories",
+  "status_definitions",
+  "language_settings",
+  "notification_settings",
+  "ui_preferences",
+  "cell_groups",
+  "cells",
+  "cell_leaders",
+  "cell_report_submissions",
+  "media_technicians",
+  "media_schedules",
+  "media_roles",
+  "media_services",
+  "media_channels",
+  "media_performance",
+  "media_awards",
+  "counseling_requests",
+  "counseling_cases",
+  "counseling_appointments",
+  "counselors",
+  "counseling_feedback",
+  "counseling_referrals",
+  "baptisms",
+  "marriages",
+  "baby_dedications",
+  "sacrament_certificates",
+  "sacrament_documents",
+  "sacrament_appointments",
+  "fevo_weekly_configs",
+  "fevo_teams",
+  "fevo_activities",
+  "fevo_reports",
+  "fevo_missing_reports",
+  "fevo_follow_up_records",
+  "fevo_evangelism_records",
+  "fevo_visitation_records",
+  "fevo_prayer_records",
+  "prison_locations",
+  "prison_representatives",
+  "prison_services",
+  "prison_participants",
+  "prison_foundation_students",
+  "prison_weekly_agendas",
+  "prison_follow_ups",
+  "prison_reports",
+  "prison_materials_requests",
+  "ministry_materials_catalog",
+  "ministry_materials_stock",
+  "ministry_materials_stock_movements",
+  "ministry_materials_sales",
+  "ministry_materials_distributions",
+  "ministry_materials_requests",
+  "ministry_materials_funds",
+  "ministry_materials_reports",
+  "programs",
+  "program_sessions",
+  "program_teams",
+  "program_participants",
+  "program_registrations",
+  "program_resources",
+  "program_budgets",
+  "program_checklists",
+  "program_reports",
+  "inventory_items",
+  "inventory_movements",
+  "inventory_maintenance",
+  "venue_spaces",
+  "service_checklists",
+  "staff",
+  "staff_departments",
+  "staff_roles",
+  "staff_salaries",
+  "staff_performance",
+  "staff_documents",
+  "staff_attendance",
+  "roles",
+  "permissions",
+  "permission_templates",
+  "audit_logs",
+];
+
+export function getApiProviderInfo(): ApiProviderInfo {
+  const base = getApiConnectionInfo();
+  return {
+    ...base,
+    usingDatabaseUrlInBrowser: false,
+  };
+}
+
+export function createApiProvider(): DataProvider & ApiProviderExtras {
   const map = Object.fromEntries(
-    names.map((n) => [n, createStubRepository(n)]),
+    COLLECTION_NAMES.map((n) => [n, createStubRepository(n)]),
   ) as Record<EntityCollectionName, EntityRepository<unknown>>;
 
   const baseUrl = getApiBaseUrl();
+  const cfg = getApiEnvConfig();
+  const info = getApiProviderInfo();
 
   return {
     name: "api",
-    description: baseUrl
-      ? `HTTP API placeholder (base: ${baseUrl}) — not wired yet.`
+    description: cfg.isConfigured
+      ? `HTTP API placeholder (base: ${baseUrl}) — domain repos not wired yet.`
       : "HTTP API placeholder — set VITE_API_BASE_URL when backend is ready.",
     isReady: () => false,
+    getInfo: getApiProviderInfo,
+    client: apiClient,
+    list: apiList,
+    getById: apiGetById,
+    create: apiCreate,
+    update: apiUpdate,
+    delete: apiDelete,
     users: map.users as EntityRepository<never>,
     churches: map.churches as EntityRepository<never>,
     members: map.members as EntityRepository<never>,
