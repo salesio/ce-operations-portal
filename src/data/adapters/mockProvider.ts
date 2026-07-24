@@ -32,6 +32,12 @@ import type {
   CounselingReferral,
   CounselingRequest,
   Counselor,
+  BabyDedication,
+  Baptism,
+  Marriage,
+  SacramentAppointment,
+  SacramentCertificate,
+  SacramentDocument,
   Member,
   Notification,
   Requisition,
@@ -94,6 +100,12 @@ import { COUNSELING_APPOINTMENTS_SEED } from "../seeds/counselingAppointmentsSee
 import { COUNSELORS_SEED } from "../seeds/counselorsSeed";
 import { COUNSELING_FEEDBACK_SEED } from "../seeds/counselingFeedbackSeed";
 import { COUNSELING_REFERRALS_SEED } from "../seeds/counselingReferralsSeed";
+import { BAPTISMS_SEED } from "../seeds/baptismsSeed";
+import { MARRIAGES_SEED } from "../seeds/marriagesSeed";
+import { BABY_DEDICATIONS_SEED } from "../seeds/babyDedicationsSeed";
+import { SACRAMENT_CERTIFICATES_SEED } from "../seeds/sacramentCertificatesSeed";
+import { SACRAMENT_DOCUMENTS_SEED } from "../seeds/sacramentDocumentsSeed";
+import { SACRAMENT_APPOINTMENTS_SEED } from "../seeds/sacramentAppointmentsSeed";
 import type { AccessPermission, AccessRole, AuditLog, PermissionTemplate } from "../types/entities";
 
 /**
@@ -179,6 +191,20 @@ export function createMockProvider(): DataProvider {
   const counselingReferrals = createMemoryRepository<CounselingReferral>(
     COUNSELING_REFERRALS_SEED.map((r) => ({ ...r })),
   );
+  const baptisms = createMemoryRepository<Baptism>(BAPTISMS_SEED.map((r) => ({ ...r })));
+  const marriages = createMemoryRepository<Marriage>(MARRIAGES_SEED.map((r) => ({ ...r })));
+  const babyDedications = createMemoryRepository<BabyDedication>(
+    BABY_DEDICATIONS_SEED.map((r) => ({ ...r })),
+  );
+  const sacramentCertificates = createMemoryRepository<SacramentCertificate>(
+    SACRAMENT_CERTIFICATES_SEED.map((r) => ({ ...r })),
+  );
+  const sacramentDocuments = createMemoryRepository<SacramentDocument>(
+    SACRAMENT_DOCUMENTS_SEED.map((r) => ({ ...r })),
+  );
+  const sacramentAppointments = createMemoryRepository<SacramentAppointment>(
+    SACRAMENT_APPOINTMENTS_SEED.map((r) => ({ ...r })),
+  );
   const inventoryItems = createMemoryRepository<InventoryItem>(
     INVENTORY_ITEMS_SEED.map((r) => ({ ...r })),
   );
@@ -255,6 +281,12 @@ export function createMockProvider(): DataProvider {
     counselors: counselors as EntityRepository<unknown>,
     counseling_feedback: counselingFeedback as EntityRepository<unknown>,
     counseling_referrals: counselingReferrals as EntityRepository<unknown>,
+    baptisms: baptisms as EntityRepository<unknown>,
+    marriages: marriages as EntityRepository<unknown>,
+    baby_dedications: babyDedications as EntityRepository<unknown>,
+    sacrament_certificates: sacramentCertificates as EntityRepository<unknown>,
+    sacrament_documents: sacramentDocuments as EntityRepository<unknown>,
+    sacrament_appointments: sacramentAppointments as EntityRepository<unknown>,
     inventory_items: inventoryItems as EntityRepository<unknown>,
     inventory_movements: inventoryMovements as EntityRepository<unknown>,
     inventory_maintenance: inventoryMaintenance as EntityRepository<unknown>,
@@ -311,6 +343,12 @@ export function createMockProvider(): DataProvider {
     counselors,
     counselingFeedback,
     counselingReferrals,
+    baptisms,
+    marriages,
+    babyDedications,
+    sacramentCertificates,
+    sacramentDocuments,
+    sacramentAppointments,
     inventoryItems,
     inventoryMovements,
     inventoryMaintenance,

@@ -1036,3 +1036,54 @@ npm run test:media-data
 # Manual: Aconselhamento → pedido → caso → agendar → feedback → referral
 # Staff Member bloqueado; VITE_DATA_SOURCE=local + F5
 ```
+
+---
+
+## Pilot migration: Sacraments
+
+**Status: live (pilot)** — dual-write / hydrate; UI remains in `js/dashboard.js` (`renderSacraments`, `state.sacraments`).
+
+See also **[SACRAMENTS_MODULE_PLAN.md](SACRAMENTS_MODULE_PLAN.md)**.
+
+### Local keys
+
+| Collection | Key |
+|------------|-----|
+| Baptisms | `ce-data-layer:baptisms` |
+| Marriages | `ce-data-layer:marriages` |
+| Baby dedications | `ce-data-layer:baby-dedications` |
+| Certificates | `ce-data-layer:sacrament-certificates` |
+| Documents | `ce-data-layer:sacrament-documents` |
+| Appointments | `ce-data-layer:sacrament-appointments` |
+
+### Domain rules
+
+- **Sacramentos** usa data layer; baptismos, casamentos e dedicações ficam **separados**  
+- **Certificados pagos** **não** criam `financeRecord` nesta fase (`payment_status` interno)  
+- Documentos sensíveis respeitam RBAC; relatórios agregados omitem `file_url`  
+- Integração preparada com Members / First Timers / Counseling (`counseling_case_id`)  
+- Audit soft em create/complete, issue/cancel certificate, verify/reject document  
+- PostgreSQL direct = fase futura  
+
+### Code
+
+| Piece | Role |
+|-------|------|
+| `src/data/repositories/sacramentsRepository.ts` | Aggregator |
+| Seeds | baptisms, marriages, babies, certificates, documents, appointments |
+| `js/sacraments-data-bridge.js` | Dual-write + pure-JS fallback (`CESacraments`) |
+| Dashboard | dual-write baptism/marriage/baby + hydrate |
+
+Cache buster: `?v=20260723-sacraments-data-v1`
+
+### How to test Sacraments
+
+```bash
+npm run build
+npm run test:sacraments-data
+npm run test:counseling-data
+npm run test:access-control-data
+npm run test:staff-hr-data
+# Manual: Sacramentos → baptismo → casamento → dedicação → certificado (sem finance)
+# VITE_DATA_SOURCE=local + F5
+```

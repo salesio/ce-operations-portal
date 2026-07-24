@@ -33,6 +33,12 @@ import type {
   CounselingReferral,
   CounselingRequest,
   Counselor,
+  BabyDedication,
+  Baptism,
+  Marriage,
+  SacramentAppointment,
+  SacramentCertificate,
+  SacramentDocument,
   Member,
   Notification,
   Requisition,
@@ -121,6 +127,12 @@ export interface DataProvider {
   counselors: EntityRepository<Counselor>;
   counselingFeedback: EntityRepository<CounselingFeedback>;
   counselingReferrals: EntityRepository<CounselingReferral>;
+  baptisms: EntityRepository<Baptism>;
+  marriages: EntityRepository<Marriage>;
+  babyDedications: EntityRepository<BabyDedication>;
+  sacramentCertificates: EntityRepository<SacramentCertificate>;
+  sacramentDocuments: EntityRepository<SacramentDocument>;
+  sacramentAppointments: EntityRepository<SacramentAppointment>;
   inventoryItems: EntityRepository<InventoryItem>;
   inventoryMovements: EntityRepository<InventoryMovement>;
   inventoryMaintenance: EntityRepository<InventoryMaintenanceRecord>;

@@ -33,6 +33,12 @@ import type {
   CounselingReferral,
   CounselingRequest,
   Counselor,
+  BabyDedication,
+  Baptism,
+  Marriage,
+  SacramentAppointment,
+  SacramentCertificate,
+  SacramentDocument,
   Member,
   Notification,
   Requisition,
@@ -107,6 +113,12 @@ function storageKeyFor(key: EntityCollectionName): string {
   if (key === "counselors") return `${STORAGE_PREFIX}counselors`;
   if (key === "counseling_feedback") return `${STORAGE_PREFIX}counseling-feedback`;
   if (key === "counseling_referrals") return `${STORAGE_PREFIX}counseling-referrals`;
+  if (key === "baptisms") return `${STORAGE_PREFIX}baptisms`;
+  if (key === "marriages") return `${STORAGE_PREFIX}marriages`;
+  if (key === "baby_dedications") return `${STORAGE_PREFIX}baby-dedications`;
+  if (key === "sacrament_certificates") return `${STORAGE_PREFIX}sacrament-certificates`;
+  if (key === "sacrament_documents") return `${STORAGE_PREFIX}sacrament-documents`;
+  if (key === "sacrament_appointments") return `${STORAGE_PREFIX}sacrament-appointments`;
   return STORAGE_PREFIX + key;
 }
 
@@ -224,6 +236,14 @@ export function createLocalStorageProvider(): DataProvider {
   const counselingFeedback = createPersistedRepository<CounselingFeedback>("counseling_feedback");
   const counselingReferrals =
     createPersistedRepository<CounselingReferral>("counseling_referrals");
+  const baptisms = createPersistedRepository<Baptism>("baptisms");
+  const marriages = createPersistedRepository<Marriage>("marriages");
+  const babyDedications = createPersistedRepository<BabyDedication>("baby_dedications");
+  const sacramentCertificates =
+    createPersistedRepository<SacramentCertificate>("sacrament_certificates");
+  const sacramentDocuments = createPersistedRepository<SacramentDocument>("sacrament_documents");
+  const sacramentAppointments =
+    createPersistedRepository<SacramentAppointment>("sacrament_appointments");
   const inventoryItems = createPersistedRepository<InventoryItem>("inventory_items");
   const inventoryMovements = createPersistedRepository<InventoryMovement>("inventory_movements");
   const inventoryMaintenance =
@@ -277,6 +297,12 @@ export function createLocalStorageProvider(): DataProvider {
     counselors: counselors as EntityRepository<unknown>,
     counseling_feedback: counselingFeedback as EntityRepository<unknown>,
     counseling_referrals: counselingReferrals as EntityRepository<unknown>,
+    baptisms: baptisms as EntityRepository<unknown>,
+    marriages: marriages as EntityRepository<unknown>,
+    baby_dedications: babyDedications as EntityRepository<unknown>,
+    sacrament_certificates: sacramentCertificates as EntityRepository<unknown>,
+    sacrament_documents: sacramentDocuments as EntityRepository<unknown>,
+    sacrament_appointments: sacramentAppointments as EntityRepository<unknown>,
     inventory_items: inventoryItems as EntityRepository<unknown>,
     inventory_movements: inventoryMovements as EntityRepository<unknown>,
     inventory_maintenance: inventoryMaintenance as EntityRepository<unknown>,
@@ -334,7 +360,14 @@ export function createLocalStorageProvider(): DataProvider {
     counselors,
     counselingFeedback,
     counselingReferrals,
-    inventoryItems,    inventoryMovements,
+    baptisms,
+    marriages,
+    babyDedications,
+    sacramentCertificates,
+    sacramentDocuments,
+    sacramentAppointments,
+    inventoryItems,
+    inventoryMovements,
     inventoryMaintenance,
     venueSpaces,
     serviceChecklists,

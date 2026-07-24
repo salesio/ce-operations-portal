@@ -1835,6 +1835,241 @@ export interface CounselingReferral {
 }
 
 // ---------------------------------------------------------------------------
+// Sacraments — Baptism, Marriage, Baby Dedication, Certificates, Documents
+// ---------------------------------------------------------------------------
+
+export interface Baptism {
+  id: EntityId;
+  baptism_number?: string | null;
+  person_type?: string | null;
+  person_id?: EntityId | null;
+  member_id?: EntityId | null;
+  first_timer_id?: EntityId | null;
+  full_name?: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
+  /** PT UI */
+  nome?: string | null;
+  apelido?: string | null;
+  gender?: string | null;
+  date_of_birth?: IsoDate | null;
+  age?: number | null;
+  idade?: number | null;
+  phone?: string | null;
+  telefone?: string | null;
+  whatsapp?: string | null;
+  email?: string | null;
+  church_id?: EntityId | null;
+  church_name?: string | null;
+  cell_group_id?: EntityId | null;
+  cell_group_name?: string | null;
+  cell_id?: EntityId | null;
+  cell_name?: string | null;
+  celula?: string | null;
+  foundation_school_completed?: boolean | null;
+  foundation_school_student_id?: EntityId | null;
+  requested_date?: IsoDate | null;
+  scheduled_date?: IsoDate | null;
+  scheduled_time?: string | null;
+  data_do_baptismo?: IsoDate | null;
+  location?: string | null;
+  local_do_baptismo?: string | null;
+  pastor_id?: EntityId | null;
+  pastor_name?: string | null;
+  baptizado_por?: string | null;
+  baptism_type?: string | null;
+  status?: string | null;
+  estado?: string | null;
+  certificate_required?: boolean | null;
+  quer_certificado?: boolean | null;
+  certificate_paid?: boolean | null;
+  certificado_pago?: boolean | null;
+  certificate_status?: string | null;
+  certificate_id?: EntityId | null;
+  certificado_emitido?: boolean | null;
+  notes?: string | null;
+  observacoes?: string | null;
+  created_by_user_id?: EntityId | null;
+  created_by_name?: string | null;
+  completed_by_user_id?: EntityId | null;
+  completed_by_name?: string | null;
+  completed_at?: IsoDateTime | null;
+  created_at?: IsoDate | IsoDateTime;
+  updated_at?: IsoDate | IsoDateTime;
+}
+
+export interface Marriage {
+  id: EntityId;
+  marriage_number?: string | null;
+  groom_member_id?: EntityId | null;
+  groom_name?: string | null;
+  nome_do_noivo?: string | null;
+  groom_phone?: string | null;
+  telefone_do_noivo?: string | null;
+  groom_email?: string | null;
+  bride_member_id?: EntityId | null;
+  bride_name?: string | null;
+  nome_da_noiva?: string | null;
+  bride_phone?: string | null;
+  telefone_da_noiva?: string | null;
+  bride_email?: string | null;
+  church_id?: EntityId | null;
+  church_name?: string | null;
+  counseling_completed?: boolean | null;
+  aconselhamento_concluido?: boolean | null;
+  counseling_case_id?: EntityId | null;
+  documents_status?: string | null;
+  documentos_entregues?: boolean | null;
+  requested_date?: IsoDate | null;
+  scheduled_date?: IsoDate | null;
+  scheduled_time?: string | null;
+  data_do_casamento?: IsoDate | null;
+  location?: string | null;
+  venue_space_id?: EntityId | null;
+  venue_space_name?: string | null;
+  pastor_id?: EntityId | null;
+  pastor_name?: string | null;
+  pastor_responsavel?: string | null;
+  witnesses?: Array<{ name?: string; phone?: string; role?: string }> | null;
+  status?: string | null;
+  estado?: string | null;
+  certificate_required?: boolean | null;
+  certificate_paid?: boolean | null;
+  certificate_status?: string | null;
+  certificate_id?: EntityId | null;
+  notes?: string | null;
+  observacoes?: string | null;
+  created_by_user_id?: EntityId | null;
+  created_by_name?: string | null;
+  completed_by_user_id?: EntityId | null;
+  completed_by_name?: string | null;
+  completed_at?: IsoDateTime | null;
+  created_at?: IsoDate | IsoDateTime;
+  updated_at?: IsoDate | IsoDateTime;
+}
+
+export interface BabyDedication {
+  id: EntityId;
+  dedication_number?: string | null;
+  child_full_name?: string | null;
+  nome_da_crianca?: string | null;
+  child_gender?: string | null;
+  child_date_of_birth?: IsoDate | null;
+  data_de_nascimento?: IsoDate | null;
+  father_member_id?: EntityId | null;
+  father_name?: string | null;
+  nome_do_pai?: string | null;
+  father_phone?: string | null;
+  mother_member_id?: EntityId | null;
+  mother_name?: string | null;
+  nome_da_mae?: string | null;
+  mother_phone?: string | null;
+  guardian_name?: string | null;
+  guardian_phone?: string | null;
+  telefone_dos_pais?: string | null;
+  church_id?: EntityId | null;
+  church_name?: string | null;
+  requested_date?: IsoDate | null;
+  scheduled_date?: IsoDate | null;
+  scheduled_time?: string | null;
+  data_da_dedicacao?: IsoDate | null;
+  location?: string | null;
+  pastor_id?: EntityId | null;
+  pastor_name?: string | null;
+  pastor_responsavel?: string | null;
+  status?: string | null;
+  estado?: string | null;
+  certificate_required?: boolean | null;
+  certificate_paid?: boolean | null;
+  certificate_status?: string | null;
+  certificate_id?: EntityId | null;
+  certificado_emitido?: boolean | null;
+  notes?: string | null;
+  observacoes?: string | null;
+  created_by_user_id?: EntityId | null;
+  created_by_name?: string | null;
+  completed_by_user_id?: EntityId | null;
+  completed_by_name?: string | null;
+  completed_at?: IsoDateTime | null;
+  created_at?: IsoDate | IsoDateTime;
+  updated_at?: IsoDate | IsoDateTime;
+}
+
+export interface SacramentCertificate {
+  id: EntityId;
+  certificate_number?: string | null;
+  sacrament_type?: string | null;
+  sacrament_id?: EntityId | null;
+  person_name?: string | null;
+  church_id?: EntityId | null;
+  church_name?: string | null;
+  issued_date?: IsoDate | null;
+  issued_by_user_id?: EntityId | null;
+  issued_by_name?: string | null;
+  pastor_id?: EntityId | null;
+  pastor_name?: string | null;
+  status?: string | null;
+  payment_status?: string | null;
+  amount_paid?: number | null;
+  currency?: string | null;
+  file_url?: string | null;
+  file_name?: string | null;
+  notes?: string | null;
+  created_at?: IsoDate | IsoDateTime;
+  updated_at?: IsoDate | IsoDateTime;
+}
+
+export interface SacramentDocument {
+  id: EntityId;
+  sacrament_type?: string | null;
+  sacrament_id?: EntityId | null;
+  person_name?: string | null;
+  document_type?: string | null;
+  document_title?: string | null;
+  file_url?: string | null;
+  file_name?: string | null;
+  status?: string | null;
+  verified_by_user_id?: EntityId | null;
+  verified_by_name?: string | null;
+  verified_at?: IsoDateTime | null;
+  rejected_by_user_id?: EntityId | null;
+  rejected_by_name?: string | null;
+  rejected_at?: IsoDateTime | null;
+  rejection_reason?: string | null;
+  uploaded_by_user_id?: EntityId | null;
+  uploaded_by_name?: string | null;
+  notes?: string | null;
+  created_at?: IsoDate | IsoDateTime;
+  updated_at?: IsoDate | IsoDateTime;
+}
+
+export interface SacramentAppointment {
+  id: EntityId;
+  sacrament_type?: string | null;
+  sacrament_id?: EntityId | null;
+  title?: string | null;
+  church_id?: EntityId | null;
+  church_name?: string | null;
+  scheduled_date?: IsoDate | null;
+  start_time?: string | null;
+  end_time?: string | null;
+  location?: string | null;
+  venue_space_id?: EntityId | null;
+  venue_space_name?: string | null;
+  pastor_id?: EntityId | null;
+  pastor_name?: string | null;
+  status?: string | null;
+  notes?: string | null;
+  created_by_user_id?: EntityId | null;
+  created_by_name?: string | null;
+  completed_by_user_id?: EntityId | null;
+  completed_by_name?: string | null;
+  completed_at?: IsoDateTime | null;
+  created_at?: IsoDate | IsoDateTime;
+  updated_at?: IsoDate | IsoDateTime;
+}
+
+// ---------------------------------------------------------------------------
 // Venue & Inventory Management
 // ---------------------------------------------------------------------------
 
@@ -2380,6 +2615,12 @@ export type EntityCollectionName =
   | "counselors"
   | "counseling_feedback"
   | "counseling_referrals"
+  | "baptisms"
+  | "marriages"
+  | "baby_dedications"
+  | "sacrament_certificates"
+  | "sacrament_documents"
+  | "sacrament_appointments"
   | "inventory_items"
   | "inventory_movements"
   | "inventory_maintenance"

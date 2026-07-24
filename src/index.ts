@@ -567,6 +567,41 @@ export {
   COUNSELING_FEEDBACK_SEED,
   COUNSELING_REFERRALS_SEED,
   counselingRepository,
+  // Sacraments
+  listBaptisms,
+  createBaptism,
+  updateBaptism,
+  listMarriages,
+  createMarriage,
+  updateMarriage,
+  listBabyDedications,
+  createBabyDedication,
+  updateBabyDedication,
+  listSacramentCertificates,
+  createSacramentCertificate,
+  issueSacramentCertificate,
+  cancelSacramentCertificate,
+  listSacramentDocuments,
+  createSacramentDocument,
+  verifySacramentDocument,
+  rejectSacramentDocument,
+  listSacramentAppointments,
+  createSacramentAppointment,
+  completeSacramentAppointment,
+  cancelSacramentAppointment,
+  getSacramentsOverviewStats,
+  getPendingCertificates,
+  getPendingDocumentReviews,
+  getUpcomingSacramentAppointments,
+  ensureSacramentsSeeded,
+  getSacramentsDataSourceInfo,
+  BAPTISMS_SEED,
+  MARRIAGES_SEED,
+  BABY_DEDICATIONS_SEED,
+  SACRAMENT_CERTIFICATES_SEED,
+  SACRAMENT_DOCUMENTS_SEED,
+  SACRAMENT_APPOINTMENTS_SEED,
+  sacramentsRepository,
 } from "./data";
 
 export type {
@@ -1113,6 +1148,36 @@ import {
   getCounselingDataSourceInfo,
   COUNSELING_REQUESTS_SEED,
   COUNSELORS_SEED,
+  listBaptisms,
+  createBaptism,
+  updateBaptism,
+  listMarriages,
+  createMarriage,
+  updateMarriage,
+  listBabyDedications,
+  createBabyDedication,
+  updateBabyDedication,
+  listSacramentCertificates,
+  createSacramentCertificate,
+  issueSacramentCertificate,
+  cancelSacramentCertificate,
+  listSacramentDocuments,
+  createSacramentDocument,
+  verifySacramentDocument,
+  rejectSacramentDocument,
+  listSacramentAppointments,
+  createSacramentAppointment,
+  completeSacramentAppointment,
+  cancelSacramentAppointment,
+  getSacramentsOverviewStats,
+  getPendingCertificates,
+  getPendingDocumentReviews,
+  getUpcomingSacramentAppointments,
+  ensureSacramentsSeeded,
+  getSacramentsDataSourceInfo,
+  BAPTISMS_SEED,
+  MARRIAGES_SEED,
+  BABY_DEDICATIONS_SEED,
   getDataProvider,
   getDataSource,
   getActiveDataSource,
@@ -1138,6 +1203,7 @@ function installDataLayerGlobals(): void {
     CEAccessControlData?: Record<string, unknown>;
     CEMedia?: Record<string, unknown>;
     CECounseling?: Record<string, unknown>;
+    CESacraments?: Record<string, unknown>;
   };
 
   const churches = {
@@ -1593,6 +1659,37 @@ function installDataLayerGlobals(): void {
     getInfo: getCounselingDataSourceInfo,
   };
 
+  const sacraments = {
+    listBaptisms,
+    createBaptism,
+    updateBaptism,
+    listMarriages,
+    createMarriage,
+    updateMarriage,
+    listBabyDedications,
+    createBabyDedication,
+    updateBabyDedication,
+    listSacramentCertificates,
+    createSacramentCertificate,
+    issueSacramentCertificate,
+    cancelSacramentCertificate,
+    listSacramentDocuments,
+    createSacramentDocument,
+    verifySacramentDocument,
+    rejectSacramentDocument,
+    listSacramentAppointments,
+    createSacramentAppointment,
+    completeSacramentAppointment,
+    cancelSacramentAppointment,
+    getSacramentsOverviewStats,
+    getPendingCertificates,
+    getPendingDocumentReviews,
+    getUpcomingSacramentAppointments,
+    ensureSacramentsSeeded,
+    getSacramentsDataSourceInfo,
+    getInfo: getSacramentsDataSourceInfo,
+  };
+
   const media = {
     listMediaTeam,
     getMediaTeamMemberById,
@@ -1945,6 +2042,29 @@ function installDataLayerGlobals(): void {
       createCounselingReferral,
       markReferralCompleted,
     },
+    sacraments,
+    baptisms: { listBaptisms, createBaptism, updateBaptism },
+    marriages: { listMarriages, createMarriage, updateMarriage },
+    babyDedications: {
+      listBabyDedications,
+      createBabyDedication,
+      updateBabyDedication,
+    },
+    sacramentCertificates: {
+      listSacramentCertificates,
+      createSacramentCertificate,
+      issueSacramentCertificate,
+    },
+    sacramentDocuments: {
+      listSacramentDocuments,
+      createSacramentDocument,
+      verifySacramentDocument,
+    },
+    sacramentAppointments: {
+      listSacramentAppointments,
+      createSacramentAppointment,
+      completeSacramentAppointment,
+    },
     getDataProvider,
     getDataSource,
     getActiveDataSource,
@@ -1994,6 +2114,9 @@ function installDataLayerGlobals(): void {
   if (!root.CECounseling) {
     root.CECounseling = counseling;
   }
+  if (!root.CESacraments) {
+    root.CESacraments = sacraments;
+  }
 
   try {
     const churchInfo = getChurchesDataSourceInfo();
@@ -2014,6 +2137,7 @@ function installDataLayerGlobals(): void {
       accessControl: Object.keys(accessControl),
       media: Object.keys(media),
       counseling: Object.keys(counseling),
+      sacraments: Object.keys(sacraments),
     });
   } catch (error) {
     console.warn("[CE DataLayer] installed with provider warning", error);

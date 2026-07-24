@@ -19,6 +19,7 @@
     "test:access-control-data": "node scripts/smoke-access-control-data.mjs",
     "test:media-data": "node scripts/smoke-media-data.mjs",
     "test:counseling-data": "node scripts/smoke-counseling-data.mjs",
+    "test:sacraments-data": "node scripts/smoke-sacraments-data.mjs",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f",
