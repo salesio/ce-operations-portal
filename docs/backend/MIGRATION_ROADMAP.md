@@ -57,13 +57,22 @@ localStorage / mock remain valid for **dev and prototype** until each domain pil
 - [ ] Production RLS + storage policies enforced
 - [ ] Full requisitions remote module
 
-## Phase 6 — Foundation School
+## Phase 6 — Requisitions + Venue/Inventory pilot (current)
 
-- Classes, students, exams, attachments
+- [x] Schema + migration `0006_requisitions_inventory_pilot.sql`
+- [x] `requisitionsSupabaseAdapter` + `venueInventorySupabaseAdapter`
+- [x] API placeholders for Requisitions + Venue/Inventory
+- [x] Repository routing (`VITE_DATA_SOURCE=supabase` / `api`)
+- [x] Optional SQL seed
+- [x] Requisition approval prepares finance disbursement only
+- [x] Inventory acquisition values stay asset metadata only
+- [x] Smoke: `test:requisitions-inventory-supabase`
+- [ ] Production RLS enforced
+- [ ] Full attachment upload flow for inventory/requisition documents
 
 ## Phase 7 — Remaining modules by domain
 
-- Cells, Requisitions, Venue, Staff, Media, Counseling, Sacraments, FEVO, Prison, Materials, Programs, Settings/Notifications
+- Foundation School, Cells, Staff, Media, Counseling, Sacraments, FEVO, Prison, Materials, Programs, Settings/Notifications
 
 ## Phase 8 — Reports + audit + notifications real-time
 

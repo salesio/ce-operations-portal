@@ -72,4 +72,6 @@ npm run test:data-layer-all
 - Auth pilot (Phase 2) optional  
 - **Churches + Members (Phase 3):** migration `0003` + seed `churches_members_seed.sql`  
 - **First Timers + Follow-Up (Phase 4):** migration `0004` + seed `first_timers_followups_seed.sql`  
-- Docs: `CHURCHES_MEMBERS_SUPABASE_PILOT.md`, `FIRST_TIMERS_FOLLOWUPS_SUPABASE_PILOT.md`  
+- **Finance + Public Giving + Storage (Phase 5):** migration `0005` + seed `finance_public_giving_seed.sql`  
+- **Requisitions + Venue/Inventory (Phase 6):** migration `0006` + seed `requisitions_inventory_seed.sql`  
+- Docs: `CHURCHES_MEMBERS_SUPABASE_PILOT.md`, `FIRST_TIMERS_FOLLOWUPS_SUPABASE_PILOT.md`, `FINANCE_PUBLIC_GIVING_STORAGE_SUPABASE_PILOT.md`, `REQUISITIONS_INVENTORY_SUPABASE_PILOT.md`  

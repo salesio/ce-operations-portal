@@ -231,3 +231,40 @@ Future intent:
 -- ALTER TABLE public.finance_disbursements ENABLE ROW LEVEL SECURITY;
 -- ALTER TABLE public.documents ENABLE ROW LEVEL SECURITY;
 */
+
+-- ---------------------------------------------------------------------------
+-- Phase 6: Requisitions + Venue/Inventory pilot - policy sketches (NOT enabled)
+-- ---------------------------------------------------------------------------
+/*
+Future intent:
+- Requisitions: church scope + department permission; approval/release only by roles.
+- Inventory: church scope; maintenance/status updates by inventory/media/admin roles.
+- Venue spaces/checklists: church scope; service checklists editable by assigned teams.
+- Finance link: requisitions may prepare finance_disbursements, but never auto-create
+  finance_records from browser actions.
+
+-- ALTER TABLE public.requisitions ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.requisition_timeline_events ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.inventory_items ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.inventory_movements ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.inventory_maintenance_records ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.venue_spaces ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.service_checklists ENABLE ROW LEVEL SECURITY;
+
+-- CREATE POLICY requisitions_select_pilot ON public.requisitions
+--   FOR SELECT TO authenticated
+--   USING (
+--     public.current_app_user_scope() = 'all'
+--     OR public.has_module_permission('requisitions', 'view')
+--     OR church_id = (SELECT church_id FROM public.users WHERE id = public.current_app_user_id())
+--     OR requested_by = public.current_app_user_id()
+--   );
+
+-- CREATE POLICY inventory_select_pilot ON public.inventory_items
+--   FOR SELECT TO authenticated
+--   USING (
+--     public.current_app_user_scope() = 'all'
+--     OR public.has_module_permission('venueInventory', 'view')
+--     OR church_id = (SELECT church_id FROM public.users WHERE id = public.current_app_user_id())
+--   );
+*/

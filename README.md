@@ -151,6 +151,19 @@ See **[docs/backend/FINANCE_PUBLIC_GIVING_STORAGE_SUPABASE_PILOT.md](docs/backen
 npm run test:finance-public-giving-supabase
 ```
 
+#### Requisitions + Venue/Inventory Supabase/API pilot (Phase 6)
+
+Same Supabase env as Phase 5. Apply migration `0006_requisitions_inventory_pilot.sql`  
+and optional seed `supabase/seeds/requisitions_inventory_seed.sql`.
+
+Only **Requisitions & Approvals** and **Venue & Inventory** join this remote pilot.  
+Requisition approval prepares a finance disbursement when needed, but does **not** create a finance expense record. Inventory acquisition values remain asset metadata only.  
+See **[docs/backend/REQUISITIONS_INVENTORY_SUPABASE_PILOT.md](docs/backend/REQUISITIONS_INVENTORY_SUPABASE_PILOT.md)**.
+
+```bash
+npm run test:requisitions-inventory-supabase
+```
+
 | Item | Location |
 |------|----------|
 | Core SQL schema / seed / RLS / storage notes | `database/` |

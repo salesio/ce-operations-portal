@@ -50,6 +50,7 @@ globalThis.window = globalThis;
 globalThis.lang = "pt";
 globalThis.L = (k) => k;
 globalThis.money = (n) => String(n);
+const thisMonth = new Date().toISOString().slice(0, 8);
 globalThis.state = {
   finance: [
     {
@@ -65,8 +66,8 @@ globalThis.state = {
       church_id: "church-virtual",
       amount: 5500,
       valor: 5500,
-      payment_date: "2026-07-08",
-      data: "2026-07-08"
+      payment_date: `${thisMonth}08`,
+      data: `${thisMonth}08`
     },
     {
       id: "p1",
@@ -79,8 +80,8 @@ globalThis.state = {
       contributor_name: "Pending Person",
       amount: 4200,
       valor: 4200,
-      payment_date: "2026-07-02",
-      data: "2026-07-02"
+      payment_date: `${thisMonth}02`,
+      data: `${thisMonth}02`
     },
     {
       id: "e1",
@@ -90,8 +91,8 @@ globalThis.state = {
       partnership_arm_id: "arm-lw-sat",
       amount: 999,
       valor: 999,
-      payment_date: "2026-07-08",
-      data: "2026-07-08"
+      payment_date: `${thisMonth}08`,
+      data: `${thisMonth}08`
     },
     {
       id: "v2",
@@ -106,8 +107,8 @@ globalThis.state = {
       church_id: "church-hq",
       amount: 5000,
       valor: 5000,
-      payment_date: "2026-07-09",
-      data: "2026-07-09"
+      payment_date: `${thisMonth}09`,
+      data: `${thisMonth}09`
     }
   ],
   partnershipArms: []

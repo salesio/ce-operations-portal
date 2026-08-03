@@ -16064,6 +16064,18 @@ function renderSettings() {
                   window.CEFinance && typeof window.CEFinance.getInfo === "function"
                     ? window.CEFinance.getInfo()
                     : null;
+                const reqInfo =
+                  window.CERequisitionsData && typeof window.CERequisitionsData.getInfo === "function"
+                    ? window.CERequisitionsData.getInfo()
+                    : window.CESupabase && typeof window.CESupabase.getRequisitionsDataSourceInfo === "function"
+                      ? window.CESupabase.getRequisitionsDataSourceInfo()
+                      : null;
+                const invInfo =
+                  window.CEVenueInventory && typeof window.CEVenueInventory.getInfo === "function"
+                    ? window.CEVenueInventory.getInfo()
+                    : window.CESupabase && typeof window.CESupabase.getVenueInventoryDataSourceInfo === "function"
+                      ? window.CESupabase.getVenueInventoryDataSourceInfo()
+                      : null;
                 const sbOn = !!(flags && flags.enableSupabase);
                 const storageOn = !!(flags && flags.enableStorage);
                 const readyLabel = (info) => {
@@ -16083,8 +16095,10 @@ function renderSettings() {
               <div>follow-up: <code>${readyLabel(fuInfo)}</code></div>
               <div>finance: <code>${readyLabel(finInfo)}</code></div>
               <div>public giving: <code>${readyLabel(finInfo)}</code></div>
+              <div>requisitions: <code>${readyLabel(reqInfo)}</code></div>
+              <div>venue & inventory: <code>${readyLabel(invInfo)}</code></div>
               <div>others: <code>local/mock</code></div>
-              <div class="text-white-50 mt-1">${lang === "pt" ? "Sem expor keys/secrets. Pilotos: Igrejas, Membros, FT, Follow-Up, Finance." : "No keys/secrets exposed. Pilots: Churches, Members, FT, Follow-Up, Finance."}</div>
+              <div class="text-white-50 mt-1">${lang === "pt" ? "Sem expor keys/secrets. Pilotos: Igrejas, Membros, FT, Follow-Up, Finance, Requisições e Inventário." : "No keys/secrets exposed. Pilots: Churches, Members, FT, Follow-Up, Finance, Requisitions and Inventory."}</div>
             </div>`;
               } catch (_) {
                 return "";

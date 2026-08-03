@@ -15,6 +15,17 @@ import {
   apiList,
   apiUpdate,
 } from "./api/apiRepositoryBase";
+import * as requisitionsApi from "./api/requisitionsApiAdapter";
+import * as venueInventoryApi from "./api/venueInventoryApiAdapter";
+import type {
+  InventoryItem,
+  InventoryMaintenanceRecord,
+  InventoryMovement,
+  Requisition,
+  RequisitionTimelineEvent,
+  ServiceChecklist,
+  VenueSpace,
+} from "../types/entities";
 
 /**
  * Placeholder REST/API provider for future Node/Express (or similar) backend
@@ -176,6 +187,48 @@ export function createApiProvider(): DataProvider & ApiProviderExtras {
   const map = Object.fromEntries(
     COLLECTION_NAMES.map((n) => [n, createStubRepository(n)]),
   ) as Record<EntityCollectionName, EntityRepository<unknown>>;
+  map.requisitions = {
+    list: requisitionsApi.listRequisitions,
+    getById: requisitionsApi.getRequisitionById,
+    create: requisitionsApi.createRequisition,
+    update: requisitionsApi.updateRequisition,
+    remove: requisitionsApi.deleteRequisition,
+  } as EntityRepository<unknown>;
+  map.requisition_timeline = {
+    list: async () => ({ ok: false, error: "Use listRequisitionTimelineEvents(requisitionId).", code: "REQUIRES_PARENT_ID" }),
+    getById: async () => ({ ok: true, data: null }),
+    create: requisitionsApi.createRequisitionTimelineEvent,
+  } as EntityRepository<unknown>;
+  map.inventory_items = {
+    list: venueInventoryApi.listInventoryItems,
+    getById: venueInventoryApi.getInventoryItemById,
+    create: venueInventoryApi.createInventoryItem,
+    update: venueInventoryApi.updateInventoryItem,
+    remove: venueInventoryApi.deleteInventoryItem,
+  } as EntityRepository<unknown>;
+  map.inventory_movements = {
+    list: venueInventoryApi.listInventoryMovements,
+    getById: async () => ({ ok: true, data: null }),
+    create: venueInventoryApi.createInventoryMovement,
+  } as EntityRepository<unknown>;
+  map.inventory_maintenance = {
+    list: venueInventoryApi.listMaintenanceRecords,
+    getById: async () => ({ ok: true, data: null }),
+    create: venueInventoryApi.createMaintenanceRecord,
+    update: venueInventoryApi.updateMaintenanceRecord,
+  } as EntityRepository<unknown>;
+  map.venue_spaces = {
+    list: venueInventoryApi.listVenueSpaces,
+    getById: async () => ({ ok: true, data: null }),
+    create: venueInventoryApi.createVenueSpace,
+    update: venueInventoryApi.updateVenueSpace,
+  } as EntityRepository<unknown>;
+  map.service_checklists = {
+    list: venueInventoryApi.listServiceChecklists,
+    getById: async () => ({ ok: true, data: null }),
+    create: venueInventoryApi.createServiceChecklist,
+    update: venueInventoryApi.updateServiceChecklist,
+  } as EntityRepository<unknown>;
 
   const baseUrl = getApiBaseUrl();
   const cfg = getApiEnvConfig();
@@ -208,8 +261,8 @@ export function createApiProvider(): DataProvider & ApiProviderExtras {
     financeRecords: map.finance_records as EntityRepository<never>,
     publicGivingSubmissions: map.public_giving_submissions as EntityRepository<never>,
     financeDisbursements: map.finance_disbursements as EntityRepository<never>,
-    requisitions: map.requisitions as EntityRepository<never>,
-    requisitionTimeline: map.requisition_timeline as EntityRepository<never>,
+    requisitions: map.requisitions as EntityRepository<Requisition>,
+    requisitionTimeline: map.requisition_timeline as EntityRepository<RequisitionTimelineEvent>,
     notifications: map.notifications as EntityRepository<never>,
     notificationTemplates: map.notification_templates as EntityRepository<never>,
     systemSettings: map.system_settings as EntityRepository<never>,
@@ -276,11 +329,11 @@ export function createApiProvider(): DataProvider & ApiProviderExtras {
     programBudgets: map.program_budgets as EntityRepository<never>,
     programChecklists: map.program_checklists as EntityRepository<never>,
     programReports: map.program_reports as EntityRepository<never>,
-    inventoryItems: map.inventory_items as EntityRepository<never>,
-    inventoryMovements: map.inventory_movements as EntityRepository<never>,
-    inventoryMaintenance: map.inventory_maintenance as EntityRepository<never>,
-    venueSpaces: map.venue_spaces as EntityRepository<never>,
-    serviceChecklists: map.service_checklists as EntityRepository<never>,
+    inventoryItems: map.inventory_items as EntityRepository<InventoryItem>,
+    inventoryMovements: map.inventory_movements as EntityRepository<InventoryMovement>,
+    inventoryMaintenance: map.inventory_maintenance as EntityRepository<InventoryMaintenanceRecord>,
+    venueSpaces: map.venue_spaces as EntityRepository<VenueSpace>,
+    serviceChecklists: map.service_checklists as EntityRepository<ServiceChecklist>,
     staff: map.staff as EntityRepository<never>,
     staffDepartments: map.staff_departments as EntityRepository<never>,
     staffRoles: map.staff_roles as EntityRepository<never>,

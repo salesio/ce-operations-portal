@@ -24,14 +24,23 @@ import * as followUpsSb from "./supabase/followUpsSupabaseAdapter";
 import * as financeSb from "./supabase/financeSupabaseAdapter";
 import * as publicGivingSb from "./supabase/publicGivingSupabaseAdapter";
 import * as disbursementsSb from "./supabase/financeDisbursementsSupabaseAdapter";
+import * as requisitionsSb from "./supabase/requisitionsSupabaseAdapter";
+import * as venueInventorySb from "./supabase/venueInventorySupabaseAdapter";
 import type {
   Church,
   FinanceDisbursement,
   FinanceRecord,
   FirstTimer,
   FollowUp,
+  InventoryItem,
+  InventoryMaintenanceRecord,
+  InventoryMovement,
   Member,
   PublicGivingSubmission,
+  Requisition,
+  RequisitionTimelineEvent,
+  ServiceChecklist,
+  VenueSpace,
 } from "../types/entities";
 
 /**
@@ -40,6 +49,7 @@ import type {
  * Phase 3: churches + members
  * Phase 4: first_timers + follow_ups
  * Phase 5: finance_records + public_giving + disbursements
+ * Phase 6: requisitions + venue/inventory pilot
  * Other collections remain NOT_IMPLEMENTED stubs.
  * Uses public anon key only (via foundation client when enabled).
  */
@@ -214,6 +224,147 @@ function createDisbursementsRepository(): EntityRepository<FinanceDisbursement> 
   };
 }
 
+function createRequisitionsRepository(): EntityRepository<Requisition> {
+  return {
+    async list(options?: ListOptions) {
+      if (options?.churchId) return requisitionsSb.getRequisitionsByChurch(options.churchId);
+      const r = await requisitionsSb.listRequisitions();
+      if (!r.ok) return r as DataResult<Requisition[]>;
+      let data = r.data || [];
+      if (options?.limit) data = data.slice(options.offset || 0, (options.offset || 0) + options.limit);
+      return { ok: true, data };
+    },
+    async getById(id: EntityId) {
+      return requisitionsSb.getRequisitionById(id);
+    },
+    async create(input: Partial<Requisition>) {
+      return requisitionsSb.createRequisition(input);
+    },
+    async update(id: EntityId, input: Partial<Requisition>) {
+      return requisitionsSb.updateRequisition(id, input);
+    },
+    async remove(id: EntityId) {
+      return requisitionsSb.deleteRequisition(id);
+    },
+  };
+}
+
+function createRequisitionTimelineRepository(): EntityRepository<RequisitionTimelineEvent> {
+  return {
+    async list(options?: ListOptions) {
+      const reqs = await requisitionsSb.listRequisitions();
+      if (!reqs.ok) return reqs as unknown as DataResult<RequisitionTimelineEvent[]>;
+      const slice = options?.limit
+        ? reqs.data.slice(options.offset || 0, (options.offset || 0) + options.limit)
+        : reqs.data;
+      const events: RequisitionTimelineEvent[] = [];
+      for (const req of slice) {
+        const tl = await requisitionsSb.listRequisitionTimelineEvents(req.id);
+        if (tl.ok) events.push(...tl.data);
+      }
+      return { ok: true, data: events };
+    },
+    async getById(_id: EntityId) {
+      return { ok: true, data: null };
+    },
+    async create(input: Partial<RequisitionTimelineEvent>) {
+      return requisitionsSb.createRequisitionTimelineEvent(input);
+    },
+  };
+}
+
+function createInventoryItemsRepository(): EntityRepository<InventoryItem> {
+  return {
+    async list(options?: ListOptions) {
+      if (options?.churchId) return venueInventorySb.getInventoryItemsByChurch(options.churchId);
+      const r = await venueInventorySb.listInventoryItems();
+      if (!r.ok) return r as DataResult<InventoryItem[]>;
+      let data = r.data || [];
+      if (options?.limit) data = data.slice(options.offset || 0, (options.offset || 0) + options.limit);
+      return { ok: true, data };
+    },
+    async getById(id: EntityId) {
+      return venueInventorySb.getInventoryItemById(id);
+    },
+    async create(input: Partial<InventoryItem>) {
+      return venueInventorySb.createInventoryItem(input);
+    },
+    async update(id: EntityId, input: Partial<InventoryItem>) {
+      return venueInventorySb.updateInventoryItem(id, input);
+    },
+    async remove(id: EntityId) {
+      return venueInventorySb.deleteInventoryItem(id);
+    },
+  };
+}
+
+function createInventoryMovementsRepository(): EntityRepository<InventoryMovement> {
+  return {
+    async list() {
+      return venueInventorySb.listInventoryMovements();
+    },
+    async getById(_id: EntityId) {
+      return { ok: true, data: null };
+    },
+    async create(input: Partial<InventoryMovement>) {
+      return venueInventorySb.createInventoryMovement(input);
+    },
+  };
+}
+
+function createInventoryMaintenanceRepository(): EntityRepository<InventoryMaintenanceRecord> {
+  return {
+    async list() {
+      return venueInventorySb.listMaintenanceRecords();
+    },
+    async getById(_id: EntityId) {
+      return { ok: true, data: null };
+    },
+    async create(input: Partial<InventoryMaintenanceRecord>) {
+      return venueInventorySb.createMaintenanceRecord(input);
+    },
+    async update(id: EntityId, input: Partial<InventoryMaintenanceRecord>) {
+      return venueInventorySb.updateMaintenanceRecord(id, input);
+    },
+  };
+}
+
+function createVenueSpacesRepository(): EntityRepository<VenueSpace> {
+  return {
+    async list(options?: ListOptions) {
+      if (options?.churchId) return venueInventorySb.getVenueSpacesByChurch(options.churchId);
+      return venueInventorySb.listVenueSpaces();
+    },
+    async getById(_id: EntityId) {
+      return { ok: true, data: null };
+    },
+    async create(input: Partial<VenueSpace>) {
+      return venueInventorySb.createVenueSpace(input);
+    },
+    async update(id: EntityId, input: Partial<VenueSpace>) {
+      return venueInventorySb.updateVenueSpace(id, input);
+    },
+  };
+}
+
+function createServiceChecklistsRepository(): EntityRepository<ServiceChecklist> {
+  return {
+    async list(options?: ListOptions) {
+      if (options?.churchId) return venueInventorySb.getChecklistsByChurch(options.churchId);
+      return venueInventorySb.listServiceChecklists();
+    },
+    async getById(_id: EntityId) {
+      return { ok: true, data: null };
+    },
+    async create(input: Partial<ServiceChecklist>) {
+      return venueInventorySb.createServiceChecklist(input);
+    },
+    async update(id: EntityId, input: Partial<ServiceChecklist>) {
+      return venueInventorySb.updateServiceChecklist(id, input);
+    },
+  };
+}
+
 function createStubRepository<T>(collection: EntityCollectionName): EntityRepository<T> {
   const notReady = <R>(): DataResult<R> => ({
     ok: false,
@@ -360,7 +511,7 @@ export function createSupabaseProvider(): DataProvider & SupabaseProviderExtras 
     COLLECTION_NAMES.map((n) => [n, createStubRepository(n)]),
   ) as Record<EntityCollectionName, EntityRepository<unknown>>;
 
-  // Phase 3 + 4 + 5 pilots
+  // Phase 3 + 4 + 5 + 6 pilots
   map.churches = createChurchesRepository() as EntityRepository<unknown>;
   map.members = createMembersRepository() as EntityRepository<unknown>;
   map.first_timers = createFirstTimersRepository() as EntityRepository<unknown>;
@@ -368,6 +519,13 @@ export function createSupabaseProvider(): DataProvider & SupabaseProviderExtras 
   map.finance_records = createFinanceRecordsRepository() as EntityRepository<unknown>;
   map.public_giving_submissions = createPublicGivingRepository() as EntityRepository<unknown>;
   map.finance_disbursements = createDisbursementsRepository() as EntityRepository<unknown>;
+  map.requisitions = createRequisitionsRepository() as EntityRepository<unknown>;
+  map.requisition_timeline = createRequisitionTimelineRepository() as EntityRepository<unknown>;
+  map.inventory_items = createInventoryItemsRepository() as EntityRepository<unknown>;
+  map.inventory_movements = createInventoryMovementsRepository() as EntityRepository<unknown>;
+  map.inventory_maintenance = createInventoryMaintenanceRepository() as EntityRepository<unknown>;
+  map.venue_spaces = createVenueSpacesRepository() as EntityRepository<unknown>;
+  map.service_checklists = createServiceChecklistsRepository() as EntityRepository<unknown>;
 
   const foundationInfo = getSupabaseConnectionInfo();
   const envCfg = getSupabaseEnvConfig();
@@ -406,8 +564,8 @@ export function createSupabaseProvider(): DataProvider & SupabaseProviderExtras 
     financeRecords: map.finance_records as EntityRepository<FinanceRecord>,
     publicGivingSubmissions: map.public_giving_submissions as EntityRepository<PublicGivingSubmission>,
     financeDisbursements: map.finance_disbursements as EntityRepository<FinanceDisbursement>,
-    requisitions: map.requisitions as EntityRepository<never>,
-    requisitionTimeline: map.requisition_timeline as EntityRepository<never>,
+    requisitions: map.requisitions as EntityRepository<Requisition>,
+    requisitionTimeline: map.requisition_timeline as EntityRepository<RequisitionTimelineEvent>,
     notifications: map.notifications as EntityRepository<never>,
     notificationTemplates: map.notification_templates as EntityRepository<never>,
     systemSettings: map.system_settings as EntityRepository<never>,
@@ -474,11 +632,11 @@ export function createSupabaseProvider(): DataProvider & SupabaseProviderExtras 
     programBudgets: map.program_budgets as EntityRepository<never>,
     programChecklists: map.program_checklists as EntityRepository<never>,
     programReports: map.program_reports as EntityRepository<never>,
-    inventoryItems: map.inventory_items as EntityRepository<never>,
-    inventoryMovements: map.inventory_movements as EntityRepository<never>,
-    inventoryMaintenance: map.inventory_maintenance as EntityRepository<never>,
-    venueSpaces: map.venue_spaces as EntityRepository<never>,
-    serviceChecklists: map.service_checklists as EntityRepository<never>,
+    inventoryItems: map.inventory_items as EntityRepository<InventoryItem>,
+    inventoryMovements: map.inventory_movements as EntityRepository<InventoryMovement>,
+    inventoryMaintenance: map.inventory_maintenance as EntityRepository<InventoryMaintenanceRecord>,
+    venueSpaces: map.venue_spaces as EntityRepository<VenueSpace>,
+    serviceChecklists: map.service_checklists as EntityRepository<ServiceChecklist>,
     staff: map.staff as EntityRepository<never>,
     staffDepartments: map.staff_departments as EntityRepository<never>,
     staffRoles: map.staff_roles as EntityRepository<never>,

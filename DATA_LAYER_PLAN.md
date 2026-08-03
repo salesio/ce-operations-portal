@@ -1546,3 +1546,49 @@ npm run test:data-layer-all
 
 See **[docs/backend/FINANCE_PUBLIC_GIVING_STORAGE_SUPABASE_PILOT.md](docs/backend/FINANCE_PUBLIC_GIVING_STORAGE_SUPABASE_PILOT.md)**.
 
+## Backend Phase 6 — Requisitions + Venue/Inventory Supabase/API pilot
+
+**Status: optional pilot** — active only with `VITE_DATA_SOURCE=supabase` + `VITE_ENABLE_SUPABASE=true`.
+
+### Domain
+
+- `requisitions`
+- `requisition_timeline_events`
+- `inventory_items`
+- `inventory_movements`
+- `inventory_maintenance_records`
+- `venue_spaces`
+- `service_checklists`
+
+### Files
+
+| Area | Path |
+|------|------|
+| Supabase migration | `supabase/migrations/0006_requisitions_inventory_pilot.sql` |
+| Optional seed | `supabase/seeds/requisitions_inventory_seed.sql` |
+| Supabase adapters | `src/data/adapters/supabase/requisitionsSupabaseAdapter.ts`, `src/data/adapters/supabase/venueInventorySupabaseAdapter.ts` |
+| API adapters | `src/data/adapters/api/requisitionsApiAdapter.ts`, `src/data/adapters/api/venueInventoryApiAdapter.ts` |
+| Docs | `docs/backend/REQUISITIONS_INVENTORY_SUPABASE_PILOT.md` |
+
+### Rules
+
+- Browser never connects directly to PostgreSQL.
+- Frontend uses anon Supabase key only; service role remains backend-only.
+- Requisition approval can prepare `finance_disbursements`.
+- Requisition approval does **not** create a `finance_record` expense.
+- Inventory acquisition cost is asset metadata only.
+- Inventory does **not** create finance records automatically.
+- Expense is recorded only through Finance disbursement release.
+
+### How to test
+
+```bash
+npm run build
+npm run test:requisitions-inventory-supabase
+npm run test:requisitions-data
+npm run test:venue-inventory-data
+npm run test:finance-public-giving-supabase
+npm run test:data-layer-all
+```
+
+See **[docs/backend/REQUISITIONS_INVENTORY_SUPABASE_PILOT.md](docs/backend/REQUISITIONS_INVENTORY_SUPABASE_PILOT.md)**.

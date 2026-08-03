@@ -25,6 +25,7 @@ const scripts = [
   "smoke-ministry-materials-data.mjs",
   "smoke-programs-data.mjs",
   "smoke-settings-notifications-data.mjs",
+  "smoke-requisitions-inventory-supabase.mjs",
 ];
 
 let failed = 0;
