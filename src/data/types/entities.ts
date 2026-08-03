@@ -2497,6 +2497,7 @@ export interface ServiceChecklist {
 export interface StaffMember {
   id: EntityId;
   staff_code?: string | null;
+  staff_number?: string | null;
   full_name?: string | null;
   first_name?: string | null;
   last_name?: string | null;
@@ -2511,6 +2512,7 @@ export interface StaffMember {
   address?: string | null;
   city?: string | null;
   province?: string | null;
+  country?: string | null;
   marital_status?: string | null;
 
   church_id?: EntityId | null;
@@ -2518,13 +2520,16 @@ export interface StaffMember {
   department_id?: EntityId | null;
   department_name?: string | null;
   role_id?: EntityId | null;
+  role_name?: string | null;
   role_title?: string | null;
   supervisor_id?: EntityId | null;
+  supervisor_staff_id?: EntityId | null;
   supervisor_user_id?: EntityId | null;
   supervisor_name?: string | null;
 
   employment_type?: string | null;
   staff_type?: string | null;
+  employment_status?: string | null;
   start_date?: IsoDate | null;
   end_date?: IsoDate | null;
   contract_start_date?: IsoDate | null;
@@ -2537,6 +2542,8 @@ export interface StaffMember {
   national_id_number?: string | null;
   nuit?: string | null;
   profile_photo?: string | null;
+  profile_photo_document_id?: EntityId | null;
+  document_ids?: unknown[] | null;
 
   /** Sensitive — only expose to authorized roles */
   salary_or_allowance?: number | null;
@@ -2548,8 +2555,14 @@ export interface StaffMember {
   bank_or_mobile_details?: string | null;
 
   has_dashboard_access?: boolean | null;
+  can_access_dashboard?: boolean | null;
   user_id?: EntityId | null;
+  auth_user_id?: EntityId | null;
+  access_role_id?: EntityId | null;
+  access_role_name?: string | null;
   login_email?: string | null;
+  salary_enabled?: boolean | null;
+  salary_visibility?: string | null;
 
   notes?: string | null;
   birthday_month?: string | null;
@@ -2568,26 +2581,41 @@ export interface StaffMember {
 export interface StaffDepartment {
   id: EntityId;
   name?: string | null;
+  slug?: string | null;
   description?: string | null;
   church_id?: EntityId | null;
   church_name?: string | null;
   head_staff_id?: EntityId | null;
+  head_name?: string | null;
   head_staff_name?: string | null;
   parent_department_id?: EntityId | null;
+  department_type?: string | null;
   status?: string | null;
+  metadata?: Record<string, unknown> | null;
+  created_by?: string | null;
+  updated_by?: string | null;
   created_at?: IsoDate | IsoDateTime;
   updated_at?: IsoDate | IsoDateTime;
 }
 
 export interface StaffRole {
   id: EntityId;
+  name?: string | null;
+  slug?: string | null;
   title?: string | null;
   description?: string | null;
   department_id?: EntityId | null;
   department_name?: string | null;
   permission_template?: string | null;
+  default_access_role_id?: EntityId | null;
+  default_access_role_name?: string | null;
+  employment_type?: string | null;
+  role_level?: string | null;
   level?: string | null;
   status?: string | null;
+  metadata?: Record<string, unknown> | null;
+  created_by?: string | null;
+  updated_by?: string | null;
   created_at?: IsoDate | IsoDateTime;
   updated_at?: IsoDate | IsoDateTime;
 }
@@ -2596,6 +2624,7 @@ export interface StaffRole {
 export interface StaffSalary {
   id: EntityId;
   staff_id?: EntityId | null;
+  staff_number?: string | null;
   staff_name?: string | null;
   church_id?: EntityId | null;
   church_name?: string | null;
@@ -2605,9 +2634,12 @@ export interface StaffSalary {
   salary_type?: string | null;
   amount?: number | null;
   base_amount?: number | null;
+  base_salary?: number | null;
+  allowances?: number | null;
   bonus?: number | null;
   deductions?: number | null;
   net_amount?: number | null;
+  net_salary?: number | null;
   currency?: string | null;
 
   payment_frequency?: string | null;
@@ -2631,6 +2663,9 @@ export interface StaffSalary {
   paid_at?: IsoDateTime | null;
 
   notes?: string | null;
+  metadata?: Record<string, unknown> | null;
+  created_by?: string | null;
+  updated_by?: string | null;
   created_at?: IsoDate | IsoDateTime;
   updated_at?: IsoDate | IsoDateTime;
 }
@@ -2638,6 +2673,7 @@ export interface StaffSalary {
 export interface StaffPerformanceReview {
   id: EntityId;
   staff_id?: EntityId | null;
+  staff_number?: string | null;
   staff_name?: string | null;
   department_id?: EntityId | null;
   department_name?: string | null;
@@ -2645,6 +2681,7 @@ export interface StaffPerformanceReview {
   church_name?: string | null;
 
   review_period?: string | null;
+  review_date?: IsoDate | null;
   evaluation_period?: string | null;
   review_start_date?: IsoDate | null;
   review_end_date?: IsoDate | null;
@@ -2659,6 +2696,7 @@ export interface StaffPerformanceReview {
   teamwork_score?: number | null;
   technical_skill_score?: number | null;
   spiritual_attitude_score?: number | null;
+  spiritual_commitment_score?: number | null;
   communication_score?: number | null;
   leadership_score?: number | null;
   task_completion_score?: number | null;
@@ -2668,11 +2706,17 @@ export interface StaffPerformanceReview {
 
   strengths?: string | null;
   improvements?: string | null;
+  improvement_areas?: string | null;
   areas_to_improve?: string | null;
+  goals?: string | null;
+  review_notes?: string | null;
   goals_next_period?: string | null;
   action_plan?: string | null;
 
   status?: string | null;
+  metadata?: Record<string, unknown> | null;
+  created_by?: string | null;
+  updated_by?: string | null;
   reviewed_at?: IsoDateTime | null;
   created_at?: IsoDate | IsoDateTime;
   updated_at?: IsoDate | IsoDateTime;
@@ -2681,17 +2725,30 @@ export interface StaffPerformanceReview {
 export interface StaffDocument {
   id: EntityId;
   staff_id?: EntityId | null;
+  staff_number?: string | null;
   staff_name?: string | null;
+  document_id?: EntityId | null;
   document_type?: string | null;
   document_title?: string | null;
   file_url?: string | null;
   file_name?: string | null;
+  storage_bucket?: string | null;
+  storage_path?: string | null;
+  is_sensitive?: boolean | null;
   issue_date?: IsoDate | null;
   expiry_date?: IsoDate | null;
   status?: string | null;
   uploaded_by_user_id?: EntityId | null;
   uploaded_by_name?: string | null;
+  verified_by_user_id?: EntityId | null;
+  verified_by_name?: string | null;
+  verified_at?: IsoDateTime | null;
+  rejected_by_user_id?: EntityId | null;
+  rejected_by_name?: string | null;
+  rejected_at?: IsoDateTime | null;
+  rejection_reason?: string | null;
   notes?: string | null;
+  metadata?: Record<string, unknown> | null;
   created_at?: IsoDate | IsoDateTime;
   updated_at?: IsoDate | IsoDateTime;
 }
@@ -2699,6 +2756,7 @@ export interface StaffDocument {
 export interface StaffAttendance {
   id: EntityId;
   staff_id?: EntityId | null;
+  staff_number?: string | null;
   staff_name?: string | null;
   church_id?: EntityId | null;
   church_name?: string | null;
@@ -2711,7 +2769,9 @@ export interface StaffAttendance {
   check_in_time?: string | null;
   check_out_time?: string | null;
   status?: string | null;
+  attendance_type?: string | null;
   attendance_status?: string | null;
+  metadata?: Record<string, unknown> | null;
   recorded_by_user_id?: EntityId | null;
   recorded_by_name?: string | null;
   notes?: string | null;

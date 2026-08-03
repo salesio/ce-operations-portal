@@ -17,6 +17,7 @@ import {
 } from "./api/apiRepositoryBase";
 import * as requisitionsApi from "./api/requisitionsApiAdapter";
 import * as venueInventoryApi from "./api/venueInventoryApiAdapter";
+import * as staffHrApi from "./api/staffHrApiAdapter";
 import type {
   InventoryItem,
   InventoryMaintenanceRecord,
@@ -24,6 +25,13 @@ import type {
   Requisition,
   RequisitionTimelineEvent,
   ServiceChecklist,
+  StaffAttendance,
+  StaffDepartment,
+  StaffDocument,
+  StaffMember,
+  StaffPerformanceReview,
+  StaffRole,
+  StaffSalary,
   VenueSpace,
 } from "../types/entities";
 
@@ -229,6 +237,54 @@ export function createApiProvider(): DataProvider & ApiProviderExtras {
     create: venueInventoryApi.createServiceChecklist,
     update: venueInventoryApi.updateServiceChecklist,
   } as EntityRepository<unknown>;
+  map.staff = {
+    list: staffHrApi.listStaffMembers,
+    getById: staffHrApi.getStaffMemberById,
+    create: staffHrApi.createStaffMember,
+    update: staffHrApi.updateStaffMember,
+    remove: staffHrApi.deleteStaffMember,
+  } as EntityRepository<unknown>;
+  map.staff_departments = {
+    list: staffHrApi.listStaffDepartments,
+    getById: staffHrApi.getStaffDepartmentById,
+    create: staffHrApi.createStaffDepartment,
+    update: staffHrApi.updateStaffDepartment,
+    remove: staffHrApi.deleteStaffDepartment,
+  } as EntityRepository<unknown>;
+  map.staff_roles = {
+    list: staffHrApi.listStaffRoles,
+    getById: staffHrApi.getStaffRoleById,
+    create: staffHrApi.createStaffRole,
+    update: staffHrApi.updateStaffRole,
+    remove: staffHrApi.deleteStaffRole,
+  } as EntityRepository<unknown>;
+  map.staff_salaries = {
+    list: staffHrApi.listStaffSalaries,
+    getById: staffHrApi.getStaffSalaryById,
+    create: staffHrApi.createStaffSalary,
+    update: staffHrApi.updateStaffSalary,
+    remove: staffHrApi.deleteStaffSalary,
+  } as EntityRepository<unknown>;
+  map.staff_performance = {
+    list: staffHrApi.listPerformanceReviews,
+    getById: staffHrApi.getPerformanceReviewById,
+    create: staffHrApi.createPerformanceReview,
+    update: staffHrApi.updatePerformanceReview,
+    remove: staffHrApi.deletePerformanceReview,
+  } as EntityRepository<unknown>;
+  map.staff_documents = {
+    list: staffHrApi.listStaffDocuments,
+    getById: staffHrApi.getStaffDocumentById,
+    create: staffHrApi.createStaffDocument,
+    update: staffHrApi.updateStaffDocument,
+    remove: async (id: EntityId) => staffHrApi.rejectStaffDocument(id, { status: "Archived" }) as unknown as DataResult<boolean>,
+  } as EntityRepository<unknown>;
+  map.staff_attendance = {
+    list: staffHrApi.listStaffAttendance,
+    getById: async () => ({ ok: true, data: null }),
+    create: staffHrApi.createStaffAttendance,
+    update: staffHrApi.updateStaffAttendance,
+  } as EntityRepository<unknown>;
 
   const baseUrl = getApiBaseUrl();
   const cfg = getApiEnvConfig();
@@ -237,7 +293,7 @@ export function createApiProvider(): DataProvider & ApiProviderExtras {
   return {
     name: "api",
     description: cfg.isConfigured
-      ? `HTTP API placeholder (base: ${baseUrl}) — domain repos not wired yet.`
+      ? `HTTP API placeholder (base: ${baseUrl}) — requisitions, inventory and staff pilots wired.`
       : "HTTP API placeholder — set VITE_API_BASE_URL when backend is ready.",
     isReady: () => false,
     getInfo: getApiProviderInfo,
@@ -334,13 +390,13 @@ export function createApiProvider(): DataProvider & ApiProviderExtras {
     inventoryMaintenance: map.inventory_maintenance as EntityRepository<InventoryMaintenanceRecord>,
     venueSpaces: map.venue_spaces as EntityRepository<VenueSpace>,
     serviceChecklists: map.service_checklists as EntityRepository<ServiceChecklist>,
-    staff: map.staff as EntityRepository<never>,
-    staffDepartments: map.staff_departments as EntityRepository<never>,
-    staffRoles: map.staff_roles as EntityRepository<never>,
-    staffSalaries: map.staff_salaries as EntityRepository<never>,
-    staffPerformance: map.staff_performance as EntityRepository<never>,
-    staffDocuments: map.staff_documents as EntityRepository<never>,
-    staffAttendance: map.staff_attendance as EntityRepository<never>,
+    staff: map.staff as EntityRepository<StaffMember>,
+    staffDepartments: map.staff_departments as EntityRepository<StaffDepartment>,
+    staffRoles: map.staff_roles as EntityRepository<StaffRole>,
+    staffSalaries: map.staff_salaries as EntityRepository<StaffSalary>,
+    staffPerformance: map.staff_performance as EntityRepository<StaffPerformanceReview>,
+    staffDocuments: map.staff_documents as EntityRepository<StaffDocument>,
+    staffAttendance: map.staff_attendance as EntityRepository<StaffAttendance>,
     roles: map.roles as EntityRepository<never>,
     permissions: map.permissions as EntityRepository<never>,
     permissionTemplates: map.permission_templates as EntityRepository<never>,

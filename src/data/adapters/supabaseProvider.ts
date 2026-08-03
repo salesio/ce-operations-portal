@@ -26,6 +26,7 @@ import * as publicGivingSb from "./supabase/publicGivingSupabaseAdapter";
 import * as disbursementsSb from "./supabase/financeDisbursementsSupabaseAdapter";
 import * as requisitionsSb from "./supabase/requisitionsSupabaseAdapter";
 import * as venueInventorySb from "./supabase/venueInventorySupabaseAdapter";
+import * as staffHrSb from "./supabase/staffHrSupabaseAdapter";
 import type {
   Church,
   FinanceDisbursement,
@@ -40,6 +41,13 @@ import type {
   Requisition,
   RequisitionTimelineEvent,
   ServiceChecklist,
+  StaffAttendance,
+  StaffDepartment,
+  StaffDocument,
+  StaffMember,
+  StaffPerformanceReview,
+  StaffRole,
+  StaffSalary,
   VenueSpace,
 } from "../types/entities";
 
@@ -50,6 +58,7 @@ import type {
  * Phase 4: first_timers + follow_ups
  * Phase 5: finance_records + public_giving + disbursements
  * Phase 6: requisitions + venue/inventory pilot
+ * Phase 7: staff & RH + staff document metadata pilot
  * Other collections remain NOT_IMPLEMENTED stubs.
  * Uses public anon key only (via foundation client when enabled).
  */
@@ -506,12 +515,159 @@ export function getSupabaseProviderInfo(): SupabaseConnectionInfo {
   return getSupabaseConnectionInfo();
 }
 
+function createStaffRepository(): EntityRepository<StaffMember> {
+  return {
+    async list(options?: ListOptions) {
+      if (options?.churchId) return staffHrSb.getStaffByChurch(options.churchId);
+      const r = await staffHrSb.listStaffMembers();
+      if (!r.ok) return r as DataResult<StaffMember[]>;
+      let data = r.data || [];
+      if (options?.limit) data = data.slice(options.offset || 0, (options.offset || 0) + options.limit);
+      return { ok: true, data };
+    },
+    async getById(id: EntityId) {
+      return staffHrSb.getStaffMemberById(id);
+    },
+    async create(input: Partial<StaffMember>) {
+      return staffHrSb.createStaffMember(input);
+    },
+    async update(id: EntityId, input: Partial<StaffMember>) {
+      return staffHrSb.updateStaffMember(id, input);
+    },
+    async remove(id: EntityId) {
+      return staffHrSb.deleteStaffMember(id);
+    },
+  };
+}
+
+function createStaffDepartmentsRepository(): EntityRepository<StaffDepartment> {
+  return {
+    async list() {
+      return staffHrSb.listStaffDepartments();
+    },
+    async getById(id: EntityId) {
+      return staffHrSb.getStaffDepartmentById(id);
+    },
+    async create(input: Partial<StaffDepartment>) {
+      return staffHrSb.createStaffDepartment(input);
+    },
+    async update(id: EntityId, input: Partial<StaffDepartment>) {
+      return staffHrSb.updateStaffDepartment(id, input);
+    },
+    async remove(id: EntityId) {
+      return staffHrSb.deleteStaffDepartment(id);
+    },
+  };
+}
+
+function createStaffRolesRepository(): EntityRepository<StaffRole> {
+  return {
+    async list() {
+      return staffHrSb.listStaffRoles();
+    },
+    async getById(id: EntityId) {
+      return staffHrSb.getStaffRoleById(id);
+    },
+    async create(input: Partial<StaffRole>) {
+      return staffHrSb.createStaffRole(input);
+    },
+    async update(id: EntityId, input: Partial<StaffRole>) {
+      return staffHrSb.updateStaffRole(id, input);
+    },
+    async remove(id: EntityId) {
+      return staffHrSb.deleteStaffRole(id);
+    },
+  };
+}
+
+function createStaffSalariesRepository(): EntityRepository<StaffSalary> {
+  return {
+    async list() {
+      return staffHrSb.listStaffSalaries();
+    },
+    async getById(id: EntityId) {
+      return staffHrSb.getStaffSalaryById(id);
+    },
+    async create(input: Partial<StaffSalary>) {
+      return staffHrSb.createStaffSalary(input);
+    },
+    async update(id: EntityId, input: Partial<StaffSalary>) {
+      return staffHrSb.updateStaffSalary(id, input);
+    },
+    async remove(id: EntityId) {
+      return staffHrSb.deleteStaffSalary(id);
+    },
+  };
+}
+
+function createStaffPerformanceRepository(): EntityRepository<StaffPerformanceReview> {
+  return {
+    async list() {
+      return staffHrSb.listPerformanceReviews();
+    },
+    async getById(id: EntityId) {
+      return staffHrSb.getPerformanceReviewById(id);
+    },
+    async create(input: Partial<StaffPerformanceReview>) {
+      return staffHrSb.createPerformanceReview(input);
+    },
+    async update(id: EntityId, input: Partial<StaffPerformanceReview>) {
+      return staffHrSb.updatePerformanceReview(id, input);
+    },
+    async remove(id: EntityId) {
+      return staffHrSb.deletePerformanceReview(id);
+    },
+  };
+}
+
+function createStaffDocumentsRepository(): EntityRepository<StaffDocument> {
+  return {
+    async list() {
+      return staffHrSb.listStaffDocuments();
+    },
+    async getById(id: EntityId) {
+      return staffHrSb.getStaffDocumentById(id);
+    },
+    async create(input: Partial<StaffDocument>) {
+      return staffHrSb.createStaffDocument(input);
+    },
+    async update(id: EntityId, input: Partial<StaffDocument>) {
+      return staffHrSb.updateStaffDocument(id, input);
+    },
+    async remove(id: EntityId) {
+      const r = await staffHrSb.rejectStaffDocument(id, { status: "Archived" });
+      if (!r.ok) return r as unknown as DataResult<boolean>;
+      return { ok: true, data: true };
+    },
+  };
+}
+
+function createStaffAttendanceRepository(): EntityRepository<StaffAttendance> {
+  return {
+    async list() {
+      return staffHrSb.listStaffAttendance();
+    },
+    async getById(_id: EntityId) {
+      return { ok: true, data: null };
+    },
+    async create(input: Partial<StaffAttendance>) {
+      return staffHrSb.createStaffAttendance(input);
+    },
+    async update(id: EntityId, input: Partial<StaffAttendance>) {
+      return staffHrSb.updateStaffAttendance(id, input);
+    },
+    async remove(_id: EntityId) {
+      return { ok: false, error: "Delete staff attendance not exposed", code: "NOT_SUPPORTED" };
+    },
+  };
+}
+
 export function createSupabaseProvider(): DataProvider & SupabaseProviderExtras {
   const map = Object.fromEntries(
     COLLECTION_NAMES.map((n) => [n, createStubRepository(n)]),
   ) as Record<EntityCollectionName, EntityRepository<unknown>>;
 
-  // Phase 3 + 4 + 5 + 6 pilots
+  // Phase 3 + 4 + 5 + 6 + 7 pilots
   map.churches = createChurchesRepository() as EntityRepository<unknown>;
   map.members = createMembersRepository() as EntityRepository<unknown>;
   map.first_timers = createFirstTimersRepository() as EntityRepository<unknown>;
@@ -526,13 +682,20 @@ export function createSupabaseProvider(): DataProvider & SupabaseProviderExtras 
   map.inventory_maintenance = createInventoryMaintenanceRepository() as EntityRepository<unknown>;
   map.venue_spaces = createVenueSpacesRepository() as EntityRepository<unknown>;
   map.service_checklists = createServiceChecklistsRepository() as EntityRepository<unknown>;
+  map.staff = createStaffRepository() as EntityRepository<unknown>;
+  map.staff_departments = createStaffDepartmentsRepository() as EntityRepository<unknown>;
+  map.staff_roles = createStaffRolesRepository() as EntityRepository<unknown>;
+  map.staff_salaries = createStaffSalariesRepository() as EntityRepository<unknown>;
+  map.staff_performance = createStaffPerformanceRepository() as EntityRepository<unknown>;
+  map.staff_documents = createStaffDocumentsRepository() as EntityRepository<unknown>;
+  map.staff_attendance = createStaffAttendanceRepository() as EntityRepository<unknown>;
 
   const foundationInfo = getSupabaseConnectionInfo();
   const envCfg = getSupabaseEnvConfig();
 
   const description =
     foundationInfo.status === "ready"
-      ? `Supabase pilot ready (${foundationInfo.urlHost || "configured"}) — churches/members/FT/FU/finance live; other modules stubbed.`
+      ? `Supabase pilot ready (${foundationInfo.urlHost || "configured"}) — churches/members/FT/FU/finance/requisitions/inventory/staff live; other modules stubbed.`
       : foundationInfo.status === "missing_env"
         ? `Supabase enabled but env incomplete — ${foundationInfo.message}`
         : "Supabase provider placeholder (disabled). Domain modules use mock/local.";
@@ -637,13 +800,13 @@ export function createSupabaseProvider(): DataProvider & SupabaseProviderExtras 
     inventoryMaintenance: map.inventory_maintenance as EntityRepository<InventoryMaintenanceRecord>,
     venueSpaces: map.venue_spaces as EntityRepository<VenueSpace>,
     serviceChecklists: map.service_checklists as EntityRepository<ServiceChecklist>,
-    staff: map.staff as EntityRepository<never>,
-    staffDepartments: map.staff_departments as EntityRepository<never>,
-    staffRoles: map.staff_roles as EntityRepository<never>,
-    staffSalaries: map.staff_salaries as EntityRepository<never>,
-    staffPerformance: map.staff_performance as EntityRepository<never>,
-    staffDocuments: map.staff_documents as EntityRepository<never>,
-    staffAttendance: map.staff_attendance as EntityRepository<never>,
+    staff: map.staff as EntityRepository<StaffMember>,
+    staffDepartments: map.staff_departments as EntityRepository<StaffDepartment>,
+    staffRoles: map.staff_roles as EntityRepository<StaffRole>,
+    staffSalaries: map.staff_salaries as EntityRepository<StaffSalary>,
+    staffPerformance: map.staff_performance as EntityRepository<StaffPerformanceReview>,
+    staffDocuments: map.staff_documents as EntityRepository<StaffDocument>,
+    staffAttendance: map.staff_attendance as EntityRepository<StaffAttendance>,
     roles: map.roles as EntityRepository<never>,
     permissions: map.permissions as EntityRepository<never>,
     permissionTemplates: map.permission_templates as EntityRepository<never>,

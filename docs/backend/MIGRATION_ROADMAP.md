@@ -92,3 +92,18 @@ localStorage / mock remain valid for **dev and prototype** until each domain pil
 3. Never put service role or `DATABASE_URL` in the browser  
 4. Run `npm run build` + `npm run test:data-layer-all` after changes  
 5. Document dual-write / hydrate for UI bridges  
+
+---
+
+## Phase 7 - Staff & RH + Documents pilot
+
+- [x] Schema + migration `0007_staff_hr_documents_pilot.sql`
+- [x] `staffHrSupabaseAdapter`
+- [x] API placeholder for Staff & RH
+- [x] Repository routing (`VITE_DATA_SOURCE=supabase` / `api`)
+- [x] Optional SQL seed
+- [x] Salary records remain HR metadata only
+- [x] Staff documents remain sensitive metadata; private bucket reserved
+- [x] Smoke: `test:staff-hr-supabase`
+- [ ] Production RLS enforced
+- [ ] Private staff document upload/signing flow

@@ -182,6 +182,50 @@ Future policy intent:
 */
 
 -- ---------------------------------------------------------------------------
+-- Phase 7: Staff & RH + staff documents pilot - policy sketches (NOT enabled)
+-- ---------------------------------------------------------------------------
+/*
+Future intent:
+- Staff profiles: church scope + HR/Admin permissions; staff may view own profile.
+- Staff salaries: HR Manager, Super Admin, explicitly permitted salary roles only.
+- Staff documents: metadata visible only to HR/Admin or own staff record; storage
+  must use a private bucket with signed URLs later.
+- Staff documents must never use a public bucket.
+- Salaries must not create finance_records or expenses automatically.
+
+-- ALTER TABLE public.staff_departments ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.staff_roles ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.staff_members ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.staff_salaries ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.staff_performance_reviews ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.staff_documents ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.staff_attendance ENABLE ROW LEVEL SECURITY;
+
+-- CREATE POLICY staff_members_select_pilot ON public.staff_members
+--   FOR SELECT TO authenticated
+--   USING (
+--     public.current_app_user_scope() = 'all'
+--     OR public.has_module_permission('staffHr', 'view')
+--     OR church_id = (SELECT church_id FROM public.users WHERE id = public.current_app_user_id())
+--     OR user_id = public.current_app_user_id()
+--   );
+
+-- CREATE POLICY staff_salaries_select_pilot ON public.staff_salaries
+--   FOR SELECT TO authenticated
+--   USING (
+--     public.has_module_permission('staffHr.salary', 'view')
+--     OR public.has_module_permission('staffHr', 'manage')
+--   );
+
+-- CREATE POLICY staff_documents_select_pilot ON public.staff_documents
+--   FOR SELECT TO authenticated
+--   USING (
+--     public.has_module_permission('staffHr.documents', 'view')
+--     OR staff_id IN (SELECT staff_id FROM public.users WHERE id = public.current_app_user_id())
+--   );
+*/
+
+-- ---------------------------------------------------------------------------
 -- Phase 4: First Timers / Follow-Ups pilot — policy sketches (NOT enabled)
 -- ---------------------------------------------------------------------------
 /*

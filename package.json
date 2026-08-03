@@ -34,6 +34,7 @@
     "test:first-timers-followups-supabase": "node scripts/smoke-first-timers-followups-supabase.mjs",
     "test:finance-public-giving-supabase": "node scripts/smoke-finance-public-giving-storage-supabase.mjs",
     "test:requisitions-inventory-supabase": "node scripts/smoke-requisitions-inventory-supabase.mjs",
+    "test:staff-hr-supabase": "node scripts/smoke-staff-hr-supabase.mjs",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f",

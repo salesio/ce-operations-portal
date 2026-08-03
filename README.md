@@ -200,6 +200,8 @@ See **[docs/backend/BACKEND_ARCHITECTURE_PLAN.md](docs/backend/BACKEND_ARCHITECT
 
 Without env variables, the dashboard keeps using **mock / localStorage** data.
 
+Backend Phase 7 adds an optional Staff & RH + Documents Supabase/API pilot. It keeps salaries as HR metadata only and stores staff document metadata as sensitive/private by default. See [docs/backend/STAFF_HR_DOCUMENTS_SUPABASE_PILOT.md](docs/backend/STAFF_HR_DOCUMENTS_SUPABASE_PILOT.md).
+
 ### Supabase (database backend — future pilots)
 
 PostgreSQL, auth, and file storage will run on **Supabase** (or an API → Postgres) — not on GitHub Pages.

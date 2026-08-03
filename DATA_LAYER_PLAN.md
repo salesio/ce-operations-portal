@@ -1592,3 +1592,39 @@ npm run test:data-layer-all
 ```
 
 See **[docs/backend/REQUISITIONS_INVENTORY_SUPABASE_PILOT.md](docs/backend/REQUISITIONS_INVENTORY_SUPABASE_PILOT.md)**.
+
+---
+
+## Backend Phase 7 - Staff & RH + Documents Supabase/API pilot
+
+**Status: optional pilot** - active only with `VITE_DATA_SOURCE=supabase` + `VITE_ENABLE_SUPABASE=true`.
+
+### Domain
+
+- `staff_departments`
+- `staff_roles`
+- `staff_members`
+- `staff_salaries`
+- `staff_performance_reviews`
+- `staff_documents`
+- `staff_attendance`
+
+### Rules
+
+- Staff salaries are sensitive HR metadata and do not create finance records.
+- Staff documents are sensitive metadata; private `staff-documents` storage is reserved for later.
+- Staff records can link to Users/Roles through `user_id`, `auth_user_id`, `access_role_id`, and `can_access_dashboard`.
+- Mock/local remains default until Supabase/API is explicitly enabled.
+
+### How to test
+
+```bash
+npm run build
+npm run test:staff-hr-supabase
+npm run test:staff-hr-data
+npm run test:access-control-data
+npm run test:venue-inventory-data
+npm run test:data-layer-all
+```
+
+See **[docs/backend/STAFF_HR_DOCUMENTS_SUPABASE_PILOT.md](docs/backend/STAFF_HR_DOCUMENTS_SUPABASE_PILOT.md)**.
