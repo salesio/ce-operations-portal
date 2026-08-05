@@ -107,3 +107,18 @@ localStorage / mock remain valid for **dev and prototype** until each domain pil
 - [x] Smoke: `test:staff-hr-supabase`
 - [ ] Production RLS enforced
 - [ ] Private staff document upload/signing flow
+
+## Phase 8 - Foundation School pilot
+
+- [x] Schema + additive migration `0008_foundation_school_pilot.sql`
+- [x] Optional synthetic seed `foundation_school_seed.sql`
+- [x] Supabase adapter for enrollments, classes, students, teachers, lessons, attendance, tests, exams and graduations
+- [x] API placeholder using `VITE_API_BASE_URL`
+- [x] Existing mock/local Foundation School repository surface preserved
+- [x] Explicit First Timer/Member enrollment; no automatic Member creation
+- [x] Explicit graduation; no automatic certificate generation
+- [x] Test average and 40/60 final-grade calculation
+- [x] Smoke: `test:foundation-school-supabase`
+- [ ] Production RLS enforcement and private signed document uploads
+
+Programs, Media, Counseling, Sacraments and payroll remain outside this phase.

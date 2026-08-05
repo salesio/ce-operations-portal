@@ -978,6 +978,8 @@ export type {
   EntityCollectionName
 } from "./data";
 
+import * as foundationSchoolSupabase from "./data/adapters/supabase/foundationSchoolSupabaseAdapter";
+
 import {
   listChurches,
   getChurchById,
@@ -1887,6 +1889,7 @@ function installDataLayerGlobals(): void {
   };
 
   const foundationSchool = {
+    ...foundationSchoolSupabase,
     listStudents: listFoundationStudents,
     createStudent: createFoundationStudent,
     updateStudent: updateFoundationStudent,
@@ -2804,6 +2807,10 @@ function installDataLayerGlobals(): void {
     firstTimers,
     followUps,
     foundationSchool,
+    foundationStudents: foundationSchool,
+    foundationClasses: foundationSchool,
+    foundationTeachers: foundationSchool,
+    foundationEnrollments: foundationSchool,
     cellMinistry,
     cellGroups,
     cells,

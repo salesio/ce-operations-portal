@@ -1238,3 +1238,5 @@ export { FOLLOW_UPS_SEED } from "./seeds/followUpsSeed";
 export { FOUNDATION_STUDENTS_SEED } from "./seeds/foundationStudentsSeed";
 export { FOUNDATION_TEACHERS_SEED } from "./seeds/foundationTeachersSeed";
 export { FOUNDATION_CLASSES_SEED } from "./seeds/foundationClassesSeed";
+export * as foundationSchoolSupabaseAdapter from "./adapters/supabase/foundationSchoolSupabaseAdapter";
+export * as foundationSchoolApiAdapter from "./adapters/api/foundationSchoolApiAdapter";

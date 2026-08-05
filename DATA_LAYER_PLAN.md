@@ -1628,3 +1628,24 @@ npm run test:data-layer-all
 ```
 
 See **[docs/backend/STAFF_HR_DOCUMENTS_SUPABASE_PILOT.md](docs/backend/STAFF_HR_DOCUMENTS_SUPABASE_PILOT.md)**.
+
+---
+
+## Backend Phase 8 - Foundation School Supabase/API pilot
+
+**Status: optional pilot** - enabled only by `VITE_DATA_SOURCE=supabase`, `VITE_ENABLE_SUPABASE=true`, and valid public Supabase URL/anon key.
+
+The existing `foundationSchoolRepository` API and mock/local seeds remain intact. In Supabase mode its students, teachers, classes and final-exam collections use the Phase 8 adapter; advanced enrollment, progress, attendance, tests, Lesson 4 practical, explicit graduation and reporting operations live in `foundationSchoolSupabaseAdapter.ts`.
+
+Database tables use the `foundation_school_*` prefix and are installed by `0008_foundation_school_pilot.sql`. The optional SQL seed is never injected automatically into a remote project.
+
+Safety rules:
+
+- First Timers and Members are linked only by explicit enrollment actions; Foundation School never creates a Member automatically.
+- Staff records can be linked to teachers but are not created or changed automatically.
+- Seven completed lessons move a student toward the final exam; graduation remains explicit.
+- External forms and scan/certificate documents remain metadata only.
+- Final grade is test average 40% + final exam percentage 60%, with pass mark 50.
+- RLS intent is documented but production policies and private signed uploads remain future work.
+
+See **[docs/backend/FOUNDATION_SCHOOL_SUPABASE_PILOT.md](docs/backend/FOUNDATION_SCHOOL_SUPABASE_PILOT.md)**.

@@ -27,12 +27,17 @@ import * as disbursementsSb from "./supabase/financeDisbursementsSupabaseAdapter
 import * as requisitionsSb from "./supabase/requisitionsSupabaseAdapter";
 import * as venueInventorySb from "./supabase/venueInventorySupabaseAdapter";
 import * as staffHrSb from "./supabase/staffHrSupabaseAdapter";
+import * as foundationSchoolSb from "./supabase/foundationSchoolSupabaseAdapter";
 import type {
   Church,
   FinanceDisbursement,
   FinanceRecord,
   FirstTimer,
   FollowUp,
+  FoundationClassGroup,
+  FoundationFinalExam,
+  FoundationStudent,
+  FoundationTeacher,
   InventoryItem,
   InventoryMaintenanceRecord,
   InventoryMovement,
@@ -662,12 +667,74 @@ function createStaffAttendanceRepository(): EntityRepository<StaffAttendance> {
   };
 }
 
+function createFoundationStudentsRepository(): EntityRepository<FoundationStudent> {
+  return {
+    async list(options?: ListOptions) {
+      const result = options?.churchId ? await foundationSchoolSb.getStudentsByChurch(options.churchId) : await foundationSchoolSb.listFoundationStudents();
+      if (!result.ok) return result as DataResult<FoundationStudent[]>;
+      let data = result.data as FoundationStudent[];
+      if (options?.limit) data = data.slice(options.offset || 0, (options.offset || 0) + options.limit);
+      return { ok: true, data };
+    },
+    async getById(id) { return foundationSchoolSb.getFoundationStudentById(id) as Promise<DataResult<FoundationStudent | null>>; },
+    async create(input) { return foundationSchoolSb.createFoundationStudent(input as foundationSchoolSb.FoundationRecord) as Promise<DataResult<FoundationStudent>>; },
+    async update(id, input) { return foundationSchoolSb.updateFoundationStudent(id, input as foundationSchoolSb.FoundationRecord) as Promise<DataResult<FoundationStudent>>; },
+    async remove(id) { return foundationSchoolSb.deleteFoundationStudent(id); },
+  };
+}
+
+function createFoundationTeachersRepository(): EntityRepository<FoundationTeacher> {
+  return {
+    async list(options?: ListOptions) {
+      const result = options?.churchId ? await foundationSchoolSb.getTeachersByChurch(options.churchId) : await foundationSchoolSb.listFoundationTeachers();
+      if (!result.ok) return result as DataResult<FoundationTeacher[]>;
+      let data = result.data as FoundationTeacher[];
+      if (options?.limit) data = data.slice(options.offset || 0, (options.offset || 0) + options.limit);
+      return { ok: true, data };
+    },
+    async getById(id) { return foundationSchoolSb.getFoundationTeacherById(id) as Promise<DataResult<FoundationTeacher | null>>; },
+    async create(input) { return foundationSchoolSb.createFoundationTeacher(input as foundationSchoolSb.FoundationRecord) as Promise<DataResult<FoundationTeacher>>; },
+    async update(id, input) { return foundationSchoolSb.updateFoundationTeacher(id, input as foundationSchoolSb.FoundationRecord) as Promise<DataResult<FoundationTeacher>>; },
+    async remove(id) { return foundationSchoolSb.deleteFoundationTeacher(id); },
+  };
+}
+
+function createFoundationClassesRepository(): EntityRepository<FoundationClassGroup> {
+  return {
+    async list(options?: ListOptions) {
+      const result = options?.churchId ? await foundationSchoolSb.getClassesByChurch(options.churchId) : await foundationSchoolSb.listFoundationClasses();
+      if (!result.ok) return result as DataResult<FoundationClassGroup[]>;
+      let data = result.data as FoundationClassGroup[];
+      if (options?.limit) data = data.slice(options.offset || 0, (options.offset || 0) + options.limit);
+      return { ok: true, data };
+    },
+    async getById(id) { return foundationSchoolSb.getFoundationClassById(id) as Promise<DataResult<FoundationClassGroup | null>>; },
+    async create(input) { return foundationSchoolSb.createFoundationClass(input as foundationSchoolSb.FoundationRecord) as Promise<DataResult<FoundationClassGroup>>; },
+    async update(id, input) { return foundationSchoolSb.updateFoundationClass(id, input as foundationSchoolSb.FoundationRecord) as Promise<DataResult<FoundationClassGroup>>; },
+    async remove(id) { return foundationSchoolSb.deleteFoundationClass(id); },
+  };
+}
+
+function createFoundationFinalExamsRepository(): EntityRepository<FoundationFinalExam> {
+  return {
+    async list() { return foundationSchoolSb.listFinalExams() as Promise<DataResult<FoundationFinalExam[]>>; },
+    async getById(id) {
+      const rows = await foundationSchoolSb.listFinalExams();
+      if (!rows.ok) return rows as DataResult<FoundationFinalExam | null>;
+      return { ok: true, data: (rows.data.find((row) => String(row.id) === String(id)) || null) as FoundationFinalExam | null };
+    },
+    async create(input) { return foundationSchoolSb.createFinalExam(input as foundationSchoolSb.FoundationRecord) as Promise<DataResult<FoundationFinalExam>>; },
+    async update(id, input) { return foundationSchoolSb.updateFinalExam(id, input as foundationSchoolSb.FoundationRecord) as Promise<DataResult<FoundationFinalExam>>; },
+    async remove() { return { ok: false, error: "Final exams are retained for audit.", code: "NOT_SUPPORTED" }; },
+  };
+}
+
 export function createSupabaseProvider(): DataProvider & SupabaseProviderExtras {
   const map = Object.fromEntries(
     COLLECTION_NAMES.map((n) => [n, createStubRepository(n)]),
   ) as Record<EntityCollectionName, EntityRepository<unknown>>;
 
-  // Phase 3 + 4 + 5 + 6 + 7 pilots
+  // Phase 3 + 4 + 5 + 6 + 7 + 8 pilots
   map.churches = createChurchesRepository() as EntityRepository<unknown>;
   map.members = createMembersRepository() as EntityRepository<unknown>;
   map.first_timers = createFirstTimersRepository() as EntityRepository<unknown>;
@@ -689,6 +756,10 @@ export function createSupabaseProvider(): DataProvider & SupabaseProviderExtras 
   map.staff_performance = createStaffPerformanceRepository() as EntityRepository<unknown>;
   map.staff_documents = createStaffDocumentsRepository() as EntityRepository<unknown>;
   map.staff_attendance = createStaffAttendanceRepository() as EntityRepository<unknown>;
+  map.foundation_students = createFoundationStudentsRepository() as EntityRepository<unknown>;
+  map.foundation_teachers = createFoundationTeachersRepository() as EntityRepository<unknown>;
+  map.foundation_class_groups = createFoundationClassesRepository() as EntityRepository<unknown>;
+  map.foundation_final_exams = createFoundationFinalExamsRepository() as EntityRepository<unknown>;
 
   const foundationInfo = getSupabaseConnectionInfo();
   const envCfg = getSupabaseEnvConfig();

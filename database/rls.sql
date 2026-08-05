@@ -53,6 +53,38 @@ Example policy sketches (do not apply until auth_user_id is wired in production)
 */
 
 -- ---------------------------------------------------------------------------
+-- Phase 8: Foundation School pilot policy plan (documented, NOT enabled)
+-- ---------------------------------------------------------------------------
+/*
+Future intent:
+- Super Admin and Main Pastor: global Foundation School visibility.
+- Church Pastor: records belonging to the user's church_id.
+- Reitor/Coordinator: classes, students and teachers in their allowed scope.
+- Professor: assigned classes/students; created_by/teacher_id retains attribution.
+- Unauthorised staff: no test scores, final exams or sensitive student notes.
+- Student portal is outside Phase 8.
+
+RLS remains deliberately disabled for the dev-safe pilot so applying migration
+0008 cannot lock out existing mock/local workflows. Before production, enable
+and test policies for every foundation_school_* table with authenticated users.
+
+-- ALTER TABLE public.foundation_school_students ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.foundation_school_classes ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.foundation_school_teachers ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.foundation_school_lesson_progress ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.foundation_school_attendance ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.foundation_school_test_results ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.foundation_school_final_exams ENABLE ROW LEVEL SECURITY;
+
+-- Example SELECT shape (do not enable until role helpers are production-ready):
+-- CREATE POLICY foundation_students_select_pilot ON public.foundation_school_students
+-- FOR SELECT TO authenticated USING (
+--   public.current_app_user_scope() = 'all'
+--   OR church_id = (SELECT church_id FROM public.users WHERE id = public.current_app_user_id())
+-- );
+*/
+
+-- ---------------------------------------------------------------------------
 -- Helper functions (Phase 2 — safe stubs; used by future policies)
 -- ---------------------------------------------------------------------------
 

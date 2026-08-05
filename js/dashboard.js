@@ -16082,6 +16082,10 @@ function renderSettings() {
                     : window.CESupabase && typeof window.CESupabase.getStaffHrDataSourceInfo === "function"
                       ? window.CESupabase.getStaffHrDataSourceInfo()
                       : null;
+                const foundationInfo =
+                  window.CEFoundationSchool && typeof window.CEFoundationSchool.getInfo === "function"
+                    ? window.CEFoundationSchool.getInfo()
+                    : null;
                 const sbOn = !!(flags && flags.enableSupabase);
                 const storageOn = !!(flags && flags.enableStorage);
                 const readyLabel = (info) => {
@@ -16105,6 +16109,8 @@ function renderSettings() {
               <div>venue & inventory: <code>${readyLabel(invInfo)}</code></div>
               <div>staff & rh: <code>${readyLabel(staffInfo)}</code></div>
               <div>staff documents: <code>${readyLabel(staffInfo)}</code> / metadata</div>
+              <div>foundation school: <code>${readyLabel(foundationInfo)}</code></div>
+              <div>foundation tests: <code>${readyLabel(foundationInfo)}</code> / external forms metadata</div>
               <div>others: <code>local/mock</code></div>
               <div class="text-white-50 mt-1">${lang === "pt" ? "Sem expor keys/secrets. Pilotos: Igrejas, Membros, FT, Follow-Up, Finance, Requisições e Inventário." : "No keys/secrets exposed. Pilots: Churches, Members, FT, Follow-Up, Finance, Requisitions and Inventory."}</div>
             </div>`;

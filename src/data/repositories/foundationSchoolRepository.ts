@@ -252,6 +252,8 @@ async function attachChurchNameStudent(s: FoundationStudent): Promise<Foundation
 }
 
 export async function ensureFoundationSchoolSeeded(): Promise<void> {
+  // Remote demo data is opt-in via foundation_school_seed.sql.
+  if (getDataSource() === "supabase") return;
   const provider = getDataProvider();
   const students = await provider.foundationStudents.list();
   if (students.ok && (students.data || []).length === 0 && provider.foundationStudents.create) {
@@ -672,5 +674,9 @@ export function getFoundationSchoolDataSourceInfo() {
     provider: provider.name,
     ready: provider.isReady(),
     description: provider.description,
+    supabaseReady: getDataSource() === "supabase" && provider.isReady(),
+    migration: "0008_foundation_school_pilot.sql",
+    automaticMemberCreation: false,
+    automaticCertificateCreation: false,
   };
 }

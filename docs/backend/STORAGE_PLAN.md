@@ -50,3 +50,5 @@
 | Programs | program-files |
 | Media | media-assets |
 | Ministry Materials | ministry-materials |
+
+Phase 8 only prepares `document_id`, `scan_document_id`, and certificate-document metadata. `foundation-exams` must remain private; uploads and signed URLs are optional future work and are never required when `VITE_ENABLE_STORAGE=false`.

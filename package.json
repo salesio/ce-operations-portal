@@ -35,6 +35,8 @@
     "test:finance-public-giving-supabase": "node scripts/smoke-finance-public-giving-storage-supabase.mjs",
     "test:requisitions-inventory-supabase": "node scripts/smoke-requisitions-inventory-supabase.mjs",
     "test:staff-hr-supabase": "node scripts/smoke-staff-hr-supabase.mjs",
+    "test:foundation-school-supabase": "node scripts/smoke-foundation-school-supabase.mjs",
+    "test:foundation-school-data": "node scripts/smoke-foundation-school-supabase.mjs",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f",

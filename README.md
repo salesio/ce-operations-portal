@@ -39,6 +39,8 @@ The UI still uses **localStorage mock** for most modules. Typed adapters live un
 
 **Staff & HR (pilot):** staff profiles, departments, roles, salaries, performance, documents, attendance via data layer + `CEStaffHR` bridge. Salaries/documents are RBAC-sensitive. Assigned equipment is read from Venue & Inventory. No automatic salary expense in Finance.
 
+**Foundation School Backend Phase 8 (optional Supabase/API pilot):** enrollments, classes, students, linked staff/teachers, lessons 1–7, attendance, external-test metadata/results, Lesson 4 practical, final exams and explicit graduations. Mock/local remain available. It never creates Members or certificates automatically and does not integrate the Google Forms API. See [docs/backend/FOUNDATION_SCHOOL_SUPABASE_PILOT.md](docs/backend/FOUNDATION_SCHOOL_SUPABASE_PILOT.md).
+
 **Users, Roles & Access Control (pilot):** users, app roles, permissions, templates, and audit logs via data layer + `access-control-data-bridge` (merges with live `CEAccessControl` templates). No real passwords; login remains demo. Access denied writes audit `access_denied`. Real Supabase Auth = future.
 
 **Media Department (pilot):** technical team, roles, services/programs, schedules (confirm/check-in/out), streaming channels, performance reviews, and awards via data layer + `CEMedia` bridge. Optional `staff_id` from Staff & HR. Equipment soft-linked from Venue & Inventory. Live TV remains external embed/link; **no real stream keys** in localStorage. See **[MEDIA_MODULE_PLAN.md](MEDIA_MODULE_PLAN.md)**.
