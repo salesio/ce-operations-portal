@@ -32,6 +32,9 @@ import * as programsSb from "./supabase/programsSupabaseAdapter";
 import * as mediaSb from "./supabase/mediaSupabaseAdapter";
 import * as counselingSb from "./supabase/counselingSupabaseAdapter";
 import * as sacramentsSb from "./supabase/sacramentsSupabaseAdapter";
+import * as fevoSb from "./supabase/fevoSupabaseAdapter";
+import * as prisonSb from "./supabase/prisonMinistrySupabaseAdapter";
+import * as materialsSb from "./supabase/ministryMaterialsSupabaseAdapter";
 import type {
   Church,
   FinanceDisbursement,
@@ -87,6 +90,7 @@ import type {
  * Phase 8: Foundation School pilot
  * Phase 9: Programs + Media pilot
  * Phase 10: Counseling + Sacraments pilot
+ * Phase 11: F.E.V.O + Prison Ministry + Ministry Materials pilot
  * Other collections remain NOT_IMPLEMENTED stubs.
  * Uses public anon key only (via foundation client when enabled).
  */
@@ -839,13 +843,32 @@ export function createSupabaseProvider(): DataProvider & SupabaseProviderExtras 
   map.sacrament_certificates = createPilotRepository<any>({ list: sacramentsSb.listSacramentCertificates, create: sacramentsSb.createSacramentCertificate, update: sacramentsSb.updateSacramentCertificate }) as EntityRepository<unknown>;
   map.sacrament_documents = createPilotRepository<any>({ list: sacramentsSb.listSacramentDocuments, create: sacramentsSb.createSacramentDocument, update: sacramentsSb.updateSacramentDocument }) as EntityRepository<unknown>;
   map.sacrament_appointments = createPilotRepository<any>({ list: sacramentsSb.listSacramentAppointments, create: sacramentsSb.createSacramentAppointment, update: sacramentsSb.updateSacramentAppointment }) as EntityRepository<unknown>;
+  map.fevo_weekly_configs = createPilotRepository<any>({ list: fevoSb.listFevoWeeklyConfigs, create: fevoSb.createFevoWeeklyConfig, update: fevoSb.updateFevoWeeklyConfig }) as EntityRepository<unknown>;
+  map.fevo_activities = createPilotRepository<any>({ list: fevoSb.listFevoActivities, create: fevoSb.createFevoActivity, update: fevoSb.updateFevoActivity }) as EntityRepository<unknown>;
+  map.fevo_reports = createPilotRepository<any>({ list: fevoSb.listFevoReports, create: fevoSb.createFevoReport, update: fevoSb.updateFevoReport }) as EntityRepository<unknown>;
+  map.fevo_missing_reports = createPilotRepository<any>({ list: fevoSb.listMissingFevoReports, create: fevoSb.createFevoMissingReport, update: fevoSb.updateFevoMissingReport }) as EntityRepository<unknown>;
+  map.fevo_evangelism_records = createPilotRepository<any>({ list: fevoSb.listFevoEvangelismRecords, create: fevoSb.createFevoEvangelismRecord, update: fevoSb.updateFevoEvangelismRecord }) as EntityRepository<unknown>;
+  map.fevo_visitation_records = createPilotRepository<any>({ list: fevoSb.listFevoVisitationRecords, create: fevoSb.createFevoVisitationRecord, update: fevoSb.updateFevoVisitationRecord }) as EntityRepository<unknown>;
+  map.fevo_prayer_records = createPilotRepository<any>({ list: fevoSb.listFevoPrayerRecords, create: fevoSb.createFevoPrayerRecord, update: fevoSb.updateFevoPrayerRecord }) as EntityRepository<unknown>;
+  map.prison_locations = createPilotRepository<any>({ list: prisonSb.listPrisonLocations, create: prisonSb.createPrisonLocation, update: prisonSb.updatePrisonLocation, remove: prisonSb.deletePrisonLocation }) as EntityRepository<unknown>;
+  map.prison_services = createPilotRepository<any>({ list: prisonSb.listPrisonServices, create: prisonSb.createPrisonService, update: prisonSb.updatePrisonService }) as EntityRepository<unknown>;
+  map.prison_foundation_students = createPilotRepository<any>({ list: prisonSb.listPrisonFoundationStudents, create: prisonSb.createPrisonFoundationStudent, update: prisonSb.updatePrisonFoundationStudent }) as EntityRepository<unknown>;
+  map.prison_weekly_agendas = createPilotRepository<any>({ list: prisonSb.listPrisonAgendaItems, create: prisonSb.createPrisonAgendaItem, update: prisonSb.updatePrisonAgendaItem }) as EntityRepository<unknown>;
+  map.prison_reports = createPilotRepository<any>({ list: prisonSb.listPrisonReports, create: prisonSb.createPrisonReport, update: prisonSb.updatePrisonReport }) as EntityRepository<unknown>;
+  map.ministry_materials_catalog = createPilotRepository<any>({ list: materialsSb.listMaterialsCatalog, create: materialsSb.createMaterialCatalogItem, update: materialsSb.updateMaterialCatalogItem, remove: materialsSb.deleteMaterialCatalogItem }) as EntityRepository<unknown>;
+  map.ministry_materials_stock = createPilotRepository<any>({ list: materialsSb.listMaterialsStock, create: materialsSb.createMaterialStock, update: materialsSb.updateMaterialStock }) as EntityRepository<unknown>;
+  map.ministry_materials_sales = createPilotRepository<any>({ list: materialsSb.listMaterialSales, create: materialsSb.createMaterialSale, update: materialsSb.updateMaterialSale }) as EntityRepository<unknown>;
+  map.ministry_materials_distributions = createPilotRepository<any>({ list: materialsSb.listMaterialDistributions, create: materialsSb.createMaterialDistribution, update: materialsSb.updateMaterialDistribution }) as EntityRepository<unknown>;
+  map.ministry_materials_requests = createPilotRepository<any>({ list: materialsSb.listMaterialRequests, create: materialsSb.createMaterialRequest, update: materialsSb.updateMaterialRequest }) as EntityRepository<unknown>;
+  map.ministry_materials_funds = createPilotRepository<any>({ list: materialsSb.listMaterialFunds, create: materialsSb.createMaterialFund, update: materialsSb.updateMaterialFund }) as EntityRepository<unknown>;
+  map.ministry_materials_reports = createPilotRepository<any>({ list: materialsSb.listMaterialReports, create: materialsSb.createMaterialReport, update: materialsSb.updateMaterialReport }) as EntityRepository<unknown>;
 
   const foundationInfo = getSupabaseConnectionInfo();
   const envCfg = getSupabaseEnvConfig();
 
   const description =
     foundationInfo.status === "ready"
-      ? `Supabase pilot ready (${foundationInfo.urlHost || "configured"}) — Phases 3–10 domain pilots available; other modules remain stubbed.`
+      ? `Supabase pilot ready (${foundationInfo.urlHost || "configured"}) — Phases 3–11 domain pilots available; other modules remain stubbed.`
       : foundationInfo.status === "missing_env"
         ? `Supabase enabled but env incomplete — ${foundationInfo.message}`
         : "Supabase provider placeholder (disabled). Domain modules use mock/local.";

@@ -1440,6 +1440,7 @@ export async function getPrisonWeeklyReport(_filters = {}) {
 
 export async function ensurePrisonMinistrySeeded(): Promise<DataResult<boolean>> {
   try {
+    if (getDataSource() === "supabase") return ok(true);
     const seed = async <T extends { id: string }>(
       listFn: () => Promise<DataResult<T[]>>,
       createViaRepo: (row: T) => Promise<unknown>,
@@ -1507,6 +1508,11 @@ export function getPrisonMinistryDataSourceInfo() {
     ready: provider.isReady(),
     description: provider.description,
     domain: "prisonMinistry",
+    migration: "0011_fevo_prison_materials_pilot.sql",
+    criminalDataAllowed: false,
+    automaticMembers: false,
+    automaticFirstTimers: false,
+    separateFoundationSchool: true,
   };
 }
 

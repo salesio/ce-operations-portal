@@ -422,20 +422,22 @@ export async function getUpcomingFevoWeeklyConfigs() {
   );
 }
 export async function activateFevoWeeklyConfig(id: EntityId, _payload = {}) {
-  // Close other actives first (soft)
+  // Close other active configs in the same church first (soft).
+  const target = await getFevoWeeklyConfigById(id);
   const list = await listFevoWeeklyConfigs();
-  if (list.ok) {
+  if (list.ok && target.ok && target.data) {
     for (const c of list.data) {
-      if (c.id !== id && /active|activo/i.test(String(c.status || c.estado))) {
+      const sameChurch = String(c.church_id || "") === String(target.data.church_id || "");
+      if (c.id !== id && sameChurch && /active|activo/i.test(String(c.status || c.estado))) {
         await updateFevoWeeklyConfig(c.id, { status: "Closed", estado: "Fechado" });
       }
     }
   }
   const result = await updateFevoWeeklyConfig(id, { status: "Active", estado: "Activo" });
   if (result.ok && result.data) {
-    // Auto-create Team A/B/C/D activities for this week if none exist
+    // Create any missing Team A/B/C/D activities without duplicating existing slots.
     const existing = await getActivitiesByWeek(id);
-    if (existing.ok && existing.data.length === 0) {
+    if (existing.ok) {
       const cfg = result.data;
       const weekLabel =
         cfg.week_label ||
@@ -447,6 +449,7 @@ export async function activateFevoWeeklyConfig(id: EntityId, _payload = {}) {
         { code: "D", name: "Team D", activity: cfg.team_d_activity || "Visitation" },
       ];
       for (const slot of slots) {
+        if (existing.data.some((activity) => String(activity.team_code || "").toUpperCase() === slot.code)) continue;
         await createFevoActivity({
           weekly_config_id: id,
           config_id: id,
@@ -815,7 +818,7 @@ export async function submitFevoReport(
     await ensureTypedRecordFromReport(result.data);
     await syncActivityFromReport(result.data, "Report Submitted");
     void softAudit("fevo_report_submitted", "fevo_report", String(id));
-    void softCreateFollowUp(result.data);
+    // Phase 11: Follow-Up creation is explicit only; retain report soft-links.
   }
   return result;
 }
@@ -1566,6 +1569,7 @@ export async function getFevoPrayerStats(_filters = {}) {
 
 export async function ensureFevoSeeded(): Promise<DataResult<boolean>> {
   try {
+    if (getDataSource() === "supabase") return ok(true);
     const cfg = await listFevoWeeklyConfigs();
     if (cfg.ok && cfg.data.length === 0) {
       for (const s of FEVO_WEEKLY_CONFIGS_SEED) {
@@ -1644,6 +1648,9 @@ export function getFevoDataSourceInfo() {
     ready: provider.isReady(),
     description: provider.description,
     domain: "fevo",
+    migration: "0011_fevo_prison_materials_pilot.sql",
+    automaticFirstTimers: false,
+    automaticFollowUps: false,
   };
 }
 

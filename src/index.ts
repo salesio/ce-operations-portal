@@ -983,6 +983,9 @@ import * as programsSupabase from "./data/adapters/supabase/programsSupabaseAdap
 import * as mediaSupabase from "./data/adapters/supabase/mediaSupabaseAdapter";
 import * as counselingSupabase from "./data/adapters/supabase/counselingSupabaseAdapter";
 import * as sacramentsSupabase from "./data/adapters/supabase/sacramentsSupabaseAdapter";
+import * as fevoSupabase from "./data/adapters/supabase/fevoSupabaseAdapter";
+import * as prisonMinistrySupabase from "./data/adapters/supabase/prisonMinistrySupabaseAdapter";
+import * as ministryMaterialsSupabase from "./data/adapters/supabase/ministryMaterialsSupabaseAdapter";
 
 import {
   listChurches,
@@ -1812,6 +1815,7 @@ function installDataLayerGlobals(): void {
     CECounseling?: Record<string, unknown>;
     CESacraments?: Record<string, unknown>;
     CEFevo?: Record<string, unknown>;
+    CEFEVO?: Record<string, unknown>;
     CEPrisonMinistry?: Record<string, unknown>;
     CEMinistryMaterials?: Record<string, unknown>;
     CEPrograms?: Record<string, unknown>;
@@ -2308,6 +2312,7 @@ function installDataLayerGlobals(): void {
   };
 
   const fevo = {
+    ...fevoSupabase,
     listFevoWeeklyConfigs,
     createFevoWeeklyConfig,
     updateFevoWeeklyConfig,
@@ -2360,6 +2365,7 @@ function installDataLayerGlobals(): void {
   };
 
   const prisonMinistry = {
+    ...prisonMinistrySupabase,
     listPrisonLocations,
     createPrisonLocation,
     updatePrisonLocation,
@@ -2419,6 +2425,7 @@ function installDataLayerGlobals(): void {
   };
 
   const ministryMaterials = {
+    ...ministryMaterialsSupabase,
     listMaterialsCatalog,
     createMaterial,
     updateMaterial,
@@ -2726,6 +2733,9 @@ function installDataLayerGlobals(): void {
   };
 
   root.CESupabase = Object.assign(root.CESupabase || {}, {
+    ...fevoSupabase,
+    ...prisonMinistrySupabase,
+    ...ministryMaterialsSupabase,
     ...counselingSupabase,
     ...sacramentsSupabase,
     ...churches,
@@ -3218,6 +3228,9 @@ function installDataLayerGlobals(): void {
   }
   if (!root.CEFevo) {
     root.CEFevo = fevo;
+  }
+  if (!root.CEFEVO) {
+    root.CEFEVO = fevo;
   }
   if (!root.CEPrisonMinistry) {
     root.CEPrisonMinistry = prisonMinistry;

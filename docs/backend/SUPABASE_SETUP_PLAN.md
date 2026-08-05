@@ -78,4 +78,5 @@ npm run test:data-layer-all
 - **Foundation School (Phase 8):** migration `0008` + optional seed `foundation_school_seed.sql`
 - **Programs + Media (Phase 9):** migration `0009` + optional seed `programs_media_seed.sql`
 - **Counseling + Sacraments (Phase 10):** migration `0010` + optional seed `counseling_sacraments_seed.sql`
-- Docs: `CHURCHES_MEMBERS_SUPABASE_PILOT.md`, `FIRST_TIMERS_FOLLOWUPS_SUPABASE_PILOT.md`, `FINANCE_PUBLIC_GIVING_STORAGE_SUPABASE_PILOT.md`, `REQUISITIONS_INVENTORY_SUPABASE_PILOT.md`, `STAFF_HR_DOCUMENTS_SUPABASE_PILOT.md`, `FOUNDATION_SCHOOL_SUPABASE_PILOT.md`, `PROGRAMS_MEDIA_SUPABASE_PILOT.md`, `COUNSELING_SACRAMENTS_SUPABASE_PILOT.md`
+- **F.E.V.O + Prison + Materials (Phase 11):** migration `0011` + optional seed `fevo_prison_materials_seed.sql`
+- Docs include `PROGRAMS_MEDIA_SUPABASE_PILOT.md`, `COUNSELING_SACRAMENTS_SUPABASE_PILOT.md`, and `FEVO_PRISON_MATERIALS_SUPABASE_PILOT.md` alongside earlier domain pilot guides.

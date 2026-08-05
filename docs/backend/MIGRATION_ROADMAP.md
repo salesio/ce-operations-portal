@@ -152,3 +152,17 @@ Counseling, Sacraments, F.E.V.O, Prison Ministry and Ministry Materials remain l
 - [ ] Production RLS, trusted confidential-field RPC and signed private URLs
 
 F.E.V.O, Prison Ministry and Ministry Materials remain local/mock in this phase.
+
+## Phase 11 - F.E.V.O + Prison Ministry + Ministry Materials pilot
+
+- [x] Additive migration `0011_fevo_prison_materials_pilot.sql`
+- [x] Optional synthetic seed `fevo_prison_materials_seed.sql`
+- [x] Supabase/API adapters for 20 operational tables
+- [x] F.E.V.O Team A-D activation, validation and missing-report controls
+- [x] No automatic First Timer or Follow-Up creation
+- [x] Prison operational/aggregate model with criminal/judicial data rejection
+- [x] Prison Foundation kept separate from general Foundation School
+- [x] Separate Ministry Materials stock and internal-only sales/funds
+- [x] No automatic Finance, Requisition, Member or Inventory creation
+- [x] Smoke: `test:fevo-prison-materials-supabase`
+- [ ] Production RLS, private signed documents, and concurrency controls

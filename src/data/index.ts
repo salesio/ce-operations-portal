@@ -1248,3 +1248,9 @@ export * as counselingSupabaseAdapter from "./adapters/supabase/counselingSupaba
 export * as sacramentsSupabaseAdapter from "./adapters/supabase/sacramentsSupabaseAdapter";
 export * as counselingApiAdapter from "./adapters/api/counselingApiAdapter";
 export * as sacramentsApiAdapter from "./adapters/api/sacramentsApiAdapter";
+export * as fevoSupabaseAdapter from "./adapters/supabase/fevoSupabaseAdapter";
+export * as prisonMinistrySupabaseAdapter from "./adapters/supabase/prisonMinistrySupabaseAdapter";
+export * as ministryMaterialsSupabaseAdapter from "./adapters/supabase/ministryMaterialsSupabaseAdapter";
+export * as fevoApiAdapter from "./adapters/api/fevoApiAdapter";
+export * as prisonMinistryApiAdapter from "./adapters/api/prisonMinistryApiAdapter";
+export * as ministryMaterialsApiAdapter from "./adapters/api/ministryMaterialsApiAdapter";

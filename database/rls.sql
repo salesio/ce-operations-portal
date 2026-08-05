@@ -122,6 +122,37 @@ assignment and field-level confidentiality boundaries before enabling RLS.
 */
 
 -- ---------------------------------------------------------------------------
+-- Phase 11: F.E.V.O + Prison Ministry + Ministry Materials (NOT enabled)
+-- ---------------------------------------------------------------------------
+/*
+F.E.V.O future intent: Super Admin/Main Pastor global view; F.E.V.O Lead
+validates; Team Lead submits own-team reports; Staff sees own assignments.
+
+Prison Ministry future intent: Super Admin/Ministry Lead manage operational
+locations, services, separated prison classes and aggregate reports. Church
+Pastors see permitted aggregates and assigned Staff see their agenda. Personal,
+criminal, judicial, sentence, offence, court, cell and inmate identity data are
+prohibited at every role and must not be stored.
+
+Ministry Materials future intent: Lead manages catalog, separate module stock,
+requests and distributions. Finance may view internal summaries when permitted,
+but sales/funds never enter verified Finance totals automatically.
+
+Migration 0011 remains dev-safe: production RLS must be tested before enabling.
+-- ALTER TABLE public.fevo_weekly_configs ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.fevo_activities ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.fevo_reports ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.prison_locations ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.prison_services ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.prison_foundation_students ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.prison_reports ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.ministry_materials_catalog ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.ministry_materials_stock ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.ministry_materials_sales ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.ministry_materials_funds ENABLE ROW LEVEL SECURITY;
+*/
+
+-- ---------------------------------------------------------------------------
 -- Phase 8: Foundation School pilot policy plan (documented, NOT enabled)
 -- ---------------------------------------------------------------------------
 /*

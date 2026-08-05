@@ -21,6 +21,7 @@ const scripts = [
   "smoke-counseling-data.mjs",
   "smoke-sacraments-data.mjs",
   "smoke-counseling-sacraments-supabase.mjs",
+  "smoke-fevo-prison-materials-supabase.mjs",
   "smoke-fevo-data.mjs",
   "smoke-prison-ministry-data.mjs",
   "smoke-ministry-materials-data.mjs",

@@ -1686,3 +1686,16 @@ Six Counseling and six Sacraments collections now route through dedicated Supaba
 - F.E.V.O, Prison Ministry and Ministry Materials remain local/mock.
 
 See **[docs/backend/COUNSELING_SACRAMENTS_SUPABASE_PILOT.md](docs/backend/COUNSELING_SACRAMENTS_SUPABASE_PILOT.md)**.
+
+---
+
+## Backend Phase 11 - F.E.V.O + Prison Ministry + Ministry Materials pilot
+
+**Status: optional pilot** — active only with complete Supabase flags and public URL/anon configuration.
+
+- F.E.V.O routes configs, activities, reports, typed records, and missing reports without automatic First Timers/Follow-Ups.
+- Prison Ministry stores operational locations, aggregate services/reports, separated prison classes/students, and agenda items; criminal/judicial data is prohibited.
+- Ministry Materials uses separate catalog/stock, explicit stock actions, internal sales/funds, requests, distributions, and reports without Finance/Requisition/Inventory automation.
+- Existing bridges and mock/local APIs remain intact.
+
+See **[docs/backend/FEVO_PRISON_MATERIALS_SUPABASE_PILOT.md](docs/backend/FEVO_PRISON_MATERIALS_SUPABASE_PILOT.md)**.

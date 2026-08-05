@@ -1537,6 +1537,7 @@ export async function getMonthlyMaterialsReport(filters: { month?: string } = {}
 
 export async function ensureMinistryMaterialsSeeded(): Promise<DataResult<boolean>> {
   try {
+    if (getDataSource() === "supabase") return ok(true);
     const p = getDataProvider();
     async function seed<T extends { id: string }>(
       listFn: () => Promise<DataResult<T[]>>,
@@ -1599,6 +1600,10 @@ export function getMinistryMaterialsDataSourceInfo() {
     ready: provider.isReady(),
     description: provider.description,
     domain: "ministryMaterials",
+    migration: "0011_fevo_prison_materials_pilot.sql",
+    internalFundsOnly: true,
+    automaticFinanceRecord: false,
+    separateFromVenueInventory: true,
   };
 }
 
