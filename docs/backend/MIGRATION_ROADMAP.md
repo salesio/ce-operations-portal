@@ -70,15 +70,15 @@ localStorage / mock remain valid for **dev and prototype** until each domain pil
 - [ ] Production RLS enforced
 - [ ] Full attachment upload flow for inventory/requisition documents
 
-## Phase 7 — Remaining modules by domain
+## Future domains after current pilots
 
 - Foundation School, Cells, Staff, Media, Counseling, Sacraments, FEVO, Prison, Materials, Programs, Settings/Notifications
 
-## Phase 8 — Reports + audit + notifications real-time
+## Future cross-domain reports + realtime
 
 - Aggregates, audit completeness, optional realtime channels
 
-## Phase 9 — VPS / API deploy
+## Future VPS / API deploy
 
 - Optional self-hosted API + Postgres
 - `VITE_DATA_SOURCE=api` + hardened secrets
@@ -122,3 +122,18 @@ localStorage / mock remain valid for **dev and prototype** until each domain pil
 - [ ] Production RLS enforcement and private signed document uploads
 
 Programs, Media, Counseling, Sacraments and payroll remain outside this phase.
+
+## Phase 9 - Programs + Media pilot
+
+- [x] Additive migration `0009_programs_media_pilot.sql`
+- [x] Optional synthetic seed `programs_media_seed.sql`
+- [x] Supabase/API adapters for nine Programs tables and seven Media tables
+- [x] Existing mock/local repositories and browser bridges preserved
+- [x] Explicit Programs → Media Service linkage
+- [x] Budget planning with explicit Requisition/Finance Disbursement soft-links
+- [x] Inventory/Staff links without automatic movement/creation
+- [x] Public Media Channel metadata validation
+- [x] Smoke: `test:programs-media-supabase`
+- [ ] Production RLS and private signed document uploads
+
+Counseling, Sacraments, F.E.V.O, Prison Ministry and Ministry Materials remain local/mock in this phase.

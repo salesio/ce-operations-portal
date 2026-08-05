@@ -76,4 +76,5 @@ npm run test:data-layer-all
 - **Requisitions + Venue/Inventory (Phase 6):** migration `0006` + seed `requisitions_inventory_seed.sql`  
 - **Staff & RH + Documents (Phase 7):** migration `0007` + seed `staff_hr_seed.sql`
 - **Foundation School (Phase 8):** migration `0008` + optional seed `foundation_school_seed.sql`
-- Docs: `CHURCHES_MEMBERS_SUPABASE_PILOT.md`, `FIRST_TIMERS_FOLLOWUPS_SUPABASE_PILOT.md`, `FINANCE_PUBLIC_GIVING_STORAGE_SUPABASE_PILOT.md`, `REQUISITIONS_INVENTORY_SUPABASE_PILOT.md`, `STAFF_HR_DOCUMENTS_SUPABASE_PILOT.md`, `FOUNDATION_SCHOOL_SUPABASE_PILOT.md`
+- **Programs + Media (Phase 9):** migration `0009` + optional seed `programs_media_seed.sql`
+- Docs: `CHURCHES_MEMBERS_SUPABASE_PILOT.md`, `FIRST_TIMERS_FOLLOWUPS_SUPABASE_PILOT.md`, `FINANCE_PUBLIC_GIVING_STORAGE_SUPABASE_PILOT.md`, `REQUISITIONS_INVENTORY_SUPABASE_PILOT.md`, `STAFF_HR_DOCUMENTS_SUPABASE_PILOT.md`, `FOUNDATION_SCHOOL_SUPABASE_PILOT.md`, `PROGRAMS_MEDIA_SUPABASE_PILOT.md`

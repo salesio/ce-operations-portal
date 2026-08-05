@@ -1240,3 +1240,7 @@ export { FOUNDATION_TEACHERS_SEED } from "./seeds/foundationTeachersSeed";
 export { FOUNDATION_CLASSES_SEED } from "./seeds/foundationClassesSeed";
 export * as foundationSchoolSupabaseAdapter from "./adapters/supabase/foundationSchoolSupabaseAdapter";
 export * as foundationSchoolApiAdapter from "./adapters/api/foundationSchoolApiAdapter";
+export * as programsSupabaseAdapter from "./adapters/supabase/programsSupabaseAdapter";
+export * as mediaSupabaseAdapter from "./adapters/supabase/mediaSupabaseAdapter";
+export * as programsApiAdapter from "./adapters/api/programsApiAdapter";
+export * as mediaApiAdapter from "./adapters/api/mediaApiAdapter";

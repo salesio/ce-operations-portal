@@ -53,6 +53,37 @@ Example policy sketches (do not apply until auth_user_id is wired in production)
 */
 
 -- ---------------------------------------------------------------------------
+-- Phase 9: Programs + Media policy plan (documented, NOT enabled)
+-- ---------------------------------------------------------------------------
+/*
+Programs future intent:
+- Super Admin/Main Pastor: global view.
+- Church Pastor: own church programs.
+- Department Head and assigned Program Coordinator: department/assigned programs.
+- Finance: budget planning and verified finance links according to permission.
+- Media: programs explicitly marked requires_media.
+
+Media future intent:
+- Super Admin and Media Lead: team, services, schedules and public channel metadata.
+- Media Team: own schedules and permitted service information.
+- Church Pastor: coverage for own church.
+- Unauthorised staff: no internal team/performance details.
+
+Complex policies remain disabled for this dev-safe pilot. Production rollout must
+test church scope, assigned staff, role permissions, budget visibility and media
+performance privacy before enabling RLS on every Programs/Media table.
+
+-- ALTER TABLE public.programs ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.program_budgets ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.program_reports ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.media_team_members ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.media_services ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.media_schedules ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.media_channels ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.media_performance_records ENABLE ROW LEVEL SECURITY;
+*/
+
+-- ---------------------------------------------------------------------------
 -- Phase 8: Foundation School pilot policy plan (documented, NOT enabled)
 -- ---------------------------------------------------------------------------
 /*

@@ -52,3 +52,5 @@
 | Ministry Materials | ministry-materials |
 
 Phase 8 only prepares `document_id`, `scan_document_id`, and certificate-document metadata. `foundation-exams` must remain private; uploads and signed URLs are optional future work and are never required when `VITE_ENABLE_STORAGE=false`.
+
+Phase 9 prepares private metadata for Program reports (`program-files`) and internal Media service assets (`media-assets`). It does not require uploads and must not use browser storage as a heavy-video or livestream hosting platform.

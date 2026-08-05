@@ -28,6 +28,7 @@ const scripts = [
   "smoke-requisitions-inventory-supabase.mjs",
   "smoke-staff-hr-supabase.mjs",
   "smoke-foundation-school-supabase.mjs",
+  "smoke-programs-media-supabase.mjs",
 ];
 
 let failed = 0;

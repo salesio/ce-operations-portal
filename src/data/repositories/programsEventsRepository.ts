@@ -1440,6 +1440,8 @@ export async function getProgramMaterialsReport(_filters = {}) {
 
 export async function ensureProgramsSeeded(): Promise<DataResult<boolean>> {
   try {
+    // Remote demo data is opt-in via programs_media_seed.sql.
+    if (getDataSource() === "supabase") return ok(true);
     const p = getDataProvider();
     async function seed<T extends { id: string }>(
       listFn: () => Promise<DataResult<T[]>>,
@@ -1506,6 +1508,10 @@ export function getProgramsDataSourceInfo() {
     ready: provider.isReady(),
     description: provider.description,
     domain: "programs",
+    migration: "0009_programs_media_pilot.sql",
+    planningOnly: true,
+    automaticFinanceRecord: false,
+    automaticExpense: false,
   };
 }
 

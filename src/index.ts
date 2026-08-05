@@ -979,6 +979,8 @@ export type {
 } from "./data";
 
 import * as foundationSchoolSupabase from "./data/adapters/supabase/foundationSchoolSupabaseAdapter";
+import * as programsSupabase from "./data/adapters/supabase/programsSupabaseAdapter";
+import * as mediaSupabase from "./data/adapters/supabase/mediaSupabaseAdapter";
 
 import {
   listChurches,
@@ -2454,6 +2456,7 @@ function installDataLayerGlobals(): void {
   };
 
   const programsEvents = {
+    ...programsSupabase,
     listPrograms,
     createProgram,
     updateProgram,
@@ -2545,6 +2548,7 @@ function installDataLayerGlobals(): void {
   };
 
   const media = {
+    ...mediaSupabase,
     listMediaTeam,
     getMediaTeamMemberById,
     createMediaTeamMember,
@@ -3043,6 +3047,7 @@ function installDataLayerGlobals(): void {
     },
     programs: programsEvents,
     programsEvents,
+    programEvents: programsEvents,
     programSessions: {
       listProgramSessions,
       createProgramSession,

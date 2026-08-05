@@ -1125,6 +1125,8 @@ export async function getMediaAwardsReport(filters: { year?: number } = {}) {
 
 export async function ensureMediaSeeded(): Promise<DataResult<boolean>> {
   try {
+    // Remote demo data is opt-in via programs_media_seed.sql.
+    if (getDataSource() === "supabase") return ok(true);
     const team = await listMediaTeam();
     if (team.ok && team.data.length === 0) {
       for (const s of MEDIA_TEAM_SEED) await createMediaTeamMember(s);
@@ -1168,6 +1170,10 @@ export function getMediaDataSourceInfo() {
     ready: provider.isReady(),
     description: provider.description,
     domain: "media",
+    migration: "0009_programs_media_pilot.sql",
+    publicChannelMetadataOnly: true,
+    automaticFinanceRecord: false,
+    heavyLivestream: false,
   };
 }
 

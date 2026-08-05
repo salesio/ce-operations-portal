@@ -28,6 +28,8 @@ import * as requisitionsSb from "./supabase/requisitionsSupabaseAdapter";
 import * as venueInventorySb from "./supabase/venueInventorySupabaseAdapter";
 import * as staffHrSb from "./supabase/staffHrSupabaseAdapter";
 import * as foundationSchoolSb from "./supabase/foundationSchoolSupabaseAdapter";
+import * as programsSb from "./supabase/programsSupabaseAdapter";
+import * as mediaSb from "./supabase/mediaSupabaseAdapter";
 import type {
   Church,
   FinanceDisbursement,
@@ -42,6 +44,22 @@ import type {
   InventoryMaintenanceRecord,
   InventoryMovement,
   Member,
+  MediaAward,
+  MediaChannel,
+  MediaPerformanceReview,
+  MediaRole,
+  MediaSchedule,
+  MediaService,
+  MediaTechnician,
+  Program,
+  ProgramBudget,
+  ProgramChecklist,
+  ProgramParticipant,
+  ProgramRegistration,
+  ProgramReport,
+  ProgramResource,
+  ProgramSession,
+  ProgramTeam,
   PublicGivingSubmission,
   Requisition,
   RequisitionTimelineEvent,
@@ -64,6 +82,8 @@ import type {
  * Phase 5: finance_records + public_giving + disbursements
  * Phase 6: requisitions + venue/inventory pilot
  * Phase 7: staff & RH + staff document metadata pilot
+ * Phase 8: Foundation School pilot
+ * Phase 9: Programs + Media pilot
  * Other collections remain NOT_IMPLEMENTED stubs.
  * Uses public anon key only (via foundation client when enabled).
  */
@@ -729,12 +749,40 @@ function createFoundationFinalExamsRepository(): EntityRepository<FoundationFina
   };
 }
 
+type PilotRecord = Record<string, unknown> & { id?: EntityId };
+
+function createPilotRepository<T extends { id: EntityId }>(operations: {
+  list: () => Promise<DataResult<PilotRecord[]>>;
+  create?: (input: PilotRecord) => Promise<DataResult<PilotRecord>>;
+  update?: (id: EntityId, input: PilotRecord) => Promise<DataResult<PilotRecord>>;
+  remove?: (id: EntityId) => Promise<DataResult<boolean>>;
+}): EntityRepository<T> {
+  return {
+    async list(options?: ListOptions) {
+      const result = await operations.list();
+      if (!result.ok) return result as DataResult<T[]>;
+      let data = result.data as T[];
+      if (options?.churchId) data = data.filter((row) => String((row as PilotRecord).church_id || "") === String(options.churchId));
+      if (options?.limit) data = data.slice(options.offset || 0, (options.offset || 0) + options.limit);
+      return { ok: true, data };
+    },
+    async getById(id) {
+      const result = await operations.list();
+      if (!result.ok) return result as DataResult<T | null>;
+      return { ok: true, data: (result.data.find((row) => String(row.id) === String(id)) || null) as T | null };
+    },
+    ...(operations.create ? { async create(input: Partial<T>) { return operations.create!(input as PilotRecord) as Promise<DataResult<T>>; } } : {}),
+    ...(operations.update ? { async update(id: EntityId, input: Partial<T>) { return operations.update!(id, input as PilotRecord) as Promise<DataResult<T>>; } } : {}),
+    ...(operations.remove ? { async remove(id: EntityId) { return operations.remove!(id); } } : {}),
+  };
+}
+
 export function createSupabaseProvider(): DataProvider & SupabaseProviderExtras {
   const map = Object.fromEntries(
     COLLECTION_NAMES.map((n) => [n, createStubRepository(n)]),
   ) as Record<EntityCollectionName, EntityRepository<unknown>>;
 
-  // Phase 3 + 4 + 5 + 6 + 7 + 8 pilots
+  // Phase 3 + 4 + 5 + 6 + 7 + 8 + 9 pilots
   map.churches = createChurchesRepository() as EntityRepository<unknown>;
   map.members = createMembersRepository() as EntityRepository<unknown>;
   map.first_timers = createFirstTimersRepository() as EntityRepository<unknown>;
@@ -760,6 +808,22 @@ export function createSupabaseProvider(): DataProvider & SupabaseProviderExtras 
   map.foundation_teachers = createFoundationTeachersRepository() as EntityRepository<unknown>;
   map.foundation_class_groups = createFoundationClassesRepository() as EntityRepository<unknown>;
   map.foundation_final_exams = createFoundationFinalExamsRepository() as EntityRepository<unknown>;
+  map.programs = createPilotRepository<Program>({ list: programsSb.listPrograms, create: programsSb.createProgram, update: programsSb.updateProgram, remove: programsSb.deleteProgram }) as EntityRepository<unknown>;
+  map.program_sessions = createPilotRepository<ProgramSession>({ list: programsSb.listProgramSessions, create: programsSb.createProgramSession, update: programsSb.updateProgramSession, remove: programsSb.deleteProgramSession }) as EntityRepository<unknown>;
+  map.program_teams = createPilotRepository<ProgramTeam>({ list: programsSb.listProgramTeams, create: programsSb.createProgramTeam, update: programsSb.updateProgramTeam, remove: programsSb.deleteProgramTeam }) as EntityRepository<unknown>;
+  map.program_participants = createPilotRepository<ProgramParticipant>({ list: programsSb.listProgramParticipants, create: programsSb.createProgramParticipant, update: programsSb.updateProgramParticipant }) as EntityRepository<unknown>;
+  map.program_registrations = createPilotRepository<ProgramRegistration>({ list: programsSb.listProgramRegistrations, create: programsSb.createProgramRegistration, update: programsSb.updateProgramRegistration }) as EntityRepository<unknown>;
+  map.program_resources = createPilotRepository<ProgramResource>({ list: programsSb.listProgramResources, create: programsSb.createProgramResource, update: programsSb.updateProgramResource }) as EntityRepository<unknown>;
+  map.program_budgets = createPilotRepository<ProgramBudget>({ list: programsSb.listProgramBudgets, create: programsSb.createProgramBudget, update: programsSb.updateProgramBudget }) as EntityRepository<unknown>;
+  map.program_checklists = createPilotRepository<ProgramChecklist>({ list: programsSb.listProgramChecklists, create: programsSb.createProgramChecklist, update: programsSb.updateProgramChecklist }) as EntityRepository<unknown>;
+  map.program_reports = createPilotRepository<ProgramReport>({ list: programsSb.listProgramReports, create: programsSb.createProgramReport, update: programsSb.updateProgramReport }) as EntityRepository<unknown>;
+  map.media_technicians = createPilotRepository<MediaTechnician>({ list: mediaSb.listMediaTeamMembers, create: mediaSb.createMediaTeamMember, update: mediaSb.updateMediaTeamMember, remove: mediaSb.deleteMediaTeamMember }) as EntityRepository<unknown>;
+  map.media_roles = createPilotRepository<MediaRole>({ list: mediaSb.listMediaRoles, create: mediaSb.createMediaRole, update: mediaSb.updateMediaRole, remove: mediaSb.deleteMediaRole }) as EntityRepository<unknown>;
+  map.media_services = createPilotRepository<MediaService>({ list: mediaSb.listMediaServices, create: mediaSb.createMediaService, update: mediaSb.updateMediaService, remove: mediaSb.deleteMediaService }) as EntityRepository<unknown>;
+  map.media_schedules = createPilotRepository<MediaSchedule>({ list: mediaSb.listMediaSchedules, create: mediaSb.createMediaSchedule, update: mediaSb.updateMediaSchedule }) as EntityRepository<unknown>;
+  map.media_channels = createPilotRepository<MediaChannel>({ list: mediaSb.listMediaChannels, create: mediaSb.createMediaChannel, update: mediaSb.updateMediaChannel }) as EntityRepository<unknown>;
+  map.media_performance = createPilotRepository<MediaPerformanceReview>({ list: mediaSb.listMediaPerformanceRecords, create: mediaSb.createMediaPerformanceRecord, update: mediaSb.updateMediaPerformanceRecord }) as EntityRepository<unknown>;
+  map.media_awards = createPilotRepository<MediaAward>({ list: mediaSb.listMediaAwards, create: mediaSb.createMediaAward, update: mediaSb.updateMediaAward }) as EntityRepository<unknown>;
 
   const foundationInfo = getSupabaseConnectionInfo();
   const envCfg = getSupabaseEnvConfig();

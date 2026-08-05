@@ -1649,3 +1649,22 @@ Safety rules:
 - RLS intent is documented but production policies and private signed uploads remain future work.
 
 See **[docs/backend/FOUNDATION_SCHOOL_SUPABASE_PILOT.md](docs/backend/FOUNDATION_SCHOOL_SUPABASE_PILOT.md)**.
+
+---
+
+## Backend Phase 9 - Programs + Media Supabase/API pilot
+
+**Status: optional pilot** — active only with the complete Supabase feature flags and public environment configuration.
+
+Programs routes all nine existing provider collections to `programsSupabaseAdapter`; Media routes team, roles, services, schedules, channels, performance and awards to `mediaSupabaseAdapter`. The existing repositories, aliases and mock/local providers remain unchanged.
+
+Safety boundaries:
+
+- Program budgets are planning only and never create expenses or Finance records.
+- Requisition, Finance Disbursement, inventory and Staff links are explicit/soft links.
+- A Program requiring Media does not automatically create a Media Service.
+- Media Channels accept public metadata only and actively reject credential-shaped fields.
+- Media does not manage heavy livestream workloads or create Finance records.
+- Remote seeds are optional and never injected automatically.
+
+See **[docs/backend/PROGRAMS_MEDIA_SUPABASE_PILOT.md](docs/backend/PROGRAMS_MEDIA_SUPABASE_PILOT.md)**.
