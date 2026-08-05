@@ -25,3 +25,5 @@ Phase 12 exposes a sanitized readiness summary in Settings. It deliberately does
 8. Run the full regression matrix and manual provider-switching tests.
 
 Health records may contain status, latency, boolean flags and sanitized messages only. Sensitive configuration values are hidden for security.
+
+Phase 13 expands this plan through `SUPABASE_REAL_SETUP_GUIDE.md`, `MIGRATION_EXECUTION_PLAN.md`, `RLS_PRODUCTION_READINESS_PLAN.md`, `STORAGE_BUCKETS_READINESS_PLAN.md`, `BACKUP_ROLLBACK_PLAN.md`, `DEPLOYMENT_PLAN.md`, and the executable readiness scripts in `scripts/`.

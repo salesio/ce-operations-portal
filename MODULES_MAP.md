@@ -21,4 +21,6 @@
 ## Data sources
 Phase 12 globals: `CEReports` (read-only), `CEReportExports` (job metadata), `CENotifications` (in-app), and `CEDataLayer.auditLogs` (sanitized audit/system access).
 
+Phase 13 migrates no operational module. It adds setup, security, seed/migration validation, provider switching, backup/rollback, deployment and future API readiness controls for all completed pilots.
+
 `VITE_DATA_SOURCE` → mock | local | api | supabase (placeholders for api/supabase).

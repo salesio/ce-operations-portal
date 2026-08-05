@@ -36,6 +36,8 @@ VITE_DATA_SOURCE=
 
 Phase 12 adds a transversal read-only Reports adapter, in-app Notification adapter, and hardened Audit/System adapter. All use the existing provider switch and public Supabase client. Reports cannot write to operational repositories; sensitive exports are metadata jobs for a future trusted backend/private-storage workflow.
 
+Phase 13 is the production-readiness layer: no new domain migration and no automatic remote SQL. It validates migration/seed inventory, frontend configuration safety, provider switching and operational documentation. A future Spring Boot/API layer remains an incremental option for privileged workflows.
+
 - Supabase schema + RLS  
 - Auth (replace demo login)  
 - Real notifications channels (optional)  

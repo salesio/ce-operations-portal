@@ -1708,3 +1708,7 @@ See **[docs/backend/FEVO_PRISON_MATERIALS_SUPABASE_PILOT.md](docs/backend/FEVO_P
 - Existing mock/local providers and public bridges remain compatible.
 
 See **[docs/backend/REPORTS_NOTIFICATIONS_AUDIT_SUPABASE_PILOT.md](docs/backend/REPORTS_NOTIFICATIONS_AUDIT_SUPABASE_PILOT.md)**.
+
+## Phase 13 — production readiness
+
+No operational repository is added or rerouted. Readiness scripts validate the four provider modes, migration/seed inventory and browser configuration safety. Real Supabase application remains a manual staging-first operation documented in `SUPABASE_REAL_SETUP_GUIDE.md` and `MIGRATION_EXECUTION_PLAN.md`.

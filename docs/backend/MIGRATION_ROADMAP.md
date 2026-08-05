@@ -175,3 +175,12 @@ F.E.V.O, Prison Ministry and Ministry Materials remain local/mock in this phase.
 - [x] Sanitized audit, sensitive-access references, system events and health checks
 - [x] Settings production-readiness indicator and smoke coverage
 - [ ] Production RLS, export worker/private downloads, backups and monitoring
+
+## Phase 13 — Production Readiness
+
+- [x] Real Supabase setup and migration execution plans
+- [x] Seed, provider and frontend configuration safety validators
+- [x] RLS, private buckets, backup/rollback and deployment plans
+- [x] Future Spring Boot decision and Kanban workflow documented
+- [x] Settings readiness summary expanded
+- [ ] Apply and validate the plans in a real staging project under change approval

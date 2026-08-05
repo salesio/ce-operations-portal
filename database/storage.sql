@@ -16,6 +16,7 @@ Buckets (create in Supabase project when enabling VITE_ENABLE_STORAGE):
 | staff-documents        | no     | contracts, IDs (sensitive)           |
 | sacrament-documents    | no     | certificates, marriage docs          |
 | counseling-documents   | no     | confidential case files              |
+| report-exports         | no     | generated report files / metadata    |
 | foundation-exams       | no     | exam attachments                     |
 | program-files          | no     | program assets                       |
 | ministry-materials     | no     | catalogues / files                   |

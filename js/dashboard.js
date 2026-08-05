@@ -16145,7 +16145,11 @@ function renderSettings() {
               <div>audit logs: <code>Supabase-ready</code> / sensitive hardened</div>
               <div>pilot-ready modules: <code>${readiness?.modules_pilot_ready_count || 19}</code></div>
               <div>last health check: <code>${readiness?.last_health_check || "not run"}</code></div>
-              <div class="mt-1">Production Readiness: Auth <code>${readiness?.production_readiness?.auth_configured ? "configured" : "pending"}</code> Â· RLS <code>planned</code> Â· Audit <code>enabled</code> Â· In-app notifications <code>enabled</code> Â· Backups <code>not configured</code></div>
+              <div>Supabase configured: <code>${readiness?.supabase_configured ? "Yes" : "No / not configured"}</code> Â· Storage enabled: <code>${readiness?.storage_enabled ? "Yes" : "No"}</code></div>
+              <div>Auth mode: <code>${readiness?.auth_mode || "Demo"}</code> Â· API mode: <code>${readiness?.api_mode || "Disabled"}</code></div>
+              <div>Migrations prepared: <code>${readiness ? `${readiness.migrations_prepared || 12}/${readiness.migrations_expected || 12}` : "12/12"}</code></div>
+              <div class="mt-1">Production Readiness: RLS <code>Planned / Dev-safe / Production pending</code> Â· Storage buckets <code>Planned / Production pending</code> Â· Audit hardening <code>Ready</code> Â· Notifications <code>In-app ready</code></div>
+              <div>Backups: <code>Not configured</code> warning Â· Java Spring Boot: <code>Future plan documented</code> Â· Deployment: <code>Pending</code></div>
               <div>service role exposed: <code>false</code> Â· direct PostgreSQL from browser: <code>false</code></div>
               <div>others: <code>local/mock</code></div>
               <div class="text-white-50 mt-1">${lang === "pt" ? "Sem expor keys/secrets. Pilotos: Igrejas, Membros, FT, Follow-Up, Finance, Requisições e Inventário." : "No keys/secrets exposed. Pilots: Churches, Members, FT, Follow-Up, Finance, Requisitions and Inventory."}</div>

@@ -1,5 +1,6 @@
 import { getDataProvider } from "../dataProvider";
-import { getDataSource } from "../config";
+import { getApiBaseUrl, getBackendFeatureFlags, getDataSource } from "../config";
+import { getSupabaseEnvConfig } from "../adapters/supabase/supabaseConfig";
 import type {
   EntityId,
   GlobalCategory,
@@ -498,7 +499,10 @@ export function getSettingsDataSourceInfo() {
 export function getProductionReadiness() {
   const source = getDataSource();
   const provider = getDataProvider();
-  const supabaseReady = source === "supabase" && provider.isReady();
+  const flags = getBackendFeatureFlags();
+  const supabaseConfig = getSupabaseEnvConfig();
+  const supabaseConfigured = flags.enableSupabase && supabaseConfig.isConfigured;
+  const supabaseReady = source === "supabase" && supabaseConfigured && provider.isReady();
   const supabaseModules = [
     "Churches", "Members", "First Timers", "Follow-Up", "Finance", "Requisitions",
     "Venue & Inventory", "Staff & RH", "Foundation School", "Programs", "Media",
@@ -508,9 +512,14 @@ export function getProductionReadiness() {
   ];
   return {
     current_data_source: source,
-    supabase_enabled: supabaseReady,
-    storage_enabled: supabaseReady,
-    api_enabled: source === "api" && provider.isReady(),
+    supabase_enabled: flags.enableSupabase,
+    supabase_configured: supabaseConfigured,
+    storage_enabled: flags.enableStorage,
+    auth_mode: flags.enableRealAuth && supabaseConfigured ? "Supabase" : "Demo",
+    api_mode: getApiBaseUrl() ? "Configured" : "Disabled",
+    api_enabled: source === "api" && !!getApiBaseUrl(),
+    migrations_prepared: 12,
+    migrations_expected: 12,
     modules_pilot_ready_count: supabaseModules.length,
     modules_using_supabase: supabaseReady ? supabaseModules : [],
     modules_still_local_or_mock: supabaseReady ? ["Other modules"] : supabaseModules,
@@ -518,10 +527,12 @@ export function getProductionReadiness() {
     production_readiness: {
       auth_configured: supabaseReady,
       rls_status: "Planned / dev-safe; production policies not yet applied",
-      storage_buckets_planned: true,
+      storage_buckets_status: "Planned / production pending",
       audit_enabled: true,
       notifications_in_app_enabled: true,
       backups_configured: false,
+      java_spring_boot: "Future plan documented",
+      deployment_status: "Pending",
       service_role_exposed: false,
       direct_postgresql_from_browser: false,
     },

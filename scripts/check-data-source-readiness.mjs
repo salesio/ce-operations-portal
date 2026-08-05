@@ -1,0 +1,9 @@
+import { existsSync, readFileSync } from "node:fs"; import { dirname,join } from "node:path"; import { fileURLToPath } from "node:url";
+const root=join(dirname(fileURLToPath(import.meta.url)),"..");let passed=0,failed=0;const read=p=>readFileSync(join(root,p),"utf8");const check=(l,v)=>{if(v){passed++;console.log(`PASS ${l}`)}else{failed++;console.error(`FAIL ${l}`)}};const has=(p,s)=>check(`${p} has ${s}`,read(p).includes(s));
+for(const f of ["src/data/adapters/mockProvider.ts","src/data/adapters/localStorageProvider.ts","src/data/adapters/apiProvider.ts","src/data/adapters/supabaseProvider.ts","src/data/config.ts"])check(`exists ${f}`,existsSync(join(root,f)));
+for(const v of ["mock","local","api","supabase"])has("src/data/config.ts",`\"${v}\"`);
+has(".env.example","VITE_DATA_SOURCE=mock"); has("docs/backend/ENVIRONMENT_VARIABLES.md","VITE_DATA_SOURCE=local"); has("docs/backend/ENVIRONMENT_VARIABLES.md","VITE_DATA_SOURCE=supabase"); has("docs/backend/ENVIRONMENT_VARIABLES.md","VITE_DATA_SOURCE=api");
+has("src/data/config.ts",'normalizeSource(runtime || fromEnv || "mock")'); has("src/data/adapters/api/apiClient.ts","NOT_CONFIGURED"); has("src/data/adapters/supabase/supabaseRepositoryBase.ts","SUPABASE_NOT_CONFIGURED");
+has("js/dashboard.js","Data Source (dev)"); has("js/dashboard.js","pilot-ready modules"); has("src/data/repositories/settingsRepository.ts","modules_using_supabase");
+for(const m of ["Churches","Members","First Timers","Follow-Up","Finance","Requisitions","Venue & Inventory","Staff & RH","Foundation School","Programs","Media","Counseling","Sacraments","F.E.V.O","Prison Ministry","Ministry Materials","Reports","Notifications","Audit Logs"])has("src/data/repositories/settingsRepository.ts",m);
+console.log(`Data source readiness: ${passed} passed, ${failed} failed.`);process.exit(failed?1:0);
