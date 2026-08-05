@@ -137,3 +137,18 @@ Programs, Media, Counseling, Sacraments and payroll remain outside this phase.
 - [ ] Production RLS and private signed document uploads
 
 Counseling, Sacraments, F.E.V.O, Prison Ministry and Ministry Materials remain local/mock in this phase.
+
+## Phase 10 - Counseling + Sacraments pilot
+
+- [x] Additive migration `0010_counseling_sacraments_pilot.sql`
+- [x] Optional synthetic seed `counseling_sacraments_seed.sql`
+- [x] Supabase/API adapters for six Counseling and six Sacraments tables
+- [x] Existing repositories, aliases, bridges and mock/local providers preserved
+- [x] Confidential fields separated and masked in normal lists/reports
+- [x] Explicit request-to-case, Follow-Up, Marriage/Counseling and certificate actions
+- [x] Sensitive Sacrament document metadata restricted to private storage
+- [x] No automatic Follow-Up, certificate, Finance record or Staff mutation
+- [x] Smoke: `test:counseling-sacraments-supabase`
+- [ ] Production RLS, trusted confidential-field RPC and signed private URLs
+
+F.E.V.O, Prison Ministry and Ministry Materials remain local/mock in this phase.

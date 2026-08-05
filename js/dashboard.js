@@ -16094,6 +16094,14 @@ function renderSettings() {
                   window.CEMedia && typeof window.CEMedia.getInfo === "function"
                     ? window.CEMedia.getInfo()
                     : null;
+                const counselingInfo =
+                  window.CECounseling && typeof window.CECounseling.getInfo === "function"
+                    ? window.CECounseling.getInfo()
+                    : null;
+                const sacramentsInfo =
+                  window.CESacraments && typeof window.CESacraments.getInfo === "function"
+                    ? window.CESacraments.getInfo()
+                    : null;
                 const sbOn = !!(flags && flags.enableSupabase);
                 const storageOn = !!(flags && flags.enableStorage);
                 const readyLabel = (info) => {
@@ -16121,6 +16129,8 @@ function renderSettings() {
               <div>foundation tests: <code>${readyLabel(foundationInfo)}</code> / external forms metadata</div>
               <div>programs: <code>${readyLabel(programsInfo)}</code></div>
               <div>media: <code>${readyLabel(mediaInfo)}</code> / public channel metadata</div>
+              <div>counseling: <code>${readyLabel(counselingInfo)}</code> / sensitive</div>
+              <div>sacraments: <code>${readyLabel(sacramentsInfo)}</code> / sensitive documents</div>
               <div>others: <code>local/mock</code></div>
               <div class="text-white-50 mt-1">${lang === "pt" ? "Sem expor keys/secrets. Pilotos: Igrejas, Membros, FT, Follow-Up, Finance, Requisições e Inventário." : "No keys/secrets exposed. Pilots: Churches, Members, FT, Follow-Up, Finance, Requisitions and Inventory."}</div>
             </div>`;

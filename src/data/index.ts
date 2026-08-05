@@ -1244,3 +1244,7 @@ export * as programsSupabaseAdapter from "./adapters/supabase/programsSupabaseAd
 export * as mediaSupabaseAdapter from "./adapters/supabase/mediaSupabaseAdapter";
 export * as programsApiAdapter from "./adapters/api/programsApiAdapter";
 export * as mediaApiAdapter from "./adapters/api/mediaApiAdapter";
+export * as counselingSupabaseAdapter from "./adapters/supabase/counselingSupabaseAdapter";
+export * as sacramentsSupabaseAdapter from "./adapters/supabase/sacramentsSupabaseAdapter";
+export * as counselingApiAdapter from "./adapters/api/counselingApiAdapter";
+export * as sacramentsApiAdapter from "./adapters/api/sacramentsApiAdapter";

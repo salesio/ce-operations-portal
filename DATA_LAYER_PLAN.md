@@ -1668,3 +1668,21 @@ Safety boundaries:
 - Remote seeds are optional and never injected automatically.
 
 See **[docs/backend/PROGRAMS_MEDIA_SUPABASE_PILOT.md](docs/backend/PROGRAMS_MEDIA_SUPABASE_PILOT.md)**.
+
+---
+
+## Backend Phase 10 - Counseling + Sacraments Supabase/API pilot
+
+**Status: optional pilot** — enabled only by the complete Supabase flags and public URL/anon-key configuration.
+
+Six Counseling and six Sacraments collections now route through dedicated Supabase adapters while the existing repository and browser APIs remain intact. API adapters remain controlled placeholders.
+
+- Normal Counseling paths mask confidential fields; confidential access requires permission and soft audit.
+- Feedback never creates a Follow-Up automatically.
+- Marriage/Counseling links are explicit and non-creating.
+- Sacrament completion never creates or issues a certificate.
+- Payment status never creates a Finance record.
+- Sacrament documents default sensitive and require private storage metadata.
+- F.E.V.O, Prison Ministry and Ministry Materials remain local/mock.
+
+See **[docs/backend/COUNSELING_SACRAMENTS_SUPABASE_PILOT.md](docs/backend/COUNSELING_SACRAMENTS_SUPABASE_PILOT.md)**.

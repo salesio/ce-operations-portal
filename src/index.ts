@@ -981,6 +981,8 @@ export type {
 import * as foundationSchoolSupabase from "./data/adapters/supabase/foundationSchoolSupabaseAdapter";
 import * as programsSupabase from "./data/adapters/supabase/programsSupabaseAdapter";
 import * as mediaSupabase from "./data/adapters/supabase/mediaSupabaseAdapter";
+import * as counselingSupabase from "./data/adapters/supabase/counselingSupabaseAdapter";
+import * as sacramentsSupabase from "./data/adapters/supabase/sacramentsSupabaseAdapter";
 
 import {
   listChurches,
@@ -2241,6 +2243,7 @@ function installDataLayerGlobals(): void {
   };
 
   const counseling = {
+    ...counselingSupabase,
     listCounselingRequests,
     createCounselingRequest,
     updateCounselingRequest,
@@ -2273,6 +2276,7 @@ function installDataLayerGlobals(): void {
   };
 
   const sacraments = {
+    ...sacramentsSupabase,
     listBaptisms,
     createBaptism,
     updateBaptism,
@@ -2722,6 +2726,8 @@ function installDataLayerGlobals(): void {
   };
 
   root.CESupabase = Object.assign(root.CESupabase || {}, {
+    ...counselingSupabase,
+    ...sacramentsSupabase,
     ...churches,
     ...members,
     ...firstTimers,

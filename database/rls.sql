@@ -84,6 +84,44 @@ performance privacy before enabling RLS on every Programs/Media table.
 */
 
 -- ---------------------------------------------------------------------------
+-- Phase 10: Counseling + Sacraments policy plan (documented, NOT enabled)
+-- ---------------------------------------------------------------------------
+/*
+Counseling future intent:
+- Super Admin and Main Pastor: global records according to explicit permission.
+- Church Pastor: records for the user's church only.
+- Counselor: assigned cases and appointments only.
+- Other staff: no Counseling access by default.
+- confidential_notes, private_assessment, pastoral_guidance,
+  confidential_session_notes and confidential_feedback require a separate
+  confidential permission. Normal lists and aggregate reports must omit them.
+- Sensitive reads/edits and confidential reports create soft audit events.
+
+Sacraments future intent:
+- Super Admin and Sacraments department: permitted global management.
+- Church Pastor: own-church records; Minister: assigned appointments.
+- sacrament_documents require explicit permission, private storage and future
+  signed URLs. Public buckets are forbidden for sensitive document content.
+
+Complex policies remain disabled for this dev-safe pilot so migration 0010
+does not lock out existing workflows. Production rollout must test church,
+assignment and field-level confidentiality boundaries before enabling RLS.
+
+-- ALTER TABLE public.counseling_requests ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.counseling_cases ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.counseling_appointments ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.counselors ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.counseling_feedback ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.counseling_referrals ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.baptisms ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.marriages ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.baby_dedications ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.sacrament_certificates ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.sacrament_documents ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.sacrament_appointments ENABLE ROW LEVEL SECURITY;
+*/
+
+-- ---------------------------------------------------------------------------
 -- Phase 8: Foundation School pilot policy plan (documented, NOT enabled)
 -- ---------------------------------------------------------------------------
 /*

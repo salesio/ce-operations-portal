@@ -30,6 +30,8 @@ import * as staffHrSb from "./supabase/staffHrSupabaseAdapter";
 import * as foundationSchoolSb from "./supabase/foundationSchoolSupabaseAdapter";
 import * as programsSb from "./supabase/programsSupabaseAdapter";
 import * as mediaSb from "./supabase/mediaSupabaseAdapter";
+import * as counselingSb from "./supabase/counselingSupabaseAdapter";
+import * as sacramentsSb from "./supabase/sacramentsSupabaseAdapter";
 import type {
   Church,
   FinanceDisbursement,
@@ -84,6 +86,7 @@ import type {
  * Phase 7: staff & RH + staff document metadata pilot
  * Phase 8: Foundation School pilot
  * Phase 9: Programs + Media pilot
+ * Phase 10: Counseling + Sacraments pilot
  * Other collections remain NOT_IMPLEMENTED stubs.
  * Uses public anon key only (via foundation client when enabled).
  */
@@ -782,7 +785,7 @@ export function createSupabaseProvider(): DataProvider & SupabaseProviderExtras 
     COLLECTION_NAMES.map((n) => [n, createStubRepository(n)]),
   ) as Record<EntityCollectionName, EntityRepository<unknown>>;
 
-  // Phase 3 + 4 + 5 + 6 + 7 + 8 + 9 pilots
+  // Phase 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10 pilots
   map.churches = createChurchesRepository() as EntityRepository<unknown>;
   map.members = createMembersRepository() as EntityRepository<unknown>;
   map.first_timers = createFirstTimersRepository() as EntityRepository<unknown>;
@@ -824,13 +827,25 @@ export function createSupabaseProvider(): DataProvider & SupabaseProviderExtras 
   map.media_channels = createPilotRepository<MediaChannel>({ list: mediaSb.listMediaChannels, create: mediaSb.createMediaChannel, update: mediaSb.updateMediaChannel }) as EntityRepository<unknown>;
   map.media_performance = createPilotRepository<MediaPerformanceReview>({ list: mediaSb.listMediaPerformanceRecords, create: mediaSb.createMediaPerformanceRecord, update: mediaSb.updateMediaPerformanceRecord }) as EntityRepository<unknown>;
   map.media_awards = createPilotRepository<MediaAward>({ list: mediaSb.listMediaAwards, create: mediaSb.createMediaAward, update: mediaSb.updateMediaAward }) as EntityRepository<unknown>;
+  map.counseling_requests = createPilotRepository<any>({ list: counselingSb.listCounselingRequests, create: counselingSb.createCounselingRequest, update: counselingSb.updateCounselingRequest, remove: counselingSb.deleteCounselingRequest }) as EntityRepository<unknown>;
+  map.counseling_cases = createPilotRepository<any>({ list: counselingSb.listCounselingCases, create: counselingSb.createCounselingCase, update: counselingSb.updateCounselingCase }) as EntityRepository<unknown>;
+  map.counseling_appointments = createPilotRepository<any>({ list: counselingSb.listCounselingAppointments, create: counselingSb.createCounselingAppointment, update: counselingSb.updateCounselingAppointment }) as EntityRepository<unknown>;
+  map.counselors = createPilotRepository<any>({ list: counselingSb.listCounselors, create: counselingSb.createCounselor, update: counselingSb.updateCounselor, remove: counselingSb.deleteCounselor }) as EntityRepository<unknown>;
+  map.counseling_feedback = createPilotRepository<any>({ list: counselingSb.listCounselingFeedback, create: counselingSb.createCounselingFeedback, update: counselingSb.updateCounselingFeedback }) as EntityRepository<unknown>;
+  map.counseling_referrals = createPilotRepository<any>({ list: counselingSb.listCounselingReferrals, create: counselingSb.createCounselingReferral, update: counselingSb.updateCounselingReferral }) as EntityRepository<unknown>;
+  map.baptisms = createPilotRepository<any>({ list: sacramentsSb.listBaptisms, create: sacramentsSb.createBaptism, update: sacramentsSb.updateBaptism, remove: sacramentsSb.deleteBaptism }) as EntityRepository<unknown>;
+  map.marriages = createPilotRepository<any>({ list: sacramentsSb.listMarriages, create: sacramentsSb.createMarriage, update: sacramentsSb.updateMarriage, remove: sacramentsSb.deleteMarriage }) as EntityRepository<unknown>;
+  map.baby_dedications = createPilotRepository<any>({ list: sacramentsSb.listBabyDedications, create: sacramentsSb.createBabyDedication, update: sacramentsSb.updateBabyDedication, remove: sacramentsSb.deleteBabyDedication }) as EntityRepository<unknown>;
+  map.sacrament_certificates = createPilotRepository<any>({ list: sacramentsSb.listSacramentCertificates, create: sacramentsSb.createSacramentCertificate, update: sacramentsSb.updateSacramentCertificate }) as EntityRepository<unknown>;
+  map.sacrament_documents = createPilotRepository<any>({ list: sacramentsSb.listSacramentDocuments, create: sacramentsSb.createSacramentDocument, update: sacramentsSb.updateSacramentDocument }) as EntityRepository<unknown>;
+  map.sacrament_appointments = createPilotRepository<any>({ list: sacramentsSb.listSacramentAppointments, create: sacramentsSb.createSacramentAppointment, update: sacramentsSb.updateSacramentAppointment }) as EntityRepository<unknown>;
 
   const foundationInfo = getSupabaseConnectionInfo();
   const envCfg = getSupabaseEnvConfig();
 
   const description =
     foundationInfo.status === "ready"
-      ? `Supabase pilot ready (${foundationInfo.urlHost || "configured"}) — churches/members/FT/FU/finance/requisitions/inventory/staff live; other modules stubbed.`
+      ? `Supabase pilot ready (${foundationInfo.urlHost || "configured"}) — Phases 3–10 domain pilots available; other modules remain stubbed.`
       : foundationInfo.status === "missing_env"
         ? `Supabase enabled but env incomplete — ${foundationInfo.message}`
         : "Supabase provider placeholder (disabled). Domain modules use mock/local.";

@@ -54,3 +54,5 @@
 Phase 8 only prepares `document_id`, `scan_document_id`, and certificate-document metadata. `foundation-exams` must remain private; uploads and signed URLs are optional future work and are never required when `VITE_ENABLE_STORAGE=false`.
 
 Phase 9 prepares private metadata for Program reports (`program-files`) and internal Media service assets (`media-assets`). It does not require uploads and must not use browser storage as a heavy-video or livestream hosting platform.
+
+Phase 10 marks every Sacrament document as sensitive, rejects public bucket names, and records an optional private metadata link in `documents`. Counseling attachments remain future work and must also be sensitive. Real uploads and signed URLs are not required; production access needs private Storage policies and authenticated signed URLs.

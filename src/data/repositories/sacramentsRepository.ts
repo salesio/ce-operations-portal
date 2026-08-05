@@ -1239,6 +1239,7 @@ export async function getDocumentsReport(_filters = {}) {
 
 export async function ensureSacramentsSeeded(): Promise<DataResult<boolean>> {
   try {
+    if (getDataSource() === "supabase") return ok(true);
     const b = await listBaptisms();
     if (b.ok && b.data.length === 0) {
       for (const s of BAPTISMS_SEED) {
@@ -1296,6 +1297,10 @@ export function getSacramentsDataSourceInfo() {
     ready: provider.isReady(),
     description: provider.description,
     domain: "sacraments",
+    migration: "0010_counseling_sacraments_pilot.sql",
+    sensitiveDocuments: true,
+    automaticFinanceRecord: false,
+    automaticCertificate: false,
   };
 }
 

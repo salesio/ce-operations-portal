@@ -1273,6 +1273,7 @@ export async function getConfidentialCounselingReport(_filters = {}) {
 
 export async function ensureCounselingSeeded(): Promise<DataResult<boolean>> {
   try {
+    if (getDataSource() === "supabase") return ok(true);
     const req = await listCounselingRequests();
     if (req.ok && req.data.length === 0) {
       for (const s of COUNSELING_REQUESTS_SEED) await createCounselingRequest(s);
@@ -1324,6 +1325,10 @@ export function getCounselingDataSourceInfo() {
     ready: provider.isReady(),
     description: provider.description,
     domain: "counseling",
+    migration: "0010_counseling_sacraments_pilot.sql",
+    sensitive: true,
+    confidentialFieldsMasked: true,
+    automaticFollowUp: false,
   };
 }
 
