@@ -35,6 +35,9 @@ import * as sacramentsSb from "./supabase/sacramentsSupabaseAdapter";
 import * as fevoSb from "./supabase/fevoSupabaseAdapter";
 import * as prisonSb from "./supabase/prisonMinistrySupabaseAdapter";
 import * as materialsSb from "./supabase/ministryMaterialsSupabaseAdapter";
+import * as reportsSb from "./supabase/reportsSupabaseAdapter";
+import * as notificationsSb from "./supabase/notificationsSupabaseAdapter";
+import * as auditSystemSb from "./supabase/auditSystemSupabaseAdapter";
 import type {
   Church,
   FinanceDisbursement,
@@ -91,6 +94,7 @@ import type {
  * Phase 9: Programs + Media pilot
  * Phase 10: Counseling + Sacraments pilot
  * Phase 11: F.E.V.O + Prison Ministry + Ministry Materials pilot
+ * Phase 12: Reports + in-app Notifications + hardened Audit/System pilot
  * Other collections remain NOT_IMPLEMENTED stubs.
  * Uses public anon key only (via foundation client when enabled).
  */
@@ -461,6 +465,11 @@ const COLLECTION_NAMES: EntityCollectionName[] = [
   "requisition_timeline",
   "notifications",
   "notification_templates",
+  "notification_preferences",
+  "report_definitions",
+  "saved_report_views",
+  "report_snapshots",
+  "report_export_jobs",
   "system_settings",
   "global_categories",
   "status_definitions",
@@ -541,6 +550,9 @@ const COLLECTION_NAMES: EntityCollectionName[] = [
   "permissions",
   "permission_templates",
   "audit_logs",
+  "sensitive_access_events",
+  "system_events",
+  "data_source_health_checks",
 ];
 
 export function getSupabaseProviderInfo(): SupabaseConnectionInfo {
@@ -862,13 +874,24 @@ export function createSupabaseProvider(): DataProvider & SupabaseProviderExtras 
   map.ministry_materials_requests = createPilotRepository<any>({ list: materialsSb.listMaterialRequests, create: materialsSb.createMaterialRequest, update: materialsSb.updateMaterialRequest }) as EntityRepository<unknown>;
   map.ministry_materials_funds = createPilotRepository<any>({ list: materialsSb.listMaterialFunds, create: materialsSb.createMaterialFund, update: materialsSb.updateMaterialFund }) as EntityRepository<unknown>;
   map.ministry_materials_reports = createPilotRepository<any>({ list: materialsSb.listMaterialReports, create: materialsSb.createMaterialReport, update: materialsSb.updateMaterialReport }) as EntityRepository<unknown>;
+  map.report_definitions = createPilotRepository<any>({ list: reportsSb.listReportDefinitions, create: reportsSb.createReportDefinition, update: reportsSb.updateReportDefinition, remove: reportsSb.deleteReportDefinition }) as EntityRepository<unknown>;
+  map.saved_report_views = createPilotRepository<any>({ list: reportsSb.listSavedReportViews, create: reportsSb.createSavedReportView, update: reportsSb.updateSavedReportView, remove: reportsSb.deleteSavedReportView }) as EntityRepository<unknown>;
+  map.report_snapshots = createPilotRepository<any>({ list: reportsSb.listReportSnapshots, create: reportsSb.createReportSnapshot, remove: reportsSb.deleteReportSnapshot }) as EntityRepository<unknown>;
+  map.report_export_jobs = createPilotRepository<any>({ list: reportsSb.listReportExportJobs, create: reportsSb.createReportExportJob, update: reportsSb.updateReportExportJob }) as EntityRepository<unknown>;
+  map.notifications = createPilotRepository<any>({ list: notificationsSb.listNotifications, create: notificationsSb.createNotification, update: notificationsSb.updateNotification, remove: notificationsSb.deleteNotification }) as EntityRepository<unknown>;
+  map.notification_templates = createPilotRepository<any>({ list: notificationsSb.listNotificationTemplates, create: notificationsSb.createNotificationTemplate, update: notificationsSb.updateNotificationTemplate }) as EntityRepository<unknown>;
+  map.notification_preferences = createPilotRepository<any>({ list: notificationsSb.listNotificationPreferences, create: notificationsSb.upsertNotificationPreference, update: notificationsSb.updateNotificationPreference }) as EntityRepository<unknown>;
+  map.audit_logs = createPilotRepository<any>({ list: auditSystemSb.listAuditLogs, create: auditSystemSb.createAuditLog }) as EntityRepository<unknown>;
+  map.sensitive_access_events = createPilotRepository<any>({ list: auditSystemSb.listSensitiveAccessEvents, create: auditSystemSb.createSensitiveAccessEvent }) as EntityRepository<unknown>;
+  map.system_events = createPilotRepository<any>({ list: auditSystemSb.listSystemEvents, create: auditSystemSb.createSystemEvent, update: auditSystemSb.resolveSystemEvent }) as EntityRepository<unknown>;
+  map.data_source_health_checks = createPilotRepository<any>({ list: auditSystemSb.listDataSourceHealthChecks, create: auditSystemSb.createDataSourceHealthCheck }) as EntityRepository<unknown>;
 
   const foundationInfo = getSupabaseConnectionInfo();
   const envCfg = getSupabaseEnvConfig();
 
   const description =
     foundationInfo.status === "ready"
-      ? `Supabase pilot ready (${foundationInfo.urlHost || "configured"}) — Phases 3–11 domain pilots available; other modules remain stubbed.`
+      ? `Supabase pilot ready (${foundationInfo.urlHost || "configured"}) — Phases 3–12 pilots available; Reports are read-only and Notifications are in-app only.`
       : foundationInfo.status === "missing_env"
         ? `Supabase enabled but env incomplete — ${foundationInfo.message}`
         : "Supabase provider placeholder (disabled). Domain modules use mock/local.";

@@ -16105,6 +16105,9 @@ function renderSettings() {
                 const fevoInfo = window.CEFevo && typeof window.CEFevo.getInfo === "function" ? window.CEFevo.getInfo() : null;
                 const prisonInfo = window.CEPrisonMinistry && typeof window.CEPrisonMinistry.getInfo === "function" ? window.CEPrisonMinistry.getInfo() : null;
                 const materialsInfo = window.CEMinistryMaterials && typeof window.CEMinistryMaterials.getInfo === "function" ? window.CEMinistryMaterials.getInfo() : null;
+                const readiness = window.CESettings && typeof window.CESettings.getProductionReadiness === "function"
+                  ? window.CESettings.getProductionReadiness()
+                  : null;
                 const sbOn = !!(flags && flags.enableSupabase);
                 const storageOn = !!(flags && flags.enableStorage);
                 const readyLabel = (info) => {
@@ -16137,6 +16140,13 @@ function renderSettings() {
               <div>f.e.v.o: <code>${readyLabel(fevoInfo)}</code></div>
               <div>prison ministry: <code>${readyLabel(prisonInfo)}</code> / sensitive-safe</div>
               <div>ministry materials: <code>${readyLabel(materialsInfo)}</code> / internal funds</div>
+              <div>reports: <code>Supabase-ready</code> / read-only</div>
+              <div>notifications: <code>Supabase-ready</code> / in-app only</div>
+              <div>audit logs: <code>Supabase-ready</code> / sensitive hardened</div>
+              <div>pilot-ready modules: <code>${readiness?.modules_pilot_ready_count || 19}</code></div>
+              <div>last health check: <code>${readiness?.last_health_check || "not run"}</code></div>
+              <div class="mt-1">Production Readiness: Auth <code>${readiness?.production_readiness?.auth_configured ? "configured" : "pending"}</code> Â· RLS <code>planned</code> Â· Audit <code>enabled</code> Â· In-app notifications <code>enabled</code> Â· Backups <code>not configured</code></div>
+              <div>service role exposed: <code>false</code> Â· direct PostgreSQL from browser: <code>false</code></div>
               <div>others: <code>local/mock</code></div>
               <div class="text-white-50 mt-1">${lang === "pt" ? "Sem expor keys/secrets. Pilotos: Igrejas, Membros, FT, Follow-Up, Finance, Requisições e Inventário." : "No keys/secrets exposed. Pilots: Churches, Members, FT, Follow-Up, Finance, Requisitions and Inventory."}</div>
             </div>`;

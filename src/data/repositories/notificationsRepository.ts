@@ -411,6 +411,7 @@ export async function getTodayNotifications(userId: EntityId) {
 
 export async function ensureNotificationsSeeded(): Promise<DataResult<boolean>> {
   try {
+    if (getDataSource() === "supabase") return ok(true);
     const p = getDataProvider();
     const existing = await listNotifications();
     if (!existing.ok || !existing.data.length) {

@@ -89,9 +89,18 @@ export type SupabaseTableName =
   | "ministry_materials_requests"
   | "ministry_materials_funds"
   | "ministry_materials_reports"
+  | "report_definitions"
+  | "saved_report_views"
+  | "report_snapshots"
+  | "report_export_jobs"
   | "documents"
   | "notifications"
+  | "notification_templates"
+  | "notification_preferences"
   | "audit_logs"
+  | "sensitive_access_events"
+  | "system_events"
+  | "data_source_health_checks"
   | "system_settings";
 
 export type SupabaseRow = Record<string, unknown> & {

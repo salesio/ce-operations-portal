@@ -58,3 +58,5 @@ Phase 9 prepares private metadata for Program reports (`program-files`) and inte
 Phase 10 marks every Sacrament document as sensitive, rejects public bucket names, and records an optional private metadata link in `documents`. Counseling attachments remain future work and must also be sensitive. Real uploads and signed URLs are not required; production access needs private Storage policies and authenticated signed URLs.
 
 Phase 11 prepares private metadata buckets for F.E.V.O reports, aggregate Prison Ministry reports, and Ministry Materials reports. Prison documents must never contain inmate identity, criminal, judicial, sentence, offence, court, process, or cell information. Uploads remain optional and production access requires signed URLs.
+
+Phase 12 stores export metadata jobs only. Future sensitive report files must use private storage, authorization immediately before download, short-lived signed URLs, expiry/retention, and a sensitive-access audit event. No public export bucket is allowed.

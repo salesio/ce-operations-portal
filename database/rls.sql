@@ -53,6 +53,32 @@ Example policy sketches (do not apply until auth_user_id is wired in production)
 */
 
 -- ---------------------------------------------------------------------------
+-- Phase 12: Reports / Notifications / Audit dev-safe policy plan (NOT enabled)
+-- ---------------------------------------------------------------------------
+/*
+Future intent:
+- report_definitions: authenticated read filtered by module permission.
+- saved_report_views: owner private views; department/church/national scopes require permission.
+- snapshots/exports: sensitivity permission gates; private bucket for generated files.
+- notifications: recipient user or matching role; templates managed by authorized admins.
+- audit_logs: Super Admin and explicitly authorized compliance/pastoral leadership only.
+- sensitive_access_events: narrow compliance access; common staff cannot select.
+- system_events/health: sanitized operational metadata only.
+
+-- ALTER TABLE public.report_definitions ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.saved_report_views ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.report_snapshots ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.report_export_jobs ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.notification_templates ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.notification_preferences ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.sensitive_access_events ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.system_events ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.data_source_health_checks ENABLE ROW LEVEL SECURITY;
+*/
+
+-- ---------------------------------------------------------------------------
 -- Phase 9: Programs + Media policy plan (documented, NOT enabled)
 -- ---------------------------------------------------------------------------
 /*

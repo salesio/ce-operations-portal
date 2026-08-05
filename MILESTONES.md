@@ -27,6 +27,8 @@ Browser does **not** connect to PostgreSQL directly. Supabase/API = future phase
 
 ## Storage model
 
+Phase 12 (`backend-phase-12-reports-notifications-audit-v1`) implements the Reports + Notifications + Audit hardening pilot; milestone commit/tag remains pending.
+
 - Isolated keys: `ce-data-layer:*`
 - Dual-write bridges keep UI state + data layer in sync
 - localStorage is **pilot/dev only**

@@ -3895,6 +3895,11 @@ export type EntityCollectionName =
   | "requisition_timeline"
   | "notifications"
   | "notification_templates"
+  | "notification_preferences"
+  | "report_definitions"
+  | "saved_report_views"
+  | "report_snapshots"
+  | "report_export_jobs"
   | "system_settings"
   | "global_categories"
   | "status_definitions"
@@ -3974,4 +3979,7 @@ export type EntityCollectionName =
   | "roles"
   | "permissions"
   | "permission_templates"
-  | "audit_logs";
+  | "audit_logs"
+  | "sensitive_access_events"
+  | "system_events"
+  | "data_source_health_checks";

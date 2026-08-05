@@ -274,3 +274,5 @@ If a first timer chooses Escola de Fundação, they are automatically enrolled i
 ## Current technical note
 
 This prototype stores data in browser localStorage only. The production version should connect to Supabase for authentication, database, roles and backups.
+
+Optional progressive Supabase pilots now cover operational modules through Phase 11 and transversal Reports/Notifications/Audit metadata in Phase 12. Mock/local remain the default. See [Phase 12 pilot](docs/backend/REPORTS_NOTIFICATIONS_AUDIT_SUPABASE_PILOT.md) and [production readiness](docs/backend/PRODUCTION_READINESS_PLAN.md).

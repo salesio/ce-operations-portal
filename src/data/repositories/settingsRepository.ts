@@ -495,6 +495,40 @@ export function getSettingsDataSourceInfo() {
   };
 }
 
+export function getProductionReadiness() {
+  const source = getDataSource();
+  const provider = getDataProvider();
+  const supabaseReady = source === "supabase" && provider.isReady();
+  const supabaseModules = [
+    "Churches", "Members", "First Timers", "Follow-Up", "Finance", "Requisitions",
+    "Venue & Inventory", "Staff & RH", "Foundation School", "Programs", "Media",
+    "Counseling (Sensitive)", "Sacraments (Sensitive Documents)", "F.E.V.O",
+    "Prison Ministry (Sensitive-safe)", "Ministry Materials (Internal Funds)",
+    "Reports (Read-only)", "Notifications (In-app)", "Audit Logs (Sensitive hardened)",
+  ];
+  return {
+    current_data_source: source,
+    supabase_enabled: supabaseReady,
+    storage_enabled: supabaseReady,
+    api_enabled: source === "api" && provider.isReady(),
+    modules_pilot_ready_count: supabaseModules.length,
+    modules_using_supabase: supabaseReady ? supabaseModules : [],
+    modules_still_local_or_mock: supabaseReady ? ["Other modules"] : supabaseModules,
+    last_health_check: null,
+    production_readiness: {
+      auth_configured: supabaseReady,
+      rls_status: "Planned / dev-safe; production policies not yet applied",
+      storage_buckets_planned: true,
+      audit_enabled: true,
+      notifications_in_app_enabled: true,
+      backups_configured: false,
+      service_role_exposed: false,
+      direct_postgresql_from_browser: false,
+    },
+    security_message: "Valores de configuração sensíveis não são exibidos por segurança.",
+  };
+}
+
 export {
   SYSTEM_SETTINGS_SEED,
   GLOBAL_CATEGORIES_SEED,
@@ -532,5 +566,6 @@ export const settingsRepository = {
   getUiPreferencesByUser,
   ensureSettingsSeeded,
   getSettingsDataSourceInfo,
+  getProductionReadiness,
   getInfo: getSettingsDataSourceInfo,
 };

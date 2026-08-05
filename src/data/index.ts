@@ -919,6 +919,7 @@ export {
   getUiPreferencesByUser,
   ensureSettingsSeeded,
   getSettingsDataSourceInfo,
+  getProductionReadiness,
   SYSTEM_SETTINGS_SEED,
   GLOBAL_CATEGORIES_SEED,
   STATUS_DEFINITIONS_SEED,
@@ -1254,3 +1255,9 @@ export * as ministryMaterialsSupabaseAdapter from "./adapters/supabase/ministryM
 export * as fevoApiAdapter from "./adapters/api/fevoApiAdapter";
 export * as prisonMinistryApiAdapter from "./adapters/api/prisonMinistryApiAdapter";
 export * as ministryMaterialsApiAdapter from "./adapters/api/ministryMaterialsApiAdapter";
+export * as reportsSupabaseAdapter from "./adapters/supabase/reportsSupabaseAdapter";
+export * as notificationsSupabaseAdapter from "./adapters/supabase/notificationsSupabaseAdapter";
+export * as auditSystemSupabaseAdapter from "./adapters/supabase/auditSystemSupabaseAdapter";
+export * as reportsApiAdapter from "./adapters/api/reportsApiAdapter";
+export * as notificationsApiAdapter from "./adapters/api/notificationsApiAdapter";
+export * as auditSystemApiAdapter from "./adapters/api/auditSystemApiAdapter";

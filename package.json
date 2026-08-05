@@ -40,6 +40,7 @@
     "test:programs-media-supabase": "node scripts/smoke-programs-media-supabase.mjs",
     "test:counseling-sacraments-supabase": "node scripts/smoke-counseling-sacraments-supabase.mjs",
     "test:fevo-prison-materials-supabase": "node scripts/smoke-fevo-prison-materials-supabase.mjs",
+    "test:reports-notifications-audit-supabase": "node scripts/smoke-reports-notifications-audit-supabase.mjs",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f",

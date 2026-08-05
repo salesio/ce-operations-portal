@@ -41,6 +41,12 @@ export function mapSupabaseError(raw: string, fallbackCode = "SUPABASE_ERROR"): 
     /relation .* does not exist|could not find the table|schema cache|PGRST205/i.test(msg) ||
     lower.includes("does not exist")
   ) {
+    if (/report_definitions|saved_report_views|report_snapshots|report_export_jobs|notification_preferences|sensitive_access_events|system_events|data_source_health_checks/i.test(msg)) {
+      return {
+        error: "Tabelas de Reports/Notifications/Audit ainda não foram criadas ou a migration não foi aplicada. / Reports/Notifications/Audit tables have not been created or migration has not been applied.",
+        code: "PHASE12_TABLES_MISSING",
+      };
+    }
     const tableHint = /first_timers|follow_ups|follow_up_timeline/i.test(msg)
       ? "first_timers/follow_ups "
       : "";

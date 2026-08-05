@@ -898,6 +898,7 @@ export {
   updateUiPreference,
   ensureSettingsSeeded,
   getSettingsDataSourceInfo,
+  getProductionReadiness,
   listNotifications,
   createNotification,
   updateNotification,
@@ -986,6 +987,9 @@ import * as sacramentsSupabase from "./data/adapters/supabase/sacramentsSupabase
 import * as fevoSupabase from "./data/adapters/supabase/fevoSupabaseAdapter";
 import * as prisonMinistrySupabase from "./data/adapters/supabase/prisonMinistrySupabaseAdapter";
 import * as ministryMaterialsSupabase from "./data/adapters/supabase/ministryMaterialsSupabaseAdapter";
+import * as reportsSupabase from "./data/adapters/supabase/reportsSupabaseAdapter";
+import * as notificationsSupabase from "./data/adapters/supabase/notificationsSupabaseAdapter";
+import * as auditSystemSupabase from "./data/adapters/supabase/auditSystemSupabaseAdapter";
 
 import {
   listChurches,
@@ -1732,6 +1736,7 @@ import {
   updateUiPreference,
   ensureSettingsSeeded,
   getSettingsDataSourceInfo,
+  getProductionReadiness,
   listNotifications,
   createNotification,
   updateNotification,
@@ -1821,6 +1826,8 @@ function installDataLayerGlobals(): void {
     CEPrograms?: Record<string, unknown>;
     CESettings?: Record<string, unknown>;
     CENotifications?: Record<string, unknown>;
+    CEReports?: Record<string, unknown>;
+    CEReportExports?: Record<string, unknown>;
     recordAuditLog?: (action: string, payload?: Record<string, unknown>) => void;
   };
 
@@ -2536,6 +2543,7 @@ function installDataLayerGlobals(): void {
     updateUiPreference,
     ensureSettingsSeeded,
     getSettingsDataSourceInfo,
+    getProductionReadiness,
     getInfo: getSettingsDataSourceInfo,
   };
 
@@ -2733,6 +2741,9 @@ function installDataLayerGlobals(): void {
   };
 
   root.CESupabase = Object.assign(root.CESupabase || {}, {
+    ...reportsSupabase,
+    ...notificationsSupabase,
+    ...auditSystemSupabase,
     ...fevoSupabase,
     ...prisonMinistrySupabase,
     ...ministryMaterialsSupabase,
@@ -2900,12 +2911,7 @@ function installDataLayerGlobals(): void {
       applyTemplateToRole,
       applyTemplateToUser,
     },
-    auditLogs: {
-      listAuditLogs,
-      createAuditLog,
-      searchAuditLogs,
-      getCriticalAuditLogs,
-    },
+    auditLogs: { ...accessControl, ...auditSystemSupabase },
     media,
     mediaTeam: {
       listMediaTeam,
@@ -3097,6 +3103,14 @@ function installDataLayerGlobals(): void {
       updateSystemSetting,
     },
     notifications: notificationsApi,
+    reports: reportsSupabase,
+    reportExports: {
+      listReportExportJobs: reportsSupabase.listReportExportJobs,
+      createReportExportJob: reportsSupabase.createReportExportJob,
+      markExportJobProcessing: reportsSupabase.markExportJobProcessing,
+      markExportJobCompleted: reportsSupabase.markExportJobCompleted,
+      markExportJobFailed: reportsSupabase.markExportJobFailed,
+    },
     notificationTemplates: {
       listNotificationTemplates,
       createNotificationTemplate,
@@ -3247,6 +3261,14 @@ function installDataLayerGlobals(): void {
   if (!root.CENotifications) {
     root.CENotifications = notificationsApi;
   }
+  root.CEReports = Object.assign(root.CEReports || {}, reportsSupabase);
+  root.CEReportExports = Object.assign(root.CEReportExports || {}, {
+    listReportExportJobs: reportsSupabase.listReportExportJobs,
+    createReportExportJob: reportsSupabase.createReportExportJob,
+    markExportJobProcessing: reportsSupabase.markExportJobProcessing,
+    markExportJobCompleted: reportsSupabase.markExportJobCompleted,
+    markExportJobFailed: reportsSupabase.markExportJobFailed,
+  });
   if (!root.recordAuditLog) {
     root.recordAuditLog = (action: string, payload: Record<string, unknown> = {}) => {
       try {

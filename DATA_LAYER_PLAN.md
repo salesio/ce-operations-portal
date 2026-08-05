@@ -1699,3 +1699,12 @@ See **[docs/backend/COUNSELING_SACRAMENTS_SUPABASE_PILOT.md](docs/backend/COUNSE
 - Existing bridges and mock/local APIs remain intact.
 
 See **[docs/backend/FEVO_PRISON_MATERIALS_SUPABASE_PILOT.md](docs/backend/FEVO_PRISON_MATERIALS_SUPABASE_PILOT.md)**.
+
+## Phase 12 — transversal Supabase/API pilot
+
+- Reports: read-only definitions, saved views, sanitized snapshots and export-job metadata.
+- Notifications: in-app only; external delivery channels remain disabled.
+- Audit/System: sanitized audit logs, sensitive-access references, system events and health checks.
+- Existing mock/local providers and public bridges remain compatible.
+
+See **[docs/backend/REPORTS_NOTIFICATIONS_AUDIT_SUPABASE_PILOT.md](docs/backend/REPORTS_NOTIFICATIONS_AUDIT_SUPABASE_PILOT.md)**.

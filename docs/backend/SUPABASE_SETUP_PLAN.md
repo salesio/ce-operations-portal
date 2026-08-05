@@ -79,4 +79,5 @@ npm run test:data-layer-all
 - **Programs + Media (Phase 9):** migration `0009` + optional seed `programs_media_seed.sql`
 - **Counseling + Sacraments (Phase 10):** migration `0010` + optional seed `counseling_sacraments_seed.sql`
 - **F.E.V.O + Prison + Materials (Phase 11):** migration `0011` + optional seed `fevo_prison_materials_seed.sql`
+- **Reports + Notifications + Audit (Phase 12):** migration `0012` + optional seed `reports_notifications_audit_seed.sql`
 - Docs include `PROGRAMS_MEDIA_SUPABASE_PILOT.md`, `COUNSELING_SACRAMENTS_SUPABASE_PILOT.md`, and `FEVO_PRISON_MATERIALS_SUPABASE_PILOT.md` alongside earlier domain pilot guides.

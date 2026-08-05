@@ -19,4 +19,6 @@
 - Globals: `CEChurches`, `CEMembers`, `CEFinance`, `CEFevo`, `CEPrisonMinistry`, `CEMinistryMaterials`, `CEPrograms`, `CESettings`, `CENotifications`, …
 
 ## Data sources
+Phase 12 globals: `CEReports` (read-only), `CEReportExports` (job metadata), `CENotifications` (in-app), and `CEDataLayer.auditLogs` (sanitized audit/system access).
+
 `VITE_DATA_SOURCE` → mock | local | api | supabase (placeholders for api/supabase).

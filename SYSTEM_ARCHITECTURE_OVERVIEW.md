@@ -34,6 +34,8 @@ VITE_DATA_SOURCE=
 
 ## Next technical phase
 
+Phase 12 adds a transversal read-only Reports adapter, in-app Notification adapter, and hardened Audit/System adapter. All use the existing provider switch and public Supabase client. Reports cannot write to operational repositories; sensitive exports are metadata jobs for a future trusted backend/private-storage workflow.
+
 - Supabase schema + RLS  
 - Auth (replace demo login)  
 - Real notifications channels (optional)  

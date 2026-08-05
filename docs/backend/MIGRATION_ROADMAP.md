@@ -166,3 +166,12 @@ F.E.V.O, Prison Ministry and Ministry Materials remain local/mock in this phase.
 - [x] No automatic Finance, Requisition, Member or Inventory creation
 - [x] Smoke: `test:fevo-prison-materials-supabase`
 - [ ] Production RLS, private signed documents, and concurrency controls
+
+## Phase 12 — Reports + Notifications + Audit Hardening
+
+- [x] Additive migration `0012_reports_notifications_audit_hardening.sql`
+- [x] Read-only reports, saved views, sanitized snapshots and export metadata jobs
+- [x] In-app notifications without external delivery
+- [x] Sanitized audit, sensitive-access references, system events and health checks
+- [x] Settings production-readiness indicator and smoke coverage
+- [ ] Production RLS, export worker/private downloads, backups and monitoring
