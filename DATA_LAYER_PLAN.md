@@ -1712,3 +1712,11 @@ See **[docs/backend/REPORTS_NOTIFICATIONS_AUDIT_SUPABASE_PILOT.md](docs/backend/
 ## Phase 13 — production readiness
 
 No operational repository is added or rerouted. Readiness scripts validate the four provider modes, migration/seed inventory and browser configuration safety. Real Supabase application remains a manual staging-first operation documented in `SUPABASE_REAL_SETUP_GUIDE.md` and `MIGRATION_EXECUTION_PLAN.md`.
+
+## Phase 14 — staging dry-run data-layer validation
+
+- Adds no operational repositories or domain behavior.
+- Keeps `local` and `mock` providers as verified fallbacks.
+- Uses the existing anon Supabase client only when an intentional staging env is supplied.
+- Live connection and minimum-table checks skip safely by default and become mandatory only with `REQUIRE_SUPABASE_LIVE=true`.
+- SQL, seeds, buckets and RLS activation remain human-confirmed actions.

@@ -41,4 +41,8 @@ Phase 13 is the production-readiness layer: no new domain migration and no autom
 - Supabase schema + RLS  
 - Auth (replace demo login)  
 - Real notifications channels (optional)  
-- Public forms secured insert policies  
+- Public forms secured insert policies
+
+## Phase 14 — staging validation boundary
+
+Phase 14 adds an operational validation layer around the existing architecture. The frontend can be pointed intentionally at a staging Supabase project through ignored environment configuration, while anon-client smoke checks validate connectivity and the minimum schema. Schema application, seeds, private buckets and RLS changes remain manual control-plane steps. Local/mock fallback and all Phase 1–13 module boundaries remain unchanged.

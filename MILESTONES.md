@@ -49,3 +49,12 @@ Phase 12 (`backend-phase-12-reports-notifications-audit-v1`) completed the Repor
 - Dual-write bridges keep UI state + data layer in sync
 - localStorage is **pilot/dev only**
 - PostgreSQL / Supabase schema prepared under `database/` (not live for UI modules yet)
+
+## Phase 14 — Supabase staging dry run and manual QA
+
+- Staging env template and step-by-step dry-run guide.
+- Ordered schema/migration, synthetic seed, private storage and incremental RLS checklists.
+- Safe anon-client connection/schema checks with default skip behavior.
+- Module manual QA, report template and local/mock rollback readiness.
+- No operational module, automatic migration or real credential added.
+- Future milestone after commit: `backend-phase-14-supabase-staging-dry-run-v1`.

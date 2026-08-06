@@ -24,6 +24,7 @@ const scripts = [
   "smoke-fevo-prison-materials-supabase.mjs",
   "smoke-reports-notifications-audit-supabase.mjs",
   "smoke-production-readiness.mjs",
+  "smoke-phase-14-staging-dry-run.mjs",
   "smoke-fevo-data.mjs",
   "smoke-prison-ministry-data.mjs",
   "smoke-ministry-materials-data.mjs",

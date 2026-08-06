@@ -46,3 +46,7 @@ Never prefix backend-only values with `VITE_`. The browser must not connect dire
 ## Acceptance
 
 Run `npm run test:production-readiness`, `npm run test:data-source-readiness`, `npm run test:validate-seeds-safety`, the complete `TEST_MATRIX.md`, and the manual QA checklist before promotion.
+
+## Phase 14 — first real setup must be staging
+
+For the first real Supabase exercise, follow `SUPABASE_STAGING_DRY_RUN_GUIDE.md`. Apply `database/schema.sql` and migrations `0002`–`0012` manually, validate after each step, and keep demo seeds out of production. Use `.env.staging.example` only as a safe template; the populated `.env.staging` stays ignored. Run the anon connection/schema checks and restore local mode as the final fallback test.

@@ -278,3 +278,9 @@ This prototype stores data in browser localStorage only. The production version 
 Optional progressive Supabase pilots now cover operational modules through Phase 11 and transversal Reports/Notifications/Audit metadata in Phase 12. Mock/local remain the default. See [Phase 12 pilot](docs/backend/REPORTS_NOTIFICATIONS_AUDIT_SUPABASE_PILOT.md) and [production readiness](docs/backend/PRODUCTION_READINESS_PLAN.md).
 
 Phase 13 adds production-readiness documentation and non-destructive validation only. Start with the [Supabase real setup guide](docs/backend/SUPABASE_REAL_SETUP_GUIDE.md), [migration execution plan](docs/backend/MIGRATION_EXECUTION_PLAN.md), [test matrix](docs/backend/TEST_MATRIX.md), and [backup/rollback plan](docs/backend/BACKUP_ROLLBACK_PLAN.md). No real migration is applied automatically.
+
+## Phase 14 — Supabase staging dry run
+
+Phase 14 adds staging preparation and non-destructive live validation without new operational modules. Use the [staging dry-run guide](docs/backend/SUPABASE_STAGING_DRY_RUN_GUIDE.md), [manual QA checklist](docs/qa/STAGING_MANUAL_QA_CHECKLIST.md), and [rollback/fallback checklist](docs/backend/STAGING_ROLLBACK_FALLBACK_CHECKLIST.md). The live connection/schema scripts skip safely when staging env is absent; no migrations, seeds or buckets are applied automatically.
+
+Key commands: `npm run test:supabase-staging-connection`, `npm run test:supabase-live-schema`, and `npm run test:phase-14-staging-dry-run`.

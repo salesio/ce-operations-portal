@@ -16149,6 +16149,11 @@ function renderSettings() {
               <div>Auth mode: <code>${readiness?.auth_mode || "Demo"}</code> Â· API mode: <code>${readiness?.api_mode || "Disabled"}</code></div>
               <div>Migrations prepared: <code>${readiness ? `${readiness.migrations_prepared || 12}/${readiness.migrations_expected || 12}` : "12/12"}</code></div>
               <div class="mt-1">Production Readiness: RLS <code>Planned / Dev-safe / Production pending</code> Â· Storage buckets <code>Planned / Production pending</code> Â· Audit hardening <code>Ready</code> Â· Notifications <code>In-app ready</code></div>
+              <div class="mt-2 fw-semibold">Staging Dry Run</div>
+              <div>Staging env template: <code>Ready</code> · Supabase live env detected: <code>${readiness?.staging_dry_run?.live_env_detected ? "Yes" : "No"}</code></div>
+              <div>Live schema check: <code>${readiness?.staging_dry_run?.live_schema_check || "Not run"}</code> · Storage bucket checklist: <code>Documented</code></div>
+              <div>Manual QA checklist: <code>Ready</code> · Rollback checklist: <code>Ready</code> · Last dry run report: <code>Not recorded</code></div>
+              <div>Current git milestone: <code>backend-phase-14-supabase-staging-dry-run-v1</code></div>
               <div>Backups: <code>Not configured</code> warning Â· Java Spring Boot: <code>Future plan documented</code> Â· Deployment: <code>Pending</code></div>
               <div>service role exposed: <code>false</code> Â· direct PostgreSQL from browser: <code>false</code></div>
               <div>others: <code>local/mock</code></div>
@@ -16157,6 +16162,27 @@ function renderSettings() {
               } catch (_) {
                 return "";
               }
+            })()}
+            ${(() => {
+              let liveDetected = false;
+              try {
+                const info = window.CESupabase && typeof window.CESupabase.getSupabaseInfo === "function"
+                  ? window.CESupabase.getSupabaseInfo()
+                  : null;
+                liveDetected = !!(info && (info.isConfigured || info.configured));
+              } catch (_) {
+                liveDetected = false;
+              }
+              return `
+            <div class="border rounded p-2 mt-2 small bg-dark bg-opacity-25" id="stagingDryRunReadiness">
+              <div class="fw-semibold mb-1">Staging Dry Run</div>
+              <div>Staging env template: <code>Ready</code> · Supabase live env detected: <code>${liveDetected ? "Yes" : "No"}</code></div>
+              <div>Live schema check: <code>Not run</code> · Storage bucket checklist: <code>Documented</code></div>
+              <div>Manual QA checklist: <code>Ready</code> · Rollback checklist: <code>Ready</code></div>
+              <div>Last dry run report: <code>Not recorded</code></div>
+              <div>Current git milestone: <code>backend-phase-14-supabase-staging-dry-run-v1</code></div>
+              <div class="text-white-50 mt-1">No keys, service-role credentials or database URLs are displayed.</div>
+            </div>`;
             })()}
           </div>
         </article>

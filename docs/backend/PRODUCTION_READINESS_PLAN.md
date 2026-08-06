@@ -27,3 +27,7 @@ Phase 12 exposes a sanitized readiness summary in Settings. It deliberately does
 Health records may contain status, latency, boolean flags and sanitized messages only. Sensitive configuration values are hidden for security.
 
 Phase 13 expands this plan through `SUPABASE_REAL_SETUP_GUIDE.md`, `MIGRATION_EXECUTION_PLAN.md`, `RLS_PRODUCTION_READINESS_PLAN.md`, `STORAGE_BUCKETS_READINESS_PLAN.md`, `BACKUP_ROLLBACK_PLAN.md`, `DEPLOYMENT_PLAN.md`, and the executable readiness scripts in `scripts/`.
+
+## Phase 14 — staging dry-run gate
+
+Before production readiness can advance, complete `SUPABASE_STAGING_DRY_RUN_GUIDE.md`, the migration/seed/storage/RLS checklists, and `docs/qa/STAGING_MANUAL_QA_CHECKLIST.md` in a dedicated staging project. Record the outcome using the staging report template. Live scripts use only the anon client, skip when unconfigured, and must never receive backend secrets. A passed staging dry run is evidence for more testing, not an automatic production approval.

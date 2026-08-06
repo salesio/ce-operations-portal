@@ -524,6 +524,16 @@ export function getProductionReadiness() {
     modules_using_supabase: supabaseReady ? supabaseModules : [],
     modules_still_local_or_mock: supabaseReady ? ["Other modules"] : supabaseModules,
     last_health_check: null,
+    staging_dry_run: {
+      env_template: "Ready",
+      live_env_detected: supabaseConfigured,
+      live_schema_check: "Not run",
+      storage_bucket_checklist: "Documented",
+      manual_qa_checklist: "Ready",
+      rollback_checklist: "Ready",
+      last_dry_run_report: "Not recorded",
+      current_git_milestone: "backend-phase-14-supabase-staging-dry-run-v1",
+    },
     production_readiness: {
       auth_configured: supabaseReady,
       rls_status: "Planned / dev-safe; production policies not yet applied",

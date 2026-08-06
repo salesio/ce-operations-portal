@@ -29,3 +29,13 @@ npm run test:finance-data
 ```
 
 Static readiness scripts do not replace staging RLS/Auth/Storage/manual QA. Record command, commit, environment, time and result in deployment evidence.
+
+## Phase 14 — staging dry-run validation
+
+| Command | Coverage | Without live env |
+|---|---|---|
+| `npm run test:supabase-staging-connection` | Anon-client initialization and safe `churches` query | Skip, exit 0 |
+| `npm run test:supabase-live-schema` | Minimum 20-table staging schema inventory | Skip, exit 0 |
+| `npm run test:phase-14-staging-dry-run` | Templates, guides, scripts, Settings, docs and secret-safety invariants | Runs locally |
+
+When `REQUIRE_SUPABASE_LIVE=true`, missing/invalid staging env must fail. Manual QA and RLS/storage evidence belong in the staging test report.
