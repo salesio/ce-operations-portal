@@ -61,6 +61,7 @@ jobs:
           for directory in assets images img; do
             [[ -d "$directory" ]] && cp -R "$directory" .github-pages-build/
           done
+          sed -i "s/20260807-pages-sync-v1/${GITHUB_SHA}/" .github-pages-build/index.html
           node scripts/write-github-pages-runtime-config.mjs .github-pages-build/js/runtime-config.js
 
       - name: Publish to gh-pages
