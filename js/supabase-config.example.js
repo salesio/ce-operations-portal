@@ -6,6 +6,9 @@
  * When running `npm run build:supabase` with a .env file, values are baked into supabase-bundle.js.
  */
 window.__CE_ENV__ = {
+  VITE_ENABLE_PUBLIC_CELL_REPORT: "false",
+  VITE_DATA_SOURCE: "mock",
+  VITE_APP_ENV: "development",
   VITE_SUPABASE_URL: "https://YOUR_PROJECT_REF.supabase.co",
   VITE_SUPABASE_ANON_KEY: "YOUR_SUPABASE_ANON_KEY"
 };

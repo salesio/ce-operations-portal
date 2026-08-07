@@ -1,5 +1,14 @@
 # Data Layer Migration — Milestones
 
+## Cell Leader Portal — Independent Cell Dashboard
+
+- Rota `cellPortal` e landing automático para Cell Leader/Assistant.
+- Contexto por igreja, grupo, célula, utilizador e staff.
+- Membros, perfis saneados, relatório, actividades, crescimento, Fundação, sacramentos, ganhar almas, programas, histórico e alertas.
+- Gráficos responsivos, filtros e exportação sem dados sensíveis.
+- Finance apenas agregado/Verified; sem edição, comprovativos ou criação de `financeRecord`.
+- Teste: `npm run test:cell-leader-portal`.
+
 Frontend progressive migration under `VITE_DATA_SOURCE=mock|local|api|supabase`.  
 Browser does **not** connect to PostgreSQL directly. Supabase/API = future phase.
 
@@ -58,3 +67,9 @@ Phase 12 (`backend-phase-12-reports-notifications-audit-v1`) completed the Repor
 - Module manual QA, report template and local/mock rollback readiness.
 - No operational module, automatic migration or real credential added.
 - Future milestone after commit: `backend-phase-14-supabase-staging-dry-run-v1`.
+# Security Fix — Authenticated Cell Report Submission
+
+- Anonymous cell-report submission disabled by default.
+- Authenticated Cell Leader/Assistant portal with assignment-based cell guard.
+- Reviewer/head validation, rejection reasons, audit events, and in-app notifications.
+- No new operational module and no automatic finance record from offerings.

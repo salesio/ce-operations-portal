@@ -1,5 +1,9 @@
 # Christ Embassy Mozambique Dashboard
 
+## Cell Leader Portal
+
+Líderes e Assistentes autenticados entram no painel independente `#cellPortal`, limitado às células atribuídas. O portal agrega membros, progresso espiritual, relatórios, actividades, ganhar almas, programas, alertas e indicadores financeiros seguros, sem notas confidenciais, comprovativos, valores detalhados ou criação de `financeRecord`. Ver `docs/backend/CELL_LEADER_PORTAL.md` e executar `npm run test:cell-leader-portal`.
+
 First dashboard prototype for the church team portal.
 
 **Live demo:** https://salesio.github.io/ce-operations-portal/
@@ -65,13 +69,13 @@ The UI still uses **localStorage mock** for most modules. Typed adapters live un
 
 **Settings + Notifications (pilot):** system settings, languages (pt default), categories, status definitions, UI preferences, in-app notification center + templates via `CESettings` / `CENotifications`. Helpers: `notify`, `createSystemNotification`, `recordAuditLog`. No push. See **[SETTINGS_MODULE_PLAN.md](SETTINGS_MODULE_PLAN.md)**, **[NOTIFICATION_CENTER_PLAN.md](NOTIFICATION_CENTER_PLAN.md)**, **[MILESTONES.md](MILESTONES.md)**.
 
-**Public Cell Report Form (leaders, no admin login):**
-- Button on the **login screen** only: *Submeter Relatório de Célula* → `#cell-report-submit`
-- Cell leaders **do not** enter the staff dashboard
-- Public/controlled multi-step form; group → cell dependent selects
+**Authenticated Cell Report Portal:**
+- The login-screen button now requires authentication before `#cell-report-submit`
+- Leaders and assistants receive a restricted portal, not the full staff navigation
+- The multi-step form only offers cells assigned to the authenticated user
 - Writes through **`cellReportsRepository` / `createCellReport`** (+ dual-write to existing `cellReports` tab)
 - Offering → `finance_review_status = Pending Finance Review` only (never auto-verified revenue)
-- Real Finance + backend security (RLS, public insert, cell token/link) = **future Supabase phase**
+- Real backend/RLS enforcement remains a reviewed Supabase step; the frontend guard is active now
 - Mobile-first, simple UX
 
 See **[DATA_LAYER_PLAN.md](DATA_LAYER_PLAN.md)** § *Public Cell Report Form*.
@@ -226,15 +230,20 @@ npm run build:supabase
 
 ### Publishing updates
 
-GitHub Pages serves the static site from the `gh-pages` branch (legacy deploy). After changing files on `main`, update the live site:
+GitHub Pages is automatically deployed from `main` by
+`.github/workflows/deploy-github-pages.yml`. Each push publishes the current
+static dashboard to the `gh-pages` branch.
 
-```bash
-git checkout gh-pages
-git checkout main -- index.html css js manifest.webmanifest .nojekyll
-git commit -am "Update live site"
-git push origin gh-pages
-git checkout main
-```
+To enable the live Supabase pilot on Pages, add these **GitHub Actions
+Secrets** (Settings → Secrets and variables → Actions):
+
+- `CE_SUPABASE_URL`
+- `CE_SUPABASE_ANON_KEY`
+
+The deployment then enables `VITE_DATA_SOURCE=supabase`. These values are
+public client configuration and are visible to browser users; secure access
+must be enforced by Supabase RLS. Never add a service-role key, `DATABASE_URL`,
+or any backend secret to GitHub Pages or Actions frontend build variables.
 
 ## Included in v1 prototype
 
@@ -284,3 +293,6 @@ Phase 13 adds production-readiness documentation and non-destructive validation 
 Phase 14 adds staging preparation and non-destructive live validation without new operational modules. Use the [staging dry-run guide](docs/backend/SUPABASE_STAGING_DRY_RUN_GUIDE.md), [manual QA checklist](docs/qa/STAGING_MANUAL_QA_CHECKLIST.md), and [rollback/fallback checklist](docs/backend/STAGING_ROLLBACK_FALLBACK_CHECKLIST.md). The live connection/schema scripts skip safely when staging env is absent; no migrations, seeds or buckets are applied automatically.
 
 Key commands: `npm run test:supabase-staging-connection`, `npm run test:supabase-live-schema`, and `npm run test:phase-14-staging-dry-run`.
+# Security Fix — Authenticated Cell Report Submission
+
+Cell reports now require login by default and are restricted to cells assigned to the authenticated leader or assistant. Reviewer/head roles process reports within scope, denied attempts are audited, and offerings remain pending finance review. The legacy anonymous form is disabled with `VITE_ENABLE_PUBLIC_CELL_REPORT=false`; see [Authenticated Cell Report Submission](docs/backend/AUTHENTICATED_CELL_REPORT_SUBMISSION.md).

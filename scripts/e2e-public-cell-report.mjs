@@ -1,5 +1,5 @@
 /**
- * Browser E2E: public cell report → dashboard → approve → refresh.
+ * Browser E2E: authenticated cell report → dashboard → approve → refresh.
  * Requires: npm run dev (http://localhost:5173)
  * Run: node scripts/e2e-public-cell-report.mjs
  */
@@ -33,6 +33,10 @@ async function main() {
     if (/Cannot use import statement outside a module/i.test(text)) return;
     consoleErrors.push(text);
   });
+  page.on("dialog", async (dialog) => {
+    if (dialog.type() === "prompt") await dialog.accept("E2E review reason");
+    else await dialog.accept();
+  });
 
   try {
     // 1. Open login
@@ -40,12 +44,16 @@ async function main() {
     await page.waitForSelector("#loginView", { timeout: 15000 });
     log(await page.locator("#loginView").isVisible(), "1. Login screen visible");
 
-    // 2. Click public submit
-    const publicBtn = page.locator("[data-public-cell-report]");
-    log(await publicBtn.isVisible(), "2. Public button visible");
-    await publicBtn.click();
+    // 2. Authenticate first; the report shortcut no longer appears on login.
+    log((await page.locator("#loginView [data-public-cell-report]").count()) === 0, "2. Login report shortcut removed");
+    await page.locator("#loginEmail").fill("cell.leader@ce-mozambique.org");
+    await page.locator("#loginPassword").fill("demo");
+    await page.locator("[data-login-enter]").click();
+    await page.waitForSelector("#appView:not(.d-none) [data-public-cell-report]", { timeout: 10000 });
+    log(await page.locator("#appView").isVisible(), "2b. Cell Leader Portal opened");
+    await page.locator("#appView [data-public-cell-report]").first().click();
     await page.waitForSelector("#publicCellReportView:not(.d-none)", { timeout: 10000 });
-    log(await page.locator("#publicCellReportForm").isVisible(), "3. Public form opened");
+    log(await page.locator("#publicCellReportForm").isVisible(), "3. Authenticated form opened");
     log(!(await page.locator("#loginView").isVisible()), "3b. Login hidden");
     log(!(await page.locator("#appView").isVisible()), "3c. Dashboard hidden");
 
@@ -59,24 +67,13 @@ async function main() {
     const churchOpts = await church.locator("option").count();
     log(churchOpts > 1, "4. Church options loaded", `count=${churchOpts}`);
 
-    // pick first non-empty church
-    const churchValue = await church.locator("option").nth(1).getAttribute("value");
-    await church.selectOption(churchValue || { index: 1 });
-    await page.waitForTimeout(300);
+    // A single leader assignment preselects and locks church/group/cell.
+    const churchLocked = await church.isDisabled();
+    log(churchLocked, "4b. Church locked for single assignment");
     const groupOpts = await group.locator("option").count();
     log(groupOpts > 1, "5. Group options after church", `count=${groupOpts}`);
-    const groupValue = await group.locator("option").nth(1).getAttribute("value");
-    await group.selectOption(groupValue || { index: 1 });
-    await page.waitForTimeout(300);
     const cellOpts = await cell.locator("option").count();
-    log(cellOpts > 1, "6. Cells filtered by group", `count=${cellOpts}`);
-    if (cellOpts > 1) {
-      await cell.selectOption({ index: 1 });
-    } else {
-      // fallback manual cell
-      await page.locator("#publicMissingCell").check();
-      await page.locator("[name='manual_cell_name']").fill("Célula E2E Manual");
-    }
+    log(cellOpts > 1 && await cell.isDisabled(), "6. Authorized cell preselected and locked", `count=${cellOpts}`);
     const leaderName = page.locator("#publicLeaderName");
     const leaderPhone = page.locator("#publicLeaderPhone");
     if (!(await leaderName.inputValue())) await leaderName.fill("Líder E2E");
@@ -111,7 +108,7 @@ async function main() {
     await page.locator("[name='confirmation']").check();
     log(await page.locator("[data-public-submit]").isVisible(), "11. Submit button visible on last step");
 
-    await page.locator("[data-public-submit]").click();
+    await page.locator("[data-public-submit]").evaluate((button) => button.click());
     await page.waitForTimeout(600);
     const success = await page.locator(".public-report-success, .public-success-badge").count();
     const successText = await page.locator("#publicCellReportView").innerText().catch(() => "");
@@ -124,7 +121,7 @@ async function main() {
         const state = raw ? JSON.parse(raw) : {};
         const reports = state?.cellLeadership?.cellReports || [];
         const publicOnes = reports.filter(
-          (r) => /public form|login_public/i.test(String(r.submitted_by_type || r.submetido_por || r.submitted_from || ""))
+          (r) => /authenticated cell leader|cell_leader_portal/i.test(String(r.submitted_by_type || r.submission_source || r.submetido_por || r.submitted_from || ""))
         );
         return {
           totalReports: reports.length,
@@ -157,7 +154,9 @@ async function main() {
     await page.waitForSelector("#loginView:not(.d-none)", { timeout: 8000 });
     log(await page.locator("#loginView").isVisible(), "13. Back to login");
 
-    // 14 enter dashboard
+    // 14 enter dashboard as admin reviewer
+    await page.locator("#loginEmail").fill("admin@ce-mozambique.org");
+    await page.locator("#loginPassword").fill("demo");
     await page.locator("#loginForm button[type='submit'], [data-login-enter]").first().click();
     await page.waitForSelector("#appView:not(.d-none)", { timeout: 10000 });
     log(await page.locator("#appView").isVisible(), "14. Dashboard entered");
@@ -182,7 +181,7 @@ async function main() {
     const content2 = await page.locator("#content").innerText();
     const visibleReport =
       (cellName && content2.includes(cellName)) ||
-      /Public form|Formulário público|Pending Finance|500|Líder E2E/i.test(content2);
+      /Authenticated portal|Portal autenticado|Pending Finance|500|Líder E2E/i.test(content2);
     log(visibleReport, "16. Public report visible in list", cellName || "search markers");
 
     // Finance status text
@@ -197,12 +196,12 @@ async function main() {
     log(approveCount > 0, "18a. Approve buttons present", `count=${approveCount}`);
     if (approveCount > 0) {
       // Prefer the public form row if possible
-      const publicRowApprove = page.locator("tr").filter({ hasText: /Formulário público|Public form|Líder E2E/i }).locator('[data-cell-report-action="approve"]').first();
+      const publicRowApprove = page.locator("tr").filter({ hasText: /Portal autenticado|Authenticated portal|Líder E2E/i }).locator('[data-cell-report-action="approve"]').first();
       if (await publicRowApprove.count()) await publicRowApprove.click();
       else await approveBtn.click();
       await page.waitForTimeout(400);
     }
-    const validateBtn = page.locator("tr").filter({ hasText: /Formulário público|Public form|Líder E2E|Approved|Aprovado/i }).locator('[data-cell-report-action="validate"]').first();
+    const validateBtn = page.locator("tr").filter({ hasText: /Portal autenticado|Authenticated portal|Líder E2E|Approved|Aprovado/i }).locator('[data-cell-report-action="validate"]').first();
     if (await validateBtn.count()) {
       await validateBtn.click();
       await page.waitForTimeout(400);
@@ -222,7 +221,7 @@ async function main() {
       const state = raw ? JSON.parse(raw) : {};
       const reports = state?.cellLeadership?.cellReports || [];
       const pub = reports.find(
-        (r) => /public form|login_public/i.test(String(r.submitted_by_type || r.submetido_por || r.submitted_from || ""))
+        (r) => /authenticated cell leader|cell_leader_portal/i.test(String(r.submitted_by_type || r.submission_source || r.submetido_por || r.submitted_from || ""))
       ) || reports[0];
       return pub
         ? { status: pub.status, estado: pub.estado, finance: pub.finance_review_status, id: pub.id }
@@ -256,7 +255,7 @@ async function main() {
       return {
         count: reports.length,
         pub: reports.find(
-          (r) => /public form|login_public/i.test(String(r.submitted_by_type || r.submetido_por || r.submitted_from || ""))
+          (r) => /authenticated cell leader|cell_leader_portal/i.test(String(r.submitted_by_type || r.submission_source || r.submetido_por || r.submitted_from || ""))
         ),
       };
     });

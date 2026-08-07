@@ -39,6 +39,26 @@
     return "mock";
   }
 
+  function safeRuntimeInfo() {
+    var env = window.__CE_ENV__ || {};
+    var runtime = {};
+    try {
+      if (window.CESupabase && typeof window.CESupabase.getInfo === "function") {
+        runtime = window.CESupabase.getInfo() || {};
+      } else if (window.CEDataLayer && typeof window.CEDataLayer.getInfo === "function") {
+        runtime = window.CEDataLayer.getInfo() || {};
+      }
+    } catch (_) {}
+    return {
+      dataSource: resolveDataSource(),
+      hasSupabaseUrl: Boolean(runtime.hasSupabaseUrl || env.VITE_SUPABASE_URL),
+      hasSupabaseAnonKey: Boolean(runtime.hasSupabaseAnonKey || env.VITE_SUPABASE_ANON_KEY),
+      supabaseEnabled: Boolean(runtime.supabaseEnabled || /^(1|true|yes|on)$/i.test(String(env.VITE_ENABLE_SUPABASE || ""))),
+      dataLayerRepositoryLoaded: Boolean(window.CEDataLayer && window.CEDataLayer.churches),
+      supabaseProviderLoaded: Boolean(window.CESupabase && typeof window.CESupabase.createChurch === "function"),
+    };
+  }
+
   /** Prefer TS bundle / CEDataLayer; never throw. */
   function resolveRepoApi() {
     var layer = window.CEDataLayer && window.CEDataLayer.churches;
@@ -232,13 +252,10 @@
     if (resolved.api) {
       return { api: resolved.api, via: resolved.via, fallback: false };
     }
-    console.warn("[CE Churches] repository API missing — using pure JS fallback", {
-      CEDataLayer: !!window.CEDataLayer,
-      CESupabase: !!window.CESupabase,
-      CEData: !!window.CEData,
-      CESupabaseKeys: window.CESupabase ? Object.keys(window.CESupabase).slice(0, 20) : [],
-      dataSource: resolveDataSource(),
-    });
+    console.warn("[CE Churches] repository unavailable; using pure JS fallback", Object.assign(
+      safeRuntimeInfo(),
+      { fallbackReason: "No Churches repository API was installed by the runtime bundle." }
+    ));
     return { api: pureFallback, via: "pure-js-fallback", fallback: true };
   }
 
@@ -329,12 +346,15 @@
     } catch (error) {
       console.warn("[CE Churches] getInfo failed", error);
     }
-    return {
+    return Object.assign(safeRuntimeInfo(), {
       source: resolveDataSource(),
-      provider: resolved.via,
+      provider: "fallback",
+      via: resolved.via,
       ready: !!resolved.api,
       fallback: resolved.fallback,
-    };
+      fallbackReason: "No Churches repository API was installed by the runtime bundle.",
+      checkedAt: new Date().toISOString(),
+    });
   }
 
   window.CEChurches = {

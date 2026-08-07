@@ -39,6 +39,26 @@
     return "mock";
   }
 
+  function safeRuntimeInfo() {
+    var env = window.__CE_ENV__ || {};
+    var runtime = {};
+    try {
+      if (window.CESupabase && typeof window.CESupabase.getInfo === "function") {
+        runtime = window.CESupabase.getInfo() || {};
+      } else if (window.CEDataLayer && typeof window.CEDataLayer.getInfo === "function") {
+        runtime = window.CEDataLayer.getInfo() || {};
+      }
+    } catch (_) {}
+    return {
+      dataSource: resolveDataSource(),
+      hasSupabaseUrl: Boolean(runtime.hasSupabaseUrl || env.VITE_SUPABASE_URL),
+      hasSupabaseAnonKey: Boolean(runtime.hasSupabaseAnonKey || env.VITE_SUPABASE_ANON_KEY),
+      supabaseEnabled: Boolean(runtime.supabaseEnabled || /^(1|true|yes|on)$/i.test(String(env.VITE_ENABLE_SUPABASE || ""))),
+      dataLayerRepositoryLoaded: Boolean(window.CEDataLayer && window.CEDataLayer.members),
+      supabaseProviderLoaded: Boolean(window.CESupabase && typeof window.CESupabase.createMember === "function"),
+    };
+  }
+
   function resolveRepoApi() {
     var layer = window.CEDataLayer && window.CEDataLayer.members;
     if (layer && typeof layer.createMember === "function") {
@@ -298,12 +318,10 @@
     if (resolved.api) {
       return { api: resolved.api, via: resolved.via, fallback: false };
     }
-    console.warn("[CE Members] repository API missing — using pure JS fallback", {
-      CEDataLayer: !!window.CEDataLayer,
-      CESupabase: !!window.CESupabase,
-      CEData: !!window.CEData,
-      dataSource: resolveDataSource(),
-    });
+    console.warn("[CE Members] repository unavailable; using pure JS fallback", Object.assign(
+      safeRuntimeInfo(),
+      { fallbackReason: "No Members repository API was installed by the runtime bundle." }
+    ));
     return { api: pureFallback, via: "pure-js-fallback", fallback: true };
   }
 
@@ -381,12 +399,15 @@
       } catch (error) {
         console.warn("[CE Members] getInfo failed", error);
       }
-      return {
+      return Object.assign(safeRuntimeInfo(), {
         source: resolveDataSource(),
-        provider: resolved.via,
+        provider: "fallback",
+        via: resolved.via,
         ready: !!resolved.api,
         fallback: resolved.fallback,
-      };
+        fallbackReason: "No Members repository API was installed by the runtime bundle.",
+        checkedAt: new Date().toISOString(),
+      });
     },
     friendlyError: friendlyError,
     _debugResolve: function () {

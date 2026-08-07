@@ -31,16 +31,16 @@ function read(rel) {
 
 // --- Static / UI wiring ---
 const indexHtml = read("index.html");
-ok("login button present", /data-public-cell-report/.test(indexHtml) && /Submeter Relat[oó]rio de C[eé]lula/.test(indexHtml));
+ok("login report shortcut removed", !/data-public-cell-report/.test(indexHtml) && !/login-public-action/.test(indexHtml));
 ok("public view shell", /id="publicCellReportView"/.test(indexHtml));
 ok("cache buster present", /20260723-(cell-report-submit|finance-data)-v\d+/.test(indexHtml));
-ok("dashboard script tagged", /dashboard\.js\?v=20260723-/.test(indexHtml));
+ok("dashboard script tagged", /dashboard\.js\?v=2026\d{4}-/.test(indexHtml));
 ok("cell ministry bridge tagged", /cell-ministry-data-bridge\.js\?v=20260723-/.test(indexHtml));
 
 const dash = read("js/dashboard.js");
 ok("hash route cell-report-submit", /cell-report-submit/.test(dash));
-ok("submitted_by_type public form", /submitted_by_type:\s*"Cell Leader Public Form"/.test(dash));
-ok("submitted_from login button", /submitted_from:\s*"login_public_button"/.test(dash));
+ok("authenticated submitted_by_type", /submitted_by_type:\s*legacyPublic \? [^:]+ : "Authenticated Cell Leader"/.test(dash));
+ok("authenticated portal source", /submission_source:\s*legacyPublic \? [^:]+ : "cell_leader_portal"/.test(dash));
 ok("Pending Finance Review on offering", /Pending Finance Review/.test(dash));
 ok("honeypot field", /name="website"[\s\S]*public-honeypot/.test(dash) || /public-honeypot/.test(dash));
 ok("rate limit localStorage", /ce-public-cell-report-last-submit/.test(dash));
@@ -53,8 +53,8 @@ const repoThin = read("src/data/repositories/cellReportsRepository.ts");
 ok("cellReportsRepository re-exports createCellReport", /createCellReport/.test(repoThin));
 
 const plan = read("DATA_LAYER_PLAN.md");
-ok("docs: Public Cell Report Form section", /### Public Cell Report Form/.test(plan));
-ok("docs: no admin login principle", /without.*admin login|no admin login/i.test(plan));
+ok("docs: Authenticated Cell Report Form section", /### Authenticated Cell Report Form/.test(plan));
+ok("docs: authenticated default", /requires login|authenticated.*default/i.test(plan));
 ok("docs: cellReportsRepository path", /cellReportsRepository/.test(plan));
 ok("docs: finance future phase", /future phase|Pending Finance Review/.test(plan));
 
@@ -174,7 +174,7 @@ ok("bridge createCellReport", /createCellReport/.test(bridge));
 
 // --- Manual checklist wiring (steps 1–20) ---
 console.log("\n--- Manual checklist (code paths) ---");
-ok("1–2 login button → public form", /data-public-cell-report/.test(indexHtml) && /showPublicCellReport/.test(dash));
+ok("1–2 authenticated portal → report form", /data-public-cell-report/.test(dash) && /showPublicCellReport/.test(dash));
 ok("3 public page hides login+app", /loginView[\s\S]{0,80}d-none[\s\S]{0,120}appView[\s\S]{0,80}d-none/.test(dash) || /showPublicCellReport[\s\S]{0,200}loginView/.test(dash));
 ok("4–5 church + group selects", /publicCellChurch/.test(dash) && /publicCellGroup/.test(dash));
 ok("6 cells filter by group", /updatePublicCellReportDependentSelects/.test(dash) && /matchGroup/.test(dash));
@@ -194,8 +194,8 @@ ok("19 dual-write local persistence path", /dualWriteCellMinistryRecord/.test(da
 ok("20 no auto verified finance income", /never auto-create verified finance|placeholder only/i.test(dash));
 
 // §24 principles
-ok("§24 leader not staff dashboard (public only)", /no admin login|Cell Leader Public Form|login_public_button/i.test(dash + plan + readme));
-ok("§24 button on login only entry", /login-public-action/.test(indexHtml));
+ok("§24 leader restricted portal", /restricted report portal|restricted portal/i.test(plan + readme));
+ok("§24 report entry requires authenticated portal", !/login-public-action/.test(indexHtml) && /cellPortal/.test(dash));
 ok("§24 uses existing data layer", /createCellReport|CECellMinistry|CEDataLayer/.test(dash));
 ok("§24 dependent group→cell", /updatePublicCellReportDependentSelects/.test(dash));
 ok("§24 existing tab not new module", /receivedReports|weeklyCellReport/.test(dash));

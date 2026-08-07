@@ -422,7 +422,8 @@ export function getMembersDataSourceInfo() {
   const api = useApiMembers();
   return {
     source: getDataSource(),
-    provider: sb ? "supabase-members-adapter" : api ? "api-members-adapter" : provider.name,
+    provider: sb ? "supabase" : api ? "api" : provider.name,
+    adapter: sb ? "supabase-members-adapter" : api ? "api-members-adapter" : provider.name,
     ready: sb ? getSupabaseEnvConfig().isConfigured : api ? false : provider.isReady(),
     description: sb
       ? "Members pilot via Supabase public.members"

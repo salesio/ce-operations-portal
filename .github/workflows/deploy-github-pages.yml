@@ -1,0 +1,72 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: github-pages-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      CE_SUPABASE_URL: ${{ secrets.CE_SUPABASE_URL }}
+      CE_SUPABASE_ANON_KEY: ${{ secrets.CE_SUPABASE_ANON_KEY }}
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Configure safe public data source
+        shell: bash
+        run: |
+          if [[ -n "$CE_SUPABASE_URL" && -n "$CE_SUPABASE_ANON_KEY" ]]; then
+            echo "VITE_DATA_SOURCE=supabase" >> "$GITHUB_ENV"
+            echo "VITE_ENABLE_SUPABASE=true" >> "$GITHUB_ENV"
+            echo "VITE_SUPABASE_URL=$CE_SUPABASE_URL" >> "$GITHUB_ENV"
+            echo "VITE_SUPABASE_ANON_KEY=$CE_SUPABASE_ANON_KEY" >> "$GITHUB_ENV"
+          else
+            echo "VITE_DATA_SOURCE=mock" >> "$GITHUB_ENV"
+            echo "VITE_ENABLE_SUPABASE=false" >> "$GITHUB_ENV"
+          fi
+          echo "VITE_ENABLE_STORAGE=false" >> "$GITHUB_ENV"
+          echo "VITE_ENABLE_REAL_AUTH=false" >> "$GITHUB_ENV"
+          echo "VITE_EMBED_PUBLIC_SUPABASE_CONFIG=true" >> "$GITHUB_ENV"
+
+      - name: Build public client bundle
+        run: npm run build
+
+      - name: Assemble static Pages artifact
+        shell: bash
+        run: |
+          rm -rf .github-pages-build
+          mkdir -p .github-pages-build
+          cp index.html manifest.webmanifest .github-pages-build/
+          [[ -f .nojekyll ]] && cp .nojekyll .github-pages-build/ || true
+          cp -R css js .github-pages-build/
+          for directory in assets images img; do
+            [[ -d "$directory" ]] && cp -R "$directory" .github-pages-build/
+          done
+          node scripts/write-github-pages-runtime-config.mjs .github-pages-build/js/runtime-config.js
+
+      - name: Publish to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: .github-pages-build
+          commit_message: "Deploy dashboard from ${{ github.sha }}"

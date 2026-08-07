@@ -62,3 +62,6 @@ ce-data-layer:audit-logs
 npm run build
 npm run test:access-control-data
 ```
+# Authenticated cell reports
+
+Cell report access uses the explicit `cell_reports.*` permissions documented in `docs/backend/AUTHENTICATED_CELL_REPORT_SUBMISSION.md`. Leader and assistant scope is derived from user/staff-to-cell assignment and enforced both while rendering choices and again before persistence. Reviewer/head access is church/department scoped; Super Admin is unrestricted. Unauthorized attempts create security audit events without sensitive content.

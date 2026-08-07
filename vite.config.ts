@@ -10,22 +10,52 @@ import { resolve } from "path";
  */
 export default defineConfig(({ mode, command }) => {
   const env = loadEnv(mode, process.cwd(), "");
+  const embedPublicSupabaseConfig = /^(1|true|yes|on)$/i.test(
+    env.VITE_EMBED_PUBLIC_SUPABASE_CONFIG || "false",
+  );
+  // The tracked IIFE bundle must remain secret-free. Development receives the
+  // public URL/anon key at request time; an explicit opt-in is required to bake
+  // public Supabase config into an untracked deployment artifact.
+  const compiledEnv = command === "build" && !embedPublicSupabaseConfig
+    ? {
+        ...env,
+        VITE_DATA_SOURCE: "mock",
+        VITE_ENABLE_SUPABASE: "false",
+        VITE_SUPABASE_URL: "",
+        VITE_SUPABASE_ANON_KEY: "",
+      }
+    : env;
   const envDefines = {
-    "import.meta.env.VITE_SUPABASE_URL": JSON.stringify(env.VITE_SUPABASE_URL || ""),
-    "import.meta.env.VITE_SUPABASE_ANON_KEY": JSON.stringify(env.VITE_SUPABASE_ANON_KEY || ""),
-    "import.meta.env.VITE_DATA_SOURCE": JSON.stringify(env.VITE_DATA_SOURCE || "mock"),
-    "import.meta.env.VITE_API_BASE_URL": JSON.stringify(env.VITE_API_BASE_URL || ""),
-    "import.meta.env.VITE_APP_ENV": JSON.stringify(env.VITE_APP_ENV || "development"),
-    "import.meta.env.VITE_ENABLE_SUPABASE": JSON.stringify(env.VITE_ENABLE_SUPABASE || "false"),
-    "import.meta.env.VITE_ENABLE_REAL_AUTH": JSON.stringify(env.VITE_ENABLE_REAL_AUTH || "false"),
-    "import.meta.env.VITE_ENABLE_STORAGE": JSON.stringify(env.VITE_ENABLE_STORAGE || "false"),
-    "import.meta.env.VITE_ENABLE_RLS": JSON.stringify(env.VITE_ENABLE_RLS || "false"),
+    "import.meta.env.VITE_SUPABASE_URL": JSON.stringify(compiledEnv.VITE_SUPABASE_URL || ""),
+    "import.meta.env.VITE_SUPABASE_ANON_KEY": JSON.stringify(compiledEnv.VITE_SUPABASE_ANON_KEY || ""),
+    "import.meta.env.VITE_DATA_SOURCE": JSON.stringify(compiledEnv.VITE_DATA_SOURCE || "mock"),
+    "import.meta.env.VITE_API_BASE_URL": JSON.stringify(compiledEnv.VITE_API_BASE_URL || ""),
+    "import.meta.env.VITE_APP_ENV": JSON.stringify(compiledEnv.VITE_APP_ENV || "development"),
+    "import.meta.env.VITE_ENABLE_SUPABASE": JSON.stringify(compiledEnv.VITE_ENABLE_SUPABASE || "false"),
+    "import.meta.env.VITE_ENABLE_REAL_AUTH": JSON.stringify(compiledEnv.VITE_ENABLE_REAL_AUTH || "false"),
+    "import.meta.env.VITE_ENABLE_STORAGE": JSON.stringify(compiledEnv.VITE_ENABLE_STORAGE || "false"),
+    "import.meta.env.VITE_ENABLE_RLS": JSON.stringify(compiledEnv.VITE_ENABLE_RLS || "false"),
+    "import.meta.env.VITE_ENABLE_PUBLIC_CELL_REPORT": JSON.stringify(compiledEnv.VITE_ENABLE_PUBLIC_CELL_REPORT || "false"),
   };
 
   // Local / Docker development: serve the static dashboard.
   // Classic non-module scripts (dashboard.js IIFE stack) — disable HMR client injection
   // that can throw "Cannot use import statement outside a module" in this MPA setup.
   if (command === "serve") {
+    const runtimeConfig = JSON.stringify({
+      VITE_DATA_SOURCE: env.VITE_DATA_SOURCE || "mock",
+      VITE_ENABLE_SUPABASE: env.VITE_ENABLE_SUPABASE || "false",
+      VITE_SUPABASE_URL: env.VITE_SUPABASE_URL || "",
+      VITE_SUPABASE_ANON_KEY: env.VITE_SUPABASE_ANON_KEY || "",
+      VITE_API_BASE_URL: env.VITE_API_BASE_URL || "",
+      VITE_APP_ENV: env.VITE_APP_ENV || "development",
+      VITE_ENABLE_REAL_AUTH: env.VITE_ENABLE_REAL_AUTH || "false",
+      VITE_ENABLE_STORAGE: env.VITE_ENABLE_STORAGE || "false",
+      VITE_ENABLE_RLS: env.VITE_ENABLE_RLS || "false",
+      VITE_ENABLE_PUBLIC_CELL_REPORT: env.VITE_ENABLE_PUBLIC_CELL_REPORT || "false",
+    }).replace(/</g, "\\u003c");
+    const runtimeScript = `window.__CE_ENV__=Object.assign(window.__CE_ENV__||{},${runtimeConfig});`;
+
     return {
       root: ".",
       appType: "mpa",
@@ -48,12 +78,33 @@ export default defineConfig(({ mode, command }) => {
             order: "post",
             enforce: "post",
             handler(html: string) {
-              return html.replace(/<script[^>]*@vite\/client[^>]*>\s*<\/script>\s*/gi, "");
+              const cleaned = html.replace(/<script[^>]*@vite\/client[^>]*>\s*<\/script>\s*/gi, "");
+              let withDevelopmentEntry = cleaned.replace(
+                /<script\s+src=["']\/?js\/supabase-bundle\.js[^"']*["']><\/script>/i,
+                '<script type="module" src="/src/index.ts"></script>',
+              );
+              // Keep the two pilot bridges behind the module entry so their
+              // initial diagnostics cannot momentarily report a false fallback.
+              withDevelopmentEntry = withDevelopmentEntry.replace(
+                /<script\s+src=["'](\/?js\/(?:churches|members)-data-bridge\.js[^"']*)["']><\/script>/gi,
+                '<script type="module" src="$1"></script>',
+              );
+              return withDevelopmentEntry.replace(
+                "</head>",
+                '<script src="/@ce-runtime-env.js"></script></head>',
+              );
             },
           },
           configureServer(server) {
             server.middlewares.use((req, res, next) => {
               const url = req.url || "";
+              if (url.split("?", 1)[0] === "/@ce-runtime-env.js") {
+                res.statusCode = 200;
+                res.setHeader("Content-Type", "application/javascript; charset=utf-8");
+                res.setHeader("Cache-Control", "no-store");
+                res.end(runtimeScript);
+                return;
+              }
               if (url === "/" || url.startsWith("/index.html") || url === "/index.html?") {
                 const end = res.end.bind(res);
                 res.end = function (chunk?: unknown, ...rest: unknown[]) {

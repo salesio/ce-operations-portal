@@ -1801,6 +1801,27 @@ import {
   FINANCE_PROOFS_BUCKET,
 } from "./data";
 
+/** Safe browser/runtime diagnostics. Never returns key or credential values. */
+export function getInfo() {
+  const dataSource = getDataSource();
+  const flags = getBackendFeatureFlags();
+  const supabase = getSupabaseEnvConfig();
+  const supabaseReady =
+    dataSource === "supabase" && flags.enableSupabase && supabase.isConfigured;
+  const provider = supabaseReady ? "supabase" : dataSource;
+  return {
+    dataSource,
+    supabaseEnabled: !!flags.enableSupabase,
+    hasSupabaseUrl: !!supabase.url,
+    hasSupabaseAnonKey: !!supabase.anonKey,
+    runtimeLoaded: true,
+    provider,
+    safe: true,
+    usingServiceRole: false,
+    checkedAt: new Date().toISOString(),
+  };
+}
+
 function installDataLayerGlobals(): void {
   const root = globalThis as typeof globalThis & {
     CESupabase?: Record<string, unknown>;
@@ -2830,6 +2851,7 @@ function installDataLayerGlobals(): void {
     resetDataProvider,
     listDataSources,
     getApiBaseUrl,
+    getInfo,
   });
 
   root.CEDataLayer = {
@@ -3121,6 +3143,7 @@ function installDataLayerGlobals(): void {
     resetDataProvider,
     listDataSources,
     getApiBaseUrl,
+    getInfo,
     getAppEnv,
     getBackendFeatureFlags,
     createApiProvider,

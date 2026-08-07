@@ -13,6 +13,7 @@
 
   const ROUTE_MODULE_MAP = {
     dashboard: "dashboard",
+    cellPortal: "dashboard",
     churches: "churches",
     members: "members",
     firstTimers: "firstTimers",
@@ -304,10 +305,31 @@
     },
     "Cell Ministry Head": {
       modules: {
-        dashboard: { ...VIEW_ONLY, scope: "all" },
+        dashboard: { ...VIEW_ONLY, scope: "all", cell_portal_permissions: ["cell_portal.view", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary"] },
         cell: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: true, can_verify: false, can_export: true, scope: "all" },
         requisitions: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "department" },
         staffHr: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "department" }
+      }
+    },
+    "Cell Leader": {
+      modules: {
+        dashboard: { ...VIEW_ONLY, scope: "own", cell_portal_permissions: ["cell_portal.view", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts"] },
+        cell: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "own", cell_report_permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"] },
+        notifications: { ...VIEW_ONLY, scope: "own" }
+      }
+    },
+    "Cell Assistant": {
+      modules: {
+        dashboard: { ...VIEW_ONLY, scope: "own", cell_portal_permissions: ["cell_portal.view", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts"] },
+        cell: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "own", cell_report_permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"] },
+        notifications: { ...VIEW_ONLY, scope: "own" }
+      }
+    },
+    "Cell Ministry Reviewer": {
+      modules: {
+        dashboard: { ...VIEW_ONLY, scope: "church", cell_portal_permissions: ["cell_portal.view", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary"] },
+        cell: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: true, can_verify: true, can_export: true, scope: "church", cell_report_permissions: ["cell_reports.view_church", "cell_reports.review", "cell_reports.validate", "cell_reports.reject", "cell_reports.export"] },
+        notifications: { ...VIEW_ONLY, scope: "church" }
       }
     },
     "ALEC Coordinator": {

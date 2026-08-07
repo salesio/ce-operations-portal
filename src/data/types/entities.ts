@@ -71,7 +71,7 @@ export interface User {
   /** Demo-only password marker — never real credentials */
   demo_password_hint?: string | null;
 
-  permissions?: Array<Record<string, unknown>> | null;
+  permissions?: Array<Record<string, unknown> | string> | null;
 
   created_by?: string | null;
   created_by_name?: string | null;
@@ -1380,6 +1380,10 @@ export interface Cell {
   lider?: string | null;
   leader_phone?: string | null;
   leader_title?: string | null;
+  primary_leader_user_id?: EntityId | null;
+  primary_leader_name?: string | null;
+  assistant_leader_user_ids?: EntityId[] | null;
+  assistant_leader_names?: string[] | null;
   meeting_day?: string | null;
   meeting_time?: string | null;
   meeting_type?: string | null;
@@ -1406,6 +1410,9 @@ export interface Cell {
 /** Cell Leader / Líder de Célula. */
 export interface CellLeader {
   id: EntityId;
+  user_id?: EntityId | null;
+  staff_id?: EntityId | null;
+  role_type?: "Leader" | "Assistant" | null;
   full_name?: string | null;
   nome_completo?: string | null;
   title?: string | null;
@@ -1502,6 +1509,13 @@ export interface CellReportSubmission {
   observacoes?: string | null;
   submitted_by_type?: string | null;
   submitted_from?: string | null;
+  submitted_by_user_id?: EntityId | null;
+  submitted_by_name?: string | null;
+  submitted_by_role?: string | null;
+  submitted_by_cell_role?: string | null;
+  authorized_cell_id?: EntityId | null;
+  auth_required?: boolean | null;
+  submission_source?: string | null;
   submitter_ip?: string | null;
   submitter_device?: string | null;
   status?: string | null;

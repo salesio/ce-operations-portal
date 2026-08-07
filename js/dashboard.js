@@ -3065,7 +3065,9 @@ const CELL_ROUTE_ALIASES = {
   cell: "cellAlecOverview",
   cellAlec: "cellAlecOverview",
   cellReportsRoute: "cellReceivedReports",
-  cellWorkflowReports: "cellConsolidation"
+  cellWorkflowReports: "cellConsolidation",
+  "cell-leader": "cellPortal",
+  "cell-portal": "cellPortal"
 };
 
 let cellRegistryFilter = { groupId: null, search: "", churchId: "", status: "" };
@@ -3269,6 +3271,14 @@ let notificationPanelFilter = "all";
 let notificationPageFilter = "all";
 
 const __cellSeed = typeof buildCellGroupsSeed === "function" ? buildCellGroupsSeed() : { cellGroups: [], cellRegistry: [] };
+if (__cellSeed.cellRegistry?.[0]) {
+  Object.assign(__cellSeed.cellRegistry[0], {
+    primary_leader_user_id: "u-7",
+    primary_leader_name: "Cell Leader Demo",
+    assistant_leader_user_ids: ["u-cell-assistant"],
+    assistant_leader_names: ["Cell Assistant Demo"]
+  });
+}
 
 const seedData = {
   users: [
@@ -3278,7 +3288,9 @@ const seedData = {
     { id: "u-4", name: "Sister Angelica", email: "angelica@ce-mozambique.org", role: "ALEC Coordinator", church_id: "church-hq", department_permissions: ["cell", "alecRegistration", "alecScores", "churchReports"], can_view_all_churches: true },
     { id: "u-5", name: "Pastora Flavia", email: "flavia@ce-mozambique.org", role: "Cell Ministry Head", church_id: "church-hq", department_permissions: ["cell", "cellReports", "cellEvaluation"], can_view_all_churches: true },
     { id: "u-6", name: "Sister Eduarda", email: "eduarda@ce-mozambique.org", role: "Final Coordinator", church_id: "church-hq", department_permissions: ["cell", "finalValidation", "reports"], can_view_all_churches: true },
-    { id: "u-7", name: "Cell Leader Demo", email: "cellleader@ce-mozambique.org", role: "Cell Leader", church_id: "church-hq", department_permissions: ["cellReports"], can_view_all_churches: false, assigned_cells: ["cell-1"] },
+    { id: "u-7", name: "Cell Leader Demo", email: "cell.leader@ce-mozambique.org", role: "Cell Leader", church_id: "church-hq", department_permissions: ["cellReports"], permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_portal.view", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts"], can_view_all_churches: false, assigned_cells: ["cr-0001"] },
+    { id: "u-cell-assistant", name: "Cell Assistant Demo", email: "cell.assistant@ce-mozambique.org", role: "Cell Assistant", church_id: "church-hq", department_permissions: ["cellReports"], permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_portal.view", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts"], can_view_all_churches: false, assigned_cells: ["cr-0001"] },
+    { id: "u-cell-reviewer", name: "Cell Reviewer Demo", email: "cell.reviewer@ce-mozambique.org", role: "Cell Ministry Reviewer", church_id: "church-hq", department_permissions: ["cellReports", "cellEvaluation"], permissions: ["cell_reports.view_church", "cell_reports.review", "cell_reports.validate", "cell_reports.reject", "cell_reports.export", "cell_portal.view", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary"], can_view_all_churches: false },
     { id: "u-8", name: "Pastor da Igreja", email: "pastor.branch@ce-mozambique.org", role: "Church Pastor", church_id: "church-hq", department_permissions: ["cell", "churchReports", "cellReports", "fevo", "venueInventory"], can_view_all_churches: false },
     { id: "u-9", name: "Sister Cassandra", email: "cassandra@ce-mozambique.org", role: "F.E.V.O Coordinator", church_id: "church-hq", department_permissions: ["fevo", "fevoConfig", "fevoReports", "fevoAnalytics"], can_view_all_churches: true },
     { id: "u-10", name: "F.E.V.O Team Leader", email: "fevo.leader@ce-mozambique.org", role: "F.E.V.O Team Leader", church_id: "church-hq", department_permissions: ["fevoReports"], can_view_all_churches: false, assigned_teams: ["Team A"], assigned_groups: ["Group Central"] },
@@ -3425,7 +3437,8 @@ const seedData = {
   },
   members: [
     { id: "m-1", tratamento: "Pastor", nome: "Kene", apelido: "Ume", telefone: "+258 86 227 0000", email: "", church_id: "church-hq", church_name: "National HQ - Christ Embassy Mozambique", celula: "Sede", departamento: "Leadership", estado: "Active", data_de_entrada: "2024-01-01", origem: "Manual", notas: "" },
-    { id: "m-2", tratamento: "Irmã", nome: "Aminata", apelido: "Chivinda", telefone: "848287179", email: "", church_id: "church-hq", church_name: "National HQ - Christ Embassy Mozambique", celula: "Mavalane", departamento: "Acompanhamento", estado: "In Progress", data_de_entrada: "2026-07-05", origem: "Primeira Vez", notas: "" }
+    { id: "m-2", tratamento: "Irmã", nome: "Aminata", apelido: "Chivinda", telefone: "848287179", email: "", church_id: "church-hq", church_name: "National HQ - Christ Embassy Mozambique", cell_group_id: "cg-001", cell_id: "cr-0001", celula: "Dominio 1", departamento: "Acompanhamento", estado: "Active", data_de_entrada: "2026-07-05", origem: "Primeira Vez", invited_count: 1, last_cell_attendance: "2026-07-30", cell_pastoral_observation: "Acompanhamento de integração em curso." },
+    { id: "m-3", tratamento: "Sr.", nome: "Mateus", apelido: "Nhantumbo", telefone: "862720011", email: "mateus@example.com", church_id: "church-hq", church_name: "National HQ - Christ Embassy Mozambique", cell_group_id: "cg-001", cell_id: "cr-0001", celula: "Dominio 1", departamento: "Células", estado: "Active", data_de_entrada: "2026-06-28", origem: "Primeira Vez", invited_count: 2, last_cell_attendance: "2026-08-02", cell_pastoral_observation: "Participa regularmente e está na Escola de Fundação." }
   ],
   foundationStudents: [
     {
@@ -3489,7 +3502,8 @@ const seedData = {
       { id: "cell-report-2", church_id: "church-hq", created_by: "Cell Leader Demo", updated_by: "Sister Eduarda", created_at: "2026-07-05", updated_at: "2026-07-06", status: "Validado", semana: "Julho Semana 1", data_inicio: "2026-06-29", data_fim: "2026-07-05", celula: "Cell Mavalane", cell_id: "cell-2", titulo_do_lider: "Irm�", nome_do_lider: "Aminata Chivinda", leader_id: "leader-2", att: 9, ft: 1, nc: 1, oferta: 850, rs: 1, observacoes: "Precisa acompanhamento para crescimento.", submetido_por: "Cell Leader Demo", avaliado_por: "Pastora Flavia", validado_por: "Sister Eduarda", estado: "Validado" }
     ],
     leaders: [
-      { id: "leader-1", church_id: "church-hq", created_by: "Sister Angelica", updated_by: "Pastora Flavia", created_at: "2026-07-03", updated_at: "2026-07-06", status: "Activo", nome_completo: "Mateus Nhantumbo", contacto: "862720011", titulo: "Irm�o", igreja: "church-hq", celula: "Cell Central", e_lider_actual: true, veio_do_alec: true, alec_concluido: true, faixa_certificado_pago: true, estado: "Activo", supervisor: "Pastora Flavia", observacoes: "Pode submeter relat�rios da sua c�lula." },
+      { id: "leader-1", user_id: "u-7", staff_id: "staff-8", role_type: "Leader", cell_id: "cr-0001", cell_group_id: "cg-001", church_id: "church-hq", created_by: "Sister Angelica", updated_by: "Pastora Flavia", created_at: "2026-07-03", updated_at: "2026-08-06", status: "Activo", nome_completo: "Cell Leader Demo", contacto: "862720011", titulo: "Irm�o", igreja: "church-hq", celula: "Dominio 1", e_lider_actual: true, veio_do_alec: true, alec_concluido: true, faixa_certificado_pago: true, estado: "Activo", supervisor: "Pastora Flavia", observacoes: "Pode submeter relatórios apenas da célula atribuída." },
+      { id: "leader-assistant-1", user_id: "u-cell-assistant", staff_id: null, role_type: "Assistant", cell_id: "cr-0001", cell_group_id: "cg-001", church_id: "church-hq", created_by: "Pastora Flavia", updated_by: "Pastora Flavia", created_at: "2026-08-06", updated_at: "2026-08-06", status: "Activo", nome_completo: "Cell Assistant Demo", contacto: "862720012", titulo: "Irmã", igreja: "church-hq", celula: "Dominio 1", e_lider_actual: false, veio_do_alec: true, alec_concluido: true, faixa_certificado_pago: false, estado: "Activo", supervisor: "Pastora Flavia", observacoes: "Assistente autorizada da célula atribuída." },
       { id: "leader-2", church_id: "church-hq", created_by: "Sister Angelica", updated_by: "Pastora Flavia", created_at: "2026-07-03", updated_at: "2026-07-06", status: "Em Treinamento", nome_completo: "Aminata Chivinda", contacto: "848287179", titulo: "Irm�", igreja: "church-hq", celula: "Cell Mavalane", e_lider_actual: true, veio_do_alec: true, alec_concluido: false, faixa_certificado_pago: false, estado: "Em Treinamento", supervisor: "Pastora Flavia", observacoes: "Acompanhar conclus�o do ALEC." }
     ],
     evaluations: [
@@ -3812,6 +3826,8 @@ function normalizeServiceLabelsInTree(value, seen = new WeakSet()) {
 let lang = localStorage.getItem(LANG_KEY) || "pt";
 let state = loadState();
 let activeUser = state.users[0];
+let isUserAuthenticated = false;
+let pendingCellReportLogin = false;
 let activeRoute = "dashboard";
 let modalMode = null;
 let modalType = null;
@@ -4593,11 +4609,25 @@ function normalizeState(saved) {
     if (!savedUserIds.has(user.id)) merged.users.push(structuredClone(user));
   });
   const venueDemoUserIds = new Set(["u-8", "u-11", "u-12", "u-13"]);
+  const authenticatedCellDemoUserIds = new Set(["u-7", "u-cell-assistant", "u-cell-reviewer"]);
   merged.users = (merged.users || []).map((user) => {
+    if (authenticatedCellDemoUserIds.has(user.id)) {
+      const securitySeed = seedData.users.find((item) => item.id === user.id) || {};
+      return normalizeUserProfile({ ...user, ...structuredClone(securitySeed) }, merged.churches || [], merged.departments || []);
+    }
     if (!venueDemoUserIds.has(user.id)) return normalizeUserProfile(user, merged.churches || [], merged.departments || []);
     const seedUser = seedData.users.find((item) => item.id === user.id);
     const mergedUser = seedUser ? { ...user, department_permissions: [...seedUser.department_permissions], assigned_department: seedUser.assigned_department, assigned_staff_name: seedUser.assigned_staff_name } : user;
     return normalizeUserProfile(mergedUser, merged.churches || [], merged.departments || []);
+  });
+  const portalMemberSeeds = new Map(seedData.members.filter((member) => member.cell_id).map((member) => [member.id, member]));
+  const savedMemberIds = new Set((merged.members || []).map((member) => member.id));
+  portalMemberSeeds.forEach((member, id) => {
+    if (!savedMemberIds.has(id)) merged.members.push(structuredClone(member));
+  });
+  merged.members = (merged.members || []).map((member) => {
+    const portalSeed = portalMemberSeeds.get(member.id);
+    return portalSeed ? { ...member, cell_group_id: portalSeed.cell_group_id, cell_id: portalSeed.cell_id, celula: portalSeed.celula, invited_count: member.invited_count ?? portalSeed.invited_count, last_cell_attendance: member.last_cell_attendance || portalSeed.last_cell_attendance, cell_pastoral_observation: member.cell_pastoral_observation || portalSeed.cell_pastoral_observation } : member;
   });
   merged.prisonMinistry = {
     ...structuredClone(seedData.prisonMinistry),
@@ -5014,28 +5044,492 @@ async function hydratePublicCellReportSources() {
   }
 }
 
-/**
- * Public weekly cell report form (no admin login).
- *
- * Frontend-first protections (this phase):
- * - honeypot field `website`
- * - strong required + numeric + offering validation
- * - session/localStorage rate limit (15s)
- * - possible_duplicate + needs_review flags
- *
- * TODO (future backend / Supabase — do not implement now):
- * - controlled public insert edge function / RPC
- * - RLS policies for anonymous insert with validation
- * - server-side validation of all fields
- * - per-cell token or access code
- * - unique shareable link per cell
- * - no full admin authentication for leaders in this flow
- */
+const CELL_REPORT_ROLE_PERMISSIONS = {
+  "Cell Leader": ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"],
+  "Cell Assistant": ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"],
+  "Cell Ministry Reviewer": ["cell_reports.view_church", "cell_reports.review", "cell_reports.validate", "cell_reports.reject", "cell_reports.export"],
+  "Cell Ministry Head": ["cell_reports.view_church", "cell_reports.review", "cell_reports.validate", "cell_reports.reject", "cell_reports.export"],
+  "Super Admin": ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_reports.view_church", "cell_reports.review", "cell_reports.validate", "cell_reports.reject", "cell_reports.export"]
+};
+
+const CELL_PORTAL_PERMISSION_CODES = [
+  "cell_portal.view",
+  "cell_portal.view_members",
+  "cell_portal.view_member_profile",
+  "cell_portal.submit_report",
+  "cell_portal.view_finance_summary",
+  "cell_portal.view_partnership_summary",
+  "cell_portal.view_soul_winning",
+  "cell_portal.view_programs",
+  "cell_portal.view_charts",
+  "cell_portal.export_summary"
+];
+
+const CELL_PORTAL_ROLE_PERMISSIONS = {
+  "Cell Leader": CELL_PORTAL_PERMISSION_CODES.filter((code) => code !== "cell_portal.export_summary"),
+  "Cell Assistant": CELL_PORTAL_PERMISSION_CODES.filter((code) => code !== "cell_portal.export_summary"),
+  "Cell Ministry Reviewer": CELL_PORTAL_PERMISSION_CODES.filter((code) => code !== "cell_portal.submit_report"),
+  "Cell Ministry Head": [...CELL_PORTAL_PERMISSION_CODES],
+  "Super Admin": [...CELL_PORTAL_PERMISSION_CODES]
+};
+
+const cellPortalPageState = {
+  cellId: "",
+  period: "month",
+  dateFrom: "",
+  dateTo: "",
+  memberStatus: "",
+  foundationStatus: "",
+  sacramentStatus: "",
+  partnership: "",
+  tithe: "",
+  invited: ""
+};
+
+function hasCellPortalPermission(permission, user = activeUser) {
+  if (!user) return false;
+  const permissions = new Set([...(user.permissions || []), ...(CELL_PORTAL_ROLE_PERMISSIONS[user.role] || [])]);
+  return user.role === "Super Admin" || permissions.has(permission);
+}
+
+function portalText(value = "") {
+  return String(value || "").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+function portalPersonName(person = {}) {
+  return String(person.full_name || person.name || [person.nome, person.apelido].filter(Boolean).join(" ") || "").trim();
+}
+
+function portalCellName(cell = {}) {
+  return cell.cell_name || cell.nome_da_celula || cell.name || cell.id || "";
+}
+
+function getCellLeaderContext(userId, preferredCellId = "") {
+  const user = (state.users || []).find((item) => item.id === userId) || (activeUser?.id === userId ? activeUser : null);
+  if (!user || !hasCellPortalPermission("cell_portal.view", user)) return null;
+  const authorizedCells = getAuthorizedCellsForUser(user.id);
+  const authorizedIds = authorizedCells.map((cell) => cell.id);
+  const selectedId = preferredCellId || cellPortalPageState.cellId;
+  const cell = authorizedCells.find((item) => item.id === selectedId) || authorizedCells[0] || null;
+  const groupId = cell?.cell_group_id || cell?.group_id || "";
+  const group = (state.cellGroups || []).find((item) => item.id === groupId) || null;
+  const church = (state.churches || []).find((item) => item.id === cell?.church_id) || null;
+  const roleMap = {
+    "Cell Leader": "Leader",
+    "Cell Assistant": "Assistant",
+    "Cell Ministry Reviewer": "Reviewer",
+    "Cell Ministry Head": "Head",
+    "Super Admin": "Admin"
+  };
+  return {
+    user_id: user.id,
+    user_name: user.name || user.full_name || user.email,
+    user_role: user.role,
+    church_id: cell?.church_id || user.church_id || "",
+    church_name: church?.church_name || church?.public_name || cell?.church_name || "",
+    cell_group_id: groupId,
+    cell_group_name: group?.group_name || group?.name || cell?.group_name || cell?.cell_group_name || "",
+    cell_id: cell?.id || "",
+    cell_name: cell ? portalCellName(cell) : "",
+    cell_role: roleMap[user.role] || user.role,
+    authorized_cell_ids: authorizedIds,
+    permissions: [...new Set([...(user.permissions || []), ...(CELL_PORTAL_ROLE_PERMISSIONS[user.role] || [])])]
+  };
+}
+
+function canAccessCell(userId, cellId) {
+  const allowed = new Set(getAuthorizedCellsForUser(userId).map((cell) => cell.id));
+  const granted = Boolean(cellId && allowed.has(cellId));
+  if (!granted && activeUser?.id === userId && cellId) {
+    recordCellReportSecurityEvent("cell_portal_access_denied", `Blocked Cell Portal access to unauthorized cell ${cellId}`, cellId);
+  }
+  return granted;
+}
+
+function portalDateValue(record = {}) {
+  return record.meeting_date || record.data || record.date || record.created_at || record.updated_at || record.start_date || record.data_de_entrada || "";
+}
+
+function portalPeriodBounds(filters = cellPortalPageState) {
+  const now = new Date();
+  const end = filters.period === "custom" && filters.dateTo ? new Date(`${filters.dateTo}T23:59:59`) : now;
+  const start = new Date(end);
+  if (filters.period === "week") start.setDate(start.getDate() - 7);
+  else if (filters.period === "quarter") start.setMonth(start.getMonth() - 3);
+  else if (filters.period === "year") start.setFullYear(start.getFullYear() - 1);
+  else if (filters.period === "custom" && filters.dateFrom) return { start: new Date(`${filters.dateFrom}T00:00:00`), end };
+  else start.setMonth(start.getMonth() - 1);
+  return { start, end };
+}
+
+function portalInPeriod(record, filters = cellPortalPageState) {
+  const value = portalDateValue(record);
+  if (!value) return true;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return true;
+  const { start, end } = portalPeriodBounds(filters);
+  return date >= start && date <= end;
+}
+
+function portalMemberBelongsToCell(member, cell) {
+  if (!member || !cell) return false;
+  if (member.cell_id) return member.cell_id === cell.id;
+  const cellNames = [portalCellName(cell), cell.name, cell.nome_da_celula].filter(Boolean).map(portalText);
+  return member.church_id === cell.church_id && cellNames.includes(portalText(member.celula || member.cell_name));
+}
+
+function getCellMemberFinanceSummary(memberId, permissions = activeUser?.permissions || []) {
+  const member = (state.members || []).find((item) => item.id === memberId);
+  if (!member) return { is_tither: false, is_partner: false, partnership_arms: [], last_contribution_month: "" };
+  const canSeeSummary = hasCellPortalPermission("cell_portal.view_finance_summary") || permissions.includes("cell_portal.view_finance_summary");
+  const name = portalText(portalPersonName(member));
+  const phone = String(member.telefone || member.phone || "").replace(/\D/g, "");
+  const verified = (state.finance || []).filter((record) => {
+    const status = portalText(record.status || record.estado || record.verification_status);
+    const type = portalText(record.type || record.tipo || record.record_type || record.transaction_type);
+    const recordName = portalText(record.full_name || record.nome_completo || [record.nome, record.apelido].filter(Boolean).join(" "));
+    const recordPhone = String(record.telefone || record.phone || "").replace(/\D/g, "");
+    const samePerson = record.member_id === member.id || (phone && recordPhone === phone) || (name && recordName === name);
+    return samePerson && /verified|validado|aprovado/.test(status) && !/expense|despesa/.test(type);
+  });
+  const tithes = verified.filter((record) => /dizim|tithe/.test(portalText(record.categoria_da_contribuicao || record.category || record.contribution_type)));
+  const partnerships = verified.filter((record) => /parceria|partnership|rapsodia|healing|loveworld|vision builder|missoes/.test(portalText(record.categoria_da_contribuicao || record.category || record.partnership_arm)));
+  const partnerRows = (state.partnership || []).filter((record) => {
+    const recordName = portalText(record.full_name || [record.nome, record.apelido].filter(Boolean).join(" ") || record.name);
+    const recordPhone = String(record.telefone || record.phone || "").replace(/\D/g, "");
+    return record.member_id === member.id || (phone && recordPhone === phone) || (name && recordName === name);
+  });
+  const allPartnerRows = [...partnerships, ...partnerRows];
+  const last = [...verified].sort((a, b) => Date.parse(portalDateValue(b)) - Date.parse(portalDateValue(a)))[0];
+  return {
+    is_tither: tithes.length > 0,
+    is_partner: allPartnerRows.length > 0,
+    partnership_arms: [...new Set(allPartnerRows.map((record) => record.partnership_arm || record.category || record.categoria_da_contribuicao).filter(Boolean))],
+    last_contribution_month: canSeeSummary && last ? String(portalDateValue(last)).slice(0, 7) : "",
+    visibility: canSeeSummary ? "summary" : "boolean_only"
+  };
+}
+
+function getCellMemberSpiritualProgress(memberId) {
+  const member = (state.members || []).find((item) => item.id === memberId);
+  if (!member) return null;
+  const memberName = portalText(portalPersonName(member));
+  const phone = String(member.telefone || member.phone || "").replace(/\D/g, "");
+  const samePerson = (record) => record.member_id === member.id || (phone && String(record.telefone || record.phone || "").replace(/\D/g, "") === phone) || portalText(portalPersonName(record)) === memberName;
+  const foundation = (state.foundationStudents || []).find(samePerson) || null;
+  const baptisms = (state.sacraments?.baptisms || []).filter(samePerson);
+  const marriages = (state.sacraments?.marriages || []).filter((record) => samePerson(record) || [record.telefone_do_noivo, record.telefone_da_noiva].some((value) => phone && String(value || "").replace(/\D/g, "") === phone));
+  const dedications = (state.sacraments?.babies || []).filter((record) => phone && String(record.telefone_dos_pais || "").replace(/\D/g, "") === phone);
+  const firstTimer = (state.firstTimers || []).find(samePerson) || null;
+  const followUps = (state.followUps || []).filter((record) => record.member_id === member.id || record.first_timer_id === firstTimer?.id);
+  return {
+    first_timer_origin: firstTimer ? (firstTimer.origem || firstTimer.culto || "First Timer") : "",
+    foundation: foundation ? {
+      enrolled: true,
+      class_name: foundation.class_name || foundation.class_group_name || foundation.turma || "",
+      completed_classes: Number(foundation.completed_classes || 0),
+      tests_status: foundation.tests_status || foundation.test_status || "",
+      final_exam: foundation.nota_exame ?? foundation.final_exam_score ?? null,
+      status: foundation.estado || foundation.status || "Em Curso",
+      graduated: Boolean(foundation.graduado || foundation.graduated)
+    } : { enrolled: false, completed_classes: 0, status: "Não inscrito", graduated: false },
+    sacraments: { baptized: baptisms.length > 0, baptisms: baptisms.length, marriages: marriages.length, baby_dedications: dedications.length },
+    member_status: member.estado || member.status || "",
+    joined_at: member.data_de_entrada || member.joined_at || "",
+    follow_up_pending: followUps.some((record) => /pending|pendente|no response/.test(portalText(record.status || record.estado)))
+  };
+}
+
+function getCellMembersProfile(cellId, filters = cellPortalPageState) {
+  const cell = (state.cellRegistry || []).find((item) => item.id === cellId);
+  if (!cell || !canAccessCell(activeUser?.id, cellId) || !hasCellPortalPermission("cell_portal.view_members")) return [];
+  return (state.members || []).filter((member) => portalMemberBelongsToCell(member, cell)).map((member) => {
+    const spiritual = getCellMemberSpiritualProgress(member.id);
+    const finance = getCellMemberFinanceSummary(member.id);
+    const row = {
+      id: member.id,
+      name: portalPersonName(member),
+      phone: member.telefone || member.phone || "",
+      status: member.estado || member.status || "",
+      joined_at: member.data_de_entrada || member.joined_at || "",
+      foundation_status: spiritual?.foundation?.status || "Não inscrito",
+      baptized: Boolean(spiritual?.sacraments?.baptized),
+      sacraments_count: Number(spiritual?.sacraments?.baptisms || 0) + Number(spiritual?.sacraments?.marriages || 0) + Number(spiritual?.sacraments?.baby_dedications || 0),
+      is_partner: finance.is_partner,
+      is_tither: finance.is_tither,
+      partnership_arms: finance.partnership_arms,
+      invited_count: Number(member.invited_count || 0),
+      last_attendance: member.last_cell_attendance || "",
+      pastoral_observation: member.cell_pastoral_observation || ""
+    };
+    return row;
+  }).filter((member) => {
+    if (filters.memberStatus && portalText(member.status) !== portalText(filters.memberStatus)) return false;
+    if (filters.foundationStatus && portalText(member.foundation_status) !== portalText(filters.foundationStatus)) return false;
+    if (filters.sacramentStatus === "baptized" && !member.baptized) return false;
+    if (filters.sacramentStatus === "not_baptized" && member.baptized) return false;
+    if (filters.partnership && String(member.is_partner) !== filters.partnership) return false;
+    if (filters.tithe && String(member.is_tither) !== filters.tithe) return false;
+    if (filters.invited && String(member.invited_count > 0) !== filters.invited) return false;
+    return true;
+  });
+}
+
+function getCellFoundationProgress(cellId) {
+  const members = getCellMembersProfile(cellId, {});
+  const buckets = { "Não inscrito": 0, "Em curso": 0, "Aguardando exame": 0, "Graduado": 0 };
+  members.forEach((member) => {
+    const status = portalText(member.foundation_status);
+    if (/gradu/.test(status)) buckets["Graduado"] += 1;
+    else if (/exam/.test(status)) buckets["Aguardando exame"] += 1;
+    else if (/curso|enrolled|inscrit/.test(status) && !/nao/.test(status)) buckets["Em curso"] += 1;
+    else buckets["Não inscrito"] += 1;
+  });
+  return buckets;
+}
+
+function getCellSacramentsSummary(cellId) {
+  const members = getCellMembersProfile(cellId, {});
+  const progress = members.map((member) => getCellMemberSpiritualProgress(member.id));
+  return {
+    baptized: progress.filter((item) => item?.sacraments?.baptized).length,
+    not_baptized: progress.filter((item) => !item?.sacraments?.baptized).length,
+    marriages: progress.reduce((sum, item) => sum + Number(item?.sacraments?.marriages || 0), 0),
+    baby_dedications: progress.reduce((sum, item) => sum + Number(item?.sacraments?.baby_dedications || 0), 0)
+  };
+}
+
+function getCellProgramsUpcoming(cellId, churchId, cellGroupId) {
+  if (!canAccessCell(activeUser?.id, cellId) || !hasCellPortalPermission("cell_portal.view_programs")) return [];
+  return (state.programs || []).filter((program) => {
+    const scoped = !program.church_id || program.church_id === churchId;
+    const targeted = !program.cell_id && !program.cell_group_id || program.cell_id === cellId || program.cell_group_id === cellGroupId;
+    return scoped && targeted && !/completed|cancelled|concluido|cancelado/.test(portalText(program.status));
+  }).sort((a, b) => Date.parse(a.start_date || 0) - Date.parse(b.start_date || 0)).slice(0, 8).map((program) => ({
+    id: program.id,
+    name: program.name || program.title,
+    date: program.start_date || program.date || "",
+    location: program.location || program.venue || churchName(program.church_id),
+    cell_action: program.cell_action || program.description || "Mobilizar e acompanhar os participantes.",
+    needs_mobilization: program.needs_mobilization ?? true,
+    needs_media: Boolean(program.needs_media),
+    needs_follow_up: program.needs_follow_up ?? /evangel|healing/.test(portalText(program.program_type || program.name))
+  }));
+}
+
+function getCellReportTrends(cellId, filters = cellPortalPageState) {
+  if (!canAccessCell(activeUser?.id, cellId)) return { reports: [], attendance: [], visitors: [], souls: [], statuses: {} };
+  const cell = (state.cellRegistry || []).find((item) => item.id === cellId);
+  const reports = sortCellReportsNewestFirst((state.cellLeadership?.cellReports || []).filter((report) => (report.cell_id === cellId || portalText(report.cell_name || report.celula) === portalText(portalCellName(cell))) && portalInPeriod(report, filters)));
+  const rows = [...reports].reverse();
+  const label = (report) => String(report.meeting_date || report.report_week || report.semana || "-").slice(0, 10);
+  const statuses = {};
+  reports.forEach((report) => { const status = cellReportStatusLabel(report); statuses[status] = (statuses[status] || 0) + 1; });
+  return {
+    reports,
+    attendance: rows.map((report) => [label(report), Number(report.attendance_count ?? report.att ?? 0)]),
+    visitors: rows.map((report) => [label(report), Number(report.first_timers_count ?? report.ft ?? 0)]),
+    souls: rows.map((report) => [label(report), Number(report.souls_won_count ?? report.new_converts_count ?? report.nc ?? report.rs ?? 0)]),
+    statuses
+  };
+}
+
+function getCellSoulWinningStats(cellId, filters = cellPortalPageState) {
+  if (!canAccessCell(activeUser?.id, cellId) || !hasCellPortalPermission("cell_portal.view_soul_winning")) return { total: 0, first_timers: 0, follow_up: 0, foundation: 0, became_members: 0, ranking: [] };
+  const members = getCellMembersProfile(cellId, {});
+  const cell = (state.cellRegistry || []).find((item) => item.id === cellId);
+  const memberNames = new Map(members.map((member) => [portalText(member.name), member]));
+  const memberPhones = new Map(members.map((member) => [String(member.phone || "").replace(/\D/g, ""), member]).filter(([phone]) => phone));
+  const firstTimers = (state.firstTimers || []).filter((person) => {
+    if (!portalInPeriod(person, filters) || person.church_id !== cell?.church_id) return false;
+    const invited = portalText(person.invited_by_name || person.convidado_por || "");
+    const invitedPhone = String(person.invited_by_phone || "").replace(/\D/g, "");
+    return person.cell_id === cellId || memberNames.has(invited) || memberPhones.has(invitedPhone);
+  });
+  const counts = new Map(members.map((member) => [member.id, 0]));
+  firstTimers.forEach((person) => {
+    const inviter = memberNames.get(portalText(person.invited_by_name || person.convidado_por || "")) || memberPhones.get(String(person.invited_by_phone || "").replace(/\D/g, ""));
+    if (inviter) counts.set(inviter.id, (counts.get(inviter.id) || 0) + 1);
+  });
+  members.forEach((member) => counts.set(member.id, Math.max(counts.get(member.id) || 0, member.invited_count || 0)));
+  const timerIds = new Set(firstTimers.map((person) => person.id));
+  const followUps = (state.followUps || []).filter((item) => timerIds.has(item.first_timer_id));
+  return {
+    total: firstTimers.reduce((sum, item) => sum + Number(item.souls_won || item.nasceu_de_novo || 0), 0),
+    first_timers: firstTimers.length,
+    follow_up: followUps.filter((item) => !/became member|concluido/.test(portalText(item.status))).length,
+    foundation: followUps.filter((item) => /foundation|fundacao/.test(portalText(item.status || item.estado || item.resultado))).length,
+    became_members: followUps.filter((item) => item.became_member || /became member/.test(portalText(item.status))).length,
+    ranking: members.map((member) => ({ member_id: member.id, name: member.name, invited: counts.get(member.id) || 0 })).sort((a, b) => b.invited - a.invited)
+  };
+}
+
+function getCellDashboardStats(cellId, filters = cellPortalPageState) {
+  const cell = (state.cellRegistry || []).find((item) => item.id === cellId);
+  if (!cell || !canAccessCell(activeUser?.id, cellId)) return null;
+  const members = getCellMembersProfile(cellId, filters);
+  const allMembers = getCellMembersProfile(cellId, {});
+  const trends = getCellReportTrends(cellId, filters);
+  const thisMonth = new Date().toISOString().slice(0, 7);
+  const latest = trends.reports[0] || null;
+  const latestStatus = latest ? cellReportStatusLabel(latest) : (lang === "pt" ? "Não submetido" : "Not submitted");
+  return {
+    cell,
+    members,
+    total_members: allMembers.length,
+    active_members: allMembers.filter((member) => /active|activo|ativo|in progress/.test(portalText(member.status))).length,
+    new_members_month: allMembers.filter((member) => String(member.joined_at || "").startsWith(thisMonth)).length,
+    visitors: getCellSoulWinningStats(cellId, filters).first_timers,
+    reports_month: trends.reports.filter((report) => String(portalDateValue(report)).startsWith(thisMonth)).length,
+    latest_report: latest,
+    current_report_status: latestStatus,
+    next_submission: (() => { const date = latest ? new Date(portalDateValue(latest)) : new Date(); date.setDate(date.getDate() + 7); return date.toISOString().slice(0, 10); })()
+  };
+}
+
+function getCellAlerts(cellId, filters = cellPortalPageState) {
+  const stats = getCellDashboardStats(cellId, filters);
+  if (!stats) return [];
+  const members = getCellMembersProfile(cellId, {});
+  const foundation = getCellFoundationProgress(cellId);
+  const soul = getCellSoulWinningStats(cellId, filters);
+  const programs = getCellProgramsUpcoming(cellId, stats.cell.church_id, stats.cell.cell_group_id || stats.cell.group_id);
+  const alerts = [];
+  if (!stats.latest_report || Date.now() - Date.parse(portalDateValue(stats.latest_report)) > 8 * 86400000) alerts.push({ tone: "warning", title: "Relatório semanal ainda não submetido", detail: "Submeta o relatório desta semana para manter o acompanhamento actualizado." });
+  const absent = members.filter((member) => member.last_attendance && Date.now() - Date.parse(member.last_attendance) > 21 * 86400000);
+  if (absent.length) alerts.push({ tone: "danger", title: `${absent.length} membro(s) sem presença recente`, detail: "Recomenda-se contacto pastoral simples." });
+  if (soul.follow_up) alerts.push({ tone: "info", title: `${soul.follow_up} visitante(s) em acompanhamento`, detail: "Confirmar o próximo contacto." });
+  if (foundation["Não inscrito"]) alerts.push({ tone: "info", title: `${foundation["Não inscrito"]} membro(s) fora da Escola de Fundação`, detail: "Avaliar inscrição e turma adequada." });
+  const sacraments = getCellSacramentsSummary(cellId);
+  if (sacraments.not_baptized) alerts.push({ tone: "warning", title: `${sacraments.not_baptized} membro(s) não baptizado(s)`, detail: "Partilhar a próxima oportunidade de baptismo." });
+  if (stats.total_members > 0 && stats.new_members_month === 0) alerts.push({ tone: "warning", title: "Célula sem crescimento registado neste mês", detail: "Rever mobilização e ganhar almas." });
+  if (programs.some((program) => !program.cell_action)) alerts.push({ tone: "info", title: "Programa futuro sem responsável", detail: "Definir a mobilização da célula." });
+  return alerts.slice(0, 6);
+}
+
+window.CELL_PORTAL_PERMISSION_CODES = CELL_PORTAL_PERMISSION_CODES;
+window.getCellLeaderContext = getCellLeaderContext;
+window.canAccessCell = canAccessCell;
+window.getCellDashboardStats = getCellDashboardStats;
+window.getCellMembersProfile = getCellMembersProfile;
+window.getCellMemberSpiritualProgress = getCellMemberSpiritualProgress;
+window.getCellMemberFinanceSummary = getCellMemberFinanceSummary;
+window.getCellSoulWinningStats = getCellSoulWinningStats;
+window.getCellFoundationProgress = getCellFoundationProgress;
+window.getCellSacramentsSummary = getCellSacramentsSummary;
+window.getCellProgramsUpcoming = getCellProgramsUpcoming;
+window.getCellReportTrends = getCellReportTrends;
+window.getCellAlerts = getCellAlerts;
+
+function cellReportEnvValue(name) {
+  const runtime = window.__CE_ENV__ || {};
+  if (runtime[name] !== undefined) return String(runtime[name]);
+  return "";
+}
+
+function isLegacyPublicCellReportEnabled() {
+  const enabled = cellReportEnvValue("VITE_ENABLE_PUBLIC_CELL_REPORT").toLowerCase() === "true";
+  const source = (cellReportEnvValue("VITE_DATA_SOURCE") || "mock").toLowerCase();
+  const appEnv = (cellReportEnvValue("VITE_APP_ENV") || "development").toLowerCase();
+  return enabled && ["mock", "local"].includes(source) && !["production", "prod"].includes(appEnv);
+}
+
+function hasCellReportPermission(permission, user = activeUser) {
+  if (!user) return false;
+  const permissions = new Set([...(user.permissions || []), ...(CELL_REPORT_ROLE_PERMISSIONS[user.role] || [])]);
+  return permissions.has(permission) || user.role === "Super Admin";
+}
+
+function getAuthorizedCellsForUser(userId) {
+  const user = (state.users || []).find((item) => item.id === userId) || (activeUser?.id === userId ? activeUser : null);
+  if (!user || !["Cell Leader", "Cell Assistant", "Cell Ministry Reviewer", "Cell Ministry Head", "Super Admin"].includes(user.role)) return [];
+  const cells = state.cellRegistry || [];
+  if (user.role === "Super Admin") return [...cells];
+  if (["Cell Ministry Reviewer", "Cell Ministry Head"].includes(user.role)) {
+    return cells.filter((cell) => !user.church_id || cell.church_id === user.church_id);
+  }
+  const assignedIds = new Set(user.assigned_cells || []);
+  const leaders = state.cellLeadership?.leaders || [];
+  leaders.forEach((leader) => {
+    const matchesUser = leader.user_id === user.id || leader.staff_id === user.staff_id || String(leader.email || "").toLowerCase() === String(user.email || "").toLowerCase();
+    const active = !leader.status || /active|activo|training|treinamento/i.test(String(leader.status));
+    if (matchesUser && active && leader.cell_id) assignedIds.add(leader.cell_id);
+  });
+  return cells.filter((cell) =>
+    assignedIds.has(cell.id) ||
+    cell.primary_leader_user_id === user.id ||
+    (cell.assistant_user_ids || []).includes(user.id)
+  );
+}
+
+window.getAuthorizedCellsForUser = getAuthorizedCellsForUser;
+
+function recordCellReportSecurityEvent(action, description, entityId = "") {
+  const now = new Date().toISOString();
+  const log = {
+    id: `audit-cell-report-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    user_id: activeUser?.id || "anonymous",
+    user_name: activeUser?.name || "Anonymous",
+    user_role: activeUser?.role || "Anonymous",
+    actor: activeUser?.name || "Anonymous",
+    church_id: activeUser?.church_id || "",
+    module: "cell_reports",
+    action,
+    entity_type: "cellReport",
+    entity_id: entityId,
+    description,
+    severity: /denied|unauthorized|reject/i.test(action) ? "warning" : "info",
+    date: now.slice(0, 10),
+    created_at: now
+  };
+  state.auditLogs = Array.isArray(state.auditLogs) ? state.auditLogs : [];
+  state.auditLogs.push(log);
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (_) {}
+  try { window.CEAccessControl?.createAuditLog?.(log); } catch (_) {}
+}
+
+function requestAuthenticatedCellReport() {
+  if (isUserAuthenticated && hasCellReportPermission("cell_reports.create_own")) {
+    history.replaceState(null, "", "#cell-report-submit");
+    void showPublicCellReport();
+    return;
+  }
+  if (isLegacyPublicCellReportEnabled()) {
+    history.replaceState(null, "", "#cell-report-submit");
+    void showPublicCellReport();
+    return;
+  }
+  pendingCellReportLogin = true;
+  showLoginView();
+  const title = document.querySelector("#loginView h1");
+  const lead = document.querySelector("#loginView .login-lead");
+  if (title) title.textContent = lang === "pt" ? "Portal do Líder de Célula" : "Cell Leader Portal";
+  if (lead) lead.textContent = lang === "pt" ? "Entre para submeter o relatório semanal da sua célula." : "Sign in to submit your cell's weekly report.";
+  showLoginError(lang === "pt" ? "É necessário iniciar sessão para submeter um relatório de célula." : "You must sign in to submit a cell report.");
+}
+
+/** Authenticated weekly cell report form. Legacy anonymous access is dev/demo-only behind a disabled-by-default flag. */
 function renderPublicCellReportForm(successRecord = null) {
   const root = byId("publicCellReportView");
   if (!root) return;
-  const churches = state.churches || [];
-  const groups = state.cellGroups || [];
+  const legacyPublic = !isUserAuthenticated && isLegacyPublicCellReportEnabled();
+  const authorizedCells = isUserAuthenticated ? getAuthorizedCellsForUser(activeUser?.id) : [];
+  if (!legacyPublic && (!isUserAuthenticated || !hasCellReportPermission("cell_reports.create_own"))) {
+    requestAuthenticatedCellReport();
+    return;
+  }
+  if (!legacyPublic && !authorizedCells.length) {
+    root.innerHTML = `<section class="public-report-card"><h1>${lang === "pt" ? "Sem célula autorizada" : "No authorized cell"}</h1><p>${lang === "pt" ? "A sua conta não está associada a nenhuma célula activa. Contacte o responsável do Ministério de Células." : "Your account is not assigned to an active cell. Contact the Cell Ministry administrator."}</p><button type="button" class="btn btn-outline-cyan" data-back-login>${L("backToLogin")}</button></section>`;
+    recordCellReportSecurityEvent("cell_report_access_denied", "Authenticated user has no authorized cell assignment");
+    return;
+  }
+  const authorizedChurchIds = new Set(authorizedCells.map((cell) => cell.church_id).filter(Boolean));
+  const authorizedGroupIds = new Set(authorizedCells.map((cell) => cell.group_id || cell.cell_group_id).filter(Boolean));
+  const churches = legacyPublic ? (state.churches || []) : (state.churches || []).filter((church) => authorizedChurchIds.has(church.id));
+  const groups = legacyPublic ? (state.cellGroups || []) : (state.cellGroups || []).filter((group) => authorizedGroupIds.has(group.id));
+  const singleCell = !legacyPublic && authorizedCells.length === 1 ? authorizedCells[0] : null;
+  const selectedChurchId = singleCell?.church_id || "";
+  const selectedGroupId = singleCell?.group_id || singleCell?.cell_group_id || "";
   const today = new Date().toISOString().slice(0, 10);
   if (successRecord) {
     const submittedAt = successRecord.created_at
@@ -5059,8 +5553,8 @@ function renderPublicCellReportForm(successRecord = null) {
           <button type="button" class="btn btn-ce-gold btn-touch" data-submit-another-cell-report>
             <i class="bi bi-plus-circle me-1"></i>${L("submitAnotherReport")}
           </button>
-          <button type="button" class="btn btn-outline-cyan btn-touch" data-back-login>
-            <i class="bi bi-box-arrow-left me-1"></i>${L("backToLogin")}
+          <button type="button" class="btn btn-outline-cyan btn-touch" data-back-cell-portal>
+            <i class="bi bi-grid me-1"></i>${lang === "pt" ? "Voltar ao painel" : "Return to dashboard"}
           </button>
         </div>
       </section>`;
@@ -5078,6 +5572,7 @@ function renderPublicCellReportForm(successRecord = null) {
         </div>
       </div>
       <form id="publicCellReportForm" class="public-report-form" novalidate>
+        ${legacyPublic ? `<div class="alert alert-warning">${lang === "pt" ? "Modo público legado activo apenas para demonstração/desenvolvimento. Não utilizar com dados reais." : "Legacy public mode enabled for demo/development only. Do not use real data."}</div>` : `<div class="alert alert-info">${lang === "pt" ? `Sessão autenticada: ${escapeAttr(activeUser?.name || "")}` : `Authenticated session: ${escapeAttr(activeUser?.name || "")}`}</div>`}
         <input type="text" name="website" class="public-honeypot" tabindex="-1" autocomplete="off" aria-hidden="true">
         <div class="public-stepper" aria-label="${L("weeklyCellReportPublic")}">
           ${stepKeys.map((key, index) => `<button type="button" class="${index === 0 ? "active" : ""}" data-public-step-jump="${index}"><span>${index + 1}</span>${cellReportPublicText(key)}</button>`).join("")}
@@ -5088,10 +5583,10 @@ function renderPublicCellReportForm(successRecord = null) {
           <div class="row g-3">
             <div class="col-md-6"><label class="form-label">${cellReportPublicText("reportWeek")} *</label><input name="report_week" class="form-control" value="${today}" required></div>
             <div class="col-md-6"><label class="form-label">${cellReportPublicText("meetingDate")} *</label><input name="meeting_date" type="date" class="form-control" value="${today}" required></div>
-            <div class="col-md-6"><label class="form-label">${cellReportPublicText("church")} *</label><select id="publicCellChurch" name="church_id" class="form-select" required>${publicCellReportSelectOptions(churches, "id", "public_name", "", cellReportPublicText("church"))}</select></div>
-            <div class="col-md-6"><label class="form-label">${cellReportPublicText("cellGroup")} *</label><select id="publicCellGroup" name="cell_group_id" class="form-select" required>${publicCellReportSelectOptions(groups, "id", "group_name", "", cellReportPublicText("cellGroup"))}</select></div>
-            <div class="col-md-6"><label class="form-label">${cellReportPublicText("cellName")} *</label><select id="publicCell" name="cell_id" class="form-select" required><option value="">${cellReportPublicText("cellName")}</option></select></div>
-            <div class="col-md-6 d-flex align-items-end"><label class="form-check"><input id="publicMissingCell" name="missing_cell" type="checkbox" class="form-check-input"> <span class="form-check-label">${L("cannotFindCell")}</span></label></div>
+            <div class="col-md-6"><label class="form-label">${cellReportPublicText("church")} *</label><select id="publicCellChurch" name="church_id" class="form-select" required ${singleCell ? "disabled" : ""}>${publicCellReportSelectOptions(churches, "id", "public_name", selectedChurchId, cellReportPublicText("church"))}</select>${singleCell ? `<input type="hidden" name="church_id" value="${escapeAttr(selectedChurchId)}">` : ""}</div>
+            <div class="col-md-6"><label class="form-label">${cellReportPublicText("cellGroup")} *</label><select id="publicCellGroup" name="cell_group_id" class="form-select" required ${singleCell ? "disabled" : ""}>${publicCellReportSelectOptions(groups, "id", "group_name", selectedGroupId, cellReportPublicText("cellGroup"))}</select>${singleCell ? `<input type="hidden" name="cell_group_id" value="${escapeAttr(selectedGroupId)}">` : ""}</div>
+            <div class="col-md-6"><label class="form-label">${cellReportPublicText("cellName")} *</label><select id="publicCell" name="cell_id" class="form-select" required ${singleCell ? "disabled" : ""}><option value="">${cellReportPublicText("cellName")}</option></select>${singleCell ? `<input type="hidden" name="cell_id" value="${escapeAttr(singleCell.id)}">` : ""}</div>
+            ${legacyPublic ? `<div class="col-md-6 d-flex align-items-end"><label class="form-check"><input id="publicMissingCell" name="missing_cell" type="checkbox" class="form-check-input"> <span class="form-check-label">${L("cannotFindCell")}</span></label></div>` : ""}
             <div class="col-md-6 d-none" data-manual-cell-wrap><label class="form-label">${cellReportPublicText("manualCellName")} *</label><input name="manual_cell_name" class="form-control"></div>
             <div class="col-md-6"><label class="form-label">${cellReportPublicText("leaderName")} *</label><input id="publicLeaderName" name="leader_name" class="form-control" required></div>
             <div class="col-md-6"><label class="form-label">${cellReportPublicText("leaderPhone")} *</label><input id="publicLeaderPhone" name="leader_phone" class="form-control" required></div>
@@ -5164,7 +5659,7 @@ function renderPublicCellReportForm(successRecord = null) {
         </section>
         <div class="public-form-actions">
           <button type="button" class="btn btn-outline-cyan btn-touch" data-public-prev disabled>${cellReportPublicText("previous")}</button>
-          <button type="button" class="btn btn-outline-cyan btn-touch" data-back-login>${L("backToLogin")}</button>
+          <button type="button" class="btn btn-outline-cyan btn-touch" data-back-cell-portal>${lang === "pt" ? "Cancelar e voltar ao painel" : "Cancel and return to dashboard"}</button>
           <button type="button" class="btn btn-ce-gold btn-touch" data-public-next>${cellReportPublicText("next")}</button>
           <button type="submit" class="btn btn-ce-gold btn-touch d-none" data-public-submit>${L("submitReport")}</button>
         </div>
@@ -5274,15 +5769,20 @@ function updatePublicCellReportDependentSelects() {
   const churchId = byId("publicCellChurch")?.value || "";
   const groupSelect = byId("publicCellGroup");
   const cellSelect = byId("publicCell");
+  const legacyPublic = !isUserAuthenticated && isLegacyPublicCellReportEnabled();
+  const authorizedCells = isUserAuthenticated ? getAuthorizedCellsForUser(activeUser?.id) : (state.cellRegistry || []);
+  const authorizedGroupIds = new Set(authorizedCells.map((cell) => cell.group_id || cell.cell_group_id).filter(Boolean));
   if (groupSelect) {
     const previousGroup = groupSelect.value;
-    const groups = (state.cellGroups || []).filter((group) => !churchId || group.church_id === churchId);
+    const groups = (state.cellGroups || []).filter((group) =>
+      (!churchId || group.church_id === churchId) && (legacyPublic || authorizedGroupIds.has(group.id))
+    );
     groupSelect.innerHTML = publicCellReportSelectOptions(groups, "id", "group_name", previousGroup, cellReportPublicText("cellGroup"));
-    if (!groups.some((g) => g.id === previousGroup)) groupSelect.value = "";
+    if (!groups.some((g) => g.id === previousGroup)) groupSelect.value = groups.length === 1 ? groups[0].id : "";
   }
   const groupId = byId("publicCellGroup")?.value || "";
   if (!cellSelect) return;
-  const cells = (state.cellRegistry || []).filter((cell) => {
+  const cells = authorizedCells.filter((cell) => {
     const matchGroup = !groupId || cell.group_id === groupId || cell.cell_group_id === groupId || cell.group_cell_id === groupId;
     const matchChurch = !churchId || cell.church_id === churchId;
     return matchGroup && matchChurch;
@@ -5290,7 +5790,7 @@ function updatePublicCellReportDependentSelects() {
   const previous = cellSelect.value;
   cellSelect.innerHTML = `<option value="">${cellReportPublicText("cellName")}</option>${cells.map((cell) => `<option value="${escapeAttr(cell.id)}">${escapeAttr(cell.cell_name || cell.name)}</option>`).join("")}`;
   if (cells.some((cell) => cell.id === previous)) cellSelect.value = previous;
-  else cellSelect.value = "";
+  else cellSelect.value = cells.length === 1 ? cells[0].id : "";
   updatePublicCellLeaderFields();
 }
 
@@ -5339,6 +5839,21 @@ function showLoginView() {
   } catch (_) {}
 }
 
+function returnFromCellReportToDashboard() {
+  if (!isUserAuthenticated || !activeUser) {
+    showLoginView();
+    return;
+  }
+  pendingCellReportLogin = false;
+  byId("publicCellReportView")?.classList.add("d-none");
+  byId("loginView")?.classList.add("d-none");
+  byId("appView")?.classList.remove("d-none");
+  renderShell();
+  const dashboardRoute = ["Cell Leader", "Cell Assistant"].includes(activeUser.role) ? "cellPortal" : "dashboard";
+  setRoute(dashboardRoute);
+  updateBackToTopVisibility();
+}
+
 function collectPublicCellReport(form, proofMeta = null) {
   const data = new FormData(form);
   const now = new Date().toISOString();
@@ -5369,6 +5884,8 @@ function collectPublicCellReport(form, proofMeta = null) {
   const leaderName = String(data.get("leader_name") || "").trim();
   const leaderPhone = String(data.get("leader_phone") || "").trim();
   const proofFile = form.querySelector('[name="proof_file"]')?.files?.[0] || null;
+  const legacyPublic = !isUserAuthenticated && isLegacyPublicCellReportEnabled();
+  const cellRole = ["Cell Leader", "Cell Assistant"].includes(activeUser?.role) ? activeUser.role : "Cell Ministry";
   return {
     id,
     report_week: data.get("report_week"),
@@ -5422,9 +5939,18 @@ function collectPublicCellReport(form, proofMeta = null) {
     challenges: data.get("challenges") || "",
     needs: data.get("needs") || "",
     leader_comments: data.get("leader_comments") || "",
-    submitted_by_type: "Cell Leader Public Form",
-    submitted_from: "login_public_button",
-    submitter_device: navigator.userAgent,
+    submitted_by_type: legacyPublic ? "Cell Leader Public Form (Legacy Demo)" : "Authenticated Cell Leader",
+    submitted_from: legacyPublic ? "legacy_public_demo" : "cell_leader_portal",
+    submission_source: legacyPublic ? "legacy_public_demo" : "cell_leader_portal",
+    submitted_by_user_id: legacyPublic ? "" : (activeUser?.id || ""),
+    submitted_by_user_name: legacyPublic ? leaderName : (activeUser?.name || ""),
+    submitted_by_user_role: legacyPublic ? "Legacy Public Demo" : (activeUser?.role || ""),
+    submitted_by_name: legacyPublic ? leaderName : (activeUser?.name || ""),
+    submitted_by_role: legacyPublic ? "Legacy Public Demo" : (activeUser?.role || ""),
+    submitted_by_cell_role: legacyPublic ? "Legacy Public Demo" : cellRole,
+    cell_role: legacyPublic ? "Legacy Public Demo" : cellRole,
+    authorized_cell_id: legacyPublic ? "" : cellId,
+    auth_required: !legacyPublic,
     status: needsReview ? "Pending Review" : "Submitted",
     estado: "Submetido",
     needs_review: !!needsReview || !!manualCell,
@@ -5433,8 +5959,8 @@ function collectPublicCellReport(form, proofMeta = null) {
     reviewed_at: "",
     validated_by: "",
     validated_at: "",
-    created_by: leaderName,
-    updated_by: leaderName,
+    created_by: legacyPublic ? leaderName : (activeUser?.name || leaderName),
+    updated_by: legacyPublic ? leaderName : (activeUser?.name || leaderName),
     created_at: now,
     updated_at: now
   };
@@ -5465,6 +5991,13 @@ function cellReportSubmissionToInternalReport(submission) {
     created_at: submission.created_at,
     updated_at: submission.updated_at,
     status: submission.status,
+    auth_required: submission.auth_required,
+    submission_source: submission.submission_source,
+    submitted_by_user_id: submission.submitted_by_user_id,
+    submitted_by_name: submission.submitted_by_name,
+    submitted_by_role: submission.submitted_by_role,
+    submitted_by_cell_role: submission.submitted_by_cell_role,
+    authorized_cell_id: submission.authorized_cell_id,
     report_week: submission.report_week,
     semana: submission.report_week,
     data_inicio: submission.report_week,
@@ -5546,6 +6079,27 @@ function cellReportSubmissionToInternalReport(submission) {
 async function submitPublicCellReport(form) {
   const alert = form.querySelector("[data-public-form-alert]");
   const data = new FormData(form);
+  const legacyPublic = !isUserAuthenticated && isLegacyPublicCellReportEnabled();
+  if (!legacyPublic && (!isUserAuthenticated || !hasCellReportPermission("cell_reports.create_own"))) {
+    const message = lang === "pt"
+      ? "Apenas líderes ou assistentes de célula autorizados podem submeter relatórios."
+      : "Only authorized cell leaders or assistants can submit cell reports.";
+    if (alert) { alert.textContent = message; alert.classList.remove("d-none"); }
+    recordCellReportSecurityEvent("cell_report_access_denied", "User lacks cell_reports.create_own permission");
+    return;
+  }
+  if (!legacyPublic) {
+    const selectedCellId = String(data.get("cell_id") || "");
+    const authorizedIds = new Set(getAuthorizedCellsForUser(activeUser?.id).map((cell) => String(cell.id)));
+    if (!selectedCellId || !authorizedIds.has(selectedCellId)) {
+      const message = lang === "pt"
+        ? "Não tem autorização para submeter relatório desta célula."
+        : "You are not authorized to submit a report for this cell.";
+      if (alert) { alert.textContent = message; alert.classList.remove("d-none"); }
+      recordCellReportSecurityEvent("cell_report_unauthorized_submission", `Blocked submission for unauthorized cell ${selectedCellId || "missing"}`, selectedCellId);
+      return;
+    }
+  }
   const lastSubmitAt = Number(localStorage.getItem("ce-public-cell-report-last-submit") || 0);
   if (Date.now() - lastSubmitAt < 15000) {
     if (alert) {
@@ -5651,9 +6205,9 @@ async function submitPublicCellReport(form) {
     return;
   }
   const submission = collectPublicCellReport(form, proofMeta);
-  // Ensure auto values match spec exactly
-  submission.submitted_by_type = "Cell Leader Public Form";
-  submission.submitted_from = "login_public_button";
+  // Ensure authenticated source metadata remains explicit and auditable.
+  submission.auth_required = !legacyPublic;
+  submission.submission_source = legacyPublic ? "legacy_public_demo" : "cell_leader_portal";
   submission.currency = "MZN";
   submission.possible_duplicate = !!isDuplicate || !!submission.possible_duplicate;
   if (submission.possible_duplicate) {
@@ -5703,7 +6257,8 @@ async function submitPublicCellReport(form) {
     console.warn("[CE CellReport public] notification fallback — submit continues", error);
   }
   try {
-    saveState("Public cell report submitted");
+    recordCellReportSecurityEvent("cell_report_submitted", `Authenticated cell report submitted for ${submission.authorized_cell_id || submission.cell_id}`, submission.id);
+    saveState(legacyPublic ? "Legacy demo cell report submitted" : "Authenticated cell report submitted");
   } catch (error) {
     // Public form may run before full admin session; still persist blob.
     try {
@@ -5793,6 +6348,24 @@ function updateCellReportReviewAction(action, reportId) {
     openCellReportDetails(reportId);
     return;
   }
+  const requiredPermission = action === "validate"
+    ? "cell_reports.validate"
+    : action === "reject"
+      ? "cell_reports.reject"
+      : "cell_reports.review";
+  if (!hasCellReportPermission(requiredPermission)) {
+    recordCellReportSecurityEvent("cell_report_review_denied", `Missing ${requiredPermission}`, reportId);
+    alert(lang === "pt" ? "Não tem permissão para executar esta acção." : "You do not have permission to perform this action.");
+    return;
+  }
+  let decisionReason = "";
+  if (["reject", "correction"].includes(action)) {
+    decisionReason = String(window.prompt(lang === "pt" ? "Indique o motivo obrigatório:" : "Enter the required reason:") || "").trim();
+    if (!decisionReason) {
+      alert(lang === "pt" ? "O motivo é obrigatório." : "A reason is required.");
+      return;
+    }
+  }
   const now = new Date().toISOString();
   const statusMap = {
     approve: ["Approved", "Aprovado"],
@@ -5808,6 +6381,8 @@ function updateCellReportReviewAction(action, reportId) {
   report.estado = estado;
   report.updated_at = now;
   report.updated_by = activeUser?.name || "Admin Principal";
+  report.review_history = Array.isArray(report.review_history) ? report.review_history : [];
+  report.review_history.push({ action, reason: decisionReason, user_id: activeUser?.id || "", user_name: activeUser?.name || "", user_role: activeUser?.role || "", created_at: now });
   if (action === "approve") {
     report.avaliado_por = activeUser?.name || "Pastora Flavia";
     report.reviewed_by = report.avaliado_por;
@@ -5817,6 +6392,20 @@ function updateCellReportReviewAction(action, reportId) {
     report.validado_por = activeUser?.name || "Sister Eduarda";
     report.validated_by = report.validado_por;
     report.validated_at = now;
+    report.validated_by_user_id = activeUser?.id || "";
+    report.validated_by_name = activeUser?.name || "";
+    report.validation_notes = "";
+  }
+  if (action === "reject") {
+    report.rejection_reason = decisionReason;
+    report.rejected_by = activeUser?.name || "";
+    report.rejected_by_user_id = activeUser?.id || "";
+    report.rejected_at = now;
+  }
+  if (action === "correction") {
+    report.correction_reason = decisionReason;
+    report.correction_requested_by = activeUser?.name || "";
+    report.correction_requested_at = now;
   }
   if (action === "finance") {
     // Placeholder only — does not create a verified finance receipt yet.
@@ -5856,8 +6445,27 @@ function updateCellReportReviewAction(action, reportId) {
     submission.reviewed_at = report.reviewed_at || submission.reviewed_at;
     submission.validated_by = report.validated_by || submission.validated_by;
     submission.validated_at = report.validated_at || submission.validated_at;
+    submission.validated_by_user_id = report.validated_by_user_id || submission.validated_by_user_id;
+    submission.validated_by_name = report.validated_by_name || submission.validated_by_name;
     submission.finance_review_status = report.finance_review_status || submission.finance_review_status;
     submission.needs_review = report.needs_review;
+    submission.review_history = report.review_history;
+    submission.rejection_reason = report.rejection_reason || submission.rejection_reason;
+    submission.correction_reason = report.correction_reason || submission.correction_reason;
+  }
+  recordCellReportSecurityEvent(`cell_report_${action}`, `Cell report review action: ${action}`, reportId);
+  if (["validate", "reject", "correction"].includes(action) && report.submitted_by_user_id) {
+    createNotification({
+      title: lang === "pt" ? "Actualização do relatório de célula" : "Cell report update",
+      message: lang === "pt" ? `O relatório ${report.id} foi actualizado para ${estado}.` : `Report ${report.id} was updated to ${status}.`,
+      module: "cell_ministry",
+      entity_type: "cellReport",
+      entity_id: report.id,
+      recipient_user_id: report.submitted_by_user_id,
+      recipient_church_id: report.church_id,
+      action_url: "cellReceivedReports",
+      action_label: L("view")
+    });
   }
   saveState(`Cell report ${action}`);
   void dualWriteCellMinistryRecord("cellReport", "update", report);
@@ -5924,15 +6532,45 @@ function openCellReportDetails(reportId) {
   bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
 }
 
+function canSelectAllCellNetworkRecords() {
+  return !!(
+    activeUser?.can_view_all_churches ||
+    activeUser?.role === "Super Admin" ||
+    (activeUser?.department_permissions || []).includes("*")
+  );
+}
+
+function isHqChurchReference(churchId = "") {
+  if (!churchId) return false;
+  if (churchId === "church-hq") return true;
+  const church = findChurchById(relationalChurches(), churchId);
+  const descriptor = [church?.type, church?.church_name, church?.public_name]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  return /\bhq\b|sede nacional|maputo central\s*-\s*sede/.test(descriptor);
+}
+
+function cellNetworkRecordsForSelect(records) {
+  const list = Array.isArray(records) ? records : [];
+  return canSelectAllCellNetworkRecords() ? list : scopedNested(list);
+}
+
+function matchesSelectedCellChurch(record, churchId = "") {
+  if (!churchId) return true;
+  if (!record?.church_id || record.church_id === churchId) return true;
+  return record.church_id === "church-hq" && isHqChurchReference(churchId);
+}
+
 function getCellGroupsForChurch(churchId = "") {
-  return scopedNested(state.cellGroups || [])
-    .filter((group) => !churchId || group.church_id === churchId)
+  return cellNetworkRecordsForSelect(state.cellGroups || [])
+    .filter((group) => matchesSelectedCellChurch(group, churchId))
     .sort((a, b) => String(a.group_name || "").localeCompare(String(b.group_name || "")));
 }
 
 function getCellsForGroup(cellGroupId = "", churchId = "") {
-  return scopedNested(state.cellRegistry || [])
-    .filter((cell) => (!churchId || cell.church_id === churchId) && (!cellGroupId || cell.group_id === cellGroupId || cell.cell_group_id === cellGroupId || cell.group_cell_id === cellGroupId))
+  return cellNetworkRecordsForSelect(state.cellRegistry || [])
+    .filter((cell) => matchesSelectedCellChurch(cell, churchId) && (!cellGroupId || cell.group_id === cellGroupId || cell.cell_group_id === cellGroupId || cell.group_cell_id === cellGroupId))
     .sort((a, b) => String(a.cell_name || "").localeCompare(String(b.cell_name || "")));
 }
 
@@ -5991,7 +6629,12 @@ function updateDependentCellSelect(groupSelect) {
   const form = groupSelect.closest("form") || document;
   const cellSelect = form.querySelector(`[name="${groupSelect.dataset.cellNameTarget || "cell_id"}"]`) || form.querySelector("[data-cell-select]");
   if (!cellSelect) return;
-  const churchId = form.querySelector("[name='church_id'], [name='igreja_id'], [name='igreja']")?.value || "";
+  // Prefer the relational church id. Finance also contains an earlier hidden
+  // `igreja` field with the display name, which must not be used for filtering.
+  const churchField = form.querySelector("[name='church_id']")
+    || form.querySelector("[name='igreja_id']")
+    || form.querySelector("[name='igreja']");
+  const churchId = churchField?.value || "";
   const cells = getCellsForGroup(groupSelect.value, churchId);
   cellSelect.innerHTML = `<option value="">${L("selectCell")}</option>${cells.map((cell) => `<option value="${cell.id}">${cell.cell_name}</option>`).join("")}`;
   cellSelect.disabled = !groupSelect.value;
@@ -8314,6 +8957,7 @@ function badgeClass(status) {
 const FALLBACK_SENSITIVE_MODULES = new Set(["finance", "staffHr", "requisitions", "accessControl", "usersRoles", "auditLogs"]);
 const FALLBACK_ROUTE_MODULES = {
   dashboard: "dashboard",
+  cellPortal: "dashboard",
   churches: "churches",
   members: "members",
   firstTimers: "firstTimers",
@@ -8452,6 +9096,15 @@ function cellRouteAreaLabel(route) {
 function renderCellSidebarNav() {
   const parentExpanded = isSidebarGroupExpanded(CELL_NAV.parentKey);
   const parentActive = isCellRoute(activeRoute);
+  if (["Cell Leader", "Cell Assistant"].includes(activeUser?.role)) {
+    return `<div class="nav-cell-branch is-expanded ${parentActive ? "has-active" : ""}">
+      <div class="nav-cell-body"><div class="nav-cell-body-inner">
+        <button type="button" class="nav-cell-item ${activeRoute === "cellPortal" || activeRoute === "dashboard" ? "active" : ""}" data-route="cellPortal"><span>${lang === "pt" ? "Minha Célula" : "My Cell"}</span></button>
+        <button type="button" class="nav-cell-item ${activeRoute === "cellReceivedReports" ? "active" : ""}" data-route="cellReceivedReports"><span>${L("receivedReports")}</span></button>
+        <button type="button" class="nav-cell-item" data-public-cell-report><span>${L("submitCellReport")}</span></button>
+      </div></div>
+    </div>`;
+  }
   return `
     <div class="nav-cell-branch ${parentExpanded ? "is-expanded" : ""} ${parentActive ? "has-active" : ""}" data-nav-group="${CELL_NAV.parentKey}">
       <button type="button" class="nav-cell-parent" aria-expanded="${parentExpanded}" aria-label="${L("navGroupToggle")}: ${L("cellLeadership")}">
@@ -8461,6 +9114,7 @@ function renderCellSidebarNav() {
       </button>
       <div class="nav-cell-body">
         <div class="nav-cell-body-inner">
+          ${hasCellPortalPermission("cell_portal.view") ? `<button type="button" class="nav-cell-item ${activeRoute === "cellPortal" ? "active" : ""}" data-route="cellPortal"><span>${lang === "pt" ? "Portal por Célula" : "Cell Portal"}</span></button>` : ""}
           ${CELL_NAV.areas.map((area) => {
             const areaExpanded = isSidebarGroupExpanded(area.key);
             const areaActive = area.routes.some(([route]) => route === activeRoute);
@@ -8516,6 +9170,19 @@ function applySidebarCollapse(collapsed = isSidebarCollapsed()) {
 }
 
 function renderShell() {
+  if (["Cell Leader", "Cell Assistant"].includes(activeUser?.role)) {
+    byId("sidebarNav").innerHTML = `<div class="nav-group is-expanded"><div class="nav-group-body"><div class="nav-group-body-inner">
+      <button type="button" class="nav-item-btn ${["dashboard", "cellPortal"].includes(activeRoute) ? "active" : ""}" data-route="cellPortal"><i class="bi bi-grid-1x2"></i><span>${lang === "pt" ? "Minha Célula" : "My Cell"}</span></button>
+      <button type="button" class="nav-item-btn ${activeRoute === "cellReceivedReports" ? "active" : ""}" data-route="cellReceivedReports"><i class="bi bi-clock-history"></i><span>${lang === "pt" ? "Relatórios Submetidos" : "Submitted Reports"}</span></button>
+      <button type="button" class="nav-item-btn" data-public-cell-report><i class="bi bi-clipboard-plus"></i><span>${lang === "pt" ? "Submeter Relatório" : "Submit Report"}</span></button>
+      <button type="button" class="nav-item-btn ${activeRoute === "notifications" ? "active" : ""}" data-route="notifications"><i class="bi bi-bell"></i><span>${lang === "pt" ? "Notificações" : "Notifications"}</span></button>
+    </div></div></div>`;
+    byId("activeUserName").textContent = activeUser.name;
+    byId("activeUserRole").textContent = activeUser.role;
+    applySidebarCollapse();
+    updateNotificationCenter();
+    return;
+  }
   byId("sidebarNav").innerHTML = NAV_GROUPS.map((group) => {
     const items = group.items.map(([route, icon, label]) => ({ route, icon: sidebarIcon(icon, route), label, nav: resolveRouteAccess(route) }))
       .filter((item) => item.nav.visible && (item.route !== "venueInventory" || canViewVenueModule()));
@@ -8629,6 +9296,10 @@ function setRoute(route) {
   const prevRoute = activeRoute;
   activeRoute = route || "dashboard";
   if (CELL_ROUTE_ALIASES[activeRoute]) activeRoute = CELL_ROUTE_ALIASES[activeRoute];
+  if (["Cell Leader", "Cell Assistant"].includes(activeUser?.role) && isCellRoute(activeRoute) && !["cellPortal", "cellReceivedReports"].includes(activeRoute)) {
+    recordCellReportSecurityEvent("cell_report_route_denied", `Restricted cell portal route: ${activeRoute}`);
+    activeRoute = "cellReceivedReports";
+  }
   if (!canEnterRoute(activeRoute)) {
     try {
       const mod = window.CEAccessControl?.routeToModule?.(activeRoute) || activeRoute;
@@ -8647,6 +9318,7 @@ function setRoute(route) {
   }
   const found = NAV_GROUPS.flatMap((group) => group.items.map((item) => ({ group, item }))).find(({ item }) => item[0] === activeRoute);
   const childRoutes = {
+    cellPortal: ["main", "cellLeadership"],
     cellAlecOverview: ["departments", "cellAlecOverview"],
     cellAlecRegistration: ["departments", "alecRegistration"],
     cellAlecScores: ["departments", "alecScores"],
@@ -8683,7 +9355,7 @@ function setRoute(route) {
     venueInventoryReports: ["departments", "venueReports"],
     notifications: ["main", "notifications"]
   };
-  byId("pageTitle").textContent = found ? L(found.item[2]) : isCellRoute(activeRoute) ? cellRouteLabel(activeRoute) : childRoutes[activeRoute] ? L(childRoutes[activeRoute][1]) : L("dashboard");
+  byId("pageTitle").textContent = activeRoute === "cellPortal" ? (lang === "pt" ? "Portal do Líder de Célula" : "Cell Leader Portal") : found ? L(found.item[2]) : isCellRoute(activeRoute) ? cellRouteLabel(activeRoute) : childRoutes[activeRoute] ? L(childRoutes[activeRoute][1]) : L("dashboard");
   byId("sectionLabel").textContent = found ? L(found.group.key) : isCellRoute(activeRoute) || childRoutes[activeRoute] ? L("departments") : L("main");
   document.querySelectorAll("[data-route]").forEach((item) => {
     const route = item.dataset.route;
@@ -8702,6 +9374,7 @@ function setRoute(route) {
   }
   const renderers = {
     dashboard: renderDashboard,
+    cellPortal: renderCellLeaderPortal,
     churches: renderChurches,
     members: renderMembers,
     firstTimers: renderFirstTimers,
@@ -9391,7 +10064,129 @@ function getDashboardCardsForUser(user = activeUser) {
     .slice(0, 12);
 }
 
+function cellPortalBars(rows, emptyLabel = "Sem dados no período") {
+  const safeRows = (rows || []).slice(-8);
+  if (!safeRows.length) return `<p class="text-secondary small mb-0">${emptyLabel}</p>`;
+  const max = Math.max(...safeRows.map(([, value]) => Number(value || 0)), 1);
+  return `<div class="cell-portal-bars">${safeRows.map(([label, value]) => `<div class="cell-portal-bar-row"><span>${escapeAttr(label)}</span><div><i style="width:${Math.max(4, (Number(value || 0) / max) * 100)}%"></i></div><strong>${Number(value || 0)}</strong></div>`).join("")}</div>`;
+}
+
+function cellPortalDonut(rows) {
+  const values = Object.entries(rows || {});
+  const total = values.reduce((sum, [, value]) => sum + Number(value || 0), 0);
+  let cursor = 0;
+  const colors = ["#55d6be", "#ffd166", "#4ea8de", "#f78c6b", "#a78bfa"];
+  const stops = values.map(([, value], index) => { const start = cursor; cursor += total ? Number(value || 0) / total * 100 : 0; return `${colors[index % colors.length]} ${start}% ${cursor}%`; }).join(", ");
+  return `<div class="cell-portal-donut-wrap"><div class="cell-portal-donut" style="background:conic-gradient(${stops || "#334155 0 100%"})"><strong>${total}</strong><span>Total</span></div><div class="cell-portal-legend">${values.map(([label, value], index) => `<div><i style="background:${colors[index % colors.length]}"></i><span>${escapeAttr(label)}</span><strong>${Number(value || 0)}</strong></div>`).join("")}</div></div>`;
+}
+
+function cellPortalSectionTitle(icon, title, subtitle = "") {
+  return `<div class="cell-portal-section-title"><div><span class="cell-portal-section-icon"><i class="bi ${icon}"></i></span><div><h3>${title}</h3>${subtitle ? `<p>${subtitle}</p>` : ""}</div></div></div>`;
+}
+
+function openCellPortalMemberProfile(memberId) {
+  const context = getCellLeaderContext(activeUser?.id, cellPortalPageState.cellId);
+  const member = context?.cell_id && canAccessCell(activeUser.id, context.cell_id) && hasCellPortalPermission("cell_portal.view_member_profile") ? getCellMembersProfile(context.cell_id, {}).find((item) => item.id === memberId) : null;
+  if (!member) {
+    recordCellReportSecurityEvent("cell_portal_member_profile_denied", `Member ${memberId} is outside authorized cell`, memberId);
+    return;
+  }
+  const spiritual = getCellMemberSpiritualProgress(member.id);
+  const finance = getCellMemberFinanceSummary(member.id);
+  const invited = getCellSoulWinningStats(context.cell_id, {}).ranking.find((item) => item.member_id === member.id)?.invited || 0;
+  const details = [
+    ["Nome", member.name], ["Telefone", member.phone], ["Igreja", context.church_name], ["Grupo", context.cell_group_name], ["Célula", context.cell_name], ["Estado", member.status],
+    ["Origem como First Timer", spiritual?.first_timer_origin || "-"], ["Escola de Fundação", spiritual?.foundation?.status || "Não inscrito"], ["Aulas concluídas", spiritual?.foundation?.completed_classes ?? 0], ["Exame final", spiritual?.foundation?.final_exam ?? "-"], ["Graduado", yesNo(spiritual?.foundation?.graduated)],
+    ["Baptizado", yesNo(spiritual?.sacraments?.baptized)], ["Casamento registado", yesNo((spiritual?.sacraments?.marriages || 0) > 0)], ["Dedicação de bebé", yesNo((spiritual?.sacraments?.baby_dedications || 0) > 0)], ["Acompanhamento pendente", yesNo(spiritual?.follow_up_pending)],
+    ["Dizimista", yesNo(finance.is_tither)], ["Parceiro", yesNo(finance.is_partner)], ["Ramos de parceria", finance.partnership_arms.join(", ") || "-"], ["Última contribuição", finance.last_contribution_month || (finance.visibility === "boolean_only" ? "Acesso agregado" : "-")], ["Pessoas convidadas", invited], ["Última presença", member.last_attendance || "-"], ["Observação simples", member.pastoral_observation || "-"]
+  ];
+  byId("modalEyebrow").textContent = "Perfil na Célula";
+  byId("modalTitle").textContent = member.name;
+  byId("modalFields").innerHTML = `<div class="col-12"><div class="detail-grid">${details.map(([label, value]) => `<div><span>${escapeAttr(label)}</span><strong>${escapeAttr(value)}</strong></div>`).join("")}</div></div><div class="col-12"><div class="alert alert-info mb-0"><i class="bi bi-shield-check me-2"></i>Este perfil exclui notas de aconselhamento, salários, documentos, comprovativos e valores financeiros detalhados.</div></div>`;
+  modalType = null;
+  byId("entryForm")?.querySelector('button[type="submit"]')?.classList.add("d-none");
+  bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
+}
+
+function exportCellPortalSummary() {
+  const context = getCellLeaderContext(activeUser?.id, cellPortalPageState.cellId);
+  if (!context?.cell_id || !hasCellPortalPermission("cell_portal.export_summary") || !canAccessCell(activeUser.id, context.cell_id)) {
+    recordCellReportSecurityEvent("cell_portal_export_denied", "Blocked Cell Portal summary export", context?.cell_id || "");
+    return;
+  }
+  const rows = [["Nome", "Estado", "Foundation School", "Baptizado", "Parceiro", "Dizimista", "Convidados"], ...getCellMembersProfile(context.cell_id, {}).map((member) => [member.name, member.status, member.foundation_status, member.baptized ? "Sim" : "Não", member.is_partner ? "Sim" : "Não", member.is_tither ? "Sim" : "Não", member.invited_count])];
+  const csv = rows.map((row) => row.map((value) => `"${String(value ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
+  const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `cell-portal-${context.cell_id}-summary.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
+  recordCellReportSecurityEvent("cell_portal_summary_exported", "Exported sanitized Cell Portal summary", context.cell_id);
+}
+
+function renderCellLeaderPortal() {
+  if (!isUserAuthenticated) {
+    showLoginView();
+    showLoginError(lang === "pt" ? "Inicie sessão para abrir o Portal do Líder de Célula." : "Sign in to open the Cell Leader Portal.");
+    return;
+  }
+  if (!hasCellPortalPermission("cell_portal.view")) return renderAccessDenied();
+  const authorizedCells = getAuthorizedCellsForUser(activeUser.id);
+  if (!authorizedCells.length) {
+    setPageContent(`<section class="panel glass-panel cell-portal-empty"><i class="bi bi-diagram-3"></i><h2>${lang === "pt" ? "Nenhuma célula está atribuída ao seu utilizador." : "No cell is assigned to your user."}</h2><p>${lang === "pt" ? "Contacte o Departamento de Células." : "Contact the Cell Ministry department."}</p></section>`);
+    recordCellReportSecurityEvent("cell_portal_no_assignment", "Authenticated user has no assigned cell");
+    return;
+  }
+  if (!cellPortalPageState.cellId || !canAccessCell(activeUser.id, cellPortalPageState.cellId)) cellPortalPageState.cellId = authorizedCells[0].id;
+  const context = getCellLeaderContext(activeUser.id, cellPortalPageState.cellId);
+  const stats = getCellDashboardStats(context.cell_id, cellPortalPageState);
+  if (!stats) return renderAccessDenied();
+  const members = stats.members;
+  const allMembers = getCellMembersProfile(context.cell_id, {});
+  const trends = getCellReportTrends(context.cell_id, cellPortalPageState);
+  const foundation = getCellFoundationProgress(context.cell_id);
+  const sacraments = getCellSacramentsSummary(context.cell_id);
+  const soul = getCellSoulWinningStats(context.cell_id, cellPortalPageState);
+  const programs = getCellProgramsUpcoming(context.cell_id, context.church_id, context.cell_group_id);
+  const alerts = getCellAlerts(context.cell_id, cellPortalPageState);
+  const partners = allMembers.filter((member) => getCellMemberFinanceSummary(member.id).is_partner).length;
+  const tithers = allMembers.filter((member) => getCellMemberFinanceSummary(member.id).is_tither).length;
+  const cell = stats.cell;
+  const leaders = [cell.primary_leader_name || cell.leader_name || cell.lider, ...(cell.assistant_leader_names || [])].filter(Boolean);
+  const activities = [
+    ...trends.reports.map((report) => ({ date: portalDateValue(report), type: "Reunião de célula", title: report.topic || report.lesson_shared || "Relatório semanal", responsible: report.submitted_by_name || report.leader_name || context.user_name, status: cellReportStatusLabel(report) })),
+    ...(state.fevo?.reports || []).filter((item) => item.cell_id === context.cell_id && portalInPeriod(item, cellPortalPageState)).map((item) => ({ date: portalDateValue(item), type: item.activity_type || "F.E.V.O", title: item.notes || item.activity_type || "Actividade", responsible: item.leader_name || "", status: item.status || item.estado || "" }))
+  ].sort((a, b) => Date.parse(b.date || 0) - Date.parse(a.date || 0)).slice(0, 10);
+  const canChooseCell = ["Cell Ministry Reviewer", "Cell Ministry Head", "Super Admin"].includes(activeUser.role) && authorizedCells.length > 1;
+  const memberStatuses = [...new Set(allMembers.map((member) => member.status).filter(Boolean))];
+  const foundationOptions = [...new Set(allMembers.map((member) => member.foundation_status).filter(Boolean))];
+  setPageContent(`<div class="cell-portal-shell">
+    <section class="cell-portal-hero"><div><span class="eyebrow">Portal do Líder de Célula</span><h2>${escapeAttr(context.cell_name)}</h2><p><i class="bi bi-building me-1"></i>${escapeAttr(context.church_name)} <span>•</span> ${escapeAttr(context.cell_group_name)}</p><div class="cell-portal-identity"><span>${escapeAttr(context.cell_role)}</span><strong>${escapeAttr(context.user_name)}</strong></div></div><div class="cell-portal-hero-actions">${canChooseCell ? `<label>Seleccionar célula<select class="form-select" data-cell-portal-cell>${authorizedCells.map((item) => `<option value="${escapeAttr(item.id)}" ${item.id === context.cell_id ? "selected" : ""}>${escapeAttr(portalCellName(item))}</option>`).join("")}</select></label>` : ""}<button type="button" class="btn btn-ce-gold btn-touch" data-public-cell-report><i class="bi bi-clipboard-plus me-2"></i>Submeter Relatório Semanal</button>${hasCellPortalPermission("cell_portal.export_summary") ? `<button type="button" class="btn btn-outline-light btn-touch" data-cell-portal-export><i class="bi bi-download me-2"></i>Exportar resumo</button>` : ""}</div></section>
+    <section class="panel glass-panel cell-portal-filters"><label>Período<select class="form-select" data-cell-portal-filter="period">${[["week","Esta semana"],["month","Este mês"],["quarter","Último trimestre"],["year","Este ano"],["custom","Personalizado"]].map(([value,label]) => `<option value="${value}" ${cellPortalPageState.period === value ? "selected" : ""}>${label}</option>`).join("")}</select></label>${cellPortalPageState.period === "custom" ? `<label>De<input type="date" class="form-control" data-cell-portal-filter="dateFrom" value="${escapeAttr(cellPortalPageState.dateFrom)}"></label><label>Até<input type="date" class="form-control" data-cell-portal-filter="dateTo" value="${escapeAttr(cellPortalPageState.dateTo)}"></label>` : ""}<label>Estado<select class="form-select" data-cell-portal-filter="memberStatus"><option value="">Todos</option>${memberStatuses.map((value) => `<option ${cellPortalPageState.memberStatus === value ? "selected" : ""}>${escapeAttr(value)}</option>`).join("")}</select></label><label>Fundação<select class="form-select" data-cell-portal-filter="foundationStatus"><option value="">Todos</option>${foundationOptions.map((value) => `<option ${cellPortalPageState.foundationStatus === value ? "selected" : ""}>${escapeAttr(value)}</option>`).join("")}</select></label><label>Sacramentos<select class="form-select" data-cell-portal-filter="sacramentStatus"><option value="">Todos</option><option value="baptized" ${cellPortalPageState.sacramentStatus === "baptized" ? "selected" : ""}>Baptizado</option><option value="not_baptized" ${cellPortalPageState.sacramentStatus === "not_baptized" ? "selected" : ""}>Não baptizado</option></select></label><label>Parceria<select class="form-select" data-cell-portal-filter="partnership"><option value="">Todos</option><option value="true" ${cellPortalPageState.partnership === "true" ? "selected" : ""}>Sim</option><option value="false" ${cellPortalPageState.partnership === "false" ? "selected" : ""}>Não</option></select></label><label>Dizimista<select class="form-select" data-cell-portal-filter="tithe"><option value="">Todos</option><option value="true" ${cellPortalPageState.tithe === "true" ? "selected" : ""}>Sim</option><option value="false" ${cellPortalPageState.tithe === "false" ? "selected" : ""}>Não</option></select></label><label>Convidou<select class="form-select" data-cell-portal-filter="invited"><option value="">Todos</option><option value="true" ${cellPortalPageState.invited === "true" ? "selected" : ""}>Sim</option><option value="false" ${cellPortalPageState.invited === "false" ? "selected" : ""}>Não</option></select></label></section>
+    <nav class="cell-portal-nav" aria-label="Secções do portal">${[["overview","Visão Geral"],["members","Membros"],["reports","Relatório"],["activities","Actividades"],["growth","Crescimento"],["finance","Parcerias & Dízimos"],["souls","Ganhar Almas"],["foundation","Fundação & Sacramentos"],["programs","Programas"],["history","Histórico"]].map(([id,label]) => `<button type="button" data-cell-portal-section="cell-portal-${id}">${label}</button>`).join("")}</nav>
+    <section id="cell-portal-overview" class="cell-portal-section">${cellPortalSectionTitle("bi-grid-1x2", "Visão Geral", "Indicadores seguros da célula autorizada")}<div class="cell-portal-kpis">${[["bi-people","Total de membros",stats.total_members],["bi-person-check","Membros activos",stats.active_members],["bi-person-plus","Novos este mês",stats.new_members_month],["bi-person-heart","Visitantes ligados",stats.visitors],["bi-clipboard-check","Relatórios este mês",stats.reports_month],["bi-activity","Estado actual",stats.current_report_status],["bi-clock-history","Último relatório",stats.latest_report ? String(portalDateValue(stats.latest_report)).slice(0,10) : "—"],["bi-calendar-week","Próxima submissão",stats.next_submission]].map(([icon,label,value]) => `<article><i class="bi ${icon}"></i><span>${label}</span><strong>${escapeAttr(value)}</strong></article>`).join("")}</div><div class="cell-portal-meta"><div><span>Igreja</span><strong>${escapeAttr(context.church_name)}</strong></div><div><span>Grupo</span><strong>${escapeAttr(context.cell_group_name)}</strong></div><div><span>Liderança</span><strong>${escapeAttr(leaders.join(", ") || context.user_name)}</strong></div><div><span>Escopo</span><strong>${context.authorized_cell_ids.length} célula(s)</strong></div></div></section>
+    <section class="cell-portal-section"><div class="cell-portal-alerts">${alerts.map((alert) => `<article class="is-${alert.tone}"><i class="bi bi-bell"></i><div><strong>${escapeAttr(alert.title)}</strong><p>${escapeAttr(alert.detail)}</p></div></article>`).join("") || `<article class="is-success"><i class="bi bi-check-circle"></i><div><strong>Sem alertas críticos</strong><p>Os principais indicadores estão actualizados.</p></div></article>`}</div></section>
+    <section id="cell-portal-members" class="cell-portal-section">${cellPortalSectionTitle("bi-people", "Membros da Célula", `${members.length} registo(s) conforme os filtros`)}<div class="panel glass-panel cell-portal-table-wrap"><table class="table cell-portal-table"><thead><tr><th>Nome</th><th>Telefone</th><th>Estado</th><th>Entrada</th><th>Fundação</th><th>Sacramentos</th><th>Parceiro</th><th>Dizimista</th><th>Convidados</th><th>Última presença</th><th></th></tr></thead><tbody>${members.map((member) => `<tr><td data-label="Nome"><strong>${escapeAttr(member.name)}</strong><small>${escapeAttr(member.pastoral_observation)}</small></td><td data-label="Telefone">${escapeAttr(member.phone)}</td><td data-label="Estado">${badge(member.status)}</td><td data-label="Entrada">${escapeAttr(member.joined_at || "—")}</td><td data-label="Fundação">${badge(member.foundation_status)}</td><td data-label="Sacramentos">${member.sacraments_count} · ${member.baptized ? "Baptizado" : "Não baptizado"}</td><td data-label="Parceiro">${yesNo(member.is_partner)}</td><td data-label="Dizimista">${yesNo(member.is_tither)}</td><td data-label="Convidados">${member.invited_count}</td><td data-label="Última presença">${escapeAttr(member.last_attendance || "—")}</td><td><button type="button" class="action-btn" data-cell-portal-member="${escapeAttr(member.id)}">Perfil na Célula</button></td></tr>`).join("") || `<tr><td colspan="11">Nenhum membro corresponde aos filtros.</td></tr>`}</tbody></table></div></section>
+    <section id="cell-portal-reports" class="cell-portal-section cell-portal-grid-2"><article class="panel glass-panel">${cellPortalSectionTitle("bi-clipboard-data", "Relatório Semanal", "Igreja, grupo e célula ficam bloqueados")}<p class="text-secondary">Submetido por <strong>${escapeAttr(context.user_name)}</strong> como ${escapeAttr(context.cell_role)}. A oferta permanece <strong>Pending Finance Review</strong> e não cria financeRecord.</p><button type="button" class="btn btn-ce-gold btn-touch" data-public-cell-report>Submeter Relatório Semanal</button></article><article class="panel glass-panel">${cellPortalSectionTitle("bi-clock-history", "Último relatório")}${stats.latest_report ? `<div class="detail-grid"><div><span>Data</span><strong>${escapeAttr(String(portalDateValue(stats.latest_report)).slice(0,10))}</strong></div><div><span>Estado</span><strong>${escapeAttr(stats.current_report_status)}</strong></div><div><span>Presentes</span><strong>${Number(stats.latest_report.attendance_count ?? stats.latest_report.att ?? 0)}</strong></div><div><span>Visitantes</span><strong>${Number(stats.latest_report.first_timers_count ?? stats.latest_report.ft ?? 0)}</strong></div></div>` : `<p class="text-secondary">Ainda não existe relatório submetido.</p>`}</article></section>
+    <section id="cell-portal-activities" class="cell-portal-section">${cellPortalSectionTitle("bi-calendar2-event", "Actividades", "Reuniões, evangelismo, visitação, oração e F.E.V.O")}<div class="cell-portal-activity-grid">${activities.map((item) => `<article><span>${escapeAttr(String(item.date || "").slice(0,10))}</span><h4>${escapeAttr(item.type)}</h4><p>${escapeAttr(item.title)}</p><div><small>${escapeAttr(item.responsible || "Por definir")}</small>${badge(item.status || "Planeado")}</div></article>`).join("") || `<p class="text-secondary">Sem actividades registadas neste período.</p>`}</div></section>
+    <section id="cell-portal-growth" class="cell-portal-section">${cellPortalSectionTitle("bi-graph-up-arrow", "Crescimento & Progresso", "Indicadores agregados e responsivos")}<div class="cell-portal-chart-grid"><article class="panel glass-panel"><h4>Presença semanal</h4>${cellPortalBars(trends.attendance)}</article><article class="panel glass-panel"><h4>Visitantes</h4>${cellPortalBars(trends.visitors)}</article><article class="panel glass-panel"><h4>Almas ganhas</h4>${cellPortalBars(trends.souls)}</article><article class="panel glass-panel"><h4>Foundation School</h4>${cellPortalDonut(foundation)}</article><article class="panel glass-panel"><h4>Sacramentos</h4>${cellPortalBars([["Baptizados",sacraments.baptized],["Não baptizados",sacraments.not_baptized],["Casamentos",sacraments.marriages],["Dedicações",sacraments.baby_dedications]])}</article><article class="panel glass-panel"><h4>Estado dos relatórios</h4>${cellPortalDonut(trends.statuses)}</article></div></section>
+    <section id="cell-portal-finance" class="cell-portal-section">${cellPortalSectionTitle("bi-shield-check", "Parcerias & Dízimos", "Apenas registos verificados; sem valores, comprovativos ou edição")}<div class="cell-portal-kpis cell-portal-kpis--compact">${[["bi-stars","Membros parceiros",partners],["bi-percent","Participação em parcerias",`${allMembers.length ? Math.round(partners/allMembers.length*100) : 0}%`],["bi-check2-circle","Dizimistas identificados",tithers],["bi-pie-chart","Participação em dízimos",`${allMembers.length ? Math.round(tithers/allMembers.length*100) : 0}%`]].map(([icon,label,value]) => `<article><i class="bi ${icon}"></i><span>${label}</span><strong>${value}</strong></article>`).join("")}</div><div class="alert alert-info mt-3 mb-0">Pending, Rejected e Expense não entram. O portal não edita Finance nem cria financeRecord.</div></section>
+    <section id="cell-portal-souls" class="cell-portal-section">${cellPortalSectionTitle("bi-person-hearts", "Ganhar Almas", "Conversão e ranking simples")}<div class="cell-portal-grid-2"><div class="cell-portal-kpis cell-portal-kpis--compact">${[["bi-person-plus","First Timers",soul.first_timers],["bi-telephone","Em acompanhamento",soul.follow_up],["bi-mortarboard","Enviados à Fundação",soul.foundation],["bi-person-check","Tornaram-se membros",soul.became_members]].map(([icon,label,value]) => `<article><i class="bi ${icon}"></i><span>${label}</span><strong>${value}</strong></article>`).join("")}</div><article class="panel glass-panel"><h4>Top inviters</h4>${soul.ranking.map((item,index) => `<div class="cell-portal-ranking"><span>${index+1}</span><strong>${escapeAttr(item.name)}</strong><b>${item.invited}</b></div>`).join("") || `<p class="text-secondary">Sem convites registados.</p>`}</article></div></section>
+    <section id="cell-portal-foundation" class="cell-portal-section cell-portal-grid-2"><article class="panel glass-panel">${cellPortalSectionTitle("bi-mortarboard", "Foundation School")}${cellPortalDonut(foundation)}</article><article class="panel glass-panel">${cellPortalSectionTitle("bi-droplet", "Sacramentos")}${cellPortalBars([["Baptizados",sacraments.baptized],["Não baptizados",sacraments.not_baptized],["Casamentos",sacraments.marriages],["Dedicações",sacraments.baby_dedications]])}</article></section>
+    <section id="cell-portal-programs" class="cell-portal-section">${cellPortalSectionTitle("bi-calendar-event", "Programas Futuros", "Programas da mesma igreja ou dirigidos ao grupo/célula")}<div class="cell-portal-programs">${programs.map((program) => `<article><div><span>${escapeAttr(program.date || "Data por confirmar")}</span>${badge(program.needs_mobilization ? "Mobilização" : "Informativo")}</div><h4>${escapeAttr(program.name)}</h4><p>${escapeAttr(program.location || "Local por confirmar")}</p><strong>${escapeAttr(program.cell_action)}</strong><footer>${program.needs_media ? "Media • " : ""}${program.needs_follow_up ? "Follow-up necessário" : "Acompanhamento normal"}</footer></article>`).join("") || `<p class="text-secondary">Não existem programas futuros relevantes registados.</p>`}</div></section>
+    <section id="cell-portal-history" class="cell-portal-section">${cellPortalSectionTitle("bi-clock-history", "Histórico", "Relatórios apenas da célula seleccionada")}<div class="panel glass-panel cell-portal-table-wrap"><table class="table cell-portal-table"><thead><tr><th>Data</th><th>Semana</th><th>Presentes</th><th>Visitantes</th><th>Almas</th><th>Estado</th></tr></thead><tbody>${trends.reports.map((report) => `<tr><td data-label="Data">${escapeAttr(String(portalDateValue(report)).slice(0,10))}</td><td data-label="Semana">${escapeAttr(report.report_week || report.semana || "—")}</td><td data-label="Presentes">${Number(report.attendance_count ?? report.att ?? 0)}</td><td data-label="Visitantes">${Number(report.first_timers_count ?? report.ft ?? 0)}</td><td data-label="Almas">${Number(report.souls_won_count ?? report.nc ?? report.rs ?? 0)}</td><td data-label="Estado">${badge(cellReportStatusLabel(report))}</td></tr>`).join("") || `<tr><td colspan="6">Sem histórico no período.</td></tr>`}</tbody></table></div></section>
+  </div>`);
+}
+
+window.renderCellLeaderPortal = renderCellLeaderPortal;
+window.openCellPortalMemberProfile = openCellPortalMemberProfile;
+
 function renderDashboard() {
+  if (["Cell Leader", "Cell Assistant"].includes(activeUser?.role)) {
+    renderCellLeaderPortal();
+    return;
+  }
   const firstTimers = scoped(getDashboardFirstTimersList());
   const finance = scoped(state.finance);
   const cells = scoped(state.cells);
@@ -14123,17 +14918,14 @@ function cellModalType(activeTab) {
 }
 
 function cellReportReviewActions(report) {
-  // Internal review actions for weekly cell report submissions (public form + admin).
-  // Always show core actions so staff can process public submissions without hunting.
-  const actions = [
-    ["view", report.id, L("view")],
-    ["approve", report.id, L("approve")],
-    ["correction", report.id, L("requestCorrection")],
-    ["validate", report.id, L("validated")],
-    ["reject", report.id, L("reject")]
-  ];
+  const actions = [["view", report.id, L("view")]];
+  if (hasCellReportPermission("cell_reports.review")) {
+    actions.push(["approve", report.id, L("approve")], ["correction", report.id, L("requestCorrection")]);
+  }
+  if (hasCellReportPermission("cell_reports.validate")) actions.push(["validate", report.id, L("validated")]);
+  if (hasCellReportPermission("cell_reports.reject")) actions.push(["reject", report.id, L("reject")]);
   // Finance: placeholder only — marks Pending Finance Review, no verified income.
-  if (report.offering_given || Number(report.oferta || report.offering_amount || 0) > 0) {
+  if (hasCellReportPermission("cell_reports.review") && (report.offering_given || Number(report.oferta || report.offering_amount || 0) > 0)) {
     actions.push(["finance", report.id, L("sendToFinance") || (lang === "pt" ? "Enviar para Finanças" : "Send to Finance")]);
   }
   // Follow-up / pastoral: soft placeholders that flag health + needs_review.
@@ -14154,7 +14946,10 @@ function cellReportReviewActions(report) {
 
 function cellReportSourceBadge(item) {
   const source = item.submitted_by_type || item.submetido_por || "";
-  const from = item.submitted_from || "";
+  const from = item.submission_source || item.submitted_from || "";
+  if (from === "cell_leader_portal" || item.auth_required === true) {
+    return badge(lang === "pt" ? "Portal autenticado" : "Authenticated portal");
+  }
   if (/public form|cell leader public/i.test(source) || from === "login_public_button") {
     return badge(lang === "pt" ? "Formulário público" : "Public form");
   }
@@ -14171,7 +14966,7 @@ function sortCellReportsNewestFirst(reports) {
 
 function isPublicCellFormReport(item) {
   const source = String(item?.submitted_by_type || item?.submetido_por || "");
-  const from = String(item?.submitted_from || "");
+  const from = String(item?.submission_source || item?.submitted_from || "");
   return /public form|cell leader public/i.test(source) || from === "login_public_button";
 }
 
@@ -14251,7 +15046,11 @@ function renderCellMinistry(activeTab = "alecOverview") {
   const alecRegistrations = scopedNested(leadership.alecRegistrations);
   const alecScores = scopedNested(leadership.alecScores);
   const churchReports = scopedNested(leadership.churchReports);
-  const cellReports = sortCellReportsNewestFirst(scopedNested(leadership.cellReports));
+  let cellReports = sortCellReportsNewestFirst(scopedNested(leadership.cellReports));
+  if (["Cell Leader", "Cell Assistant"].includes(activeUser?.role)) {
+    const authorizedIds = new Set(getAuthorizedCellsForUser(activeUser.id).map((cell) => cell.id));
+    cellReports = cellReports.filter((report) => authorizedIds.has(report.cell_id) || report.submitted_by_user_id === activeUser.id);
+  }
   const leaders = scopedNested(leadership.leaders);
   const evaluations = scopedNested(leadership.evaluations);
   const validations = scopedNested(leadership.validations);
@@ -16025,7 +16824,36 @@ function renderSettings() {
             <button type="button" class="btn btn-sm btn-outline-cyan" data-route="notifications">${lang === "pt" ? "Abrir centro de notificações" : "Open notification center"}</button>
             <button type="button" class="btn btn-sm btn-outline-cyan" data-route="audit">${L("auditLogs")}</button>
             <p class="text-secondary small mb-0">${lang === "pt" ? "Data layer: mock/local/api/supabase via VITE_DATA_SOURCE. Sem PostgreSQL directo no browser." : "Data layer: mock/local/api/supabase via VITE_DATA_SOURCE. No direct browser PostgreSQL."}</p>
-            <p class="text-secondary small mb-0">${settingsApi ? `provider: ${(settingsApi.getInfo && settingsApi.getInfo())?.source || "ready"}` : "bridge: pending"}</p>
+            <p class="text-secondary small mb-0">provider: ${(() => {
+              try {
+                const info = window.CEDataLayer?.getInfo?.() || window.CESupabase?.getInfo?.();
+                return info?.provider || info?.dataSource || "not loaded";
+              } catch (_error) {
+                return "not loaded";
+              }
+            })()}</p>
+            ${(() => {
+              const safeInfo = (api) => {
+                try {
+                  return api && typeof api.getInfo === "function" ? api.getInfo() : null;
+                } catch (_error) {
+                  return null;
+                }
+              };
+              const runtime = safeInfo(window.CEDataLayer) || safeInfo(window.CESupabase) || {};
+              const churchesRuntime = safeInfo(window.CEChurches) || {};
+              const membersRuntime = safeInfo(window.CEMembers) || {};
+              const source = runtime.dataSource || (window.__CE_ENV__ && window.__CE_ENV__.VITE_DATA_SOURCE) || "mock";
+              return `
+            <div class="border rounded p-2 mt-2 small bg-dark bg-opacity-25" id="runtimeProviderIndicator">
+              <div class="fw-semibold mb-1">${lang === "pt" ? "Estado real do runtime" : "Actual runtime status"}</div>
+              <div>Data source actual: <code>${String(source)}</code></div>
+              <div>Supabase runtime loaded: <code>${window.CESupabase && typeof window.CESupabase.getInfo === "function" ? "Yes" : "No"}</code></div>
+              <div>Supabase URL detected: <code>${runtime.hasSupabaseUrl ? "Yes" : "No"}</code> · anon key detected: <code>${runtime.hasSupabaseAnonKey ? "Yes" : "No"}</code></div>
+              <div>CEChurches provider: <code>${churchesRuntime.provider || (churchesRuntime.fallback ? "fallback" : "not loaded")}</code> · CEMembers provider: <code>${membersRuntime.provider || (membersRuntime.fallback ? "fallback" : "not loaded")}</code></div>
+              <div>Last runtime provider check: <code>${new Date().toISOString()}</code></div>
+            </div>`;
+            })()}
             ${(() => {
               try {
                 const src =
@@ -16034,6 +16862,13 @@ function renderSettings() {
                     : null) ||
                   (window.__CE_ENV__ && window.__CE_ENV__.VITE_DATA_SOURCE) ||
                   "mock";
+                const runtimeInfo =
+                  window.CEDataLayer && typeof window.CEDataLayer.getInfo === "function"
+                    ? window.CEDataLayer.getInfo()
+                    : window.CESupabase && typeof window.CESupabase.getInfo === "function"
+                      ? window.CESupabase.getInfo()
+                      : null;
+                const runtimeCheckedAt = new Date().toISOString();
                 const flags =
                   window.CESupabase && typeof window.CESupabase.getBackendFeatureFlags === "function"
                     ? window.CESupabase.getBackendFeatureFlags()
@@ -16108,17 +16943,17 @@ function renderSettings() {
                 const readiness = window.CESettings && typeof window.CESettings.getProductionReadiness === "function"
                   ? window.CESettings.getProductionReadiness()
                   : null;
-                const sbOn = !!(flags && flags.enableSupabase);
+                const sbOn = !!(runtimeInfo?.supabaseEnabled || (flags && flags.enableSupabase));
+                const runtimeConfigured = !!(runtimeInfo?.hasSupabaseUrl && runtimeInfo?.hasSupabaseAnonKey);
                 const storageOn = !!(flags && flags.enableStorage);
                 const readyLabel = (info) => {
-                  if (!info || !info.provider) return "—";
+                  if (!info || !info.provider) return "not reported";
                   if (String(info.provider).includes("supabase")) return "Supabase-ready";
                   return String(info.provider);
                 };
                 return `
             <div class="border rounded p-2 mt-2 small bg-dark bg-opacity-25" id="dataSourceIndicator">
-              <div class="fw-semibold mb-1">${lang === "pt" ? "Data Source (dev)" : "Data Source (dev)"}</div>
-              <div>source: <code>${String(src)}</code></div>
+              <div class="fw-semibold mb-1">${lang === "pt" ? "Providers por módulo" : "Providers by module"}</div>
               <div>supabase flag: <code>${sbOn ? "true" : "false"}</code>${sbInfo && sbInfo.status ? ` · status: <code>${sbInfo.status}</code>` : ""}</div>
               <div>storage: <code>${storageOn ? "enabled" : "disabled"}</code></div>
               <div>churches: <code>${readyLabel(chInfo)}</code></div>
@@ -16145,15 +16980,10 @@ function renderSettings() {
               <div>audit logs: <code>Supabase-ready</code> / sensitive hardened</div>
               <div>pilot-ready modules: <code>${readiness?.modules_pilot_ready_count || 19}</code></div>
               <div>last health check: <code>${readiness?.last_health_check || "not run"}</code></div>
-              <div>Supabase configured: <code>${readiness?.supabase_configured ? "Yes" : "No / not configured"}</code> Â· Storage enabled: <code>${readiness?.storage_enabled ? "Yes" : "No"}</code></div>
+              <div>Supabase configured: <code>${runtimeConfigured ? "Yes" : "No / not configured"}</code> Â· Storage enabled: <code>${storageOn ? "Yes" : "No"}</code></div>
               <div>Auth mode: <code>${readiness?.auth_mode || "Demo"}</code> Â· API mode: <code>${readiness?.api_mode || "Disabled"}</code></div>
               <div>Migrations prepared: <code>${readiness ? `${readiness.migrations_prepared || 12}/${readiness.migrations_expected || 12}` : "12/12"}</code></div>
               <div class="mt-1">Production Readiness: RLS <code>Planned / Dev-safe / Production pending</code> Â· Storage buckets <code>Planned / Production pending</code> Â· Audit hardening <code>Ready</code> Â· Notifications <code>In-app ready</code></div>
-              <div class="mt-2 fw-semibold">Staging Dry Run</div>
-              <div>Staging env template: <code>Ready</code> · Supabase live env detected: <code>${readiness?.staging_dry_run?.live_env_detected ? "Yes" : "No"}</code></div>
-              <div>Live schema check: <code>${readiness?.staging_dry_run?.live_schema_check || "Not run"}</code> · Storage bucket checklist: <code>Documented</code></div>
-              <div>Manual QA checklist: <code>Ready</code> · Rollback checklist: <code>Ready</code> · Last dry run report: <code>Not recorded</code></div>
-              <div>Current git milestone: <code>backend-phase-14-supabase-staging-dry-run-v1</code></div>
               <div>Backups: <code>Not configured</code> warning Â· Java Spring Boot: <code>Future plan documented</code> Â· Deployment: <code>Pending</code></div>
               <div>service role exposed: <code>false</code> Â· direct PostgreSQL from browser: <code>false</code></div>
               <div>others: <code>local/mock</code></div>
@@ -16166,10 +16996,8 @@ function renderSettings() {
             ${(() => {
               let liveDetected = false;
               try {
-                const info = window.CESupabase && typeof window.CESupabase.getSupabaseInfo === "function"
-                  ? window.CESupabase.getSupabaseInfo()
-                  : null;
-                liveDetected = !!(info && (info.isConfigured || info.configured));
+                const info = window.CEDataLayer?.getInfo?.() || window.CESupabase?.getInfo?.() || null;
+                liveDetected = !!(info && info.hasSupabaseUrl && info.hasSupabaseAnonKey);
               } catch (_) {
                 liveDetected = false;
               }
@@ -16177,7 +17005,7 @@ function renderSettings() {
             <div class="border rounded p-2 mt-2 small bg-dark bg-opacity-25" id="stagingDryRunReadiness">
               <div class="fw-semibold mb-1">Staging Dry Run</div>
               <div>Staging env template: <code>Ready</code> · Supabase live env detected: <code>${liveDetected ? "Yes" : "No"}</code></div>
-              <div>Live schema check: <code>Not run</code> · Storage bucket checklist: <code>Documented</code></div>
+              <div>Live schema check: <code>Not recorded in browser</code> · Storage bucket checklist: <code>Documented</code></div>
               <div>Manual QA checklist: <code>Ready</code> · Rollback checklist: <code>Ready</code></div>
               <div>Last dry run report: <code>Not recorded</code></div>
               <div>Current git milestone: <code>backend-phase-14-supabase-staging-dry-run-v1</code></div>
@@ -19076,6 +19904,11 @@ function enrollFirstTimer(id) {
 document.addEventListener("click", async (event) => {
   const langButton = event.target.closest("[data-lang]");
   if (langButton) return applyLanguage(langButton.dataset.lang);
+  const portalSection = event.target.closest("[data-cell-portal-section]");
+  if (portalSection) return scrollContentTo(portalSection.dataset.cellPortalSection);
+  const portalMember = event.target.closest("[data-cell-portal-member]");
+  if (portalMember) return openCellPortalMemberProfile(portalMember.dataset.cellPortalMember);
+  if (event.target.closest("[data-cell-portal-export]")) return exportCellPortalSummary();
   const groupToggle = event.target.closest(".nav-group-toggle");
   if (groupToggle) {
     const key = groupToggle.closest(".nav-group")?.dataset.navGroup;
@@ -19150,6 +19983,8 @@ document.addEventListener("click", async (event) => {
   }
   const logoutButton = event.target.closest("#logoutBtn");
   if (logoutButton) {
+    isUserAuthenticated = false;
+    pendingCellReportLogin = false;
     byId("appView")?.classList.add("d-none");
     byId("loginView")?.classList.remove("d-none");
     updateBackToTopVisibility();
@@ -19867,7 +20702,22 @@ byId("entryModal")?.addEventListener("shown.bs.modal", () => {
   mountMediaScheduleFormControls(byId("entryForm"));
 });
 
+byId("entryModal")?.addEventListener("hidden.bs.modal", () => {
+  byId("entryForm")?.querySelector('button[type="submit"]')?.classList.remove("d-none");
+});
+
 document.addEventListener("change", (event) => {
+  if (event.target.matches("[data-cell-portal-cell]")) {
+    const requestedCell = event.target.value || "";
+    if (canAccessCell(activeUser?.id, requestedCell)) cellPortalPageState.cellId = requestedCell;
+    renderCellLeaderPortal();
+    return;
+  }
+  if (event.target.matches("[data-cell-portal-filter]")) {
+    cellPortalPageState[event.target.dataset.cellPortalFilter] = event.target.value || "";
+    renderCellLeaderPortal();
+    return;
+  }
   if (modalType === "mediaSchedule" && event.target.closest("#entryForm") && ["date", "service_name"].includes(event.target.name)) {
     syncMediaScheduleCameraSlots(byId("entryForm"));
   }
@@ -19961,9 +20811,27 @@ function showLoginError(message) {
 }
 
 function resolveAuthApi() {
-  if (window.CEAuth && typeof window.CEAuth.login === "function") return window.CEAuth;
-  if (window.CESupabase && typeof window.CESupabase.login === "function") return window.CESupabase;
-  if (window.CESupabase?.auth && typeof window.CESupabase.auth.login === "function") return window.CESupabase.auth;
+  const candidates = [window.CEAuth, window.CESupabase?.auth, window.CESupabase];
+  for (const candidate of candidates) {
+    if (!candidate || typeof candidate.login !== "function") continue;
+    // Supabase data may be active for operational modules while authentication
+    // deliberately stays in demo mode. In that case use the dashboard's seeded
+    // users instead of routing the demo login through the live users provider.
+    if (typeof candidate.getAuthInfo === "function") {
+      try {
+        if (candidate.getAuthInfo()?.mode === "demo") continue;
+      } catch (_error) {
+        // Older compatible auth bridges may not expose a complete diagnostic.
+      }
+    } else if (typeof candidate.isRealAuthEnabled === "function") {
+      try {
+        if (!candidate.isRealAuthEnabled()) continue;
+      } catch (_error) {
+        // Fall through to the legacy bridge when its feature probe is unavailable.
+      }
+    }
+    return candidate;
+  }
   return null;
 }
 
@@ -19987,7 +20855,9 @@ function applyAuthModeBadge() {
       badgeWrap.innerHTML =
         '<span class="badge text-bg-warning text-dark">Auth flags on</span> <span class="small text-white-50">config incomplete</span>';
     } else {
-      badgeWrap.innerHTML = '<span class="badge text-bg-secondary" data-i18n="login.demoMode">Demo Mode</span>';
+      badgeWrap.innerHTML =
+        `<span class="badge text-bg-secondary" data-i18n="login.demoMode">Demo Mode</span> ` +
+        `<span class="small text-white-50">${lang === "en" ? "Password:" : "Senha:"} <strong>demo</strong></span>`;
     }
   }
   if (forgot) {
@@ -20026,13 +20896,37 @@ function mapAccountToDashboardUser(account) {
 }
 
 function continueEnterDashboard() {
+  isUserAuthenticated = true;
+  recordCellReportSecurityEvent("cell_report_login", `Authenticated login as ${activeUser?.role || "unknown role"}`);
+  const resumeCellReport = pendingCellReportLogin;
+  pendingCellReportLogin = false;
+  const allowedPortalRoles = ["Cell Leader", "Cell Assistant", "Cell Ministry Reviewer", "Cell Ministry Head", "Super Admin"];
+  if (resumeCellReport && !allowedPortalRoles.includes(activeUser?.role)) {
+    isUserAuthenticated = false;
+    byId("appView")?.classList.add("d-none");
+    byId("loginView")?.classList.remove("d-none");
+    showLoginError(lang === "pt" ? "Apenas líderes ou assistentes de célula autorizados podem submeter relatórios." : "Only authorized cell leaders or assistants can submit cell reports.");
+    recordCellReportSecurityEvent("cell_report_access_denied", "Authenticated role is not allowed in the Cell Leader Portal");
+    return;
+  }
   byId("loginView")?.classList.add("d-none");
   byId("appView")?.classList.remove("d-none");
   renderShell();
   syncTopbarHeight();
   applyBackToTopLabel();
   const requestedRoute = location.hash.replace("#", "");
-  setRoute(isPublicCellReportRoute(requestedRoute) || requestedRoute === "login" ? "dashboard" : requestedRoute || "dashboard");
+  const isCellPortalMember = ["Cell Leader", "Cell Assistant"].includes(activeUser?.role);
+  if (isCellPortalMember) {
+    // Always land leaders and assistants on their independent dashboard first.
+    // The authorized weekly-report action remains available inside that portal.
+    setRoute("cellPortal");
+  } else if (resumeCellReport && hasCellReportPermission("cell_reports.create_own")) {
+    history.replaceState(null, "", "#cell-report-submit");
+    void showPublicCellReport();
+  } else {
+    const reviewerRoute = resumeCellReport && ["Cell Ministry Reviewer", "Cell Ministry Head"].includes(activeUser?.role) ? "cellReceivedReports" : "";
+    setRoute(reviewerRoute || (isPublicCellReportRoute(requestedRoute) || requestedRoute === "login" ? "dashboard" : requestedRoute || "dashboard"));
+  }
   updateBackToTopVisibility();
   // Data-layer pilots: sync churches + members + first timers without blocking UI paint
   Promise.resolve()
@@ -21582,10 +22476,16 @@ async function enterDashboard() {
             lang === "en"
               ? "User account not provisioned. Ask an admin to link your Auth user."
               : "Conta de utilizador não provisionada. Peça a um admin para ligar o utilizador Auth.";
+        } else if (code === "AUTH_DEMO_BAD_PASSWORD") {
+          msg =
+            lang === "en"
+              ? "Incorrect demo password. Use: demo"
+              : "Senha demo incorrecta. Use: demo";
         }
-        // If real auth was not intended and demo path failed hard, fall back to legacy email match
+        // Only recover from an unavailable legacy adapter. Invalid demo credentials
+        // must never be converted into an authenticated session.
         const wantReal = !!(auth.isRealAuthEnabled && auth.isRealAuthEnabled());
-        if (!wantReal && code !== "AUTH_LOCKED") {
+        if (!wantReal && ["AUTH_ERROR", "AUTH_TIMEOUT"].includes(code)) {
           const matchedUser = state.users.find(
             (user) => String(user.email || "").trim().toLowerCase() === email,
           );
@@ -21615,7 +22515,15 @@ async function enterDashboard() {
     const matchedUser = state.users.find(
       (user) => String(user.email || "").trim().toLowerCase() === email,
     );
-    if (matchedUser) activeUser = matchedUser;
+    if (!matchedUser) {
+      showLoginError(lang === "en" ? "Demo user not found." : "Utilizador demo não encontrado.");
+      return false;
+    }
+    if (password.trim() !== "demo") {
+      showLoginError(lang === "en" ? "Incorrect demo password. Use: demo" : "Senha demo incorrecta. Use: demo");
+      return false;
+    }
+    activeUser = matchedUser;
     continueEnterDashboard();
     runOptionalSupabaseLoginSync(email, password);
     return true;
@@ -21690,11 +22598,16 @@ try {
 
 document.addEventListener("click", (event) => {
   if (event.target.closest("[data-public-cell-report]")) {
-    history.replaceState(null, "", "#cell-report-submit");
-    showPublicCellReport();
+    requestAuthenticatedCellReport();
+    return;
+  }
+  if (event.target.closest("[data-back-cell-portal]")) {
+    returnFromCellReportToDashboard();
     return;
   }
   if (event.target.closest("[data-back-login]")) {
+    isUserAuthenticated = false;
+    pendingCellReportLogin = false;
     showLoginView();
     return;
   }
@@ -21758,7 +22671,7 @@ window.addEventListener("resize", syncTopbarHeight);
 window.addEventListener("hashchange", () => {
   const route = location.hash.replace("#", "").replace(/^\//, "");
   if (isPublicCellReportRoute(route)) {
-    showPublicCellReport();
+    requestAuthenticatedCellReport();
     return;
   }
   if (route === "login") {
@@ -21797,6 +22710,6 @@ applyLanguage(lang);
 applySidebarCollapse();
 applyBackToTopLabel();
 updateBackToTopVisibility();
-if (isPublicCellReportRoute(location.hash.replace("#", ""))) showPublicCellReport();
+if (isPublicCellReportRoute(location.hash.replace("#", ""))) requestAuthenticatedCellReport();
 
 const ServiceTimesEditor = renderChurchServiceTimesEditor;

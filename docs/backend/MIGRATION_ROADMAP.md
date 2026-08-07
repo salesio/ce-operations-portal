@@ -184,3 +184,6 @@ F.E.V.O, Prison Ministry and Ministry Materials remain local/mock in this phase.
 - [x] Future Spring Boot decision and Kanban workflow documented
 - [x] Settings readiness summary expanded
 - [ ] Apply and validate the plans in a real staging project under change approval
+# Authenticated cell-report security preparation
+
+The progressive model now carries user/staff leader assignments, primary/assistant user IDs on cells, authenticated submitter metadata, `authorized_cell_id`, `auth_required`, and `submission_source`. These fields are prepared in the TypeScript entities/seeds and repository normalizers without applying a live migration automatically. A future reviewed migration/RLS policy must enforce the same ownership checks server-side before real Supabase writes.

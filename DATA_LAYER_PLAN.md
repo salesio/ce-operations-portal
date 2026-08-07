@@ -492,26 +492,26 @@ npm run dev
 - “Send offering to Finance” = **placeholder only** (`finance_review_status = Pending Finance Review`) — no verified finance receipt
 - Cell Group / Cell dependent selects unchanged for other modules
 
-### Public Cell Report Form
+### Authenticated Cell Report Form
 
-Public weekly report form for **cell leaders** (no admin login).
+Authenticated weekly report form for assigned **cell leaders and assistants**.
 
 **Phase rules (non-negotiable) — §24:**
-- Cell leader does **not** enter the staff dashboard
+- Cell leader enters a restricted report portal, not the full staff dashboard
 - Entry button stays on the **login** screen only
-- Form is **public / controlled** (frontend-first; no staff auth this phase)
+- Form requires login and assignment authorization by default
 - Uses the **existing data layer** (`cellReportsRepository` / `createCellReport` + dual-write)
 - **Group and cell** are selectable and **dependent** (cells filter by group + church)
 - Report lands in the **existing** tab: Células & Liderança → Relatórios de Células → Submissões Semanais
 - Offering does **not** become verified finance income automatically (`Pending Finance Review` only)
 - Real Finance = **future phase**
-- Backend security (RLS, public insert, token/link per cell) = **future Supabase phase**
+- Backend RLS must mirror the active frontend ownership guard before live writes
 - Keep UX **simple and mobile-friendly**
 
 | Item | Detail |
 |------|--------|
 | Entry | Login screen button **Submeter Relatório de Célula** → hash `#cell-report-submit` (aliases: `#submit-cell-report`, `#cell-report`) |
-| Auth | **None** this phase — leaders do not get staff accounts |
+| Auth | Required by default; demo leader/assistant/reviewer accounts are seeded without real passwords |
 | UI | 7-step mobile-first form on navy shell + premium light card |
 | Data sources | Churches / groups / cells / leaders from `CEDataLayer` / `CECellMinistry` / existing `state` |
 | Write path | `cellReportsRepository.createCellReport` (+ dual-write into `state.cellLeadership.cellReports` + `state.cellReportSubmissions` + localStorage) |
@@ -522,8 +522,9 @@ Public weekly report form for **cell leaders** (no admin login).
 | Field | Value |
 |-------|--------|
 | `status` | `Submitted` or `Pending Review` (duplicate / manual cell / missing offer ref / health flags) |
-| `submitted_by_type` | `Cell Leader Public Form` |
-| `submitted_from` | `login_public_button` |
+| `submitted_by_type` | `Authenticated Cell Leader` |
+| `submission_source` | `cell_leader_portal` |
+| `auth_required` | `true` |
 | `needs_review` | `true` when manual cell, duplicate, pastoral/follow-up health, or missing payment ref with offering |
 | `possible_duplicate` | same week + group + cell already submitted |
 | `finance_review_status` | `Pending Finance Review` if offering; else `Not Applicable` |
@@ -1720,3 +1721,6 @@ No operational repository is added or rerouted. Readiness scripts validate the f
 - Uses the existing anon Supabase client only when an intentional staging env is supplied.
 - Live connection and minimum-table checks skip safely by default and become mandatory only with `REQUIRE_SUPABASE_LIVE=true`.
 - SQL, seeds, buckets and RLS activation remain human-confirmed actions.
+# Authenticated Cell Report Security Update
+
+The former anonymous-first Cell Report Form is now authenticated by default. `VITE_ENABLE_PUBLIC_CELL_REPORT=false`; the legacy form is demo/dev-only. Submissions use `submission_source=cell_leader_portal`, authenticated actor metadata, and an assignment-based `authorized_cell_id`. Repository bridges remain compatible and offerings continue as `Pending Finance Review` without automatic finance posting.

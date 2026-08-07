@@ -1,5 +1,29 @@
 import type { AccessPermission } from "../types/entities";
 
+export const CELL_REPORT_PERMISSION_CODES = [
+  "cell_reports.view_own",
+  "cell_reports.create_own",
+  "cell_reports.edit_own_until_validated",
+  "cell_reports.view_church",
+  "cell_reports.review",
+  "cell_reports.validate",
+  "cell_reports.reject",
+  "cell_reports.export",
+] as const;
+
+export const CELL_PORTAL_PERMISSION_CODES = [
+  "cell_portal.view",
+  "cell_portal.view_members",
+  "cell_portal.view_member_profile",
+  "cell_portal.submit_report",
+  "cell_portal.view_finance_summary",
+  "cell_portal.view_partnership_summary",
+  "cell_portal.view_soul_winning",
+  "cell_portal.view_programs",
+  "cell_portal.view_charts",
+  "cell_portal.export_summary",
+] as const;
+
 function p(
   id: string,
   role_id: string,
@@ -60,5 +84,29 @@ export const PERMISSIONS_SEED: AccessPermission[] = [
   }),
   p("perm-viewer-fin", "role-viewer", "Viewer", "finance", {
     can_view: true, can_export: false, scope: "all", is_sensitive: true,
+  }),
+  p("perm-cell-leader-own", "role-cell-leader", "Cell Leader", "cell_reports", {
+    can_view: true, can_create: true, can_edit: true, scope: "own",
+  }),
+  p("perm-cell-assistant-own", "role-cell-assistant", "Cell Assistant", "cell_reports", {
+    can_view: true, can_create: true, can_edit: true, scope: "own",
+  }),
+  p("perm-cell-reviewer-church", "role-cell-reviewer", "Cell Ministry Reviewer", "cell_reports", {
+    can_view: true, can_edit: true, can_approve: true, can_verify: true, can_export: true, scope: "church", is_sensitive: true,
+  }),
+  p("perm-cell-head-all", "role-cell-head", "Cell Ministry Head", "cell_reports", {
+    can_view: true, can_edit: true, can_approve: true, can_verify: true, can_export: true, scope: "all", is_sensitive: true,
+  }),
+  p("perm-cell-portal-leader", "role-cell-leader", "Cell Leader", "cell_portal", {
+    can_view: true, can_create: true, can_edit: false, can_export: false, scope: "own",
+  }),
+  p("perm-cell-portal-assistant", "role-cell-assistant", "Cell Assistant", "cell_portal", {
+    can_view: true, can_create: true, can_edit: false, can_export: false, scope: "own",
+  }),
+  p("perm-cell-portal-reviewer", "role-cell-reviewer", "Cell Ministry Reviewer", "cell_portal", {
+    can_view: true, can_create: false, can_edit: false, can_export: true, scope: "church",
+  }),
+  p("perm-cell-portal-head", "role-cell-head", "Cell Ministry Head", "cell_portal", {
+    can_view: true, can_create: true, can_edit: false, can_export: true, scope: "all",
   }),
 ];

@@ -42,6 +42,9 @@ export const CELL_LEADERS_SEED: CellLeader[] = [
   })),
   ...CELLS_SEED.map((cell, index) => ({
     id: cell.leader_id || `cl-${cell.id}`,
+    user_id: index === 0 ? "u-7" : null,
+    staff_id: index === 0 ? "staff-8" : null,
+    role_type: "Leader" as const,
     full_name: cell.leader_name || `Líder ${index + 1}`,
     nome_completo: cell.leader_name || `Líder ${index + 1}`,
     title: cell.leader_title || "Irmã",

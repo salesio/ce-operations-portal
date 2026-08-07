@@ -248,7 +248,8 @@ export function getChurchesDataSourceInfo() {
   const api = useApiChurches();
   return {
     source: getDataSource(),
-    provider: sb ? "supabase-churches-adapter" : api ? "api-churches-adapter" : provider.name,
+    provider: sb ? "supabase" : api ? "api" : provider.name,
+    adapter: sb ? "supabase-churches-adapter" : api ? "api-churches-adapter" : provider.name,
     ready: sb ? getSupabaseEnvConfig().isConfigured : api ? false : provider.isReady(),
     description: sb
       ? "Churches pilot via Supabase public.churches"
