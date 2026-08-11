@@ -3308,6 +3308,7 @@ const seedData = {
     { id: "u-21", name: "Media Supervisor Demo", email: "media.supervisor@ce-mozambique.org", role: "Media Supervisor", church_id: "church-hq", department_permissions: ["media"], assigned_department: "Mídia", can_view_all_churches: true },
     { id: "u-22", name: "Técnico A", email: "media.member@ce-mozambique.org", role: "Media Team Member", church_id: "church-hq", department_permissions: ["mediaTeam"], assigned_department: "Mídia", assigned_staff_name: "Técnico A", can_view_all_churches: false },
     { id: "u-23", name: "Head de Aconselhamento", email: "counseling.head@ce-mozambique.org", role: "Counseling Head", church_id: "church-hq", department_permissions: ["counseling", "followUp", "firstTimers", "reports"], can_view_all_churches: true },
+    { id: "u-24", name: "Reitor Pastoral", email: "reitor@ce-mozambique.org", role: "Reitor", church_id: "church-hq", department_permissions: ["firstTimers", "followUp", "counseling", "reports", "notifications"], can_view_all_churches: true, demo_password_hint: "demo" },
     { id: "u-24", name: "Professor Joao Mazive", email: "foundation.teacher@ce-mozambique.org", role: "Foundation Teacher", church_id: "church-hq", department_permissions: ["foundation_teacher"], assigned_foundation_teacher_id: "ftch-1", can_view_all_churches: false },
     { id: "u-25", name: "Assistente da Escola de Fundacao", email: "foundation.assistant@ce-mozambique.org", role: "Foundation Assistant", church_id: "church-hq", department_permissions: ["foundation_assistant"], assigned_foundation_teacher_id: "ftch-3", can_view_all_churches: false },
     { id: "u-foundation-rector", name: "Pastor Coordenador", email: "foundation.rector@ce-mozambique.org", role: "Foundation Rector", church_id: "church-hq", department_permissions: ["foundation_rector", "foundation"], assigned_foundation_teacher_id: "ftch-rector", can_view_all_churches: true },
@@ -6823,7 +6824,8 @@ function venueReportName(report) {
 }
 
 function fullName(record) {
-  return cleanDisplayText(`${record.tratamento ? `${record.tratamento} ` : ""}${record.nome || ""} ${record.apelido || ""}`.trim());
+  const parts = `${record.tratamento ? `${record.tratamento} ` : ""}${record.nome || ""} ${record.apelido || ""}`.trim();
+  return cleanDisplayText(parts || record.full_name || record.fullName || record.name || "");
 }
 
 function migrateChurchRecord(church) {
@@ -9016,6 +9018,7 @@ function fallbackCanViewModule(user = activeUser, module = "dashboard") {
   if (role === "HR Manager") return ["staffHr", "reports"].includes(module);
   if (role === "Requisition Officer") return ["requisitions", "reports", "venueInventory"].includes(module);
   if (role === "Counseling Head") return ["counseling", "followUp", "firstTimers", "reports", "notifications"].includes(module);
+  if (role === "Reitor" || role === "Rector") return ["firstTimers", "followUp", "counseling", "reports", "notifications"].includes(module);
   if (role === "Counselor") return ["counseling", "followUp", "notifications"].includes(module);
   if (role === "Follow-Up Coordinator") return ["followUp", "firstTimers", "counseling", "reports", "notifications"].includes(module);
   if (role === "Foundation Teacher" || role === "Foundation Assistant") return ["foundation", "notifications"].includes(module);
@@ -9641,6 +9644,7 @@ function applyFirstTimerCardFilters(list, filters = {}) {
   const cellFilter = filters.cell_id || filters.cellId;
   const groupFilter = filters.cell_group_id || filters.cellGroupId;
   const statusFilter = filters.followup || filters.status || filters.estado_do_seguimento;
+  const workflowFilter = filters.workflow_status || filters.workflow;
   const query = String(filters.q || filters.search || filters.query || "").trim().toLowerCase();
 
   if (churchFilter) {
@@ -9655,6 +9659,7 @@ function applyFirstTimerCardFilters(list, filters = {}) {
   if (statusFilter) {
     rows = rows.filter((p) => statusKey(p.estado_do_seguimento || p.follow_up_status || p.status) === statusKey(statusFilter));
   }
+  if (workflowFilter) rows = rows.filter((p) => p.workflow_status === workflowFilter);
   if (filters.quer_escola_de_fundacao || filters.wants_foundation_school) {
     rows = rows.filter((p) => p.quer_escola_de_fundacao || p.wants_foundation_school || p.wantsFoundationSchool);
   }
@@ -9669,7 +9674,7 @@ function applyFirstTimerCardFilters(list, filters = {}) {
   }
   if (query) {
     rows = rows.filter((p) =>
-      [p.nome, p.apelido, p.telefone, p.whatsapp, p.email, p.culto, p.endereco, p.celula, p.celula_preferida, p.conselheiro_responsavel, p.estado_do_seguimento]
+      [p.full_name, p.fullName, p.nome, p.apelido, p.telefone, p.whatsapp, p.email, p.culto, p.endereco, p.celula, p.celula_preferida, p.conselheiro_responsavel, p.estado_do_seguimento]
         .some((value) => String(value || "").toLowerCase().includes(query))
     );
   }
@@ -9888,6 +9893,7 @@ function canDashboardSee(moduleKey) {
   if (role === "HR Manager") return ["staffHr", "reports"].includes(moduleKey);
   if (role === "Requisition Officer") return ["requisitions", "reports"].includes(moduleKey);
   if (role === "Counseling Head") return ["counseling", "followUp", "firstTimers", "reports", "notifications"].includes(moduleKey);
+  if (role === "Reitor" || role === "Rector") return ["firstTimers", "followUp", "counseling", "reports", "notifications"].includes(moduleKey);
   if (role === "Counselor") return ["counseling", "followUp", "notifications"].includes(moduleKey);
   if (role === "Follow-Up Coordinator") return ["followUp", "firstTimers", "counseling", "reports", "notifications"].includes(moduleKey);
   if (role === "Media Director" || role === "Media Supervisor") return ["media", "reports", "venueInventory", "programs", "notifications"].includes(moduleKey);
@@ -10313,7 +10319,7 @@ function firstTimerActions(id) {
   const workflow = row.workflow_status || "DRAFT";
   const actions = [["view", "firstTimer", id, L("view")], ["edit", "firstTimer", id, L("edit")]];
   if (["DRAFT", "READY_FOR_REVIEW", "NEEDS_CORRECTION"].includes(workflow)) actions.push(["submitIntake", "firstTimer", id, "Submeter ao Reitor"]);
-  if (workflow === "SUBMITTED_TO_RECTOR") actions.push(["approveIntake", "firstTimer", id, "Aprovar"]);
+  if (workflow === "SUBMITTED_TO_RECTOR") actions.push(["approveIntake", "firstTimer", id, "Aprovar"], ["returnIntake", "firstTimer", id, "Devolver"], ["rejectIntake", "firstTimer", id, "Rejeitar"]);
   if (workflow === "RECTOR_APPROVED") actions.push(["handoffFollowup", "firstTimer", id, "Encaminhar Follow-Up"]);
   if (workflow === "SENT_TO_FOLLOWUP") actions.push(["receiveFollowup", "firstTimer", id, "Confirmar recepção"]);
   if (workflow === "FOLLOWUP_RECEIVED") actions.push(["createExplicitFollowup", "firstTimer", id, "Criar Follow-Up"]);
@@ -10322,6 +10328,19 @@ function firstTimerActions(id) {
 
 function firstTimerWorkflowLabel(status) {
   return ({ DRAFT: "Rascunho", READY_FOR_REVIEW: "Pronto para revisão", SUBMITTED_TO_RECTOR: "Submetido ao Reitor", NEEDS_CORRECTION: "Precisa de correcção", RECTOR_APPROVED: "Aprovado pelo Reitor", RECTOR_REJECTED: "Rejeitado pelo Reitor", SENT_TO_FOLLOWUP: "Enviado para Follow-Up", FOLLOWUP_RECEIVED: "Recebido por Follow-Up", FOLLOWUP_IN_PROGRESS: "Follow-Up em curso", COMPLETED: "Concluído", ARCHIVED: "Arquivado" }[status] || status || "Rascunho");
+}
+
+function canReviewFirstTimerIntake() {
+  return /super\s*admin|reitor|rector/i.test(String(activeUser?.role || ""));
+}
+
+function renderFirstTimerRectorPanel(list) {
+  if (!canReviewFirstTimerIntake()) return "";
+  const reviewRows = list.filter((person) => ["READY_FOR_REVIEW", "SUBMITTED_TO_RECTOR"].includes(person.workflow_status));
+  return `<article class="panel glass-panel mb-4" id="first-timer-rector-review"><div class="panel-head"><div><h3 class="panel-title"><i class="bi bi-person-check me-2 text-warning"></i>Painel do Reitor</h3><p class="text-secondary mb-0">Registos prontos ou submetidos para revisão pastoral.</p></div><span class="badge bg-warning text-dark">${reviewRows.length} pendente(s)</span></div>${reviewRows.length ? dataTable(["Nº", "Nome", "Igreja", "Estado", "Decisão"], reviewRows.map((person) => [person.first_timer_number || "—", fullName(person), churchName(person.church_id), badge(firstTimerWorkflowLabel(person.workflow_status)), actionButtons([
+    ...(person.workflow_status === "READY_FOR_REVIEW" ? [["submitIntake", "firstTimer", person.id, "Receber para aprovação"]] : []),
+    ...(person.workflow_status === "SUBMITTED_TO_RECTOR" ? [["approveIntake", "firstTimer", person.id, "Aprovar"], ["returnIntake", "firstTimer", person.id, "Devolver"], ["rejectIntake", "firstTimer", person.id, "Rejeitar"]] : [])
+  ])])) : `<p class="text-secondary mb-0">Não há registos a aguardar decisão do Reitor.</p>`}</article>`;
 }
 
 const FIRST_TIMER_IMPORT_HEADERS = ["full_name", "phone", "date_of_birth", "neighborhood", "profession", "invited_by_name", "born_again", "foundation_school_interest", "cell_interest", "next_service_interest", "church_id"];
@@ -10410,6 +10429,7 @@ function renderFirstTimers() {
       ${sm("bi-send-check", "Em Follow-Up", list.filter((p) => ["SENT_TO_FOLLOWUP", "FOLLOWUP_RECEIVED", "FOLLOWUP_IN_PROGRESS"].includes(p.workflow_status)).length, "firstTimers", { filterPayload: {} })}
     </div>
     ${summaryFilterChips("firstTimers")}
+    ${renderFirstTimerRectorPanel(list)}
     <article class="panel glass-panel">
       <div class="d-flex gap-2 flex-wrap mb-3"><button class="btn btn-outline-cyan" type="button" data-first-timer-csv-template>Baixar Modelo Excel</button><label class="btn btn-outline-light mb-0">Importar Excel<input type="file" accept=".csv,.tsv,text/csv" data-first-timer-import hidden></label><span class="small text-secondary align-self-center">Importação CSV compatível com Excel; pré-visualização antes de gravar.</span></div>
       ${filterBar({ viewToggle: ViewToggle(view), statusOptions: followupStatuses })}
@@ -14241,6 +14261,10 @@ function getFirstTimersRepoSafe() {
 
 function migrateFirstTimerRecord(person) {
   if (!person) return person;
+  const suppliedFullName = String(person.full_name || person.fullName || "").trim();
+  const nameParts = suppliedFullName.split(/\s+/).filter(Boolean);
+  const normalizedFirstName = person.nome || person.first_name || nameParts.shift() || "";
+  const normalizedLastName = person.apelido || person.last_name || nameParts.join(" ");
   const churchId = person.church_id || person.churchId || "";
   const churchLabel = person.church_name || person.igreja || churchName(churchId) || "";
   const asBool = (value) => value === true || value === "on" || value === "true" || value === 1 || value === "1";
@@ -14251,8 +14275,12 @@ function migrateFirstTimerRecord(person) {
     ...person,
     id: person.id,
     tratamento: person.tratamento || person.title || "",
-    nome: person.nome || person.first_name || "",
-    apelido: person.apelido || person.last_name || "",
+    nome: normalizedFirstName,
+    first_name: person.first_name || normalizedFirstName,
+    apelido: normalizedLastName,
+    last_name: person.last_name || normalizedLastName,
+    full_name: suppliedFullName || `${normalizedFirstName} ${normalizedLastName}`.trim(),
+    fullName: suppliedFullName || `${normalizedFirstName} ${normalizedLastName}`.trim(),
     genero: person.genero || person.gender || "",
     data_de_nascimento: person.data_de_nascimento || person.date_of_birth || person.dateOfBirth || "",
     telefone: person.telefone || person.phone || "",
@@ -18923,6 +18951,7 @@ async function submitForm(form) {
         return;
       }
       state.firstTimers.push(migrateFirstTimerRecord(repoResult?.data || created));
+      firstTimersPageState.filter = {};
       saveState(`Created first timer ${fullName(created)}`);
     }
     bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide();
@@ -19577,20 +19606,21 @@ function quickAction(action, type, id) {
     alert(L("noPermissionArea"));
     return;
   }
-  if (type === "firstTimer" && ["submitIntake", "approveIntake", "handoffFollowup", "receiveFollowup", "createExplicitFollowup"].includes(action)) {
+  if (type === "firstTimer" && ["submitIntake", "approveIntake", "returnIntake", "rejectIntake", "handoffFollowup", "receiveFollowup", "createExplicitFollowup"].includes(action)) {
     const record = (state.firstTimers || []).find((item) => item.id === id);
     if (!record) return;
-    const nextStatus = { submitIntake: "SUBMITTED_TO_RECTOR", approveIntake: "RECTOR_APPROVED", handoffFollowup: "SENT_TO_FOLLOWUP", receiveFollowup: "FOLLOWUP_RECEIVED", createExplicitFollowup: "FOLLOWUP_IN_PROGRESS" }[action];
+    const nextStatus = { submitIntake: "SUBMITTED_TO_RECTOR", approveIntake: "RECTOR_APPROVED", returnIntake: "NEEDS_CORRECTION", rejectIntake: "RECTOR_REJECTED", handoffFollowup: "SENT_TO_FOLLOWUP", receiveFollowup: "FOLLOWUP_RECEIVED", createExplicitFollowup: "FOLLOWUP_IN_PROGRESS" }[action];
     if (action === "createExplicitFollowup" && record.workflow_status !== "FOLLOWUP_RECEIVED") {
       alert("O Follow-Up deve confirmar recepção antes da criação explícita do caso.");
       return;
     }
     const now = new Date().toISOString();
+    const reviewNotes = ["returnIntake", "rejectIntake"].includes(action) ? (prompt("Indique o motivo para a decisão do Reitor:", record.rector_review_notes || "") || "") : record.rector_review_notes || "";
     Object.assign(record, {
       workflow_status: nextStatus,
       updated_at: now,
       ...(action === "submitIntake" ? { submitted_at: now, submitted_by_user_id: activeUser.id } : {}),
-      ...(action === "approveIntake" ? { rector_reviewed_at: now, rector_reviewed_by_user_id: activeUser.id } : {}),
+      ...(["approveIntake", "returnIntake", "rejectIntake"].includes(action) ? { rector_reviewed_at: now, rector_reviewed_by_user_id: activeUser.id, rector_review_notes: reviewNotes } : {}),
       ...(action === "handoffFollowup" ? { handoff_at: now, handoff_to_user_id: "" } : {})
     });
     void persistFirstTimerViaRepository("update", record);

@@ -22,6 +22,9 @@ check(!/cell_group_id.*cellRegistrySelect/.test(dashboard.slice(dashboard.indexO
 check(/Submeter ao Reitor/.test(dashboard) && /Encaminhar Follow-Up/.test(dashboard), "explicit workflow actions present");
 check(/Importar Excel/.test(dashboard) && /Baixar Modelo Excel/.test(dashboard), "Excel-compatible import/template controls present");
 check(/duplicate/.test(dashboard) && /workflow_status/.test(dashboard), "duplicate guard and workflow status present");
+check(/renderFirstTimerRectorPanel/.test(dashboard) && /Painel do Reitor/.test(dashboard), "Rector review panel is available");
+check(/full_name: suppliedFullName/.test(dashboard) && /record\.full_name/.test(dashboard), "full name is retained for list rendering");
+check(/firstTimersPageState\.filter = \{\}/.test(dashboard), "new intake clears stale table filters");
 
 const adapter = text("src/data/adapters/supabase/firstTimersSupabaseAdapter.ts");
 check(/first_timer_number/.test(adapter) && /invited_by_member_id/.test(adapter), "Supabase adapter maps intake fields");

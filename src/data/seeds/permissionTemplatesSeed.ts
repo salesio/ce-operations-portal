@@ -64,6 +64,23 @@ export const PERMISSION_TEMPLATES_SEED: PermissionTemplate[] = [
     updated_at: "2026-07-10",
   },
   {
+    id: "tpl-rector-pastoral-care",
+    name: "Rector Pastoral Care Template",
+    description: "Revisão pastoral de Primeira Vez, acompanhamento e relatórios completos de aconselhamento.",
+    role_level: "Manager",
+    is_system_template: true,
+    permissions: [
+      full("dashboard", "all"),
+      full("firstTimers", "all"),
+      full("followUp", "all"),
+      full("counseling", "all"),
+      full("reports", "all"),
+      view("churches", "all"),
+    ],
+    created_at: "2026-08-11",
+    updated_at: "2026-08-11",
+  },
+  {
     id: "tpl-hr-manager",
     name: "HR Manager Template",
     description: "Staff & RH com salários",
