@@ -3309,6 +3309,7 @@ const seedData = {
     { id: "u-22", name: "Técnico A", email: "media.member@ce-mozambique.org", role: "Media Team Member", church_id: "church-hq", department_permissions: ["mediaTeam"], assigned_department: "Mídia", assigned_staff_name: "Técnico A", can_view_all_churches: false },
     { id: "u-23", name: "Head de Aconselhamento", email: "counseling.head@ce-mozambique.org", role: "Counseling Head", church_id: "church-hq", department_permissions: ["counseling", "followUp", "firstTimers", "reports"], can_view_all_churches: true },
     { id: "u-26", name: "Reitor Pastoral", email: "reitor@ce-mozambique.org", role: "Reitor", church_id: "church-hq", department_permissions: ["firstTimers", "followUp", "counseling", "reports", "notifications"], can_view_all_churches: true, demo_password_hint: "demo" },
+    { id: "u-27", name: "Responsável de Acompanhamento", email: "acompanhamento@ce-mozambique.org", role: "Follow-Up Coordinator", church_id: "church-hq", department_permissions: ["firstTimers", "followUp"], can_view_all_churches: true, demo_password_hint: "demo" },
     { id: "u-24", name: "Professor Joao Mazive", email: "foundation.teacher@ce-mozambique.org", role: "Foundation Teacher", church_id: "church-hq", department_permissions: ["foundation_teacher"], assigned_foundation_teacher_id: "ftch-1", can_view_all_churches: false },
     { id: "u-25", name: "Assistente da Escola de Fundacao", email: "foundation.assistant@ce-mozambique.org", role: "Foundation Assistant", church_id: "church-hq", department_permissions: ["foundation_assistant"], assigned_foundation_teacher_id: "ftch-3", can_view_all_churches: false },
     { id: "u-foundation-rector", name: "Pastor Coordenador", email: "foundation.rector@ce-mozambique.org", role: "Foundation Rector", church_id: "church-hq", department_permissions: ["foundation_rector", "foundation"], assigned_foundation_teacher_id: "ftch-rector", can_view_all_churches: true },
@@ -9018,9 +9019,9 @@ function fallbackCanViewModule(user = activeUser, module = "dashboard") {
   if (role === "HR Manager") return ["staffHr", "reports"].includes(module);
   if (role === "Requisition Officer") return ["requisitions", "reports", "venueInventory"].includes(module);
   if (role === "Counseling Head") return ["counseling", "followUp", "firstTimers", "reports", "notifications"].includes(module);
-  if (role === "Reitor" || role === "Rector") return ["firstTimers", "followUp", "counseling", "reports", "notifications"].includes(module);
+  if (role === "Reitor" || role === "Rector") return ["firstTimers", "followUp", "foundation", "sacraments", "counseling", "notifications"].includes(module);
   if (role === "Counselor") return ["counseling", "followUp", "notifications"].includes(module);
-  if (role === "Follow-Up Coordinator") return ["followUp", "firstTimers", "counseling", "reports", "notifications"].includes(module);
+  if (role === "Follow-Up Coordinator") return ["followUp", "firstTimers"].includes(module);
   if (role === "Foundation Teacher" || role === "Foundation Assistant") return ["foundation", "notifications"].includes(module);
   if (role === "Media Director" || role === "Media Supervisor") return ["media", "reports", "venueInventory", "programs", "notifications"].includes(module);
   if (role === "Media Team Member") return ["media", "notifications"].includes(module);
@@ -9040,6 +9041,22 @@ function fallbackCanViewModule(user = activeUser, module = "dashboard") {
     media: ["media", "mediaTeam"]
   };
   return (legacyModuleKeys[module] || [module]).some((key) => grants.includes(key));
+}
+
+function roleWorkspaceRoutes(user = activeUser) {
+  const role = String(user?.role || "");
+  if (role === "Reitor" || role === "Rector") return ["firstTimers", "followUp", "foundation", "sacraments", "counseling"];
+  if (role === "Follow-Up Coordinator") return ["firstTimers", "followUp"];
+  return null;
+}
+
+function isRouteInRoleWorkspace(route, user = activeUser) {
+  const allowedRoutes = roleWorkspaceRoutes(user);
+  return !allowedRoutes || allowedRoutes.includes(route);
+}
+
+function roleWorkspaceDefaultRoute(user = activeUser) {
+  return roleWorkspaceRoutes(user)?.[0] || "dashboard";
 }
 
 function fallbackRouteAccess(route) {
@@ -9066,6 +9083,7 @@ function canAccessNavRoute(route) {
 }
 
 function canEnterRoute(route) {
+  if (!isRouteInRoleWorkspace(route)) return false;
   const nav = resolveRouteAccess(route);
   return nav.access?.can_view && !nav.locked;
 }
@@ -9202,11 +9220,12 @@ function renderShell() {
     return;
   }
   byId("sidebarNav").innerHTML = NAV_GROUPS.map((group) => {
+    const workspaceRoutes = roleWorkspaceRoutes();
     const items = group.items.map(([route, icon, label]) => ({ route, icon: sidebarIcon(icon, route), label, nav: resolveRouteAccess(route) }))
-      .filter((item) => item.nav.visible && (item.route !== "venueInventory" || canViewVenueModule()));
+      .filter((item) => (!workspaceRoutes || workspaceRoutes.includes(item.route)) && item.nav.visible && (item.route !== "venueInventory" || canViewVenueModule()));
     if (!items.length && group.key !== "departments") return "";
     const expanded = isSidebarGroupExpanded(group.key);
-    const cellNav = group.key === "departments" ? renderCellSidebarNav() : "";
+    const cellNav = group.key === "departments" && !workspaceRoutes ? renderCellSidebarNav() : "";
     const navItems = items.map(({ route, icon, label, nav }) => `
       <button type="button" class="nav-item-btn ${nav.locked ? "is-locked" : ""}" ${nav.locked ? `data-locked-route="${route}" aria-disabled="true"` : `data-route="${route}" onclick="window.setRoute && window.setRoute('${route}'); return false;"`} title="${nav.locked ? L("navLockedTooltip") : L(label)}">
         <i class="bi ${sidebarIcon(icon, route)}"></i><span>${L(label)}</span>${nav.locked ? `<i class="bi bi-lock-fill nav-lock-icon" aria-hidden="true"></i>` : ""}
@@ -9893,9 +9912,9 @@ function canDashboardSee(moduleKey) {
   if (role === "HR Manager") return ["staffHr", "reports"].includes(moduleKey);
   if (role === "Requisition Officer") return ["requisitions", "reports"].includes(moduleKey);
   if (role === "Counseling Head") return ["counseling", "followUp", "firstTimers", "reports", "notifications"].includes(moduleKey);
-  if (role === "Reitor" || role === "Rector") return ["firstTimers", "followUp", "counseling", "reports", "notifications"].includes(moduleKey);
+  if (role === "Reitor" || role === "Rector") return ["firstTimers", "followUp", "foundation", "sacraments", "counseling"].includes(moduleKey);
   if (role === "Counselor") return ["counseling", "followUp", "notifications"].includes(moduleKey);
-  if (role === "Follow-Up Coordinator") return ["followUp", "firstTimers", "counseling", "reports", "notifications"].includes(moduleKey);
+  if (role === "Follow-Up Coordinator") return ["followUp", "firstTimers"].includes(moduleKey);
   if (role === "Media Director" || role === "Media Supervisor") return ["media", "reports", "venueInventory", "programs", "notifications"].includes(moduleKey);
   if (role === "Media Team Member") return ["media", "notifications"].includes(moduleKey);
   if (role === "Department Head") return ["requisitions", "reports", "staffHr", "cellMinistryOverview", "venueInventory"].includes(moduleKey);
@@ -10337,10 +10356,30 @@ function canReviewFirstTimerIntake() {
 function renderFirstTimerRectorPanel(list) {
   if (!canReviewFirstTimerIntake()) return "";
   const reviewRows = list.filter((person) => ["READY_FOR_REVIEW", "SUBMITTED_TO_RECTOR"].includes(person.workflow_status));
-  return `<article class="panel glass-panel mb-4" id="first-timer-rector-review"><div class="panel-head"><div><h3 class="panel-title"><i class="bi bi-person-check me-2 text-warning"></i>Painel do Reitor</h3><p class="text-secondary mb-0">Registos prontos ou submetidos para revisão pastoral.</p></div><span class="badge bg-warning text-dark">${reviewRows.length} pendente(s)</span></div>${reviewRows.length ? dataTable(["Nº", "Nome", "Igreja", "Estado", "Decisão"], reviewRows.map((person) => [person.first_timer_number || "—", fullName(person), churchName(person.church_id), badge(firstTimerWorkflowLabel(person.workflow_status)), actionButtons([
-    ...(person.workflow_status === "READY_FOR_REVIEW" ? [["receiveForRectorReview", "firstTimer", person.id, "Receber para aprovação"]] : []),
+  const submittedRows = reviewRows.filter((person) => person.workflow_status === "SUBMITTED_TO_RECTOR");
+  const bulkActions = submittedRows.length ? `<div class="d-flex gap-2 flex-wrap mt-2 justify-content-end"><button type="button" class="btn btn-sm btn-success" data-first-timer-bulk="approve">Aprovar todos (${submittedRows.length})</button><button type="button" class="btn btn-sm btn-outline-warning" data-first-timer-bulk="return">Devolver todos (${submittedRows.length})</button><button type="button" class="btn btn-sm btn-outline-danger" data-first-timer-bulk="reject">Rejeitar todos (${submittedRows.length})</button></div>` : "";
+  return `<article class="panel glass-panel mb-4" id="first-timer-rector-review"><div class="panel-head"><div><h3 class="panel-title"><i class="bi bi-person-check me-2 text-warning"></i>Painel do Reitor</h3><p class="text-secondary mb-0">Registos prontos ou submetidos para revisão pastoral.</p></div><div class="text-end"><span class="badge bg-warning text-dark">${reviewRows.length} pendente(s)</span>${bulkActions}</div></div>${reviewRows.length ? dataTable(["Nº", "Nome", "Igreja", "Estado", "Decisão"], reviewRows.map((person) => [person.first_timer_number || "—", fullName(person), churchName(person.church_id), badge(firstTimerWorkflowLabel(person.workflow_status)), actionButtons([
+    ...(person.workflow_status === "READY_FOR_REVIEW" ? [["receiveForRectorReview", "firstTimer", person.id, "Lançar para Aprovação"]] : []),
     ...(person.workflow_status === "SUBMITTED_TO_RECTOR" ? [["approveIntake", "firstTimer", person.id, "Aprovar"], ["returnIntake", "firstTimer", person.id, "Devolver"], ["rejectIntake", "firstTimer", person.id, "Rejeitar"]] : [])
   ])])) : `<p class="text-secondary mb-0">Não há registos a aguardar decisão do Reitor.</p>`}</article>`;
+}
+
+function processFirstTimerBulkReview(decision) {
+  if (!canReviewFirstTimerIntake()) return;
+  const submitted = (state.firstTimers || []).filter((person) => person.workflow_status === "SUBMITTED_TO_RECTOR");
+  if (!submitted.length) return alert("Não há registos submetidos para decisão.");
+  const labels = { approve: "aprovar", return: "devolver", reject: "rejeitar" };
+  if (!confirm(`Confirma ${labels[decision]} todos os ${submitted.length} registo(s) submetidos?`)) return;
+  const now = new Date().toISOString();
+  const reviewNotes = ["return", "reject"].includes(decision) ? (prompt("Indique o motivo que será registado em todos os casos:", "") || "") : "";
+  const nextStatus = { approve: "RECTOR_APPROVED", return: "NEEDS_CORRECTION", reject: "RECTOR_REJECTED" }[decision];
+  submitted.forEach((record) => Object.assign(record, { workflow_status: nextStatus, updated_at: now, rector_reviewed_at: now, rector_reviewed_by_user_id: activeUser?.id || null, rector_review_notes: reviewNotes || record.rector_review_notes || "" }));
+  try { saveState(`Rector bulk ${labels[decision]}: ${submitted.length} First Timer(s)`); } catch (error) { console.warn("[CE FirstTimers] bulk local save failed", error); }
+  void Promise.all(submitted.map((record) => persistFirstTimerViaRepository("update", record))).then((results) => {
+    const failed = results.filter((result) => result?.ok === false);
+    if (failed.length) console.warn("[CE FirstTimers] bulk workflow sync pending", failed);
+  });
+  setRoute("firstTimers");
 }
 
 const FIRST_TIMER_IMPORT_HEADERS = ["full_name", "phone", "date_of_birth", "neighborhood", "profession", "invited_by_name", "born_again", "foundation_school_interest", "cell_interest", "next_service_interest", "church_id"];
@@ -20653,6 +20692,8 @@ document.addEventListener("click", async (event) => {
   if (openButton) return openForm(openButton.dataset.openForm);
   const applyFilterButton = event.target.closest("[data-filter-apply]");
   if (applyFilterButton && applyFilterToolbar(applyFilterButton.dataset.filterApply, applyFilterButton)) return;
+  const firstTimerBulkButton = event.target.closest("[data-first-timer-bulk]");
+  if (firstTimerBulkButton) return processFirstTimerBulkReview(firstTimerBulkButton.dataset.firstTimerBulk);
   const actionButton = event.target.closest("[data-action]");
   if (actionButton) return quickAction(actionButton.dataset.action, actionButton.dataset.type, actionButton.dataset.id);
   const enrollButton = event.target.closest("[data-enroll]");
@@ -21098,7 +21139,9 @@ function continueEnterDashboard() {
     void showPublicCellReport();
   } else {
     const reviewerRoute = resumeCellReport && ["Cell Ministry Reviewer", "Cell Ministry Head"].includes(activeUser?.role) ? "cellReceivedReports" : "";
-    setRoute(reviewerRoute || (isPublicCellReportRoute(requestedRoute) || requestedRoute === "login" ? "dashboard" : requestedRoute || "dashboard"));
+    const workspaceDefault = roleWorkspaceDefaultRoute(activeUser);
+    const requestedWorkspaceRoute = isRouteInRoleWorkspace(requestedRoute) ? requestedRoute : "";
+    setRoute(reviewerRoute || (isPublicCellReportRoute(requestedRoute) || requestedRoute === "login" ? workspaceDefault : requestedWorkspaceRoute || workspaceDefault));
   }
   updateBackToTopVisibility();
   // Data-layer pilots: sync churches + members + first timers without blocking UI paint

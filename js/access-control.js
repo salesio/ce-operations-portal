@@ -194,11 +194,18 @@
     },
     "Follow-Up Coordinator": {
       modules: {
-        dashboard: { ...VIEW_ONLY, scope: "all" },
         followUp: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "all" },
-        counseling: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "all", can_create_follow_up_from_counseling: true },
-        firstTimers: { ...VIEW_ONLY, scope: "all" },
-        reports: { ...VIEW_ONLY, scope: "all", can_export: true }
+        firstTimers: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "all" }
+      }
+    },
+    "Reitor": {
+      modules: {
+        firstTimers: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: true, can_verify: false, can_export: true, scope: "all" },
+        followUp: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "all" },
+        foundation: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: true, can_verify: false, can_export: true, scope: "all" },
+        sacraments: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: true, can_verify: false, can_export: true, scope: "all" },
+        counseling: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: true, can_verify: true, can_export: true, scope: "all", can_view_sensitive_counseling_notes: true },
+        notifications: { ...VIEW_ONLY, scope: "all" }
       }
     },
     "Finance Head": {
