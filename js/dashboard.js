@@ -3308,7 +3308,7 @@ const seedData = {
     { id: "u-21", name: "Media Supervisor Demo", email: "media.supervisor@ce-mozambique.org", role: "Media Supervisor", church_id: "church-hq", department_permissions: ["media"], assigned_department: "Mídia", can_view_all_churches: true },
     { id: "u-22", name: "Técnico A", email: "media.member@ce-mozambique.org", role: "Media Team Member", church_id: "church-hq", department_permissions: ["mediaTeam"], assigned_department: "Mídia", assigned_staff_name: "Técnico A", can_view_all_churches: false },
     { id: "u-23", name: "Head de Aconselhamento", email: "counseling.head@ce-mozambique.org", role: "Counseling Head", church_id: "church-hq", department_permissions: ["counseling", "followUp", "firstTimers", "reports"], can_view_all_churches: true },
-    { id: "u-24", name: "Reitor Pastoral", email: "reitor@ce-mozambique.org", role: "Reitor", church_id: "church-hq", department_permissions: ["firstTimers", "followUp", "counseling", "reports", "notifications"], can_view_all_churches: true, demo_password_hint: "demo" },
+    { id: "u-26", name: "Reitor Pastoral", email: "reitor@ce-mozambique.org", role: "Reitor", church_id: "church-hq", department_permissions: ["firstTimers", "followUp", "counseling", "reports", "notifications"], can_view_all_churches: true, demo_password_hint: "demo" },
     { id: "u-24", name: "Professor Joao Mazive", email: "foundation.teacher@ce-mozambique.org", role: "Foundation Teacher", church_id: "church-hq", department_permissions: ["foundation_teacher"], assigned_foundation_teacher_id: "ftch-1", can_view_all_churches: false },
     { id: "u-25", name: "Assistente da Escola de Fundacao", email: "foundation.assistant@ce-mozambique.org", role: "Foundation Assistant", church_id: "church-hq", department_permissions: ["foundation_assistant"], assigned_foundation_teacher_id: "ftch-3", can_view_all_churches: false },
     { id: "u-foundation-rector", name: "Pastor Coordenador", email: "foundation.rector@ce-mozambique.org", role: "Foundation Rector", church_id: "church-hq", department_permissions: ["foundation_rector", "foundation"], assigned_foundation_teacher_id: "ftch-rector", can_view_all_churches: true },
@@ -10338,7 +10338,7 @@ function renderFirstTimerRectorPanel(list) {
   if (!canReviewFirstTimerIntake()) return "";
   const reviewRows = list.filter((person) => ["READY_FOR_REVIEW", "SUBMITTED_TO_RECTOR"].includes(person.workflow_status));
   return `<article class="panel glass-panel mb-4" id="first-timer-rector-review"><div class="panel-head"><div><h3 class="panel-title"><i class="bi bi-person-check me-2 text-warning"></i>Painel do Reitor</h3><p class="text-secondary mb-0">Registos prontos ou submetidos para revisão pastoral.</p></div><span class="badge bg-warning text-dark">${reviewRows.length} pendente(s)</span></div>${reviewRows.length ? dataTable(["Nº", "Nome", "Igreja", "Estado", "Decisão"], reviewRows.map((person) => [person.first_timer_number || "—", fullName(person), churchName(person.church_id), badge(firstTimerWorkflowLabel(person.workflow_status)), actionButtons([
-    ...(person.workflow_status === "READY_FOR_REVIEW" ? [["submitIntake", "firstTimer", person.id, "Receber para aprovação"]] : []),
+    ...(person.workflow_status === "READY_FOR_REVIEW" ? [["receiveForRectorReview", "firstTimer", person.id, "Receber para aprovação"]] : []),
     ...(person.workflow_status === "SUBMITTED_TO_RECTOR" ? [["approveIntake", "firstTimer", person.id, "Aprovar"], ["returnIntake", "firstTimer", person.id, "Devolver"], ["rejectIntake", "firstTimer", person.id, "Rejeitar"]] : [])
   ])])) : `<p class="text-secondary mb-0">Não há registos a aguardar decisão do Reitor.</p>`}</article>`;
 }
@@ -19606,10 +19606,10 @@ function quickAction(action, type, id) {
     alert(L("noPermissionArea"));
     return;
   }
-  if (type === "firstTimer" && ["submitIntake", "approveIntake", "returnIntake", "rejectIntake", "handoffFollowup", "receiveFollowup", "createExplicitFollowup"].includes(action)) {
+  if (type === "firstTimer" && ["submitIntake", "receiveForRectorReview", "approveIntake", "returnIntake", "rejectIntake", "handoffFollowup", "receiveFollowup", "createExplicitFollowup"].includes(action)) {
     const record = (state.firstTimers || []).find((item) => item.id === id);
     if (!record) return;
-    const nextStatus = { submitIntake: "SUBMITTED_TO_RECTOR", approveIntake: "RECTOR_APPROVED", returnIntake: "NEEDS_CORRECTION", rejectIntake: "RECTOR_REJECTED", handoffFollowup: "SENT_TO_FOLLOWUP", receiveFollowup: "FOLLOWUP_RECEIVED", createExplicitFollowup: "FOLLOWUP_IN_PROGRESS" }[action];
+    const nextStatus = { submitIntake: "SUBMITTED_TO_RECTOR", receiveForRectorReview: "SUBMITTED_TO_RECTOR", approveIntake: "RECTOR_APPROVED", returnIntake: "NEEDS_CORRECTION", rejectIntake: "RECTOR_REJECTED", handoffFollowup: "SENT_TO_FOLLOWUP", receiveFollowup: "FOLLOWUP_RECEIVED", createExplicitFollowup: "FOLLOWUP_IN_PROGRESS" }[action];
     if (action === "createExplicitFollowup" && record.workflow_status !== "FOLLOWUP_RECEIVED") {
       alert("O Follow-Up deve confirmar recepção antes da criação explícita do caso.");
       return;
@@ -19619,12 +19619,21 @@ function quickAction(action, type, id) {
     Object.assign(record, {
       workflow_status: nextStatus,
       updated_at: now,
-      ...(action === "submitIntake" ? { submitted_at: now, submitted_by_user_id: activeUser.id } : {}),
-      ...(["approveIntake", "returnIntake", "rejectIntake"].includes(action) ? { rector_reviewed_at: now, rector_reviewed_by_user_id: activeUser.id, rector_review_notes: reviewNotes } : {}),
+      ...(action === "submitIntake" ? { submitted_at: now, submitted_by_user_id: activeUser?.id || null } : {}),
+      ...(action === "receiveForRectorReview" ? { submitted_at: now, received_for_rector_review_at: now, received_for_rector_review_by_user_id: activeUser?.id || null } : {}),
+      ...(["approveIntake", "returnIntake", "rejectIntake"].includes(action) ? { rector_reviewed_at: now, rector_reviewed_by_user_id: activeUser?.id || null, rector_review_notes: reviewNotes } : {}),
       ...(action === "handoffFollowup" ? { handoff_at: now, handoff_to_user_id: "" } : {})
     });
-    void persistFirstTimerViaRepository("update", record);
-    saveState(`First Timer workflow: ${firstTimerWorkflowLabel(nextStatus)}`);
+    // The Rector's inbox action is intentionally independent from the submitter notification.
+    // This keeps the page responsive even if a live notification write is unavailable.
+    void persistFirstTimerViaRepository("update", record).then((result) => {
+      if (result?.ok === false) console.warn("[CE FirstTimers] workflow sync pending", result);
+    });
+    try {
+      saveState(`First Timer workflow: ${firstTimerWorkflowLabel(nextStatus)}`);
+    } catch (error) {
+      console.warn("[CE FirstTimers] local workflow save failed", error);
+    }
     if (action === "submitIntake") notifyRole("Reitor", { title: "Intake de Primeira Vez para revisão", message: `${fullName(record)} foi submetido para aprovação.`, module: "firstTimers", entity_type: "first_timer", entity_id: id, type: "approval_required", recipient_church_id: record.church_id });
     if (action === "handoffFollowup") notifyRole("Follow-Up", { title: "Novo intake aprovado", message: `${fullName(record)} foi encaminhado para Follow-Up.`, module: "firstTimers", entity_type: "first_timer", entity_id: id, type: "action_required", recipient_church_id: record.church_id });
     if (action === "createExplicitFollowup") return openFollowup(id);

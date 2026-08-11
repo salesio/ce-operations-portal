@@ -23,6 +23,8 @@ check(/Submeter ao Reitor/.test(dashboard) && /Encaminhar Follow-Up/.test(dashbo
 check(/Importar Excel/.test(dashboard) && /Baixar Modelo Excel/.test(dashboard), "Excel-compatible import/template controls present");
 check(/duplicate/.test(dashboard) && /workflow_status/.test(dashboard), "duplicate guard and workflow status present");
 check(/renderFirstTimerRectorPanel/.test(dashboard) && /Painel do Reitor/.test(dashboard), "Rector review panel is available");
+check(/receiveForRectorReview/.test(dashboard) && /Receber para aprovação/.test(dashboard), "Rector receives intake with a dedicated safe action");
+check(/Reitor Pastoral/.test(dashboard) && /id: "u-26"/.test(dashboard), "Rector demo account has a unique identifier");
 check(/full_name: suppliedFullName/.test(dashboard) && /record\.full_name/.test(dashboard), "full name is retained for list rendering");
 check(/firstTimersPageState\.filter = \{\}/.test(dashboard), "new intake clears stale table filters");
 
