@@ -1,0 +1,31 @@
+/** Pastoral Care First Timers intake workflow: static safety and wiring check. */
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+let failed = 0;
+function check(condition, label) { console.log(`${condition ? "PASS" : "FAIL"} ${label}`); if (!condition) failed += 1; }
+function text(path) { return readFileSync(join(root, path), "utf8"); }
+
+const migration = "supabase/migrations/0013_first_timers_intake_workflow.sql";
+check(existsSync(join(root, migration)), "0013 migration exists");
+const sql = text(migration);
+check(/first_timer_intake_batches/i.test(sql) && /workflow_status/i.test(sql), "migration adds intake batch and workflow");
+check(!/drop\s+table/i.test(sql), "migration has no destructive table drop");
+check(/never creates members/i.test(sql), "migration documents no automatic operational entities");
+
+const dashboard = text("js/dashboard.js");
+check(/renderFirstTimerIntakeForm/.test(dashboard), "dedicated intake form exists");
+check(/Nome completo \*/.test(dashboard) && /Quem convidou\?/.test(dashboard), "physical intake fields present");
+check(!/cell_group_id.*cellRegistrySelect/.test(dashboard.slice(dashboard.indexOf("firstTimer: ["), dashboard.indexOf("member: ["))), "legacy first timer schema excludes cell selectors");
+check(/Submeter ao Reitor/.test(dashboard) && /Encaminhar Follow-Up/.test(dashboard), "explicit workflow actions present");
+check(/Importar Excel/.test(dashboard) && /Baixar Modelo Excel/.test(dashboard), "Excel-compatible import/template controls present");
+check(/duplicate/.test(dashboard) && /workflow_status/.test(dashboard), "duplicate guard and workflow status present");
+
+const adapter = text("src/data/adapters/supabase/firstTimersSupabaseAdapter.ts");
+check(/first_timer_number/.test(adapter) && /invited_by_member_id/.test(adapter), "Supabase adapter maps intake fields");
+check(!/SERVICE_ROLE_KEY\s*=/.test(adapter), "adapter has no service role credential");
+
+console.log(`\nFirst Timers intake workflow: ${failed ? "failed" : "passed"}`);
+process.exit(failed ? 1 : 0);

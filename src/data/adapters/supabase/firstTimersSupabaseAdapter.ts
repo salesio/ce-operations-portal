@@ -52,13 +52,13 @@ export function mapFirstTimerFromRow(row: SupabaseRow | null | undefined): First
   const churchId = row.church_id != null ? String(row.church_id) : null;
   const followUp = String(row.follow_up_status || "Pending");
   const born = asBool(row.born_again);
-  const foundation = asBool(row.foundation_interest);
+  const foundation = asBool(row.foundation_school_interest ?? row.foundation_interest);
   const counseling = asBool(row.counseling_interest);
   const cellInterest = asBool(row.cell_interest);
   const converted = asBool(row.converted_to_member);
   const visitDate = (row.visit_date as string) || null;
   const serviceName = String(row.service_name || "");
-  const invited = String(row.invited_by || "");
+  const invited = String((row.invited_by_name ?? row.invited_by) || "");
   const status = String(row.status || "Active");
 
   return {
@@ -81,6 +81,9 @@ export function mapFirstTimerFromRow(row: SupabaseRow | null | undefined): First
     email: String(row.email || ""),
     address: String(row.address || ""),
     endereco: String(row.address || ""),
+    neighborhood: (row.neighborhood as string) || (row.address as string) || null,
+    neighbourhood: (row.neighborhood as string) || (row.address as string) || null,
+    profession: (row.profession as string) || null,
     church_id: churchId,
     churchId,
     church_name: (row.church_name as string) || null,
@@ -97,6 +100,8 @@ export function mapFirstTimerFromRow(row: SupabaseRow | null | undefined): First
     culto: serviceName,
     invited_by: invited,
     convidado_por: invited,
+    invited_by_name: invited,
+    invited_by_member_id: row.invited_by_member_id != null ? String(row.invited_by_member_id) : null,
     born_again: born,
     nasceu_de_novo: born,
     bornAgain: born,
@@ -104,6 +109,9 @@ export function mapFirstTimerFromRow(row: SupabaseRow | null | undefined): First
     quer_escola_de_fundacao: foundation,
     wants_foundation_school: foundation,
     wantsFoundationSchool: foundation,
+    foundation_school_interest: foundation,
+    next_service_interest: asBool(row.next_service_interest),
+    willAttendNextService: asBool(row.next_service_interest),
     counseling_interest: counseling,
     quer_aconselhamento: counseling,
     wants_counseling: counseling,
@@ -126,6 +134,19 @@ export function mapFirstTimerFromRow(row: SupabaseRow | null | undefined): First
     convertida_em_membro: converted,
     member_id: row.member_id != null ? String(row.member_id) : null,
     status,
+    first_timer_number: (row.first_timer_number as string) || null,
+    workflow_status: (row.workflow_status as string) || "DRAFT",
+    batch_id: row.batch_id != null ? String(row.batch_id) : null,
+    batch_code: (row.batch_code as string) || null,
+    submitted_at: (row.submitted_at as string) || null,
+    submitted_by_user_id: row.submitted_by_user_id != null ? String(row.submitted_by_user_id) : null,
+    rector_reviewed_at: (row.rector_reviewed_at as string) || null,
+    rector_reviewed_by_user_id: row.rector_reviewed_by_user_id != null ? String(row.rector_reviewed_by_user_id) : null,
+    rector_review_notes: (row.rector_review_notes as string) || null,
+    handoff_at: (row.handoff_at as string) || null,
+    handoff_to_user_id: row.handoff_to_user_id != null ? String(row.handoff_to_user_id) : null,
+    handoff_notes: (row.handoff_notes as string) || null,
+    follow_up_id: row.follow_up_id != null ? String(row.follow_up_id) : null,
     notes: (row.notes as string) || "",
     notas: (row.notes as string) || "",
     created_at: (row.created_at as string) || undefined,
@@ -158,6 +179,8 @@ export function mapFirstTimerToRow(
     whatsapp: person.whatsapp || phone || null,
     email: person.email || null,
     address: person.address ?? person.endereco ?? null,
+    neighborhood: person.neighborhood ?? person.neighbourhood ?? person.endereco ?? null,
+    profession: person.profession ?? null,
     church_id: churchId && isValidUuid(String(churchId)) ? String(churchId) : null,
     church_name: person.church_name ?? person.igreja ?? null,
     cell_group_id: person.cell_group_id != null ? String(person.cell_group_id) : null,
@@ -167,6 +190,8 @@ export function mapFirstTimerToRow(
     visit_date: person.visit_date ?? person.data_do_culto ?? person.serviceDate ?? null,
     service_name: person.service_name ?? person.culto ?? person.serviceName ?? null,
     invited_by: person.invited_by ?? person.convidado_por ?? person.invitedBy ?? null,
+    invited_by_name: person.invited_by_name ?? person.invited_by ?? person.convidado_por ?? null,
+    invited_by_member_id: person.invited_by_member_id && isValidUuid(String(person.invited_by_member_id)) ? String(person.invited_by_member_id) : null,
     born_again: asBool(person.born_again ?? person.nasceu_de_novo ?? person.bornAgain),
     foundation_interest: asBool(
       person.foundation_interest ??
@@ -180,6 +205,8 @@ export function mapFirstTimerToRow(
     cell_interest: asBool(
       person.cell_interest ?? person.interesse_em_celula ?? person.interested_in_cell,
     ),
+    foundation_school_interest: asBool(person.foundation_school_interest ?? person.foundation_interest ?? person.quer_escola_de_fundacao),
+    next_service_interest: asBool(person.next_service_interest ?? person.willAttendNextService),
     follow_up_status: String(followUp),
     assigned_to_user_id:
       person.follow_up_responsible_id && isValidUuid(String(person.follow_up_responsible_id))
@@ -193,6 +220,19 @@ export function mapFirstTimerToRow(
     member_id:
       person.member_id && isValidUuid(String(person.member_id)) ? String(person.member_id) : null,
     status: person.status || "Active",
+    first_timer_number: person.first_timer_number ?? null,
+    workflow_status: person.workflow_status ?? "DRAFT",
+    batch_id: person.batch_id && isValidUuid(String(person.batch_id)) ? String(person.batch_id) : null,
+    batch_code: person.batch_code ?? null,
+    submitted_at: person.submitted_at ?? null,
+    submitted_by_user_id: person.submitted_by_user_id && isValidUuid(String(person.submitted_by_user_id)) ? String(person.submitted_by_user_id) : null,
+    rector_reviewed_at: person.rector_reviewed_at ?? null,
+    rector_reviewed_by_user_id: person.rector_reviewed_by_user_id && isValidUuid(String(person.rector_reviewed_by_user_id)) ? String(person.rector_reviewed_by_user_id) : null,
+    rector_review_notes: person.rector_review_notes ?? null,
+    handoff_at: person.handoff_at ?? null,
+    handoff_to_user_id: person.handoff_to_user_id && isValidUuid(String(person.handoff_to_user_id)) ? String(person.handoff_to_user_id) : null,
+    handoff_notes: person.handoff_notes ?? null,
+    follow_up_id: person.follow_up_id && isValidUuid(String(person.follow_up_id)) ? String(person.follow_up_id) : null,
     notes: person.notes ?? person.notas ?? null,
     metadata: {},
   };

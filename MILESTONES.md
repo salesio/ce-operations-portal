@@ -73,3 +73,9 @@ Phase 12 (`backend-phase-12-reports-notifications-audit-v1`) completed the Repor
 - Authenticated Cell Leader/Assistant portal with assignment-based cell guard.
 - Reviewer/head validation, rejection reasons, audit events, and in-app notifications.
 - No new operational module and no automatic finance record from offerings.
+
+## Pastoral Care — First Timers Intake & Approval Workflow Refactor
+
+- Additive migration `0013_first_timers_intake_workflow.sql` introduces intake batches and explicit workflow/audit references.
+- The First Timers screen captures visitor data plus interests only; no automatic cell, ESF, member or Follow-Up creation is permitted.
+- Explicit Rector review, Follow-Up handoff and Excel-compatible CSV preview/template controls are prepared.

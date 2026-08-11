@@ -167,10 +167,46 @@ CREATE TABLE IF NOT EXISTS public.users (
   failed_login_attempts   integer NOT NULL DEFAULT 0,
   locked_until            timestamptz,
   metadata                jsonb NOT NULL DEFAULT '{}'::jsonb,
+  first_timer_number      text,
+  neighborhood            text,
+  profession              text,
+  invited_by_name         text,
+  invited_by_member_id    uuid REFERENCES public.members (id) ON DELETE SET NULL,
+  foundation_school_interest boolean NOT NULL DEFAULT false,
+  next_service_interest   boolean NOT NULL DEFAULT false,
+  workflow_status         text NOT NULL DEFAULT 'DRAFT',
+  batch_id                uuid,
+  batch_code              text,
+  submitted_at            timestamptz,
+  submitted_by_user_id    uuid,
+  rector_reviewed_at      timestamptz,
+  rector_reviewed_by_user_id uuid,
+  rector_review_notes     text,
+  handoff_at              timestamptz,
+  handoff_to_user_id      uuid,
+  handoff_notes           text,
+  follow_up_id            uuid,
   created_at              timestamptz NOT NULL DEFAULT now(),
   updated_at              timestamptz NOT NULL DEFAULT now(),
   created_by              uuid,
   updated_by              uuid
+);
+
+CREATE TABLE IF NOT EXISTS public.first_timer_intake_batches (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  batch_code text NOT NULL UNIQUE,
+  church_id uuid REFERENCES public.churches (id) ON DELETE SET NULL,
+  intake_date date NOT NULL DEFAULT current_date,
+  status text NOT NULL DEFAULT 'DRAFT',
+  entered_by_user_id uuid,
+  submitted_at timestamptz,
+  submitted_by_user_id uuid,
+  rector_reviewed_at timestamptz,
+  rector_reviewed_by_user_id uuid,
+  review_notes text,
+  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
 );
 
 -- Phase 2: additive columns for older Docker volumes that already created users
@@ -349,6 +385,25 @@ ALTER TABLE public.first_timers ADD COLUMN IF NOT EXISTS cell_name text;
 ALTER TABLE public.first_timers ADD COLUMN IF NOT EXISTS service_name text;
 ALTER TABLE public.first_timers ADD COLUMN IF NOT EXISTS invited_by text;
 ALTER TABLE public.first_timers ADD COLUMN IF NOT EXISTS counseling_interest boolean DEFAULT false;
+ALTER TABLE public.first_timers ADD COLUMN IF NOT EXISTS first_timer_number text;
+ALTER TABLE public.first_timers ADD COLUMN IF NOT EXISTS neighborhood text;
+ALTER TABLE public.first_timers ADD COLUMN IF NOT EXISTS profession text;
+ALTER TABLE public.first_timers ADD COLUMN IF NOT EXISTS invited_by_name text;
+ALTER TABLE public.first_timers ADD COLUMN IF NOT EXISTS invited_by_member_id uuid REFERENCES public.members (id) ON DELETE SET NULL;
+ALTER TABLE public.first_timers ADD COLUMN IF NOT EXISTS foundation_school_interest boolean NOT NULL DEFAULT false;
+ALTER TABLE public.first_timers ADD COLUMN IF NOT EXISTS next_service_interest boolean NOT NULL DEFAULT false;
+ALTER TABLE public.first_timers ADD COLUMN IF NOT EXISTS workflow_status text NOT NULL DEFAULT 'DRAFT';
+ALTER TABLE public.first_timers ADD COLUMN IF NOT EXISTS batch_id uuid;
+ALTER TABLE public.first_timers ADD COLUMN IF NOT EXISTS batch_code text;
+ALTER TABLE public.first_timers ADD COLUMN IF NOT EXISTS submitted_at timestamptz;
+ALTER TABLE public.first_timers ADD COLUMN IF NOT EXISTS submitted_by_user_id uuid;
+ALTER TABLE public.first_timers ADD COLUMN IF NOT EXISTS rector_reviewed_at timestamptz;
+ALTER TABLE public.first_timers ADD COLUMN IF NOT EXISTS rector_reviewed_by_user_id uuid;
+ALTER TABLE public.first_timers ADD COLUMN IF NOT EXISTS rector_review_notes text;
+ALTER TABLE public.first_timers ADD COLUMN IF NOT EXISTS handoff_at timestamptz;
+ALTER TABLE public.first_timers ADD COLUMN IF NOT EXISTS handoff_to_user_id uuid;
+ALTER TABLE public.first_timers ADD COLUMN IF NOT EXISTS handoff_notes text;
+ALTER TABLE public.first_timers ADD COLUMN IF NOT EXISTS follow_up_id uuid;
 ALTER TABLE public.first_timers ADD COLUMN IF NOT EXISTS cell_interest boolean DEFAULT false;
 ALTER TABLE public.first_timers ADD COLUMN IF NOT EXISTS assigned_to_user_id uuid;
 ALTER TABLE public.first_timers ADD COLUMN IF NOT EXISTS assigned_to_name text;

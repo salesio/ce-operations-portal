@@ -6574,8 +6574,20 @@ function getCellsForGroup(cellGroupId = "", churchId = "") {
     .sort((a, b) => String(a.cell_name || "").localeCompare(String(b.cell_name || "")));
 }
 
+function getFormChurchId(record = {}) {
+  const explicitChurchId = record.church_id || record.igreja_id || "";
+  if (explicitChurchId) return explicitChurchId;
+  const label = String(record.igreja || record.church_name || "").trim();
+  if (!label) return "";
+  const church = relationalChurches().find((item) => {
+    const displayName = String(item.public_name || item.church_name || "").trim();
+    return displayName && displayName.toLowerCase() === label.toLowerCase();
+  });
+  return church?.id || "";
+}
+
 function cellGroupSelectField(name, label, record = {}, { colClass = "col-md-6" } = {}) {
-  const churchId = record.church_id || record.igreja || "";
+  const churchId = getFormChurchId(record);
   const current = record[name] || record.cell_group_id || "";
   const groups = getCellGroupsForChurch(churchId);
   return `
@@ -6589,7 +6601,7 @@ function cellGroupSelectField(name, label, record = {}, { colClass = "col-md-6" 
 }
 
 function cellSelectField(name, label, record = {}, { colClass = "col-md-6" } = {}) {
-  const churchId = record.church_id || record.igreja || "";
+  const churchId = getFormChurchId(record);
   const groupId = record.cell_group_id || record.group_id || record.group_cell_id || record.grupo_de_celula || "";
   const selectedGroup = (state.cellGroups || []).find((group) => group.id === groupId || group.group_name === groupId);
   const cells = selectedGroup ? getCellsForGroup(selectedGroup.id, churchId) : [];
@@ -8375,7 +8387,10 @@ function applyContributorToFinanceForm(candidate) {
   renderFinanceContributorSuggestions();
   renderFinanceDuplicateWarning([]);
   const churchSelectEl = form.querySelector('[name="church_id"][data-church-select]');
-  if (churchSelectEl) applyChurchSelection(churchSelectEl, relationalChurches(), relationalFormOptions());
+  if (churchSelectEl) {
+    applyChurchSelection(churchSelectEl, relationalChurches(), relationalFormOptions());
+    refreshCellGroupSelectForChurch(form, churchSelectEl.value);
+  }
   const groupSelect = form.querySelector("[data-cell-group-select]");
   if (groupSelect) {
     if (candidate.cell_group_id || candidate.grupo_de_celula) groupSelect.value = candidate.cell_group_id || (state.cellGroups || []).find((g) => g.group_name === candidate.grupo_de_celula)?.id || "";
@@ -8458,9 +8473,9 @@ function financeContributorSectionHtml(record = {}) {
         <div class="col-md-6"><label class="form-label">${L("whatsapp")}</label><input class="form-control" name="whatsapp" data-finance-person-field value="${migrated.whatsapp || ""}"></div>
         <div class="col-md-6"><label class="form-label">${L("email")}</label><input class="form-control" name="email" type="email" data-finance-person-field value="${migrated.email || ""}"></div>
         <div class="col-md-6"><label class="form-label">${L("address")}</label><input class="form-control" name="endereco" data-finance-person-field value="${migrated.endereco || ""}"></div>
+        ${churchField}
         ${cellGroupSelectField("cell_group_id", L("cellGroup"), migrated)}
         ${cellSelectField("cell_id", L("cell"), migrated)}
-        ${churchField}
       </div>
       <label class="finance-save-contributor form-check mt-3">
         <input class="form-check-input" type="checkbox" name="save_as_contributor" value="1">
@@ -8494,7 +8509,7 @@ function renderFinanceAddForm(record = {}) {
 function financeEntrySchema() {
   return [
     ["nome", "name"], ["apelido", "surname"], ["endereco", "address"], ["telefone", "phone"], ["whatsapp", "whatsapp"], ["email", "email", "email"],
-    ["cell_group_id", "cellGroup", "cellGroupSelect"], ["cell_id", "cell", "cellRegistrySelect"], ["church_id", "church", "church"],
+    ["church_id", "church", "church"], ["cell_group_id", "cellGroup", "cellGroupSelect"], ["cell_id", "cell", "cellRegistrySelect"],
     ["categoria_da_contribuicao", "category", "select", givingCategories],
     ["metodo_de_pagamento", "method", "select", paymentMethods],
     ["valor", "amount", "number"], ["referencia_da_transaccao", "transactionReference"],
@@ -10294,7 +10309,76 @@ function groupSum(records, groupKey, sumKey) {
 }
 
 function firstTimerActions(id) {
-  return actionButtons([["view", "firstTimer", id, L("view")], ["edit", "firstTimer", id, L("edit")], ["followup", "firstTimer", id, L("updateFollowup")]]);
+  const row = (state.firstTimers || []).find((item) => item.id === id) || {};
+  const workflow = row.workflow_status || "DRAFT";
+  const actions = [["view", "firstTimer", id, L("view")], ["edit", "firstTimer", id, L("edit")]];
+  if (["DRAFT", "READY_FOR_REVIEW", "NEEDS_CORRECTION"].includes(workflow)) actions.push(["submitIntake", "firstTimer", id, "Submeter ao Reitor"]);
+  if (workflow === "SUBMITTED_TO_RECTOR") actions.push(["approveIntake", "firstTimer", id, "Aprovar"]);
+  if (workflow === "RECTOR_APPROVED") actions.push(["handoffFollowup", "firstTimer", id, "Encaminhar Follow-Up"]);
+  if (workflow === "SENT_TO_FOLLOWUP") actions.push(["receiveFollowup", "firstTimer", id, "Confirmar recepção"]);
+  if (workflow === "FOLLOWUP_RECEIVED") actions.push(["createExplicitFollowup", "firstTimer", id, "Criar Follow-Up"]);
+  return actionButtons(actions);
+}
+
+function firstTimerWorkflowLabel(status) {
+  return ({ DRAFT: "Rascunho", READY_FOR_REVIEW: "Pronto para revisão", SUBMITTED_TO_RECTOR: "Submetido ao Reitor", NEEDS_CORRECTION: "Precisa de correcção", RECTOR_APPROVED: "Aprovado pelo Reitor", RECTOR_REJECTED: "Rejeitado pelo Reitor", SENT_TO_FOLLOWUP: "Enviado para Follow-Up", FOLLOWUP_RECEIVED: "Recebido por Follow-Up", FOLLOWUP_IN_PROGRESS: "Follow-Up em curso", COMPLETED: "Concluído", ARCHIVED: "Arquivado" }[status] || status || "Rascunho");
+}
+
+const FIRST_TIMER_IMPORT_HEADERS = ["full_name", "phone", "date_of_birth", "neighborhood", "profession", "invited_by_name", "born_again", "foundation_school_interest", "cell_interest", "next_service_interest", "church_id"];
+
+function downloadFirstTimerExcelTemplate() {
+  const csv = `${FIRST_TIMER_IMPORT_HEADERS.join(",")}\nAna Exemplo,840000000,1996-01-01,Maputo,Estudante,João Exemplo,true,true,false,true,\n`;
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+  link.download = "modelo-primeira-vez-intake.csv";
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
+function importFirstTimerCsv(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const lines = String(reader.result || "").split(/\r?\n/).filter(Boolean);
+    const headers = (lines.shift() || "").split(/[,;\t]/).map((value) => value.trim());
+    const missing = FIRST_TIMER_IMPORT_HEADERS.filter((header) => !headers.includes(header));
+    if (missing.length) return alert(`Modelo inválido. Faltam: ${missing.join(", ")}`);
+    const rows = lines.map((line) => {
+      const values = line.split(/[,;\t]/);
+      return Object.fromEntries(headers.map((header, index) => [header, String(values[index] || "").trim()]));
+    }).filter((row) => row.full_name && row.phone);
+    if (!rows.length) return alert("Não foram encontradas linhas válidas para pré-visualização.");
+    const preview = rows.slice(0, 10).map((row) => `${row.full_name} — ${row.phone}`).join("\n");
+    if (!confirm(`Pré-visualização (${rows.length} registos):\n${preview}\n\nGuardar como rascunhos?`)) return;
+    const now = new Date().toISOString();
+    rows.forEach((row, index) => {
+      const duplicate = (state.firstTimers || []).some((item) => String(item.phone || item.telefone || "").replace(/\D/g, "") === String(row.phone).replace(/\D/g, "") || String(fullName(item)).toLowerCase() === row.full_name.toLowerCase());
+      if (duplicate) return;
+      const created = migrateFirstTimerRecord({ id: `ft-${Date.now()}-${index}`, first_timer_number: `FT-${new Date().getFullYear()}-${String((state.firstTimers || []).length + 1).padStart(4, "0")}`, full_name: row.full_name, phone: row.phone, telefone: row.phone, date_of_birth: row.date_of_birth || null, neighborhood: row.neighborhood || "", profession: row.profession || "", invited_by_name: row.invited_by_name || "", invited_by: row.invited_by_name || "", born_again: row.born_again === "true", foundation_school_interest: row.foundation_school_interest === "true", cell_interest: row.cell_interest === "true", next_service_interest: row.next_service_interest === "true", church_id: row.church_id || activeUser.church_id, workflow_status: "DRAFT", estado_do_seguimento: "Pending", created_by: activeUser.name, updated_by: activeUser.name, created_at: now, updated_at: now });
+      state.firstTimers.push(created);
+      void persistFirstTimerViaRepository("create", created);
+    });
+    saveState(`Imported ${rows.length} first timer intake drafts`);
+    setRoute(activeRoute);
+  };
+  reader.readAsText(file);
+}
+
+function renderFirstTimerIntakeForm(record = {}) {
+  const value = (key, fallback = "") => escapeAttr(record[key] ?? fallback);
+  const yesNo = (key, label) => `<div class="col-md-6"><label class="form-label d-block">${label}</label><div class="btn-group" role="group"><input class="btn-check" type="radio" name="${key}" id="${key}-yes" value="true" ${(record[key] || record[{ nasceu_de_novo: "born_again", foundation_school_interest: "quer_escola_de_fundacao", interesse_em_celula: "cell_interest", next_service_interest: "willAttendNextService" }[key]]) ? "checked" : ""}><label class="btn btn-outline-success" for="${key}-yes">Sim</label><input class="btn-check" type="radio" name="${key}" id="${key}-no" value="false" ${!(record[key] || record[{ nasceu_de_novo: "born_again", foundation_school_interest: "quer_escola_de_fundacao", interesse_em_celula: "cell_interest", next_service_interest: "willAttendNextService" }[key]]) ? "checked" : ""}><label class="btn btn-outline-secondary" for="${key}-no">Não</label></div></div>`;
+  const churches = getChurchOptions(relationalChurches());
+  const members = scoped(state.members || [], "members").slice(0, 150);
+  return `<div class="col-12"><div class="alert alert-info mb-2">Intake pastoral: interesses não criam células, matrícula na ESF, membro nem follow-up automaticamente.</div></div>
+    <div class="col-md-6"><label class="form-label">Nome completo *</label><input required name="full_name" class="form-control" value="${value("full_name", fullName(record))}"></div>
+    <div class="col-md-6"><label class="form-label">Telefone *</label><input required name="phone" class="form-control" value="${value("phone", record.telefone || "")}"></div>
+    <div class="col-md-6"><label class="form-label">Data de nascimento</label><input type="date" name="date_of_birth" class="form-control" value="${value("date_of_birth", record.data_de_nascimento || "")}"></div>
+    <div class="col-md-6"><label class="form-label">Bairro</label><input name="neighborhood" class="form-control" value="${value("neighborhood", record.neighbourhood || record.endereco || "")}"></div>
+    <div class="col-md-6"><label class="form-label">Profissão</label><input name="profession" class="form-control" value="${value("profession")}"></div>
+    <div class="col-md-6"><label class="form-label">Quem convidou?</label><input name="invited_by_name" list="firstTimerMemberSuggestions" class="form-control" value="${value("invited_by_name", record.convidado_por || "")}"><datalist id="firstTimerMemberSuggestions">${members.map((member) => `<option value="${escapeAttr(fullName(member))}"></option>`).join("")}</datalist><div class="form-text">Sugestão de membro; a ligação é opcional.</div></div>
+    ${yesNo("nasceu_de_novo", "Nasceu de novo?")}${yesNo("foundation_school_interest", "Tem interesse na ESF?")}${yesNo("interesse_em_celula", "Tem interesse numa célula?")}${yesNo("next_service_interest", "Pretende vir ao próximo culto?")}
+    <div class="col-md-6"><label class="form-label">Igreja *</label><select required name="church_id" class="form-select"><option value="">Seleccionar igreja</option>${churches.map((church) => `<option value="${escapeAttr(church.id)}" ${String(record.church_id || "") === String(church.id) ? "selected" : ""}>${cleanDisplayText(churchOptionLabel(church))}</option>`).join("")}</select></div>
+    <div class="col-md-6"><label class="form-label">Estado do intake</label><select name="workflow_status" class="form-select"><option value="DRAFT" ${(record.workflow_status || "DRAFT") === "DRAFT" ? "selected" : ""}>Rascunho</option><option value="READY_FOR_REVIEW" ${record.workflow_status === "READY_FOR_REVIEW" ? "selected" : ""}>Pronto para revisão</option></select></div>`;
 }
 
 function renderFirstTimerCard(person) {
@@ -10320,24 +10404,25 @@ function renderFirstTimers() {
     ${sectionHeader(L("firstTimers"), L("firstTimerSubtitle"), "firstTimer", "bi-person-heart")}
     <div class="row g-3 mb-4 summary-cards-row">
       ${sm("bi-person-heart", L("totalFirstTimers"), list.length, "firstTimers", { filterPayload: {} })}
-      ${sm("bi-hourglass-split", L("pending"), list.filter((p) => isFirstTimerPendingFollowUp(p)).length, "firstTimers", { filterPayload: { followup: "pending" } })}
-      ${sm("bi-check2-circle", L("contacted"), list.filter((p) => statusKey(p.estado_do_seguimento) === "contacted").length, "firstTimers", { filterPayload: { followup: "contacted" } })}
-      ${sm("bi-mortarboard", L("wantFoundation"), list.filter((p) => isFirstTimerWantsFoundation(p)).length, "firstTimers", { filterPayload: { quer_escola_de_fundacao: true } })}
-      ${sm("bi-person-check", L("becameMember"), list.filter((p) => statusKey(p.estado_do_seguimento) === "becameMember" || p.converted_to_member).length, "firstTimers", { filterPayload: { became_member: true } })}
+      ${sm("bi-hourglass-split", "Em revisão", list.filter((p) => ["SUBMITTED_TO_RECTOR", "READY_FOR_REVIEW"].includes(p.workflow_status)).length, "firstTimers", { filterPayload: {} })}
+      ${sm("bi-check2-circle", "Aprovados", list.filter((p) => p.workflow_status === "RECTOR_APPROVED").length, "firstTimers", { filterPayload: {} })}
+      ${sm("bi-mortarboard", "Interesse ESF", list.filter((p) => p.foundation_school_interest || p.quer_escola_de_fundacao).length, "firstTimers", { filterPayload: {} })}
+      ${sm("bi-send-check", "Em Follow-Up", list.filter((p) => ["SENT_TO_FOLLOWUP", "FOLLOWUP_RECEIVED", "FOLLOWUP_IN_PROGRESS"].includes(p.workflow_status)).length, "firstTimers", { filterPayload: {} })}
     </div>
     ${summaryFilterChips("firstTimers")}
     <article class="panel glass-panel">
+      <div class="d-flex gap-2 flex-wrap mb-3"><button class="btn btn-outline-cyan" type="button" data-first-timer-csv-template>Baixar Modelo Excel</button><label class="btn btn-outline-light mb-0">Importar Excel<input type="file" accept=".csv,.tsv,text/csv" data-first-timer-import hidden></label><span class="small text-secondary align-self-center">Importação CSV compatível com Excel; pré-visualização antes de gravar.</span></div>
       ${filterBar({ viewToggle: ViewToggle(view), statusOptions: followupStatuses })}
       ${(() => {
         const filtered = applyFirstTimerCardFilters(list, firstTimersPageState.filter);
         const fTableRows = filtered.map((p) => [
-          fullName(p), p.telefone, churchName(p.church_id), p.culto, yesNo(p.nasceu_de_novo), yesNo(p.quer_escola_de_fundacao), badge(p.estado_do_seguimento),
+          p.first_timer_number || "—", fullName(p), p.telefone || p.phone || "—", churchName(p.church_id), yesNo(p.nasceu_de_novo), yesNo(p.foundation_school_interest ?? p.quer_escola_de_fundacao), badge(firstTimerWorkflowLabel(p.workflow_status)),
           firstTimerActions(p.id)
         ]);
         const fCardsHtml = filtered.map((p) => renderFirstTimerCard(p)).join("");
         return view === "cards"
           ? (filtered.length ? DataCardsGrid(fCardsHtml) : noResultsHtml())
-          : (filtered.length ? dataTable([L("name"), L("phone"), L("church"), L("service"), L("bornAgain"), L("foundation"), L("status"), L("actions")], fTableRows) : noResultsHtml());
+          : (filtered.length ? dataTable(["Nº", L("name"), L("phone"), L("church"), L("bornAgain"), "ESF", "Workflow", L("actions")], fTableRows) : noResultsHtml());
       })()}
     </article>
     ${moduleSection(L("rptFunnelTitle"), L("rptFunnelHint"), "bi-funnel", "", renderDomainReportsPanel("funnel", { module: "firstTimers", showTitle: false }))}
@@ -18217,9 +18302,8 @@ function labelFor(key) {
 }
 
 const formSchemas = {
-  firstTimer: [
-    ["tratamento", "treatment", "select", treatmentOptions], ["nome", "name"], ["apelido", "surname"], ["genero", "gender", "select", ["Feminino", "Masculino"]], ["data_de_nascimento", "birthDate", "date"], ["telefone", "phone"], ["whatsapp", "whatsapp"], ["email", "email", "email"], ["endereco", "address"], ["church_id", "church", "church"], ["cell_group_id", "cellGroup", "cellGroupSelect"], ["cell_id", "cell", "cellRegistrySelect"], ["data_do_culto", "date", "date"], ["culto", "service", "select", serviceOptions], ["convidado_por", "Invited by"], ["nasceu_de_novo", "bornAgain", "checkbox"], ["quer_escola_de_fundacao", "foundationSchool", "checkbox"], ["quer_aconselhamento", "counseling", "checkbox"], ["interesse_em_celula", "cellInterest", "checkbox"], ["estado_do_seguimento", "followupState", "select", followupStatuses], ["conselheiro_responsavel", "responsibleCounselor"], ["notas", "notes", "textarea"]
-  ],
+  // Rendered by renderFirstTimerIntakeForm; kept only as a safe fallback schema.
+  firstTimer: [["full_name", "fullName"], ["phone", "phone"], ["date_of_birth", "birthDate", "date"], ["neighborhood", "areaNeighborhood"], ["profession", "staffRoleTitle"], ["invited_by_name", "Invited by"], ["nasceu_de_novo", "bornAgain", "checkbox"], ["foundation_school_interest", "foundationSchool", "checkbox"], ["interesse_em_celula", "cellInterest", "checkbox"], ["next_service_interest", "nextService", "checkbox"], ["church_id", "church", "church"]],
   member: [
     ["tratamento", "treatment", "select", treatmentOptions], ["nome", "name"], ["apelido", "surname"], ["telefone", "phone"], ["email", "email", "email"],
     ["church_id", "church", "church", { showInfoCard: true, autofillFields: ["church_id", "province", "city", "district_or_area"], igrejaField: "igreja" }],
@@ -18405,6 +18489,8 @@ function openForm(type, id = null) {
     byId("modalTitle").textContent = type === "finance" && !id ? L("addFinance") : formTitle(type);
     if (type === "finance" && !id) {
       byId("modalFields").innerHTML = renderFinanceAddForm(record);
+    } else if (type === "firstTimer") {
+      byId("modalFields").innerHTML = renderFirstTimerIntakeForm(record || {});
     } else if (type === "mediaSchedule") {
       byId("modalFields").innerHTML = renderMediaScheduleForm(record || {});
     } else {
@@ -18533,6 +18619,20 @@ function fieldControl([name, labelKey, inputType = "text", options = []], record
 async function submitForm(form) {
   const schema = modalType === "finance" ? getFinanceSchema(modalMode === "edit" ? "edit" : "create") : formSchemas[modalType];
   const data = Object.fromEntries(new FormData(form).entries());
+  if (modalType === "firstTimer") {
+    ["nasceu_de_novo", "foundation_school_interest", "interesse_em_celula", "next_service_interest"].forEach((field) => {
+      data[field] = String(data[field] || "false") === "true";
+    });
+    data.telefone = data.phone || "";
+    data.data_de_nascimento = data.date_of_birth || null;
+    data.endereco = data.neighborhood || "";
+    data.neighbourhood = data.neighborhood || "";
+    data.convidado_por = data.invited_by_name || "";
+    data.invited_by = data.invited_by_name || "";
+    data.quer_escola_de_fundacao = data.foundation_school_interest;
+    data.willAttendNextService = data.next_service_interest;
+    data.estado_do_seguimento = "Pending";
+  }
   if (!canRenderAction(modalMode === "edit" ? "edit" : "add", modalType)) {
     alert(L("noPermissionArea"));
     return;
@@ -18812,7 +18912,9 @@ async function submitForm(form) {
         updated_by: activeUser.name,
         created_at: nowIso,
         updated_at: today,
-        estado_do_seguimento: data.estado_do_seguimento || "Pending",
+        first_timer_number: data.first_timer_number || `FT-${new Date().getFullYear()}-${String((state.firstTimers || []).length + 1).padStart(4, "0")}`,
+        workflow_status: data.workflow_status || "DRAFT",
+        estado_do_seguimento: "Pending",
         ...data
       });
       const repoResult = await persistFirstTimerViaRepository("create", created);
@@ -19475,6 +19577,29 @@ function quickAction(action, type, id) {
     alert(L("noPermissionArea"));
     return;
   }
+  if (type === "firstTimer" && ["submitIntake", "approveIntake", "handoffFollowup", "receiveFollowup", "createExplicitFollowup"].includes(action)) {
+    const record = (state.firstTimers || []).find((item) => item.id === id);
+    if (!record) return;
+    const nextStatus = { submitIntake: "SUBMITTED_TO_RECTOR", approveIntake: "RECTOR_APPROVED", handoffFollowup: "SENT_TO_FOLLOWUP", receiveFollowup: "FOLLOWUP_RECEIVED", createExplicitFollowup: "FOLLOWUP_IN_PROGRESS" }[action];
+    if (action === "createExplicitFollowup" && record.workflow_status !== "FOLLOWUP_RECEIVED") {
+      alert("O Follow-Up deve confirmar recepção antes da criação explícita do caso.");
+      return;
+    }
+    const now = new Date().toISOString();
+    Object.assign(record, {
+      workflow_status: nextStatus,
+      updated_at: now,
+      ...(action === "submitIntake" ? { submitted_at: now, submitted_by_user_id: activeUser.id } : {}),
+      ...(action === "approveIntake" ? { rector_reviewed_at: now, rector_reviewed_by_user_id: activeUser.id } : {}),
+      ...(action === "handoffFollowup" ? { handoff_at: now, handoff_to_user_id: "" } : {})
+    });
+    void persistFirstTimerViaRepository("update", record);
+    saveState(`First Timer workflow: ${firstTimerWorkflowLabel(nextStatus)}`);
+    if (action === "submitIntake") notifyRole("Reitor", { title: "Intake de Primeira Vez para revisão", message: `${fullName(record)} foi submetido para aprovação.`, module: "firstTimers", entity_type: "first_timer", entity_id: id, type: "approval_required", recipient_church_id: record.church_id });
+    if (action === "handoffFollowup") notifyRole("Follow-Up", { title: "Novo intake aprovado", message: `${fullName(record)} foi encaminhado para Follow-Up.`, module: "firstTimers", entity_type: "first_timer", entity_id: id, type: "action_required", recipient_church_id: record.church_id });
+    if (action === "createExplicitFollowup") return openFollowup(id);
+    return setRoute(activeRoute);
+  }
   if (type === "foundationTeacher") {
     if (action === "view") return openFoundationTeacherForm(id, "view");
     if (action === "edit") return openFoundationTeacherForm(id, "edit");
@@ -19902,6 +20027,10 @@ function enrollFirstTimer(id) {
 }
 
 document.addEventListener("click", async (event) => {
+  if (event.target.closest("[data-first-timer-csv-template]")) {
+    downloadFirstTimerExcelTemplate();
+    return;
+  }
   const langButton = event.target.closest("[data-lang]");
   if (langButton) return applyLanguage(langButton.dataset.lang);
   const portalSection = event.target.closest("[data-cell-portal-section]");
@@ -20707,6 +20836,11 @@ byId("entryModal")?.addEventListener("hidden.bs.modal", () => {
 });
 
 document.addEventListener("change", (event) => {
+  if (event.target.matches("[data-first-timer-import]")) {
+    importFirstTimerCsv(event.target.files?.[0]);
+    event.target.value = "";
+    return;
+  }
   if (event.target.matches("[data-cell-portal-cell]")) {
     const requestedCell = event.target.value || "";
     if (canAccessCell(activeUser?.id, requestedCell)) cellPortalPageState.cellId = requestedCell;

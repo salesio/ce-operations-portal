@@ -6,6 +6,8 @@ Líderes e Assistentes autenticados entram no painel independente `#cellPortal`,
 
 First dashboard prototype for the church team portal.
 
+Pastoral Care First Timers now uses an explicit intake → Rector review → Follow-Up handoff workflow. The intake records only visitor data and interests; it never auto-creates a member, cell assignment, Foundation School enrolment or Follow-Up case. Run `npm run test:first-timers-intake-workflow` for its safety/wiring check.
+
 **Live demo:** https://salesio.github.io/ce-operations-portal/
 
 Login with the demo credentials on the page (`admin@ce-mozambique.org` / `demo`).

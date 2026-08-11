@@ -47,6 +47,7 @@ ok("schema has roles", /create table if not exists public\.roles/i.test(schema))
 ok("schema has permissions", /create table if not exists public\.permissions/i.test(schema));
 ok("schema has members", /create table if not exists public\.members/i.test(schema));
 ok("schema has first_timers", /create table if not exists public\.first_timers/i.test(schema));
+ok("schema has first timer intake batches", /create table if not exists public\.first_timer_intake_batches/i.test(schema));
 ok("schema has finance_records", /create table if not exists public\.finance_records/i.test(schema));
 ok("schema has public_giving_submissions", /create table if not exists public\.public_giving_submissions/i.test(schema));
 ok("schema has documents", /create table if not exists public\.documents/i.test(schema));

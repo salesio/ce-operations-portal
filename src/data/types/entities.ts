@@ -309,6 +309,26 @@ export interface Member {
  */
 export interface FirstTimer {
   id: EntityId;
+  /** Pastoral Care intake / approval workflow (Phase 15). */
+  first_timer_number?: string | null;
+  neighborhood?: string | null;
+  profession?: string | null;
+  invited_by_name?: string | null;
+  invited_by_member_id?: EntityId | null;
+  foundation_school_interest?: boolean | null;
+  next_service_interest?: boolean | null;
+  workflow_status?: "DRAFT" | "READY_FOR_REVIEW" | "SUBMITTED_TO_RECTOR" | "NEEDS_CORRECTION" | "RECTOR_APPROVED" | "RECTOR_REJECTED" | "SENT_TO_FOLLOWUP" | "FOLLOWUP_RECEIVED" | "FOLLOWUP_IN_PROGRESS" | "COMPLETED" | "ARCHIVED" | string | null;
+  batch_id?: EntityId | null;
+  batch_code?: string | null;
+  submitted_at?: IsoDateTime | null;
+  submitted_by_user_id?: EntityId | null;
+  rector_reviewed_at?: IsoDateTime | null;
+  rector_reviewed_by_user_id?: EntityId | null;
+  rector_review_notes?: string | null;
+  handoff_at?: IsoDateTime | null;
+  handoff_to_user_id?: EntityId | null;
+  handoff_notes?: string | null;
+  follow_up_id?: EntityId | null;
   /** UI / PT fields used by dashboard.js */
   tratamento?: string | null;
   nome?: string | null;

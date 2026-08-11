@@ -1,5 +1,9 @@
 # Data layer plan — CE Mozambique Operations Dashboard
 
+## Pastoral Care — First Timers Intake Workflow Refactor
+
+Migration `0013_first_timers_intake_workflow.sql` adds a lightweight batch and explicit workflow fields to `first_timers`. The intake uses the Supabase-safe First Timers adapter, accepts no cell assignment or enrolment fields, and never automatically creates a member, Foundation School enrolment or Follow-Up case.
+
 ## Current state (today)
 
 | Layer | Status |

@@ -49,14 +49,15 @@ export function normalizeFirstTimer(
   input: Partial<FirstTimer> & { id?: string },
 ): FirstTimer {
   const id = input.id || `ft-${Date.now()}`;
-  const nome = input.nome ?? input.first_name ?? "";
+  const suppliedFullName = input.full_name ?? input.fullName ?? "";
+  const nome = input.nome ?? input.first_name ?? String(suppliedFullName).split(/\s+/)[0] ?? "";
   const apelido = input.apelido ?? input.last_name ?? "";
   const tratamento = input.tratamento ?? input.title ?? "";
   const telefone = input.telefone ?? input.phone ?? "";
   const churchId = input.church_id ?? input.churchId ?? null;
   const fullFromParts = [tratamento, nome, apelido].filter(Boolean).join(" ").trim();
   const fullName =
-    input.full_name || input.fullName || fullFromParts || "Primeira Vez";
+    suppliedFullName || fullFromParts || "Primeira Vez";
   const followUp =
     input.estado_do_seguimento ??
     input.follow_up_status ??
@@ -101,6 +102,8 @@ export function normalizeFirstTimer(
     null;
   const nextFollowUp =
     input.proxima_data_contacto ?? input.next_follow_up_date ?? null;
+  const foundationInterest = asBool(input.foundation_school_interest ?? input.quer_escola_de_fundacao ?? input.wants_foundation_school);
+  const nextServiceInterest = asBool(input.next_service_interest ?? input.willAttendNextService);
 
   return {
     ...input,
@@ -128,6 +131,8 @@ export function normalizeFirstTimer(
     endereco: input.endereco ?? input.address ?? input.neighbourhood ?? "",
     address: input.address ?? input.endereco ?? "",
     neighbourhood: input.neighbourhood ?? input.endereco ?? null,
+    neighborhood: input.neighborhood ?? input.neighbourhood ?? input.endereco ?? null,
+    profession: input.profession ?? null,
     church_id: churchId,
     churchId,
     church_name: input.church_name ?? input.igreja ?? null,
@@ -147,12 +152,17 @@ export function normalizeFirstTimer(
     convidado_por: invited,
     invited_by: invited,
     invitedBy: invited,
+    invited_by_name: input.invited_by_name ?? invited,
+    invited_by_member_id: input.invited_by_member_id ?? null,
     nasceu_de_novo: nasceu,
     born_again: nasceu,
     bornAgain: nasceu,
-    quer_escola_de_fundacao: querFundacao,
-    wants_foundation_school: querFundacao,
-    wantsFoundationSchool: querFundacao,
+    quer_escola_de_fundacao: foundationInterest,
+    wants_foundation_school: foundationInterest,
+    wantsFoundationSchool: foundationInterest,
+    foundation_school_interest: foundationInterest,
+    next_service_interest: nextServiceInterest,
+    willAttendNextService: nextServiceInterest,
     quer_aconselhamento: querAconselhamento,
     wants_counseling: querAconselhamento,
     wantsCounseling: querAconselhamento,
@@ -172,6 +182,19 @@ export function normalizeFirstTimer(
     converted_to_member: converted,
     convertida_em_membro: converted,
     member_id: input.member_id ?? null,
+    first_timer_number: input.first_timer_number ?? null,
+    workflow_status: input.workflow_status ?? "DRAFT",
+    batch_id: input.batch_id ?? null,
+    batch_code: input.batch_code ?? null,
+    submitted_at: input.submitted_at ?? null,
+    submitted_by_user_id: input.submitted_by_user_id ?? null,
+    rector_reviewed_at: input.rector_reviewed_at ?? null,
+    rector_reviewed_by_user_id: input.rector_reviewed_by_user_id ?? null,
+    rector_review_notes: input.rector_review_notes ?? null,
+    handoff_at: input.handoff_at ?? null,
+    handoff_to_user_id: input.handoff_to_user_id ?? null,
+    handoff_notes: input.handoff_notes ?? null,
+    follow_up_id: input.follow_up_id ?? null,
     notas: input.notas ?? input.notes ?? "",
     notes: input.notes ?? input.notas ?? "",
     created_at: input.created_at ?? input.createdAt,
