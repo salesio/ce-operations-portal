@@ -350,14 +350,17 @@
   function applyFirstTimers(payload) {
     const store = window.firstTimersPageState;
     if (!store) return;
-    store.filter = { ...store.filter, ...(payload.filterPayload || {}) };
+    // Summary cards represent one complete view. Replacing, instead of merging,
+    // prevents a previous card (for example "Pending") from being combined with
+    // a later, incompatible card filter (for example "Sent to Cell").
+    store.filter = { ...(payload.filterPayload || {}) };
     return true;
   }
 
   function applyFollowUp(payload) {
     const store = window.followUpPageState;
     if (!store) return;
-    store.filter = { ...store.filter, ...(payload.filterPayload || {}) };
+    store.filter = { ...(payload.filterPayload || {}) };
     return true;
   }
 

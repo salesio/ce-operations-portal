@@ -38,6 +38,8 @@ check(/receiveForRectorReview/.test(dashboard) && /Lançar para Aprovação/.tes
 check(/data-first-timer-bulk/.test(dashboard) && /processFirstTimerBulkReview/.test(dashboard), "Rector bulk review actions are wired");
 check(/roleWorkspaceRoutes/.test(dashboard) && /Follow-Up Coordinator/.test(dashboard), "Pastoral role workspaces restrict visible routes");
 check(/hasNationalPastoralScope/.test(dashboard), "pastoral workspace keeps national scope despite incomplete client profile mapping");
+check(/workflow_statuses/.test(dashboard) && /first-timers-results/.test(dashboard), "First Timers summary cards filter and focus results");
+check(/follow-up-results/.test(dashboard), "Follow-Up summary cards focus results");
 check(/Reitor Pastoral/.test(dashboard) && /id: "u-26"/.test(dashboard), "Rector demo account has a unique identifier");
 check(/full_name: suppliedFullName/.test(dashboard) && /record\.full_name/.test(dashboard), "full name is retained for list rendering");
 check(/firstTimersPageState\.filter = \{\}/.test(dashboard), "new intake clears stale table filters");
@@ -46,6 +48,9 @@ const adapter = text("src/data/adapters/supabase/firstTimersSupabaseAdapter.ts")
 check(/first_timer_number/.test(adapter) && /invited_by_member_id/.test(adapter), "Supabase adapter maps intake fields");
 check(/emptyToNull/.test(adapter) && /visit_date: emptyToNull/.test(adapter), "optional dates are sent as null, never empty strings");
 check(!/SERVICE_ROLE_KEY\s*=/.test(adapter), "adapter has no service role credential");
+
+const summaryNavigation = text("js/summary-card-nav.js");
+check(/store\.filter = \{ \.\.\.\(payload\.filterPayload \|\| \{\}\) \}/.test(summaryNavigation), "pastoral summary cards replace incompatible prior filters");
 
 console.log(`\nFirst Timers intake workflow: ${failed ? "failed" : "passed"}`);
 process.exit(failed ? 1 : 0);

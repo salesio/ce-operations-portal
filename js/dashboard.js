@@ -9685,6 +9685,9 @@ function applyFirstTimerCardFilters(list, filters = {}) {
   const groupFilter = filters.cell_group_id || filters.cellGroupId;
   const statusFilter = filters.followup || filters.status || filters.estado_do_seguimento;
   const workflowFilter = filters.workflow_status || filters.workflow;
+  const workflowFilters = Array.isArray(filters.workflow_statuses)
+    ? filters.workflow_statuses.filter(Boolean)
+    : [];
   const query = String(filters.q || filters.search || filters.query || "").trim().toLowerCase();
 
   if (churchFilter) {
@@ -9700,6 +9703,7 @@ function applyFirstTimerCardFilters(list, filters = {}) {
     rows = rows.filter((p) => statusKey(p.estado_do_seguimento || p.follow_up_status || p.status) === statusKey(statusFilter));
   }
   if (workflowFilter) rows = rows.filter((p) => p.workflow_status === workflowFilter);
+  if (workflowFilters.length) rows = rows.filter((p) => workflowFilters.includes(p.workflow_status));
   if (filters.quer_escola_de_fundacao || filters.wants_foundation_school) {
     rows = rows.filter((p) => p.quer_escola_de_fundacao || p.wants_foundation_school || p.wantsFoundationSchool);
   }
@@ -10484,15 +10488,15 @@ function renderFirstTimers() {
   setPageContent(`
     ${sectionHeader(L("firstTimers"), L("firstTimerSubtitle"), "firstTimer", "bi-person-heart")}
     <div class="row g-3 mb-4 summary-cards-row">
-      ${sm("bi-person-heart", L("totalFirstTimers"), list.length, "firstTimers", { filterPayload: {} })}
-      ${sm("bi-hourglass-split", "Em revisão", list.filter((p) => ["SUBMITTED_TO_RECTOR", "READY_FOR_REVIEW"].includes(p.workflow_status)).length, "firstTimers", { filterPayload: {} })}
-      ${sm("bi-check2-circle", "Aprovados", list.filter((p) => p.workflow_status === "RECTOR_APPROVED").length, "firstTimers", { filterPayload: {} })}
-      ${sm("bi-mortarboard", "Interesse ESF", list.filter((p) => p.foundation_school_interest || p.quer_escola_de_fundacao).length, "firstTimers", { filterPayload: {} })}
-      ${sm("bi-send-check", "Em Follow-Up", list.filter((p) => ["SENT_TO_FOLLOWUP", "FOLLOWUP_RECEIVED", "FOLLOWUP_IN_PROGRESS"].includes(p.workflow_status)).length, "firstTimers", { filterPayload: {} })}
+      ${sm("bi-person-heart", L("totalFirstTimers"), list.length, "firstTimers", { scrollTo: "first-timers-results", filterPayload: {} })}
+      ${sm("bi-hourglass-split", "Em revisão", list.filter((p) => ["SUBMITTED_TO_RECTOR", "READY_FOR_REVIEW"].includes(p.workflow_status)).length, "firstTimers", { scrollTo: "first-timers-results", filterPayload: { workflow_statuses: ["SUBMITTED_TO_RECTOR", "READY_FOR_REVIEW"] } })}
+      ${sm("bi-check2-circle", "Aprovados", list.filter((p) => p.workflow_status === "RECTOR_APPROVED").length, "firstTimers", { scrollTo: "first-timers-results", filterPayload: { workflow_status: "RECTOR_APPROVED" } })}
+      ${sm("bi-mortarboard", "Interesse ESF", list.filter((p) => p.foundation_school_interest || p.quer_escola_de_fundacao).length, "firstTimers", { scrollTo: "first-timers-results", filterPayload: { wants_foundation_school: true } })}
+      ${sm("bi-send-check", "Em Follow-Up", list.filter((p) => ["SENT_TO_FOLLOWUP", "FOLLOWUP_RECEIVED", "FOLLOWUP_IN_PROGRESS"].includes(p.workflow_status)).length, "firstTimers", { scrollTo: "first-timers-results", filterPayload: { workflow_statuses: ["SENT_TO_FOLLOWUP", "FOLLOWUP_RECEIVED", "FOLLOWUP_IN_PROGRESS"] } })}
     </div>
     ${summaryFilterChips("firstTimers")}
     ${renderFirstTimerRectorPanel(list)}
-    <article class="panel glass-panel">
+    <article id="first-timers-results" class="panel glass-panel">
       <div class="d-flex gap-2 flex-wrap mb-3"><button class="btn btn-outline-cyan" type="button" data-first-timer-csv-template>Baixar Modelo Excel</button><label class="btn btn-outline-light mb-0">Importar Excel<input type="file" accept=".csv,.tsv,text/csv" data-first-timer-import hidden></label><span class="small text-secondary align-self-center">Importação CSV compatível com Excel; pré-visualização antes de gravar.</span></div>
       ${filterBar({ viewToggle: ViewToggle(view), statusOptions: followupStatuses })}
       ${(() => {
@@ -10534,14 +10538,14 @@ function renderFollowUp() {
   setPageContent(`
     ${sectionHeader(L("followUp"), L("followupSubtitle"), null, "bi-telephone-outbound")}
     <div class="row g-3 mb-4 summary-cards-row">
-      ${sm("bi-hourglass-split", L("pending"), list.filter((p) => statusKey(p.estado_do_seguimento) === "pending").length, "followUp", { filterPayload: { followup: "pending" } })}
-      ${sm("bi-check2-circle", L("contacted"), list.filter((p) => statusKey(p.estado_do_seguimento) === "contacted").length, "followUp", { filterPayload: { followup: "contacted" } })}
-      ${sm("bi-telephone-x", L("noAnswer"), list.filter((p) => statusKey(p.estado_do_seguimento) === "noAnswer").length, "followUp", { filterPayload: { followup: "noAnswer" } })}
-      ${sm("bi-calendar-check", L("visitScheduled"), list.filter((p) => statusKey(p.estado_do_seguimento) === "interested").length, "followUp", { filterPayload: { followup: "interested" } })}
-      ${sm("bi-diagram-3", L("sentToCell"), list.filter((p) => ["Sent to Cell", "Enrolled in Foundation School"].includes(p.estado_do_seguimento)).length, "followUp", { filterPayload: { sent_to_cell: true } })}
+      ${sm("bi-hourglass-split", L("pending"), list.filter((p) => statusKey(p.estado_do_seguimento) === "pending").length, "followUp", { scrollTo: "follow-up-results", filterPayload: { followup: "pending" } })}
+      ${sm("bi-check2-circle", L("contacted"), list.filter((p) => statusKey(p.estado_do_seguimento) === "contacted").length, "followUp", { scrollTo: "follow-up-results", filterPayload: { followup: "contacted" } })}
+      ${sm("bi-telephone-x", L("noAnswer"), list.filter((p) => statusKey(p.estado_do_seguimento) === "noAnswer").length, "followUp", { scrollTo: "follow-up-results", filterPayload: { followup: "noAnswer" } })}
+      ${sm("bi-calendar-check", L("visitScheduled"), list.filter((p) => statusKey(p.estado_do_seguimento) === "interested").length, "followUp", { scrollTo: "follow-up-results", filterPayload: { followup: "interested" } })}
+      ${sm("bi-diagram-3", L("sentToCell"), list.filter((p) => ["Sent to Cell", "Enrolled in Foundation School"].includes(p.estado_do_seguimento)).length, "followUp", { scrollTo: "follow-up-results", filterPayload: { sent_to_cell: true } })}
     </div>
     ${summaryFilterChips("followUp")}
-    <article class="panel glass-panel">
+    <article id="follow-up-results" class="panel glass-panel">
       ${filterBar({ month: false, viewToggle: `<div class="view-toggle" role="group"><button type="button" class="view-toggle-btn ${view === "kanban" ? "active" : ""}" data-followup-view="kanban"><i class="bi bi-kanban"></i><span>Kanban</span></button><button type="button" class="view-toggle-btn ${view === "table" ? "active" : ""}" data-followup-view="table"><i class="bi bi-table"></i><span>${L("tableView")}</span></button></div>` })}
       ${view === "kanban"
         ? renderFollowUpKanban(filtered.length ? filtered : list)
