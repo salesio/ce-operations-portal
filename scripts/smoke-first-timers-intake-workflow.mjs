@@ -25,6 +25,7 @@ check(/duplicate/.test(dashboard) && /workflow_status/.test(dashboard), "duplica
 
 const adapter = text("src/data/adapters/supabase/firstTimersSupabaseAdapter.ts");
 check(/first_timer_number/.test(adapter) && /invited_by_member_id/.test(adapter), "Supabase adapter maps intake fields");
+check(/emptyToNull/.test(adapter) && /visit_date: emptyToNull/.test(adapter), "optional dates are sent as null, never empty strings");
 check(!/SERVICE_ROLE_KEY\s*=/.test(adapter), "adapter has no service role credential");
 
 console.log(`\nFirst Timers intake workflow: ${failed ? "failed" : "passed"}`);

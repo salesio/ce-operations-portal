@@ -34,6 +34,12 @@ function asBool(value: unknown): boolean {
   return false;
 }
 
+/** PostgreSQL date/timestamp columns reject an empty string; optional UI fields use null. */
+function emptyToNull(value: unknown): string | null {
+  const normalized = String(value ?? "").trim();
+  return normalized || null;
+}
+
 function statusKey(status: string | null | undefined): string {
   return String(status || "")
     .trim()
@@ -174,7 +180,7 @@ export function mapFirstTimerToRow(
     last_name: last || null,
     title: title || null,
     gender: person.gender ?? person.genero ?? null,
-    date_of_birth: person.date_of_birth ?? person.data_de_nascimento ?? null,
+    date_of_birth: emptyToNull(person.date_of_birth ?? person.data_de_nascimento),
     phone: phone || null,
     whatsapp: person.whatsapp || phone || null,
     email: person.email || null,
@@ -187,7 +193,7 @@ export function mapFirstTimerToRow(
     cell_group_name: person.cell_group_name ?? null,
     cell_id: person.cell_id != null ? String(person.cell_id) : null,
     cell_name: person.cell_name ?? person.celula ?? person.celula_preferida ?? null,
-    visit_date: person.visit_date ?? person.data_do_culto ?? person.serviceDate ?? null,
+    visit_date: emptyToNull(person.visit_date ?? person.data_do_culto ?? person.serviceDate),
     service_name: person.service_name ?? person.culto ?? person.serviceName ?? null,
     invited_by: person.invited_by ?? person.convidado_por ?? person.invitedBy ?? null,
     invited_by_name: person.invited_by_name ?? person.invited_by ?? person.convidado_por ?? null,
@@ -224,12 +230,12 @@ export function mapFirstTimerToRow(
     workflow_status: person.workflow_status ?? "DRAFT",
     batch_id: person.batch_id && isValidUuid(String(person.batch_id)) ? String(person.batch_id) : null,
     batch_code: person.batch_code ?? null,
-    submitted_at: person.submitted_at ?? null,
+    submitted_at: emptyToNull(person.submitted_at),
     submitted_by_user_id: person.submitted_by_user_id && isValidUuid(String(person.submitted_by_user_id)) ? String(person.submitted_by_user_id) : null,
-    rector_reviewed_at: person.rector_reviewed_at ?? null,
+    rector_reviewed_at: emptyToNull(person.rector_reviewed_at),
     rector_reviewed_by_user_id: person.rector_reviewed_by_user_id && isValidUuid(String(person.rector_reviewed_by_user_id)) ? String(person.rector_reviewed_by_user_id) : null,
     rector_review_notes: person.rector_review_notes ?? null,
-    handoff_at: person.handoff_at ?? null,
+    handoff_at: emptyToNull(person.handoff_at),
     handoff_to_user_id: person.handoff_to_user_id && isValidUuid(String(person.handoff_to_user_id)) ? String(person.handoff_to_user_id) : null,
     handoff_notes: person.handoff_notes ?? null,
     follow_up_id: person.follow_up_id && isValidUuid(String(person.follow_up_id)) ? String(person.follow_up_id) : null,
