@@ -18135,11 +18135,14 @@ function createNotification(payload = {}) {
   state.notifications = [...created, ...(state.notifications || [])];
   saveState("Created notification");
   updateNotificationCenter();
-  // Dual-write to data layer (soft)
+  // Dual-write to the data layer (soft). Do not call window.CENotifications
+  // here: this file exposes that object below and doing so re-enters this
+  // function indefinitely (most visibly when an intake is submitted to the
+  // Rector), eventually exhausting the browser's memory.
   try {
-    const bridge = window.CENotifications || window.CEDataLayer?.notifications;
+    const bridge = window.CEDataLayer?.notifications;
     created.forEach((row) => {
-      if (bridge?.createNotification) void bridge.createNotification(row);
+      if (bridge?.createNotification && bridge.createNotification !== createNotification) void bridge.createNotification(row);
     });
   } catch (_) {}
   return created;
@@ -18193,7 +18196,9 @@ async function hydrateSettingsFromRepository() {
 }
 
 async function hydrateNotificationsFromRepository() {
-  const api = window.CENotifications || window.CEDataLayer?.notifications;
+  // Prefer the data-layer adapter. `window.CENotifications` is the UI helper
+  // exported at the end of this file and does not provide repository reads.
+  const api = window.CEDataLayer?.notifications || window.CENotifications;
   if (!api?.listNotifications) return false;
   try {
     const result = await api.listNotifications();

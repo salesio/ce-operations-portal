@@ -28,11 +28,10 @@
 
   function resolveApi() {
     var layer = window.CEDataLayer && window.CEDataLayer.notifications;
-    if (layer && typeof layer.createNotification === "function") {
+    // `dataApi` is the local fallback exposed by this bridge. Resolving it as
+    // an external API would make every method call back into `call()` forever.
+    if (layer && layer !== dataApi && typeof layer.createNotification === "function") {
       return { api: layer, via: "CEDataLayer.notifications" };
-    }
-    if (window.CENotifications && typeof window.CENotifications.createNotification === "function") {
-      return { api: window.CENotifications, via: "CENotifications" };
     }
     if (window.CESupabase && typeof window.CESupabase.createNotification === "function") {
       return { api: window.CESupabase, via: "CESupabase" };

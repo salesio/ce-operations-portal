@@ -52,5 +52,9 @@ check(!/SERVICE_ROLE_KEY\s*=/.test(adapter), "adapter has no service role creden
 const summaryNavigation = text("js/summary-card-nav.js");
 check(/store\.filter = \{ \.\.\.\(payload\.filterPayload \|\| \{\}\) \}/.test(summaryNavigation), "pastoral summary cards replace incompatible prior filters");
 
+const notificationsBridge = text("js/notifications-data-bridge.js");
+check(/layer !== dataApi/.test(notificationsBridge) && !/window\.CENotifications && typeof window\.CENotifications\.createNotification/.test(notificationsBridge), "notification bridge avoids self-recursive API calls");
+check(/window\.CEDataLayer\?\.notifications \|\| window\.CENotifications/.test(dashboard), "notification hydration uses the data-layer adapter");
+
 console.log(`\nFirst Timers intake workflow: ${failed ? "failed" : "passed"}`);
 process.exit(failed ? 1 : 0);
