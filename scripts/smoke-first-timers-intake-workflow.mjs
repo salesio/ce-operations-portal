@@ -15,6 +15,13 @@ check(/first_timer_intake_batches/i.test(sql) && /workflow_status/i.test(sql), "
 check(!/drop\s+table/i.test(sql), "migration has no destructive table drop");
 check(/never creates members/i.test(sql), "migration documents no automatic operational entities");
 
+const pastoralAccessMigration = "supabase/migrations/0014_pastoral_care_access.sql";
+check(existsSync(join(root, pastoralAccessMigration)), "0014 pastoral access migration exists");
+const pastoralSql = text(pastoralAccessMigration);
+check(/pastoral_rector/.test(pastoralSql) && /follow_up_coordinator/.test(pastoralSql), "pastoral roles are server-side");
+check(/first_timers_pastoral_read/.test(pastoralSql) && /follow_ups_pastoral_read/.test(pastoralSql), "pastoral read policies are defined");
+check(!/service_role/i.test(pastoralSql), "pastoral migration does not use a service role");
+
 const dashboard = text("js/dashboard.js");
 check(/renderFirstTimerIntakeForm/.test(dashboard), "dedicated intake form exists");
 check(/Nome completo \*/.test(dashboard) && /Quem convidou\?/.test(dashboard), "physical intake fields present");
@@ -30,6 +37,7 @@ check(/Reitor Pastoral/.test(dashboard) && /id: "u-26"/.test(dashboard), "Rector
 check(/receiveForRectorReview/.test(dashboard) && /Lançar para Aprovação/.test(dashboard), "Rector launches intake with a dedicated safe action");
 check(/data-first-timer-bulk/.test(dashboard) && /processFirstTimerBulkReview/.test(dashboard), "Rector bulk review actions are wired");
 check(/roleWorkspaceRoutes/.test(dashboard) && /Follow-Up Coordinator/.test(dashboard), "Pastoral role workspaces restrict visible routes");
+check(/hasNationalPastoralScope/.test(dashboard), "pastoral workspace keeps national scope despite incomplete client profile mapping");
 check(/Reitor Pastoral/.test(dashboard) && /id: "u-26"/.test(dashboard), "Rector demo account has a unique identifier");
 check(/full_name: suppliedFullName/.test(dashboard) && /record\.full_name/.test(dashboard), "full name is retained for list rendering");
 check(/firstTimersPageState\.filter = \{\}/.test(dashboard), "new intake clears stale table filters");

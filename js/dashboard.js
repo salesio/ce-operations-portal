@@ -4814,6 +4814,27 @@ function logAccessDenied(route, module) {
 
 function scoped(records, module = "dashboard") {
   const list = Array.isArray(records) ? records : [];
+  const pastoralRole = String(activeUser?.role || activeUser?.role_name || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+  // These focused workspaces are national pastoral review roles. Their accounts
+  // may not carry a church UUID in demo or Supabase-auth mapping, so do not let
+  // that missing identifier hide the pastoral records they are meant to review.
+  const hasNationalPastoralScope = [
+    "reitor",
+    "rector",
+    "pastoral reitor",
+    "pastoral rector",
+    "follow up coordinator",
+    "acompanhamento",
+    "responsavel de acompanhamento",
+  ].includes(pastoralRole);
+  if (hasNationalPastoralScope && ["dashboard", "firstTimers", "followUp"].includes(module)) {
+    return list;
+  }
   if (window.CEAccessControl?.filterDataByScope) {
     return window.CEAccessControl.filterDataByScope(list, activeUser, module);
   }
@@ -10456,7 +10477,9 @@ function renderFirstTimerCard(person) {
 }
 
 function renderFirstTimers() {
-  const list = scoped(state.firstTimers);
+  // Scope against the pastoral module, not the dashboard. Restricted-workspace
+  // users do not have a dashboard tab, but they still have national pastoral scope.
+  const list = scoped(state.firstTimers, "firstTimers");
   const view = modulePageState.firstTimers.view;
   setPageContent(`
     ${sectionHeader(L("firstTimers"), L("firstTimerSubtitle"), "firstTimer", "bi-person-heart")}
@@ -10505,7 +10528,7 @@ function renderFollowUpKanban(list) {
 }
 
 function renderFollowUp() {
-  const list = scoped(state.firstTimers);
+  const list = scoped(state.firstTimers, "followUp");
   const view = modulePageState.followUp.view;
   const filtered = applyFirstTimerCardFilters(list, followUpPageState.filter);
   setPageContent(`

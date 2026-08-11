@@ -79,3 +79,9 @@ Phase 12 (`backend-phase-12-reports-notifications-audit-v1`) completed the Repor
 - Additive migration `0013_first_timers_intake_workflow.sql` introduces intake batches and explicit workflow/audit references.
 - The First Timers screen captures visitor data plus interests only; no automatic cell, ESF, member or Follow-Up creation is permitted.
 - Explicit Rector review, Follow-Up handoff and Excel-compatible CSV preview/template controls are prepared.
+
+## Pastoral Supabase Access
+
+- Additive migration `0014_pastoral_care_access.sql` prepares authenticated server-side roles for the Reitor and Responsável de Acompanhamento.
+- The Reitor reads pastoral data and reviews First Timers; the Follow-Up Coordinator reads First Timers and manages Follow-Ups.
+- The migration is deliberately manual: it must be reviewed and applied in Supabase SQL Editor, first in staging. No service-role credential is exposed to the browser.
