@@ -74,6 +74,7 @@ import type {
   ProgramSession,
   ProgramTeam,
   Member,
+  MemberRegistrationCandidate,
   Notification,
   NotificationSetting,
   NotificationTemplate,
@@ -200,6 +201,7 @@ export function createMockProvider(): DataProvider {
   const users = createMemoryRepository<User>(USERS_SEED.map((r) => ({ ...r })));
   const churches = createMemoryRepository<Church>(CHURCHES_SEED.map((c) => ({ ...c })));
   const members = createMemoryRepository<Member>(MEMBERS_SEED.map((m) => ({ ...m })));
+  const memberRegistrationCandidates = createMemoryRepository<MemberRegistrationCandidate>([]);
   const firstTimers = createMemoryRepository<FirstTimer>(
     FIRST_TIMERS_SEED.map((f) => ({ ...f })),
   );
@@ -454,6 +456,7 @@ export function createMockProvider(): DataProvider {
     users: users as EntityRepository<unknown>,
     churches: churches as EntityRepository<unknown>,
     members: members as EntityRepository<unknown>,
+    member_registration_candidates: memberRegistrationCandidates as EntityRepository<unknown>,
     first_timers: firstTimers as EntityRepository<unknown>,
     follow_ups: followUps as EntityRepository<unknown>,
     foundation_students: foundationStudents as EntityRepository<unknown>,
@@ -558,6 +561,7 @@ export function createMockProvider(): DataProvider {
     users,
     churches,
     members,
+    memberRegistrationCandidates,
     firstTimers,
     followUps,
     foundationStudents,

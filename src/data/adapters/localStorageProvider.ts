@@ -75,6 +75,7 @@ import type {
   ProgramSession,
   ProgramTeam,
   Member,
+  MemberRegistrationCandidate,
   Notification,
   NotificationSetting,
   NotificationTemplate,
@@ -274,6 +275,7 @@ export function createLocalStorageProvider(): DataProvider {
   const users = createPersistedRepository<User>("users");
   const churches = createPersistedRepository<Church>("churches");
   const members = createPersistedRepository<Member>("members");
+  const memberRegistrationCandidates = createPersistedRepository<MemberRegistrationCandidate>("member_registration_candidates");
   const firstTimers = createPersistedRepository<FirstTimer>("first_timers");
   const followUps = createPersistedRepository<FollowUp>("follow_ups");
   const foundationStudents = createPersistedRepository<FoundationStudent>("foundation_students");
@@ -414,6 +416,7 @@ export function createLocalStorageProvider(): DataProvider {
     users: users as EntityRepository<unknown>,
     churches: churches as EntityRepository<unknown>,
     members: members as EntityRepository<unknown>,
+    member_registration_candidates: memberRegistrationCandidates as EntityRepository<unknown>,
     first_timers: firstTimers as EntityRepository<unknown>,
     follow_ups: followUps as EntityRepository<unknown>,
     foundation_students: foundationStudents as EntityRepository<unknown>,
@@ -519,6 +522,7 @@ export function createLocalStorageProvider(): DataProvider {
     users,
     churches,
     members,
+    memberRegistrationCandidates,
     firstTimers,
     followUps,
     foundationStudents,

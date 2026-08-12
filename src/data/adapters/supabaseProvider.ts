@@ -1,4 +1,4 @@
-import type { EntityCollectionName, EntityId } from "../types/entities";
+import type { EntityCollectionName, EntityId, MemberRegistrationCandidate } from "../types/entities";
 import type {
   DataProvider,
   DataResult,
@@ -450,6 +450,7 @@ const COLLECTION_NAMES: EntityCollectionName[] = [
   "users",
   "churches",
   "members",
+  "member_registration_candidates",
   "first_timers",
   "follow_ups",
   "foundation_students",
@@ -804,6 +805,12 @@ export function createSupabaseProvider(): DataProvider & SupabaseProviderExtras 
   // Phase 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10 pilots
   map.churches = createChurchesRepository() as EntityRepository<unknown>;
   map.members = createMembersRepository() as EntityRepository<unknown>;
+  map.member_registration_candidates = createPilotRepository<MemberRegistrationCandidate>({
+    list: () => supabaseList<MemberRegistrationCandidate>("member_registration_candidates"),
+    create: (record) => supabaseCreate<MemberRegistrationCandidate>("member_registration_candidates", record),
+    update: (id, record) => supabaseUpdate<MemberRegistrationCandidate>("member_registration_candidates", id, record),
+    remove: (id) => supabaseDelete("member_registration_candidates", id),
+  }) as EntityRepository<unknown>;
   map.first_timers = createFirstTimersRepository() as EntityRepository<unknown>;
   map.follow_ups = createFollowUpsRepository() as EntityRepository<unknown>;
   map.finance_records = createFinanceRecordsRepository() as EntityRepository<unknown>;
@@ -912,6 +919,7 @@ export function createSupabaseProvider(): DataProvider & SupabaseProviderExtras 
     users: map.users as EntityRepository<never>,
     churches: map.churches as EntityRepository<Church>,
     members: map.members as EntityRepository<Member>,
+    memberRegistrationCandidates: map.member_registration_candidates as EntityRepository<MemberRegistrationCandidate>,
     firstTimers: map.first_timers as EntityRepository<FirstTimer>,
     followUps: map.follow_ups as EntityRepository<FollowUp>,
     foundationStudents: map.foundation_students as EntityRepository<never>,

@@ -4659,6 +4659,7 @@ function normalizeState(saved) {
     merged.cellLeadership.actionPlans = structuredClone(seedData.cellLeadership.actionPlans || []);
   }
   merged.cellReportSubmissions = Array.isArray(merged.cellReportSubmissions) ? merged.cellReportSubmissions : [];
+  merged.memberRegistrationCandidates = Array.isArray(merged.memberRegistrationCandidates) ? merged.memberRegistrationCandidates : [];
   merged.financeDisbursements = Array.isArray(merged.financeDisbursements) ? merged.financeDisbursements : [];
   if (!Array.isArray(merged.partnershipArms) || !merged.partnershipArms.length) {
     merged.partnershipArms = typeof PARTNERSHIP_ARMS_SEED !== "undefined"
@@ -10209,6 +10210,7 @@ function renderCellLeaderPortal() {
   if (!stats) return renderAccessDenied();
   const members = stats.members;
   const allMembers = getCellMembersProfile(context.cell_id, {});
+  const candidates = (state.memberRegistrationCandidates || []).filter((item) => item.cell_id === context.cell_id && item.registered_by_user_id === activeUser.id);
   const trends = getCellReportTrends(context.cell_id, cellPortalPageState);
   const foundation = getCellFoundationProgress(context.cell_id);
   const sacraments = getCellSacramentsSummary(context.cell_id);
@@ -10228,7 +10230,7 @@ function renderCellLeaderPortal() {
   const foundationOptions = [...new Set(allMembers.map((member) => member.foundation_status).filter(Boolean))];
   setPageContent(`<div class="cell-portal-shell">
     <section class="cell-portal-hero"><div><span class="eyebrow">Portal do Líder de Célula</span><h2>${escapeAttr(context.cell_name)}</h2><p><i class="bi bi-building me-1"></i>${escapeAttr(context.church_name)} <span>•</span> ${escapeAttr(context.cell_group_name)}</p><div class="cell-portal-identity"><span>${escapeAttr(context.cell_role)}</span><strong>${escapeAttr(context.user_name)}</strong></div></div><div class="cell-portal-hero-actions">${canChooseCell ? `<label>Seleccionar célula<select class="form-select" data-cell-portal-cell>${authorizedCells.map((item) => `<option value="${escapeAttr(item.id)}" ${item.id === context.cell_id ? "selected" : ""}>${escapeAttr(portalCellName(item))}</option>`).join("")}</select></label>` : ""}<button type="button" class="btn btn-ce-gold btn-touch" data-public-cell-report><i class="bi bi-clipboard-plus me-2"></i>Submeter Relatório Semanal</button>${hasCellPortalPermission("cell_portal.export_summary") ? `<button type="button" class="btn btn-outline-light btn-touch" data-cell-portal-export><i class="bi bi-download me-2"></i>Exportar resumo</button>` : ""}</div></section>
-    <section class="panel glass-panel cell-portal-filters"><label>Período<select class="form-select" data-cell-portal-filter="period">${[["week","Esta semana"],["month","Este mês"],["quarter","Último trimestre"],["year","Este ano"],["custom","Personalizado"]].map(([value,label]) => `<option value="${value}" ${cellPortalPageState.period === value ? "selected" : ""}>${label}</option>`).join("")}</select></label>${cellPortalPageState.period === "custom" ? `<label>De<input type="date" class="form-control" data-cell-portal-filter="dateFrom" value="${escapeAttr(cellPortalPageState.dateFrom)}"></label><label>Até<input type="date" class="form-control" data-cell-portal-filter="dateTo" value="${escapeAttr(cellPortalPageState.dateTo)}"></label>` : ""}<label>Estado<select class="form-select" data-cell-portal-filter="memberStatus"><option value="">Todos</option>${memberStatuses.map((value) => `<option ${cellPortalPageState.memberStatus === value ? "selected" : ""}>${escapeAttr(value)}</option>`).join("")}</select></label><label>Fundação<select class="form-select" data-cell-portal-filter="foundationStatus"><option value="">Todos</option>${foundationOptions.map((value) => `<option ${cellPortalPageState.foundationStatus === value ? "selected" : ""}>${escapeAttr(value)}</option>`).join("")}</select></label><label>Sacramentos<select class="form-select" data-cell-portal-filter="sacramentStatus"><option value="">Todos</option><option value="baptized" ${cellPortalPageState.sacramentStatus === "baptized" ? "selected" : ""}>Baptizado</option><option value="not_baptized" ${cellPortalPageState.sacramentStatus === "not_baptized" ? "selected" : ""}>Não baptizado</option></select></label><label>Parceria<select class="form-select" data-cell-portal-filter="partnership"><option value="">Todos</option><option value="true" ${cellPortalPageState.partnership === "true" ? "selected" : ""}>Sim</option><option value="false" ${cellPortalPageState.partnership === "false" ? "selected" : ""}>Não</option></select></label><label>Dizimista<select class="form-select" data-cell-portal-filter="tithe"><option value="">Todos</option><option value="true" ${cellPortalPageState.tithe === "true" ? "selected" : ""}>Sim</option><option value="false" ${cellPortalPageState.tithe === "false" ? "selected" : ""}>Não</option></select></label><label>Convidou<select class="form-select" data-cell-portal-filter="invited"><option value="">Todos</option><option value="true" ${cellPortalPageState.invited === "true" ? "selected" : ""}>Sim</option><option value="false" ${cellPortalPageState.invited === "false" ? "selected" : ""}>Não</option></select></label></section>
+    <section class="panel glass-panel cell-portal-filters"><div class="d-flex justify-content-end"><button type="button" class="btn btn-ce-gold btn-touch" data-open-member-candidate><i class="bi bi-person-plus me-2"></i>Registar Pessoa</button></div><label>Período<select class="form-select" data-cell-portal-filter="period">${[["week","Esta semana"],["month","Este mês"],["quarter","Último trimestre"],["year","Este ano"],["custom","Personalizado"]].map(([value,label]) => `<option value="${value}" ${cellPortalPageState.period === value ? "selected" : ""}>${label}</option>`).join("")}</select></label>${cellPortalPageState.period === "custom" ? `<label>De<input type="date" class="form-control" data-cell-portal-filter="dateFrom" value="${escapeAttr(cellPortalPageState.dateFrom)}"></label><label>Até<input type="date" class="form-control" data-cell-portal-filter="dateTo" value="${escapeAttr(cellPortalPageState.dateTo)}"></label>` : ""}<label>Estado<select class="form-select" data-cell-portal-filter="memberStatus"><option value="">Todos</option>${memberStatuses.map((value) => `<option ${cellPortalPageState.memberStatus === value ? "selected" : ""}>${escapeAttr(value)}</option>`).join("")}</select></label><label>Fundação<select class="form-select" data-cell-portal-filter="foundationStatus"><option value="">Todos</option>${foundationOptions.map((value) => `<option ${cellPortalPageState.foundationStatus === value ? "selected" : ""}>${escapeAttr(value)}</option>`).join("")}</select></label><label>Sacramentos<select class="form-select" data-cell-portal-filter="sacramentStatus"><option value="">Todos</option><option value="baptized" ${cellPortalPageState.sacramentStatus === "baptized" ? "selected" : ""}>Baptizado</option><option value="not_baptized" ${cellPortalPageState.sacramentStatus === "not_baptized" ? "selected" : ""}>Não baptizado</option></select></label><label>Parceria<select class="form-select" data-cell-portal-filter="partnership"><option value="">Todos</option><option value="true" ${cellPortalPageState.partnership === "true" ? "selected" : ""}>Sim</option><option value="false" ${cellPortalPageState.partnership === "false" ? "selected" : ""}>Não</option></select></label><label>Dizimista<select class="form-select" data-cell-portal-filter="tithe"><option value="">Todos</option><option value="true" ${cellPortalPageState.tithe === "true" ? "selected" : ""}>Sim</option><option value="false" ${cellPortalPageState.tithe === "false" ? "selected" : ""}>Não</option></select></label><label>Convidou<select class="form-select" data-cell-portal-filter="invited"><option value="">Todos</option><option value="true" ${cellPortalPageState.invited === "true" ? "selected" : ""}>Sim</option><option value="false" ${cellPortalPageState.invited === "false" ? "selected" : ""}>Não</option></select></label></section>
     <nav class="cell-portal-nav" aria-label="Secções do portal">${[["overview","Visão Geral"],["members","Membros"],["reports","Relatório"],["activities","Actividades"],["growth","Crescimento"],["finance","Parcerias & Dízimos"],["souls","Ganhar Almas"],["foundation","Fundação & Sacramentos"],["programs","Programas"],["history","Histórico"]].map(([id,label]) => `<button type="button" data-cell-portal-section="cell-portal-${id}">${label}</button>`).join("")}</nav>
     <section id="cell-portal-overview" class="cell-portal-section">${cellPortalSectionTitle("bi-grid-1x2", "Visão Geral", "Indicadores seguros da célula autorizada")}<div class="cell-portal-kpis">${[["bi-people","Total de membros",stats.total_members],["bi-person-check","Membros activos",stats.active_members],["bi-person-plus","Novos este mês",stats.new_members_month],["bi-person-heart","Visitantes ligados",stats.visitors],["bi-clipboard-check","Relatórios este mês",stats.reports_month],["bi-activity","Estado actual",stats.current_report_status],["bi-clock-history","Último relatório",stats.latest_report ? String(portalDateValue(stats.latest_report)).slice(0,10) : "—"],["bi-calendar-week","Próxima submissão",stats.next_submission]].map(([icon,label,value]) => `<article><i class="bi ${icon}"></i><span>${label}</span><strong>${escapeAttr(value)}</strong></article>`).join("")}</div><div class="cell-portal-meta"><div><span>Igreja</span><strong>${escapeAttr(context.church_name)}</strong></div><div><span>Grupo</span><strong>${escapeAttr(context.cell_group_name)}</strong></div><div><span>Liderança</span><strong>${escapeAttr(leaders.join(", ") || context.user_name)}</strong></div><div><span>Escopo</span><strong>${context.authorized_cell_ids.length} célula(s)</strong></div></div></section>
     <section class="cell-portal-section"><div class="cell-portal-alerts">${alerts.map((alert) => `<article class="is-${alert.tone}"><i class="bi bi-bell"></i><div><strong>${escapeAttr(alert.title)}</strong><p>${escapeAttr(alert.detail)}</p></div></article>`).join("") || `<article class="is-success"><i class="bi bi-check-circle"></i><div><strong>Sem alertas críticos</strong><p>Os principais indicadores estão actualizados.</p></div></article>`}</div></section>
@@ -10585,11 +10587,80 @@ function applyMemberCardFilters(list, filters = {}) {
   return rows;
 }
 
+function canReviewMemberCandidates(user = activeUser) {
+  return ["Super Admin", "Church Admin", "Membership Officer", "Cell Ministry Head"].includes(user?.role);
+}
+
+function candidateStatusLabel(status) {
+  return ({ Draft: "Rascunho", ReadyForSubmission: "Pronto para submeter", Submitted: "Submetido", UnderReview: "Em revisão", NeedsCorrection: "Precisa de correcção", Approved: "Aprovado", Rejected: "Rejeitado", Withdrawn: "Retirado" })[status] || status || "Rascunho";
+}
+
+function candidateFullName(candidate) { return String(candidate?.full_name || "").trim(); }
+
+function candidateDuplicates(candidate) {
+  const norm = (value) => String(value || "").trim().toLowerCase();
+  const digits = (value) => String(value || "").replace(/\D/g, "");
+  const name = norm(candidate.full_name), phone = digits(candidate.primary_phone), email = norm(candidate.email), dob = String(candidate.date_of_birth || "");
+  return (state.members || []).map((member) => {
+    const memberName = norm(fullName(member)), memberPhone = digits(member.primary_phone || member.phone || member.telefone), memberEmail = norm(member.email), memberDob = String(member.date_of_birth || member.data_de_nascimento || "");
+    const likely = (phone && phone === memberPhone) || (email && email === memberEmail) || (name && dob && name === memberName && dob === memberDob);
+    const possible = !likely && name && candidate.church_id === member.church_id && norm(candidate.neighborhood) && norm(candidate.neighborhood) === norm(member.neighborhood) && name === memberName;
+    return likely || possible ? { member, confidence: likely ? "Likely" : "Possible" } : null;
+  }).filter(Boolean);
+}
+
+function recordCandidateAudit(action, candidate) {
+  state.auditLogs = Array.isArray(state.auditLogs) ? state.auditLogs : [];
+  state.auditLogs.push({ id: `audit-candidate-${Date.now()}`, action, module: "members", entity_type: "member_registration_candidate", entity_id: candidate.id, user_id: activeUser?.id || "", user_name: activeUser?.name || "", user_role: activeUser?.role || "", church_id: candidate.church_id || "", description: `Candidate workflow: ${action}`, severity: "info", created_at: new Date().toISOString() });
+}
+
+function notifyCandidate(candidate, title, message) {
+  if (typeof notifyUser === "function" && candidate.registered_by_user_id) notifyUser(candidate.registered_by_user_id, { title, message, module: "members", entity_type: "member_registration_candidate", entity_id: candidate.id, action_url: "#members" });
+}
+
+function openMemberCandidateForm(id = null) {
+  const context = getCellLeaderContext(activeUser?.id, cellPortalPageState.cellId);
+  const candidate = id ? (state.memberRegistrationCandidates || []).find((item) => item.id === id) : null;
+  if (!candidate && (!context?.cell_id || !["Cell Leader", "Cell Assistant"].includes(activeUser?.role))) return alert("Apenas líderes e assistentes autorizados podem registar candidatos pela célula.");
+  if (candidate && !canReviewMemberCandidates() && candidate.registered_by_user_id !== activeUser?.id) return alert("Não tem permissão para editar este pedido.");
+  const data = candidate || { church_id: context.church_id, church_name: context.church_name, cell_group_id: context.cell_group_id, cell_group_name: context.cell_group_name, cell_id: context.cell_id, cell_name: context.cell_name };
+  modalMode = candidate ? "edit" : "create"; modalType = "memberCandidate"; modalRecordId = candidate?.id || null;
+  byId("modalEyebrow").textContent = "Pedido de adesão";
+  byId("modalTitle").textContent = candidate ? "Editar candidato" : "Registar pessoa na célula";
+  byId("modalFields").innerHTML = `<div class="col-12"><div class="alert alert-info mb-2">Este registo é um <strong>candidato</strong>, não um membro oficial. A adesão depende de revisão humana.</div></div><div class="col-md-6"><label class="form-label">Nome completo *</label><input required name="full_name" class="form-control" value="${escapeAttr(data.full_name || "")}"></div><div class="col-md-6"><label class="form-label">Telefone (opcional)</label><input name="primary_phone" class="form-control" value="${escapeAttr(data.primary_phone || "")}"></div><div class="col-md-6"><label class="form-label">E-mail</label><input type="email" name="email" class="form-control" value="${escapeAttr(data.email || "")}"></div><div class="col-md-6"><label class="form-label">Data de nascimento</label><input type="date" name="date_of_birth" class="form-control" value="${escapeAttr(data.date_of_birth || "")}"></div><div class="col-md-6"><label class="form-label">Bairro</label><input name="neighborhood" class="form-control" value="${escapeAttr(data.neighborhood || "")}"></div><div class="col-md-6"><label class="form-label">Profissão</label><input name="occupation" class="form-control" value="${escapeAttr(data.occupation || "")}"></div><div class="col-12"><label class="form-label">Contexto bloqueado</label><div class="form-control bg-light">${escapeAttr(data.church_name || "")} · ${escapeAttr(data.cell_group_name || "")} · ${escapeAttr(data.cell_name || "")}</div></div><div class="col-12"><label class="form-label">Notas</label><textarea name="notes" class="form-control">${escapeAttr(data.notes || "")}</textarea></div>`;
+  bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
+}
+
+function submitMemberCandidateForm(form) {
+  const data = Object.fromEntries(new FormData(form).entries()); const now = new Date().toISOString();
+  const context = getCellLeaderContext(activeUser?.id, cellPortalPageState.cellId);
+  const existing = modalRecordId ? (state.memberRegistrationCandidates || []).find((item) => item.id === modalRecordId) : null;
+  const record = { ...existing, ...data, id: existing?.id || `mc-${Date.now()}`, candidate_number: existing?.candidate_number || `MC-${new Date().getFullYear()}-${String((state.memberRegistrationCandidates || []).length + 1).padStart(4, "0")}`, church_id: existing?.church_id || context?.church_id, church_name: existing?.church_name || context?.church_name, cell_group_id: existing?.cell_group_id || context?.cell_group_id, cell_group_name: existing?.cell_group_name || context?.cell_group_name, cell_id: existing?.cell_id || context?.cell_id, cell_name: existing?.cell_name || context?.cell_name, registration_source: existing?.registration_source || (activeUser?.role === "Cell Assistant" ? "CellAssistant" : "CellLeader"), registered_by_user_id: existing?.registered_by_user_id || activeUser?.id, registered_by_name: existing?.registered_by_name || activeUser?.name, registered_by_cell_role: existing?.registered_by_cell_role || context?.cell_role, registered_at: existing?.registered_at || now, approval_status: existing?.approval_status || "Draft", membership_status: "Candidate", primary_phone: String(data.primary_phone || "").trim() || null, data_quality_status: String(data.primary_phone || "").trim() ? "Valid" : "NeedsReview", created_at: existing?.created_at || now, updated_at: now };
+  if (!record.full_name || !record.church_id || !record.cell_id) return alert("Nome completo, igreja e célula são obrigatórios.");
+  if (!existing) state.memberRegistrationCandidates.push(record); else Object.assign(existing, record);
+  recordCandidateAudit(existing ? "member_candidate.updated" : "member_candidate.created", record); saveState("Registo de candidato actualizado"); bootstrap.Modal.getInstance(byId("entryModal"))?.hide(); renderCellLeaderPortal();
+}
+
+function candidateAction(action, id) {
+  const candidate = (state.memberRegistrationCandidates || []).find((item) => item.id === id); if (!candidate) return;
+  const now = new Date().toISOString();
+  if (action === "submit") { if (candidate.registered_by_user_id !== activeUser?.id && !canReviewMemberCandidates()) return; Object.assign(candidate, { approval_status: "Submitted", submitted_for_approval_by: activeUser.id, submitted_for_approval_at: now, updated_at: now }); notifyRole("Membership Officer", { title: "Novo pedido de adesão", message: "Existe um pedido de adesão para revisão.", module: "members", entity_id: candidate.id }); recordCandidateAudit("member_candidate.submitted", candidate); }
+  else if (!canReviewMemberCandidates()) return;
+  else if (action === "correction") { const reason = prompt("Indique a correcção necessária:"); if (!reason) return; Object.assign(candidate, { approval_status: "NeedsCorrection", correction_reason: reason, reviewed_by_user_id: activeUser.id, reviewed_by_name: activeUser.name, reviewed_at: now }); notifyCandidate(candidate, "Pedido devolvido para correcção", "O pedido de adesão precisa de correcção."); recordCandidateAudit("member_candidate.correction_requested", candidate); }
+  else if (action === "reject") { const reason = prompt("Motivo da rejeição:"); if (!reason) return; Object.assign(candidate, { approval_status: "Rejected", rejection_reason: reason, reviewed_by_user_id: activeUser.id, reviewed_by_name: activeUser.name, reviewed_at: now }); notifyCandidate(candidate, "Pedido rejeitado", "O pedido de adesão foi rejeitado."); recordCandidateAudit("member_candidate.rejected", candidate); }
+  else if (action === "approve" || action === "link") { const duplicates = candidateDuplicates(candidate); const selected = action === "link" ? duplicates[0] : null; if (duplicates.length && !selected) { candidate.possible_existing_member_id = duplicates[0].member.id; candidate.duplicate_confidence = duplicates[0].confidence; candidate.approval_status = "UnderReview"; recordCandidateAudit("member_candidate.duplicate_detected", candidate); alert("Foi encontrado possível membro existente. Use ‘Ligar existente’ para decidir manualmente."); saveState("Possível duplicado identificado"); renderMembers(); return; }
+    let member = selected?.member; if (!member) { member = { id: `m-${Date.now()}`, nome: candidate.full_name.split(" ")[0], apelido: candidate.full_name.split(" ").slice(1).join(" "), full_name: candidate.full_name, telefone: candidate.primary_phone, primary_phone: candidate.primary_phone, email: candidate.email || "", church_id: candidate.church_id, church_name: candidate.church_name, cell_group_id: candidate.cell_group_id, cell_group_name: candidate.cell_group_name, cell_id: candidate.cell_id, cell_name: candidate.cell_name, celula: candidate.cell_name, origem: candidate.registration_source, estado: "Active", status: "Active", membership_status: "Active", data_quality_status: candidate.data_quality_status, created_at: now, updated_at: now }; state.members.push(member); }
+    Object.assign(candidate, { approval_status: "Approved", approval_decision: selected ? "LinkedExistingMember" : "ApprovedNewMember", approved_member_id: member.id, approved_at: now, reviewed_by_user_id: activeUser.id, reviewed_by_name: activeUser.name, reviewed_at: now }); notifyCandidate(candidate, "Pedido aprovado", "O pedido de adesão foi aprovado."); recordCandidateAudit(selected ? "member_candidate.linked_existing_member" : "member_candidate.approved", candidate); }
+  saveState("Fluxo de adesão actualizado"); if (activeRoute === "cellPortal") renderCellLeaderPortal(); else renderMembers();
+}
+
 function renderMembers() {
   const list = scoped(state.members);
   const view = modulePageState.members.view;
   const filtered = applyMemberCardFilters(list, modulePageState.members.filter || {});
   const churchesCount = new Set(list.map((m) => m.church_id).filter(Boolean)).size;
+  const candidates = scoped(state.memberRegistrationCandidates || []);
+  const reviewQueue = candidates.filter((item) => ["Submitted", "UnderReview", "NeedsCorrection"].includes(item.approval_status));
   const tableRows = filtered.map((m) => [
     fullName(m), m.telefone, churchName(m.church_id), m.celula, m.departamento, badge(m.estado), memberActions(m.id)
   ]);
@@ -10602,6 +10673,7 @@ function renderMembers() {
       ${sm("bi-hourglass", L("inProgress"), list.filter((m) => statusKey(m.estado) === "inProgress").length, "members", { scrollTo: "members-results", filterPayload: { status: "inProgress" } })}
       ${sm("bi-arrow-left-right", L("transferred"), list.filter((m) => statusKey(m.estado) === "transferred").length, "members", { scrollTo: "members-results", filterPayload: { status: "transferred" } })}
       ${sm("bi-building", L("membersByChurch"), churchesCount, "members", { scrollTo: "members-results", filterPayload: { hasChurch: true } })}
+      ${canReviewMemberCandidates() ? sm("bi-person-exclamation", "Pedidos por aprovar", reviewQueue.length, "members", { scrollTo: "member-candidate-queue" }) : ""}
     </div>
     ${summaryFilterChips("members")}
     <article class="panel glass-panel">
@@ -10610,6 +10682,7 @@ function renderMembers() {
         ${view === "cards" ? DataCardsGrid(filtered.map((m) => renderMemberCard(m)).join("")) : dataTable([L("name"), L("phone"), L("church"), L("cell"), L("department"), L("status"), L("actions")], tableRows, { rowAttrs })}
       </div>
     </article>
+    ${canReviewMemberCandidates() ? `<article id="member-candidate-queue" class="panel glass-panel mt-4"><div class="d-flex justify-content-between align-items-center mb-3"><div><h3 class="h5 mb-1">Pedidos de Adesão / Por Aprovar</h3><p class="mb-0 text-secondary">Candidatos não são membros oficiais até à decisão explícita.</p></div><span class="badge text-bg-warning">${reviewQueue.length} em fila</span></div>${dataTable(["Candidato", "Igreja / célula", "Registado por", "Telefone", "Duplicado", "Estado", "Acções"], candidates.map((c) => [candidateFullName(c), `${c.church_name || "—"}<br><small>${c.cell_name || "—"}</small>`, c.registered_by_name || "—", c.primary_phone || "—", c.duplicate_confidence || "—", badge(candidateStatusLabel(c.approval_status)), `<button class="action-btn" data-candidate-action="edit" data-candidate-id="${c.id}">Ver / Editar</button> ${["Submitted", "UnderReview"].includes(c.approval_status) ? `<button class="action-btn" data-candidate-action="approve" data-candidate-id="${c.id}">Aprovar</button><button class="action-btn" data-candidate-action="link" data-candidate-id="${c.id}">Ligar existente</button><button class="action-btn" data-candidate-action="correction" data-candidate-id="${c.id}">Devolver</button><button class="action-btn" data-candidate-action="reject" data-candidate-id="${c.id}">Rejeitar</button>` : ""`]))}</article>` : ""}
     ${renderHqMembersDryRunPreview()}
   `);
 }
@@ -20186,6 +20259,12 @@ document.addEventListener("click", async (event) => {
   }
   const langButton = event.target.closest("[data-lang]");
   if (langButton) return applyLanguage(langButton.dataset.lang);
+  if (event.target.closest("[data-open-member-candidate]")) return openMemberCandidateForm();
+  const candidateButton = event.target.closest("[data-candidate-action]");
+  if (candidateButton) {
+    if (candidateButton.dataset.candidateAction === "edit") return openMemberCandidateForm(candidateButton.dataset.candidateId);
+    return candidateAction(candidateButton.dataset.candidateAction, candidateButton.dataset.candidateId);
+  }
   const portalSection = event.target.closest("[data-cell-portal-section]");
   if (portalSection) return scrollContentTo(portalSection.dataset.cellPortalSection);
   const portalMember = event.target.closest("[data-cell-portal-member]");
@@ -20783,6 +20862,7 @@ byId("entryForm")?.addEventListener("submit", (event) => {
   if (modalType === "foundationClassGroup") return submitFoundationClass(event.target);
   if (modalType === "foundationMarkClass") return submitFoundationMarkClass(event.target);
   if (modalType === "foundationScore") return submitFoundationScore(event.target);
+  if (modalType === "memberCandidate") return submitMemberCandidateForm(event.target);
   if (modalType) submitForm(event.target);
 });
 

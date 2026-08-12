@@ -62,3 +62,57 @@ CREATE TABLE IF NOT EXISTS public.member_legacy_import_rows (
 CREATE INDEX IF NOT EXISTS idx_members_legacy_import_batch ON public.members(legacy_import_batch_id);
 CREATE INDEX IF NOT EXISTS idx_member_legacy_rows_batch ON public.member_legacy_import_rows(batch_id);
 COMMENT ON TABLE public.member_legacy_import_batches IS 'Dry-run staging only. This migration never imports members.';
+
+-- Candidate registration workflow. A row here is not a member record and never
+-- creates finance, sacraments, Foundation School or cell-report records by itself.
+CREATE TABLE IF NOT EXISTS public.member_registration_candidates (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  candidate_number text UNIQUE NOT NULL,
+  full_name text NOT NULL,
+  first_name text,
+  last_name text,
+  date_of_birth date,
+  primary_phone text,
+  secondary_phone text,
+  email text,
+  neighborhood text,
+  address text,
+  marital_status text,
+  occupation text,
+  kingschat_username text,
+  church_id uuid NOT NULL REFERENCES public.churches(id) ON DELETE RESTRICT,
+  church_name text,
+  cell_group_id text,
+  cell_group_name text,
+  cell_id text NOT NULL,
+  cell_name text,
+  registration_source text NOT NULL,
+  registered_by_user_id uuid,
+  registered_by_name text,
+  registered_by_cell_role text,
+  registered_at timestamptz NOT NULL DEFAULT now(),
+  membership_status text NOT NULL DEFAULT 'Candidate',
+  approval_status text NOT NULL DEFAULT 'Draft',
+  submitted_for_approval_by uuid,
+  submitted_for_approval_at timestamptz,
+  reviewed_by_user_id uuid,
+  reviewed_by_name text,
+  reviewed_at timestamptz,
+  approval_decision text,
+  correction_reason text,
+  rejection_reason text,
+  approved_member_id uuid REFERENCES public.members(id) ON DELETE SET NULL,
+  approved_at timestamptz,
+  possible_existing_member_id uuid REFERENCES public.members(id) ON DELETE SET NULL,
+  duplicate_confidence text,
+  data_quality_status text NOT NULL DEFAULT 'Valid',
+  notes text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT member_candidate_approval_status_check CHECK (approval_status IN ('Draft', 'ReadyForSubmission', 'Submitted', 'UnderReview', 'NeedsCorrection', 'Approved', 'Rejected', 'Withdrawn'))
+);
+CREATE INDEX IF NOT EXISTS idx_member_candidates_church_status ON public.member_registration_candidates(church_id, approval_status);
+CREATE INDEX IF NOT EXISTS idx_member_candidates_cell_status ON public.member_registration_candidates(cell_id, approval_status);
+CREATE INDEX IF NOT EXISTS idx_member_candidates_phone ON public.member_registration_candidates(primary_phone) WHERE primary_phone IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_member_candidates_email ON public.member_registration_candidates(email) WHERE email IS NOT NULL;
+COMMENT ON TABLE public.member_registration_candidates IS 'Controlled membership requests. Only explicit review may create or link an official member.';

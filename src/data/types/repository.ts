@@ -4,6 +4,7 @@ import type {
   CellLeader,
   CellReportSubmission,
   Church,
+  MemberRegistrationCandidate,
   EntityCollectionName,
   EntityId,
   FinanceDisbursement,
@@ -99,7 +100,7 @@ import type {
   StaffSalary,
   User,
   VenueSpace,
-}
+} from "./entities";
 
 /** Result wrapper so adapters can return soft failures without throwing. */
 export type DataResult<T> =
@@ -138,6 +139,7 @@ export interface DataProvider {
   users: EntityRepository<User>;
   churches: EntityRepository<Church>;
   members: EntityRepository<Member>;
+  memberRegistrationCandidates: EntityRepository<MemberRegistrationCandidate>;
   firstTimers: EntityRepository<FirstTimer>;
   followUps: EntityRepository<FollowUp>;
   foundationStudents: EntityRepository<FoundationStudent>;

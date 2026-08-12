@@ -1,4 +1,4 @@
-import type { EntityCollectionName, EntityId } from "../types/entities";
+import type { EntityCollectionName, EntityId, MemberRegistrationCandidate } from "../types/entities";
 import type {
   DataProvider,
   DataResult,
@@ -86,6 +86,7 @@ const COLLECTION_NAMES: EntityCollectionName[] = [
   "users",
   "churches",
   "members",
+  "member_registration_candidates",
   "first_timers",
   "follow_ups",
   "foundation_students",
@@ -306,6 +307,7 @@ export function createApiProvider(): DataProvider & ApiProviderExtras {
     users: map.users as EntityRepository<never>,
     churches: map.churches as EntityRepository<never>,
     members: map.members as EntityRepository<never>,
+    memberRegistrationCandidates: map.member_registration_candidates as EntityRepository<MemberRegistrationCandidate>,
     firstTimers: map.first_timers as EntityRepository<never>,
     followUps: map.follow_ups as EntityRepository<never>,
     foundationStudents: map.foundation_students as EntityRepository<never>,

@@ -54,6 +54,7 @@
     "test:supabase-runtime-provider": "node scripts/smoke-supabase-runtime-provider.mjs",
     "test:phase-14-staging-dry-run": "node scripts/smoke-phase-14-staging-dry-run.mjs",
     "test:members-master-data": "node scripts/smoke-members-master-data.mjs",
+    "test:member-candidate-workflow": "node scripts/smoke-member-candidate-workflow.mjs",
     "test:hq-members-import": "node scripts/smoke-hq-members-import.mjs",
     "dry-run:hq-members-import": "node scripts/dry-run-hq-members-import.mjs",
     "docker:up": "docker compose up -d",

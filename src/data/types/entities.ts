@@ -327,6 +327,78 @@ export interface Member {
   member_since_precision?: "exact" | "month" | "year" | "unknown" | string | null;
 }
 
+/** A registration request is not an official member until explicitly approved. */
+export type MemberCandidateApprovalStatus =
+  | "Draft"
+  | "ReadyForSubmission"
+  | "Submitted"
+  | "UnderReview"
+  | "NeedsCorrection"
+  | "Approved"
+  | "Rejected"
+  | "Withdrawn"
+  | string;
+
+export type MemberRegistrationSource =
+  | "AdminManual"
+  | "ChurchMembershipOffice"
+  | "CellLeader"
+  | "CellAssistant"
+  | "LegacyImport"
+  | "FirstTimerConversion"
+  | "Other"
+  | string;
+
+/**
+ * Controlled intake for a possible church member. The only authoritative
+ * membership record remains `Member`; this entity is an approval request.
+ */
+export interface MemberRegistrationCandidate {
+  id: EntityId;
+  candidate_number: string;
+  full_name: string;
+  first_name?: string | null;
+  last_name?: string | null;
+  date_of_birth?: IsoDate | null;
+  primary_phone?: string | null;
+  secondary_phone?: string | null;
+  email?: string | null;
+  neighborhood?: string | null;
+  address?: string | null;
+  marital_status?: string | null;
+  occupation?: string | null;
+  kingschat_username?: string | null;
+  church_id: EntityId;
+  church_name?: string | null;
+  cell_group_id?: EntityId | null;
+  cell_group_name?: string | null;
+  cell_id: EntityId;
+  cell_name?: string | null;
+  registration_source: MemberRegistrationSource;
+  registered_by_user_id: EntityId;
+  registered_by_name?: string | null;
+  registered_by_cell_role?: string | null;
+  registered_at: IsoDateTime;
+  membership_status?: string | null;
+  approval_status: MemberCandidateApprovalStatus;
+  submitted_for_approval_by?: EntityId | null;
+  submitted_for_approval_at?: IsoDateTime | null;
+  reviewed_by_user_id?: EntityId | null;
+  reviewed_by_name?: string | null;
+  reviewed_at?: IsoDateTime | null;
+  approval_decision?: string | null;
+  correction_reason?: string | null;
+  rejection_reason?: string | null;
+  approved_member_id?: EntityId | null;
+  approved_at?: IsoDateTime | null;
+  possible_existing_member_id?: EntityId | null;
+  duplicate_confidence?: "Possible" | "Likely" | string | null;
+  data_quality_status?: "Valid" | "NeedsReview" | "Invalid" | string | null;
+  notes?: string | null;
+  created_at?: IsoDateTime;
+  updated_at?: IsoDateTime;
+}
+
 // ---------------------------------------------------------------------------
 // First timers & follow-up
 // ---------------------------------------------------------------------------
@@ -437,7 +509,6 @@ export interface FirstTimer {
   next_follow_up_date?: IsoDate | null;
   converted_to_member?: boolean | null;
   status?: string | null;
-  profession?: string | null;
   createdAt?: IsoDateTime;
   updatedAt?: IsoDateTime;
 }
@@ -3948,6 +4019,7 @@ export type EntityCollectionName =
   | "users"
   | "churches"
   | "members"
+  | "member_registration_candidates"
   | "first_timers"
   | "follow_ups"
   | "foundation_students"

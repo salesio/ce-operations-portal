@@ -24,6 +24,17 @@ export const CELL_PORTAL_PERMISSION_CODES = [
   "cell_portal.export_summary",
 ] as const;
 
+export const MEMBER_CANDIDATE_PERMISSION_CODES = [
+  "members.candidates.view",
+  "members.candidates.create",
+  "members.candidates.edit_own",
+  "members.candidates.submit",
+  "members.candidates.review",
+  "members.candidates.approve",
+  "members.candidates.reject",
+  "members.candidates.request_correction",
+] as const;
+
 function p(
   id: string,
   role_id: string,
@@ -108,5 +119,14 @@ export const PERMISSIONS_SEED: AccessPermission[] = [
   }),
   p("perm-cell-portal-head", "role-cell-head", "Cell Ministry Head", "cell_portal", {
     can_view: true, can_create: true, can_edit: false, can_export: true, scope: "all",
+  }),
+  p("perm-cell-leader-candidates", "role-cell-leader", "Cell Leader", "memberCandidates", {
+    can_view: true, can_create: true, can_edit: true, scope: "own",
+  }),
+  p("perm-cell-assistant-candidates", "role-cell-assistant", "Cell Assistant", "memberCandidates", {
+    can_view: true, can_create: true, can_edit: true, scope: "own",
+  }),
+  p("perm-membership-officer-candidates", "role-membership-officer", "Membership Officer", "memberCandidates", {
+    can_view: true, can_edit: true, can_approve: true, scope: "church",
   }),
 ];

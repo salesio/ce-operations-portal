@@ -110,6 +110,14 @@ export {
 } from "./repositories/membersRepository";
 
 export {
+  listMemberRegistrationCandidates,
+  createMemberRegistrationCandidate,
+  updateMemberRegistrationCandidate,
+  normalizeMemberRegistrationCandidate,
+  findMemberCandidateDuplicates,
+} from "./repositories/memberRegistrationCandidatesRepository";
+
+export {
   listFirstTimers,
   getFirstTimerById,
   createFirstTimer,
