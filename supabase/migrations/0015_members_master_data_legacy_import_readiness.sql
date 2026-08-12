@@ -1,0 +1,64 @@
+-- Members master data + HQ legacy import readiness. Additive only; no import runs here.
+ALTER TABLE public.members
+  ADD COLUMN IF NOT EXISTS member_number text,
+  ADD COLUMN IF NOT EXISTS primary_phone text,
+  ADD COLUMN IF NOT EXISTS secondary_phone text,
+  ADD COLUMN IF NOT EXISTS neighborhood text,
+  ADD COLUMN IF NOT EXISTS marital_status text,
+  ADD COLUMN IF NOT EXISTS occupation text,
+  ADD COLUMN IF NOT EXISTS kingschat_username text,
+  ADD COLUMN IF NOT EXISTS membership_status text,
+  ADD COLUMN IF NOT EXISTS cell_role text,
+  ADD COLUMN IF NOT EXISTS cell_participation_status text,
+  ADD COLUMN IF NOT EXISTS service_participation_status text,
+  ADD COLUMN IF NOT EXISTS legacy_foundation_status text,
+  ADD COLUMN IF NOT EXISTS legacy_foundation_raw_value text,
+  ADD COLUMN IF NOT EXISTS legacy_alec_status text,
+  ADD COLUMN IF NOT EXISTS legacy_alec_raw_value text,
+  ADD COLUMN IF NOT EXISTS legacy_baptism_status text,
+  ADD COLUMN IF NOT EXISTS legacy_baptism_raw_value text,
+  ADD COLUMN IF NOT EXISTS legacy_partner_status text,
+  ADD COLUMN IF NOT EXISTS legacy_partnership_arms jsonb NOT NULL DEFAULT '[]'::jsonb,
+  ADD COLUMN IF NOT EXISTS foundation_student_id uuid,
+  ADD COLUMN IF NOT EXISTS baptism_id uuid,
+  ADD COLUMN IF NOT EXISTS active_cell_assignment_id uuid,
+  ADD COLUMN IF NOT EXISTS legacy_source text,
+  ADD COLUMN IF NOT EXISTS legacy_source_sheet text,
+  ADD COLUMN IF NOT EXISTS legacy_source_row integer,
+  ADD COLUMN IF NOT EXISTS legacy_import_batch_id uuid,
+  ADD COLUMN IF NOT EXISTS data_quality_status text,
+  ADD COLUMN IF NOT EXISTS reconciliation_status text,
+  ADD COLUMN IF NOT EXISTS member_since_year integer,
+  ADD COLUMN IF NOT EXISTS member_since_raw text,
+  ADD COLUMN IF NOT EXISTS member_since_precision text;
+
+-- Approved import policy: a member may be created without a phone number.
+-- Migration 0015 is unapplied staging readiness work; historical migrations stay unchanged.
+ALTER TABLE public.members ALTER COLUMN phone DROP NOT NULL;
+ALTER TABLE public.members ALTER COLUMN primary_phone DROP NOT NULL;
+
+CREATE TABLE IF NOT EXISTS public.member_legacy_import_batches (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(), batch_number text UNIQUE NOT NULL,
+  source_file_name text NOT NULL, source_type text NOT NULL DEFAULT 'XLSX',
+  church_id uuid REFERENCES public.churches(id) ON DELETE SET NULL, church_name text,
+  total_sheets integer NOT NULL DEFAULT 0, total_rows_scanned integer NOT NULL DEFAULT 0,
+  member_rows_detected integer NOT NULL DEFAULT 0, valid_members integer NOT NULL DEFAULT 0,
+  invalid_rows integer NOT NULL DEFAULT 0, possible_duplicates integer NOT NULL DEFAULT 0,
+  likely_duplicates integer NOT NULL DEFAULT 0, matched_groups integer NOT NULL DEFAULT 0,
+  unmatched_groups integer NOT NULL DEFAULT 0, matched_cells integer NOT NULL DEFAULT 0,
+  unmatched_cells integer NOT NULL DEFAULT 0, status text NOT NULL DEFAULT 'DryRunReady',
+  dry_run_report jsonb NOT NULL DEFAULT '{}'::jsonb, mapping_version text NOT NULL,
+  created_by uuid, created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS public.member_legacy_import_rows (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(), batch_id uuid NOT NULL REFERENCES public.member_legacy_import_batches(id) ON DELETE CASCADE,
+  sheet_name text NOT NULL, source_row_number integer NOT NULL, raw_values jsonb NOT NULL DEFAULT '{}'::jsonb,
+  normalized_values jsonb NOT NULL DEFAULT '{}'::jsonb, proposed_member jsonb NOT NULL DEFAULT '{}'::jsonb,
+  proposed_church_id uuid, proposed_cell_group_id text, proposed_cell_id text,
+  duplicate_candidate_member_id uuid, duplicate_confidence text, group_match_status text, cell_match_status text,
+  validation_status text NOT NULL, warnings jsonb NOT NULL DEFAULT '[]'::jsonb, errors jsonb NOT NULL DEFAULT '[]'::jsonb,
+  decision text NOT NULL DEFAULT 'Pending', created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_members_legacy_import_batch ON public.members(legacy_import_batch_id);
+CREATE INDEX IF NOT EXISTS idx_member_legacy_rows_batch ON public.member_legacy_import_rows(batch_id);
+COMMENT ON TABLE public.member_legacy_import_batches IS 'Dry-run staging only. This migration never imports members.';

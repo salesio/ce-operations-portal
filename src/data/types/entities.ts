@@ -291,6 +291,40 @@ export interface Member {
   createdAt?: IsoDateTime;
   updatedAt?: IsoDateTime;
   isActive?: boolean;
+  /** Additive master-data fields. Legacy values are informational until reconciled. */
+  member_number?: string | null;
+  /** Optional. Missing phones are retained as null and flagged for data quality review. */
+  primary_phone?: string | null;
+  secondary_phone?: string | null;
+  neighborhood?: string | null;
+  marital_status?: string | null;
+  occupation?: string | null;
+  kingschat_username?: string | null;
+  membership_status?: MemberStatus | null;
+  cell_role?: "Member" | "Assistant" | "Leader" | "Unknown" | string | null;
+  cell_participation_status?: "Regular" | "Sometimes" | "NotParticipating" | "Unknown" | string | null;
+  service_participation_status?: "Regular" | "Sometimes" | "NotParticipating" | "Unknown" | string | null;
+  legacy_foundation_status?: string | null;
+  legacy_foundation_raw_value?: string | null;
+  legacy_alec_status?: string | null;
+  legacy_alec_raw_value?: string | null;
+  legacy_baptism_status?: string | null;
+  legacy_baptism_raw_value?: string | null;
+  legacy_partner_status?: string | null;
+  legacy_partnership_arms?: string[] | null;
+  foundation_student_id?: EntityId | null;
+  baptism_id?: EntityId | null;
+  active_cell_assignment_id?: EntityId | null;
+  legacy_source?: string | null;
+  legacy_source_sheet?: string | null;
+  legacy_source_row?: number | null;
+  legacy_import_batch_id?: EntityId | null;
+  legacy_original_values?: Record<string, unknown> | null;
+  data_quality_status?: "Valid" | "NeedsReview" | "Invalid" | string | null;
+  reconciliation_status?: "Pending" | "Reconciled" | "NotRequired" | string | null;
+  member_since_year?: number | null;
+  member_since_raw?: string | null;
+  member_since_precision?: "exact" | "month" | "year" | "unknown" | string | null;
 }
 
 // ---------------------------------------------------------------------------

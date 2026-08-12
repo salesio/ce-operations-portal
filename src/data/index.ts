@@ -1234,6 +1234,8 @@ export {
 
 export { CHURCHES_SEED } from "./seeds/churchesSeed";
 export { MEMBERS_SEED } from "./seeds/membersSeed";
+export { parseHqMembersWorkbook } from "./legacy/hqMembersImport";
+export type { LegacyImportDryRun, LegacyMemberImportRow } from "./legacy/hqMembersImport";
 export { FIRST_TIMERS_SEED } from "./seeds/firstTimersSeed";
 export { FOLLOW_UPS_SEED } from "./seeds/followUpsSeed";
 export { FOUNDATION_STUDENTS_SEED } from "./seeds/foundationStudentsSeed";

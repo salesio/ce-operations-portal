@@ -50,7 +50,10 @@ export function normalizeMember(input: Partial<Member> & { id?: string }): Membe
   const nome = input.nome ?? input.first_name ?? "";
   const apelido = input.apelido ?? input.last_name ?? "";
   const tratamento = input.tratamento ?? input.title ?? "";
-  const telefone = input.telefone ?? input.phone ?? "";
+  // Contact details are optional master data. Preserve absence as null so that
+  // neither manual entry nor legacy imports invent placeholder phone numbers.
+  const primaryPhone = input.primary_phone ?? input.phone ?? input.telefone ?? null;
+  const telefone = input.telefone ?? input.phone ?? input.primary_phone ?? null;
   const estado = input.estado ?? input.status ?? "Active";
   const churchId = input.church_id ?? input.churchId ?? null;
   const fullFromParts = [tratamento, nome, apelido].filter(Boolean).join(" ").trim();
@@ -76,11 +79,17 @@ export function normalizeMember(input: Partial<Member> & { id?: string }): Membe
     data_de_nascimento: input.data_de_nascimento ?? input.date_of_birth ?? null,
     date_of_birth: input.date_of_birth ?? input.data_de_nascimento ?? null,
     telefone,
-    phone: input.phone ?? telefone,
-    whatsapp: input.whatsapp ?? telefone,
+    phone: input.phone ?? input.primary_phone ?? input.telefone ?? null,
+    primary_phone: primaryPhone,
+    secondary_phone: input.secondary_phone ?? null,
+    whatsapp: input.whatsapp ?? telefone ?? null,
     email: input.email ?? "",
     endereco: input.endereco ?? input.address ?? "",
     address: input.address ?? input.endereco ?? "",
+    neighborhood: input.neighborhood ?? null,
+    marital_status: input.marital_status ?? null,
+    occupation: input.occupation ?? null,
+    kingschat_username: input.kingschat_username ?? null,
     church_id: churchId,
     churchId,
     church_name: input.church_name ?? input.igreja ?? null,
@@ -102,6 +111,25 @@ export function normalizeMember(input: Partial<Member> & { id?: string }): Membe
     notas: input.notas ?? input.notes ?? "",
     notes: input.notes ?? input.notas ?? "",
     isActive: input.isActive ?? isActiveStatus(estado),
+    membership_status: input.membership_status ?? estado,
+    cell_role: input.cell_role ?? "Member",
+    cell_participation_status: input.cell_participation_status ?? "Unknown",
+    service_participation_status: input.service_participation_status ?? "Unknown",
+    legacy_foundation_status: input.legacy_foundation_status ?? null,
+    legacy_foundation_raw_value: input.legacy_foundation_raw_value ?? null,
+    legacy_alec_status: input.legacy_alec_status ?? null,
+    legacy_alec_raw_value: input.legacy_alec_raw_value ?? null,
+    legacy_baptism_status: input.legacy_baptism_status ?? null,
+    legacy_baptism_raw_value: input.legacy_baptism_raw_value ?? null,
+    legacy_partner_status: input.legacy_partner_status ?? null,
+    legacy_partnership_arms: input.legacy_partnership_arms ?? [],
+    legacy_source: input.legacy_source ?? null,
+    legacy_source_sheet: input.legacy_source_sheet ?? null,
+    legacy_source_row: input.legacy_source_row ?? null,
+    legacy_import_batch_id: input.legacy_import_batch_id ?? null,
+    legacy_original_values: input.legacy_original_values ?? null,
+    data_quality_status: input.data_quality_status ?? (primaryPhone ? "Valid" : "NeedsReview"),
+    reconciliation_status: input.reconciliation_status ?? "NotRequired",
     created_at: input.created_at ?? input.createdAt,
     updated_at: input.updated_at ?? input.updatedAt,
     createdAt: input.createdAt ?? (typeof input.created_at === "string" ? input.created_at : undefined),

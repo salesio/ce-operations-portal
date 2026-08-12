@@ -41,7 +41,7 @@ ok("notifications bridge", existsSync(join(root, "js/notifications-data-bridge.j
 ok(
   "index includes bridges",
   /settings-data-bridge\.js\?v=20260723-settings-notifications-v1/.test(read("index.html")) &&
-    /notifications-data-bridge\.js\?v=20260723-settings-notifications-v1/.test(read("index.html")),
+    /notifications-data-bridge\.js\?v=(?:20260723-settings-notifications-v1|20260811-notification-recursion-fix-v1)/.test(read("index.html")),
 );
 ok("docs pilot Settings", /Pilot migration: Settings/.test(read("DATA_LAYER_PLAN.md")));
 ok("SETTINGS_MODULE_PLAN", existsSync(join(root, "SETTINGS_MODULE_PLAN.md")));

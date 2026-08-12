@@ -6,6 +6,8 @@ Líderes e Assistentes autenticados entram no painel independente `#cellPortal`,
 
 First dashboard prototype for the church team portal.
 
+**HQ legacy members readiness:** Members now have additive master-data support and a read-only multi-sheet HQ importer. `npm run dry-run:hq-members-import` inspects `DATA BASE NOVEMBER.xlsx` without changing the original or writing to Supabase. See [HQ legacy import guidance](docs/backend/HQ_LEGACY_MEMBERS_IMPORT.md).
+
 **Pastoral Supabase access:** the Reitor and Responsável de Acompanhamento have focused workspaces, but their live data access must be assigned server-side. Apply `supabase/migrations/0014_pastoral_care_access.sql` manually and follow [docs/backend/PASTORAL_SUPABASE_ACCESS_SETUP.md](docs/backend/PASTORAL_SUPABASE_ACCESS_SETUP.md). No service-role key is used in the frontend.
 
 Pastoral Care First Timers now uses an explicit intake → Rector review → Follow-Up handoff workflow. The intake records only visitor data and interests; it never auto-creates a member, cell assignment, Foundation School enrolment or Follow-Up case. Run `npm run test:first-timers-intake-workflow` for its safety/wiring check.

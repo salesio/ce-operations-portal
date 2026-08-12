@@ -16,6 +16,7 @@ export {
 } from "./lib/financeRepository";
 
 export { mapFinanceRecordToDashboard, mapSubmissionToDashboard } from "./lib/mappers";
+import { parseHqMembersWorkbook } from "./data/legacy/hqMembersImport";
 
 // Progressive data layer (mock / local / api / supabase)
 export {
@@ -102,6 +103,7 @@ export {
   ensureMembersSeeded,
   getMembersDataSourceInfo,
   normalizeMember,
+  parseHqMembersWorkbook,
   MEMBERS_SEED,
   // First Timers
   listFirstTimers,
@@ -1879,6 +1881,7 @@ function installDataLayerGlobals(): void {
     getInactiveMembers,
     ensureMembersSeeded,
     getMembersDataSourceInfo,
+    parseHqMembersWorkbook,
   };
 
   const firstTimers = {

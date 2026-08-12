@@ -26,6 +26,9 @@ npm run db:schema:check
 npm run test:settings-notifications-data
 npm run test:access-control-data
 npm run test:finance-data
+npm run test:members-master-data
+npm run test:hq-members-import
+npm run dry-run:hq-members-import
 ```
 
 Static readiness scripts do not replace staging RLS/Auth/Storage/manual QA. Record command, commit, environment, time and result in deployment evidence.

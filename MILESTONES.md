@@ -33,6 +33,7 @@ Browser does **not** connect to PostgreSQL directly. Supabase/API = future phase
 | churches-members-supabase-v1 | Backend Phase 3 — Churches + Members Supabase pilot | Done |
 | first-timers-followups-supabase-v1 | Backend Phase 4 — First Timers + Follow-Up Supabase pilot | Done |
 | finance-public-giving-storage-v1 | Backend Phase 5 — Finance + Public Giving + Storage pilot | Done |
+| members-master-data-hq-import-readiness-v1 | Additive member master data + HQ legacy workbook dry-run, no import | Ready for review |
 
 ## Storage model
 

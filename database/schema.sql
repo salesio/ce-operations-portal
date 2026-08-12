@@ -267,6 +267,7 @@ CREATE TABLE IF NOT EXISTS public.members (
   title             text,
   gender            text,
   date_of_birth     date,
+  -- Optional: members without a phone are retained with NULL, never a placeholder.
   phone             text,
   whatsapp          text,
   email             text,
@@ -303,7 +304,32 @@ ALTER TABLE public.members ADD COLUMN IF NOT EXISTS cell_group_name text;
 ALTER TABLE public.members ADD COLUMN IF NOT EXISTS cell_name text;
 ALTER TABLE public.members ADD COLUMN IF NOT EXISTS department_id text;
 ALTER TABLE public.members ADD COLUMN IF NOT EXISTS department_name text;
-ALTER TABLE public.members ADD COLUMN IF NOT EXISTS entry_date date;
+  ALTER TABLE public.members ADD COLUMN IF NOT EXISTS entry_date date;
+  ALTER TABLE public.members ADD COLUMN IF NOT EXISTS member_number text;
+  ALTER TABLE public.members ADD COLUMN IF NOT EXISTS primary_phone text;
+  ALTER TABLE public.members ADD COLUMN IF NOT EXISTS secondary_phone text;
+  ALTER TABLE public.members ADD COLUMN IF NOT EXISTS neighborhood text;
+  ALTER TABLE public.members ADD COLUMN IF NOT EXISTS marital_status text;
+  ALTER TABLE public.members ADD COLUMN IF NOT EXISTS occupation text;
+  ALTER TABLE public.members ADD COLUMN IF NOT EXISTS kingschat_username text;
+  ALTER TABLE public.members ADD COLUMN IF NOT EXISTS membership_status text;
+  ALTER TABLE public.members ADD COLUMN IF NOT EXISTS cell_role text;
+  ALTER TABLE public.members ADD COLUMN IF NOT EXISTS cell_participation_status text;
+  ALTER TABLE public.members ADD COLUMN IF NOT EXISTS service_participation_status text;
+  ALTER TABLE public.members ADD COLUMN IF NOT EXISTS legacy_foundation_status text;
+  ALTER TABLE public.members ADD COLUMN IF NOT EXISTS legacy_foundation_raw_value text;
+  ALTER TABLE public.members ADD COLUMN IF NOT EXISTS legacy_alec_status text;
+  ALTER TABLE public.members ADD COLUMN IF NOT EXISTS legacy_alec_raw_value text;
+  ALTER TABLE public.members ADD COLUMN IF NOT EXISTS legacy_baptism_status text;
+  ALTER TABLE public.members ADD COLUMN IF NOT EXISTS legacy_baptism_raw_value text;
+  ALTER TABLE public.members ADD COLUMN IF NOT EXISTS legacy_partner_status text;
+  ALTER TABLE public.members ADD COLUMN IF NOT EXISTS legacy_partnership_arms jsonb NOT NULL DEFAULT '[]'::jsonb;
+  ALTER TABLE public.members ADD COLUMN IF NOT EXISTS legacy_source text;
+  ALTER TABLE public.members ADD COLUMN IF NOT EXISTS legacy_source_sheet text;
+  ALTER TABLE public.members ADD COLUMN IF NOT EXISTS legacy_source_row integer;
+  ALTER TABLE public.members ADD COLUMN IF NOT EXISTS legacy_import_batch_id uuid;
+  ALTER TABLE public.members ADD COLUMN IF NOT EXISTS data_quality_status text;
+  ALTER TABLE public.members ADD COLUMN IF NOT EXISTS reconciliation_status text;
 ALTER TABLE public.members ADD COLUMN IF NOT EXISTS source text;
 ALTER TABLE public.members ADD COLUMN IF NOT EXISTS notes text;
 
@@ -321,6 +347,58 @@ CREATE INDEX IF NOT EXISTS idx_members_status ON public.members (status);
 CREATE INDEX IF NOT EXISTS idx_members_phone ON public.members (phone);
 CREATE INDEX IF NOT EXISTS idx_members_email ON public.members (email);
 CREATE INDEX IF NOT EXISTS idx_members_full_name ON public.members (full_name);
+
+-- HQ legacy member workbook dry-run staging. These tables are empty by default;
+-- no workbook is imported by this schema or by any browser code.
+CREATE TABLE IF NOT EXISTS public.member_legacy_import_batches (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  batch_number text UNIQUE NOT NULL,
+  source_file_name text NOT NULL,
+  source_type text NOT NULL DEFAULT 'XLSX',
+  church_id uuid REFERENCES public.churches(id) ON DELETE SET NULL,
+  church_name text,
+  total_sheets integer NOT NULL DEFAULT 0,
+  total_rows_scanned integer NOT NULL DEFAULT 0,
+  member_rows_detected integer NOT NULL DEFAULT 0,
+  valid_members integer NOT NULL DEFAULT 0,
+  invalid_rows integer NOT NULL DEFAULT 0,
+  possible_duplicates integer NOT NULL DEFAULT 0,
+  likely_duplicates integer NOT NULL DEFAULT 0,
+  matched_groups integer NOT NULL DEFAULT 0,
+  unmatched_groups integer NOT NULL DEFAULT 0,
+  matched_cells integer NOT NULL DEFAULT 0,
+  unmatched_cells integer NOT NULL DEFAULT 0,
+  status text NOT NULL DEFAULT 'DryRunReady',
+  dry_run_report jsonb NOT NULL DEFAULT '{}'::jsonb,
+  mapping_version text NOT NULL,
+  created_by uuid,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.member_legacy_import_rows (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  batch_id uuid NOT NULL REFERENCES public.member_legacy_import_batches(id) ON DELETE CASCADE,
+  sheet_name text NOT NULL,
+  source_row_number integer NOT NULL,
+  raw_values jsonb NOT NULL DEFAULT '{}'::jsonb,
+  normalized_values jsonb NOT NULL DEFAULT '{}'::jsonb,
+  proposed_member jsonb NOT NULL DEFAULT '{}'::jsonb,
+  proposed_church_id uuid,
+  proposed_cell_group_id text,
+  proposed_cell_id text,
+  duplicate_candidate_member_id uuid,
+  duplicate_confidence text,
+  group_match_status text,
+  cell_match_status text,
+  validation_status text NOT NULL,
+  warnings jsonb NOT NULL DEFAULT '[]'::jsonb,
+  errors jsonb NOT NULL DEFAULT '[]'::jsonb,
+  decision text NOT NULL DEFAULT 'Pending',
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_members_legacy_import_batch ON public.members(legacy_import_batch_id);
+CREATE INDEX IF NOT EXISTS idx_member_legacy_rows_batch ON public.member_legacy_import_rows(batch_id);
 
 DROP TRIGGER IF EXISTS trg_members_updated_at ON public.members;
 CREATE TRIGGER trg_members_updated_at

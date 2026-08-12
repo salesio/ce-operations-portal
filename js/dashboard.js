@@ -10595,7 +10595,7 @@ function renderMembers() {
   ]);
   const rowAttrs = filtered.map((m) => ` data-filter-row data-filter-church-values="${churchFilterTokens(m)}" data-filter-status-values="${statusKey(m.estado)} ${m.estado || ""}"`);
   setPageContent(`
-    ${sectionHeader(L("members"), L("membersSubtitle"), "member", "bi-people")}
+    ${sectionHeader(L("members"), L("membersSubtitle"), "member", "bi-people", { actions: `<button type="button" class="btn btn-outline-cyan btn-touch" data-hq-members-dry-run><i class="bi bi-file-earmark-spreadsheet me-2"></i>${lang === "pt" ? "Pré-visualizar importação histórica" : "Preview legacy import"}</button><input id="hq-members-import-file" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>` })}
     <div class="row g-3 mb-4 summary-cards-row">
       ${sm("bi-people", L("total"), list.length, "members", { scrollTo: "members-results", filterPayload: {} })}
       ${sm("bi-check-circle", L("active"), list.filter((m) => statusKey(m.estado) === "active").length, "members", { scrollTo: "members-results", filterPayload: { status: "active" } })}
@@ -10610,7 +10610,21 @@ function renderMembers() {
         ${view === "cards" ? DataCardsGrid(filtered.map((m) => renderMemberCard(m)).join("")) : dataTable([L("name"), L("phone"), L("church"), L("cell"), L("department"), L("status"), L("actions")], tableRows, { rowAttrs })}
       </div>
     </article>
+    ${renderHqMembersDryRunPreview()}
   `);
+}
+
+function renderHqMembersDryRunPreview() {
+  const dryRun = state.hqMembersLegacyDryRun;
+  if (!dryRun?.report) return "";
+  const report = dryRun.report;
+  const rows = (dryRun.rows || []).slice(0, 50);
+  return `<article class="panel glass-panel mt-4">
+    <div class="d-flex flex-wrap justify-content-between gap-2 align-items-start mb-3"><div><h3 class="h5 mb-1">${lang === "pt" ? "Pré-visualização: importação histórica" : "Legacy import preview"}</h3><p class="mb-0 text-secondary">${lang === "pt" ? "Apenas leitura. Nenhum membro, célula, grupo ou dado no Supabase foi criado ou alterado." : "Read-only. No member, cell, group, or Supabase data was created or changed."}</p></div><span class="badge text-bg-warning">Dry run</span></div>
+    <div class="row g-3 mb-3">${sm("bi-people", lang === "pt" ? "Linhas de membros" : "Member rows", report.member_rows_detected || 0, "members")}${sm("bi-telephone", lang === "pt" ? "Com telefone" : "With phone", report.rows_with_phone || 0, "members")}${sm("bi-exclamation-triangle", lang === "pt" ? "Possíveis duplicados" : "Possible duplicates", report.possible_duplicates || 0, "members")}${sm("bi-question-circle", lang === "pt" ? "Sem telefone" : "Missing phone", report.rows_missing_phone || 0, "members")}</div>
+    ${dataTable([lang === "pt" ? "Folha" : "Sheet", lang === "pt" ? "Linha" : "Row", lang === "pt" ? "Estado" : "Status", lang === "pt" ? "Avisos" : "Warnings"], rows.map((row) => [row.sheet_name, row.source_row_number, badge(row.validation_status), (row.warnings || []).join(" · ") || "-"]))}
+    <p class="small text-secondary mt-3 mb-0">${lang === "pt" ? "São mostradas no máximo 50 linhas. Revise os casos pendentes antes de qualquer importação futura autorizada." : "A maximum of 50 rows is shown. Review pending cases before any future authorized import."}</p>
+  </article>`;
 }
 
 function defaultFoundationAttendance() {
@@ -14214,6 +14228,12 @@ function migrateMemberRecord(member) {
     nome: member.nome || member.first_name || "",
     apelido: member.apelido || member.last_name || "",
     telefone: member.telefone || member.phone || "",
+    primary_phone: member.primary_phone || member.telefone || member.phone || "",
+    secondary_phone: member.secondary_phone || "",
+    neighborhood: member.neighborhood || member.bairro || "",
+    marital_status: member.marital_status || "",
+    occupation: member.occupation || member.profissao || "",
+    kingschat_username: member.kingschat_username || "",
     whatsapp: member.whatsapp || member.telefone || member.phone || "",
     email: member.email || "",
     endereco: member.endereco || member.address || "",
@@ -14229,6 +14249,10 @@ function migrateMemberRecord(member) {
     department_id: member.department_id || "",
     department_name: member.department_name || member.departamento || "",
     estado: member.estado || member.status || "Active",
+    membership_status: member.membership_status || member.estado || member.status || "Active",
+    cell_role: member.cell_role || "Member",
+    cell_participation_status: member.cell_participation_status || "Unknown",
+    service_participation_status: member.service_participation_status || "Unknown",
     data_de_entrada: member.data_de_entrada || member.member_since || "",
     origem: member.origem || member.source || "Manual",
     notas: member.notas || member.notes || ""
@@ -18404,9 +18428,11 @@ const formSchemas = {
   // Rendered by renderFirstTimerIntakeForm; kept only as a safe fallback schema.
   firstTimer: [["full_name", "fullName"], ["phone", "phone"], ["date_of_birth", "birthDate", "date"], ["neighborhood", "areaNeighborhood"], ["profession", "staffRoleTitle"], ["invited_by_name", "Invited by"], ["nasceu_de_novo", "bornAgain", "checkbox"], ["foundation_school_interest", "foundationSchool", "checkbox"], ["interesse_em_celula", "cellInterest", "checkbox"], ["next_service_interest", "nextService", "checkbox"], ["church_id", "church", "church"]],
   member: [
-    ["tratamento", "treatment", "select", treatmentOptions], ["nome", "name"], ["apelido", "surname"], ["telefone", "phone"], ["email", "email", "email"],
+    ["", "Dados pessoais", "section"],
+    ["tratamento", "treatment", "select", treatmentOptions], ["nome", "name"], ["apelido", "surname"], ["primary_phone", "Telefone (opcional)"], ["secondary_phone", "Telefone alternativo (opcional)"], ["email", "email", "email"], ["neighborhood", "Bairro"], ["marital_status", "Estado civil"], ["occupation", "Profissão"], ["kingschat_username", "KingsChat"],
+    ["", "Igreja, célula e participação", "section"],
     ["church_id", "church", "church", { showInfoCard: true, autofillFields: ["church_id", "province", "city", "district_or_area"], igrejaField: "igreja" }],
-    ["cell_group_id", "cellGroup", "cellGroupSelect"], ["cell_id", "cell", "cellRegistrySelect"], ["departamento", "department"], ["estado", "status", "select", memberStatuses], ["data_de_entrada", "entryDate", "date"], ["origem", "origin", "select", ["Primeira Vez", "Escola de Fundação", "Transferência", "Manual"]], ["notas", "notes", "textarea"]
+    ["cell_group_id", "cellGroup", "cellGroupSelect"], ["cell_id", "cell", "cellRegistrySelect"], ["cell_role", "Função na célula", "select", ["Member", "Leader", "Assistant", "Visitor"]], ["cell_participation_status", "Participação na célula", "select", ["Regular", "Sometimes", "NotParticipating", "Unknown"]], ["service_participation_status", "Participação nos cultos", "select", ["Regular", "Sometimes", "NotParticipating", "Unknown"]], ["departamento", "department"], ["", "Situação e histórico", "section"], ["estado", "status", "select", memberStatuses], ["membership_status", "Estado de membro", "select", ["Active", "Inactive", "Transferred", "Pending"]], ["data_de_entrada", "entryDate", "date"], ["origem", "origin", "select", ["Primeira Vez", "Escola de Fundação", "Transferência", "Manual"]], ["legacy_foundation_status", "Escola de Fundação (legado)", "select", ["Unknown", "NotStarted", "InterestedOrRegistered", "InProgress", "Completed", "Graduated", "Incomplete"]], ["legacy_alec_status", "ALEC (legado)", "select", ["Unknown", "NotStarted", "Registered", "InProgress", "Completed"]], ["legacy_baptism_status", "Batismo (legado)", "select", ["Unknown", "Yes", "No"]], ["legacy_partner_status", "Parceria (legado)", "select", ["Unknown", "Yes", "No"]], ["notas", "notes", "textarea"]
   ],
   foundationStudent: [],
   finance: financeEntrySchema(),
@@ -18718,6 +18744,19 @@ function fieldControl([name, labelKey, inputType = "text", options = []], record
 async function submitForm(form) {
   const schema = modalType === "finance" ? getFinanceSchema(modalMode === "edit" ? "edit" : "create") : formSchemas[modalType];
   const data = Object.fromEntries(new FormData(form).entries());
+  if (modalType === "member") {
+    const memberName = [data.nome, data.apelido].map((value) => String(value || "").trim()).filter(Boolean).join(" ");
+    if (!memberName || !data.church_id) {
+      alert("Para criar um membro, informe pelo menos o nome e a igreja.");
+      return;
+    }
+    // Phone is intentionally optional. Persist no invented number when blank.
+    data.primary_phone = String(data.primary_phone || "").trim() || null;
+    data.secondary_phone = String(data.secondary_phone || "").trim() || null;
+    data.telefone = data.primary_phone;
+    data.phone = data.primary_phone;
+    data.data_quality_status = data.primary_phone ? "Valid" : "NeedsReview";
+  }
   if (modalType === "firstTimer") {
     ["nasceu_de_novo", "foundation_school_interest", "interesse_em_celula", "next_service_interest"].forEach((field) => {
       data[field] = String(data[field] || "false") === "true";
@@ -20137,6 +20176,13 @@ function enrollFirstTimer(id) {
 }
 
 document.addEventListener("click", async (event) => {
+  if (event.target.closest("[data-hq-members-dry-run]")) {
+    byId("hq-members-import-file")?.click();
+    return;
+  }
+  if (inputType === "section") {
+    return `<div class="col-12 pt-2"><h3 class="h6 border-bottom pb-2 mb-0">${label}</h3></div>`;
+  }
   if (event.target.closest("[data-first-timer-csv-template]")) {
     downloadFirstTimerExcelTemplate();
     return;
@@ -20948,6 +20994,32 @@ byId("entryModal")?.addEventListener("hidden.bs.modal", () => {
 });
 
 document.addEventListener("change", (event) => {
+  if (event.target.matches("#hq-members-import-file")) {
+    const file = event.target.files?.[0];
+    const parse = window.CEMembers?.parseHqMembersWorkbook;
+    if (!file || typeof parse !== "function") {
+      alert(lang === "pt" ? "A pré-visualização não está disponível. Atualize a página depois de compilar o bundle de dados." : "The preview is unavailable. Refresh after the data bundle has been compiled.");
+      return;
+    }
+    file.arrayBuffer()
+      .then((buffer) => {
+        state.hqMembersLegacyDryRun = parse(buffer, {
+          churches: state.churches || [],
+          cellGroups: state.cellGroups || state.cellMinistry?.groups || [],
+          cells: state.cells || state.cellMinistry?.cells || [],
+          members: state.members || [],
+          sourceFileName: file.name,
+          createdBy: activeUser?.name || ""
+        });
+        renderMembers();
+      })
+      .catch((error) => {
+        console.error("[CE Members] legacy dry-run failed", error);
+        alert(lang === "pt" ? "Não foi possível ler a planilha. Nenhum dado foi alterado." : "The workbook could not be read. No data was changed.");
+      })
+      .finally(() => { event.target.value = ""; });
+    return;
+  }
   if (event.target.matches("[data-first-timer-import]")) {
     importFirstTimerCsv(event.target.files?.[0]);
     event.target.value = "";

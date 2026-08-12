@@ -14,6 +14,7 @@ Data layer stores users, roles, permissions, templates, and audit logs for dual-
 4. Sensitive modules require explicit view permission.
 5. Scopes: `own` | `church` | `department` | `national` | `all`.
 6. Audit critical actions: approve, verify, release, export, view_salary, change_role, access_denied.
+7. Historical member raw values are limited to authorized import/reconciliation review; ordinary profiles show only safe legacy indicators.
 
 ## Demo users
 

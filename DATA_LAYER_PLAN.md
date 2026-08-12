@@ -1,5 +1,9 @@
 # Data layer plan — CE Mozambique Operations Dashboard
 
+## Members Master Data + HQ Legacy Import Readiness
+
+Migration `0015_members_master_data_legacy_import_readiness.sql` is additive. It extends member master data and adds batch/row staging tables for review. The HQ workbook is processed only through `dry-run:hq-members-import`; it creates no member, Finance, Sacrament, Foundation, Cell, Cell Group or permission record.
+
 ## Pastoral Care — First Timers Intake Workflow Refactor
 
 Migration `0013_first_timers_intake_workflow.sql` adds a lightweight batch and explicit workflow fields to `first_timers`. The intake uses the Supabase-safe First Timers adapter, accepts no cell assignment or enrolment fields, and never automatically creates a member, Foundation School enrolment or Follow-Up case.

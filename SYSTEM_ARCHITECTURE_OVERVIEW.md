@@ -1,5 +1,9 @@
 # System Architecture Overview
 
+## Members legacy-data boundary
+
+The HQ workbook parser is read-only preparation: it creates a dry-run preview only and never invokes a write repository. Current Foundation, Sacraments and Finance data remains authoritative over historical spreadsheet values.
+
 ## Layers
 
 1. **UI** — static HTML + `js/dashboard.js` + module bridges  
