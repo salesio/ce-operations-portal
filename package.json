@@ -46,6 +46,7 @@
     "test:reports-notifications-audit-supabase": "node scripts/smoke-reports-notifications-audit-supabase.mjs",
     "test:validate-seeds-safety": "node scripts/validate-seeds-safety.mjs",
     "test:migrations-readiness": "node scripts/validate-migrations-order.mjs",
+    "test:pastoral-care-access-migration": "node scripts/smoke-pastoral-care-access-migration.mjs",
     "test:data-source-readiness": "node scripts/check-data-source-readiness.mjs",
     "test:production-readiness": "node scripts/production-readiness-check.mjs",
     "test:phase-13-production-readiness": "node scripts/smoke-production-readiness.mjs",
