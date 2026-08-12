@@ -20180,9 +20180,6 @@ document.addEventListener("click", async (event) => {
     byId("hq-members-import-file")?.click();
     return;
   }
-  if (inputType === "section") {
-    return `<div class="col-12 pt-2"><h3 class="h6 border-bottom pb-2 mb-0">${label}</h3></div>`;
-  }
   if (event.target.closest("[data-first-timer-csv-template]")) {
     downloadFirstTimerExcelTemplate();
     return;
