@@ -11,7 +11,7 @@ for (const file of required) {
 }
 const dashboard = fs.readFileSync("js/dashboard.js", "utf8");
 const migration = fs.readFileSync("supabase/migrations/0015_members_master_data_legacy_import_readiness.sql", "utf8");
-for (const token of ["memberRegistrationCandidates", "openMemberCandidateForm", "candidateAction", "member_candidate.approved", "member_candidate.submitted", "member_candidate.correction_requested", "data-open-member-candidate", "data-candidate-submit-form", "Registos por Aprovar", "data-member-candidate-tab", "persistMemberCandidateViaRepository"]) {
+for (const token of ["memberRegistrationCandidates", "openMemberCandidateForm", "candidateAction", "member_candidate.approved", "member_candidate.submitted", "member_candidate.correction_requested", "data-open-member-candidate", "data-candidate-submit-form", "Registos por Aprovar", "data-member-candidate-tab", "persistMemberCandidateViaRepository", "local-state-legacy-candidate", "provider_sync_status", "Pending"]) {
   if (!dashboard.includes(token)) throw new Error(`Dashboard workflow is missing: ${token}`);
 }
 for (const token of ["member_registration_candidates", "primary_phone text", "approval_status", "approved_member_id"]) {

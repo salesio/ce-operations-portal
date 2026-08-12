@@ -10667,7 +10667,15 @@ async function persistMemberCandidateViaRepository(mode, candidate) {
   const actor = { id: activeUser?.id, name: activeUser?.name, role: activeUser?.role, church_id: candidate.church_id, authorized_cell_ids: getAuthorizedCellsForUser(activeUser?.id).map((cell) => cell.id) };
   try {
     const result = mode === "create" ? await repo.createMemberRegistrationCandidate(candidate, actor) : await repo.updateMemberRegistrationCandidate(candidate.id, candidate, actor);
-    if (result?.ok === false) console.warn("[CE Member Candidates] repository write failed; keeping local record", result);
+    if (result?.ok === false) {
+      // Older dashboard-only candidates predate the Supabase row. They must not
+      // prevent an explicit human approval from creating and displaying the member.
+      if (mode === "update" && (result.code === "NOT_FOUND" || /n[aã]o encontrado|not found/i.test(String(result.error || "")))) {
+        console.warn("[CE Member Candidates] legacy local candidate not yet in provider; preserving local workflow", result);
+        return { ok: true, data: candidate, skipped: true, via: "local-state-legacy-candidate", repoError: result };
+      }
+      console.warn("[CE Member Candidates] repository write failed; keeping local record", result);
+    }
     return result || { ok: true, data: candidate };
   } catch (error) {
     console.warn("[CE Member Candidates] repository unavailable; keeping local record", error);
@@ -10753,7 +10761,11 @@ async function candidateAction(action, id) {
         }
         if (!member) {
           member = { id: `m-${Date.now()}`, nome: candidate.full_name.split(" ")[0], apelido: candidate.full_name.split(" ").slice(1).join(" "), full_name: candidate.full_name, telefone: candidate.primary_phone, primary_phone: candidate.primary_phone, email: candidate.email || "", church_id: candidate.church_id, church_name: candidate.church_name, cell_group_id: candidate.cell_group_id, cell_group_name: candidate.cell_group_name, cell_id: candidate.cell_id, cell_name: candidate.cell_name, celula: candidate.cell_name, origem: candidate.registration_source, estado: "Active", status: "Active", membership_status: "Active", data_quality_status: candidate.data_quality_status, created_at: now, updated_at: now };
-          const memberResult = await persistMemberViaRepository("create", member); if (memberResult?.ok === false) return alert(memberResult.error || "Não foi possível criar o membro oficial."); state.members.push(member);
+          const memberResult = await persistMemberViaRepository("create", member); if (memberResult?.ok === false) return alert(memberResult.error || "Não foi possível criar o membro oficial.");
+          // Keep a visible local fallback when the active provider cannot yet write.
+          // It is preserved during hydration instead of disappearing after refresh.
+          if (memberResult?.skipped) member.provider_sync_status = "Pending";
+          state.members.push(member);
         } else if (!member.cell_id) {
           Object.assign(member, { cell_id: candidate.cell_id, cell_name: candidate.cell_name, celula: candidate.cell_name, cell_group_id: candidate.cell_group_id, cell_group_name: candidate.cell_group_name, updated_at: now }); void persistMemberViaRepository("update", member);
         }
@@ -14506,10 +14518,12 @@ async function hydrateMembersFromRepository() {
       return false;
     }
     const previousById = new Map((state.members || []).map((item) => [item.id, item]));
-    state.members = result.data.map((repoMember) => {
+    const hydratedMembers = result.data.map((repoMember) => {
       const previous = previousById.get(repoMember.id) || {};
       return migrateMemberRecord({ ...previous, ...repoMember });
     });
+    const pendingLocalMembers = (state.members || []).filter((member) => member.provider_sync_status === "Pending" && !hydratedMembers.some((repoMember) => repoMember.id === member.id));
+    state.members = [...hydratedMembers, ...pendingLocalMembers];
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     console.info("[CE Members] hydrated", state.members.length, "members");
     return true;
