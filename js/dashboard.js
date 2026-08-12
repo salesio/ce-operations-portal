@@ -19771,7 +19771,80 @@ async function submitForm(form) {
   setRoute(activeRoute);
 }
 
+function restoreEntryModalFooter() {
+  const footer = byId("entryForm")?.querySelector(".ops-modal-footer");
+  if (!footer) return;
+  footer.innerHTML = `<button type="button" class="btn btn-outline-glass btn-touch" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-ce-gold btn-touch">Guardar</button>`;
+}
+
+function memberProfileStatus(value) {
+  const status = String(value || "Unknown").trim();
+  return ({ Active: "Activo", Inactive: "Inactivo", "In Progress": "Em Progresso", Unknown: "Não informado", NotRequired: "Não informado" })[status] || status;
+}
+
+function memberProfileValue(...values) {
+  return values.find((value) => value !== undefined && value !== null && String(value).trim() !== "") || "";
+}
+
+function memberProfileRows(rows, { core = [] } = {}) {
+  return `<div class="member-profile-grid">${rows.filter(([label, value]) => value || core.includes(label)).map(([label, value]) => `<div><span>${escapeAttr(label)}</span><strong>${escapeAttr(value || "—")}</strong></div>`).join("")}</div>`;
+}
+
+function buildMemberProfileViewModel(member) {
+  const full = fullName(member) || memberProfileValue(member.full_name, member.fullName, member.name) || "Membro";
+  const phone = memberProfileValue(member.primary_phone, member.telefone, member.phone);
+  const secondaryPhone = memberProfileValue(member.secondary_phone, member.telefone_alternativo);
+  const whatsapp = memberProfileValue(member.whatsapp);
+  const church = memberProfileValue(member.church_name, member.igreja, churchName(member.church_id));
+  const group = memberProfileValue(member.cell_group_name, (state.cellGroups || []).find((item) => item.id === member.cell_group_id)?.group_name);
+  const cell = memberProfileValue(member.cell_name, member.celula, (state.cellRegistry || []).find((item) => item.id === member.cell_id)?.cell_name);
+  const spiritual = getCellMemberSpiritualProgress(member.id) || {};
+  const foundation = spiritual.foundation || {};
+  const sacraments = spiritual.sacraments || {};
+  const nameKey = portalText(full);
+  const sameMember = (record) => record?.member_id === member.id || (nameKey && portalText(portalPersonName(record)) === nameKey);
+  const alec = [...(state.cellLeadership?.alecScores || []), ...(state.cellLeadership?.alecRegistrations || [])].find(sameMember);
+  const invited = (state.firstTimers || []).filter((item) => item.invited_by_member_id === member.id).length;
+  const followups = (state.followUps || []).filter((item) => item.member_id === member.id || item.first_timer_member_id === member.id).length;
+  const financeAllowed = ["Super Admin", "Finance Head", "Partnership Coordinator"].includes(activeUser?.role);
+  const finance = financeAllowed ? getCellMemberFinanceSummary(member.id, ["cell_portal.view_finance_summary"]) : null;
+  const adminQuality = ["Super Admin", "Membership Officer", "Church Admin", "Members/Data Officer", "Membership Admin"].includes(activeUser?.role);
+  const legacy = Boolean(member.legacy_source || member.legacy_source_sheet || member.legacy_import_batch_id);
+  return {
+    full, initials: full.split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase(),
+    status: memberProfileStatus(memberProfileValue(member.membership_status, member.estado, member.status)), church, group, cell,
+    personal: [["Nome completo", full], ["Telefone", phone], ["Telefone alternativo", secondaryPhone && secondaryPhone !== phone ? secondaryPhone : ""], ["WhatsApp", whatsapp && whatsapp !== phone && whatsapp !== secondaryPhone ? whatsapp : ""], ["E-mail", memberProfileValue(member.email)], ["Data de nascimento", memberProfileValue(member.date_of_birth, member.data_de_nascimento)], ["Bairro", memberProfileValue(member.neighborhood, member.bairro)], ["Morada", memberProfileValue(member.address, member.endereco)], ["Estado civil", memberProfileValue(member.marital_status)], ["Profissão", memberProfileValue(member.occupation, member.profissao)], ["KingsChat", memberProfileValue(member.kingschat_username)]],
+    churchLife: [["Igreja", church], ["Membro desde", memberProfileValue(member.member_since, member.data_de_entrada)], ["Estado", memberProfileStatus(memberProfileValue(member.membership_status, member.estado, member.status))], ["Grupo de célula", group], ["Célula", cell], ["Função na célula", memberProfileValue(member.cell_role, "Membro")], ["Participação na célula", memberProfileStatus(member.cell_participation_status)], ["Participação nos cultos", memberProfileStatus(member.service_participation_status)], ["Origem", memberProfileValue(member.origem, member.source)]],
+    spiritual: [["Escola de Fundação", memberProfileValue(foundation.status, member.legacy_foundation_status, "Não informado")], ["Baptismo", sacraments.baptized ? "Baptizado" : memberProfileValue(member.legacy_baptism_status, "Não informado")], ["Sacramentos", `${Number(sacraments.marriages || 0)} casamento(s) · ${Number(sacraments.baby_dedications || 0)} dedicação(ões)`], ["ALEC", memberProfileValue(alec?.status, alec?.estado, member.legacy_alec_status, "Não informado")], ["Graduação Foundation", foundation.graduated ? "Concluída" : ""], ["Acompanhamento", followups ? `${followups} registo(s)` : ""]],
+    stewardship: finance ? [["Parceiro", yesNo(finance.is_partner)], ["Ramos de parceria", finance.partnership_arms.join(", ")], ["Dízimo", finance.is_tither ? "Actividade recente" : "Sem actividade"]] : [],
+    souls: [["Pessoas convidadas", invited], ["First Timers associados", invited], ["Nasceram de novo", (state.firstTimers || []).filter((item) => item.invited_by_member_id === member.id && /sim|yes|true/i.test(String(item.nasceu_de_novo || item.born_again || ""))).length], ["Em acompanhamento", followups], ["Enviados à Escola de Fundação", (state.foundationStudents || []).filter((item) => item.member_id === member.id).length]],
+    history: [["Origem do cadastro", memberProfileValue(member.origem, member.source)], ["Criado em", memberProfileValue(member.created_at, member.createdAt)], ["Última actualização", memberProfileValue(member.updated_at, member.updatedAt)]],
+    quality: adminQuality && (legacy || !["", "Valid", "Clean", "NotRequired"].includes(String(member.data_quality_status || "")) || member.reconciliation_status) ? [["Qualidade", memberProfileStatus(member.data_quality_status)], ["Reconciliação", memberProfileStatus(member.reconciliation_status)], ["Histórico importado", yesNo(legacy)], ["Folha de origem", member.legacy_source_sheet || ""], ["Linha de origem", member.legacy_source_row || ""]] : []
+  };
+}
+
+function memberProfileHtml(member) {
+  const vm = buildMemberProfileViewModel(member);
+  const section = (title, rows, options) => `<section class="member-profile-section"><h6>${title}</h6>${memberProfileRows(rows, options)}</section>`;
+  return `<article class="member-profile"><header class="member-profile-header"><span class="member-profile-avatar">${escapeAttr(vm.initials)}</span><div><h3>${escapeAttr(vm.full)}</h3><div class="member-profile-badges">${badge(vm.status)}${vm.church ? `<span>${escapeAttr(vm.church)}</span>` : ""}${vm.cell ? `<span>Célula: ${escapeAttr(vm.cell)}</span>` : ""}</div></div></header>${section("Dados Pessoais", vm.personal, { core: ["Telefone", "E-mail"] })}${section("Vida na Igreja", vm.churchLife, { core: ["Igreja", "Célula"] })}${section("Progresso Espiritual", vm.spiritual)}${vm.stewardship.length ? section("Parcerias & Mordomia", vm.stewardship) : ""}${section("Ganhar Almas", vm.souls)}<details class="member-profile-history"><summary>Histórico</summary>${memberProfileRows(vm.history)}</details>${vm.quality.length ? `<details class="member-profile-history"><summary>Qualidade dos Dados</summary>${memberProfileRows(vm.quality)}</details>` : ""}</article>`;
+}
+
+function openMemberProfileView(id) {
+  const member = (state.members || []).find((item) => item.id === id);
+  if (!member) return;
+  restoreEntryModalFooter();
+  byId("modalEyebrow").textContent = "Perfil pastoral";
+  byId("modalTitle").textContent = fullName(member) || "Membro";
+  byId("modalFields").innerHTML = `<div class="col-12">${memberProfileHtml(member)}</div>`;
+  const footer = byId("entryForm")?.querySelector(".ops-modal-footer");
+  if (footer) footer.innerHTML = `<button type="button" class="btn btn-outline-glass btn-touch" data-bs-dismiss="modal">Fechar</button>${canRenderAction("edit", "member") ? `<button type="button" class="btn btn-ce-gold btn-touch" data-member-profile-edit="${escapeAttr(id)}">Editar</button>` : ""}`;
+  modalType = null;
+  bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
+}
+
 function openView(type, id) {
+  if (type === "member") return openMemberProfileView(id);
+  restoreEntryModalFooter();
   if (type === "church") return openChurchDrawer("view", id);
   if (type === "finance") return openFinanceDrawer("view", id);
   if (type === "staffProfile") return openStaffProfileView(id);
@@ -20405,6 +20478,11 @@ document.addEventListener("click", async (event) => {
   if (candidateTabButton) {
     modulePageState.members.candidateTab = candidateTabButton.dataset.memberCandidateTab || "pending";
     return renderMembers();
+  }
+  const memberProfileEdit = event.target.closest("[data-member-profile-edit]");
+  if (memberProfileEdit) {
+    bootstrap.Modal.getInstance(byId("entryModal"))?.hide();
+    return openForm("member", memberProfileEdit.dataset.memberProfileEdit);
   }
   const portalSection = event.target.closest("[data-cell-portal-section]");
   if (portalSection) return scrollContentTo(portalSection.dataset.cellPortalSection);

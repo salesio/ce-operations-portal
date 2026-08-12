@@ -56,6 +56,7 @@
     "test:members-master-data": "node scripts/smoke-members-master-data.mjs",
     "test:member-candidate-workflow": "node scripts/smoke-member-candidate-workflow.mjs",
     "test:member-candidate-approval-flow": "node scripts/smoke-member-candidate-workflow.mjs",
+    "test:member-profile-view": "node scripts/smoke-member-profile-view.mjs",
     "test:hq-members-import": "node scripts/smoke-hq-members-import.mjs",
     "dry-run:hq-members-import": "node scripts/dry-run-hq-members-import.mjs",
     "docker:up": "docker compose up -d",
