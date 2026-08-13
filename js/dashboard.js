@@ -5120,6 +5120,71 @@ const cellPortalPageState = {
   tithe: "",
   invited: ""
 };
+// The Cell Portal deliberately has its own paginated member source.  Do not
+// reuse state.members here: that cache belongs to local/mock compatibility and
+// must never decide what a live Supabase cell can see.
+const cellPortalMembersState = { cellId: "", page: 1, pageSize: 50, totalCount: 0, totalPages: 1, items: [], loading: false, loaded: false, error: "", requestId: 0 };
+const cellPortalContextState = { ready: false, loading: false };
+
+function usesSupabaseMembers() {
+  // CEDataLayer is an aggregate and intentionally has no getInfo method.
+  // The Members module exposes the authoritative per-module provider state.
+  const runtime = window.CEMembers?.getInfo?.() || window.CEDataLayer?.members?.getInfo?.() || window.CESupabase?.getInfo?.() || {};
+  return String(runtime.dataSource || runtime.provider || window.__CE_ENV__?.VITE_DATA_SOURCE || "").toLowerCase() === "supabase";
+}
+
+function cellPortalMemberSource(cellId) {
+  if (usesSupabaseMembers()) {
+    return String(cellPortalMembersState.cellId) === String(cellId) ? cellPortalMembersState.items : [];
+  }
+  return state.members || [];
+}
+
+async function loadCellPortalMembers(cellId, { force = false } = {}) {
+  if (!usesSupabaseMembers()) return true;
+  const repo = getMembersRepoSafe();
+  if (!repo?.listMembersPage || !cellId) return false;
+  const pageState = cellPortalMembersState;
+  if (!force && pageState.loading) return false;
+  if (!force && pageState.loaded && String(pageState.cellId) === String(cellId)) return true;
+  const requestId = ++pageState.requestId;
+  pageState.loading = true;
+  pageState.error = "";
+  pageState.cellId = cellId;
+  try {
+    const result = await repo.listMembersPage({ page: pageState.page, pageSize: pageState.pageSize, cellId });
+    if (requestId !== pageState.requestId) return false;
+    if (!result?.ok) { pageState.error = result?.error || "Falha ao carregar membros da célula."; return false; }
+    pageState.items = (result.data?.items || []).map((member) => migrateMemberRecord(member));
+    pageState.page = result.data?.page || pageState.page;
+    pageState.pageSize = result.data?.pageSize || pageState.pageSize;
+    pageState.totalCount = result.data?.totalCount || 0;
+    pageState.totalPages = result.data?.totalPages || 1;
+    pageState.loaded = true;
+    return true;
+  } catch (error) {
+    if (requestId === pageState.requestId) pageState.error = error?.message || "Falha ao carregar membros da célula.";
+    return false;
+  } finally {
+    if (requestId === pageState.requestId) {
+      pageState.loading = false;
+      if (activeRoute === "cellPortal") renderCellLeaderPortal();
+    }
+  }
+}
+
+async function ensureCellPortalContext() {
+  if (!usesSupabaseMembers() || cellPortalContextState.ready || cellPortalContextState.loading) return cellPortalContextState.ready;
+  cellPortalContextState.loading = true;
+  try {
+    await hydrateCellMinistryFromRepository();
+    cellPortalContextState.ready = true;
+    return true;
+  } finally {
+    cellPortalContextState.loading = false;
+    if (activeRoute === "cellPortal") renderCellLeaderPortal();
+  }
+}
 
 function hasCellPortalPermission(permission, user = activeUser) {
   if (!user) return false;
@@ -5217,7 +5282,7 @@ function portalMemberBelongsToCell(member, cell) {
 }
 
 function getCellMemberFinanceSummary(memberId, permissions = activeUser?.permissions || []) {
-  const member = (state.members || []).find((item) => item.id === memberId);
+  const member = [...(cellPortalMembersState.items || []), ...(state.members || [])].find((item) => item.id === memberId);
   if (!member) return { is_tither: false, is_partner: false, partnership_arms: [], last_contribution_month: "" };
   const canSeeSummary = hasCellPortalPermission("cell_portal.view_finance_summary") || permissions.includes("cell_portal.view_finance_summary");
   const name = portalText(portalPersonName(member));
@@ -5249,7 +5314,7 @@ function getCellMemberFinanceSummary(memberId, permissions = activeUser?.permiss
 }
 
 function getCellMemberSpiritualProgress(memberId) {
-  const member = (state.members || []).find((item) => item.id === memberId);
+  const member = [...(cellPortalMembersState.items || []), ...(state.members || [])].find((item) => item.id === memberId);
   if (!member) return null;
   const memberName = portalText(portalPersonName(member));
   const phone = String(member.telefone || member.phone || "").replace(/\D/g, "");
@@ -5281,7 +5346,7 @@ function getCellMemberSpiritualProgress(memberId) {
 function getCellMembersProfile(cellId, filters = cellPortalPageState) {
   const cell = (state.cellRegistry || []).find((item) => item.id === cellId);
   if (!cell || !canAccessCell(activeUser?.id, cellId) || !hasCellPortalPermission("cell_portal.view_members")) return [];
-  return (state.members || []).filter((member) => portalMemberBelongsToCell(member, cell)).map((member) => {
+  return cellPortalMemberSource(cellId).filter((member) => portalMemberBelongsToCell(member, cell)).map((member) => {
     const spiritual = getCellMemberSpiritualProgress(member.id);
     const finance = getCellMemberFinanceSummary(member.id);
     const row = {
@@ -10249,6 +10314,11 @@ function renderCellLeaderPortal() {
     return;
   }
   if (!hasCellPortalPermission("cell_portal.view")) return renderAccessDenied();
+  if (usesSupabaseMembers() && !cellPortalContextState.ready) {
+    void ensureCellPortalContext();
+    setPageContent(`<section class="panel glass-panel cell-portal-empty"><i class="bi bi-arrow-repeat"></i><h2>${lang === "pt" ? "A carregar células e grupos do Supabase…" : "Loading cells and groups from Supabase…"}</h2></section>`);
+    return;
+  }
   const authorizedCells = getAuthorizedCellsForUser(activeUser.id);
   if (!authorizedCells.length) {
     setPageContent(`<section class="panel glass-panel cell-portal-empty"><i class="bi bi-diagram-3"></i><h2>${lang === "pt" ? "Nenhuma célula está atribuída ao seu utilizador." : "No cell is assigned to your user."}</h2><p>${lang === "pt" ? "Contacte o Departamento de Células." : "Contact the Cell Ministry department."}</p></section>`);
@@ -10257,10 +10327,14 @@ function renderCellLeaderPortal() {
   }
   if (!cellPortalPageState.cellId || !canAccessCell(activeUser.id, cellPortalPageState.cellId)) cellPortalPageState.cellId = authorizedCells[0].id;
   const context = getCellLeaderContext(activeUser.id, cellPortalPageState.cellId);
+  if (usesSupabaseMembers() && (!cellPortalMembersState.loaded || String(cellPortalMembersState.cellId) !== String(context?.cell_id))) {
+    void loadCellPortalMembers(context?.cell_id);
+  }
   const stats = getCellDashboardStats(context.cell_id, cellPortalPageState);
   if (!stats) return renderAccessDenied();
   const members = stats.members;
   const allMembers = getCellMembersProfile(context.cell_id, {});
+  const cellMembersLoading = usesSupabaseMembers() && cellPortalMembersState.loading;
   // Show every registration in the authorized cell scope, not only the active creator's rows.
   const candidates = (state.memberRegistrationCandidates || []).filter((item) => context.authorized_cell_ids.includes(item.cell_id));
   const candidateCounts = {
@@ -10293,7 +10367,7 @@ function renderCellLeaderPortal() {
     <nav class="cell-portal-nav" aria-label="Secções do portal">${[["overview","Visão Geral"],["members","Membros"],["reports","Relatório"],["activities","Actividades"],["growth","Crescimento"],["finance","Parcerias & Dízimos"],["souls","Ganhar Almas"],["foundation","Fundação & Sacramentos"],["programs","Programas"],["history","Histórico"]].map(([id,label]) => `<button type="button" data-cell-portal-section="cell-portal-${id}">${label}</button>`).join("")}</nav>
     <section id="cell-portal-overview" class="cell-portal-section">${cellPortalSectionTitle("bi-grid-1x2", "Visão Geral", "Indicadores seguros da célula autorizada")}<div class="cell-portal-kpis">${[["bi-people","Total de membros",stats.total_members],["bi-person-check","Membros activos",stats.active_members],["bi-person-plus","Novos este mês",stats.new_members_month],["bi-person-heart","Visitantes ligados",stats.visitors],["bi-clipboard-check","Relatórios este mês",stats.reports_month],["bi-activity","Estado actual",stats.current_report_status],["bi-clock-history","Último relatório",stats.latest_report ? String(portalDateValue(stats.latest_report)).slice(0,10) : "—"],["bi-calendar-week","Próxima submissão",stats.next_submission]].map(([icon,label,value]) => `<article><i class="bi ${icon}"></i><span>${label}</span><strong>${escapeAttr(value)}</strong></article>`).join("")}</div><div class="cell-portal-meta"><div><span>Igreja</span><strong>${escapeAttr(context.church_name)}</strong></div><div><span>Grupo</span><strong>${escapeAttr(context.cell_group_name)}</strong></div><div><span>Liderança</span><strong>${escapeAttr(leaders.join(", ") || context.user_name)}</strong></div><div><span>Escopo</span><strong>${context.authorized_cell_ids.length} célula(s)</strong></div></div></section>
     <section class="cell-portal-section"><div class="cell-portal-alerts">${alerts.map((alert) => `<article class="is-${alert.tone}"><i class="bi bi-bell"></i><div><strong>${escapeAttr(alert.title)}</strong><p>${escapeAttr(alert.detail)}</p></div></article>`).join("") || `<article class="is-success"><i class="bi bi-check-circle"></i><div><strong>Sem alertas críticos</strong><p>Os principais indicadores estão actualizados.</p></div></article>`}</div></section>
-    <section id="cell-portal-members" class="cell-portal-section">${cellPortalSectionTitle("bi-people", "Membros da Célula", `${members.length} registo(s) conforme os filtros`)}<div class="panel glass-panel cell-portal-table-wrap"><table class="table cell-portal-table"><thead><tr><th>Nome</th><th>Telefone</th><th>Estado</th><th>Entrada</th><th>Fundação</th><th>Sacramentos</th><th>Parceiro</th><th>Dizimista</th><th>Convidados</th><th>Última presença</th><th></th></tr></thead><tbody>${members.map((member) => `<tr><td data-label="Nome"><strong>${escapeAttr(member.name)}</strong><small>${escapeAttr(member.pastoral_observation)}</small></td><td data-label="Telefone">${escapeAttr(member.phone)}</td><td data-label="Estado">${badge(member.status)}</td><td data-label="Entrada">${escapeAttr(member.joined_at || "—")}</td><td data-label="Fundação">${badge(member.foundation_status)}</td><td data-label="Sacramentos">${member.sacraments_count} · ${member.baptized ? "Baptizado" : "Não baptizado"}</td><td data-label="Parceiro">${yesNo(member.is_partner)}</td><td data-label="Dizimista">${yesNo(member.is_tither)}</td><td data-label="Convidados">${member.invited_count}</td><td data-label="Última presença">${escapeAttr(member.last_attendance || "—")}</td><td><button type="button" class="action-btn" data-cell-portal-member="${escapeAttr(member.id)}">Perfil na Célula</button></td></tr>`).join("") || `<tr><td colspan="11">Nenhum membro corresponde aos filtros.</td></tr>`}</tbody></table></div></section>
+    <section id="cell-portal-members" class="cell-portal-section">${cellPortalSectionTitle("bi-people", "Membros da Célula", cellMembersLoading ? "A carregar membros da célula no Supabase…" : `${usesSupabaseMembers() ? cellPortalMembersState.totalCount : members.length} registo(s) conforme os filtros`)}<div class="panel glass-panel cell-portal-table-wrap"><table class="table cell-portal-table"><thead><tr><th>Nome</th><th>Telefone</th><th>Estado</th><th>Entrada</th><th>Fundação</th><th>Sacramentos</th><th>Parceiro</th><th>Dizimista</th><th>Convidados</th><th>Última presença</th><th></th></tr></thead><tbody>${cellMembersLoading ? `<tr><td colspan="11">A carregar membros da célula…</td></tr>` : members.map((member) => `<tr><td data-label="Nome"><strong>${escapeAttr(member.name)}</strong><small>${escapeAttr(member.pastoral_observation)}</small></td><td data-label="Telefone">${escapeAttr(member.phone)}</td><td data-label="Estado">${badge(member.status)}</td><td data-label="Entrada">${escapeAttr(member.joined_at || "—")}</td><td data-label="Fundação">${badge(member.foundation_status)}</td><td data-label="Sacramentos">${member.sacraments_count} · ${member.baptized ? "Baptizado" : "Não baptizado"}</td><td data-label="Parceiro">${yesNo(member.is_partner)}</td><td data-label="Dizimista">${yesNo(member.is_tither)}</td><td data-label="Convidados">${member.invited_count}</td><td data-label="Última presença">${escapeAttr(member.last_attendance || "—")}</td><td><button type="button" class="action-btn" data-cell-portal-member="${escapeAttr(member.id)}">Perfil na Célula</button></td></tr>`).join("") || `<tr><td colspan="11">Nenhum membro corresponde aos filtros.</td></tr>`}</tbody></table></div>${usesSupabaseMembers() && !cellMembersLoading ? `<div class="d-flex justify-content-between align-items-center gap-2 mt-3"><small class="text-secondary">${cellPortalMembersState.totalCount} membro(s) · Página ${cellPortalMembersState.page} / ${cellPortalMembersState.totalPages}</small><div class="d-flex gap-2"><button class="action-btn" data-cell-portal-member-page="prev" ${cellPortalMembersState.page <= 1 ? "disabled" : ""}>Anterior</button><button class="action-btn" data-cell-portal-member-page="next" ${cellPortalMembersState.page >= cellPortalMembersState.totalPages ? "disabled" : ""}>Próximo</button></div></div>` : ""}</section>
     <section id="cell-portal-candidates" class="cell-portal-section">${cellPortalSectionTitle("bi-person-plus", "Registos por Aprovar", "Pedidos de adesão da(s) célula(s) autorizada(s)")}<div class="cell-portal-kpis cell-portal-kpis--compact">${[["bi-people","Membros oficiais",allMembers.length],["bi-pencil-square","Rascunhos",candidateCounts.drafts],["bi-hourglass-split","Aguardando aprovação",candidateCounts.submitted],["bi-search","Em revisão",candidateCounts.reviewing],["bi-arrow-repeat","Precisa correcção",candidateCounts.correction],["bi-x-circle","Rejeitados",candidateCounts.rejected]].map(([icon,label,value]) => `<article><i class="bi ${icon}"></i><span>${label}</span><strong>${value}</strong></article>`).join("")}</div><div class="panel glass-panel cell-portal-table-wrap mt-3"><table class="table cell-portal-table"><thead><tr><th>Nome</th><th>Telefone</th><th>Estado</th><th>Motivo</th><th>Acções</th></tr></thead><tbody>${candidates.filter((item) => !["Approved", "Withdrawn"].includes(item.approval_status)).map((item) => `<tr><td><strong>${escapeAttr(candidateFullName(item))}</strong></td><td>${escapeAttr(item.primary_phone || "—")}</td><td>${badge(candidateStatusLabel(item.approval_status))}</td><td>${escapeAttr(item.correction_reason || item.rejection_reason || "—")}</td><td>${candidatePortalActions(item)}</td></tr>`).join("") || `<tr><td colspan="5">Nenhum candidato pendente para esta célula.</td></tr>`}</tbody></table></div></section>
     <section id="cell-portal-reports" class="cell-portal-section cell-portal-grid-2"><article class="panel glass-panel">${cellPortalSectionTitle("bi-clipboard-data", "Relatório Semanal", "Igreja, grupo e célula ficam bloqueados")}<p class="text-secondary">Submetido por <strong>${escapeAttr(context.user_name)}</strong> como ${escapeAttr(context.cell_role)}. A oferta permanece <strong>Pending Finance Review</strong> e não cria financeRecord.</p><button type="button" class="btn btn-ce-gold btn-touch" data-public-cell-report>Submeter Relatório Semanal</button></article><article class="panel glass-panel">${cellPortalSectionTitle("bi-clock-history", "Último relatório")}${stats.latest_report ? `<div class="detail-grid"><div><span>Data</span><strong>${escapeAttr(String(portalDateValue(stats.latest_report)).slice(0,10))}</strong></div><div><span>Estado</span><strong>${escapeAttr(stats.current_report_status)}</strong></div><div><span>Presentes</span><strong>${Number(stats.latest_report.attendance_count ?? stats.latest_report.att ?? 0)}</strong></div><div><span>Visitantes</span><strong>${Number(stats.latest_report.first_timers_count ?? stats.latest_report.ft ?? 0)}</strong></div></div>` : `<p class="text-secondary">Ainda não existe relatório submetido.</p>`}</article></section>
     <section id="cell-portal-activities" class="cell-portal-section">${cellPortalSectionTitle("bi-calendar2-event", "Actividades", "Reuniões, evangelismo, visitação, oração e F.E.V.O")}<div class="cell-portal-activity-grid">${activities.map((item) => `<article><span>${escapeAttr(String(item.date || "").slice(0,10))}</span><h4>${escapeAttr(item.type)}</h4><p>${escapeAttr(item.title)}</p><div><small>${escapeAttr(item.responsible || "Por definir")}</small>${badge(item.status || "Planeado")}</div></article>`).join("") || `<p class="text-secondary">Sem actividades registadas neste período.</p>`}</div></section>
@@ -10917,7 +10991,8 @@ async function candidateAction(action, id) {
 
 function renderMembers() {
   const pageState = modulePageState.members;
-  const list = scoped(pageState.items || []);
+  // A stale provider response must never paint more than the requested page.
+  const list = scoped(pageState.items || []).slice(0, pageState.pageSize || 50);
   const view = modulePageState.members.view;
   const filtered = list;
   const churchesCount = new Set(list.map((m) => m.church_id).filter(Boolean)).size;
@@ -10952,7 +11027,7 @@ function renderMembers() {
     <article class="panel glass-panel">
       ${renderMembersFilterBar(list, modulePageState.members.filter || {}, view)}
       <div id="members-results">
-        ${view === "cards" ? DataCardsGrid(filtered.map((m) => renderMemberCard(m)).join("")) : dataTable([L("name"), L("phone"), L("church"), "Grupo de Célula", L("cell"), L("department"), L("status"), L("actions")], tableRows, { rowAttrs })}
+        ${pageState.loading ? `<div class="p-4 text-secondary">${lang === "pt" ? "A carregar página de membros…" : "Loading member page…"}</div>` : view === "cards" ? DataCardsGrid(filtered.map((m) => renderMemberCard(m)).join("")) : dataTable([L("name"), L("phone"), L("church"), "Grupo de Célula", L("cell"), L("department"), L("status"), L("actions")], tableRows, { rowAttrs })}
       </div>
     </article>
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-3" data-members-pagination><span class="text-secondary small">${pageState.loaded ? `${pageState.totalCount} ${lang === "pt" ? "membros" : "members"} · ${lang === "pt" ? "Página" : "Page"} ${pageState.page} / ${pageState.totalPages}` : ""}</span><div class="d-flex align-items-center gap-2"><select class="form-select form-select-sm" data-members-page-size aria-label="Members per page">${[25,50,100].map((size) => `<option value="${size}"${pageState.pageSize === size ? " selected" : ""}>${size}</option>`).join("")}</select><button class="action-btn" data-members-page="prev" ${pageState.page <= 1 || pageState.loading ? "disabled" : ""}>${lang === "pt" ? "Anterior" : "Previous"}</button><button class="action-btn" data-members-page="next" ${pageState.page >= pageState.totalPages || pageState.loading ? "disabled" : ""}>${lang === "pt" ? "Próximo" : "Next"}</button></div></div>
@@ -20962,6 +21037,13 @@ document.addEventListener("click", async (event) => {
     const pageState = modulePageState.members;
     pageState.page = memberPageButton.dataset.membersPage === "next" ? Math.min(pageState.totalPages, pageState.page + 1) : Math.max(1, pageState.page - 1);
     void loadMembersPage({ force: true });
+    return;
+  }
+  const cellPortalPageButton = event.target.closest("[data-cell-portal-member-page]");
+  if (cellPortalPageButton) {
+    const pageState = cellPortalMembersState;
+    pageState.page = cellPortalPageButton.dataset.cellPortalMemberPage === "next" ? Math.min(pageState.totalPages, pageState.page + 1) : Math.max(1, pageState.page - 1);
+    void loadCellPortalMembers(cellPortalPageState.cellId, { force: true });
     return;
   }
   const followupViewBtn = event.target.closest("[data-followup-view]");

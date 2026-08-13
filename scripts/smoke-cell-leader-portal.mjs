@@ -37,6 +37,9 @@ check("no proof or document fields exported", !/proof_url|file_url|document_url|
 check("weekly report integrated", /data-public-cell-report/.test(portal) && /Pending Finance Review/.test(portal));
 check("charts and indicators rendered", /cellPortalBars/.test(dashboard) && /cellPortalDonut/.test(dashboard) && /cell-portal-chart-grid/.test(portal));
 check("members filters rendered", ["memberStatus", "foundationStatus", "partnership", "tithe", "invited"].every((filter) => dashboard.includes(`data-cell-portal-filter=\"${filter}\"`)));
+check("live cell members use scoped pagination", /function loadCellPortalMembers\(cellId/.test(dashboard) && /listMembersPage\(\{ page: pageState\.page, pageSize: pageState\.pageSize, cellId \}\)/.test(dashboard) && /function cellPortalMemberSource\(cellId\)/.test(dashboard));
+check("cell portal member paging controls rendered", /data-cell-portal-member-page=\"prev\"/.test(dashboard) && /data-cell-portal-member-page=\"next\"/.test(dashboard));
+check("portal hydrates live cell context", /function ensureCellPortalContext\(\)/.test(dashboard) && /hydrateCellMinistryFromRepository\(\)/.test(dashboard) && /A carregar células e grupos do Supabase/.test(dashboard));
 check("mobile portal prepared", /@media \(max-width: 700px\)/.test(css) && /td::before/.test(css));
 check("leader lands in portal", /isCellPortalMember[\s\S]{0,220}setRoute\("cellPortal"\)/.test(dashboard));
 check("admin dashboard hidden from leaders", /if \(\["Cell Leader", "Cell Assistant"\][\s\S]{0,500}sidebarNav/.test(dashboard));

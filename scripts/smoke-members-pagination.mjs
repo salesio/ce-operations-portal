@@ -13,6 +13,7 @@ const required = [
   [adapter, ".range(from, from + pageSize - 1)", "server range pagination"],
   [dashboard, "data-members-page-size", "page-size selector"],
   [dashboard, "loadMembersPage", "dashboard page loader"],
+  [dashboard, "slice(0, pageState.pageSize || 50)", "render page guard"],
   [bridge, "listMembersPage", "runtime bridge method"],
 ];
 for (const [text, needle, label] of required) {
