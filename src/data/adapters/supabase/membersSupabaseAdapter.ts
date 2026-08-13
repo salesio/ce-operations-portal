@@ -40,6 +40,10 @@ export type MemberListQuery = {
   churchId?: string;
   cellGroupId?: string;
   cellId?: string;
+  /** Exact legacy/display cell name. Used after the portal resolves an imported cell name. */
+  cellName?: string;
+  /** Narrow discovery search for legacy imports where cell_id was not populated. */
+  cellNameLike?: string;
   status?: string;
 };
 
@@ -237,6 +241,11 @@ export async function listMembersPage(query: MemberListQuery = {}): Promise<Data
     if (query.churchId) request = request.eq("church_id", query.churchId);
     if (query.cellGroupId) request = request.eq("cell_group_id", query.cellGroupId);
     if (query.cellId) request = request.eq("cell_id", query.cellId);
+    if (query.cellName) request = request.eq("cell_name", query.cellName);
+    if (query.cellNameLike) {
+      const safeCellName = String(query.cellNameLike).replace(/[%_,()]/g, " ").replace(/\s+/g, " ").trim();
+      if (safeCellName) request = request.ilike("cell_name", `%${safeCellName}%`);
+    }
     if (query.status) {
       const statusKey = String(query.status).toLowerCase();
       const statusValues: Record<string, string[]> = {

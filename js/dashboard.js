@@ -5123,7 +5123,7 @@ const cellPortalPageState = {
 // The Cell Portal deliberately has its own paginated member source.  Do not
 // reuse state.members here: that cache belongs to local/mock compatibility and
 // must never decide what a live Supabase cell can see.
-const cellPortalMembersState = { cellId: "", page: 1, pageSize: 50, totalCount: 0, totalPages: 1, items: [], loading: false, loaded: false, error: "", requestId: 0 };
+const cellPortalMembersState = { cellId: "", resolvedCellName: "", page: 1, pageSize: 50, totalCount: 0, totalPages: 1, items: [], loading: false, loaded: false, error: "", requestId: 0 };
 const cellPortalContextState = { ready: false, loading: false };
 
 function usesSupabaseMembers() {
@@ -5140,6 +5140,32 @@ function cellPortalMemberSource(cellId) {
   return state.members || [];
 }
 
+function portalCellNameTokens(value = "") {
+  return portalText(value).split(/[^a-z0-9]+/).map((token) => token.replace(/s$/, "")).filter((token) => token.length >= 4 && !["cell", "celula", "main"].includes(token));
+}
+
+function portalCellNameMatchScore(selectedCell, memberCellName) {
+  const selectedTokens = portalCellNameTokens(portalCellName(selectedCell));
+  const memberTokens = portalCellNameTokens(memberCellName);
+  const shared = selectedTokens.filter((selected) => memberTokens.some((member) => member === selected || member.startsWith(selected) || selected.startsWith(member)));
+  return shared.length >= 2 ? shared.length : 0;
+}
+
+async function resolveLegacyCellPortalName(repo, cell) {
+  const tokens = portalCellNameTokens(portalCellName(cell));
+  const anchor = tokens.sort((a, b) => b.length - a.length)[0];
+  if (!anchor) return "";
+  const result = await repo.listMembersPage({ page: 1, pageSize: 100, cellNameLike: anchor });
+  if (!result?.ok) return "";
+  const matches = new Map();
+  (result.data?.items || []).forEach((member) => {
+    const name = String(member.cell_name || member.celula || "").trim();
+    const score = portalCellNameMatchScore(cell, name);
+    if (score) matches.set(name, Math.max(matches.get(name) || 0, score));
+  });
+  return [...matches.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]?.[0] || "";
+}
+
 async function loadCellPortalMembers(cellId, { force = false } = {}) {
   if (!usesSupabaseMembers()) return true;
   const repo = getMembersRepoSafe();
@@ -5151,8 +5177,20 @@ async function loadCellPortalMembers(cellId, { force = false } = {}) {
   pageState.loading = true;
   pageState.error = "";
   pageState.cellId = cellId;
+  pageState.resolvedCellName = "";
   try {
-    const result = await repo.listMembersPage({ page: pageState.page, pageSize: pageState.pageSize, cellId });
+    let result = await repo.listMembersPage({ page: pageState.page, pageSize: pageState.pageSize, cellId });
+    // Imported HQ records preserve the source cell name but may not have a
+    // foreign-key cell_id. Resolve a precise live name only when the ID query
+    // is empty; this keeps normal Cell Ministry records on the fast ID path.
+    if (result?.ok && !result.data?.totalCount) {
+      const cell = (state.cellRegistry || []).find((item) => String(item.id) === String(cellId));
+      const legacyName = cell ? await resolveLegacyCellPortalName(repo, cell) : "";
+      if (legacyName) {
+        result = await repo.listMembersPage({ page: pageState.page, pageSize: pageState.pageSize, cellName: legacyName });
+        pageState.resolvedCellName = legacyName;
+      }
+    }
     if (requestId !== pageState.requestId) return false;
     if (!result?.ok) { pageState.error = result?.error || "Falha ao carregar membros da célula."; return false; }
     pageState.items = (result.data?.items || []).map((member) => migrateMemberRecord(member));
@@ -5274,11 +5312,13 @@ function portalInPeriod(record, filters = cellPortalPageState) {
 function portalMemberBelongsToCell(member, cell) {
   if (!member || !cell) return false;
   if (member.cell_id && String(member.cell_id) === String(cell.id)) return true;
+  if (cellPortalMembersState.resolvedCellName && String(member.cell_name || member.celula || "") === cellPortalMembersState.resolvedCellName) return true;
   const cellNames = [portalCellName(cell), cell.name, cell.nome_da_celula].filter(Boolean).map(portalText);
   const sameCellName = cellNames.includes(portalText(member.celula || member.cell_name));
   // Historical imports can carry an old cell identifier that is not present in
   // the current cell catalogue. The preserved cell name is the safe fallback.
-  return sameCellName && (!member.church_id || !cell.church_id || String(member.church_id) === String(cell.church_id));
+  const equivalentLegacyName = portalCellNameMatchScore(cell, member.celula || member.cell_name) >= 2;
+  return (sameCellName || equivalentLegacyName) && (!member.church_id || !cell.church_id || String(member.church_id) === String(cell.church_id));
 }
 
 function getCellMemberFinanceSummary(memberId, permissions = activeUser?.permissions || []) {
