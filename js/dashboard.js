@@ -10601,7 +10601,12 @@ function normalizedMemberFilterText(value) {
 }
 
 function memberCellGroupLabel(member = {}) {
-  return member.cell_group_name || member.grupo_de_celula || cellGroupName(member.cell_group_id || member.group_id) || "";
+  const cell = (state.cellRegistry || []).find((item) =>
+    (member.cell_id && String(item.id) === String(member.cell_id)) ||
+    (member.cell_name && String(item.cell_name || "").trim().toLocaleLowerCase() === String(member.cell_name).trim().toLocaleLowerCase()) ||
+    (member.celula && String(item.cell_name || "").trim().toLocaleLowerCase() === String(member.celula).trim().toLocaleLowerCase())
+  );
+  return member.cell_group_name || member.grupo_de_celula || cellGroupName(member.cell_group_id || member.group_id || cell?.group_id || cell?.cell_group_id) || "";
 }
 
 function memberCellLabel(member = {}) {
@@ -10622,7 +10627,7 @@ function memberCellFilterValue(member = {}) {
   return label ? `name:${normalizedMemberFilterText(label)}` : "";
 }
 
-function memberFilterOptions(list, type) {
+function memberFilterOptions(list, type, selectedGroup = "") {
   const options = new Map();
   const add = (value, label) => {
     if (value && label && !options.has(value)) options.set(value, label);
@@ -10631,15 +10636,16 @@ function memberFilterOptions(list, type) {
     (state.cellGroups || []).forEach((group) => add(`id:${group.id}`, group.group_name || group.name));
     list.forEach((member) => add(memberCellGroupFilterValue(member), memberCellGroupLabel(member)));
   } else {
-    (state.cellRegistry || []).forEach((cell) => add(`id:${cell.id}`, cell.cell_name || cell.name));
-    list.forEach((member) => add(memberCellFilterValue(member), memberCellLabel(member)));
+    const inSelectedGroup = (record) => !selectedGroup || memberCellGroupFilterValue(record) === selectedGroup;
+    (state.cellRegistry || []).filter(inSelectedGroup).forEach((cell) => add(`id:${cell.id}`, cell.cell_name || cell.name));
+    list.filter(inSelectedGroup).forEach((member) => add(memberCellFilterValue(member), memberCellLabel(member)));
   }
   return [...options.entries()].sort(([, a], [, b]) => String(a).localeCompare(String(b), lang === "pt" ? "pt" : "en"));
 }
 
 function renderMembersFilterBar(list, filters = {}, view = "table") {
   const groupOptions = memberFilterOptions(list, "cellGroup");
-  const cellOptions = memberFilterOptions(list, "cell");
+  const cellOptions = memberFilterOptions(list, "cell", filters.cell_group || "");
   const selected = (key, value) => String(filters[key] || "") === String(value) ? " selected" : "";
   const churchOptions = (state.churches || []).map((church) => `<option value="${escapeAttr(church.id)}"${selected("church_id", church.id)}>${escapeAttr(church.church_name || church.public_name || church.id)}</option>`).join("");
   const groupHtml = groupOptions.map(([value, label]) => `<option value="${escapeAttr(value)}"${selected("cell_group", value)}>${escapeAttr(label)}</option>`).join("");
@@ -10655,6 +10661,16 @@ function renderMembersFilterBar(list, filters = {}, view = "table") {
     <button type="button" class="btn btn-outline-cyan action-secondary btn-touch" data-member-filter-clear>${lang === "pt" ? "Limpar filtros" : "Clear filters"}</button>
     <button type="button" class="btn btn-outline-cyan action-secondary btn-touch"><i class="bi bi-download me-1"></i>${L("export")}</button>
   </div>`;
+}
+
+function updateMemberDependentCellFilter(filterBar) {
+  const groupSelect = filterBar?.querySelector('[data-member-filter="cell_group"]');
+  const cellSelect = filterBar?.querySelector('[data-member-filter="cell"]');
+  if (!groupSelect || !cellSelect) return;
+  const previous = cellSelect.value;
+  const options = memberFilterOptions(scoped(state.members), "cell", groupSelect.value);
+  cellSelect.innerHTML = `<option value="">${L("cell")}</option>${options.map(([value, label]) => `<option value="${escapeAttr(value)}">${escapeAttr(label)}</option>`).join("")}`;
+  if (options.some(([value]) => value === previous)) cellSelect.value = previous;
 }
 
 function applyMemberCardFilters(list, filters = {}) {
@@ -21757,6 +21773,12 @@ function startDashboardAutoRefresh() {
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible" && isUserAuthenticated && Date.now() - dashboardLastRefreshAt >= DASHBOARD_AUTO_REFRESH_MS) {
     void refreshDashboardData();
+  }
+});
+
+document.addEventListener("change", (event) => {
+  if (event.target.matches('[data-member-filter="cell_group"]')) {
+    updateMemberDependentCellFilter(event.target.closest("[data-member-filter-bar]"));
   }
 });
 
