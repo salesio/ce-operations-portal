@@ -16,10 +16,43 @@ import {
   searchRows,
   updateRow,
 } from "./supabaseRepositoryBase";
+import { getSupabaseFoundationClient } from "./supabaseClient";
+import { mapSupabaseError } from "./supabaseRepositoryBase";
 import type { SupabaseRow } from "./supabaseTypes";
 
 const TABLE = "members";
 const MEMBERS_PAGE_SIZE = 1000;
+const MEMBER_PAGE_DEFAULT_SIZE = 50;
+const MEMBER_PAGE_MAX_SIZE = 100;
+// Deliberately narrow projection for the Members list. Profile screens still use
+// getMemberById(), which can load the full record only when the user asks for it.
+const MEMBER_LIST_COLUMNS = [
+  "id", "member_code", "full_name", "first_name", "last_name", "title",
+  "primary_phone", "secondary_phone", "phone", "email", "church_id", "church_name",
+  "cell_group_id", "cell_group_name", "cell_id", "cell_name", "department_id",
+  "department_name", "status", "membership_status", "entry_date", "source",
+  "cell_role", "created_at", "updated_at"
+].join(",");
+
+export type MemberListQuery = {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  churchId?: string;
+  cellGroupId?: string;
+  cellId?: string;
+  status?: string;
+};
+
+export type MemberPage = {
+  items: Member[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
+};
 
 function ok<T>(data: T): DataResult<T> {
   return { ok: true, data };
@@ -200,6 +233,59 @@ export async function listMembers(): Promise<DataResult<Member[]>> {
   }
 
   return ok(rows.map((r) => mapMemberFromRow(r)!).filter(Boolean));
+}
+
+/**
+ * Server-side page for the Members workspace. This must remain the default UI
+ * path: it uses an exact PostgREST count and never downloads the whole table.
+ */
+export async function listMembersPage(query: MemberListQuery = {}): Promise<DataResult<MemberPage>> {
+  const client = getSupabaseFoundationClient();
+  if (!client) {
+    const mapped = mapSupabaseError("Supabase not configured");
+    return fail(mapped.error, mapped.code);
+  }
+  const page = Math.max(1, Number(query.page) || 1);
+  const pageSize = Math.min(MEMBER_PAGE_MAX_SIZE, Math.max(25, Number(query.pageSize) || MEMBER_PAGE_DEFAULT_SIZE));
+  const from = (page - 1) * pageSize;
+  const search = String(query.search || "").trim();
+  try {
+    let request: any = client.from(TABLE).select(MEMBER_LIST_COLUMNS, { count: "exact" });
+    if (query.churchId) request = request.eq("church_id", query.churchId);
+    if (query.cellGroupId) request = request.eq("cell_group_id", query.cellGroupId);
+    if (query.cellId) request = request.eq("cell_id", query.cellId);
+    if (query.status) {
+      const statusKey = String(query.status).toLowerCase();
+      const statusValues: Record<string, string[]> = {
+        active: ["Active", "Activo", "Ativa", "Activa"],
+        inprogress: ["In Progress", "Em Curso", "InProgress"],
+        transferred: ["Transferred", "Transferido", "TransferredOut"],
+      };
+      request = request.in("status", statusValues[statusKey] || [query.status]);
+    }
+    // A one-character search is intentionally not sent to PostgREST; it is too
+    // broad for a live operational directory and causes avoidable full scans.
+    if (search.length >= 2) {
+      const safe = search.replace(/[%_,()]/g, " ").replace(/\s+/g, " ").trim();
+      if (safe) request = request.or([
+        `full_name.ilike.%${safe}%`, `first_name.ilike.%${safe}%`, `last_name.ilike.%${safe}%`,
+        `primary_phone.ilike.%${safe}%`, `secondary_phone.ilike.%${safe}%`, `phone.ilike.%${safe}%`,
+        `email.ilike.%${safe}%`, `member_code.ilike.%${safe}%`
+      ].join(","));
+    }
+    const { data, error, count } = await request.order("full_name", { ascending: true }).range(from, from + pageSize - 1);
+    if (error) {
+      const mapped = mapSupabaseError(error.message);
+      return fail(mapped.error, mapped.code);
+    }
+    const totalCount = Number(count || 0);
+    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+    const items = ((data || []) as SupabaseRow[]).map((row) => mapMemberFromRow(row)!).filter(Boolean);
+    return ok({ items, page, pageSize, totalCount, totalPages, hasNext: page < totalPages, hasPrevious: page > 1 });
+  } catch (error) {
+    const mapped = mapSupabaseError(error instanceof Error ? error.message : "member page failed");
+    return fail(mapped.error, mapped.code);
+  }
 }
 
 export async function getMemberById(id: EntityId): Promise<DataResult<Member | null>> {

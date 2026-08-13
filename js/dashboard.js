@@ -9501,6 +9501,7 @@ function setRoute(route) {
     audit: renderAudit
   };
   (renderers[activeRoute] || renderDashboard)();
+  if (activeRoute === "members" && !modulePageState.members.loading) void loadMembersPage();
   history.replaceState(null, "", `#${activeRoute}`);
   document.querySelector(".ops-sidebar").classList.remove("is-open");
   const contentEl = byId("content");
@@ -9547,8 +9548,42 @@ function toggleModuleNav(key) {
   });
 }
 
-const modulePageState = { members: { view: "table", filter: {}, candidateTab: "pending" }, firstTimers: { view: "table" }, followUp: { view: "kanban" } };
+const modulePageState = { members: { view: "table", filter: {}, candidateTab: "pending", page: 1, pageSize: 50, totalCount: 0, totalPages: 1, items: [], loading: false, loaded: false, error: "", requestId: 0 }, firstTimers: { view: "table" }, followUp: { view: "kanban" } };
 window.modulePageState = modulePageState;
+let memberSearchDebounceTimer = null;
+
+function memberPageQuery() {
+  const filters = modulePageState.members.filter || {};
+  const resolveId = (value) => String(value || "").startsWith("id:") ? String(value).slice(3) : "";
+  return { page: modulePageState.members.page || 1, pageSize: modulePageState.members.pageSize || 50, search: filters.search || "", churchId: filters.church_id || "", cellGroupId: resolveId(filters.cell_group), cellId: resolveId(filters.cell), status: filters.status || "" };
+}
+
+async function loadMembersPage({ force = false } = {}) {
+  const pageState = modulePageState.members;
+  const repo = getMembersRepoSafe();
+  if (!repo?.listMembersPage || (pageState.loading && !force)) return false;
+  const requestId = ++pageState.requestId;
+  pageState.loading = true;
+  pageState.error = "";
+  if (activeRoute === "members") renderMembers();
+  try {
+    const result = await repo.listMembersPage(memberPageQuery());
+    if (requestId !== pageState.requestId) return false;
+    if (!result?.ok) { pageState.error = result?.error || "Falha ao carregar membros."; return false; }
+    pageState.items = (result.data?.items || []).map((member) => migrateMemberRecord(member));
+    pageState.page = result.data?.page || pageState.page;
+    pageState.pageSize = result.data?.pageSize || pageState.pageSize;
+    pageState.totalCount = result.data?.totalCount || 0;
+    pageState.totalPages = result.data?.totalPages || 1;
+    pageState.loaded = true;
+    return true;
+  } catch (error) {
+    if (requestId === pageState.requestId) pageState.error = error?.message || "Falha ao carregar membros.";
+    return false;
+  } finally {
+    if (requestId === pageState.requestId) { pageState.loading = false; if (activeRoute === "members") renderMembers(); }
+  }
+}
 
 function setPageContent(html) {
   const el = byId("content");
@@ -10875,9 +10910,10 @@ async function candidateAction(action, id) {
 }
 
 function renderMembers() {
-  const list = scoped(state.members);
+  const pageState = modulePageState.members;
+  const list = scoped(pageState.items || []);
   const view = modulePageState.members.view;
-  const filtered = applyMemberCardFilters(list, modulePageState.members.filter || {});
+  const filtered = list;
   const churchesCount = new Set(list.map((m) => m.church_id).filter(Boolean)).size;
   const candidates = (state.memberRegistrationCandidates || []).filter((item) => canReviewMemberCandidates() || scoped([item]).length);
   const reviewQueue = candidates.filter((item) => ["Submitted", "UnderReview"].includes(item.approval_status));
@@ -10898,11 +10934,11 @@ function renderMembers() {
   setPageContent(`
     ${sectionHeader(L("members"), L("membersSubtitle"), "member", "bi-people", { actions: `<button type="button" class="btn btn-outline-cyan btn-touch" data-hq-members-dry-run><i class="bi bi-file-earmark-spreadsheet me-2"></i>${lang === "pt" ? "Pré-visualizar importação histórica" : "Preview legacy import"}</button><input id="hq-members-import-file" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>` })}
     <div class="row g-3 mb-4 summary-cards-row">
-      ${sm("bi-people", L("total"), list.length, "members", { scrollTo: "members-results", filterPayload: {} })}
-      ${sm("bi-check-circle", L("active"), list.filter((m) => statusKey(m.estado) === "active").length, "members", { scrollTo: "members-results", filterPayload: { status: "active" } })}
-      ${sm("bi-hourglass", L("inProgress"), list.filter((m) => statusKey(m.estado) === "inProgress").length, "members", { scrollTo: "members-results", filterPayload: { status: "inProgress" } })}
-      ${sm("bi-arrow-left-right", L("transferred"), list.filter((m) => statusKey(m.estado) === "transferred").length, "members", { scrollTo: "members-results", filterPayload: { status: "transferred" } })}
-      ${sm("bi-building", L("membersByChurch"), churchesCount, "members", { scrollTo: "members-results", filterPayload: { hasChurch: true } })}
+      ${sm("bi-people", L("total"), pageState.totalCount || 0, "members", { scrollTo: "members-results", filterPayload: {} })}
+      ${sm("bi-check-circle", L("active"), "—", "members", { scrollTo: "members-results", filterPayload: { status: "active" } })}
+      ${sm("bi-hourglass", L("inProgress"), "—", "members", { scrollTo: "members-results", filterPayload: { status: "inProgress" } })}
+      ${sm("bi-arrow-left-right", L("transferred"), "—", "members", { scrollTo: "members-results", filterPayload: { status: "transferred" } })}
+      ${sm("bi-building", L("membersByChurch"), churchesCount || "—", "members", { scrollTo: "members-results", filterPayload: { hasChurch: true } })}
       ${canReviewMemberCandidates() ? sm("bi-person-exclamation", "Pedidos por aprovar", reviewQueue.length, "members", { scrollTo: "member-candidate-queue" }) : ""}
     </div>
     ${summaryFilterChips("members")}
@@ -10913,8 +10949,10 @@ function renderMembers() {
         ${view === "cards" ? DataCardsGrid(filtered.map((m) => renderMemberCard(m)).join("")) : dataTable([L("name"), L("phone"), L("church"), "Grupo de Célula", L("cell"), L("department"), L("status"), L("actions")], tableRows, { rowAttrs })}
       </div>
     </article>
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-3" data-members-pagination><span class="text-secondary small">${pageState.loaded ? `${pageState.totalCount} ${lang === "pt" ? "membros" : "members"} · ${lang === "pt" ? "Página" : "Page"} ${pageState.page} / ${pageState.totalPages}` : ""}</span><div class="d-flex align-items-center gap-2"><select class="form-select form-select-sm" data-members-page-size aria-label="Members per page">${[25,50,100].map((size) => `<option value="${size}"${pageState.pageSize === size ? " selected" : ""}>${size}</option>`).join("")}</select><button class="action-btn" data-members-page="prev" ${pageState.page <= 1 || pageState.loading ? "disabled" : ""}>${lang === "pt" ? "Anterior" : "Previous"}</button><button class="action-btn" data-members-page="next" ${pageState.page >= pageState.totalPages || pageState.loading ? "disabled" : ""}>${lang === "pt" ? "Próximo" : "Next"}</button></div></div>
     ${renderHqMembersDryRunPreview()}
   `);
+  if (!pageState.loaded && !pageState.loading) void loadMembersPage();
 }
 
 function renderHqMembersDryRunPreview() {
@@ -20901,12 +20939,23 @@ document.addEventListener("click", async (event) => {
       cell: filterBar?.querySelector('[data-member-filter="cell"]')?.value || "",
       status: filterBar?.querySelector('[data-member-filter="status"]')?.value || ""
     };
-    renderMembers();
+    modulePageState.members.page = 1;
+    modulePageState.members.loaded = false;
+    void loadMembersPage({ force: true });
     return;
   }
   if (event.target.closest("[data-member-filter-clear]")) {
     modulePageState.members.filter = {};
-    renderMembers();
+    modulePageState.members.page = 1;
+    modulePageState.members.loaded = false;
+    void loadMembersPage({ force: true });
+    return;
+  }
+  const memberPageButton = event.target.closest("[data-members-page]");
+  if (memberPageButton) {
+    const pageState = modulePageState.members;
+    pageState.page = memberPageButton.dataset.membersPage === "next" ? Math.min(pageState.totalPages, pageState.page + 1) : Math.max(1, pageState.page - 1);
+    void loadMembersPage({ force: true });
     return;
   }
   const followupViewBtn = event.target.closest("[data-followup-view]");
@@ -21764,30 +21813,27 @@ function dashboardHasOpenEditor() {
 async function refreshDashboardData({ render = true } = {}) {
   if (!isUserAuthenticated || dashboardRefreshInFlight) return false;
   dashboardRefreshInFlight = true;
-  const refreshTasks = [
-    hydrateChurchesFromRepository,
-    hydrateMembersFromRepository,
-    hydrateFirstTimersFromRepository,
-    hydrateFollowUpsFromRepository,
-    hydrateFoundationSchoolFromRepository,
-    hydrateCellMinistryFromRepository,
-    hydrateFinanceFromRepository,
-    hydrateRequisitionsFromRepository,
-    hydrateVenueInventoryFromRepository,
-    hydrateStaffHrFromRepository,
-    hydrateAccessControlFromRepository,
-    hydrateMediaFromRepository,
-    hydrateCounselingFromRepository,
-    hydrateSacramentsFromRepository,
-    hydrateFevoFromRepository,
-    hydratePrisonMinistryFromRepository,
-    hydrateMinistryMaterialsFromRepository,
-    hydrateProgramsFromRepository,
-    hydrateSettingsFromRepository,
-    hydrateNotificationsFromRepository
-  ];
+  const routeRefreshers = {
+    churches: hydrateChurchesFromRepository,
+    firstTimers: hydrateFirstTimersFromRepository,
+    followUp: hydrateFollowUpsFromRepository,
+    foundation: hydrateFoundationSchoolFromRepository,
+    finance: hydrateFinanceFromRepository,
+    requisitions: hydrateRequisitionsFromRepository,
+    staffHr: hydrateStaffHrFromRepository,
+    users: hydrateAccessControlFromRepository,
+    access: hydrateAccessControlFromRepository,
+    audit: hydrateAccessControlFromRepository,
+    media: hydrateMediaFromRepository,
+    counseling: hydrateCounselingFromRepository,
+    sacraments: hydrateSacramentsFromRepository,
+    programs: hydrateProgramsFromRepository,
+    settings: hydrateSettingsFromRepository,
+    notifications: hydrateNotificationsFromRepository
+  };
+  const routeTask = activeRoute?.startsWith("cell") ? hydrateCellMinistryFromRepository : activeRoute?.startsWith("fevo") ? hydrateFevoFromRepository : activeRoute?.startsWith("venueInventory") ? hydrateVenueInventoryFromRepository : routeRefreshers[activeRoute] || hydrateNotificationsFromRepository;
   try {
-    await Promise.allSettled(refreshTasks.map((task) => Promise.resolve().then(task)));
+    await Promise.resolve().then(routeTask);
     dashboardLastRefreshAt = Date.now();
     if (render && document.visibilityState === "visible" && !dashboardHasOpenEditor() && activeRoute && activeRoute !== "login") {
       setRoute(activeRoute);
@@ -21821,9 +21867,34 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
+document.addEventListener("input", (event) => {
+  if (!event.target.matches('[data-member-filter="search"]')) return;
+  if (memberSearchDebounceTimer) window.clearTimeout(memberSearchDebounceTimer);
+  memberSearchDebounceTimer = window.setTimeout(() => {
+    const filterBar = event.target.closest("[data-member-filter-bar]");
+    if (!filterBar || activeRoute !== "members") return;
+    modulePageState.members.filter = {
+      ...(modulePageState.members.filter || {}),
+      search: event.target.value.trim(),
+      church_id: filterBar.querySelector('[data-member-filter="church_id"]')?.value || "",
+      cell_group: filterBar.querySelector('[data-member-filter="cell_group"]')?.value || "",
+      cell: filterBar.querySelector('[data-member-filter="cell"]')?.value || "",
+      status: filterBar.querySelector('[data-member-filter="status"]')?.value || ""
+    };
+    modulePageState.members.page = 1;
+    modulePageState.members.loaded = false;
+    void loadMembersPage({ force: true });
+  }, 350);
+});
+
 document.addEventListener("change", (event) => {
   if (event.target.matches('[data-member-filter="cell_group"]')) {
     updateMemberDependentCellFilter(event.target.closest("[data-member-filter-bar]"));
+  }
+  if (event.target.matches("[data-members-page-size]")) {
+    modulePageState.members.pageSize = Number(event.target.value) || 50;
+    modulePageState.members.page = 1;
+    void loadMembersPage({ force: true });
   }
 });
 
@@ -21863,6 +21934,9 @@ function continueEnterDashboard() {
   }
   updateBackToTopVisibility();
   startDashboardAutoRefresh();
+  // Kept only as an opt-in compatibility escape hatch. Normal login is lazy:
+  // the visible route loads its data on demand, avoiding a burst of module calls.
+  if (window.__CE_LEGACY_EAGER_HYDRATE__ === true) {
   // Data-layer pilots: sync churches + members + first timers without blocking UI paint
   Promise.resolve()
     .then(() => hydrateChurchesFromRepository())
@@ -21870,14 +21944,6 @@ function continueEnterDashboard() {
       if (hydrated && activeRoute === "churches") renderChurches();
     })
     .catch((error) => console.warn("[CE Churches] background hydrate skipped", error));
-  Promise.resolve()
-    .then(() => hydrateMembersFromRepository())
-    .then((hydrated) => {
-      if (!hydrated) return;
-      if (activeRoute === "members") renderMembers();
-      if (["cellPortal", "cellMembers", "cellGroups", "cellCellsList"].includes(activeRoute)) setRoute(activeRoute);
-    })
-    .catch((error) => console.warn("[CE Members] background hydrate skipped", error));
   Promise.resolve()
     .then(() => hydrateFirstTimersFromRepository())
     .then((hydrated) => {
@@ -22045,6 +22111,7 @@ function continueEnterDashboard() {
       if (typeof updateNotificationCenter === "function") updateNotificationCenter();
     })
     .catch((error) => console.warn("[CE Notifications] background hydrate skipped", error));
+  }
 }
 
 function dualWriteFevoRecord(modalType, mode, record) {

@@ -93,6 +93,7 @@ export {
 
 export {
   listMembers,
+  listMembersPage,
   getMemberById,
   createMember,
   updateMember,

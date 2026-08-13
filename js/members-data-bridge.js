@@ -181,6 +181,15 @@
       var store = getFallbackStore();
       return ok(store.rows.slice());
     },
+    listMembersPage: async function (query) {
+      var listed = await pureFallback.listMembers();
+      if (!listed.ok) return listed;
+      var source = listed.data || [];
+      var page = Math.max(1, Number(query && query.page) || 1);
+      var pageSize = Math.min(100, Math.max(25, Number(query && query.pageSize) || 50));
+      var totalCount = source.length;
+      return ok({ items: source.slice((page - 1) * pageSize, page * pageSize), page: page, pageSize: pageSize, totalCount: totalCount, totalPages: Math.max(1, Math.ceil(totalCount / pageSize)), hasNext: page * pageSize < totalCount, hasPrevious: page > 1 });
+    },
     getMemberById: async function (id) {
       var store = getFallbackStore();
       var found = store.rows.find(function (row) {
@@ -361,6 +370,7 @@
 
   window.CEMembers = {
     listMembers: function () { return call("listMembers", []); },
+    listMembersPage: function (query) { return call("listMembersPage", [query || {}]); },
     getMemberById: function (id) { return call("getMemberById", [id]); },
     createMember: function (payload) {
       console.info("[CE Members] createMember invoked", {

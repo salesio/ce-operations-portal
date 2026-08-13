@@ -1,0 +1,24 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+const root = process.cwd();
+const read = (file) => readFileSync(resolve(root, file), "utf8");
+const adapter = read("src/data/adapters/supabase/membersSupabaseAdapter.ts");
+const dashboard = read("js/dashboard.js");
+const bridge = read("js/members-data-bridge.js");
+const required = [
+  [adapter, "listMembersPage", "Supabase member page function"],
+  [adapter, 'count: "exact"', "exact total count"],
+  [adapter, "MEMBER_LIST_COLUMNS", "narrow list projection"],
+  [adapter, ".range(from, from + pageSize - 1)", "server range pagination"],
+  [dashboard, "data-members-page-size", "page-size selector"],
+  [dashboard, "loadMembersPage", "dashboard page loader"],
+  [bridge, "listMembersPage", "runtime bridge method"],
+];
+for (const [text, needle, label] of required) {
+  if (!text.includes(needle)) throw new Error(`Missing ${label}: ${needle}`);
+}
+if (adapter.includes("while (true)") && adapter.includes("MEMBERS_PAGE_SIZE")) {
+  console.log("Note: legacy listMembers remains available for non-directory consumers; the Members screen uses listMembersPage.");
+}
+console.log("Members pagination smoke test passed.");

@@ -7,6 +7,8 @@ import { listChurches } from "./churchesRepository";
 import { getSupabaseEnvConfig } from "../adapters/supabase/supabaseConfig";
 import * as membersSb from "../adapters/supabase/membersSupabaseAdapter";
 import * as membersApi from "../adapters/api/membersApiAdapter";
+export type { MemberListQuery, MemberPage } from "../adapters/supabase/membersSupabaseAdapter";
+import type { MemberListQuery, MemberPage } from "../adapters/supabase/membersSupabaseAdapter";
 
 function fail<T>(error: string, code = "MEMBERS_ERROR"): DataResult<T> {
   return { ok: false, error, code };
@@ -202,6 +204,37 @@ export async function listMembers(): Promise<DataResult<Member[]>> {
     return ok(rows);
   } catch (error) {
     return fail(error instanceof Error ? error.message : "Falha ao listar membros.");
+  }
+}
+
+/** Paginated directory query used by the Members screen. */
+export async function listMembersPage(query: MemberListQuery = {}): Promise<DataResult<MemberPage>> {
+  try {
+    if (useSupabaseMembers()) {
+      const result = await membersSb.listMembersPage(query);
+      if (!result.ok) return result;
+      return ok({ ...result.data, items: result.data.items.map(normalizeMember) });
+    }
+    // Local/mock remain deterministic, while mirroring the same page contract.
+    const listed = await listMembers();
+    if (!listed.ok) return listed as DataResult<MemberPage>;
+    const page = Math.max(1, Number(query.page) || 1);
+    const pageSize = Math.min(100, Math.max(25, Number(query.pageSize) || 50));
+    const search = String(query.search || "").trim().toLowerCase();
+    const matches = (listed.data || []).filter((member) => {
+      if (query.churchId && String(member.church_id || member.churchId || "") !== String(query.churchId)) return false;
+      if (query.cellGroupId && String(member.cell_group_id || "") !== String(query.cellGroupId)) return false;
+      if (query.cellId && String(member.cell_id || "") !== String(query.cellId)) return false;
+      if (query.status && String(member.status || member.estado || "").toLowerCase() !== String(query.status).toLowerCase()) return false;
+      if (search.length < 2) return true;
+      return [member.full_name, member.first_name, member.last_name, member.primary_phone, member.secondary_phone, member.phone, member.email, member.member_code]
+        .some((value) => String(value || "").toLowerCase().includes(search));
+    });
+    const totalCount = matches.length;
+    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+    return ok({ items: matches.slice((page - 1) * pageSize, page * pageSize), page, pageSize, totalCount, totalPages, hasNext: page < totalPages, hasPrevious: page > 1 });
+  } catch (error) {
+    return fail(error instanceof Error ? error.message : "Falha ao paginar membros.");
   }
 }
 

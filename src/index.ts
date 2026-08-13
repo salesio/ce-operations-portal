@@ -89,6 +89,7 @@ export {
   CHURCHES_SEED,
   // Members
   listMembers,
+  listMembersPage,
   getMemberById,
   createMember,
   updateMember,
@@ -1008,6 +1009,7 @@ import {
   ensureChurchesSeeded,
   getChurchesDataSourceInfo,
   listMembers,
+  listMembersPage,
   getMemberById,
   createMember,
   updateMember,
@@ -1876,6 +1878,7 @@ function installDataLayerGlobals(): void {
 
   const members = {
     listMembers,
+    listMembersPage,
     getMemberById,
     createMember,
     updateMember,
