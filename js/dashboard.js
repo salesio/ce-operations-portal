@@ -15113,24 +15113,26 @@ async function hydrateCellMinistryFromRepository() {
   const repo = getCellMinistryRepoSafe();
   if (!repo) return false;
   try {
+    const runtimeInfo = window.CEDataLayer?.getInfo?.() || window.CESupabase?.getInfo?.() || {};
+    const usingSupabase = String(runtimeInfo.dataSource || runtimeInfo.provider || window.__CE_ENV__?.VITE_DATA_SOURCE || "").toLowerCase().includes("supabase");
     let hydrated = false;
     const listGroups = repo.listCellGroups;
     if (typeof listGroups === "function") {
       const result = await listGroups();
-      if (result?.ok && Array.isArray(result.data) && result.data.length) {
+      if (result?.ok && Array.isArray(result.data) && (result.data.length || usingSupabase)) {
         const prev = new Map((state.cellGroups || []).map((g) => [g.id, g]));
         const byId = new Map();
         result.data.forEach((row) => {
           const previous = prev.get(row.id) || {};
           byId.set(row.id, {
-            ...row,
-            ...previous,
+            ...(usingSupabase ? previous : row),
+            ...(usingSupabase ? row : previous),
             id: row.id,
-            group_name: previous.group_name || row.group_name || row.name,
-            name: previous.name || row.name || row.group_name
+            group_name: row.group_name || row.name || previous.group_name,
+            name: row.name || row.group_name || previous.name
           });
         });
-        prev.forEach((localRow, id) => {
+        if (!usingSupabase) prev.forEach((localRow, id) => {
           if (!byId.has(id)) byId.set(id, localRow);
         });
         state.cellGroups = [...byId.values()];
@@ -15141,21 +15143,21 @@ async function hydrateCellMinistryFromRepository() {
     const listCellsFn = repo.listCells;
     if (typeof listCellsFn === "function") {
       const result = await listCellsFn();
-      if (result?.ok && Array.isArray(result.data) && result.data.length) {
+      if (result?.ok && Array.isArray(result.data) && (result.data.length || usingSupabase)) {
         const prev = new Map((state.cellRegistry || []).map((c) => [c.id, c]));
         const byId = new Map();
         result.data.forEach((row) => {
           const previous = prev.get(row.id) || {};
           byId.set(row.id, {
-            ...row,
-            ...previous,
+            ...(usingSupabase ? previous : row),
+            ...(usingSupabase ? row : previous),
             id: row.id,
-            cell_name: previous.cell_name || row.cell_name || row.name,
-            group_id: previous.group_id || row.group_id || row.cell_group_id,
-            cell_group_id: previous.cell_group_id || row.cell_group_id || row.group_id
+            cell_name: row.cell_name || row.name || previous.cell_name,
+            group_id: row.group_id || row.cell_group_id || previous.group_id,
+            cell_group_id: row.cell_group_id || row.group_id || previous.cell_group_id
           });
         });
-        prev.forEach((localRow, id) => {
+        if (!usingSupabase) prev.forEach((localRow, id) => {
           if (!byId.has(id)) byId.set(id, localRow);
         });
         state.cellRegistry = [...byId.values()];
