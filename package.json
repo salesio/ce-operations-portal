@@ -59,8 +59,6 @@
     "test:member-candidate-approval-flow": "node scripts/smoke-member-candidate-workflow.mjs",
     "test:member-profile-view": "node scripts/smoke-member-profile-view.mjs",
     "test:hq-members-import": "node scripts/smoke-hq-members-import.mjs",
-    "test:hq-members-pilot-import": "node scripts/smoke-hq-members-pilot-import.mjs",
-    "import:hq-members-pilot": "node scripts/import-hq-members-pilot.mjs",
     "test:members-pagination": "node scripts/smoke-members-pagination.mjs",
     "test:performance": "node scripts/smoke-performance.mjs",
     "dry-run:hq-members-import": "node scripts/dry-run-hq-members-import.mjs",
