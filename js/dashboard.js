@@ -3046,6 +3046,7 @@ const CELL_NAV = {
         ["cellWeeklyReport", "weeklyCellReport"],
         ["cellGroups", "cellGroups"],
         ["cellCellsList", "cellCellsList"],
+        ["cellMembers", "members"],
         ["cellLeadersRoute", "cellLeaders"],
         ["cellFinalValidation", "finalValidation"],
         ["cellConsolidation", "consolidation"]
@@ -9391,6 +9392,7 @@ function setRoute(route) {
     cellWeeklyReport: ["departments", "weeklyCellReport"],
     cellGroups: ["departments", "cellGroups"],
     cellCellsList: ["departments", "cellCellsList"],
+    cellMembers: ["departments", "members"],
     cellLeadersRoute: ["departments", "cellLeaders"],
     cellFinalValidation: ["departments", "finalValidation"],
     cellConsolidation: ["departments", "consolidation"],
@@ -9456,6 +9458,7 @@ function setRoute(route) {
     cellWeeklyReport: () => renderCellMinistry("weeklyReport"),
     cellGroups: renderCellGroups,
     cellCellsList: renderCellCellsList,
+    cellMembers: renderCellMembers,
     cellLeadersRoute: () => renderCellMinistry("cellLeaders"),
     cellFinalValidation: () => renderCellMinistry("finalValidation"),
     cellConsolidation: () => renderCellMinistry("consolidation"),
@@ -15590,9 +15593,86 @@ function renderCellMinistry(activeTab = "alecOverview") {
   requestAnimationFrame(() => scrollContentTo("content", { behavior: "auto" }));
 }
 
+function cellMembershipSummary(members = [], registry = [], groups = []) {
+  const textKey = (value) => String(value || "").trim().toLocaleLowerCase();
+  const cellsById = new Map(registry.map((cell) => [String(cell.id), cell]));
+  const cellsByName = new Map(registry.filter((cell) => cell.cell_name).map((cell) => [textKey(cell.cell_name), cell]));
+  const groupsById = new Map(groups.map((group) => [String(group.id), group]));
+  const groupsByName = new Map(groups.filter((group) => group.group_name).map((group) => [textKey(group.group_name), group]));
+  const byCell = new Map();
+  const byGroup = new Map();
+  const assigned = [];
+  const awaitingAssignment = [];
+
+  members.forEach((member) => {
+    const rawCellId = String(member.cell_id || "");
+    const rawCellName = member.cell_name || member.celula || "";
+    const cell = cellsById.get(rawCellId) || cellsByName.get(textKey(rawCellName));
+    const rawGroupId = String(member.cell_group_id || member.group_id || "");
+    const rawGroupName = member.cell_group_name || member.grupo_de_celula || "";
+    const group = groupsById.get(rawGroupId) || groupsByName.get(textKey(rawGroupName)) || (cell ? groupsById.get(String(cell.group_id || cell.cell_group_id || cell.group_cell_id || "")) : null);
+    const row = { member, cell: cell || null, group: group || null };
+    if (!cell) {
+      awaitingAssignment.push(row);
+      return;
+    }
+    assigned.push(row);
+    if (!byCell.has(cell.id)) byCell.set(cell.id, []);
+    byCell.get(cell.id).push(row);
+    if (group?.id) {
+      if (!byGroup.has(group.id)) byGroup.set(group.id, []);
+      byGroup.get(group.id).push(row);
+    }
+  });
+
+  return { assigned, awaitingAssignment, byCell, byGroup };
+}
+
+function renderCellMembers() {
+  const groups = scopedNested(state.cellGroups || []);
+  const registry = scopedNested(state.cellRegistry || []);
+  const members = scoped(state.members || []);
+  const membership = cellMembershipSummary(members, registry, groups);
+  const groupName = (row) => row.group?.group_name || row.member.cell_group_name || row.member.grupo_de_celula || "—";
+  const cellNameValue = (row) => row.cell?.cell_name || row.member.cell_name || row.member.celula || "—";
+  const assignmentStatus = (row) => row.cell
+    ? `<span class="status-pill status-green">${lang === "pt" ? "Atribuído à célula" : "Assigned to cell"}</span>`
+    : `<span class="status-pill status-amber">${lang === "pt" ? "Aguarda atribuição" : "Awaiting assignment"}</span>`;
+  const rows = [...membership.awaitingAssignment, ...membership.assigned]
+    .sort((a, b) => fullName(a.member).localeCompare(fullName(b.member), lang))
+    .map((row) => [
+      fullName(row.member) || "—",
+      row.member.primary_phone || row.member.telefone || row.member.phone || "—",
+      churchName(row.member.church_id) || row.member.church_name || row.member.igreja || "—",
+      groupName(row),
+      cellNameValue(row),
+      row.member.cell_role || "Member",
+      assignmentStatus(row),
+      actionButtons([["edit", "member", row.member.id, lang === "pt" ? "Atribuir / editar" : "Assign / edit"]])
+    ]);
+  const navHtml = cellModuleHeader("cellMembers");
+  const bodyHtml = `
+    <article class="panel glass-panel mb-4">
+      <div class="panel-head"><div><h3 class="panel-title">${lang === "pt" ? "Membros nas células" : "Members in cells"}</h3><p class="mb-0 text-secondary">${lang === "pt" ? "A lista usa os membros carregados pelo data source activo. Importados sem célula permanecem na fila de atribuição; nenhum é colocado automaticamente." : "This list uses members loaded by the active data source. Imported records without a cell remain in the assignment queue; none are assigned automatically."}</p></div></div>
+      <div class="row g-3 summary-cards-row">
+        ${metric("bi-people", L("totalMembers"), members.length, L("members"))}
+        ${metric("bi-diagram-3", lang === "pt" ? "Atribuídos a células" : "Assigned to cells", membership.assigned.length, L("cellCellsList"))}
+        ${metric("bi-person-plus", lang === "pt" ? "Aguardam atribuição" : "Awaiting assignment", membership.awaitingAssignment.length, lang === "pt" ? "Revisar e atribuir" : "Review and assign")}
+        ${metric("bi-collection", lang === "pt" ? "Grupos com membros" : "Groups with members", membership.byGroup.size, L("cellGroups"))}
+      </div>
+    </article>
+    <article class="panel glass-panel">
+      ${filterBar({ search: true, church: true, month: false, status: false, exportBtn: true })}
+      ${dataTable([L("name"), L("phone"), L("church"), L("groupName"), L("cell"), lang === "pt" ? "Função" : "Role", lang === "pt" ? "Atribuição" : "Assignment", L("actions")], rows, { rowAttrs: [...membership.awaitingAssignment, ...membership.assigned].sort((a, b) => fullName(a.member).localeCompare(fullName(b.member), lang)).map((row) => ` data-filter-row data-filter-church-values="${churchFilterTokens(row.member)}" data-filter-status-values="${row.cell ? "assigned" : "awaiting"}"`) })}
+    </article>`;
+  setPageContent(navHtml + tabParallaxWrap(bodyHtml, activeRoute));
+  triggerTabParallax();
+}
+
 function renderCellGroups() {
   const groups = scopedNested(state.cellGroups || []);
   const registry = scopedNested(state.cellRegistry || []);
+  const membership = cellMembershipSummary(scoped(state.members || []), registry, groups);
   const statusOptions = [...new Set(registry.map((item) => item.status).filter(Boolean))].sort();
   const navHtml = cellModuleHeader("cellGroups", { modalType: "cellGroup" });
   const bodyHtml = `
@@ -15604,7 +15684,8 @@ function renderCellGroups() {
     <div class="row g-3 mb-4">
       ${metric("bi-collection", L("totalGroupCells"), groups.length, L("cellGroups"))}
       ${metric("bi-diagram-3", L("totalCells"), registry.length, L("activeCells"))}
-      ${metric("bi-people", L("totalMembers"), groups.reduce((sum, item) => sum + Number(item.total_members || 0), 0), L("members"))}
+      ${metric("bi-people", L("totalMembers"), membership.assigned.length, L("members"))}
+      ${metric("bi-person-plus", lang === "pt" ? "Aguardam atribuição" : "Awaiting assignment", membership.awaitingAssignment.length, lang === "pt" ? "Fila de membros" : "Member queue")}
       ${metric("bi-flag", L("needsReview"), groups.filter((item) => item.needs_review).length, L("importReview"))}
     </div>
     <div class="cell-accordion-toolbar">
@@ -15614,12 +15695,12 @@ function renderCellGroups() {
         <button type="button" class="btn btn-sm btn-outline-light" data-action="collapseCellGroups">${L("collapseAll")}</button>
       </div>
     </div>
-    ${renderCellGroupAccordion(groups, registry, { showMetrics: true, showActions: true })}`;
+    ${renderCellGroupAccordion(groups, registry, { showMetrics: true, showActions: true, membership })}`;
   setPageContent(navHtml + tabParallaxWrap(bodyHtml, activeRoute));
   triggerTabParallax();
 }
 
-function renderCellGroupAccordion(groups, registry, { showMetrics = true, showActions = true } = {}) {
+function renderCellGroupAccordion(groups, registry, { showMetrics = true, showActions = true, membership = cellMembershipSummary(scoped(state.members || []), registry, groups) } = {}) {
   const cellsByGroup = new Map();
   registry.forEach((cell) => {
     const key = cell.group_id || cell.cell_group_id || cell.group_cell_id || "";
@@ -15629,6 +15710,7 @@ function renderCellGroupAccordion(groups, registry, { showMetrics = true, showAc
   return `<div class="cell-group-accordion" data-cell-group-accordion>
     ${groups.map((group) => {
       const cells = cellsByGroup.get(group.id) || [];
+      const memberRows = membership.byGroup.get(group.id) || [];
       const searchText = `${group.group_name} ${group.leader_name || ""} ${churchName(group.church_id)}`.toLowerCase();
       return `
         <details class="cell-group-item" data-cell-group-item data-search-text="${searchText}">
@@ -15636,6 +15718,7 @@ function renderCellGroupAccordion(groups, registry, { showMetrics = true, showAc
             <div class="cell-group-title"><strong>${group.group_name}</strong><span>${churchName(group.church_id)}</span></div>
             <div class="cell-group-summary-meta">
               <span class="cell-count-pill">${cells.length} ${L("cellCellsList")}</span>
+              <span class="cell-count-pill">${memberRows.length} ${L("members")}</span>
               ${group.leader_name ? `<span>${group.leader_name}</span>` : ""}
               ${badge(group.status)}
               ${group.needs_review ? `<span class="status-pill status-amber">${L("needsReview")}</span>` : ""}
@@ -15644,12 +15727,14 @@ function renderCellGroupAccordion(groups, registry, { showMetrics = true, showAc
           <div class="cell-group-inner">
             ${showMetrics ? `<div class="cell-mini-metrics">
               <span>${L("attendance")}: <strong>${cells.reduce((sum, cell) => sum + Number(cell.attendance || 0), 0)}</strong></span>
+              <span>${L("members")}: <strong>${memberRows.length}</strong></span>
               <span>FT: <strong>${cells.reduce((sum, cell) => sum + Number(cell.first_timers || 0), 0)}</strong></span>
               <span>NC: <strong>${cells.reduce((sum, cell) => sum + Number(cell.new_converts || 0), 0)}</strong></span>
               <span>${L("offering")}: <strong>${money(cells.reduce((sum, cell) => sum + Number(cell.offering || 0), 0))}</strong></span>
             </div>` : ""}
-            ${dataTable([L("cellName"), L("leaderName"), L("attendance"), L("firstTimeShort"), L("newConvertsShort"), L("offering"), L("status"), L("observation"), L("actions")], cells.map((cell) => [
+            ${dataTable([L("cellName"), L("members"), L("leaderName"), L("attendance"), L("firstTimeShort"), L("newConvertsShort"), L("offering"), L("status"), L("observation"), L("actions")], cells.map((cell) => [
               cell.cell_name,
+              (membership.byCell.get(cell.id) || []).length,
               `${cell.leader_title || ""} ${cell.leader_name || ""}`.trim() || "-",
               cell.attendance || 0,
               cell.first_timers || 0,
@@ -15667,6 +15752,7 @@ function renderCellGroupAccordion(groups, registry, { showMetrics = true, showAc
 function renderCellCellsList() {
   const groups = scopedNested(state.cellGroups || []);
   let cells = scopedNested(state.cellRegistry || []);
+  const membership = cellMembershipSummary(scoped(state.members || []), cells, groups);
   const filterGroup = cellRegistryFilter.groupId ? groups.find((item) => item.id === cellRegistryFilter.groupId) : null;
   if (filterGroup) cells = cells.filter((item) => item.group_id === filterGroup.id || item.cell_group_id === filterGroup.id || item.group_cell_id === filterGroup.id);
   const statusOptions = [...new Set(cells.map((item) => item.status).filter(Boolean))].sort();
@@ -15706,13 +15792,15 @@ function renderCellCellsList() {
     })}
     <div class="row g-3 mb-4">
       ${metric("bi-diagram-3", L("totalCells"), cells.length, filterGroup ? filterGroup.group_name : L("all"))}
+      ${metric("bi-people", L("totalMembers"), cells.reduce((sum, item) => sum + (membership.byCell.get(item.id) || []).length, 0), L("members"))}
       ${metric("bi-people", L("totalAttendance"), cells.reduce((sum, item) => sum + Number(item.attendance || 0), 0), L("reportWeek"))}
       ${metric("bi-person-heart", L("totalFirstTime"), cells.reduce((sum, item) => sum + Number(item.first_timers || 0), 0), L("firstTimers"))}
       ${metric("bi-stars", L("totalNewConverts"), cells.reduce((sum, item) => sum + Number(item.new_converts || 0), 0), L("newConverts"))}
     </div>
     <div class="row g-4">
-      <div class="col-12">${modulePanel("cellRegistry", L("cellCellsList"), "cellRegistry", [L("cellName"), L("groupName"), L("leaderTitle"), L("leaderName"), L("attendance"), L("firstTimeShort"), L("newConvertsShort"), L("offering"), L("observation"), L("status"), L("actions")], cells.map((item) => [
+      <div class="col-12">${modulePanel("cellRegistry", L("cellCellsList"), "cellRegistry", [L("cellName"), L("members"), L("groupName"), L("leaderTitle"), L("leaderName"), L("attendance"), L("firstTimeShort"), L("newConvertsShort"), L("offering"), L("observation"), L("status"), L("actions")], cells.map((item) => [
         item.cell_name,
+        (membership.byCell.get(item.id) || []).length,
         item.group_name,
         item.leader_title,
         item.leader_name,
@@ -21554,7 +21642,9 @@ function continueEnterDashboard() {
   Promise.resolve()
     .then(() => hydrateMembersFromRepository())
     .then((hydrated) => {
-      if (hydrated && activeRoute === "members") renderMembers();
+      if (!hydrated) return;
+      if (activeRoute === "members") renderMembers();
+      if (["cellMembers", "cellGroups", "cellCellsList"].includes(activeRoute)) setRoute(activeRoute);
     })
     .catch((error) => console.warn("[CE Members] background hydrate skipped", error));
   Promise.resolve()

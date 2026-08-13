@@ -52,6 +52,7 @@
     cellWeeklyReport: "cell",
     cellGroups: "cell",
     cellCellsList: "cell",
+    cellMembers: "cell",
     cellLeadersRoute: "cell",
     cellFinalValidation: "cell",
     cellConsolidation: "cell"
