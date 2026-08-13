@@ -5202,9 +5202,12 @@ function portalInPeriod(record, filters = cellPortalPageState) {
 
 function portalMemberBelongsToCell(member, cell) {
   if (!member || !cell) return false;
-  if (member.cell_id) return member.cell_id === cell.id;
+  if (member.cell_id && String(member.cell_id) === String(cell.id)) return true;
   const cellNames = [portalCellName(cell), cell.name, cell.nome_da_celula].filter(Boolean).map(portalText);
-  return member.church_id === cell.church_id && cellNames.includes(portalText(member.celula || member.cell_name));
+  const sameCellName = cellNames.includes(portalText(member.celula || member.cell_name));
+  // Historical imports can carry an old cell identifier that is not present in
+  // the current cell catalogue. The preserved cell name is the safe fallback.
+  return sameCellName && (!member.church_id || !cell.church_id || String(member.church_id) === String(cell.church_id));
 }
 
 function getCellMemberFinanceSummary(memberId, permissions = activeUser?.permissions || []) {
@@ -14559,6 +14562,46 @@ function migrateMemberRecord(member) {
   };
 }
 
+function memberNetworkText(value = "") {
+  return String(value || "").trim().toLocaleLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+function syncMemberDerivedCellNetwork() {
+  const members = Array.isArray(state.members) ? state.members : [];
+  const baseGroups = (state.cellGroups || []).filter((group) => !group.is_member_derived);
+  const baseCells = (state.cellRegistry || []).filter((cell) => !cell.is_member_derived);
+  const groups = [...baseGroups];
+  const cells = [...baseCells];
+  const groupKey = (churchId, groupName) => `${String(churchId || "")}:${memberNetworkText(groupName)}`;
+  const groupByKey = new Map(baseGroups.map((group) => [groupKey(group.church_id, group.group_name || group.name), group]));
+  const cellByKey = new Map(baseCells.map((cell) => [
+    `${String(cell.church_id || "")}:${memberNetworkText(cell.group_id || cell.cell_group_id || "")}:${memberNetworkText(cell.cell_name || cell.name)}`,
+    cell
+  ]));
+
+  members.forEach((member) => {
+    const cellName = String(member.cell_name || member.celula || "").trim();
+    if (!cellName) return;
+    const churchId = String(member.church_id || "");
+    const groupName = String(member.cell_group_name || member.grupo_de_celula || "").trim();
+    let group = groupByKey.get(groupKey(churchId, groupName));
+    if (!group && groupName) {
+      group = { id: `legacy-member-group:${memberNetworkText(groupName)}`, group_name: groupName, name: groupName, church_id: churchId, status: "Active", is_member_derived: true, source: "Member import mapping" };
+      groupByKey.set(groupKey(churchId, groupName), group);
+      groups.push(group);
+    }
+    const groupId = group?.id || member.cell_group_id || member.group_id || "";
+    const cellKey = `${churchId}:${memberNetworkText(groupId)}:${memberNetworkText(cellName)}`;
+    if (!cellByKey.has(cellKey)) {
+      const cell = { id: `legacy-member-cell:${memberNetworkText(churchId)}:${memberNetworkText(groupId || groupName)}:${memberNetworkText(cellName)}`, cell_name: cellName, name: cellName, church_id: churchId, group_id: groupId, cell_group_id: groupId, status: "Active", is_member_derived: true, source: "Member import mapping" };
+      cellByKey.set(cellKey, cell);
+      cells.push(cell);
+    }
+  });
+  state.cellGroups = groups;
+  state.cellRegistry = cells;
+}
+
 /**
  * Persist via data-layer first; if missing/unavailable, keep classic localStorage path.
  */
@@ -14618,6 +14661,7 @@ async function hydrateMembersFromRepository() {
     });
     const pendingLocalMembers = (state.members || []).filter((member) => member.provider_sync_status === "Pending" && !hydratedMembers.some((repoMember) => repoMember.id === member.id));
     state.members = [...hydratedMembers, ...pendingLocalMembers];
+    syncMemberDerivedCellNetwork();
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     console.info("[CE Members] hydrated", state.members.length, "members");
     return true;
@@ -15329,6 +15373,7 @@ async function hydrateCellMinistryFromRepository() {
         console.info("[CE CellMinistry] hydrated reports", state.cellLeadership.cellReports.length);
       }
     }
+    if (Array.isArray(state.members) && state.members.length) syncMemberDerivedCellNetwork();
     if (hydrated) localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     return hydrated;
   } catch (error) {
@@ -21830,7 +21875,7 @@ function continueEnterDashboard() {
     .then((hydrated) => {
       if (!hydrated) return;
       if (activeRoute === "members") renderMembers();
-      if (["cellMembers", "cellGroups", "cellCellsList"].includes(activeRoute)) setRoute(activeRoute);
+      if (["cellPortal", "cellMembers", "cellGroups", "cellCellsList"].includes(activeRoute)) setRoute(activeRoute);
     })
     .catch((error) => console.warn("[CE Members] background hydrate skipped", error));
   Promise.resolve()
