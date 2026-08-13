@@ -12,6 +12,7 @@ const required = [
   [adapter, "MEMBER_LIST_COLUMNS", "narrow list projection"],
   [adapter, ".range(from, from + pageSize - 1)", "server range pagination"],
   [dashboard, "data-members-page-size", "page-size selector"],
+  [dashboard, 'members: { view: "cards"', "Cards default view"],
   [dashboard, "loadMembersPage", "dashboard page loader"],
   [dashboard, "slice(0, pageState.pageSize || 50)", "render page guard"],
   [bridge, "listMembersPage", "runtime bridge method"],

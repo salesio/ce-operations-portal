@@ -9619,7 +9619,7 @@ function toggleModuleNav(key) {
   });
 }
 
-const modulePageState = { members: { view: "table", filter: {}, candidateTab: "pending", page: 1, pageSize: 50, totalCount: 0, totalPages: 1, items: [], loading: false, loaded: false, error: "", requestId: 0 }, firstTimers: { view: "table" }, followUp: { view: "kanban" } };
+const modulePageState = { members: { view: "cards", filter: {}, candidateTab: "pending", page: 1, pageSize: 50, totalCount: 0, totalPages: 1, items: [], loading: false, loaded: false, error: "", requestId: 0 }, firstTimers: { view: "table" }, followUp: { view: "kanban" } };
 window.modulePageState = modulePageState;
 let memberSearchDebounceTimer = null;
 
