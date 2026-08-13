@@ -18,7 +18,5 @@ const required = [
 for (const [text, needle, label] of required) {
   if (!text.includes(needle)) throw new Error(`Missing ${label}: ${needle}`);
 }
-if (adapter.includes("while (true)") && adapter.includes("MEMBERS_PAGE_SIZE")) {
-  console.log("Note: legacy listMembers remains available for non-directory consumers; the Members screen uses listMembersPage.");
-}
+if (adapter.includes("while (true)")) throw new Error("Members adapter still iterates through every remote page.");
 console.log("Members pagination smoke test passed.");

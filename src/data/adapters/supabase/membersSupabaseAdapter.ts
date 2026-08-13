@@ -21,7 +21,6 @@ import { mapSupabaseError } from "./supabaseRepositoryBase";
 import type { SupabaseRow } from "./supabaseTypes";
 
 const TABLE = "members";
-const MEMBERS_PAGE_SIZE = 1000;
 const MEMBER_PAGE_DEFAULT_SIZE = 50;
 const MEMBER_PAGE_MAX_SIZE = 100;
 // Deliberately narrow projection for the Members list. Profile screens still use
@@ -212,27 +211,11 @@ export function mapMemberToRow(member: Partial<Member>, forUpdate = false): Supa
 }
 
 export async function listMembers(): Promise<DataResult<Member[]>> {
-  // Supabase/PostgREST caps an unpaged select at its configured maximum (commonly
-  // 1,000 rows). Load stable, ordered pages so the Members dashboard represents
-  // the full database rather than only the first page of an import.
-  const rows: SupabaseRow[] = [];
-  let offset = 0;
-
-  while (true) {
-    const res = await listRows(TABLE, {
-      orderBy: "full_name",
-      offset,
-      limit: MEMBERS_PAGE_SIZE,
-    });
-    if (!res.ok) return fail(res.error, res.code);
-
-    const page = res.data || [];
-    rows.push(...page);
-    if (page.length < MEMBERS_PAGE_SIZE) break;
-    offset += MEMBERS_PAGE_SIZE;
-  }
-
-  return ok(rows.map((r) => mapMemberFromRow(r)!).filter(Boolean));
+  // Compatibility-only API. Never iterate through the entire remote table here:
+  // directory consumers must use listMembersPage() with explicit pagination.
+  const page = await listMembersPage({ page: 1, pageSize: MEMBER_PAGE_MAX_SIZE });
+  if (!page.ok) return fail(page.error, page.code);
+  return ok(page.data.items);
 }
 
 /**

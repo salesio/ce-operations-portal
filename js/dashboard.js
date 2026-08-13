@@ -3828,6 +3828,12 @@ function normalizeServiceLabelsInTree(value, seen = new WeakSet()) {
 
 let lang = localStorage.getItem(LANG_KEY) || "pt";
 let state = loadState();
+// Older builds cached an entire Supabase members table in the browser. Preserve
+// only local write fallbacks; the live directory is now exclusively paginated.
+if (String(window.__CE_ENV__?.VITE_DATA_SOURCE || "").toLowerCase() === "supabase" && Array.isArray(state.members) && state.members.length > 100) {
+  state.members = state.members.filter((member) => member?.provider_sync_status === "Pending");
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (_) {}
+}
 let activeUser = state.users[0];
 let isUserAuthenticated = false;
 let pendingCellReportLogin = false;
