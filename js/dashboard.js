@@ -3832,6 +3832,10 @@ let activeUser = state.users[0];
 let isUserAuthenticated = false;
 let pendingCellReportLogin = false;
 let activeRoute = "dashboard";
+const DASHBOARD_AUTO_REFRESH_MS = 5 * 60 * 1000;
+let dashboardAutoRefreshTimer = null;
+let dashboardRefreshInFlight = false;
+let dashboardLastRefreshAt = 0;
 let modalMode = null;
 let modalType = null;
 
@@ -10585,15 +10589,86 @@ function renderMemberCard(member) {
     meta: [
       [L("phone"), member.telefone, "bi-telephone"],
       [L("church"), churchName(member.church_id), "bi-building"],
-      [L("cell"), member.celula || "-", "bi-diagram-3"]
+      [L("cell"), memberCellLabel(member) || "-", "bi-diagram-3"]
     ],
     pills: [member.origem || L("origin")],
     actions: memberActions(member.id)
   });
 }
 
+function normalizedMemberFilterText(value) {
+  return String(value || "").trim().toLocaleLowerCase();
+}
+
+function memberCellGroupLabel(member = {}) {
+  return member.cell_group_name || member.grupo_de_celula || cellGroupName(member.cell_group_id || member.group_id) || "";
+}
+
+function memberCellLabel(member = {}) {
+  return member.cell_name || member.celula || cellName(member.cell_id) || "";
+}
+
+function memberCellGroupFilterValue(member = {}) {
+  const id = member.cell_group_id || member.group_id;
+  if (id) return `id:${id}`;
+  const label = memberCellGroupLabel(member);
+  return label ? `name:${normalizedMemberFilterText(label)}` : "";
+}
+
+function memberCellFilterValue(member = {}) {
+  const id = member.cell_id;
+  if (id) return `id:${id}`;
+  const label = memberCellLabel(member);
+  return label ? `name:${normalizedMemberFilterText(label)}` : "";
+}
+
+function memberFilterOptions(list, type) {
+  const options = new Map();
+  const add = (value, label) => {
+    if (value && label && !options.has(value)) options.set(value, label);
+  };
+  if (type === "cellGroup") {
+    (state.cellGroups || []).forEach((group) => add(`id:${group.id}`, group.group_name || group.name));
+    list.forEach((member) => add(memberCellGroupFilterValue(member), memberCellGroupLabel(member)));
+  } else {
+    (state.cellRegistry || []).forEach((cell) => add(`id:${cell.id}`, cell.cell_name || cell.name));
+    list.forEach((member) => add(memberCellFilterValue(member), memberCellLabel(member)));
+  }
+  return [...options.entries()].sort(([, a], [, b]) => String(a).localeCompare(String(b), lang === "pt" ? "pt" : "en"));
+}
+
+function renderMembersFilterBar(list, filters = {}, view = "table") {
+  const groupOptions = memberFilterOptions(list, "cellGroup");
+  const cellOptions = memberFilterOptions(list, "cell");
+  const selected = (key, value) => String(filters[key] || "") === String(value) ? " selected" : "";
+  const churchOptions = (state.churches || []).map((church) => `<option value="${escapeAttr(church.id)}"${selected("church_id", church.id)}>${escapeAttr(church.church_name || church.public_name || church.id)}</option>`).join("");
+  const groupHtml = groupOptions.map(([value, label]) => `<option value="${escapeAttr(value)}"${selected("cell_group", value)}>${escapeAttr(label)}</option>`).join("");
+  const cellHtml = cellOptions.map(([value, label]) => `<option value="${escapeAttr(value)}"${selected("cell", value)}>${escapeAttr(label)}</option>`).join("");
+  return `<div class="filter-toolbar filter-bar mb-3" data-member-filter-bar>
+    <div class="filter-toolbar-search"><i class="bi bi-search"></i><input class="form-control" type="search" data-member-filter="search" value="${escapeAttr(filters.search || "")}" placeholder="${L("search")}: nome, telefone, grupo ou célula"></div>
+    <select class="form-select" data-member-filter="church_id"><option value="">${L("filterChurch")}</option>${churchOptions}</select>
+    <select class="form-select" data-member-filter="cell_group"><option value="">Grupo de Célula</option>${groupHtml}</select>
+    <select class="form-select" data-member-filter="cell"><option value="">${L("cell")}</option>${cellHtml}</select>
+    <select class="form-select" data-member-filter="status"><option value="">${L("filterStatus")}</option>${["active", "inProgress", "transferred"].map((status) => `<option value="${status}"${selected("status", status)}>${statusText(status)}</option>`).join("")}</select>
+    ${ViewToggle(view)}
+    <button type="button" class="btn btn-ce-gold btn-touch" data-member-filter-apply><i class="bi bi-search me-1"></i>${L("search")}</button>
+    <button type="button" class="btn btn-outline-cyan action-secondary btn-touch" data-member-filter-clear>${lang === "pt" ? "Limpar filtros" : "Clear filters"}</button>
+    <button type="button" class="btn btn-outline-cyan action-secondary btn-touch"><i class="bi bi-download me-1"></i>${L("export")}</button>
+  </div>`;
+}
+
 function applyMemberCardFilters(list, filters = {}) {
   let rows = [...list];
+  const search = normalizedMemberFilterText(filters.search);
+  if (search) {
+    rows = rows.filter((member) => [
+      fullName(member), member.telefone, member.primary_phone, member.phone, member.email,
+      churchName(member.church_id), memberCellGroupLabel(member), memberCellLabel(member)
+    ].some((value) => normalizedMemberFilterText(value).includes(search)));
+  }
+  if (filters.church_id) rows = rows.filter((member) => String(member.church_id || "") === String(filters.church_id));
+  if (filters.cell_group) rows = rows.filter((member) => memberCellGroupFilterValue(member) === filters.cell_group);
+  if (filters.cell) rows = rows.filter((member) => memberCellFilterValue(member) === filters.cell);
   if (filters.status) rows = rows.filter((member) => statusKey(member.estado) === filters.status);
   if (filters.hasChurch) rows = rows.filter((member) => Boolean(member.church_id));
   return rows;
@@ -10798,7 +10873,7 @@ function renderMembers() {
   ];
   const candidateRows = candidates.filter((item) => (candidateTabs.find(([key]) => key === candidateTab)?.[2] || ["Submitted"]).includes(item.approval_status));
   const tableRows = filtered.map((m) => [
-    fullName(m), m.telefone, churchName(m.church_id), m.celula, m.departamento, badge(m.estado), memberActions(m.id)
+    fullName(m), m.telefone || m.primary_phone || "—", churchName(m.church_id), memberCellGroupLabel(m) || "—", memberCellLabel(m) || "—", m.departamento, badge(m.estado), memberActions(m.id)
   ]);
   const rowAttrs = filtered.map((m) => ` data-filter-row data-filter-church-values="${churchFilterTokens(m)}" data-filter-status-values="${statusKey(m.estado)} ${m.estado || ""}"`);
   setPageContent(`
@@ -10814,9 +10889,9 @@ function renderMembers() {
     ${summaryFilterChips("members")}
     ${canReviewMemberCandidates() ? `<article id="member-candidate-queue" class="panel glass-panel mb-4"><div class="d-flex justify-content-between align-items-center mb-3"><div><h3 class="h5 mb-1">Pedidos de Adesão</h3><p class="mb-0 text-secondary">Rascunhos ficam separados: apenas pedidos submetidos entram na fila de aprovação.</p></div><span class="badge text-bg-warning">${reviewQueue.length} em fila</span></div><div class="d-flex flex-wrap gap-2 mb-3">${candidateTabs.map(([key,label,statuses]) => `<button type="button" class="action-btn ${candidateTab === key ? "active" : ""}" data-member-candidate-tab="${key}">${label} <span class="badge text-bg-secondary">${candidates.filter((item) => statuses.includes(item.approval_status)).length}</span></button>`).join("")}</div>${dataTable(["Candidato", "Igreja / célula", "Registado por", "Telefone", "Duplicado", "Estado", "Acções"], candidateRows.map((c) => [candidateFullName(c), `${c.church_name || "—"}<br><small>${c.cell_name || "—"}</small>`, c.registered_by_name || "—", c.primary_phone || "Não informado", c.duplicate_confidence || "—", badge(candidateStatusLabel(c.approval_status)), candidateAdminActions(c)]))}</article>` : ""}
     <article class="panel glass-panel">
-      ${filterBar({ viewToggle: ViewToggle(view) })}
+      ${renderMembersFilterBar(list, modulePageState.members.filter || {}, view)}
       <div id="members-results">
-        ${view === "cards" ? DataCardsGrid(filtered.map((m) => renderMemberCard(m)).join("")) : dataTable([L("name"), L("phone"), L("church"), L("cell"), L("department"), L("status"), L("actions")], tableRows, { rowAttrs })}
+        ${view === "cards" ? DataCardsGrid(filtered.map((m) => renderMemberCard(m)).join("")) : dataTable([L("name"), L("phone"), L("church"), "Grupo de Célula", L("cell"), L("department"), L("status"), L("actions")], tableRows, { rowAttrs })}
       </div>
     </article>
     ${renderHqMembersDryRunPreview()}
@@ -20654,6 +20729,7 @@ document.addEventListener("click", async (event) => {
   const logoutButton = event.target.closest("#logoutBtn");
   if (logoutButton) {
     isUserAuthenticated = false;
+    stopDashboardAutoRefresh();
     pendingCellReportLogin = false;
     byId("appView")?.classList.add("d-none");
     byId("loginView")?.classList.remove("d-none");
@@ -20752,6 +20828,24 @@ document.addEventListener("click", async (event) => {
       modulePageState.firstTimers.view = mode;
       renderFirstTimers();
     }
+    return;
+  }
+  const memberFilterApply = event.target.closest("[data-member-filter-apply]");
+  if (memberFilterApply) {
+    const filterBar = memberFilterApply.closest("[data-member-filter-bar]");
+    modulePageState.members.filter = {
+      search: filterBar?.querySelector('[data-member-filter="search"]')?.value?.trim() || "",
+      church_id: filterBar?.querySelector('[data-member-filter="church_id"]')?.value || "",
+      cell_group: filterBar?.querySelector('[data-member-filter="cell_group"]')?.value || "",
+      cell: filterBar?.querySelector('[data-member-filter="cell"]')?.value || "",
+      status: filterBar?.querySelector('[data-member-filter="status"]')?.value || ""
+    };
+    renderMembers();
+    return;
+  }
+  if (event.target.closest("[data-member-filter-clear]")) {
+    modulePageState.members.filter = {};
+    renderMembers();
     return;
   }
   const followupViewBtn = event.target.closest("[data-followup-view]");
@@ -21599,6 +21693,73 @@ function mapAccountToDashboardUser(account) {
   };
 }
 
+function dashboardHasOpenEditor() {
+  return Boolean(
+    modalType ||
+    document.querySelector(".modal.show, .offcanvas.show, [data-finance-drawer].show, [data-church-drawer].show, [data-requisition-drawer].show")
+  );
+}
+
+async function refreshDashboardData({ render = true } = {}) {
+  if (!isUserAuthenticated || dashboardRefreshInFlight) return false;
+  dashboardRefreshInFlight = true;
+  const refreshTasks = [
+    hydrateChurchesFromRepository,
+    hydrateMembersFromRepository,
+    hydrateFirstTimersFromRepository,
+    hydrateFollowUpsFromRepository,
+    hydrateFoundationSchoolFromRepository,
+    hydrateCellMinistryFromRepository,
+    hydrateFinanceFromRepository,
+    hydrateRequisitionsFromRepository,
+    hydrateVenueInventoryFromRepository,
+    hydrateStaffHrFromRepository,
+    hydrateAccessControlFromRepository,
+    hydrateMediaFromRepository,
+    hydrateCounselingFromRepository,
+    hydrateSacramentsFromRepository,
+    hydrateFevoFromRepository,
+    hydratePrisonMinistryFromRepository,
+    hydrateMinistryMaterialsFromRepository,
+    hydrateProgramsFromRepository,
+    hydrateSettingsFromRepository,
+    hydrateNotificationsFromRepository
+  ];
+  try {
+    await Promise.allSettled(refreshTasks.map((task) => Promise.resolve().then(task)));
+    dashboardLastRefreshAt = Date.now();
+    if (render && document.visibilityState === "visible" && !dashboardHasOpenEditor() && activeRoute && activeRoute !== "login") {
+      setRoute(activeRoute);
+    }
+    if (typeof updateNotificationCenter === "function") updateNotificationCenter();
+    return true;
+  } catch (error) {
+    console.warn("[CE Dashboard] scheduled data refresh skipped", error);
+    return false;
+  } finally {
+    dashboardRefreshInFlight = false;
+  }
+}
+
+function stopDashboardAutoRefresh() {
+  if (dashboardAutoRefreshTimer) window.clearInterval(dashboardAutoRefreshTimer);
+  dashboardAutoRefreshTimer = null;
+}
+
+function startDashboardAutoRefresh() {
+  stopDashboardAutoRefresh();
+  dashboardLastRefreshAt = Date.now();
+  dashboardAutoRefreshTimer = window.setInterval(() => {
+    if (document.visibilityState === "visible") void refreshDashboardData();
+  }, DASHBOARD_AUTO_REFRESH_MS);
+}
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && isUserAuthenticated && Date.now() - dashboardLastRefreshAt >= DASHBOARD_AUTO_REFRESH_MS) {
+    void refreshDashboardData();
+  }
+});
+
 function continueEnterDashboard() {
   isUserAuthenticated = true;
   recordCellReportSecurityEvent("cell_report_login", `Authenticated login as ${activeUser?.role || "unknown role"}`);
@@ -21634,6 +21795,7 @@ function continueEnterDashboard() {
     setRoute(reviewerRoute || (isPublicCellReportRoute(requestedRoute) || requestedRoute === "login" ? workspaceDefault : requestedWorkspaceRoute || workspaceDefault));
   }
   updateBackToTopVisibility();
+  startDashboardAutoRefresh();
   // Data-layer pilots: sync churches + members + first timers without blocking UI paint
   Promise.resolve()
     .then(() => hydrateChurchesFromRepository())
