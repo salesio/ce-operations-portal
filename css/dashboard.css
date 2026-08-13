@@ -2859,6 +2859,24 @@ tr[data-public-cell-report="1"] td:last-child {
   outline-offset: 3px;
 }
 
+/* Keep the Members pager clear of the fixed scroll-to-top control. */
+[data-members-pagination] {
+  padding-right: 5.25rem;
+  padding-bottom: 0.75rem;
+}
+
+@media (max-width: 767.98px) {
+  [data-members-pagination] {
+    padding-right: 0;
+    padding-bottom: 5rem;
+  }
+
+  [data-members-pagination] > div {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
 @media (max-width: 1199.98px) {
   .ops-hero {
     grid-template-columns: 1fr;
