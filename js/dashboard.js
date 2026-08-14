@@ -5109,6 +5109,7 @@ const CELL_PORTAL_ROLE_PERMISSIONS = {
 };
 
 const cellPortalPageState = {
+  cellGroupId: "",
   cellId: "",
   period: "month",
   dateFrom: "",
@@ -10438,8 +10439,22 @@ function renderCellLeaderPortal() {
     recordCellReportSecurityEvent("cell_portal_no_assignment", "Authenticated user has no assigned cell");
     return;
   }
-  if (!cellPortalPageState.cellId || !canAccessCell(activeUser.id, cellPortalPageState.cellId)) cellPortalPageState.cellId = authorizedCells[0].id;
+  if (!cellPortalPageState.cellId || !canAccessCell(activeUser.id, cellPortalPageState.cellId)) {
+    if (cellPortalPageState.cellGroupId) {
+      const groupAuthCell = authorizedCells.find((c) => String(c.group_id || c.cell_group_id || "") === String(cellPortalPageState.cellGroupId));
+      if (groupAuthCell) {
+        cellPortalPageState.cellId = groupAuthCell.id;
+      } else {
+        cellPortalPageState.cellId = authorizedCells[0].id;
+      }
+    } else {
+      cellPortalPageState.cellId = authorizedCells[0].id;
+    }
+  }
   const context = getCellLeaderContext(activeUser.id, cellPortalPageState.cellId);
+  if (!cellPortalPageState.cellGroupId && context?.cell_group_id) {
+    cellPortalPageState.cellGroupId = context.cell_group_id;
+  }
   if (usesSupabaseMembers() && (!cellPortalMembersState.loaded || String(cellPortalMembersState.cellId) !== String(context?.cell_id))) {
     void loadCellPortalMembers(context?.cell_id);
   }
@@ -10474,16 +10489,38 @@ function renderCellLeaderPortal() {
   const canChooseCell = ["Cell Ministry Reviewer", "Cell Ministry Head", "Super Admin"].includes(activeUser.role) && authorizedCells.length > 1;
   const memberStatuses = [...new Set(allMembers.map((member) => member.status).filter(Boolean))];
   const foundationOptions = [...new Set(allMembers.map((member) => member.foundation_status).filter(Boolean))];
-  const cellGroupsList = (state.cellGroups || []).length
-    ? state.cellGroups
-    : [...new Map((state.cells || []).map((c) => [c.group_id || c.cell_group_id, { id: c.group_id || c.cell_group_id, group_name: c.group_name || c.cell_group_name }])).values()].filter((g) => g.id);
-  const cellRegistryList = (state.cellRegistry?.length ? state.cellRegistry : (state.cells || [])).filter((c) => {
+  const allGroups = [
+    ...(state.cellGroups || []),
+    ...(state.cellMinistry?.groups || [])
+  ];
+  const allGroupMap = new Map();
+  allGroups.forEach((g) => {
+    const gid = g.id || g.group_id || g.cell_group_id;
+    const gname = g.group_name || g.name || g.nome_do_grupo || g.cell_group_name;
+    if (gid && gname && !allGroupMap.has(String(gid))) {
+      allGroupMap.set(String(gid), { id: gid, group_name: gname });
+    }
+  });
+  const allCells = state.cellRegistry?.length ? state.cellRegistry : (state.cells || []);
+  allCells.forEach((c) => {
+    const gid = c.group_id || c.cell_group_id;
+    const gname = c.group_name || c.cell_group_name || c.nome_do_grupo;
+    if (gid && gname && !allGroupMap.has(String(gid))) {
+      allGroupMap.set(String(gid), { id: gid, group_name: gname });
+    }
+  });
+  const cellGroupsList = Array.from(allGroupMap.values());
+  const cellRegistryList = allCells.filter((c) => {
     if (!cellPortalPageState.cellGroupId) return true;
     return String(c.group_id || c.cell_group_id || "") === String(cellPortalPageState.cellGroupId);
   });
+  const heroCellsList = cellPortalPageState.cellGroupId
+    ? authorizedCells.filter((c) => String(c.group_id || c.cell_group_id || "") === String(cellPortalPageState.cellGroupId))
+    : authorizedCells;
+  const displayHeroCells = heroCellsList.length ? heroCellsList : authorizedCells;
 
   setPageContent(`<div class="cell-portal-shell">
-    <section class="cell-portal-hero"><div><span class="eyebrow">Portal do Líder de Célula</span><h2>${escapeAttr(context.cell_name)}</h2><p><i class="bi bi-building me-1"></i>${escapeAttr(context.church_name)} <span>•</span> ${escapeAttr(context.cell_group_name)}</p><div class="cell-portal-identity"><span>${escapeAttr(context.cell_role)}</span><strong>${escapeAttr(context.user_name)}</strong></div></div><div class="cell-portal-hero-actions">${canChooseCell ? `<label>Seleccionar célula<select class="form-select" data-cell-portal-cell>${authorizedCells.map((item) => `<option value="${escapeAttr(item.id)}" ${item.id === context.cell_id ? "selected" : ""}>${escapeAttr(portalCellName(item))}</option>`).join("")}</select></label>` : ""}<button type="button" class="btn btn-ce-gold btn-touch" data-public-cell-report><i class="bi bi-clipboard-plus me-2"></i>Submeter Relatório Semanal</button>${hasCellPortalPermission("cell_portal.export_summary") ? `<button type="button" class="btn btn-outline-light btn-touch" data-cell-portal-export><i class="bi bi-download me-2"></i>Exportar resumo</button>` : ""}</div></section>
+    <section class="cell-portal-hero"><div><span class="eyebrow">Portal do Líder de Célula</span><h2>${escapeAttr(context.cell_name)}</h2><p><i class="bi bi-building me-1"></i>${escapeAttr(context.church_name)} <span>•</span> ${escapeAttr(context.cell_group_name)}</p><div class="cell-portal-identity"><span>${escapeAttr(context.cell_role)}</span><strong>${escapeAttr(context.user_name)}</strong></div></div><div class="cell-portal-hero-actions">${canChooseCell ? `<label>Seleccionar célula<select class="form-select" data-cell-portal-cell>${displayHeroCells.map((item) => `<option value="${escapeAttr(item.id)}" ${String(item.id) === String(context.cell_id) ? "selected" : ""}>${escapeAttr(portalCellName(item))}</option>`).join("")}</select></label>` : ""}<button type="button" class="btn btn-ce-gold btn-touch" data-public-cell-report><i class="bi bi-clipboard-plus me-2"></i>Submeter Relatório Semanal</button>${hasCellPortalPermission("cell_portal.export_summary") ? `<button type="button" class="btn btn-outline-light btn-touch" data-cell-portal-export><i class="bi bi-download me-2"></i>Exportar resumo</button>` : ""}</div></section>
     <section class="panel glass-panel cell-portal-filters"><div class="d-flex justify-content-end"><button type="button" class="btn btn-ce-gold btn-touch" data-open-member-candidate><i class="bi bi-person-plus me-2"></i>Registar Pessoa</button></div><label>Grupo de Célula<select class="form-select" data-cell-portal-filter="cellGroupId"><option value="">Todos os Grupos</option>${cellGroupsList.map((g) => `<option value="${escapeAttr(g.id)}" ${String(g.id) === String(cellPortalPageState.cellGroupId || "") ? "selected" : ""}>${escapeAttr(g.group_name || g.name)}</option>`).join("")}</select></label><label>Célula<select class="form-select" data-cell-portal-filter="cellId"><option value="">Todas as Células</option>${cellRegistryList.map((c) => `<option value="${escapeAttr(c.id)}" ${String(c.id) === String(cellPortalPageState.cellId || "") ? "selected" : ""}>${escapeAttr(c.cell_name || c.name)}</option>`).join("")}</select></label><label>Período<select class="form-select" data-cell-portal-filter="period">${[["week","Esta semana"],["month","Este mês"],["quarter","Último trimestre"],["year","Este ano"],["custom","Personalizado"]].map(([value,label]) => `<option value="${value}" ${cellPortalPageState.period === value ? "selected" : ""}>${label}</option>`).join("")}</select></label>${cellPortalPageState.period === "custom" ? `<label>De<input type="date" class="form-control" data-cell-portal-filter="dateFrom" value="${escapeAttr(cellPortalPageState.dateFrom)}"></label><label>Até<input type="date" class="form-control" data-cell-portal-filter="dateTo" value="${escapeAttr(cellPortalPageState.dateTo)}"></label>` : ""}<label>Estado<select class="form-select" data-cell-portal-filter="memberStatus"><option value="">Todos</option>${memberStatuses.map((value) => `<option ${cellPortalPageState.memberStatus === value ? "selected" : ""}>${escapeAttr(value)}</option>`).join("")}</select></label><label>Fundação<select class="form-select" data-cell-portal-filter="foundationStatus"><option value="">Todos</option>${foundationOptions.map((value) => `<option ${cellPortalPageState.foundationStatus === value ? "selected" : ""}>${escapeAttr(value)}</option>`).join("")}</select></label><label>Sacramentos<select class="form-select" data-cell-portal-filter="sacramentStatus"><option value="">Todos</option><option value="baptized" ${cellPortalPageState.sacramentStatus === "baptized" ? "selected" : ""}>Baptizado</option><option value="not_baptized" ${cellPortalPageState.sacramentStatus === "not_baptized" ? "selected" : ""}>Não baptizado</option></select></label><label>Parceria<select class="form-select" data-cell-portal-filter="partnership"><option value="">Todos</option><option value="true" ${cellPortalPageState.partnership === "true" ? "selected" : ""}>Sim</option><option value="false" ${cellPortalPageState.partnership === "false" ? "selected" : ""}>Não</option></select></label><label>Dizimista<select class="form-select" data-cell-portal-filter="tithe"><option value="">Todos</option><option value="true" ${cellPortalPageState.tithe === "true" ? "selected" : ""}>Sim</option><option value="false" ${cellPortalPageState.tithe === "false" ? "selected" : ""}>Não</option></select></label><label>Convidou<select class="form-select" data-cell-portal-filter="invited"><option value="">Todos</option><option value="true" ${cellPortalPageState.invited === "true" ? "selected" : ""}>Sim</option><option value="false" ${cellPortalPageState.invited === "false" ? "selected" : ""}>Não</option></select></label></section>
     <nav class="cell-portal-nav" aria-label="Secções do portal">${[["overview","Visão Geral"],["members","Membros"],["reports","Relatório"],["activities","Actividades"],["growth","Crescimento"],["finance","Parcerias & Dízimos"],["souls","Ganhar Almas"],["foundation","Fundação & Sacramentos"],["programs","Programas"],["history","Histórico"]].map(([id,label]) => `<button type="button" data-cell-portal-section="cell-portal-${id}">${label}</button>`).join("")}</nav>
     <section id="cell-portal-overview" class="cell-portal-section">${cellPortalSectionTitle("bi-grid-1x2", "Visão Geral", "Indicadores seguros da célula autorizada")}<div class="cell-portal-kpis">${[["bi-people","Total de membros",stats.total_members],["bi-person-check","Membros activos",stats.active_members],["bi-person-plus","Novos este mês",stats.new_members_month],["bi-person-heart","Visitantes ligados",stats.visitors],["bi-clipboard-check","Relatórios este mês",stats.reports_month],["bi-activity","Estado actual",stats.current_report_status],["bi-clock-history","Último relatório",stats.latest_report ? String(portalDateValue(stats.latest_report)).slice(0,10) : "—"],["bi-calendar-week","Próxima submissão",stats.next_submission]].map(([icon,label,value]) => `<article><i class="bi ${icon}"></i><span>${label}</span><strong>${escapeAttr(value)}</strong></article>`).join("")}</div><div class="cell-portal-meta"><div><span>Igreja</span><strong>${escapeAttr(context.church_name)}</strong></div><div><span>Grupo</span><strong>${escapeAttr(context.cell_group_name)}</strong></div><div><span>Liderança</span><strong>${escapeAttr(leaders.join(", ") || context.user_name)}</strong></div><div><span>Escopo</span><strong>${context.authorized_cell_ids.length} célula(s)</strong></div></div></section>
@@ -21917,7 +21954,14 @@ document.addEventListener("change", (event) => {
   }
   if (event.target.matches("[data-cell-portal-cell]")) {
     const requestedCell = event.target.value || "";
-    if (canAccessCell(activeUser?.id, requestedCell)) cellPortalPageState.cellId = requestedCell;
+    if (canAccessCell(activeUser?.id, requestedCell)) {
+      cellPortalPageState.cellId = requestedCell;
+      const allCells = state.cellRegistry?.length ? state.cellRegistry : (state.cells || []);
+      const cellObj = allCells.find((c) => String(c.id) === String(requestedCell));
+      if (cellObj && (cellObj.group_id || cellObj.cell_group_id)) {
+        cellPortalPageState.cellGroupId = cellObj.group_id || cellObj.cell_group_id;
+      }
+    }
     renderCellLeaderPortal();
     return;
   }
@@ -21925,11 +21969,33 @@ document.addEventListener("change", (event) => {
     const filterKey = event.target.dataset.cellPortalFilter;
     const val = event.target.value || "";
     cellPortalPageState[filterKey] = val;
+    const allCells = state.cellRegistry?.length ? state.cellRegistry : (state.cells || []);
     if (filterKey === "cellGroupId") {
-      if (cellPortalPageState.cellId) {
-        const cellObj = (state.cellRegistry || state.cells || []).find((c) => String(c.id) === String(cellPortalPageState.cellId));
-        if (cellObj && val && String(cellObj.group_id || cellObj.cell_group_id || "") !== String(val)) {
+      const authorizedCells = getAuthorizedCellsForUser(activeUser?.id);
+      if (val) {
+        const groupAuthCells = authorizedCells.filter((c) => String(c.group_id || c.cell_group_id || "") === String(val));
+        const groupRegistryCells = allCells.filter((c) => String(c.group_id || c.cell_group_id || "") === String(val));
+        if (groupAuthCells.length > 0) {
+          cellPortalPageState.cellId = groupAuthCells[0].id;
+        } else if (groupRegistryCells.length > 0) {
+          cellPortalPageState.cellId = groupRegistryCells[0].id;
+        } else {
           cellPortalPageState.cellId = "";
+        }
+      } else {
+        if (!cellPortalPageState.cellId && authorizedCells.length > 0) {
+          cellPortalPageState.cellId = authorizedCells[0].id;
+        }
+      }
+    }
+    if (filterKey === "cellId") {
+      if (val) {
+        if (canAccessCell(activeUser?.id, val)) {
+          cellPortalPageState.cellId = val;
+        }
+        const cellObj = allCells.find((c) => String(c.id) === String(val));
+        if (cellObj && (cellObj.group_id || cellObj.cell_group_id)) {
+          cellPortalPageState.cellGroupId = cellObj.group_id || cellObj.cell_group_id;
         }
       }
     }
