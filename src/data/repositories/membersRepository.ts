@@ -232,16 +232,44 @@ export async function listMembersPage(query: MemberListQuery = {}): Promise<Data
         if (!matchId && !matchName) return false;
       }
       if (query.cellGroupId || query.cellGroupName) {
-        const matchId = query.cellGroupId && String(member.cell_group_id || "") === String(query.cellGroupId);
-        const targetGroup = String(query.cellGroupName || query.cellGroupId).toLowerCase();
-        const matchName = targetGroup && String(member.cell_group_name || member.grupo_de_celula || "").toLowerCase().includes(targetGroup);
-        if (!matchId && !matchName) return false;
+        const targetGroup = String(query.cellGroupName || query.cellGroupId || "").toLowerCase();
+        const matchGroupId = query.cellGroupId && String(member.cell_group_id || member.group_id || "").toLowerCase() === String(query.cellGroupId).toLowerCase();
+        const matchGroupName = targetGroup && String(member.cell_group_name || member.grupo_de_celula || "").toLowerCase().includes(targetGroup);
+        let matchRegistry = false;
+        if (typeof window !== "undefined" && (window as any).state?.cellRegistry) {
+          const registry = (window as any).state.cellRegistry || [];
+          const cell = registry.find((c: any) =>
+            (member.cell_id && String(c.id) === String(member.cell_id)) ||
+            (member.cell_name && String(c.cell_name || "").toLowerCase() === String(member.cell_name).toLowerCase()) ||
+            (member.celula && String(c.cell_name || "").toLowerCase() === String(member.celula).toLowerCase())
+          );
+          if (cell) {
+            if (query.cellGroupId && (String(cell.group_id) === String(query.cellGroupId) || String(cell.cell_group_id) === String(query.cellGroupId))) matchRegistry = true;
+            if (targetGroup) {
+              const gName = String(cell.group_name || cell.cell_group_name || "").toLowerCase();
+              if (gName && (gName.includes(targetGroup) || targetGroup.includes(gName))) matchRegistry = true;
+            }
+          }
+        }
+        if (!matchGroupId && !matchGroupName && !matchRegistry) return false;
       }
       if (query.cellId || query.cellName || query.cellNameLike) {
-        const matchId = query.cellId && String(member.cell_id || "") === String(query.cellId);
-        const targetCell = String(query.cellName || query.cellNameLike || query.cellId).toLowerCase();
-        const matchName = targetCell && String(member.cell_name || member.celula || "").toLowerCase().includes(targetCell);
-        if (!matchId && !matchName) return false;
+        const targetCell = String(query.cellName || query.cellNameLike || query.cellId || "").toLowerCase();
+        const matchCellId = query.cellId && String(member.cell_id || "").toLowerCase() === String(query.cellId).toLowerCase();
+        const matchCellName = targetCell && String(member.cell_name || member.celula || "").toLowerCase().includes(targetCell);
+        let matchRegistry = false;
+        if (typeof window !== "undefined" && (window as any).state?.cellRegistry) {
+          const registry = (window as any).state.cellRegistry || [];
+          const cell = registry.find((c: any) =>
+            (query.cellId && String(c.id) === String(query.cellId)) ||
+            (targetCell && String(c.cell_name || c.name || "").toLowerCase().includes(targetCell))
+          );
+          if (cell) {
+            if (member.cell_id && String(member.cell_id) === String(cell.id)) matchRegistry = true;
+            if (member.cell_name && String(cell.cell_name || "").toLowerCase().includes(String(member.cell_name).toLowerCase())) matchRegistry = true;
+          }
+        }
+        if (!matchCellId && !matchCellName && !matchRegistry) return false;
       }
       if (query.status && String(member.status || member.estado || "").toLowerCase() !== String(query.status).toLowerCase()) return false;
       if (search.length < 2) return true;

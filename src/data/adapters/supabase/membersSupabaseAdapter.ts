@@ -254,26 +254,73 @@ export async function listMembersPage(query: MemberListQuery = {}): Promise<Data
     }
 
     if (query.cellGroupId || query.cellGroupName) {
-      const isGroupUuid = query.cellGroupId && isValidUuid(query.cellGroupId);
-      const safeGroup = String(query.cellGroupName || (isGroupUuid ? "" : query.cellGroupId)).replace(/[%_,()]/g, " ").replace(/\s+/g, " ").trim();
-      if (isGroupUuid && safeGroup) {
-        request = request.or(`cell_group_id.eq.${query.cellGroupId},cell_group_name.ilike.%${safeGroup}%`);
-      } else if (isGroupUuid) {
-        request = request.eq("cell_group_id", query.cellGroupId);
-      } else if (safeGroup) {
-        request = request.ilike("cell_group_name", `%${safeGroup}%`);
+      const groupTerms: string[] = [];
+      const groupIdStr = String(query.cellGroupId || "").trim();
+      const groupNameStr = String(query.cellGroupName || "").trim();
+      if (groupIdStr) {
+        groupTerms.push(`cell_group_id.eq.${groupIdStr}`);
+      }
+      if (groupNameStr) {
+        const safeGroup = groupNameStr.replace(/[%_,()]/g, " ").replace(/\s+/g, " ").trim();
+        if (safeGroup) {
+          groupTerms.push(`cell_group_name.ilike.%${safeGroup}%`);
+          groupTerms.push(`cell_name.ilike.%${safeGroup}%`);
+        }
+      }
+      if (typeof window !== "undefined" && (window as any).state?.cellRegistry) {
+        const registry = (window as any).state.cellRegistry || [];
+        const matchingCells = registry.filter((c: any) => {
+          if (groupIdStr && (String(c.group_id) === groupIdStr || String(c.cell_group_id) === groupIdStr)) return true;
+          if (groupNameStr) {
+            const gName = String(c.group_name || c.cell_group_name || "").toLowerCase();
+            return gName.includes(groupNameStr.toLowerCase()) || groupNameStr.toLowerCase().includes(gName);
+          }
+          return false;
+        });
+        matchingCells.forEach((c: any) => {
+          if (c.id) groupTerms.push(`cell_id.eq.${c.id}`);
+          const cNameClean = String(c.cell_name || c.name || "").replace(/[%_,()]/g, " ").replace(/\s+/g, " ").trim();
+          if (cNameClean) groupTerms.push(`cell_name.ilike.%${cNameClean}%`);
+        });
+      }
+      if (groupTerms.length > 0) {
+        const uniqueTerms = Array.from(new Set(groupTerms));
+        request = request.or(uniqueTerms.join(","));
       }
     }
 
     if (query.cellId || query.cellName || query.cellNameLike) {
-      const isCellUuid = query.cellId && isValidUuid(query.cellId);
-      const safeCell = String(query.cellName || query.cellNameLike || (isCellUuid ? "" : query.cellId)).replace(/[%_,()]/g, " ").replace(/\s+/g, " ").trim();
-      if (isCellUuid && safeCell) {
-        request = request.or(`cell_id.eq.${query.cellId},cell_name.ilike.%${safeCell}%`);
-      } else if (isCellUuid) {
-        request = request.eq("cell_id", query.cellId);
-      } else if (safeCell) {
-        request = request.ilike("cell_name", `%${safeCell}%`);
+      const cellTerms: string[] = [];
+      const cellIdStr = String(query.cellId || "").trim();
+      const cellNameStr = String(query.cellName || query.cellNameLike || "").trim();
+      if (cellIdStr) {
+        cellTerms.push(`cell_id.eq.${cellIdStr}`);
+      }
+      if (cellNameStr) {
+        const safeCell = cellNameStr.replace(/[%_,()]/g, " ").replace(/\s+/g, " ").trim();
+        if (safeCell) {
+          cellTerms.push(`cell_name.ilike.%${safeCell}%`);
+        }
+      }
+      if (typeof window !== "undefined" && (window as any).state?.cellRegistry) {
+        const registry = (window as any).state.cellRegistry || [];
+        const matchingCells = registry.filter((c: any) => {
+          if (cellIdStr && String(c.id) === cellIdStr) return true;
+          if (cellNameStr) {
+            const cName = String(c.cell_name || c.name || "").toLowerCase();
+            return cName.includes(cellNameStr.toLowerCase()) || cellNameStr.toLowerCase().includes(cName);
+          }
+          return false;
+        });
+        matchingCells.forEach((c: any) => {
+          if (c.id) cellTerms.push(`cell_id.eq.${c.id}`);
+          const cNameClean = String(c.cell_name || c.name || "").replace(/[%_,()]/g, " ").replace(/\s+/g, " ").trim();
+          if (cNameClean) cellTerms.push(`cell_name.ilike.%${cNameClean}%`);
+        });
+      }
+      if (cellTerms.length > 0) {
+        const uniqueTerms = Array.from(new Set(cellTerms));
+        request = request.or(uniqueTerms.join(","));
       }
     }
 

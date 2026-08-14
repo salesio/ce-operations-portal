@@ -10956,12 +10956,18 @@ function applyMemberCardFilters(list, filters = {}) {
       if (memberCellGroupFilterValue(member) === target) return true;
       if (target.startsWith("id:")) {
         const id = target.slice(3);
+        if (String(member.cell_group_id || member.group_id || "") === id) return true;
         const groupObj = (state.cellGroups || []).find((g) => String(g.id) === id);
         const groupName = groupObj?.group_name || groupObj?.name;
-        if (groupName && normalizedMemberFilterText(memberCellGroupLabel(member)).includes(normalizedMemberFilterText(groupName))) return true;
+        const memberGroupLabel = normalizedMemberFilterText(memberCellGroupLabel(member));
+        if (groupName) {
+          const targetNorm = normalizedMemberFilterText(groupName);
+          if (memberGroupLabel.includes(targetNorm) || targetNorm.includes(memberGroupLabel)) return true;
+        }
       } else if (target.startsWith("name:")) {
         const targetName = target.slice(5);
-        if (normalizedMemberFilterText(memberCellGroupLabel(member)).includes(targetName)) return true;
+        const memberGroupLabel = normalizedMemberFilterText(memberCellGroupLabel(member));
+        if (memberGroupLabel.includes(targetName) || targetName.includes(memberGroupLabel)) return true;
       }
       return false;
     });
@@ -10972,12 +10978,18 @@ function applyMemberCardFilters(list, filters = {}) {
       if (memberCellFilterValue(member) === target) return true;
       if (target.startsWith("id:")) {
         const id = target.slice(3);
+        if (String(member.cell_id || "") === id) return true;
         const cellObj = (state.cellRegistry || []).find((c) => String(c.id) === id);
         const cellName = cellObj?.cell_name || cellObj?.name;
-        if (cellName && normalizedMemberFilterText(memberCellLabel(member)).includes(normalizedMemberFilterText(cellName))) return true;
+        const memberCellLbl = normalizedMemberFilterText(memberCellLabel(member));
+        if (cellName) {
+          const targetNorm = normalizedMemberFilterText(cellName);
+          if (memberCellLbl.includes(targetNorm) || targetNorm.includes(memberCellLbl)) return true;
+        }
       } else if (target.startsWith("name:")) {
         const targetName = target.slice(5);
-        if (normalizedMemberFilterText(memberCellLabel(member)).includes(targetName)) return true;
+        const memberCellLbl = normalizedMemberFilterText(memberCellLabel(member));
+        if (memberCellLbl.includes(targetName) || targetName.includes(memberCellLbl)) return true;
       }
       return false;
     });
