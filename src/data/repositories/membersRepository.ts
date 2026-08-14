@@ -222,16 +222,25 @@ export async function listMembersPage(query: MemberListQuery = {}): Promise<Data
     const pageSize = Math.min(100, Math.max(25, Number(query.pageSize) || 50));
     const search = String(query.search || "").trim().toLowerCase();
     const matches = (listed.data || []).filter((member) => {
-      if (query.churchId && String(member.church_id || member.churchId || "") !== String(query.churchId)) return false;
+      if (query.churchId) {
+        const matchId = String(member.church_id || member.churchId || "") === String(query.churchId);
+        const churchObj = (typeof window !== "undefined" && (window as any).state?.churches || []).find(
+          (c: any) => String(c.id) === String(query.churchId) || String(c.church_id) === String(query.churchId)
+        );
+        const targetChurchName = churchObj?.church_name || churchObj?.public_name || String(query.churchId);
+        const matchName = targetChurchName && String(member.church_name || member.igreja || "").toLowerCase().includes(targetChurchName.toLowerCase());
+        if (!matchId && !matchName) return false;
+      }
       if (query.cellGroupId || query.cellGroupName) {
         const matchId = query.cellGroupId && String(member.cell_group_id || "") === String(query.cellGroupId);
-        const matchName = query.cellGroupName && String(member.cell_group_name || member.grupo_de_celula || "").toLowerCase().includes(String(query.cellGroupName).toLowerCase());
+        const targetGroup = String(query.cellGroupName || query.cellGroupId).toLowerCase();
+        const matchName = targetGroup && String(member.cell_group_name || member.grupo_de_celula || "").toLowerCase().includes(targetGroup);
         if (!matchId && !matchName) return false;
       }
       if (query.cellId || query.cellName || query.cellNameLike) {
         const matchId = query.cellId && String(member.cell_id || "") === String(query.cellId);
-        const targetName = String(query.cellName || query.cellNameLike || "").toLowerCase();
-        const matchName = targetName && String(member.cell_name || member.celula || "").toLowerCase().includes(targetName);
+        const targetCell = String(query.cellName || query.cellNameLike || query.cellId).toLowerCase();
+        const matchName = targetCell && String(member.cell_name || member.celula || "").toLowerCase().includes(targetCell);
         if (!matchId && !matchName) return false;
       }
       if (query.status && String(member.status || member.estado || "").toLowerCase() !== String(query.status).toLowerCase()) return false;

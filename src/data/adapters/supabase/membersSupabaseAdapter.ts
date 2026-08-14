@@ -238,36 +238,43 @@ export async function listMembersPage(query: MemberListQuery = {}): Promise<Data
   const search = String(query.search || "").trim();
   try {
     let request: any = client.from(TABLE).select(MEMBER_LIST_COLUMNS, { count: "exact" });
-    if (query.churchId) request = request.eq("church_id", query.churchId);
-
-    if (query.cellGroupId && query.cellGroupName) {
-      const safeGroup = String(query.cellGroupName).replace(/[%_,()]/g, " ").replace(/\s+/g, " ").trim();
-      if (safeGroup) {
-        request = request.or(`cell_group_id.eq.${query.cellGroupId},cell_group_name.ilike.%${safeGroup}%`);
+    if (query.churchId) {
+      if (isValidUuid(query.churchId)) {
+        request = request.eq("church_id", query.churchId);
       } else {
-        request = request.eq("cell_group_id", query.cellGroupId);
+        const churchObj = (typeof window !== "undefined" && (window as any).state?.churches || []).find(
+          (c: any) => String(c.id) === String(query.churchId) || String(c.church_id) === String(query.churchId)
+        );
+        const churchName = churchObj?.church_name || churchObj?.public_name || query.churchId;
+        const safeName = String(churchName).replace(/[%_,()]/g, " ").replace(/\s+/g, " ").trim();
+        if (safeName) {
+          request = request.ilike("church_name", `%${safeName}%`);
+        }
       }
-    } else if (query.cellGroupId) {
-      request = request.eq("cell_group_id", query.cellGroupId);
-    } else if (query.cellGroupName) {
-      const safeGroup = String(query.cellGroupName).replace(/[%_,()]/g, " ").replace(/\s+/g, " ").trim();
-      if (safeGroup) request = request.ilike("cell_group_name", `%${safeGroup}%`);
     }
 
-    if (query.cellId && (query.cellName || query.cellNameLike)) {
-      const safeCell = String(query.cellName || query.cellNameLike || "").replace(/[%_,()]/g, " ").replace(/\s+/g, " ").trim();
-      if (safeCell) {
-        request = request.or(`cell_id.eq.${query.cellId},cell_name.ilike.%${safeCell}%`);
-      } else {
-        request = request.eq("cell_id", query.cellId);
+    if (query.cellGroupId || query.cellGroupName) {
+      const isGroupUuid = query.cellGroupId && isValidUuid(query.cellGroupId);
+      const safeGroup = String(query.cellGroupName || (isGroupUuid ? "" : query.cellGroupId)).replace(/[%_,()]/g, " ").replace(/\s+/g, " ").trim();
+      if (isGroupUuid && safeGroup) {
+        request = request.or(`cell_group_id.eq.${query.cellGroupId},cell_group_name.ilike.%${safeGroup}%`);
+      } else if (isGroupUuid) {
+        request = request.eq("cell_group_id", query.cellGroupId);
+      } else if (safeGroup) {
+        request = request.ilike("cell_group_name", `%${safeGroup}%`);
       }
-    } else if (query.cellId) {
-      request = request.eq("cell_id", query.cellId);
-    } else if (query.cellName) {
-      request = request.eq("cell_name", query.cellName);
-    } else if (query.cellNameLike) {
-      const safeCellName = String(query.cellNameLike).replace(/[%_,()]/g, " ").replace(/\s+/g, " ").trim();
-      if (safeCellName) request = request.ilike("cell_name", `%${safeCellName}%`);
+    }
+
+    if (query.cellId || query.cellName || query.cellNameLike) {
+      const isCellUuid = query.cellId && isValidUuid(query.cellId);
+      const safeCell = String(query.cellName || query.cellNameLike || (isCellUuid ? "" : query.cellId)).replace(/[%_,()]/g, " ").replace(/\s+/g, " ").trim();
+      if (isCellUuid && safeCell) {
+        request = request.or(`cell_id.eq.${query.cellId},cell_name.ilike.%${safeCell}%`);
+      } else if (isCellUuid) {
+        request = request.eq("cell_id", query.cellId);
+      } else if (safeCell) {
+        request = request.ilike("cell_name", `%${safeCell}%`);
+      }
     }
 
     if (query.status) {

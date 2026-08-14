@@ -9694,6 +9694,13 @@ function memberPageQuery() {
     cellGroupName = rawGroup.slice(5);
   } else if (rawGroup) {
     cellGroupId = rawGroup;
+    const groupObj = (state.cellGroups || []).find((g) => String(g.id) === rawGroup || String(g.group_name || g.name || "").toLowerCase() === rawGroup.toLowerCase());
+    if (groupObj) {
+      cellGroupId = groupObj.id;
+      cellGroupName = groupObj.group_name || groupObj.name || "";
+    } else {
+      cellGroupName = rawGroup;
+    }
   }
 
   let cellId = "";
@@ -9706,6 +9713,13 @@ function memberPageQuery() {
     cellName = rawCell.slice(5);
   } else if (rawCell) {
     cellId = rawCell;
+    const cellObj = (state.cellRegistry || []).find((c) => String(c.id) === rawCell || String(c.cell_name || c.name || "").toLowerCase() === rawCell.toLowerCase());
+    if (cellObj) {
+      cellId = cellObj.id;
+      cellName = cellObj.cell_name || cellObj.name || "";
+    } else {
+      cellName = rawCell;
+    }
   }
 
   return {
@@ -9732,7 +9746,11 @@ async function loadMembersPage({ force = false } = {}) {
   try {
     const result = await repo.listMembersPage(memberPageQuery());
     if (requestId !== pageState.requestId) return false;
-    if (!result?.ok) { pageState.error = result?.error || "Falha ao carregar membros."; return false; }
+    if (!result?.ok) {
+      pageState.error = result?.error || "Falha ao carregar membros.";
+      pageState.loaded = true;
+      return false;
+    }
     pageState.items = (result.data?.items || []).map((member) => migrateMemberRecord(member));
     pageState.page = result.data?.page || pageState.page;
     pageState.pageSize = result.data?.pageSize || pageState.pageSize;
@@ -9741,7 +9759,10 @@ async function loadMembersPage({ force = false } = {}) {
     pageState.loaded = true;
     return true;
   } catch (error) {
-    if (requestId === pageState.requestId) pageState.error = error?.message || "Falha ao carregar membros.";
+    if (requestId === pageState.requestId) {
+      pageState.error = error?.message || "Falha ao carregar membros.";
+      pageState.loaded = true;
+    }
     return false;
   } finally {
     if (requestId === pageState.requestId) { pageState.loading = false; if (activeRoute === "members") renderMembers(); }
@@ -10845,6 +10866,25 @@ function memberCellFilterValue(member = {}) {
   return label ? `name:${normalizedMemberFilterText(label)}` : "";
 }
 
+function isRecordInSelectedCellGroup(record = {}, selectedGroup = "") {
+  if (!selectedGroup) return true;
+  const filterVal = memberCellGroupFilterValue(record);
+  if (filterVal === selectedGroup) return true;
+  if (selectedGroup.startsWith("id:")) {
+    const groupId = selectedGroup.slice(3);
+    const recGroupId = String(record.cell_group_id || record.group_id || "");
+    if (recGroupId === groupId) return true;
+    const groupObj = (state.cellGroups || []).find((g) => String(g.id) === groupId);
+    const groupName = groupObj?.group_name || groupObj?.name;
+    if (groupName && normalizedMemberFilterText(memberCellGroupLabel(record)).includes(normalizedMemberFilterText(groupName))) return true;
+  } else if (selectedGroup.startsWith("name:")) {
+    const groupName = selectedGroup.slice(5);
+    const recGroupName = normalizedMemberFilterText(memberCellGroupLabel(record));
+    if (recGroupName.includes(groupName) || groupName.includes(recGroupName)) return true;
+  }
+  return false;
+}
+
 function memberFilterOptions(list, type, selectedGroup = "") {
   const options = new Map();
   const add = (value, label) => {
@@ -10854,7 +10894,7 @@ function memberFilterOptions(list, type, selectedGroup = "") {
     (state.cellGroups || []).forEach((group) => add(`id:${group.id}`, group.group_name || group.name));
     list.forEach((member) => add(memberCellGroupFilterValue(member), memberCellGroupLabel(member)));
   } else {
-    const inSelectedGroup = (record) => !selectedGroup || memberCellGroupFilterValue(record) === selectedGroup;
+    const inSelectedGroup = (record) => isRecordInSelectedCellGroup(record, selectedGroup);
     (state.cellRegistry || []).filter(inSelectedGroup).forEach((cell) => add(`id:${cell.id}`, cell.cell_name || cell.name));
     list.filter(inSelectedGroup).forEach((member) => add(memberCellFilterValue(member), memberCellLabel(member)));
   }
@@ -10900,7 +10940,16 @@ function applyMemberCardFilters(list, filters = {}) {
       churchName(member.church_id), memberCellGroupLabel(member), memberCellLabel(member)
     ].some((value) => normalizedMemberFilterText(value).includes(search)));
   }
-  if (filters.church_id) rows = rows.filter((member) => String(member.church_id || "") === String(filters.church_id));
+  if (filters.church_id) {
+    const targetChurchId = String(filters.church_id);
+    const churchObj = (state.churches || []).find((c) => String(c.id) === targetChurchId || String(c.church_id) === targetChurchId);
+    const targetChurchName = churchObj?.church_name || churchObj?.public_name || targetChurchId;
+    rows = rows.filter((member) => {
+      if (String(member.church_id || member.churchId || "") === targetChurchId) return true;
+      if (targetChurchName && normalizedMemberFilterText(member.church_name || member.igreja).includes(normalizedMemberFilterText(targetChurchName))) return true;
+      return false;
+    });
+  }
   if (filters.cell_group) {
     const target = filters.cell_group;
     rows = rows.filter((member) => {
@@ -10909,10 +10958,10 @@ function applyMemberCardFilters(list, filters = {}) {
         const id = target.slice(3);
         const groupObj = (state.cellGroups || []).find((g) => String(g.id) === id);
         const groupName = groupObj?.group_name || groupObj?.name;
-        if (groupName && normalizedMemberFilterText(memberCellGroupLabel(member)) === normalizedMemberFilterText(groupName)) return true;
+        if (groupName && normalizedMemberFilterText(memberCellGroupLabel(member)).includes(normalizedMemberFilterText(groupName))) return true;
       } else if (target.startsWith("name:")) {
         const targetName = target.slice(5);
-        if (normalizedMemberFilterText(memberCellGroupLabel(member)) === targetName) return true;
+        if (normalizedMemberFilterText(memberCellGroupLabel(member)).includes(targetName)) return true;
       }
       return false;
     });
@@ -10925,10 +10974,10 @@ function applyMemberCardFilters(list, filters = {}) {
         const id = target.slice(3);
         const cellObj = (state.cellRegistry || []).find((c) => String(c.id) === id);
         const cellName = cellObj?.cell_name || cellObj?.name;
-        if (cellName && normalizedMemberFilterText(memberCellLabel(member)) === normalizedMemberFilterText(cellName)) return true;
+        if (cellName && normalizedMemberFilterText(memberCellLabel(member)).includes(normalizedMemberFilterText(cellName))) return true;
       } else if (target.startsWith("name:")) {
         const targetName = target.slice(5);
-        if (normalizedMemberFilterText(memberCellLabel(member)) === targetName) return true;
+        if (normalizedMemberFilterText(memberCellLabel(member)).includes(targetName)) return true;
       }
       return false;
     });
@@ -11157,13 +11206,22 @@ function renderMembers() {
     <article class="panel glass-panel">
       ${renderMembersFilterBar(list, modulePageState.members.filter || {}, view)}
       <div id="members-results">
-        ${pageState.loading ? `<div class="p-4 text-secondary">${lang === "pt" ? "A carregar página de membros…" : "Loading member page…"}</div>` : view === "cards" ? DataCardsGrid(filtered.map((m) => renderMemberCard(m)).join("")) : dataTable([L("name"), L("phone"), L("church"), "Grupo de Célula", L("cell"), L("department"), L("status"), L("actions")], tableRows, { rowAttrs })}
+        ${pageState.loading
+          ? `<div class="p-4 text-secondary">${lang === "pt" ? "A carregar página de membros…" : "Loading member page…"}</div>`
+          : pageState.error
+            ? `<div class="alert alert-warning m-3 d-flex justify-content-between align-items-center">
+                <div><i class="bi bi-exclamation-triangle me-2"></i>${escapeAttr(pageState.error)}</div>
+                <button type="button" class="btn btn-sm btn-outline-dark" data-member-filter-apply>${lang === "pt" ? "Tentar novamente" : "Retry"}</button>
+               </div>`
+            : view === "cards"
+              ? DataCardsGrid(filtered.map((m) => renderMemberCard(m)).join(""))
+              : dataTable([L("name"), L("phone"), L("church"), "Grupo de Célula", L("cell"), L("department"), L("status"), L("actions")], tableRows, { rowAttrs })}
       </div>
     </article>
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-3" data-members-pagination><span class="text-secondary small">${pageState.loaded ? `${pageState.totalCount} ${lang === "pt" ? "membros" : "members"} · ${lang === "pt" ? "Página" : "Page"} ${pageState.page} / ${pageState.totalPages}` : ""}</span><div class="d-flex align-items-center gap-2"><select class="form-select form-select-sm" data-members-page-size aria-label="Members per page">${[25,50,100].map((size) => `<option value="${size}"${pageState.pageSize === size ? " selected" : ""}>${size}</option>`).join("")}</select><button class="action-btn" data-members-page="prev" ${pageState.page <= 1 || pageState.loading ? "disabled" : ""}>${lang === "pt" ? "Anterior" : "Previous"}</button><button class="action-btn" data-members-page="next" ${pageState.page >= pageState.totalPages || pageState.loading ? "disabled" : ""}>${lang === "pt" ? "Próximo" : "Next"}</button></div></div>
     ${renderHqMembersDryRunPreview()}
   `);
-  if (!pageState.loaded && !pageState.loading) void loadMembersPage();
+  if (!pageState.loaded && !pageState.loading && !pageState.error) void loadMembersPage();
 }
 
 function renderHqMembersDryRunPreview() {
