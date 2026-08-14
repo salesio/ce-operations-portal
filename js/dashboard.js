@@ -9613,6 +9613,22 @@ function setRoute(route) {
   };
   (renderers[activeRoute] || renderDashboard)();
   if (activeRoute === "members" && !modulePageState.members.loading) void loadMembersPage();
+  const memberDependentRoutes = [
+    "cellMembers", "cellGroups", "cellCellsList", "cellMinistryOverview",
+    "counseling", "sacraments", "foundation", "fevo", "staffHr",
+    "cellPrison", "cellMaterials"
+  ];
+  if (memberDependentRoutes.some((r) => activeRoute === r || String(activeRoute || "").startsWith(r))) {
+    if (!state.members || !state.members.length) {
+      Promise.resolve(hydrateMembersFromRepository())
+        .then((hydrated) => {
+          if (hydrated) {
+            (renderers[activeRoute] || renderDashboard)();
+          }
+        })
+        .catch((err) => console.warn("[CE Members] route hydrate skipped", err));
+    }
+  }
   history.replaceState(null, "", `#${activeRoute}`);
   document.querySelector(".ops-sidebar").classList.remove("is-open");
   const contentEl = byId("content");
@@ -22062,6 +22078,16 @@ function continueEnterDashboard() {
   }
   updateBackToTopVisibility();
   startDashboardAutoRefresh();
+  // Always hydrate members asynchronously so state.members is populated across departments
+  Promise.resolve()
+    .then(() => hydrateMembersFromRepository())
+    .then((hydrated) => {
+      if (hydrated && (activeRoute === "cellMembers" || activeRoute === "cellGroups" || activeRoute === "members" || String(activeRoute || "").startsWith("cell"))) {
+        (renderers[activeRoute] || renderDashboard)();
+      }
+    })
+    .catch((error) => console.warn("[CE Members] background hydrate skipped", error));
+
   // Kept only as an opt-in compatibility escape hatch. Normal login is lazy:
   // the visible route loads its data on demand, avoiding a burst of module calls.
   if (window.__CE_LEGACY_EAGER_HYDRATE__ === true) {
