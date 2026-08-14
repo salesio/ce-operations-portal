@@ -1,0 +1,500 @@
+{
+  "totalDbMembers": 1761,
+  "emptyCellGroupMembersCount": 0,
+  "emptyCellNameMembersCount": 0,
+  "distinctDbGroups": 15,
+  "distinctDbCells": 148,
+  "dbGroupCounts": {
+    "Diplomatas": 67,
+    "Estrelas de Siao": 65,
+    "QOG": 148,
+    "Vanguard": 172,
+    "Royal Sister": 409,
+    "Wealth Nation": 86,
+    "Pais da Fé": 68,
+    "Perolas do Reino": 66,
+    "MWV": 154,
+    "Zion Nation": 103,
+    "Dominio": 18,
+    "Transformada": 50,
+    "Agathos": 58,
+    "Pioneiro": 154,
+    "Phronesis": 143
+  },
+  "dbCellCounts": {
+    "Diplomatas Victory": 16,
+    "Diplomata Graca Abundante": 8,
+    "ESTRELAS DE SIÃO": 9,
+    "CELL MAIN-Queens Of Glory": 3,
+    "CELL 3 -Queens of Glory Prolifics": 11,
+    "Diplomats Victory B": 8,
+    "Diplomats B1": 5,
+    "Diplomats koinonia": 7,
+    "Diplomatas The Chosen": 15,
+    "Diplomatas Jireh A": 8,
+    "ESTRELAS DE SIÃO A": 8,
+    "ESTRELAS DE SIÃO B": 6,
+    "ESTRELAS DE SIÃO C": 5,
+    "ESTRELAS DE SIÃO D": 8,
+    "ESTRELAS DE SIÃO E": 15,
+    "CELL 3 - Queens of Glory Bold D": 15,
+    "ESTRELAS DE SIÃO E1": 6,
+    "ESTRELAS  DE SIÃO E2": 3,
+    "ESTRELAS DE SIÃO F": 5,
+    "CELL MAIN-Quens Of Glory": 14,
+    "CELL 1-Queens of Glory Excellency": 12,
+    "CELL 2-Queens of Glory Excellency A": 4,
+    "CELL 4-Queens of Glory Multiplied": 4,
+    "CELL 5 - Queens of Glory Virtuous B": 7,
+    "CELL 1 - Queens of Glory Bold Main": 21,
+    "VANGUARD VISIONÁRIOS": 129,
+    "CELL 2 - Queens of Glory Bold C": 4,
+    "CELL 5 - Queens of Glory Bold G": 19,
+    "CELL 5 - Queens of Glory Bold H                                                                      Lider:                            Sabina": 34,
+    "Royal Sisters Main Cell": 40,
+    "Royal Sisters Victory": 10,
+    "Royal Sisters Opportunity": 8,
+    "Royal Sisters Chosen": 37,
+    "Royal Sisters Perfection": 21,
+    "Royal Sisters Divine": 21,
+    "Royal Sisters Brightness": 17,
+    "Royal Sisters Soul Seekers": 21,
+    "Royal Sisters Reborn": 9,
+    "Royal Sisters Rise & Shine": 19,
+    "Royal Sisters Zoe": 11,
+    "Royal Sisters Executives Main": 25,
+    "Royal Sisters Executives Choices": 4,
+    "Royal Sisters Executives Bold": 21,
+    "Royal Sister's Unlock Main": 37,
+    "Royal Sister's Unlock Precious": 12,
+    "Royal Sister's Unlock Influence": 16,
+    "Royal Sister's Unlock Purpose": 5,
+    "Royal Sister's Unlock Love": 5,
+    "Royal Sister's Dominion Main": 23,
+    "Royal Sister's Dominion Charis": 5,
+    "Royal Sister's Dominion": 10,
+    "Royal Sisters Business Main": 10,
+    "Royal Sisters Business A1": 17,
+    "Royal Sisters Business A": 5,
+    "WEALTH NATION MAIN": 34,
+    "WEALTH NATION TRANSFORMATION": 14,
+    "WEALTH NATION TRANSFORMATION GRACED": 4,
+    "WEALTH NATION HELPERS": 5,
+    "WEALTH NATION ROYALTY": 7,
+    "WEALTH NATION ROYALTY CHOSEN": 3,
+    "WEALTH NATION AGAPE": 5,
+    "WEALTH NATION SALVATION": 3,
+    "WEALTH NATION HOLY": 9,
+    "WEALTH NATION HOLY VIRTUE": 2,
+    "NOME CELULA: PAIS DE FE": 18,
+    "NOME CELULA: PAIS DE FE A": 4,
+    "NOME CELULA PAIS DE FE B": 5,
+    "MAES DE FE": 28,
+    "NOME CELULA PAIS DE FE NKOBE": 5,
+    "NOME CELULA PAIS DE FE NDLAVELA": 8,
+    "Celula: PEROLAS DO REINO DIVINAS MAIN - ANTONIA PINTO": 7,
+    "Celula: PEROLAS DO REINO PAZ DE CRISTO - VERONICA MACUACUA": 12,
+    "Celula: PEROLAS DO REINO MAIN - EUNICE NHAVENE": 8,
+    "Celula: PEROLAS DO REINO FAITH AND HOPE - MARILIA FERRÃO": 22,
+    "VANGUARD SHINE": 21,
+    "Celula: PEROLAS DO REINO PERFEITAS - MERCI UBISSE": 12,
+    "Celula: PEROLAS DO REINO DIVINAS - ABENCOADAS - PASCOA MALIPA": 5,
+    "VANGUARD SHEEP 1": 4,
+    "VANGUARD MAIN": 18,
+    "MIGHT WOMEN OF VALOR MAIN": 32,
+    "PRECIOUS": 29,
+    "Teens of Wonders": 18,
+    "Graced By Wisdon": 26,
+    "Kairós": 14,
+    "CROWNED WITH PURPOSE": 9,
+    "SHINING LIGHT": 10,
+    "TOW Pearls": 7,
+    "Phronesis": 7,
+    "Agape": 2,
+    "MBZ MAIN": 21,
+    "MBZ  A": 4,
+    "MBZ B": 8,
+    "MBZ C": 19,
+    "MBZ F": 5,
+    "MBZ H": 2,
+    "MBZ I": 1,
+    "DISCOVERY MAIN": 9,
+    "EXECUTIVAS": 7,
+    "THE BEAUTIE OF ZION A-1": 15,
+    "LIONESS B": 3,
+    "NACAO DE HEROIS": 9,
+    "Celula: Dominio Main": 18,
+    "Celula: TRANSFORMADAS": 50,
+    "Agathos Main": 15,
+    "Agathos Excellence": 14,
+    "Agathos Light": 10,
+    "Agathos Purpose": 9,
+    "Agathos Virtous": 1,
+    "Agathos Purpose A": 1,
+    "Agathos Eagles": 2,
+    "Agathos Light A": 6,
+    "Pioneiros Sub Grace": 9,
+    "Pioneiros Sub Grace the choosen": 3,
+    "Pioneiros Sub Grace Intrépidos": 1,
+    "Pioneiros Substance Power": 13,
+    "Pioneiros Multitude": 5,
+    "PIONEIROS SUBSTANCE ACE": 6,
+    "PIONEIROS SUBSTANCE CHARIS": 41,
+    "PIONEIROS CHARIS ATALAIA": 15,
+    "PIONEIROS CHARIS EXCELENTES": 15,
+    "PIONEIROS CHARIS ALCANCADOS": 13,
+    "Pioneiros Change": 8,
+    "Pioneiros Substance Of Faith": 3,
+    "Pioneiros ASAH": 6,
+    "Excellence MAIN": 12,
+    "Pioneiros Excellence Shining": 4,
+    "PHRONESIS BUSINESS Main": 67,
+    "PHRONESIS BUSINESS A": 2,
+    "PHRONESIS BUSINESS WELLNESS": 2,
+    "PHRONESIS BUSINESS DYNAMIC": 1,
+    "PHRONESIS BUSINESS LIGHT IF LIFE": 2,
+    "PHRONESIS BUSINESS CONQUERORS": 2,
+    "PHRONESIS BUSINESS LIGHT": 2,
+    "PHRONESIS CHAMPIONS E": 1,
+    "PHRONESIS CHAMPIONS Main": 9,
+    "PHRONESIS CHAMPIONS A": 11,
+    "PHRONESIS CHAMPIONS B": 6,
+    "PHRONESIS CHAMPIONS C": 1,
+    "PHRONESIS CHAMPIONS D": 1,
+    "PHRONESIS DOERS Main": 15,
+    "PHRONESIS DOERS A": 12,
+    "PHRONESIS DOERS B": 3,
+    "PHRONESIS DOERS C": 1,
+    "PHRONESIS DOERS D": 1,
+    "PHRONESIS DOERS E": 1,
+    "PHRONESIS DOERS E1": 1,
+    "PHRONESIS DOERS H": 1,
+    "PHRONESIS DOERS I": 1
+  },
+  "groupsWithMembers": [
+    {
+      "seedGroupName": "Royal Sister",
+      "expectedCellsInSeed": 19,
+      "matchingDbGroupsFound": [
+        "Royal Sister"
+      ],
+      "matchingDbCellsFound": [
+        "Royal Sisters Main Cell",
+        "Royal Sisters Victory",
+        "Royal Sisters Opportunity",
+        "Royal Sisters Chosen",
+        "Royal Sisters Perfection"
+      ],
+      "groupMemberCount": 409,
+      "cellMemberCount": 409,
+      "totalMembersFound": 818,
+      "hasMembersInDb": true
+    },
+    {
+      "seedGroupName": "Vanguard",
+      "expectedCellsInSeed": 7,
+      "matchingDbGroupsFound": [
+        "Vanguard"
+      ],
+      "matchingDbCellsFound": [
+        "VANGUARD VISIONÁRIOS",
+        "VANGUARD SHINE",
+        "VANGUARD SHEEP 1",
+        "VANGUARD MAIN"
+      ],
+      "groupMemberCount": 172,
+      "cellMemberCount": 172,
+      "totalMembersFound": 344,
+      "hasMembersInDb": true
+    },
+    {
+      "seedGroupName": "MWV",
+      "expectedCellsInSeed": 10,
+      "matchingDbGroupsFound": [
+        "MWV"
+      ],
+      "matchingDbCellsFound": [],
+      "groupMemberCount": 154,
+      "cellMemberCount": 0,
+      "totalMembersFound": 154,
+      "hasMembersInDb": true
+    },
+    {
+      "seedGroupName": "Pioneiro",
+      "expectedCellsInSeed": 14,
+      "matchingDbGroupsFound": [
+        "Pioneiro"
+      ],
+      "matchingDbCellsFound": [
+        "Pioneiros Sub Grace",
+        "Pioneiros Sub Grace the choosen",
+        "Pioneiros Sub Grace Intrépidos",
+        "Pioneiros Substance Power",
+        "Pioneiros Multitude"
+      ],
+      "groupMemberCount": 154,
+      "cellMemberCount": 142,
+      "totalMembersFound": 296,
+      "hasMembersInDb": true
+    },
+    {
+      "seedGroupName": "QOG",
+      "expectedCellsInSeed": 6,
+      "matchingDbGroupsFound": [
+        "QOG"
+      ],
+      "matchingDbCellsFound": [],
+      "groupMemberCount": 148,
+      "cellMemberCount": 0,
+      "totalMembersFound": 148,
+      "hasMembersInDb": true
+    },
+    {
+      "seedGroupName": "Phronesis",
+      "expectedCellsInSeed": 9,
+      "matchingDbGroupsFound": [
+        "Phronesis"
+      ],
+      "matchingDbCellsFound": [
+        "Phronesis",
+        "PHRONESIS BUSINESS Main",
+        "PHRONESIS BUSINESS A",
+        "PHRONESIS BUSINESS WELLNESS",
+        "PHRONESIS BUSINESS DYNAMIC"
+      ],
+      "groupMemberCount": 143,
+      "cellMemberCount": 150,
+      "totalMembersFound": 293,
+      "hasMembersInDb": true
+    },
+    {
+      "seedGroupName": "Zion Nation",
+      "expectedCellsInSeed": 8,
+      "matchingDbGroupsFound": [
+        "Zion Nation"
+      ],
+      "matchingDbCellsFound": [],
+      "groupMemberCount": 103,
+      "cellMemberCount": 0,
+      "totalMembersFound": 103,
+      "hasMembersInDb": true
+    },
+    {
+      "seedGroupName": "Wealth Nation",
+      "expectedCellsInSeed": 10,
+      "matchingDbGroupsFound": [
+        "Wealth Nation"
+      ],
+      "matchingDbCellsFound": [
+        "WEALTH NATION MAIN",
+        "WEALTH NATION TRANSFORMATION",
+        "WEALTH NATION TRANSFORMATION GRACED",
+        "WEALTH NATION HELPERS",
+        "WEALTH NATION ROYALTY"
+      ],
+      "groupMemberCount": 86,
+      "cellMemberCount": 86,
+      "totalMembersFound": 172,
+      "hasMembersInDb": true
+    },
+    {
+      "seedGroupName": "Pais da Fé",
+      "expectedCellsInSeed": 7,
+      "matchingDbGroupsFound": [
+        "Pais da Fé"
+      ],
+      "matchingDbCellsFound": [],
+      "groupMemberCount": 68,
+      "cellMemberCount": 0,
+      "totalMembersFound": 68,
+      "hasMembersInDb": true
+    },
+    {
+      "seedGroupName": "Diplomatas",
+      "expectedCellsInSeed": 9,
+      "matchingDbGroupsFound": [
+        "Diplomatas"
+      ],
+      "matchingDbCellsFound": [
+        "Diplomatas Victory",
+        "Diplomatas The Chosen",
+        "Diplomatas Jireh A"
+      ],
+      "groupMemberCount": 67,
+      "cellMemberCount": 39,
+      "totalMembersFound": 106,
+      "hasMembersInDb": true
+    },
+    {
+      "seedGroupName": "Perolas do Reino",
+      "expectedCellsInSeed": 10,
+      "matchingDbGroupsFound": [
+        "Perolas do Reino"
+      ],
+      "matchingDbCellsFound": [
+        "Celula: PEROLAS DO REINO DIVINAS MAIN - ANTONIA PINTO",
+        "Celula: PEROLAS DO REINO PAZ DE CRISTO - VERONICA MACUACUA",
+        "Celula: PEROLAS DO REINO MAIN - EUNICE NHAVENE",
+        "Celula: PEROLAS DO REINO FAITH AND HOPE - MARILIA FERRÃO",
+        "Celula: PEROLAS DO REINO PERFEITAS - MERCI UBISSE"
+      ],
+      "groupMemberCount": 66,
+      "cellMemberCount": 66,
+      "totalMembersFound": 132,
+      "hasMembersInDb": true
+    },
+    {
+      "seedGroupName": "Estrelas de Siao",
+      "expectedCellsInSeed": 8,
+      "matchingDbGroupsFound": [
+        "Estrelas de Siao"
+      ],
+      "matchingDbCellsFound": [],
+      "groupMemberCount": 65,
+      "cellMemberCount": 0,
+      "totalMembersFound": 65,
+      "hasMembersInDb": true
+    },
+    {
+      "seedGroupName": "Agathos",
+      "expectedCellsInSeed": 7,
+      "matchingDbGroupsFound": [
+        "Agathos"
+      ],
+      "matchingDbCellsFound": [
+        "Agathos Main",
+        "Agathos Excellence",
+        "Agathos Light",
+        "Agathos Purpose",
+        "Agathos Virtous"
+      ],
+      "groupMemberCount": 58,
+      "cellMemberCount": 58,
+      "totalMembersFound": 116,
+      "hasMembersInDb": true
+    },
+    {
+      "seedGroupName": "Transformada",
+      "expectedCellsInSeed": 3,
+      "matchingDbGroupsFound": [
+        "Transformada"
+      ],
+      "matchingDbCellsFound": [
+        "Celula: TRANSFORMADAS"
+      ],
+      "groupMemberCount": 50,
+      "cellMemberCount": 50,
+      "totalMembersFound": 100,
+      "hasMembersInDb": true
+    },
+    {
+      "seedGroupName": "Dominio",
+      "expectedCellsInSeed": 2,
+      "matchingDbGroupsFound": [
+        "Dominio"
+      ],
+      "matchingDbCellsFound": [
+        "Royal Sister's Dominion Main",
+        "Royal Sister's Dominion Charis",
+        "Royal Sister's Dominion",
+        "Celula: Dominio Main"
+      ],
+      "groupMemberCount": 18,
+      "cellMemberCount": 56,
+      "totalMembersFound": 74,
+      "hasMembersInDb": true
+    }
+  ],
+  "groupsWithZeroMembers": [
+    {
+      "seedGroupName": "Geração Eleita",
+      "expectedCellsInSeed": 5,
+      "matchingDbGroupsFound": [],
+      "matchingDbCellsFound": [],
+      "groupMemberCount": 0,
+      "cellMemberCount": 0,
+      "totalMembersFound": 0,
+      "hasMembersInDb": false
+    },
+    {
+      "seedGroupName": "Coroa Real",
+      "expectedCellsInSeed": 5,
+      "matchingDbGroupsFound": [],
+      "matchingDbCellsFound": [],
+      "groupMemberCount": 0,
+      "cellMemberCount": 0,
+      "totalMembersFound": 0,
+      "hasMembersInDb": false
+    },
+    {
+      "seedGroupName": "Blossom",
+      "expectedCellsInSeed": 3,
+      "matchingDbGroupsFound": [],
+      "matchingDbCellsFound": [],
+      "groupMemberCount": 0,
+      "cellMemberCount": 0,
+      "totalMembersFound": 0,
+      "hasMembersInDb": false
+    },
+    {
+      "seedGroupName": "Nação Santa",
+      "expectedCellsInSeed": 11,
+      "matchingDbGroupsFound": [],
+      "matchingDbCellsFound": [],
+      "groupMemberCount": 0,
+      "cellMemberCount": 0,
+      "totalMembersFound": 0,
+      "hasMembersInDb": false
+    },
+    {
+      "seedGroupName": "Men of Vision",
+      "expectedCellsInSeed": 14,
+      "matchingDbGroupsFound": [],
+      "matchingDbCellsFound": [],
+      "groupMemberCount": 0,
+      "cellMemberCount": 0,
+      "totalMembersFound": 0,
+      "hasMembersInDb": false
+    },
+    {
+      "seedGroupName": "Elevadas",
+      "expectedCellsInSeed": 28,
+      "matchingDbGroupsFound": [],
+      "matchingDbCellsFound": [],
+      "groupMemberCount": 0,
+      "cellMemberCount": 0,
+      "totalMembersFound": 0,
+      "hasMembersInDb": false
+    },
+    {
+      "seedGroupName": "Destemidas",
+      "expectedCellsInSeed": 9,
+      "matchingDbGroupsFound": [],
+      "matchingDbCellsFound": [],
+      "groupMemberCount": 0,
+      "cellMemberCount": 0,
+      "totalMembersFound": 0,
+      "hasMembersInDb": false
+    },
+    {
+      "seedGroupName": "Genesis",
+      "expectedCellsInSeed": 9,
+      "matchingDbGroupsFound": [],
+      "matchingDbCellsFound": [],
+      "groupMemberCount": 0,
+      "cellMemberCount": 0,
+      "totalMembersFound": 0,
+      "hasMembersInDb": false
+    },
+    {
+      "seedGroupName": "Ambassadors",
+      "expectedCellsInSeed": 16,
+      "matchingDbGroupsFound": [],
+      "matchingDbCellsFound": [],
+      "groupMemberCount": 0,
+      "cellMemberCount": 0,
+      "totalMembersFound": 0,
+      "hasMembersInDb": false
+    }
+  ]
+}

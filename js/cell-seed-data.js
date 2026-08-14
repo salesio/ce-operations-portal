@@ -5,52 +5,34 @@
  */
 (function () {
   const CELL_GROUP_DEFINITIONS = [
+    { name: "Royal Sister", total_cells: 19 },
+    { name: "Vanguard", total_cells: 7 },
+    { name: "MWV", total_cells: 10 },
+    { name: "Pioneiro", total_cells: 14 },
+    { name: "QOG", total_cells: 6 },
+    { name: "Phronesis", total_cells: 9 },
+    { name: "Zion Nation", total_cells: 8 },
+    { name: "Wealth Nation", total_cells: 10 },
+    { name: "Pais da Fé", total_cells: 7 },
+    { name: "Diplomatas", total_cells: 9 },
+    { name: "Perolas do Reino", total_cells: 10 },
+    { name: "Estrelas de Siao", total_cells: 8 },
+    { name: "Agathos", total_cells: 7 },
+    { name: "Transformada", total_cells: 3 },
     { name: "Dominio", total_cells: 2 },
-    { name: "Visionarios", total_cells: 1 },
-    { name: "Transformadas", total_cells: 3 },
-    { name: "Gods CEO Main", total_cells: 17, needs_review: true },
-    { name: "Diplomats Victory", total_cells: 9 },
-    { name: "Wealth Nation Main", total_cells: 10 },
-    { name: "Mulheres de Substancia Main", total_cells: 10, needs_review: true },
-    { name: "Homens de Propósito", total_cells: 8 },
-    { name: "Perola do Reino Main", total_cells: 10, needs_review: true },
-    { name: "Queens of Glory Main", total_cells: 6, needs_review: true },
-    { name: "Agathos Main", total_cells: 7 },
-    { name: "Phronesis Business Main", total_cells: 9 },
-    { name: "Pais de Fe", total_cells: 7 },
-    { name: "Estrelas de Si�o", total_cells: 8, needs_review: true },
-    { name: "Vanguard Main", total_cells: 7 },
-    { name: "Mighty Women of Valor Main", total_cells: 10 },
-    { name: "Luzes de Si�o", total_cells: 5, needs_review: true },
-    { name: "Gera��o Eleita Main", total_cells: 5 },
-    { name: "Gera��o Eleita Supreme", total_cells: 4, needs_review: true },
-    { name: "Pioneiros Substance", total_cells: 14 },
-    { name: "Pioneiros Charis", total_cells: 4 },
-    { name: "Realeza Central", total_cells: 17 },
-    { name: "Realeza Valentes", total_cells: 4 },
-    { name: "Realeza Brilhante", total_cells: 14 },
-    { name: "Realeza Gera��o Esperan�a", total_cells: 7, needs_review: true },
-    { name: "Royal Sisters Main", total_cells: 19 },
-    { name: "Royal Sisters Shine Main", total_cells: 6 },
-    { name: "Royal Sisters Dominion", total_cells: 6 },
-    { name: "Royal Sisters Excellence", total_cells: 5 },
-    { name: "Coroa Real Main", total_cells: 5, needs_review: true },
-    { name: "Coroa Real Rainhas de Cristo", total_cells: 7, needs_review: true },
-    { name: "Blossom Main", total_cells: 3 },
-    { name: "Blossom Perfection Main", total_cells: 7 },
-    { name: "Blossom Diamante Main", total_cells: 5 },
-    { name: "Na��o Santa", total_cells: 11 },
+    { name: "Geração Eleita", total_cells: 5 },
+    { name: "Coroa Real", total_cells: 5 },
+    { name: "Blossom", total_cells: 3 },
+    { name: "Nação Santa", total_cells: 11 },
     { name: "Men of Vision", total_cells: 14 },
-    { name: "Men of Vision Giants", total_cells: 4, needs_review: true },
-    { name: "Elevadas Main", total_cells: 28, needs_review: true },
-    { name: "Destemidas Main", total_cells: 9 },
-    { name: "Genesis Main", total_cells: 9 },
-    { name: "Genesis Eternal Excellence", total_cells: 4, needs_review: true },
-    { name: "Ambassadors Main", total_cells: 16 }
+    { name: "Elevadas", total_cells: 28 },
+    { name: "Destemidas", total_cells: 9 },
+    { name: "Genesis", total_cells: 9 },
+    { name: "Ambassadors", total_cells: 16 }
   ];
 
-  const GROUP_STATUSES = ["Activo", "Em Crescimento", "Precisa de Aten��o", "Inactivo"];
-  const LEADER_TITLES = ["Irm�o", "Irm�", "Pastor", "Di�cono"];
+  const GROUP_STATUSES = ["Activo", "Em Crescimento", "Precisa de Ateno", "Inactivo"];
+  const LEADER_TITLES = ["Irmo", "Irm", "Pastor", "Dicono"];
 
   function buildCellGroupsSeed() {
     const cellGroups = [];
