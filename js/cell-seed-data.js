@@ -5,30 +5,23 @@
  */
 (function () {
   const CELL_GROUP_DEFINITIONS = [
-    { name: "Royal Sister", total_cells: 19 },
-    { name: "Vanguard", total_cells: 7 },
+    { name: "Royal Sister", total_cells: 25 },
+    { name: "Phronesis", total_cells: 22 },
+    { name: "Pioneiro", total_cells: 15 },
+    { name: "Blossom", total_cells: 13 },
+    { name: "Zion Nation", total_cells: 12 },
     { name: "MWV", total_cells: 10 },
-    { name: "Pioneiro", total_cells: 14 },
-    { name: "QOG", total_cells: 6 },
-    { name: "Phronesis", total_cells: 9 },
-    { name: "Zion Nation", total_cells: 8 },
     { name: "Wealth Nation", total_cells: 10 },
-    { name: "Pais da Fé", total_cells: 7 },
-    { name: "Diplomatas", total_cells: 9 },
-    { name: "Perolas do Reino", total_cells: 10 },
-    { name: "Estrelas de Siao", total_cells: 8 },
-    { name: "Agathos", total_cells: 7 },
-    { name: "Transformada", total_cells: 3 },
-    { name: "Dominio", total_cells: 2 },
-    { name: "Geração Eleita", total_cells: 5 },
-    { name: "Coroa Real", total_cells: 5 },
-    { name: "Blossom", total_cells: 3 },
-    { name: "Nação Santa", total_cells: 11 },
-    { name: "Men of Vision", total_cells: 14 },
-    { name: "Elevadas", total_cells: 28 },
-    { name: "Destemidas", total_cells: 9 },
-    { name: "Genesis", total_cells: 9 },
-    { name: "Ambassadors", total_cells: 16 }
+    { name: "Estrelas de Siao", total_cells: 9 },
+    { name: "Agathos", total_cells: 8 },
+    { name: "Diplomatas", total_cells: 7 },
+    { name: "Perolas do Reino", total_cells: 6 },
+    { name: "QOG", total_cells: 4 },
+    { name: "Vanguard", total_cells: 4 },
+    { name: "Pais da Fé", total_cells: 2 },
+    { name: "Dominio", total_cells: 1 },
+    { name: "Transformada", total_cells: 1 },
+    { name: "Visionarios", total_cells: 1 }
   ];
 
   const GROUP_STATUSES = ["Activo", "Em Crescimento", "Precisa de Ateno", "Inactivo"];
