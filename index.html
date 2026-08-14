@@ -198,6 +198,13 @@
   <script src="js/requisition-reports-module.js?v=20260712-reports-hub-v1"></script>
   <script src="js/reports-export-module.js?v=20260712-reports-hub-v1"></script>
   <script src="js/reports-framework-module.js?v=20260714-filter-apply-v2"></script>
+  <script src="js/cell-seed-data.js?v=20260710-cell-nav"></script>
+  <script src="js/public-giving-bridge.js?v=20260714-cell-selects-v1"></script>
+  <script src="js/access-control.js?v=20260806-cell-portal-v7"></script>
+  <script src="js/finance-disbursements-module.js?v=20260714-rbac-v4"></script>
+  <script src="js/requisition-reports-module.js?v=20260712-reports-hub-v1"></script>
+  <script src="js/reports-export-module.js?v=20260712-reports-hub-v1"></script>
+  <script src="js/reports-framework-module.js?v=20260714-filter-apply-v2"></script>
   <script src="js/domain-reports-module.js?v=20260712-reports-hub-v1"></script>
   <script src="js/requisitions-module.js?v=20260723-venue-inventory-data-v1"></script>
   <!-- requisitions-data-bridge + venue-inventory-data-bridge loaded after data layer -->
@@ -209,6 +216,7 @@
     window.__CE_ENV__ = window.__CE_ENV__ || {};
     // window.__CE_ENV__.VITE_DATA_SOURCE = 'local'; // test churches localStorage provider
   </script>
+  <script src="js/supabase-config.js?v=20260814-supabase-v2"></script>
   <!-- Safe default locally; GitHub Pages replaces this file during deployment. -->
   <script src="js/runtime-config.js?v=20260813-pages-runtime-v2"></script>
   <!-- Data layer bundle (churches … staff HR + access control + prison) -->
@@ -236,7 +244,6 @@
   <script src="js/dashboard.js?v=20260813-cell-portal-legacy-members-v3"></script>
   <!-- UMD build (classic script) — ESM CDN breaks without type="module" -->
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-  <script defer src="js/supabase-config.js?v=20260712-supabase"></script>
   <script defer src="js/supabase-bridge.js?v=20260712-supabase"></script>
 </body>
 </html>
