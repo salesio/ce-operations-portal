@@ -223,8 +223,17 @@ export async function listMembersPage(query: MemberListQuery = {}): Promise<Data
     const search = String(query.search || "").trim().toLowerCase();
     const matches = (listed.data || []).filter((member) => {
       if (query.churchId && String(member.church_id || member.churchId || "") !== String(query.churchId)) return false;
-      if (query.cellGroupId && String(member.cell_group_id || "") !== String(query.cellGroupId)) return false;
-      if (query.cellId && String(member.cell_id || "") !== String(query.cellId)) return false;
+      if (query.cellGroupId || query.cellGroupName) {
+        const matchId = query.cellGroupId && String(member.cell_group_id || "") === String(query.cellGroupId);
+        const matchName = query.cellGroupName && String(member.cell_group_name || member.grupo_de_celula || "").toLowerCase().includes(String(query.cellGroupName).toLowerCase());
+        if (!matchId && !matchName) return false;
+      }
+      if (query.cellId || query.cellName || query.cellNameLike) {
+        const matchId = query.cellId && String(member.cell_id || "") === String(query.cellId);
+        const targetName = String(query.cellName || query.cellNameLike || "").toLowerCase();
+        const matchName = targetName && String(member.cell_name || member.celula || "").toLowerCase().includes(targetName);
+        if (!matchId && !matchName) return false;
+      }
       if (query.status && String(member.status || member.estado || "").toLowerCase() !== String(query.status).toLowerCase()) return false;
       if (search.length < 2) return true;
       return [member.full_name, member.first_name, member.last_name, member.primary_phone, member.secondary_phone, member.phone, member.email, member.member_code]

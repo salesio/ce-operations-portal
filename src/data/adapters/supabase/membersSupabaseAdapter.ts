@@ -239,13 +239,37 @@ export async function listMembersPage(query: MemberListQuery = {}): Promise<Data
   try {
     let request: any = client.from(TABLE).select(MEMBER_LIST_COLUMNS, { count: "exact" });
     if (query.churchId) request = request.eq("church_id", query.churchId);
-    if (query.cellGroupId) request = request.eq("cell_group_id", query.cellGroupId);
-    if (query.cellId) request = request.eq("cell_id", query.cellId);
-    if (query.cellName) request = request.eq("cell_name", query.cellName);
-    if (query.cellNameLike) {
+
+    if (query.cellGroupId && query.cellGroupName) {
+      const safeGroup = String(query.cellGroupName).replace(/[%_,()]/g, " ").replace(/\s+/g, " ").trim();
+      if (safeGroup) {
+        request = request.or(`cell_group_id.eq.${query.cellGroupId},cell_group_name.ilike.%${safeGroup}%`);
+      } else {
+        request = request.eq("cell_group_id", query.cellGroupId);
+      }
+    } else if (query.cellGroupId) {
+      request = request.eq("cell_group_id", query.cellGroupId);
+    } else if (query.cellGroupName) {
+      const safeGroup = String(query.cellGroupName).replace(/[%_,()]/g, " ").replace(/\s+/g, " ").trim();
+      if (safeGroup) request = request.ilike("cell_group_name", `%${safeGroup}%`);
+    }
+
+    if (query.cellId && (query.cellName || query.cellNameLike)) {
+      const safeCell = String(query.cellName || query.cellNameLike || "").replace(/[%_,()]/g, " ").replace(/\s+/g, " ").trim();
+      if (safeCell) {
+        request = request.or(`cell_id.eq.${query.cellId},cell_name.ilike.%${safeCell}%`);
+      } else {
+        request = request.eq("cell_id", query.cellId);
+      }
+    } else if (query.cellId) {
+      request = request.eq("cell_id", query.cellId);
+    } else if (query.cellName) {
+      request = request.eq("cell_name", query.cellName);
+    } else if (query.cellNameLike) {
       const safeCellName = String(query.cellNameLike).replace(/[%_,()]/g, " ").replace(/\s+/g, " ").trim();
       if (safeCellName) request = request.ilike("cell_name", `%${safeCellName}%`);
     }
+
     if (query.status) {
       const statusKey = String(query.status).toLowerCase();
       const statusValues: Record<string, string[]> = {

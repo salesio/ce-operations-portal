@@ -1,0 +1,16 @@
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+const scriptPath = join(root, "scripts/import-hq-members-pilot.mjs");
+const script = readFileSync(scriptPath, "utf8");
+const check = (label, ok) => { console.log(`${ok ? "PASS" : "FAIL"} ${label}`); if (!ok) process.exitCode = 1; };
+check("pilot import script exists", existsSync(scriptPath));
+check("write is opt-in only", /--write/.test(script) && /ALLOW_HQ_PILOT_IMPORT/.test(script) && /REQUIRE_SUPABASE_LIVE/.test(script));
+check("maximum ten new members is guarded", /MAX_NEW_MEMBERS = 10/.test(script) && /length > MAX_NEW_MEMBERS/.test(script));
+check("workbook remains read-only", /readFileSync\(workbookPath\)/.test(script) && !/writeFileSync\(workbookPath\)/.test(script));
+check("duplicate candidates are skipped", /LIKELY_DUPLICATE/.test(script) && /expected_skip_count/.test(script));
+check("phone remains nullable", /primary_phone: row.primaryPhone/.test(script) && /phone_null_count/.test(script));
+check("no external domain records are created", !/\.from\("(?:finance_records|foundation_school_students|baptisms|cell_groups|cells)"\)/.test(script));
+check("rollback reference is produced", /legacy_import_batch_id/.test(script) && /DELETE FROM public\.members/.test(script));
+check("no service role or database URL is embedded", !/(SUPABASE_SERVICE_ROLE_KEY|DATABASE_URL)/.test(script));
