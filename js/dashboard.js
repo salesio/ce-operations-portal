@@ -9187,6 +9187,7 @@ function fallbackCanViewModule(user = activeUser, module = "dashboard") {
 
 function roleWorkspaceRoutes(user = activeUser) {
   const role = String(user?.role || "");
+  if (role === "ALEC Coordinator") return ["cellAlecOverview", "cellAlecRegistration", "cellAlecScores", "cellChurchReports"];
   if (role === "Reitor" || role === "Rector") return ["firstTimers", "followUp", "foundation", "sacraments", "counseling"];
   if (role === "Follow-Up Coordinator") return ["firstTimers", "followUp"];
   return null;
@@ -9272,6 +9273,7 @@ function cellRouteAreaLabel(route) {
 }
 
 function renderCellSidebarNav() {
+  const workspaceRoutes = roleWorkspaceRoutes();
   const parentExpanded = isSidebarGroupExpanded(CELL_NAV.parentKey);
   const parentActive = isCellRoute(activeRoute);
   if (["Cell Leader", "Cell Assistant"].includes(activeUser?.role)) {
@@ -9283,6 +9285,7 @@ function renderCellSidebarNav() {
       </div></div>
     </div>`;
   }
+  const showCellPortal = hasCellPortalPermission("cell_portal.view") && (!workspaceRoutes || workspaceRoutes.includes("cellPortal"));
   return `
     <div class="nav-cell-branch ${parentExpanded ? "is-expanded" : ""} ${parentActive ? "has-active" : ""}" data-nav-group="${CELL_NAV.parentKey}">
       <button type="button" class="nav-cell-parent" aria-expanded="${parentExpanded}" aria-label="${L("navGroupToggle")}: ${L("cellLeadership")}">
@@ -9292,8 +9295,14 @@ function renderCellSidebarNav() {
       </button>
       <div class="nav-cell-body">
         <div class="nav-cell-body-inner">
-          ${hasCellPortalPermission("cell_portal.view") ? `<button type="button" class="nav-cell-item ${activeRoute === "cellPortal" ? "active" : ""}" data-route="cellPortal"><span>${lang === "pt" ? "Portal por Célula" : "Cell Portal"}</span></button>` : ""}
+          ${showCellPortal ? `<button type="button" class="nav-cell-item ${activeRoute === "cellPortal" ? "active" : ""}" data-route="cellPortal"><span>${lang === "pt" ? "Portal por Célula" : "Cell Portal"}</span></button>` : ""}
           ${CELL_NAV.areas.map((area) => {
+            const visibleRoutes = area.routes.filter(([route]) => {
+              if (workspaceRoutes && !workspaceRoutes.includes(route)) return false;
+              const nav = resolveRouteAccess(route);
+              return nav.visible;
+            });
+            if (!visibleRoutes.length) return "";
             const areaExpanded = isSidebarGroupExpanded(area.key);
             const areaActive = area.routes.some(([route]) => route === activeRoute);
             return `
@@ -9305,9 +9314,8 @@ function renderCellSidebarNav() {
                 </button>
                 <div class="nav-cell-area-body">
                   <div class="nav-cell-area-body-inner">
-                    ${area.routes.map(([route, label]) => {
+                    ${visibleRoutes.map(([route, label]) => {
                       const nav = resolveRouteAccess(route);
-                      if (!nav.visible) return "";
                       return `
                       <button type="button" class="nav-cell-item ${activeRoute === route ? "active" : ""} ${nav.locked ? "is-locked" : ""}" ${nav.locked ? `data-locked-route="${route}" aria-disabled="true"` : `data-route="${route}" onclick="window.setRoute && window.setRoute('${route}'); return false;"`} title="${nav.locked ? L("navLockedTooltip") : L(label)}">
                         <span>${L(label)}</span>${nav.locked ? `<i class="bi bi-lock-fill nav-lock-icon" aria-hidden="true"></i>` : ""}
@@ -9367,7 +9375,7 @@ function renderShell() {
       .filter((item) => (!workspaceRoutes || workspaceRoutes.includes(item.route)) && item.nav.visible && (item.route !== "venueInventory" || canViewVenueModule()));
     if (!items.length && group.key !== "departments") return "";
     const expanded = isSidebarGroupExpanded(group.key);
-    const cellNav = group.key === "departments" && !workspaceRoutes ? renderCellSidebarNav() : "";
+    const cellNav = group.key === "departments" && (!workspaceRoutes || workspaceRoutes.some((r) => r.startsWith("cell"))) ? renderCellSidebarNav() : "";
     const navItems = items.map(({ route, icon, label, nav }) => `
       <button type="button" class="nav-item-btn ${nav.locked ? "is-locked" : ""}" ${nav.locked ? `data-locked-route="${route}" aria-disabled="true"` : `data-route="${route}" onclick="window.setRoute && window.setRoute('${route}'); return false;"`} title="${nav.locked ? L("navLockedTooltip") : L(label)}">
         <i class="bi ${sidebarIcon(icon, route)}"></i><span>${L(label)}</span>${nav.locked ? `<i class="bi bi-lock-fill nav-lock-icon" aria-hidden="true"></i>` : ""}

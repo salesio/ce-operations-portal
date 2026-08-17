@@ -457,6 +457,7 @@
     if (!user || !module) return emptyAccess();
     const base = { module, ...NO_ACCESS };
     const explicitDeniedModules = {
+      "ALEC Coordinator": new Set(["finance", "staffHr", "requisitions", "usersRoles", "accessControl", "auditLogs", "churches", "counseling", "foundation", "fevo", "venueInventory", "sacraments", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"]),
       "Finance Head": new Set(["staffHr", "usersRoles", "accessControl"]),
       "Finance Officer": new Set(["staffHr", "usersRoles", "accessControl", "auditLogs"]),
       "HR Manager": new Set(["finance", "requisitions", "usersRoles", "accessControl", "auditLogs"]),
