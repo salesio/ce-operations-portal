@@ -19424,6 +19424,7 @@ function openForm(type, id = null) {
     requestAnimationFrame(() => {
       mountRelationalControls(byId("entryForm"));
       mountMediaScheduleFormControls(byId("entryForm"));
+      mountAlecMemberAutocompleteControls(byId("entryForm"));
       cleanRenderedText(byId("entryModal"));
     });
   };
@@ -24413,13 +24414,151 @@ function renderDataHealthDashboard() {
   `;
 }
 
+// 6. ALEC Member Autocomplete & Auto-Fill Controls
+function mountAlecMemberAutocompleteControls(formEl) {
+  if (!formEl || !["alecRegistration", "alecScore"].includes(modalType)) return;
+  const nameInput = formEl.querySelector('[name="nome_completo"]');
+  if (!nameInput) return;
+
+  const inputCol = nameInput.closest(".col-md-6, .col-12");
+  if (!inputCol) return;
+
+  let suggestionsBox = inputCol.querySelector("#alecMemberSuggestions");
+  if (!suggestionsBox) {
+    inputCol.style.position = "relative";
+    suggestionsBox = document.createElement("div");
+    suggestionsBox.id = "alecMemberSuggestions";
+    suggestionsBox.className = "alec-member-suggestions list-group position-absolute d-none shadow-lg z-3";
+    inputCol.appendChild(suggestionsBox);
+  }
+
+  let badgeEl = inputCol.querySelector("#alecLinkedBadge");
+  if (!badgeEl) {
+    badgeEl = document.createElement("div");
+    badgeEl.id = "alecLinkedBadge";
+    badgeEl.className = "small text-success d-none mt-1 fw-semibold";
+    inputCol.appendChild(badgeEl);
+  }
+
+  nameInput.setAttribute("placeholder", "Digite o nome ou telefone do membro...");
+  nameInput.setAttribute("autocomplete", "off");
+
+  const hideSuggestions = () => {
+    suggestionsBox.classList.add("d-none");
+    suggestionsBox.innerHTML = "";
+  };
+
+  nameInput.addEventListener("input", () => {
+    const q = nameInput.value.trim().toLowerCase();
+    if (q.length < 2) {
+      hideSuggestions();
+      badgeEl.classList.add("d-none");
+      return;
+    }
+
+    const members = state.members || [];
+    const matches = members.filter((m) => {
+      const haystack = [
+        m.full_name,
+        m.first_name,
+        m.last_name,
+        m.phone,
+        m.primary_phone,
+        m.secondary_phone,
+        m.member_code,
+        m.cell_name,
+        m.celula
+      ].filter(Boolean).join(" ").toLowerCase();
+      return haystack.includes(q);
+    }).slice(0, 6);
+
+    if (!matches.length) {
+      suggestionsBox.innerHTML = `<div class="list-group-item bg-dark text-white-50 p-2 small">${L("noSearchResults") || "Nenhum membro encontrado na base"}</div>`;
+      suggestionsBox.classList.remove("d-none");
+      return;
+    }
+
+    suggestionsBox.innerHTML = matches.map((m) => `
+      <button type="button" class="list-group-item list-group-item-action bg-dark text-white border-secondary p-2 alec-member-suggestion-item" data-select-member-id="${m.id}">
+        <div class="d-flex w-100 justify-content-between align-items-center mb-1">
+          <strong class="text-gold">${m.full_name || `${m.first_name || ""} ${m.last_name || ""}`.trim()}</strong>
+          <span class="badge text-bg-secondary small">${m.member_code || "Membro HQ"}</span>
+        </div>
+        <div class="small text-white-50 text-truncate">
+          ${[m.primary_phone || m.phone, churchName(m.church_id), m.cell_name || m.celula].filter(Boolean).join(" · ")}
+        </div>
+      </button>
+    `).join("");
+
+    suggestionsBox.classList.remove("d-none");
+
+    suggestionsBox.querySelectorAll("[data-select-member-id]").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        const id = btn.dataset.selectMemberId;
+        const member = members.find((item) => item.id === id);
+        if (!member) return;
+
+        const fullName = member.full_name || `${member.first_name || ""} ${member.last_name || ""}`.trim();
+        nameInput.value = fullName;
+
+        const phoneInput = formEl.querySelector('[name="contacto"]');
+        if (phoneInput) phoneInput.value = member.primary_phone || member.phone || member.secondary_phone || "";
+
+        const churchSelect = formEl.querySelector('[name="church_id"]');
+        if (churchSelect && member.church_id) {
+          churchSelect.value = member.church_id;
+          churchSelect.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+
+        const cellInput = formEl.querySelector('[name="celula"]');
+        if (cellInput) cellInput.value = member.cell_name || member.celula || "";
+
+        const leaderInput = formEl.querySelector('[name="nome_do_lider_de_celula"]');
+        if (leaderInput) leaderInput.value = member.cell_leader_name || member.lider || "";
+
+        const foundationCheck = formEl.querySelector('[name="fez_escola_de_fundacao"]');
+        if (foundationCheck) {
+          const isDone = ["Completed", "Graduated", "Yes", "Sim"].includes(member.legacy_foundation_status) || ["Completed", "Graduated"].includes(member.foundation_school_status);
+          foundationCheck.checked = isDone;
+        }
+
+        const isLeaderCheck = formEl.querySelector('[name="e_lider"]');
+        if (isLeaderCheck) {
+          const isLeader = ["Leader", "Assistant", "Líder", "Assistente"].includes(member.cell_role);
+          isLeaderCheck.checked = isLeader;
+        }
+
+        let memberIdInput = formEl.querySelector('[name="member_id"]');
+        if (!memberIdInput) {
+          memberIdInput = document.createElement("input");
+          memberIdInput.type = "hidden";
+          memberIdInput.name = "member_id";
+          formEl.appendChild(memberIdInput);
+        }
+        memberIdInput.value = member.id;
+
+        hideSuggestions();
+        badgeEl.innerHTML = `<i class="bi bi-check-circle-fill me-1"></i> Membro Vinculado: ${fullName} (${churchName(member.church_id)})`;
+        badgeEl.classList.remove("d-none");
+      });
+    });
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!inputCol.contains(e.target)) hideSuggestions();
+  });
+}
+
 // Global exports
 window.updateTopbarBreadcrumbs = updateTopbarBreadcrumbs;
 window.openAuditHistoryDrawer = openAuditHistoryDrawer;
 window.renderDataHealthDashboard = renderDataHealthDashboard;
+window.mountAlecMemberAutocompleteControls = mountAlecMemberAutocompleteControls;
 
 document.addEventListener("DOMContentLoaded", () => {
   initUniversalSearch();
   initBatchSelection();
 });
+
 

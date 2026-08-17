@@ -7580,3 +7580,27 @@ nav.module-tabs {
   padding: 0.75rem;
 }
 
+/* ALEC Member Autocomplete Suggestions */
+.alec-member-suggestions {
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 240px;
+  overflow-y: auto;
+  border-radius: 0.5rem;
+  background: #0f172a;
+  border: 1px solid rgba(245, 199, 85, 0.4);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+  z-index: 1060;
+}
+.alec-member-suggestion-item {
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.alec-member-suggestion-item:hover,
+.alec-member-suggestion-item.is-active {
+  background: rgba(245, 199, 85, 0.15) !important;
+  border-color: var(--gold) !important;
+}
+
+
