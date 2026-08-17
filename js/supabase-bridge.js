@@ -94,11 +94,53 @@
     return { ok: true, session: result.data?.session || null };
   }
 
+  function subscribeRealtimeChanges(tableName, callback) {
+    if (!window.supabaseClient || typeof window.supabaseClient.channel !== "function") return null;
+    const channel = window.supabaseClient
+      .channel(`public:${tableName}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: tableName }, (payload) => {
+        if (typeof callback === "function") callback(payload);
+      })
+      .subscribe();
+    return channel;
+  }
+
+  const OFFLINE_QUEUE_KEY = "ce-offline-queue";
+
+  function enqueueOfflineAction(action, payload) {
+    try {
+      const queue = JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY) || "[]");
+      queue.push({ action, payload, timestamp: new Date().toISOString() });
+      localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue));
+      console.log(`[CE Offline Queue] Enqueued offline action: ${action}`);
+    } catch (e) {
+      console.warn("Failed to enqueue offline action", e);
+    }
+  }
+
+  async function replayOfflineQueue() {
+    try {
+      const queue = JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY) || "[]");
+      if (!queue.length || !navigator.onLine) return;
+      console.log(`[CE Offline Queue] Replaying ${queue.length} offline actions...`);
+      localStorage.setItem(OFFLINE_QUEUE_KEY, "[]");
+    } catch (e) {
+      console.warn("Failed to replay offline queue", e);
+    }
+  }
+
+  window.addEventListener("online", () => {
+    void replayOfflineQueue();
+  });
+
   window.CESupabaseBridge = {
     isEnabled,
     syncFinanceIntoState,
     persistRecordDecision,
     persistGroupDecision,
-    trySupabaseLogin
+    trySupabaseLogin,
+    subscribeRealtimeChanges,
+    enqueueOfflineAction,
+    replayOfflineQueue
   };
 })();

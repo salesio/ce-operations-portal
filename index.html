@@ -87,11 +87,17 @@
         <button id="menuToggle" class="icon-btn d-lg-none" type="button" aria-label="Menu">
           <i class="bi bi-list"></i>
         </button>
-        <div>
+        <div class="topbar-title-wrap">
           <span id="sectionLabel" class="eyebrow">MAIN</span>
           <h1 id="pageTitle">Dashboard</h1>
+          <nav id="topbarBreadcrumbs" class="topbar-breadcrumbs d-none d-md-flex" aria-label="Breadcrumb"></nav>
         </div>
         <div class="topbar-actions">
+          <button id="universalSearchBtn" type="button" class="btn btn-outline-glass btn-sm me-2 d-inline-flex align-items-center gap-2" aria-label="Pesquisa Global (Ctrl+K)">
+            <i class="bi bi-search"></i>
+            <span class="d-none d-sm-inline">Pesquisar...</span>
+            <kbd class="kbd-pill">Ctrl K</kbd>
+          </button>
           <div class="dash-lang-switch" role="group" aria-label="Idioma">
             <button type="button" data-lang="pt" class="active">PT</button>
             <button type="button" data-lang="en">EN</button>
@@ -227,6 +233,57 @@
     window.__CE_ENV__ = window.__CE_ENV__ || {};
     // window.__CE_ENV__.VITE_DATA_SOURCE = 'local'; // test churches localStorage provider
   </script>
+  <!-- Universal Search Modal (Ctrl + K) -->
+  <div class="modal fade" id="universalSearchModal" tabindex="-1" aria-labelledby="universalSearchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content bg-dark text-white border-secondary border-opacity-50 shadow-lg">
+        <div class="modal-header border-bottom border-secondary border-opacity-25 pb-2">
+          <div class="input-group input-group-lg">
+            <span class="input-group-text bg-transparent border-0 text-white-50"><i class="bi bi-search fs-4"></i></span>
+            <input type="search" id="universalSearchInput" class="form-control bg-transparent border-0 text-white shadow-none" placeholder="Pesquisar Membros, Células, Lideres, Igrejas ou Requisições..." autocomplete="off">
+          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body p-3 overflow-auto" style="max-height: 60vh;">
+          <div id="universalSearchResults" class="d-flex flex-column gap-2">
+            <p class="text-white-50 small mb-0 text-center py-4">Escreva pelo menos 2 caracteres para pesquisar em toda a plataforma...</p>
+          </div>
+        </div>
+        <div class="modal-footer border-top border-secondary border-opacity-25 py-2 justify-content-between small text-white-50">
+          <span><kbd class="kbd-pill">↑</kbd> <kbd class="kbd-pill">↓</kbd> Navegar &nbsp; <kbd class="kbd-pill">Enter</kbd> Seleccionar</span>
+          <span><kbd class="kbd-pill">ESC</kbd> Fechar</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sticky Floating Batch Action Bar -->
+  <div id="batchActionBar" class="batch-action-bar d-none shadow-lg">
+    <div class="d-flex align-items-center justify-content-between gap-3">
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge text-bg-warning rounded-pill px-3 py-2 fs-6" id="batchSelectedCount">0 seleccionados</span>
+        <span class="small text-white-50" id="batchScopeText">Acções em lote</span>
+      </div>
+      <div class="d-flex align-items-center gap-2" id="batchActionButtons">
+        <button type="button" class="btn btn-sm btn-ce-gold" data-batch-action="export"><i class="bi bi-download me-1"></i> Exportar Lote</button>
+        <button type="button" class="btn btn-sm btn-outline-light" data-batch-action="clear">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audit History Drawer -->
+  <div id="auditHistoryDrawerBackdrop" class="drawer-backdrop d-none"></div>
+  <aside id="auditHistoryDrawer" class="ops-drawer d-none" aria-hidden="true">
+    <div class="drawer-header border-bottom border-secondary border-opacity-25 p-3">
+      <span class="eyebrow text-gold">AUDITORIA E HISTÓRICO</span>
+      <h3 id="auditDrawerTitle" class="h5 text-white mb-0">Histórico de Alterações</h3>
+      <button type="button" class="btn-close btn-close-white ms-auto" id="closeAuditDrawerBtn"></button>
+    </div>
+    <div class="drawer-body p-3 overflow-auto" id="auditDrawerBody">
+      <div class="timeline" id="auditTimelineList"></div>
+    </div>
+  </aside>
+
   <script src="js/supabase-config.js?v=20260814-supabase-v2"></script>
   <!-- Safe default locally; GitHub Pages replaces this file during deployment. -->
   <script src="js/runtime-config.js?v=20260813-pages-runtime-v2"></script>
