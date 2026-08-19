@@ -63,8 +63,8 @@ function church(
 export const CHURCHES_SEED: Church[] = [
   church({
     id: "church-hq",
-    church_name: "National HQ - Christ Embassy Mozambique",
-    public_name: "Igreja Embaixada de Cristo Maputo / Embaixada de Cristo Moçambique",
+    church_name: "E.C. Maputo Central - Sede",
+    public_name: "E.C. Maputo Central - Sede",
     type: "Sede Nacional",
     province: "Maputo Cidade",
     city: "KaMpfumo",

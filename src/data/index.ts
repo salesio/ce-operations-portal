@@ -74,6 +74,7 @@ export {
   refreshCurrentUserPermissions,
   isRealAuthEnabled,
   getAuthInfo,
+  getCurrentScope,
   getAuthDataSourceInfo,
   requestPasswordReset,
   ensureAuthSeeded,
@@ -213,6 +214,23 @@ export {
   normalizeCellLeader,
   normalizeCellReport,
 } from "./repositories/cellMinistryRepository";
+
+export {
+  listCellUserAssignments,
+  getAuthorizedCellsForUserId,
+  createCellUserAssignment,
+  updateCellUserAssignment,
+  endCellUserAssignment,
+} from "./repositories/cellUserAssignmentsRepository";
+
+export {
+  listCellTransferRequests,
+  createCellTransferRequest,
+  updateCellTransferRequest,
+  approveCellTransferRequest,
+  rejectCellTransferRequest,
+  logCellMemberRemoval,
+} from "./repositories/cellTransferRequestsRepository";
 
 export { CELL_GROUPS_SEED } from "./seeds/cellGroupsSeed";
 export { CELLS_SEED } from "./seeds/cellsSeed";

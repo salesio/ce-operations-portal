@@ -133,6 +133,34 @@
         : { ...FULL_ACCESS, can_delete: m === "auditLogs" ? false : FULL_ACCESS.can_delete }
       ]))
     },
+    "Church Admin": {
+      modules: {
+        dashboard: { ...VIEW_ONLY, scope: "church" },
+        churches: { ...VIEW_ONLY, can_edit: true },
+        members: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: true, can_verify: false, can_export: true, scope: "church" },
+        firstTimers: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: true, can_verify: false, can_export: true, scope: "church" },
+        followUp: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "church" },
+        reports: { ...VIEW_ONLY, can_export: true },
+        counseling: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "church" },
+        foundation: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: true, can_verify: false, can_export: true, scope: "church" },
+        finance: { can_view: false, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "church" },
+        fevo: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "church" },
+        venueInventory: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "church" },
+        sacraments: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "church" },
+        cell: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: true, can_verify: true, can_export: true, scope: "church" },
+        requisitions: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "church" },
+        staffHr: { can_view: false, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "church" },
+        programs: { ...VIEW_ONLY, can_create: true, can_edit: true },
+        partnership: { ...VIEW_ONLY },
+        media: { ...VIEW_ONLY },
+        prisonMinistry: { ...VIEW_ONLY },
+        ministryMaterials: { ...VIEW_ONLY },
+        usersRoles: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "church" },
+        accessControl: { can_view: false, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "church" },
+        settings: { ...VIEW_ONLY },
+        auditLogs: { can_view: false, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "church" }
+      }
+    },
     "Church Pastor": {
       modules: {
         dashboard: { ...VIEW_ONLY, scope: "church" },
@@ -319,10 +347,19 @@
         staffHr: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "department" }
       }
     },
+    "Cell Group Leader": {
+      modules: {
+        dashboard: { ...VIEW_ONLY, scope: "cell_group", cell_portal_permissions: ["cell_portal.view", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary"] },
+        cell: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "cell_group", cell_report_permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"] },
+        members: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "cell_group" },
+        notifications: { ...VIEW_ONLY, scope: "cell_group" }
+      }
+    },
     "Cell Leader": {
       modules: {
         dashboard: { ...VIEW_ONLY, scope: "own", cell_portal_permissions: ["cell_portal.view", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts"] },
         cell: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "own", cell_report_permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"] },
+        members: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "own" },
         notifications: { ...VIEW_ONLY, scope: "own" }
       }
     },
@@ -330,6 +367,15 @@
       modules: {
         dashboard: { ...VIEW_ONLY, scope: "own", cell_portal_permissions: ["cell_portal.view", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts"] },
         cell: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "own", cell_report_permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"] },
+        members: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "own" },
+        notifications: { ...VIEW_ONLY, scope: "own" }
+      }
+    },
+    "Assistant Cell Leader": {
+      modules: {
+        dashboard: { ...VIEW_ONLY, scope: "own", cell_portal_permissions: ["cell_portal.view", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts"] },
+        cell: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "own", cell_report_permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"] },
+        members: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "own" },
         notifications: { ...VIEW_ONLY, scope: "own" }
       }
     },
@@ -458,6 +504,10 @@
     const base = { module, ...NO_ACCESS };
     const explicitDeniedModules = {
       "ALEC Coordinator": new Set(["finance", "staffHr", "requisitions", "usersRoles", "accessControl", "auditLogs", "churches", "counseling", "foundation", "fevo", "venueInventory", "sacraments", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"]),
+      "Cell Leader": new Set(["finance", "staffHr", "requisitions", "usersRoles", "accessControl", "auditLogs", "churches", "counseling", "foundation", "fevo", "venueInventory", "sacraments", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"]),
+      "Cell Assistant": new Set(["finance", "staffHr", "requisitions", "usersRoles", "accessControl", "auditLogs", "churches", "counseling", "foundation", "fevo", "venueInventory", "sacraments", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"]),
+      "Assistant Cell Leader": new Set(["finance", "staffHr", "requisitions", "usersRoles", "accessControl", "auditLogs", "churches", "counseling", "foundation", "fevo", "venueInventory", "sacraments", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"]),
+      "Cell Group Leader": new Set(["finance", "staffHr", "requisitions", "usersRoles", "accessControl", "auditLogs", "churches", "counseling", "foundation", "fevo", "venueInventory", "sacraments", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"]),
       "Finance Head": new Set(["staffHr", "usersRoles", "accessControl"]),
       "Finance Officer": new Set(["staffHr", "usersRoles", "accessControl", "auditLogs"]),
       "HR Manager": new Set(["finance", "requisitions", "usersRoles", "accessControl", "auditLogs"]),
@@ -568,6 +618,26 @@
     const scope = getUserScope(user, module);
     if (!record || !user) return false;
     if (["all", "national"].includes(scope)) return true;
+    if (scope === "cell" || (["Cell Leader", "Cell Assistant", "Assistant Cell Leader"].includes(user.role) && (module === "members" || module === "cell"))) {
+      const authorizedCells = new Set([
+        ...(user.assigned_cells || []),
+        user.cell_id,
+        user.cellId
+      ].filter(Boolean));
+      const recordCellId = record.cell_id || record.cellId || record.celula_id;
+      if (!authorizedCells.size) return false;
+      return authorizedCells.has(recordCellId);
+    }
+    if (scope === "cell_group" || (user.role === "Cell Group Leader" && (module === "members" || module === "cell"))) {
+      const authorizedGroups = new Set([
+        ...(user.assigned_cell_groups || []),
+        user.cell_group_id,
+        user.cellGroupId
+      ].filter(Boolean));
+      const recordGroupId = record.cell_group_id || record.cellGroupId || record.grupo_id;
+      if (!authorizedGroups.size) return false;
+      return authorizedGroups.has(recordGroupId);
+    }
     if (scope === "own") {
       const staffName = user.assigned_staff_name || user.name;
       return record.user_id === user.id ||
@@ -654,6 +724,18 @@
     return canViewSalary(user);
   }
 
+  function getCurrentScope(user = (typeof activeUser !== "undefined" ? activeUser : null)) {
+    if (!user) return null;
+    return {
+      role: user.role || user.role_name || "",
+      church: user.church_id || user.churchId || "",
+      department: user.department_id || user.department_name || user.assigned_department || "",
+      cellGroups: user.assigned_cell_groups || (user.cell_group_id ? [user.cell_group_id] : []),
+      cells: user.assigned_cells || (user.cell_id ? [user.cell_id] : []),
+      permissions: user.permissions || [],
+    };
+  }
+
   window.CEAccessControl = {
     SHOW_LOCKED_MODULES,
     SENSITIVE_MODULES,
@@ -666,6 +748,7 @@
     canAccessTab,
     canPerformAction,
     getUserScope,
+    getCurrentScope,
     filterDataByScope,
     recordMatchesScope,
     canViewRoute,
@@ -677,4 +760,8 @@
     canViewSensitiveStaffData,
     isSensitiveModule
   };
+
+  window.CEAccess = Object.assign(window.CEAccess || {}, {
+    getCurrentScope: () => getCurrentScope()
+  });
 })();

@@ -126,7 +126,19 @@ export const PERMISSIONS_SEED: AccessPermission[] = [
   p("perm-cell-assistant-candidates", "role-cell-assistant", "Cell Assistant", "memberCandidates", {
     can_view: true, can_create: true, can_edit: true, scope: "own",
   }),
-  p("perm-membership-officer-candidates", "role-membership-officer", "Membership Officer", "memberCandidates", {
-    can_view: true, can_edit: true, can_approve: true, scope: "church",
+  p("perm-church-admin-all", "role-church-admin", "Church Admin", "dashboard", {
+    can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: true, can_verify: true, can_export: true, scope: "church",
+  }),
+  p("perm-church-admin-members", "role-church-admin", "Church Admin", "members", {
+    can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: true, can_export: true, scope: "church",
+  }),
+  p("perm-cell-group-leader-portal", "role-cell-group-leader", "Cell Group Leader", "cell_portal", {
+    can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "cell_group",
+  }),
+  p("perm-cell-group-leader-members", "role-cell-group-leader", "Cell Group Leader", "members", {
+    can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "cell_group",
+  }),
+  p("perm-cell-group-leader-reports", "role-cell-group-leader", "Cell Group Leader", "cell_reports", {
+    can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "cell_group",
   }),
 ];

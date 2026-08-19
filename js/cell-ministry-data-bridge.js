@@ -311,6 +311,33 @@
     getCellsWithoutReport: function (week) {
       return call("getCellsWithoutReport", [week]);
     },
+    listCellUserAssignments: function (filter) {
+      return call("listCellUserAssignments", [filter]);
+    },
+    createCellUserAssignment: function (payload) {
+      return call("createCellUserAssignment", [payload]);
+    },
+    updateCellUserAssignment: function (id, payload) {
+      return call("updateCellUserAssignment", [id, payload]);
+    },
+    endCellUserAssignment: function (id, notes) {
+      return call("endCellUserAssignment", [id, notes]);
+    },
+    listCellTransferRequests: function (filter) {
+      return call("listCellTransferRequests", [filter]);
+    },
+    createCellTransferRequest: function (payload) {
+      return call("createCellTransferRequest", [payload]);
+    },
+    approveCellTransferRequest: function (id, reviewerId, reviewerName) {
+      return call("approveCellTransferRequest", [id, reviewerId, reviewerName]);
+    },
+    rejectCellTransferRequest: function (id, reviewerId, rejectionReason, reviewerName) {
+      return call("rejectCellTransferRequest", [id, reviewerId, rejectionReason, reviewerName]);
+    },
+    logCellMemberRemoval: function (payload) {
+      return call("logCellMemberRemoval", [payload]);
+    },
     getInfo: function () {
       return call("getInfo", []);
     },

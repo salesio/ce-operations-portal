@@ -1,0 +1,1654 @@
+{
+  "activeExcelGroupsCount": 17,
+  "activeExcelTotalCellsCount": 150,
+  "activeExcelTotalMembersCount": 1913,
+  "totalSupabaseMembersCount": 1896,
+  "groupsComparison": [
+    {
+      "groupName": "Diplomatas",
+      "excelTotalCells": 7,
+      "excelTotalMembers": 67,
+      "dbGroupMemberCount": 67,
+      "matchedDbGroupNames": [
+        "Diplomatas"
+      ],
+      "statusInSupabase": "EXISTS_IN_DB",
+      "cellDetails": [
+        {
+          "cellName": "Diplomatas Victory",
+          "excelMembers": 16,
+          "supabaseMembers": 16,
+          "matchedDbCellNames": [
+            "Diplomatas Victory"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Diplomats Victory B",
+          "excelMembers": 8,
+          "supabaseMembers": 8,
+          "matchedDbCellNames": [
+            "Diplomats Victory B"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Diplomats B1",
+          "excelMembers": 5,
+          "supabaseMembers": 5,
+          "matchedDbCellNames": [
+            "Diplomats B1"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Diplomats koinonia",
+          "excelMembers": 7,
+          "supabaseMembers": 7,
+          "matchedDbCellNames": [
+            "Diplomats koinonia"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Diplomata Graca Abundante",
+          "excelMembers": 8,
+          "supabaseMembers": 8,
+          "matchedDbCellNames": [
+            "Diplomata Graca Abundante"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Diplomatas The Chosen",
+          "excelMembers": 15,
+          "supabaseMembers": 15,
+          "matchedDbCellNames": [
+            "Diplomatas The Chosen"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Diplomatas Jireh A",
+          "excelMembers": 8,
+          "supabaseMembers": 8,
+          "matchedDbCellNames": [
+            "Diplomatas Jireh A"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        }
+      ]
+    },
+    {
+      "groupName": "Estrelas de Siao",
+      "excelTotalCells": 9,
+      "excelTotalMembers": 66,
+      "dbGroupMemberCount": 66,
+      "matchedDbGroupNames": [
+        "Estrelas de Siao"
+      ],
+      "statusInSupabase": "EXISTS_IN_DB",
+      "cellDetails": [
+        {
+          "cellName": "ESTRELAS DE SIÃO",
+          "excelMembers": 9,
+          "supabaseMembers": 66,
+          "matchedDbCellNames": [
+            "ESTRELAS DE SIÃO",
+            "ESTRELAS DE SIÃO A",
+            "ESTRELAS DE SIÃO B",
+            "ESTRELAS DE SIÃO C",
+            "ESTRELAS DE SIÃO D",
+            "ESTRELAS DE SIÃO E",
+            "ESTRELAS DE SIÃO E1",
+            "ESTRELAS DE SIÃO E2",
+            "ESTRELAS DE SIÃO F"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "ESTRELAS DE SIÃO A",
+          "excelMembers": 8,
+          "supabaseMembers": 17,
+          "matchedDbCellNames": [
+            "ESTRELAS DE SIÃO",
+            "ESTRELAS DE SIÃO A"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "ESTRELAS DE SIÃO B",
+          "excelMembers": 6,
+          "supabaseMembers": 15,
+          "matchedDbCellNames": [
+            "ESTRELAS DE SIÃO",
+            "ESTRELAS DE SIÃO B"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "ESTRELAS DE SIÃO C",
+          "excelMembers": 5,
+          "supabaseMembers": 14,
+          "matchedDbCellNames": [
+            "ESTRELAS DE SIÃO",
+            "ESTRELAS DE SIÃO C"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "ESTRELAS DE SIÃO D",
+          "excelMembers": 8,
+          "supabaseMembers": 17,
+          "matchedDbCellNames": [
+            "ESTRELAS DE SIÃO",
+            "ESTRELAS DE SIÃO D"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "ESTRELAS DE SIÃO E",
+          "excelMembers": 16,
+          "supabaseMembers": 34,
+          "matchedDbCellNames": [
+            "ESTRELAS DE SIÃO",
+            "ESTRELAS DE SIÃO E",
+            "ESTRELAS DE SIÃO E1",
+            "ESTRELAS DE SIÃO E2"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "ESTRELAS DE SIÃO E1",
+          "excelMembers": 6,
+          "supabaseMembers": 31,
+          "matchedDbCellNames": [
+            "ESTRELAS DE SIÃO",
+            "ESTRELAS DE SIÃO E",
+            "ESTRELAS DE SIÃO E1"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "ESTRELAS DE SIÃO E2",
+          "excelMembers": 3,
+          "supabaseMembers": 28,
+          "matchedDbCellNames": [
+            "ESTRELAS DE SIÃO",
+            "ESTRELAS DE SIÃO E",
+            "ESTRELAS DE SIÃO E2"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "ESTRELAS DE SIÃO F",
+          "excelMembers": 5,
+          "supabaseMembers": 14,
+          "matchedDbCellNames": [
+            "ESTRELAS DE SIÃO",
+            "ESTRELAS DE SIÃO F"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        }
+      ]
+    },
+    {
+      "groupName": "QOG",
+      "excelTotalCells": 4,
+      "excelTotalMembers": 148,
+      "dbGroupMemberCount": 149,
+      "matchedDbGroupNames": [
+        "QOG"
+      ],
+      "statusInSupabase": "EXISTS_IN_DB",
+      "cellDetails": [
+        {
+          "cellName": "SUB-GROUP MAIN",
+          "excelMembers": 55,
+          "supabaseMembers": 1,
+          "matchedDbCellNames": [
+            "SUB-GROUP MAIN"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "SUB-GROUP QUEENS OF GLORY BOLD",
+          "excelMembers": 40,
+          "supabaseMembers": 0,
+          "matchedDbCellNames": [],
+          "statusInSupabase": "MISSING_IN_DB"
+        },
+        {
+          "cellName": "CELL 5 - Queens of Glory Bold G",
+          "excelMembers": 19,
+          "supabaseMembers": 19,
+          "matchedDbCellNames": [
+            "CELL 5 - Queens of Glory Bold G"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "CELL 5 - Queens of Glory Bold H Lider: Sabina",
+          "excelMembers": 34,
+          "supabaseMembers": 34,
+          "matchedDbCellNames": [
+            "CELL 5 - Queens of Glory Bold H Lider: Sabina"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        }
+      ]
+    },
+    {
+      "groupName": "Royal Sister",
+      "excelTotalCells": 25,
+      "excelTotalMembers": 410,
+      "dbGroupMemberCount": 411,
+      "matchedDbGroupNames": [
+        "Royal Sister"
+      ],
+      "statusInSupabase": "EXISTS_IN_DB",
+      "cellDetails": [
+        {
+          "cellName": "Royal Sisters Main Cell",
+          "excelMembers": 40,
+          "supabaseMembers": 40,
+          "matchedDbCellNames": [
+            "Royal Sisters Main Cell"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Royal Sisters Victory",
+          "excelMembers": 10,
+          "supabaseMembers": 10,
+          "matchedDbCellNames": [
+            "Royal Sisters Victory"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Royal Sisters Opportunity",
+          "excelMembers": 9,
+          "supabaseMembers": 9,
+          "matchedDbCellNames": [
+            "Royal Sisters Opportunity"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Royal Sisters Chosen",
+          "excelMembers": 37,
+          "supabaseMembers": 37,
+          "matchedDbCellNames": [
+            "Royal Sisters Chosen"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Royal Sisters Perfection",
+          "excelMembers": 21,
+          "supabaseMembers": 21,
+          "matchedDbCellNames": [
+            "Royal Sisters Perfection"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Royal Sisters Divine",
+          "excelMembers": 21,
+          "supabaseMembers": 21,
+          "matchedDbCellNames": [
+            "Royal Sisters Divine"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Royal Sisters Brightness",
+          "excelMembers": 17,
+          "supabaseMembers": 17,
+          "matchedDbCellNames": [
+            "Royal Sisters Brightness"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Royal Sisters Soul Seekers",
+          "excelMembers": 21,
+          "supabaseMembers": 21,
+          "matchedDbCellNames": [
+            "Royal Sisters Soul Seekers"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Royal Sisters Reborn",
+          "excelMembers": 9,
+          "supabaseMembers": 9,
+          "matchedDbCellNames": [
+            "Royal Sisters Reborn"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Royal Sisters Rise & Shine",
+          "excelMembers": 19,
+          "supabaseMembers": 19,
+          "matchedDbCellNames": [
+            "Royal Sisters Rise & Shine"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Royal Sisters Zoe",
+          "excelMembers": 11,
+          "supabaseMembers": 11,
+          "matchedDbCellNames": [
+            "Royal Sisters Zoe"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Royal Sisters Executives Main",
+          "excelMembers": 25,
+          "supabaseMembers": 25,
+          "matchedDbCellNames": [
+            "Royal Sisters Executives Main"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Royal Sisters Executives Choices",
+          "excelMembers": 4,
+          "supabaseMembers": 4,
+          "matchedDbCellNames": [
+            "Royal Sisters Executives Choices"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Royal Sisters Executives Bold",
+          "excelMembers": 21,
+          "supabaseMembers": 21,
+          "matchedDbCellNames": [
+            "Royal Sisters Executives Bold"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Royal Sister's Unlock Main",
+          "excelMembers": 36,
+          "supabaseMembers": 37,
+          "matchedDbCellNames": [
+            "Royal Sister's Unlock Main"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Royal Sister's Unlock Precious",
+          "excelMembers": 12,
+          "supabaseMembers": 41,
+          "matchedDbCellNames": [
+            "Royal Sister's Unlock Precious",
+            "PRECIOUS"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Royal Sister's Unlock Influence",
+          "excelMembers": 16,
+          "supabaseMembers": 16,
+          "matchedDbCellNames": [
+            "Royal Sister's Unlock Influence"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Royal Sister's Unlock Purpose",
+          "excelMembers": 5,
+          "supabaseMembers": 5,
+          "matchedDbCellNames": [
+            "Royal Sister's Unlock Purpose"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Royal Sister's Unlock Love",
+          "excelMembers": 5,
+          "supabaseMembers": 5,
+          "matchedDbCellNames": [
+            "Royal Sister's Unlock Love"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Royal Sister's Dominion Main",
+          "excelMembers": 23,
+          "supabaseMembers": 33,
+          "matchedDbCellNames": [
+            "Royal Sister's Dominion Main",
+            "Royal Sister's Dominion"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Royal Sister's Dominion Charis",
+          "excelMembers": 5,
+          "supabaseMembers": 15,
+          "matchedDbCellNames": [
+            "Royal Sister's Dominion Charis",
+            "Royal Sister's Dominion"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Royal Sister's Dominion",
+          "excelMembers": 10,
+          "supabaseMembers": 38,
+          "matchedDbCellNames": [
+            "Royal Sister's Dominion Main",
+            "Royal Sister's Dominion Charis",
+            "Royal Sister's Dominion"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Royal Sisters Business Main",
+          "excelMembers": 10,
+          "supabaseMembers": 10,
+          "matchedDbCellNames": [
+            "Royal Sisters Business Main"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Royal Sisters Business A1",
+          "excelMembers": 18,
+          "supabaseMembers": 23,
+          "matchedDbCellNames": [
+            "Royal Sisters Business A1",
+            "Royal Sisters Business A"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Royal Sisters Business A",
+          "excelMembers": 5,
+          "supabaseMembers": 23,
+          "matchedDbCellNames": [
+            "Royal Sisters Business A1",
+            "Royal Sisters Business A"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        }
+      ]
+    },
+    {
+      "groupName": "Visionarios",
+      "excelTotalCells": 1,
+      "excelTotalMembers": 14,
+      "dbGroupMemberCount": 14,
+      "matchedDbGroupNames": [
+        "Visionarios"
+      ],
+      "statusInSupabase": "EXISTS_IN_DB",
+      "cellDetails": [
+        {
+          "cellName": "Visionarios",
+          "excelMembers": 14,
+          "supabaseMembers": 147,
+          "matchedDbCellNames": [
+            "VANGUARD VISIONÁRIOS",
+            "Visionarios"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        }
+      ]
+    },
+    {
+      "groupName": "Wealth Nation",
+      "excelTotalCells": 10,
+      "excelTotalMembers": 86,
+      "dbGroupMemberCount": 86,
+      "matchedDbGroupNames": [
+        "Wealth Nation"
+      ],
+      "statusInSupabase": "EXISTS_IN_DB",
+      "cellDetails": [
+        {
+          "cellName": "WEALTH NATION MAIN",
+          "excelMembers": 34,
+          "supabaseMembers": 34,
+          "matchedDbCellNames": [
+            "WEALTH NATION MAIN"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "WEALTH NATION TRANSFORMATION",
+          "excelMembers": 14,
+          "supabaseMembers": 18,
+          "matchedDbCellNames": [
+            "WEALTH NATION TRANSFORMATION",
+            "WEALTH NATION TRANSFORMATION GRACED"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "WEALTH NATION TRANSFORMATION GRACED",
+          "excelMembers": 4,
+          "supabaseMembers": 18,
+          "matchedDbCellNames": [
+            "WEALTH NATION TRANSFORMATION",
+            "WEALTH NATION TRANSFORMATION GRACED"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "WEALTH NATION HELPERS",
+          "excelMembers": 5,
+          "supabaseMembers": 5,
+          "matchedDbCellNames": [
+            "WEALTH NATION HELPERS"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "WEALTH NATION ROYALTY",
+          "excelMembers": 7,
+          "supabaseMembers": 10,
+          "matchedDbCellNames": [
+            "WEALTH NATION ROYALTY",
+            "WEALTH NATION ROYALTY CHOSEN"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "WEALTH NATION ROYALTY CHOSEN",
+          "excelMembers": 3,
+          "supabaseMembers": 10,
+          "matchedDbCellNames": [
+            "WEALTH NATION ROYALTY",
+            "WEALTH NATION ROYALTY CHOSEN"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "WEALTH NATION AGAPE",
+          "excelMembers": 5,
+          "supabaseMembers": 7,
+          "matchedDbCellNames": [
+            "WEALTH NATION AGAPE",
+            "Agape"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "WEALTH NATION SALVATION",
+          "excelMembers": 3,
+          "supabaseMembers": 3,
+          "matchedDbCellNames": [
+            "WEALTH NATION SALVATION"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "WEALTH NATION HOLY",
+          "excelMembers": 9,
+          "supabaseMembers": 11,
+          "matchedDbCellNames": [
+            "WEALTH NATION HOLY",
+            "WEALTH NATION HOLY VIRTUE"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "WEALTH NATION HOLY VIRTUE",
+          "excelMembers": 2,
+          "supabaseMembers": 11,
+          "matchedDbCellNames": [
+            "WEALTH NATION HOLY",
+            "WEALTH NATION HOLY VIRTUE"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        }
+      ]
+    },
+    {
+      "groupName": "Pais da Fé",
+      "excelTotalCells": 2,
+      "excelTotalMembers": 68,
+      "dbGroupMemberCount": 68,
+      "matchedDbGroupNames": [
+        "Pais da Fé"
+      ],
+      "statusInSupabase": "EXISTS_IN_DB",
+      "cellDetails": [
+        {
+          "cellName": "Pais da Fé",
+          "excelMembers": 27,
+          "supabaseMembers": 0,
+          "matchedDbCellNames": [],
+          "statusInSupabase": "MISSING_IN_DB"
+        },
+        {
+          "cellName": "MAES DE FE",
+          "excelMembers": 41,
+          "supabaseMembers": 28,
+          "matchedDbCellNames": [
+            "MAES DE FE"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        }
+      ]
+    },
+    {
+      "groupName": "Perolas do Reino",
+      "excelTotalCells": 6,
+      "excelTotalMembers": 66,
+      "dbGroupMemberCount": 66,
+      "matchedDbGroupNames": [
+        "Perolas do Reino"
+      ],
+      "statusInSupabase": "EXISTS_IN_DB",
+      "cellDetails": [
+        {
+          "cellName": "PEROLAS DO REINO DIVINAS MAIN - ANTONIA PINTO",
+          "excelMembers": 7,
+          "supabaseMembers": 7,
+          "matchedDbCellNames": [
+            "Celula: PEROLAS DO REINO DIVINAS MAIN - ANTONIA PINTO"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "PEROLAS DO REINO PAZ DE CRISTO - VERONICA MACUACUA",
+          "excelMembers": 12,
+          "supabaseMembers": 12,
+          "matchedDbCellNames": [
+            "Celula: PEROLAS DO REINO PAZ DE CRISTO - VERONICA MACUACUA"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "PEROLAS DO REINO MAIN - EUNICE NHAVENE",
+          "excelMembers": 8,
+          "supabaseMembers": 8,
+          "matchedDbCellNames": [
+            "Celula: PEROLAS DO REINO MAIN - EUNICE NHAVENE"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "PEROLAS DO REINO FAITH AND HOPE - MARILIA FERRÃO",
+          "excelMembers": 22,
+          "supabaseMembers": 22,
+          "matchedDbCellNames": [
+            "Celula: PEROLAS DO REINO FAITH AND HOPE - MARILIA FERRÃO"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "PEROLAS DO REINO PERFEITAS - MERCI UBISSE",
+          "excelMembers": 12,
+          "supabaseMembers": 12,
+          "matchedDbCellNames": [
+            "Celula: PEROLAS DO REINO PERFEITAS - MERCI UBISSE"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "PEROLAS DO REINO DIVINAS - ABENCOADAS - PASCOA MALIPA",
+          "excelMembers": 5,
+          "supabaseMembers": 5,
+          "matchedDbCellNames": [
+            "Celula: PEROLAS DO REINO DIVINAS - ABENCOADAS - PASCOA MALIPA"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        }
+      ]
+    },
+    {
+      "groupName": "Vanguard",
+      "excelTotalCells": 4,
+      "excelTotalMembers": 195,
+      "dbGroupMemberCount": 183,
+      "matchedDbGroupNames": [
+        "Vanguard"
+      ],
+      "statusInSupabase": "EXISTS_IN_DB",
+      "cellDetails": [
+        {
+          "cellName": "VANGUARD SHINE",
+          "excelMembers": 22,
+          "supabaseMembers": 21,
+          "matchedDbCellNames": [
+            "VANGUARD SHINE"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "VANGUARD VISIONÁRIOS",
+          "excelMembers": 144,
+          "supabaseMembers": 147,
+          "matchedDbCellNames": [
+            "VANGUARD VISIONÁRIOS",
+            "Visionarios"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "VANGUARD SHEEP 1",
+          "excelMembers": 4,
+          "supabaseMembers": 4,
+          "matchedDbCellNames": [
+            "VANGUARD SHEEP 1"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "VANGUARD MAIN",
+          "excelMembers": 25,
+          "supabaseMembers": 25,
+          "matchedDbCellNames": [
+            "VANGUARD MAIN"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        }
+      ]
+    },
+    {
+      "groupName": "MWV",
+      "excelTotalCells": 10,
+      "excelTotalMembers": 154,
+      "dbGroupMemberCount": 154,
+      "matchedDbGroupNames": [
+        "MWV"
+      ],
+      "statusInSupabase": "EXISTS_IN_DB",
+      "cellDetails": [
+        {
+          "cellName": "MIGHT WOMEN OF VALOR MAIN",
+          "excelMembers": 32,
+          "supabaseMembers": 32,
+          "matchedDbCellNames": [
+            "MIGHT WOMEN OF VALOR MAIN"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "PRECIOUS",
+          "excelMembers": 29,
+          "supabaseMembers": 41,
+          "matchedDbCellNames": [
+            "Royal Sister's Unlock Precious",
+            "PRECIOUS"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Teens of Wonders",
+          "excelMembers": 18,
+          "supabaseMembers": 18,
+          "matchedDbCellNames": [
+            "Teens of Wonders"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Graced By Wisdon",
+          "excelMembers": 26,
+          "supabaseMembers": 26,
+          "matchedDbCellNames": [
+            "Graced By Wisdon"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Kairós",
+          "excelMembers": 14,
+          "supabaseMembers": 14,
+          "matchedDbCellNames": [
+            "Kairós"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "CROWNED WITH PURPOSE",
+          "excelMembers": 9,
+          "supabaseMembers": 9,
+          "matchedDbCellNames": [
+            "CROWNED WITH PURPOSE"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "SHINING LIGHT",
+          "excelMembers": 10,
+          "supabaseMembers": 10,
+          "matchedDbCellNames": [
+            "SHINING LIGHT"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "TOW Pearls",
+          "excelMembers": 7,
+          "supabaseMembers": 7,
+          "matchedDbCellNames": [
+            "TOW Pearls"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Phronesis",
+          "excelMembers": 7,
+          "supabaseMembers": 150,
+          "matchedDbCellNames": [
+            "Phronesis",
+            "PHRONESIS BUSINESS Main",
+            "PHRONESIS BUSINESS A",
+            "PHRONESIS BUSINESS WELLNESS",
+            "PHRONESIS BUSINESS DYNAMIC",
+            "PHRONESIS BUSINESS LIGHT IF LIFE",
+            "PHRONESIS BUSINESS CONQUERORS",
+            "PHRONESIS BUSINESS LIGHT",
+            "PHRONESIS CHAMPIONS E",
+            "PHRONESIS CHAMPIONS Main",
+            "PHRONESIS CHAMPIONS A",
+            "PHRONESIS CHAMPIONS B",
+            "PHRONESIS CHAMPIONS C",
+            "PHRONESIS CHAMPIONS D",
+            "PHRONESIS DOERS Main",
+            "PHRONESIS DOERS A",
+            "PHRONESIS DOERS B",
+            "PHRONESIS DOERS C",
+            "PHRONESIS DOERS D",
+            "PHRONESIS DOERS E",
+            "PHRONESIS DOERS E1",
+            "PHRONESIS DOERS H",
+            "PHRONESIS DOERS I"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Agape",
+          "excelMembers": 2,
+          "supabaseMembers": 7,
+          "matchedDbCellNames": [
+            "WEALTH NATION AGAPE",
+            "Agape"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        }
+      ]
+    },
+    {
+      "groupName": "Zion Nation",
+      "excelTotalCells": 12,
+      "excelTotalMembers": 103,
+      "dbGroupMemberCount": 103,
+      "matchedDbGroupNames": [
+        "Zion Nation"
+      ],
+      "statusInSupabase": "EXISTS_IN_DB",
+      "cellDetails": [
+        {
+          "cellName": "MBZ MAIN",
+          "excelMembers": 21,
+          "supabaseMembers": 21,
+          "matchedDbCellNames": [
+            "MBZ MAIN"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "MBZ A",
+          "excelMembers": 4,
+          "supabaseMembers": 4,
+          "matchedDbCellNames": [
+            "MBZ A"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "MBZ B",
+          "excelMembers": 8,
+          "supabaseMembers": 8,
+          "matchedDbCellNames": [
+            "MBZ B"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "MBZ C",
+          "excelMembers": 19,
+          "supabaseMembers": 19,
+          "matchedDbCellNames": [
+            "MBZ C"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "MBZ F",
+          "excelMembers": 5,
+          "supabaseMembers": 5,
+          "matchedDbCellNames": [
+            "MBZ F"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "MBZ H",
+          "excelMembers": 2,
+          "supabaseMembers": 2,
+          "matchedDbCellNames": [
+            "MBZ H"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "MBZ I",
+          "excelMembers": 1,
+          "supabaseMembers": 1,
+          "matchedDbCellNames": [
+            "MBZ I"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "DISCOVERY MAIN",
+          "excelMembers": 9,
+          "supabaseMembers": 9,
+          "matchedDbCellNames": [
+            "DISCOVERY MAIN"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "EXECUTIVAS",
+          "excelMembers": 7,
+          "supabaseMembers": 7,
+          "matchedDbCellNames": [
+            "EXECUTIVAS"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "THE BEAUTIE OF ZION A-1",
+          "excelMembers": 15,
+          "supabaseMembers": 15,
+          "matchedDbCellNames": [
+            "THE BEAUTIE OF ZION A-1"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "LIONESS B",
+          "excelMembers": 3,
+          "supabaseMembers": 3,
+          "matchedDbCellNames": [
+            "LIONESS B"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "NACAO DE HEROIS",
+          "excelMembers": 9,
+          "supabaseMembers": 9,
+          "matchedDbCellNames": [
+            "NACAO DE HEROIS"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        }
+      ]
+    },
+    {
+      "groupName": "Dominio",
+      "excelTotalCells": 1,
+      "excelTotalMembers": 18,
+      "dbGroupMemberCount": 18,
+      "matchedDbGroupNames": [
+        "Dominio"
+      ],
+      "statusInSupabase": "EXISTS_IN_DB",
+      "cellDetails": [
+        {
+          "cellName": "Dominio Main",
+          "excelMembers": 18,
+          "supabaseMembers": 18,
+          "matchedDbCellNames": [
+            "Celula: Dominio Main"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        }
+      ]
+    },
+    {
+      "groupName": "Transformada",
+      "excelTotalCells": 1,
+      "excelTotalMembers": 50,
+      "dbGroupMemberCount": 50,
+      "matchedDbGroupNames": [
+        "Transformada"
+      ],
+      "statusInSupabase": "EXISTS_IN_DB",
+      "cellDetails": [
+        {
+          "cellName": "TRANSFORMADAS",
+          "excelMembers": 50,
+          "supabaseMembers": 50,
+          "matchedDbCellNames": [
+            "Celula: TRANSFORMADAS"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        }
+      ]
+    },
+    {
+      "groupName": "Agathos",
+      "excelTotalCells": 8,
+      "excelTotalMembers": 59,
+      "dbGroupMemberCount": 58,
+      "matchedDbGroupNames": [
+        "Agathos"
+      ],
+      "statusInSupabase": "EXISTS_IN_DB",
+      "cellDetails": [
+        {
+          "cellName": "Agathos Main",
+          "excelMembers": 15,
+          "supabaseMembers": 15,
+          "matchedDbCellNames": [
+            "Agathos Main"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Agathos Excellence",
+          "excelMembers": 14,
+          "supabaseMembers": 14,
+          "matchedDbCellNames": [
+            "Agathos Excellence"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Agathos Light",
+          "excelMembers": 10,
+          "supabaseMembers": 16,
+          "matchedDbCellNames": [
+            "Agathos Light",
+            "Agathos Light A"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Agathos Purpose",
+          "excelMembers": 9,
+          "supabaseMembers": 10,
+          "matchedDbCellNames": [
+            "Agathos Purpose",
+            "Agathos Purpose A"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Agathos Virtous",
+          "excelMembers": 1,
+          "supabaseMembers": 1,
+          "matchedDbCellNames": [
+            "Agathos Virtous"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Agathos Purpose A",
+          "excelMembers": 1,
+          "supabaseMembers": 10,
+          "matchedDbCellNames": [
+            "Agathos Purpose",
+            "Agathos Purpose A"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Agathos Eagles",
+          "excelMembers": 3,
+          "supabaseMembers": 2,
+          "matchedDbCellNames": [
+            "Agathos Eagles"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Agathos Light A",
+          "excelMembers": 6,
+          "supabaseMembers": 16,
+          "matchedDbCellNames": [
+            "Agathos Light",
+            "Agathos Light A"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        }
+      ]
+    },
+    {
+      "groupName": "Pioneiro",
+      "excelTotalCells": 15,
+      "excelTotalMembers": 172,
+      "dbGroupMemberCount": 172,
+      "matchedDbGroupNames": [
+        "Pioneiro"
+      ],
+      "statusInSupabase": "EXISTS_IN_DB",
+      "cellDetails": [
+        {
+          "cellName": "Pioneiros Sub Grace",
+          "excelMembers": 9,
+          "supabaseMembers": 13,
+          "matchedDbCellNames": [
+            "Pioneiros Sub Grace",
+            "Pioneiros Sub Grace the choosen",
+            "Pioneiros Sub Grace Intrépidos"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Pioneiros Sub Grace the choosen",
+          "excelMembers": 3,
+          "supabaseMembers": 12,
+          "matchedDbCellNames": [
+            "Pioneiros Sub Grace",
+            "Pioneiros Sub Grace the choosen"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Pioneiros Sub Grace Intrépidos",
+          "excelMembers": 1,
+          "supabaseMembers": 10,
+          "matchedDbCellNames": [
+            "Pioneiros Sub Grace",
+            "Pioneiros Sub Grace Intrépidos"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Pioneiros Substance Power",
+          "excelMembers": 31,
+          "supabaseMembers": 31,
+          "matchedDbCellNames": [
+            "Pioneiros Substance Power"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Pioneiros Multitude",
+          "excelMembers": 5,
+          "supabaseMembers": 5,
+          "matchedDbCellNames": [
+            "Pioneiros Multitude"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "PIONEIROS SUBSTANCE ACE",
+          "excelMembers": 6,
+          "supabaseMembers": 6,
+          "matchedDbCellNames": [
+            "PIONEIROS SUBSTANCE ACE"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "PIONEIROS SUBSTANCE CHARIS",
+          "excelMembers": 41,
+          "supabaseMembers": 41,
+          "matchedDbCellNames": [
+            "PIONEIROS SUBSTANCE CHARIS"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "PIONEIROS CHARIS ATALAIA",
+          "excelMembers": 15,
+          "supabaseMembers": 15,
+          "matchedDbCellNames": [
+            "PIONEIROS CHARIS ATALAIA"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "PIONEIROS CHARIS EXCELENTES",
+          "excelMembers": 15,
+          "supabaseMembers": 15,
+          "matchedDbCellNames": [
+            "PIONEIROS CHARIS EXCELENTES"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "PIONEIROS CHARIS ALCANCADOS",
+          "excelMembers": 13,
+          "supabaseMembers": 13,
+          "matchedDbCellNames": [
+            "PIONEIROS CHARIS ALCANCADOS"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Pioneiros Change",
+          "excelMembers": 8,
+          "supabaseMembers": 8,
+          "matchedDbCellNames": [
+            "Pioneiros Change"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Pioneiros Substance Of Faith",
+          "excelMembers": 3,
+          "supabaseMembers": 3,
+          "matchedDbCellNames": [
+            "Pioneiros Substance Of Faith"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Pioneiros ASAH",
+          "excelMembers": 6,
+          "supabaseMembers": 6,
+          "matchedDbCellNames": [
+            "Pioneiros ASAH"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Excellence MAIN",
+          "excelMembers": 12,
+          "supabaseMembers": 12,
+          "matchedDbCellNames": [
+            "Excellence MAIN"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Pioneiros Excellence Shining",
+          "excelMembers": 4,
+          "supabaseMembers": 4,
+          "matchedDbCellNames": [
+            "Pioneiros Excellence Shining"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        }
+      ]
+    },
+    {
+      "groupName": "Blossom",
+      "excelTotalCells": 13,
+      "excelTotalMembers": 94,
+      "dbGroupMemberCount": 88,
+      "matchedDbGroupNames": [
+        "Blossom"
+      ],
+      "statusInSupabase": "EXISTS_IN_DB",
+      "cellDetails": [
+        {
+          "cellName": "Blossom Main: Stela Jaqueta",
+          "excelMembers": 25,
+          "supabaseMembers": 24,
+          "matchedDbCellNames": [
+            "Blossom Main: Stela Jaqueta"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Blossom Diamante Main: Cristina Malauene",
+          "excelMembers": 13,
+          "supabaseMembers": 13,
+          "matchedDbCellNames": [
+            "Blossom Diamante Main: Cristina Malauene"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Blossom Diamante A: Telma Santana",
+          "excelMembers": 5,
+          "supabaseMembers": 4,
+          "matchedDbCellNames": [
+            "Blossom Diamante A: Telma Santana"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Blossom Diamante B: Gervasia Lapone",
+          "excelMembers": 6,
+          "supabaseMembers": 6,
+          "matchedDbCellNames": [
+            "Blossom Diamante B: Gervasia Lapone"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Blossom Diamante C: Salito Jose",
+          "excelMembers": 7,
+          "supabaseMembers": 6,
+          "matchedDbCellNames": [
+            "Blossom Diamante C: Salito Jose"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Blossom Diamante C1:Araujo",
+          "excelMembers": 3,
+          "supabaseMembers": 2,
+          "matchedDbCellNames": [
+            "Blossom Diamante C1:Araujo"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Blossom Diamante C2:Elisa Bernardo",
+          "excelMembers": 2,
+          "supabaseMembers": 2,
+          "matchedDbCellNames": [
+            "Blossom Diamante C2:Elisa Bernardo"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Blossom Diamante C3:Fernando Caetano",
+          "excelMembers": 6,
+          "supabaseMembers": 5,
+          "matchedDbCellNames": [
+            "Blossom Diamante C3:Fernando Caetano"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Blossom Perfection Main: Francisca Nobre",
+          "excelMembers": 8,
+          "supabaseMembers": 8,
+          "matchedDbCellNames": [
+            "Blossom Perfection Main: Francisca Nobre"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Blossom Perfection Main for The Nations: Maria Telma Matsinhe",
+          "excelMembers": 4,
+          "supabaseMembers": 4,
+          "matchedDbCellNames": [
+            "Blossom Perfection Main for The Nations: Maria Telma Matsinhe"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Blossom Perfection A: Sheila Sitoe",
+          "excelMembers": 5,
+          "supabaseMembers": 5,
+          "matchedDbCellNames": [
+            "Blossom Perfection A: Sheila Sitoe"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Blossom Perfection B: Nelia Boane",
+          "excelMembers": 7,
+          "supabaseMembers": 6,
+          "matchedDbCellNames": [
+            "Blossom Perfection B: Nelia Boane"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "Blossom Perfection C3: Marilia Magingane",
+          "excelMembers": 3,
+          "supabaseMembers": 3,
+          "matchedDbCellNames": [
+            "Blossom Perfection C3: Marilia Magingane"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        }
+      ]
+    },
+    {
+      "groupName": "Phronesis",
+      "excelTotalCells": 22,
+      "excelTotalMembers": 143,
+      "dbGroupMemberCount": 143,
+      "matchedDbGroupNames": [
+        "Phronesis"
+      ],
+      "statusInSupabase": "EXISTS_IN_DB",
+      "cellDetails": [
+        {
+          "cellName": "PHRONESIS BUSINESS Main",
+          "excelMembers": 67,
+          "supabaseMembers": 74,
+          "matchedDbCellNames": [
+            "Phronesis",
+            "PHRONESIS BUSINESS Main"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "PHRONESIS BUSINESS A",
+          "excelMembers": 2,
+          "supabaseMembers": 9,
+          "matchedDbCellNames": [
+            "Phronesis",
+            "PHRONESIS BUSINESS A"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "PHRONESIS BUSINESS WELLNESS",
+          "excelMembers": 2,
+          "supabaseMembers": 9,
+          "matchedDbCellNames": [
+            "Phronesis",
+            "PHRONESIS BUSINESS WELLNESS"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "PHRONESIS BUSINESS DYNAMIC",
+          "excelMembers": 1,
+          "supabaseMembers": 8,
+          "matchedDbCellNames": [
+            "Phronesis",
+            "PHRONESIS BUSINESS DYNAMIC"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "PHRONESIS BUSINESS LIGHT IF LIFE",
+          "excelMembers": 2,
+          "supabaseMembers": 11,
+          "matchedDbCellNames": [
+            "Phronesis",
+            "PHRONESIS BUSINESS LIGHT IF LIFE",
+            "PHRONESIS BUSINESS LIGHT"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "PHRONESIS BUSINESS CONQUERORS",
+          "excelMembers": 2,
+          "supabaseMembers": 9,
+          "matchedDbCellNames": [
+            "Phronesis",
+            "PHRONESIS BUSINESS CONQUERORS"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "PHRONESIS BUSINESS LIGHT",
+          "excelMembers": 2,
+          "supabaseMembers": 11,
+          "matchedDbCellNames": [
+            "Phronesis",
+            "PHRONESIS BUSINESS LIGHT IF LIFE",
+            "PHRONESIS BUSINESS LIGHT"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "PHRONESIS CHAMPIONS Main",
+          "excelMembers": 9,
+          "supabaseMembers": 16,
+          "matchedDbCellNames": [
+            "Phronesis",
+            "PHRONESIS CHAMPIONS Main"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "PHRONESIS CHAMPIONS A",
+          "excelMembers": 11,
+          "supabaseMembers": 18,
+          "matchedDbCellNames": [
+            "Phronesis",
+            "PHRONESIS CHAMPIONS A"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "PHRONESIS CHAMPIONS B",
+          "excelMembers": 6,
+          "supabaseMembers": 13,
+          "matchedDbCellNames": [
+            "Phronesis",
+            "PHRONESIS CHAMPIONS B"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "PHRONESIS CHAMPIONS C",
+          "excelMembers": 1,
+          "supabaseMembers": 8,
+          "matchedDbCellNames": [
+            "Phronesis",
+            "PHRONESIS CHAMPIONS C"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "PHRONESIS CHAMPIONS D",
+          "excelMembers": 1,
+          "supabaseMembers": 8,
+          "matchedDbCellNames": [
+            "Phronesis",
+            "PHRONESIS CHAMPIONS D"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "PHRONESIS CHAMPIONS E",
+          "excelMembers": 1,
+          "supabaseMembers": 8,
+          "matchedDbCellNames": [
+            "Phronesis",
+            "PHRONESIS CHAMPIONS E"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "PHRONESIS DOERS Main",
+          "excelMembers": 15,
+          "supabaseMembers": 22,
+          "matchedDbCellNames": [
+            "Phronesis",
+            "PHRONESIS DOERS Main"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "PHRONESIS DOERS A",
+          "excelMembers": 12,
+          "supabaseMembers": 19,
+          "matchedDbCellNames": [
+            "Phronesis",
+            "PHRONESIS DOERS A"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "PHRONESIS DOERS B",
+          "excelMembers": 3,
+          "supabaseMembers": 10,
+          "matchedDbCellNames": [
+            "Phronesis",
+            "PHRONESIS DOERS B"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "PHRONESIS DOERS C",
+          "excelMembers": 1,
+          "supabaseMembers": 8,
+          "matchedDbCellNames": [
+            "Phronesis",
+            "PHRONESIS DOERS C"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "PHRONESIS DOERS D",
+          "excelMembers": 1,
+          "supabaseMembers": 8,
+          "matchedDbCellNames": [
+            "Phronesis",
+            "PHRONESIS DOERS D"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "PHRONESIS DOERS E",
+          "excelMembers": 1,
+          "supabaseMembers": 9,
+          "matchedDbCellNames": [
+            "Phronesis",
+            "PHRONESIS DOERS E",
+            "PHRONESIS DOERS E1"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "PHRONESIS DOERS E1",
+          "excelMembers": 1,
+          "supabaseMembers": 9,
+          "matchedDbCellNames": [
+            "Phronesis",
+            "PHRONESIS DOERS E",
+            "PHRONESIS DOERS E1"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "PHRONESIS DOERS H",
+          "excelMembers": 1,
+          "supabaseMembers": 8,
+          "matchedDbCellNames": [
+            "Phronesis",
+            "PHRONESIS DOERS H"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        },
+        {
+          "cellName": "PHRONESIS DOERS I",
+          "excelMembers": 1,
+          "supabaseMembers": 8,
+          "matchedDbCellNames": [
+            "Phronesis",
+            "PHRONESIS DOERS I"
+          ],
+          "statusInSupabase": "EXISTS_IN_DB"
+        }
+      ]
+    }
+  ],
+  "seedGroupsNotInExcel": [],
+  "dbGroupsNotInExcelWithMemberCounts": []
+}

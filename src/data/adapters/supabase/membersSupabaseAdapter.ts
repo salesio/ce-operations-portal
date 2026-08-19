@@ -140,6 +140,11 @@ export function mapMemberFromRow(row: SupabaseRow | null | undefined): Member | 
     legacy_alec_status: (row.legacy_alec_status as string) || null,
     legacy_baptism_status: (row.legacy_baptism_status as string) || null,
     legacy_partner_status: (row.legacy_partner_status as string) || null,
+    data_quality_status: (row.data_quality_status as string) || "Valid",
+    reconciliation_status: (row.reconciliation_status as string) || "Pending",
+    confirmed_by: (row.confirmed_by as string) || null,
+    confirmed_at: (row.confirmed_at as string) || null,
+    reconciliation_notes: (row.reconciliation_notes as string) || null,
     created_at: (row.created_at as string) || undefined,
     updated_at: (row.updated_at as string) || undefined,
   };
@@ -201,7 +206,10 @@ export function mapMemberToRow(member: Partial<Member>, forUpdate = false): Supa
     legacy_source_row: member.legacy_source_row ?? null,
     legacy_import_batch_id: member.legacy_import_batch_id ?? null,
     data_quality_status: member.data_quality_status ?? "Valid",
-    reconciliation_status: member.reconciliation_status ?? "NotRequired",
+    reconciliation_status: member.reconciliation_status ?? "Pending",
+    confirmed_by: member.confirmed_by ?? null,
+    confirmed_at: member.confirmed_at ?? null,
+    reconciliation_notes: member.reconciliation_notes ?? null,
     member_since_year: member.member_since_year ?? null,
     member_since_raw: member.member_since_raw ?? null,
     member_since_precision: member.member_since_precision ?? "exact",
@@ -226,6 +234,16 @@ export async function listMembers(): Promise<DataResult<Member[]>> {
  * Server-side page for the Members workspace. This must remain the default UI
  * path: it uses an exact PostgREST count and never downloads the whole table.
  */
+const MOCK_CHURCH_UUID_MAP: Record<string, string> = {
+  "church-hq": "a1111111-1111-4111-8111-111111111101",
+  "church-matola": "a1111111-1111-4111-8111-111111111102",
+  "church-khongolote": "a1111111-1111-4111-8111-111111111103",
+  "church-beira": "a1111111-1111-4111-8111-111111111104",
+  "church-nampula": "a1111111-1111-4111-8111-111111111105",
+  "church-choupal": "a1111111-1111-4111-8111-111111111106",
+  "church-virtual": "a1111111-1111-4111-8111-111111111107",
+};
+
 export async function listMembersPage(query: MemberListQuery = {}): Promise<DataResult<MemberPage>> {
   const client = getSupabaseFoundationClient();
   if (!client) {
@@ -239,8 +257,9 @@ export async function listMembersPage(query: MemberListQuery = {}): Promise<Data
   try {
     let request: any = client.from(TABLE).select(MEMBER_LIST_COLUMNS, { count: "exact" });
     if (query.churchId) {
-      if (isValidUuid(query.churchId)) {
-        request = request.eq("church_id", query.churchId);
+      const mappedId = MOCK_CHURCH_UUID_MAP[query.churchId] || query.churchId;
+      if (isValidUuid(mappedId)) {
+        request = request.eq("church_id", mappedId);
       } else {
         const churchObj = (typeof window !== "undefined" && (window as any).state?.churches || []).find(
           (c: any) => String(c.id) === String(query.churchId) || String(c.church_id) === String(query.churchId)
@@ -333,6 +352,10 @@ export async function listMembersPage(query: MemberListQuery = {}): Promise<Data
       };
       request = request.in("status", statusValues[statusKey] || [query.status]);
     }
+
+    if (query.reconciliationStatus) {
+      request = request.eq("reconciliation_status", query.reconciliationStatus);
+    }
     // A one-character search is intentionally not sent to PostgREST; it is too
     // broad for a live operational directory and causes avoidable full scans.
     if (search.length >= 2) {
@@ -340,7 +363,8 @@ export async function listMembersPage(query: MemberListQuery = {}): Promise<Data
       if (safe) request = request.or([
         `full_name.ilike.%${safe}%`, `first_name.ilike.%${safe}%`, `last_name.ilike.%${safe}%`,
         `primary_phone.ilike.%${safe}%`, `secondary_phone.ilike.%${safe}%`, `phone.ilike.%${safe}%`,
-        `email.ilike.%${safe}%`, `member_code.ilike.%${safe}%`
+        `email.ilike.%${safe}%`, `member_code.ilike.%${safe}%`,
+        `church_name.ilike.%${safe}%`, `cell_group_name.ilike.%${safe}%`, `cell_name.ilike.%${safe}%`
       ].join(","));
     }
     const { data, error, count } = await request.order("full_name", { ascending: true }).range(from, from + pageSize - 1);

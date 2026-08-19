@@ -87,8 +87,15 @@ export function getSupabaseConnectionInfo() {
   } catch {
     urlHost = undefined;
   }
+  const authSessionPresent = typeof window !== "undefined" && Boolean((window as any).CESupabase?.getAuthInfo?.()?.authenticated);
   return {
     status,
+    configured: cfg.isConfigured,
+    connected: cfg.isConfigured,
+    urlConfigured: isLikelySupabaseUrl(cfg.url),
+    authSessionPresent,
+    dataSource: readEnv("VITE_DATA_SOURCE") || "mock",
+    version: "2026.08.19-members-runtime-fix",
     enabled: cfg.enableSupabase,
     hasUrl: !!cfg.url,
     hasAnonKey: !!cfg.anonKey,

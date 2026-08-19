@@ -66,6 +66,7 @@ export {
   refreshCurrentUserPermissions,
   isRealAuthEnabled,
   getAuthInfo,
+  getCurrentScope,
   getAuthDataSourceInfo,
   requestPasswordReset,
   isSupabaseAuthEnabled,
@@ -248,6 +249,17 @@ export {
   normalizeCell,
   normalizeCellLeader,
   normalizeCellReport,
+  listCellUserAssignments,
+  getAuthorizedCellsForUserId,
+  createCellUserAssignment,
+  updateCellUserAssignment,
+  endCellUserAssignment,
+  listCellTransferRequests,
+  createCellTransferRequest,
+  updateCellTransferRequest,
+  approveCellTransferRequest,
+  rejectCellTransferRequest,
+  logCellMemberRemoval,
   CELL_GROUPS_SEED,
   CELLS_SEED,
   CELL_LEADERS_SEED,
@@ -1801,6 +1813,7 @@ import {
   refreshCurrentUserPermissions,
   isRealAuthEnabled,
   getAuthInfo,
+  getCurrentScope,
   getAuthDataSourceInfo,
   requestPasswordReset,
   isSupabaseAuthEnabled,
@@ -3268,11 +3281,26 @@ function installDataLayerGlobals(): void {
       refreshCurrentUserPermissions,
       isRealAuthEnabled,
       getAuthInfo,
+      getInfo: getAuthInfo,
+      getCurrentScope,
       getAuthDataSourceInfo,
       requestPasswordReset,
       isSupabaseAuthEnabled,
       getSupabaseAuthStatus,
     };
+  } else {
+    Object.assign((root as { CEAuth?: Record<string, unknown> }).CEAuth || {}, {
+      getInfo: getAuthInfo,
+      getAuthInfo,
+      getCurrentScope,
+    });
+  }
+  if (!root.CEAccess) {
+    root.CEAccess = {
+      getCurrentScope,
+    };
+  } else {
+    Object.assign(root.CEAccess, { getCurrentScope });
   }
   if (!root.CEMedia) {
     root.CEMedia = media;

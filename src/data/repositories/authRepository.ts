@@ -32,6 +32,8 @@ import {
   updateUserAuthStatus,
 } from "./accessControlRepository";
 
+import { getAuthorizedCellsForUserId } from "./cellUserAssignmentsRepository";
+
 export type AuthMode = "demo" | "supabase";
 
 export type AuthAccount = User & {
@@ -40,6 +42,13 @@ export type AuthAccount = User & {
 };
 
 export type AuthInfo = {
+  authenticated?: boolean;
+  authUserId?: string | null;
+  appUserId?: string | null;
+  role?: string | null;
+  churchId?: string | null;
+  cellIds?: string[];
+  source?: string;
   mode: AuthMode;
   realAuthEnabled: boolean;
   supabaseEnabled: boolean;
@@ -96,12 +105,31 @@ export function isRealAuthEnabled(): boolean {
   return isSupabaseAuthEnabled();
 }
 
+export function getCurrentScope() {
+  if (!currentAccount) return null;
+  return {
+    role: currentAccount.role || currentAccount.role_name || "",
+    church: currentAccount.church_id || currentAccount.churchId || "",
+    department: currentAccount.department_id || currentAccount.department_name || "",
+    cellGroups: currentAccount.assigned_cell_groups || (currentAccount.cell_group_id ? [currentAccount.cell_group_id] : []),
+    cells: currentAccount.assigned_cells || (currentAccount.cell_id ? [currentAccount.cell_id] : []),
+    permissions: currentAccount.permissions || [],
+  };
+}
+
 export function getAuthInfo(): AuthInfo {
   const flags = getBackendFeatureFlags();
   const cfg = getSupabaseEnvConfig();
   const status = getSupabaseAuthStatus();
   const real = isSupabaseAuthEnabled();
   return {
+    authenticated: Boolean(currentAccount),
+    authUserId: currentAccount?.auth_user_id || null,
+    appUserId: currentAccount?.id || null,
+    role: currentAccount?.role || currentAccount?.role_name || null,
+    churchId: currentAccount?.church_id || currentAccount?.churchId || null,
+    cellIds: currentAccount?.assigned_cells || (currentAccount?.cell_id ? [currentAccount.cell_id] : []),
+    source: real ? "supabase" : "local",
     mode: real ? "supabase" : "demo",
     realAuthEnabled: real,
     supabaseEnabled: flags.enableSupabase,
@@ -129,6 +157,14 @@ async function attachPermissions(user: User): Promise<AuthAccount> {
     if (perms.ok && perms.data?.length) {
       account.permissions = perms.data as AccessPermission[];
     }
+  }
+  try {
+    const cellIds = await getAuthorizedCellsForUserId(account.id);
+    if (cellIds.length) {
+      account.assigned_cells = [...new Set([...(account.assigned_cells || []), ...cellIds])];
+    }
+  } catch {
+    /* soft */
   }
   return account;
 }
@@ -198,14 +234,14 @@ export async function resolveUserAccountFromAuth(authUser: {
     );
   }
 
-  if (/lock|bloque/i.test(String(user.status || "")) || user.has_dashboard_access === false) {
+  if (/lock|bloque|suspend|inactiv|inativ/i.test(String(user.status || "")) || user.has_dashboard_access === false) {
     softAudit("auth_access_denied", {
       user_id: user.id,
       email: user.email,
-      description: "User locked or without dashboard access",
+      description: "User locked, suspended, inactive, or without dashboard access",
       severity: "warning",
     });
-    return fail("Conta bloqueada ou sem acesso ao dashboard.", "AUTH_LOCKED");
+    return fail("Conta inactiva, suspensa ou sem acesso ao dashboard.", "AUTH_LOCKED");
   }
 
   await markUserLastLogin(user.id);
@@ -235,6 +271,13 @@ export async function loginDemo(
   email: string,
   passwordOrHint = "demo",
 ): Promise<LoginResult> {
+  if (getDataSource() === "supabase" || isRealAuthEnabled() || getBackendFeatureFlags().enableRealAuth) {
+    return fail(
+      "Modo demo desactivado quando VITE_DATA_SOURCE=supabase ou autenticação real está activa.",
+      "AUTH_DEMO_DISABLED",
+    );
+  }
+
   const emailNorm = String(email || "").trim().toLowerCase();
   if (!emailNorm) return fail("Email obrigatório", "VALIDATION");
 
@@ -258,14 +301,14 @@ export async function loginDemo(
     return fail("Utilizador demo não encontrado.", "AUTH_DEMO_NOT_FOUND");
   }
 
-  if (/lock|bloque/i.test(String(user.status || ""))) {
+  if (/lock|bloque|suspend|inactiv|inativ/i.test(String(user.status || "")) || user.has_dashboard_access === false) {
     softAudit("auth_access_denied", {
       user_id: user.id,
       email: user.email,
-      description: "Demo login: locked user",
+      description: "Demo login: locked, suspended or inactive user",
       severity: "warning",
     });
-    return fail("Conta bloqueada (demo).", "AUTH_LOCKED");
+    return fail("Conta inactiva, suspensa ou sem acesso ao dashboard (demo).", "AUTH_LOCKED");
   }
 
   const hint = String(user.demo_password_hint || "demo").trim();
@@ -303,21 +346,16 @@ export async function loginWithSupabase(
 ): Promise<LoginResult> {
   const info = getAuthInfo();
   if (!info.realAuthEnabled) {
-    // Soft path: if flags say "want real" but misconfigured, surface friendly error
-    const flags = getBackendFeatureFlags();
-    if (flags.enableRealAuth) {
-      softAudit("auth_login_failed", {
-        email,
-        description: info.message_en || info.message,
-        severity: "warning",
-      });
-      return fail(
-        info.message_pt ||
-          "Autenticação real não está configurada. Verifique as variáveis Supabase.",
-        "AUTH_NOT_CONFIGURED",
-      );
-    }
-    return loginDemo(email, password);
+    softAudit("auth_login_failed", {
+      email,
+      description: info.message_en || info.message,
+      severity: "warning",
+    });
+    return fail(
+      info.message_pt ||
+        "Autenticação real não está configurada. Verifique as variáveis Supabase.",
+      "AUTH_NOT_CONFIGURED",
+    );
   }
 
   const signed = await signInWithEmailPassword(email, password);
@@ -349,7 +387,7 @@ export async function loginWithSupabase(
 
 /** Unified login: real auth when enabled, otherwise demo. */
 export async function login(email: string, password: string): Promise<LoginResult> {
-  if (isRealAuthEnabled() || getBackendFeatureFlags().enableRealAuth) {
+  if (getDataSource() === "supabase" || isRealAuthEnabled() || getBackendFeatureFlags().enableRealAuth) {
     return loginWithSupabase(email, password);
   }
   return loginDemo(email, password);

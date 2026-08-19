@@ -9,8 +9,8 @@ INSERT INTO public.churches (
 ) VALUES
   (
     'a1111111-1111-4111-8111-111111111101',
-    'National HQ - Christ Embassy Mozambique',
-    'Sede Nacional / HQ Maputo',
+    'E.C. Maputo Central - Sede',
+    'E.C. Maputo Central - Sede',
     'HQ',
     'Maputo',
     'Maputo',

@@ -1,5 +1,5 @@
 /**
- * Members module bridge — progressive data layer pilot (same pattern as Churches).
+ * Members module bridge — progressive data layer with strict Supabase mode.
  *
  * Resolution order:
  * 1. window.CEDataLayer.members
@@ -9,6 +9,14 @@
 (function () {
   var STORAGE_KEY = "ce-data-layer:members";
   var fallbackMemory = null;
+  var BUILD_VERSION = "2026.08.19-members-runtime-fix";
+
+  var lastState = {
+    lastQuery: null,
+    lastError: null,
+    lastRowsReturned: 0,
+    fallbackUsed: false,
+  };
 
   function friendlyError(result, fallback) {
     if (result && result.ok === false) return result.error || fallback;
@@ -40,7 +48,7 @@
   }
 
   function safeRuntimeInfo() {
-    var env = window.__CE_ENV__ || {};
+    var env = (typeof window !== "undefined" && window.__CE_ENV__) || {};
     var runtime = {};
     try {
       if (window.CESupabase && typeof window.CESupabase.getInfo === "function") {
@@ -121,7 +129,7 @@
         telefone: "+258 86 227 0000",
         email: "",
         church_id: "church-hq",
-        church_name: "National HQ - Christ Embassy Mozambique",
+        church_name: "E.C. Maputo Central - Sede",
         celula: "Sede",
         departamento: "Leadership",
         estado: "Active",
@@ -137,7 +145,7 @@
         telefone: "848287179",
         email: "",
         church_id: "church-hq",
-        church_name: "National HQ - Christ Embassy Mozambique",
+        church_name: "E.C. Maputo Central - Sede",
         celula: "Mavalane",
         departamento: "Acompanhamento",
         estado: "In Progress",
@@ -188,7 +196,15 @@
       var page = Math.max(1, Number(query && query.page) || 1);
       var pageSize = Math.min(100, Math.max(25, Number(query && query.pageSize) || 50));
       var totalCount = source.length;
-      return ok({ items: source.slice((page - 1) * pageSize, page * pageSize), page: page, pageSize: pageSize, totalCount: totalCount, totalPages: Math.max(1, Math.ceil(totalCount / pageSize)), hasNext: page * pageSize < totalCount, hasPrevious: page > 1 });
+      return ok({
+        items: source.slice((page - 1) * pageSize, page * pageSize),
+        page: page,
+        pageSize: pageSize,
+        totalCount: totalCount,
+        totalPages: Math.max(1, Math.ceil(totalCount / pageSize)),
+        hasNext: page * pageSize < totalCount,
+        hasPrevious: page > 1,
+      });
     },
     getMemberById: async function (id) {
       var store = getFallbackStore();
@@ -201,7 +217,7 @@
       var store = getFallbackStore();
       if (store.source === "api" || store.source === "supabase") {
         return fail(
-          "API/Supabase provider ainda não implementado. Use VITE_DATA_SOURCE=mock|local.",
+          "API/Supabase provider indisponível.",
           "NOT_IMPLEMENTED"
         );
       }
@@ -219,7 +235,7 @@
       var store = getFallbackStore();
       if (store.source === "api" || store.source === "supabase") {
         return fail(
-          "API/Supabase provider ainda não implementado. Use VITE_DATA_SOURCE=mock|local.",
+          "API/Supabase provider indisponível.",
           "NOT_IMPLEMENTED"
         );
       }
@@ -327,6 +343,10 @@
     if (resolved.api) {
       return { api: resolved.api, via: resolved.via, fallback: false };
     }
+    var source = resolveDataSource();
+    if (source === "supabase") {
+      return { api: null, via: "none", fallback: true };
+    }
     console.warn("[CE Members] repository unavailable; using pure JS fallback", Object.assign(
       safeRuntimeInfo(),
       { fallbackReason: "No Members repository API was installed by the runtime bundle." }
@@ -335,7 +355,52 @@
   }
 
   async function call(method, args) {
+    var source = resolveDataSource();
     var resolved = getApi();
+
+    if (method === "listMembersPage" || method === "listMembers") {
+      lastState.lastQuery = (args && args[0]) || {};
+    }
+
+    if (source === "supabase") {
+      if (resolved.fallback || !resolved.api) {
+        lastState.lastError = "Repositório de membros Supabase não está inicializado.";
+        lastState.fallbackUsed = false;
+        return fail("Não foi possível carregar membros do Supabase. Verifique a ligação ao servidor.", "SUPABASE_UNAVAILABLE");
+      }
+      var supabaseFn = resolved.api[method];
+      if (typeof supabaseFn !== "function") {
+        lastState.lastError = "Método " + method + " não disponível no repositório Supabase.";
+        lastState.fallbackUsed = false;
+        return fail("Operação não suportada no repositório de membros Supabase.", "NOT_SUPPORTED");
+      }
+      try {
+        var sbResult = await supabaseFn.apply(resolved.api, args || []);
+        if (sbResult && sbResult.ok === false) {
+          lastState.lastError = sbResult.error || "Erro retornado pelo Supabase.";
+          lastState.fallbackUsed = false;
+          return sbResult;
+        }
+        lastState.lastError = null;
+        lastState.fallbackUsed = false;
+        if (sbResult && sbResult.data) {
+          if (Array.isArray(sbResult.data.items)) {
+            lastState.lastRowsReturned = sbResult.data.items.length;
+          } else if (Array.isArray(sbResult.data)) {
+            lastState.lastRowsReturned = sbResult.data.length;
+          } else {
+            lastState.lastRowsReturned = 1;
+          }
+        }
+        return sbResult;
+      } catch (sbError) {
+        lastState.lastError = sbError && sbError.message ? sbError.message : "Excepção na chamada Supabase.";
+        lastState.fallbackUsed = false;
+        return fail(lastState.lastError, "SUPABASE_EXCEPTION");
+      }
+    }
+
+    // Mock / Local mode with fallback tolerance
     var fn = resolved.api && resolved.api[method];
     if (typeof fn !== "function") {
       fn = pureFallback[method];
@@ -347,10 +412,17 @@
     try {
       var result = await fn.apply(resolved.api, args || []);
       if (result && result.ok === false && !resolved.fallback && pureFallback[method]) {
-        var source = resolveDataSource();
-        if (source === "mock" || source === "local") {
-          console.warn("[CE Members] bundle " + method + " failed — retrying pure fallback", result);
-          return await pureFallback[method].apply(pureFallback, args || []);
+        console.warn("[CE Members] bundle " + method + " failed — retrying pure fallback", result);
+        lastState.fallbackUsed = true;
+        return await pureFallback[method].apply(pureFallback, args || []);
+      }
+      lastState.lastError = null;
+      lastState.fallbackUsed = resolved.fallback;
+      if (result && result.data) {
+        if (Array.isArray(result.data.items)) {
+          lastState.lastRowsReturned = result.data.items.length;
+        } else if (Array.isArray(result.data)) {
+          lastState.lastRowsReturned = result.data.length;
         }
       }
       return result;
@@ -358,12 +430,15 @@
       console.warn("[CE Members] " + method + " threw via " + resolved.via, error);
       if (!resolved.fallback && pureFallback[method]) {
         try {
+          lastState.fallbackUsed = true;
           return await pureFallback[method].apply(pureFallback, args || []);
         } catch (fallbackError) {
           console.error("[CE Members] pure fallback also failed", fallbackError);
+          lastState.lastError = fallbackError && fallbackError.message;
           return fail(fallbackError && fallbackError.message, "FALLBACK_ERROR");
         }
       }
+      lastState.lastError = error && error.message;
       return fail(error && error.message, "BRIDGE_ERROR");
     }
   }
@@ -392,32 +467,24 @@
     getActiveMembers: function () { return call("getActiveMembers", []); },
     getInactiveMembers: function () { return call("getInactiveMembers", []); },
     getInfo: function () {
+      var source = resolveDataSource();
       var resolved = getApi();
-      try {
-        if (resolved.api && typeof resolved.api.getMembersDataSourceInfo === "function") {
-          return Object.assign({ via: resolved.via }, resolved.api.getMembersDataSourceInfo());
-        }
-        if (resolved.api && typeof resolved.api.getInfo === "function") {
-          return Object.assign({ via: resolved.via }, resolved.api.getInfo());
-        }
-        if (window.CESupabase && typeof window.CESupabase.getMembersDataSourceInfo === "function") {
-          return Object.assign(
-            { via: "CESupabase.getMembersDataSourceInfo" },
-            window.CESupabase.getMembersDataSourceInfo()
-          );
-        }
-      } catch (error) {
-        console.warn("[CE Members] getInfo failed", error);
-      }
-      return Object.assign(safeRuntimeInfo(), {
-        source: resolveDataSource(),
-        provider: "fallback",
+      var repoName = (resolved.via === "CESupabase" || resolved.via.indexOf("members") >= 0)
+        ? "membersSupabaseAdapter"
+        : (resolved.via || "pureFallback");
+      return {
+        dataSource: source,
+        repository: repoName,
+        fallbackUsed: lastState.fallbackUsed,
+        lastQuery: lastState.lastQuery,
+        lastError: lastState.lastError,
+        lastRowsReturned: lastState.lastRowsReturned,
+        version: BUILD_VERSION,
         via: resolved.via,
         ready: !!resolved.api,
         fallback: resolved.fallback,
-        fallbackReason: "No Members repository API was installed by the runtime bundle.",
         checkedAt: new Date().toISOString(),
-      });
+      };
     },
     friendlyError: friendlyError,
     _debugResolve: function () {

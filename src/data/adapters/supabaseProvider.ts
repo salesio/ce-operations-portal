@@ -38,6 +38,8 @@ import * as materialsSb from "./supabase/ministryMaterialsSupabaseAdapter";
 import * as reportsSb from "./supabase/reportsSupabaseAdapter";
 import * as notificationsSb from "./supabase/notificationsSupabaseAdapter";
 import * as auditSystemSb from "./supabase/auditSystemSupabaseAdapter";
+import * as usersSb from "./supabase/usersSupabaseAdapter";
+import * as accessControlSb from "./supabase/accessControlSupabaseAdapter";
 import type {
   Church,
   FinanceDisbursement,
@@ -80,6 +82,9 @@ import type {
   StaffRole,
   StaffSalary,
   VenueSpace,
+  User,
+  AccessRole,
+  AccessPermission,
 } from "../types/entities";
 
 /**
@@ -802,7 +807,28 @@ export function createSupabaseProvider(): DataProvider & SupabaseProviderExtras 
     COLLECTION_NAMES.map((n) => [n, createStubRepository(n)]),
   ) as Record<EntityCollectionName, EntityRepository<unknown>>;
 
-  // Phase 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10 pilots
+  // Phase 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10 + Users/Roles pilots
+  map.users = createPilotRepository<User>({
+    list: usersSb.listUsers,
+    getById: usersSb.getUserById,
+    create: usersSb.createUser,
+    update: usersSb.updateUser,
+    remove: usersSb.deleteUser,
+  }) as EntityRepository<unknown>;
+  map.roles = createPilotRepository<AccessRole>({
+    list: accessControlSb.listRoles,
+    getById: accessControlSb.getRoleById,
+    create: accessControlSb.createRole,
+    update: accessControlSb.updateRole,
+    remove: accessControlSb.deleteRole,
+  }) as EntityRepository<unknown>;
+  map.permissions = createPilotRepository<AccessPermission>({
+    list: accessControlSb.listPermissions,
+    getById: accessControlSb.getPermissionById,
+    create: accessControlSb.createPermission,
+    update: accessControlSb.updatePermission,
+    remove: accessControlSb.deletePermission,
+  }) as EntityRepository<unknown>;
   map.churches = createChurchesRepository() as EntityRepository<unknown>;
   map.members = createMembersRepository() as EntityRepository<unknown>;
   map.member_registration_candidates = createPilotRepository<MemberRegistrationCandidate>({
@@ -916,7 +942,7 @@ export function createSupabaseProvider(): DataProvider & SupabaseProviderExtras 
     create: supabaseCreate,
     update: supabaseUpdate,
     delete: supabaseDelete,
-    users: map.users as EntityRepository<never>,
+    users: map.users as EntityRepository<User>,
     churches: map.churches as EntityRepository<Church>,
     members: map.members as EntityRepository<Member>,
     memberRegistrationCandidates: map.member_registration_candidates as EntityRepository<MemberRegistrationCandidate>,
@@ -1011,8 +1037,8 @@ export function createSupabaseProvider(): DataProvider & SupabaseProviderExtras 
     staffPerformance: map.staff_performance as EntityRepository<StaffPerformanceReview>,
     staffDocuments: map.staff_documents as EntityRepository<StaffDocument>,
     staffAttendance: map.staff_attendance as EntityRepository<StaffAttendance>,
-    roles: map.roles as EntityRepository<never>,
-    permissions: map.permissions as EntityRepository<never>,
+    roles: map.roles as EntityRepository<AccessRole>,
+    permissions: map.permissions as EntityRepository<AccessPermission>,
     permissionTemplates: map.permission_templates as EntityRepository<never>,
     auditLogs: map.audit_logs as EntityRepository<never>,
     collection(name) {

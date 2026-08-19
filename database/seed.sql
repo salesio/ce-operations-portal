@@ -20,8 +20,8 @@ ON CONFLICT (name) DO NOTHING;
 INSERT INTO public.churches (id, church_name, public_name, type, province, city, status)
 VALUES (
   '22222222-2222-2222-2222-222222222201',
-  'National HQ - Christ Embassy Mozambique',
-  'National HQ',
+  'E.C. Maputo Central - Sede',
+  'E.C. Maputo Central - Sede',
   'HQ',
   'Maputo',
   'Maputo',

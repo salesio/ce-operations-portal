@@ -166,7 +166,7 @@ async function attachChurchName(member: Member): Promise<Member> {
  * Skipped for supabase/api (remote seed via SQL).
  */
 export async function ensureMembersSeeded(): Promise<void> {
-  if (useSupabaseMembers() || useApiMembers()) return;
+  if (getDataSource() === "supabase" || useSupabaseMembers() || useApiMembers()) return;
   const provider = getDataProvider();
   const listed = await provider.members.list();
   if (!listed.ok) return;
@@ -181,7 +181,10 @@ export async function ensureMembersSeeded(): Promise<void> {
 
 export async function listMembers(): Promise<DataResult<Member[]>> {
   try {
-    if (useSupabaseMembers()) {
+    if (getDataSource() === "supabase") {
+      if (!useSupabaseMembers()) {
+        return fail("Supabase não está configurado. Verifique as variáveis de ambiente.", "SUPABASE_NOT_CONFIGURED");
+      }
       const result = await membersSb.listMembers();
       if (!result.ok) return result;
       const rows = await Promise.all(
@@ -210,7 +213,10 @@ export async function listMembers(): Promise<DataResult<Member[]>> {
 /** Paginated directory query used by the Members screen. */
 export async function listMembersPage(query: MemberListQuery = {}): Promise<DataResult<MemberPage>> {
   try {
-    if (useSupabaseMembers()) {
+    if (getDataSource() === "supabase") {
+      if (!useSupabaseMembers()) {
+        return fail("Supabase não está configurado. Verifique as variáveis de ambiente.", "SUPABASE_NOT_CONFIGURED");
+      }
       const result = await membersSb.listMembersPage(query);
       if (!result.ok) return result;
       return ok({ ...result.data, items: result.data.items.map(normalizeMember) });
@@ -272,6 +278,7 @@ export async function listMembersPage(query: MemberListQuery = {}): Promise<Data
         if (!matchCellId && !matchCellName && !matchRegistry) return false;
       }
       if (query.status && String(member.status || member.estado || "").toLowerCase() !== String(query.status).toLowerCase()) return false;
+      if (query.reconciliationStatus && String(member.reconciliation_status || "").toLowerCase() !== String(query.reconciliationStatus).toLowerCase()) return false;
       if (search.length < 2) return true;
       return [member.full_name, member.first_name, member.last_name, member.primary_phone, member.secondary_phone, member.phone, member.email, member.member_code]
         .some((value) => String(value || "").toLowerCase().includes(search));
@@ -286,7 +293,10 @@ export async function listMembersPage(query: MemberListQuery = {}): Promise<Data
 
 export async function getMemberById(id: EntityId): Promise<DataResult<Member | null>> {
   try {
-    if (useSupabaseMembers()) {
+    if (getDataSource() === "supabase") {
+      if (!useSupabaseMembers()) {
+        return fail("Supabase não está configurado. Verifique as variáveis de ambiente.", "SUPABASE_NOT_CONFIGURED");
+      }
       const result = await membersSb.getMemberById(id);
       if (!result.ok) return result;
       if (!result.data) return ok(null);
@@ -310,7 +320,10 @@ export async function getMemberById(id: EntityId): Promise<DataResult<Member | n
 
 export async function createMember(payload: Partial<Member>): Promise<DataResult<Member>> {
   try {
-    if (useSupabaseMembers()) {
+    if (getDataSource() === "supabase") {
+      if (!useSupabaseMembers()) {
+        return fail("Supabase não está configurado. Verifique as variáveis de ambiente.", "SUPABASE_NOT_CONFIGURED");
+      }
       let member = normalizeMember(payload);
       member = await attachChurchName(member);
       const result = await membersSb.createMember(member);
@@ -348,7 +361,10 @@ export async function updateMember(
   payload: Partial<Member>,
 ): Promise<DataResult<Member>> {
   try {
-    if (useSupabaseMembers()) {
+    if (getDataSource() === "supabase") {
+      if (!useSupabaseMembers()) {
+        return fail("Supabase não está configurado. Verifique as variáveis de ambiente.", "SUPABASE_NOT_CONFIGURED");
+      }
       const existing = await membersSb.getMemberById(id);
       if (!existing.ok) return fail(existing.error, existing.code);
       if (!existing.data) return fail("Membro não encontrado.", "NOT_FOUND");
@@ -388,7 +404,12 @@ export async function updateMember(
 
 export async function deleteMember(id: EntityId): Promise<DataResult<boolean>> {
   try {
-    if (useSupabaseMembers()) return membersSb.deleteMember(id);
+    if (getDataSource() === "supabase") {
+      if (!useSupabaseMembers()) {
+        return fail("Supabase não está configurado. Verifique as variáveis de ambiente.", "SUPABASE_NOT_CONFIGURED");
+      }
+      return membersSb.deleteMember(id);
+    }
     if (useApiMembers()) return membersApi.deleteMember(id);
     const provider = getDataProvider();
     if (!provider.members.remove) {
@@ -402,7 +423,10 @@ export async function deleteMember(id: EntityId): Promise<DataResult<boolean>> {
 
 export async function searchMembers(query: string): Promise<DataResult<Member[]>> {
   try {
-    if (useSupabaseMembers()) {
+    if (getDataSource() === "supabase") {
+      if (!useSupabaseMembers()) {
+        return fail("Supabase não está configurado. Verifique as variáveis de ambiente.", "SUPABASE_NOT_CONFIGURED");
+      }
       const result = await membersSb.searchMembers(query);
       if (!result.ok) return result;
       return ok((result.data || []).map((m) => normalizeMember(m)));

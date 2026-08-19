@@ -1,0 +1,145 @@
+{
+  "excelFilePath": "C:\\Users\\Alves King Edition\\Downloads\\DATA BASE NOVEMBER (1).xlsx",
+  "totalExcelMembers": 1914,
+  "totalMissingMembers": 147,
+  "cellsSummary": [
+    {
+      "cellName": "Blossom Main: Stela Jaqueta",
+      "groupName": "Blossom",
+      "totalExcel": 25,
+      "missingFromDb": 24
+    },
+    {
+      "cellName": "Pioneiros Substance Power",
+      "groupName": "Pioneiro",
+      "totalExcel": 31,
+      "missingFromDb": 18
+    },
+    {
+      "cellName": "Visionarios",
+      "groupName": "Visionarios",
+      "totalExcel": 14,
+      "missingFromDb": 14
+    },
+    {
+      "cellName": "VANGUARD VISIONÁRIOS",
+      "groupName": "Vanguard",
+      "totalExcel": 144,
+      "missingFromDb": 14
+    },
+    {
+      "cellName": "Blossom Diamante Main: Cristina Malauene",
+      "groupName": "Blossom",
+      "totalExcel": 13,
+      "missingFromDb": 13
+    },
+    {
+      "cellName": "Blossom Perfection Main: Francisca Nobre",
+      "groupName": "Blossom",
+      "totalExcel": 8,
+      "missingFromDb": 8
+    },
+    {
+      "cellName": "VANGUARD MAIN",
+      "groupName": "Vanguard",
+      "totalExcel": 25,
+      "missingFromDb": 7
+    },
+    {
+      "cellName": "Blossom Diamante B: Gervasia Lapone",
+      "groupName": "Blossom",
+      "totalExcel": 6,
+      "missingFromDb": 6
+    },
+    {
+      "cellName": "Blossom Diamante C: Salito Jose",
+      "groupName": "Blossom",
+      "totalExcel": 7,
+      "missingFromDb": 6
+    },
+    {
+      "cellName": "Blossom Perfection B: Nelia Boane",
+      "groupName": "Blossom",
+      "totalExcel": 7,
+      "missingFromDb": 6
+    },
+    {
+      "cellName": "Blossom Diamante C3:Fernando Caetano",
+      "groupName": "Blossom",
+      "totalExcel": 6,
+      "missingFromDb": 5
+    },
+    {
+      "cellName": "Blossom Perfection A: Sheila Sitoe",
+      "groupName": "Blossom",
+      "totalExcel": 5,
+      "missingFromDb": 5
+    },
+    {
+      "cellName": "Blossom Diamante A: Telma Santana",
+      "groupName": "Blossom",
+      "totalExcel": 5,
+      "missingFromDb": 4
+    },
+    {
+      "cellName": "Blossom Perfection Main for The Nations: Maria Telma Matsinhe",
+      "groupName": "Blossom",
+      "totalExcel": 4,
+      "missingFromDb": 4
+    },
+    {
+      "cellName": "Blossom Perfection C3: Marilia Magingane",
+      "groupName": "Blossom",
+      "totalExcel": 3,
+      "missingFromDb": 3
+    },
+    {
+      "cellName": "Blossom Diamante C1:Araujo",
+      "groupName": "Blossom",
+      "totalExcel": 3,
+      "missingFromDb": 2
+    },
+    {
+      "cellName": "Blossom Diamante C2:Elisa Bernardo",
+      "groupName": "Blossom",
+      "totalExcel": 2,
+      "missingFromDb": 2
+    },
+    {
+      "cellName": "ESTRELAS DE SIÃO E",
+      "groupName": "Estrelas de Siao",
+      "totalExcel": 16,
+      "missingFromDb": 1
+    },
+    {
+      "cellName": "SUB-GROUP MAIN",
+      "groupName": "QOG",
+      "totalExcel": 55,
+      "missingFromDb": 1
+    },
+    {
+      "cellName": "Royal Sisters Opportunity",
+      "groupName": "Royal Sister",
+      "totalExcel": 9,
+      "missingFromDb": 1
+    },
+    {
+      "cellName": "Royal Sisters Business A1",
+      "groupName": "Royal Sister",
+      "totalExcel": 18,
+      "missingFromDb": 1
+    },
+    {
+      "cellName": "VANGUARD SHINE",
+      "groupName": "Vanguard",
+      "totalExcel": 22,
+      "missingFromDb": 1
+    },
+    {
+      "cellName": "Agathos Eagles",
+      "groupName": "Agathos",
+      "totalExcel": 3,
+      "missingFromDb": 1
+    }
+  ]
+}

@@ -2667,3 +2667,91 @@ COMMENT ON TABLE public.report_snapshots IS 'Sanitized aggregates only; excludes
 COMMENT ON TABLE public.report_export_jobs IS 'Metadata jobs; sensitive exports require authorization and private storage.';
 COMMENT ON TABLE public.notification_preferences IS 'Only in-app delivery is functional in Phase 12.';
 COMMENT ON TABLE public.sensitive_access_events IS 'Reference and affected field names only; no sensitive content.';
+
+-- ============================================================================
+-- CORE: cell_user_assignments (Phase 18)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS public.cell_user_assignments (
+  id                uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id           uuid NOT NULL REFERENCES public.users (id) ON DELETE CASCADE,
+  church_id         uuid REFERENCES public.churches (id) ON DELETE SET NULL,
+  cell_group_id     text,
+  cell_id           text NOT NULL,
+  assignment_role   text NOT NULL DEFAULT 'cell_leader',
+  status            text NOT NULL DEFAULT 'Active',
+  starts_at         timestamptz NOT NULL DEFAULT now(),
+  ends_at           timestamptz,
+  notes             text,
+  metadata          jsonb NOT NULL DEFAULT '{}'::jsonb,
+  created_at        timestamptz NOT NULL DEFAULT now(),
+  updated_at        timestamptz NOT NULL DEFAULT now(),
+  created_by        uuid,
+  updated_by        uuid
+);
+
+CREATE INDEX IF NOT EXISTS idx_cell_user_assignments_user_id ON public.cell_user_assignments (user_id);
+CREATE INDEX IF NOT EXISTS idx_cell_user_assignments_cell_id ON public.cell_user_assignments (cell_id);
+CREATE INDEX IF NOT EXISTS idx_cell_user_assignments_cell_group_id ON public.cell_user_assignments (cell_group_id);
+CREATE INDEX IF NOT EXISTS idx_cell_user_assignments_status ON public.cell_user_assignments (status);
+
+-- ============================================================================
+-- CORE: cell_transfer_requests (Phase 19)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS public.cell_transfer_requests (
+  id                    uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  member_id             uuid NOT NULL REFERENCES public.members (id) ON DELETE CASCADE,
+  member_name           text,
+  from_cell_id          text NOT NULL,
+  from_cell_name        text,
+  from_cell_group_id    text,
+  from_cell_group_name  text,
+  to_cell_id            text,
+  to_cell_name          text,
+  to_cell_group_id      text,
+  to_cell_group_name    text,
+  church_id             uuid REFERENCES public.churches (id) ON DELETE SET NULL,
+  requested_by          uuid REFERENCES public.users (id) ON DELETE SET NULL,
+  requested_by_name     text,
+  reason                text NOT NULL,
+  notes                 text,
+  status                text NOT NULL DEFAULT 'Submitted',
+  reviewed_by           uuid REFERENCES public.users (id) ON DELETE SET NULL,
+  reviewed_by_name      text,
+  reviewed_at           timestamptz,
+  rejection_reason      text,
+  metadata              jsonb NOT NULL DEFAULT '{}'::jsonb,
+  created_at            timestamptz NOT NULL DEFAULT now(),
+  updated_at            timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_cell_transfers_member_id ON public.cell_transfer_requests (member_id);
+CREATE INDEX IF NOT EXISTS idx_cell_transfers_from_cell ON public.cell_transfer_requests (from_cell_id);
+CREATE INDEX IF NOT EXISTS idx_cell_transfers_to_cell ON public.cell_transfer_requests (to_cell_id);
+
+CREATE TABLE IF NOT EXISTS public.cell_member_removal_logs (
+  id                    uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  member_id             uuid NOT NULL REFERENCES public.members (id) ON DELETE CASCADE,
+  cell_id               text NOT NULL,
+  cell_group_id         text,
+  church_id             uuid REFERENCES public.churches (id) ON DELETE SET NULL,
+  removed_by            uuid REFERENCES public.users (id) ON DELETE SET NULL,
+  removed_by_name       text,
+  reason                text NOT NULL,
+  notes                 text,
+  removed_at            timestamptz NOT NULL DEFAULT now(),
+  metadata              jsonb NOT NULL DEFAULT '{}'::jsonb
+);
+
+CREATE INDEX IF NOT EXISTS idx_removal_logs_member_id ON public.cell_member_removal_logs (member_id);
+CREATE INDEX IF NOT EXISTS idx_removal_logs_cell_id ON public.cell_member_removal_logs (cell_id);
+
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS cell_group_id text;
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS cell_id text;
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS department_name text;
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS assigned_cells text[] NOT NULL DEFAULT '{}'::text[];
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS assigned_cell_groups text[] NOT NULL DEFAULT '{}'::text[];
+ALTER TABLE public.members ADD COLUMN IF NOT EXISTS reconciliation_status text NOT NULL DEFAULT 'Pending';
+ALTER TABLE public.members ADD COLUMN IF NOT EXISTS confirmed_by uuid REFERENCES public.users (id) ON DELETE SET NULL;
+ALTER TABLE public.members ADD COLUMN IF NOT EXISTS confirmed_at timestamptz;
+ALTER TABLE public.members ADD COLUMN IF NOT EXISTS reconciliation_notes text;
+

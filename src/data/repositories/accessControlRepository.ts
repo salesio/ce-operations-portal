@@ -14,6 +14,8 @@ import { ROLES_SEED } from "../seeds/rolesSeed";
 import { PERMISSIONS_SEED } from "../seeds/permissionsSeed";
 import { PERMISSION_TEMPLATES_SEED } from "../seeds/permissionTemplatesSeed";
 import { AUDIT_LOGS_SEED } from "../seeds/auditLogsSeed";
+import * as usersSb from "../adapters/supabase/usersSupabaseAdapter";
+import * as accessControlSb from "../adapters/supabase/accessControlSupabaseAdapter";
 
 function fail<T>(error: string, code = "ACCESS_CONTROL_ERROR"): DataResult<T> {
   return { ok: false, error, code };
@@ -206,6 +208,11 @@ export async function getUserById(id: EntityId): Promise<DataResult<User | null>
 }
 
 export async function getUserByEmail(email: string): Promise<DataResult<User | null>> {
+  if (getDataSource() === "supabase") {
+    const res = await usersSb.getUserByEmail(email);
+    if (!res.ok) return res;
+    return ok(res.data ? normalizeUser(res.data) : null);
+  }
   const list = await listUsers();
   if (!list.ok) return list as DataResult<User | null>;
   const e = statusKey(email);
@@ -215,10 +222,15 @@ export async function getUserByEmail(email: string): Promise<DataResult<User | n
 
 /** Resolve app user by Supabase Auth uuid (auth.users.id). */
 export async function getUserByAuthUserId(authUserId: string): Promise<DataResult<User | null>> {
-  const list = await listUsers();
-  if (!list.ok) return list as DataResult<User | null>;
   const id = String(authUserId || "").trim();
   if (!id) return ok(null);
+  if (getDataSource() === "supabase") {
+    const res = await usersSb.getUserByAuthUserId(id);
+    if (!res.ok) return res;
+    return ok(res.data ? normalizeUser(res.data) : null);
+  }
+  const list = await listUsers();
+  if (!list.ok) return list as DataResult<User | null>;
   const found =
     list.data.find((u) => String(u.auth_user_id || "").trim() === id) || null;
   return ok(found);
@@ -551,7 +563,12 @@ export async function deletePermission(id: EntityId) {
     return fail(e instanceof Error ? e.message : "deletePermission failed");
   }
 }
-export async function getPermissionsByRole(roleId: EntityId) {
+export async function getPermissionsByRole(roleId: EntityId): Promise<DataResult<AccessPermission[]>> {
+  if (getDataSource() === "supabase") {
+    const res = await accessControlSb.getPermissionsByRole(roleId);
+    if (!res.ok) return res;
+    return ok(res.data.map(normalizePermission));
+  }
   const list = await listPermissions();
   if (!list.ok) return list;
   return ok(list.data.filter((p) => p.role_id === roleId));
@@ -839,6 +856,10 @@ export async function exportAuditLogs(filters: {
 // ---------------------------------------------------------------------------
 
 export async function ensureAccessControlSeeded(): Promise<DataResult<boolean>> {
+  if (getDataSource() === "supabase") {
+    // In Supabase mode, seeds are handled strictly via SQL migrations.
+    return ok(true);
+  }
   try {
     const users = await listUsers();
     if (users.ok && users.data.length === 0) {

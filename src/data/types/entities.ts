@@ -51,7 +51,10 @@ export interface User {
   staff_id?: EntityId | null;
   staff_name?: string | null;
   assigned_staff_name?: string | null;
+  cell_id?: string | null;
+  cell_group_id?: string | null;
   assigned_cells?: string[] | null;
+  assigned_cell_groups?: string[] | null;
   assigned_teams?: string[] | null;
   assigned_groups?: string[] | null;
   assigned_foundation_teacher_id?: string | null;
@@ -320,11 +323,73 @@ export interface Member {
   legacy_source_row?: number | null;
   legacy_import_batch_id?: EntityId | null;
   legacy_original_values?: Record<string, unknown> | null;
-  data_quality_status?: "Valid" | "NeedsReview" | "Invalid" | string | null;
-  reconciliation_status?: "Pending" | "Reconciled" | "NotRequired" | string | null;
+  data_quality_status?: "Valid" | "NeedsReview" | "Invalid" | "Incomplete" | "DuplicateSuspect" | string | null;
+  reconciliation_status?: "Pending" | "Confirmed" | "NeedsCorrection" | "NotInCell" | "TransferRequested" | "Transferred" | "DuplicateSuspected" | "Reconciled" | "NotRequired" | string | null;
+  confirmed_by?: EntityId | null;
+  confirmed_at?: IsoDateTime | null;
+  reconciliation_notes?: string | null;
   member_since_year?: number | null;
   member_since_raw?: string | null;
   member_since_precision?: "exact" | "month" | "year" | "unknown" | string | null;
+}
+
+export interface CellUserAssignment {
+  id: EntityId;
+  user_id: EntityId;
+  church_id?: EntityId | null;
+  cell_group_id?: string | null;
+  cell_id: string;
+  assignment_role: "cell_group_leader" | "cell_leader" | "assistant_cell_leader" | "cell_admin" | string;
+  status: "Active" | "Ended" | "Suspended" | string;
+  starts_at?: IsoDateTime;
+  ends_at?: IsoDateTime | null;
+  notes?: string | null;
+  metadata?: Record<string, unknown>;
+  created_at?: IsoDateTime;
+  updated_at?: IsoDateTime;
+  created_by?: string | null;
+  updated_by?: string | null;
+}
+
+export interface CellTransferRequest {
+  id: EntityId;
+  member_id: EntityId;
+  member_name?: string | null;
+  from_cell_id: string;
+  from_cell_name?: string | null;
+  from_cell_group_id?: string | null;
+  from_cell_group_name?: string | null;
+  to_cell_id?: string | null;
+  to_cell_name?: string | null;
+  to_cell_group_id?: string | null;
+  to_cell_group_name?: string | null;
+  church_id?: EntityId | null;
+  requested_by?: EntityId | null;
+  requested_by_name?: string | null;
+  reason: string;
+  notes?: string | null;
+  status: "Draft" | "Submitted" | "Approved" | "Rejected" | "Cancelled" | string;
+  reviewed_by?: EntityId | null;
+  reviewed_by_name?: string | null;
+  reviewed_at?: IsoDateTime | null;
+  rejection_reason?: string | null;
+  metadata?: Record<string, unknown>;
+  created_at?: IsoDateTime;
+  updated_at?: IsoDateTime;
+}
+
+export interface CellMemberRemovalLog {
+  id: EntityId;
+  member_id: EntityId;
+  cell_id: string;
+  cell_group_id?: string | null;
+  church_id?: EntityId | null;
+  removed_by?: EntityId | null;
+  removed_by_name?: string | null;
+  reason: "Transferido" | "Mudou de igreja" | "Inactivo" | "Pertence a outra célula" | "Registo incorrecto" | "Falecido" | "Outro" | string;
+  notes?: string | null;
+  removed_at?: IsoDateTime;
+  metadata?: Record<string, unknown>;
 }
 
 /** A registration request is not an official member until explicitly approved. */
