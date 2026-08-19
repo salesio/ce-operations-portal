@@ -1,11 +1,14 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 
+const DEFAULT_URL = "https://kmurqbgpybrolrrumiue.supabase.co";
+const DEFAULT_ANON_KEY = "sb_publishable_SWyV8DiSlWMQFXt9Nh477A_SHeVUlli";
+
 const outputPath = resolve(process.argv[2] || "js/runtime-config.js");
-const url = String(process.env.VITE_SUPABASE_URL || process.env.CE_SUPABASE_URL || "").trim();
-const anonKey = String(process.env.VITE_SUPABASE_ANON_KEY || process.env.CE_SUPABASE_ANON_KEY || "").trim();
-const dataSource = String(process.env.VITE_DATA_SOURCE || process.env.CE_DATA_SOURCE || (url && anonKey ? "supabase" : "mock")).trim();
-const enableSupabase = String(process.env.VITE_ENABLE_SUPABASE || (url && anonKey ? "true" : "false")).trim();
+const url = String(process.env.VITE_SUPABASE_URL || process.env.CE_SUPABASE_URL || DEFAULT_URL).trim();
+const anonKey = String(process.env.VITE_SUPABASE_ANON_KEY || process.env.CE_SUPABASE_ANON_KEY || DEFAULT_ANON_KEY).trim();
+const dataSource = String(process.env.VITE_DATA_SOURCE || process.env.CE_DATA_SOURCE || "supabase").trim();
+const enableSupabase = String(process.env.VITE_ENABLE_SUPABASE || "true").trim();
 const enableRealAuth = String(process.env.VITE_ENABLE_REAL_AUTH || process.env.CE_ENABLE_REAL_AUTH || "false").trim();
 const enableStorage = String(process.env.VITE_ENABLE_STORAGE || "false").trim();
 
@@ -24,12 +27,12 @@ const config = liveSupabase
       VITE_SUPABASE_ANON_KEY: anonKey,
     }
   : {
-      VITE_DATA_SOURCE: dataSource || "mock",
+      VITE_DATA_SOURCE: dataSource || "supabase",
       VITE_ENABLE_SUPABASE: /^(1|true|yes|on)$/i.test(enableSupabase) ? "true" : "false",
       VITE_ENABLE_STORAGE: "false",
       VITE_ENABLE_REAL_AUTH: /^(1|true|yes|on)$/i.test(enableRealAuth) ? "true" : "false",
-      VITE_SUPABASE_URL: url ? url.replace(/\/$/, "") : "",
-      VITE_SUPABASE_ANON_KEY: anonKey,
+      VITE_SUPABASE_URL: url ? url.replace(/\/$/, "") : DEFAULT_URL,
+      VITE_SUPABASE_ANON_KEY: anonKey || DEFAULT_ANON_KEY,
     };
 
 const serializedConfig = JSON.stringify(config).replace(/</g, "\\u003c");
