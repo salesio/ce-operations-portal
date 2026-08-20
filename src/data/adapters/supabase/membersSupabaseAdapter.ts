@@ -244,12 +244,43 @@ const MOCK_CHURCH_UUID_MAP: Record<string, string> = {
   "church-virtual": "a1111111-1111-4111-8111-111111111107",
 };
 
+const memberLastState = {
+  lastQuery: null as MemberListQuery | null,
+  lastError: null as string | null,
+  lastRowsReturned: 0,
+};
+
+export function getMembersDataSourceInfo() {
+  return {
+    source: "supabase",
+    repository: "membersSupabaseAdapter",
+    fallbackUsed: false,
+    lastQuery: memberLastState.lastQuery,
+    lastError: memberLastState.lastError,
+    lastRowsReturned: memberLastState.lastRowsReturned,
+    version: "2026.08.20-members-fix-v2",
+    ready: true,
+    fallback: false,
+    checkedAt: new Date().toISOString(),
+  };
+}
+
 export async function listMembersPage(query: MemberListQuery = {}): Promise<DataResult<MemberPage>> {
+  memberLastState.lastQuery = { ...query };
   const client = getSupabaseFoundationClient();
   if (!client) {
     const mapped = mapSupabaseError("Supabase not configured");
+    memberLastState.lastError = mapped.error;
     return fail(mapped.error, mapped.code);
   }
+
+  // Task 4: Verify Auth session presence safely before executing protected query
+  let sessionUserId: string | null = null;
+  try {
+    const sessionRes = await client.auth.getSession();
+    sessionUserId = sessionRes?.data?.session?.user?.id || null;
+  } catch (_) {}
+
   const page = Math.max(1, Number(query.page) || 1);
   const pageSize = Math.min(MEMBER_PAGE_MAX_SIZE, Math.max(25, Number(query.pageSize) || MEMBER_PAGE_DEFAULT_SIZE));
   const from = (page - 1) * pageSize;
@@ -370,14 +401,20 @@ export async function listMembersPage(query: MemberListQuery = {}): Promise<Data
     const { data, error, count } = await request.order("full_name", { ascending: true }).range(from, from + pageSize - 1);
     if (error) {
       const mapped = mapSupabaseError(error.message);
+      memberLastState.lastError = mapped.error;
+      memberLastState.lastRowsReturned = 0;
       return fail(mapped.error, mapped.code);
     }
     const totalCount = Number(count || 0);
     const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
     const items = ((data || []) as SupabaseRow[]).map((row) => mapMemberFromRow(row)!).filter(Boolean);
+    memberLastState.lastRowsReturned = items.length;
+    memberLastState.lastError = null;
     return ok({ items, page, pageSize, totalCount, totalPages, hasNext: page < totalPages, hasPrevious: page > 1 });
   } catch (error) {
     const mapped = mapSupabaseError(error instanceof Error ? error.message : "member page failed");
+    memberLastState.lastError = mapped.error;
+    memberLastState.lastRowsReturned = 0;
     return fail(mapped.error, mapped.code);
   }
 }

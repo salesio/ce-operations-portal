@@ -72,6 +72,7 @@
     "test:supabase-runtime-members": "node scripts/test-supabase-runtime-members.mjs",
     "test:real-auth-migration": "node scripts/test-real-auth-migration.mjs && node scripts/test-login-flow-full.mjs",
     "test:migration-0022": "node scripts/test-migration-0022-rls-hardening.mjs && node scripts/test-migration-0022-pglite-execution.mjs",
+    "test:auth-fail-closed-and-profile-resolution": "node scripts/test-auth-fail-closed-and-profile-resolution.mjs",
     "test:auth-full-suite": "node scripts/test-auth-real.mjs && node scripts/test-users-roles.mjs && node scripts/test-cell-access.mjs && node scripts/test-cell-member-reconciliation.mjs && node scripts/test-cell-transfer.mjs && node scripts/test-rls-cell-leader.mjs && node scripts/test-hardened-data-sources.mjs && node scripts/test-church-consolidation.mjs && node scripts/test-supabase-runtime-members.mjs && node scripts/test-real-auth-migration.mjs && node scripts/test-login-flow-full.mjs && node scripts/test-migration-0022-rls-hardening.mjs && node scripts/test-migration-0022-pglite-execution.mjs",
     "dry-run:hq-members-import": "node scripts/dry-run-hq-members-import.mjs",
     "docker:up": "docker compose up -d",

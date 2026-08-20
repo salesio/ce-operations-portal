@@ -12,7 +12,7 @@ export type ListRowsOptions = {
   churchId?: string;
   orderBy?: string;
   ascending?: boolean;
-  filters?: Record<string, string | number | boolean | null>;
+  filters?: Record<string, string | number | boolean | null> | ((query: any) => any);
 };
 
 function fail<T>(error: string, code = "SUPABASE_DISABLED"): SupabaseResult<T> {
@@ -66,7 +66,7 @@ export function mapSupabaseError(raw: string, fallbackCode = "SUPABASE_ERROR"): 
   return { error: msg || "Supabase error", code: fallbackCode };
 }
 
-function requireClient(): SupabaseResult<NonNullable<ReturnType<typeof getSupabaseFoundationClient>>> {
+export function requireClient(): SupabaseResult<NonNullable<ReturnType<typeof getSupabaseFoundationClient>>> {
   const info = getSupabaseConnectionInfo();
   const client = getSupabaseFoundationClient();
   if (!client) {
@@ -85,7 +85,9 @@ export async function listRows(
   try {
     let q = clientRes.data.from(table).select("*");
     if (options.churchId) q = q.eq("church_id", options.churchId);
-    if (options.filters) {
+    if (typeof options.filters === "function") {
+      q = options.filters(q) || q;
+    } else if (options.filters && typeof options.filters === "object") {
       for (const [key, value] of Object.entries(options.filters)) {
         if (value === undefined) continue;
         q = q.eq(key, value);
@@ -239,7 +241,7 @@ export async function searchRows(
 
 export async function filterRows(
   table: SupabaseTableName | string,
-  filters: Record<string, string | number | boolean | null>,
+  filters: Record<string, string | number | boolean | null> | ((query: any) => any),
   options: { limit?: number; orderBy?: string } = {},
 ): Promise<SupabaseResult<SupabaseRow[]>> {
   return listRows(table, {

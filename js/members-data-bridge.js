@@ -469,16 +469,24 @@
     getInfo: function () {
       var source = resolveDataSource();
       var resolved = getApi();
+      var adapterInfo = {};
+      try {
+        if (resolved.api && typeof resolved.api.getMembersDataSourceInfo === "function") {
+          adapterInfo = resolved.api.getMembersDataSourceInfo() || {};
+        } else if (resolved.api && typeof resolved.api.getInfo === "function") {
+          adapterInfo = resolved.api.getInfo() || {};
+        }
+      } catch (_) {}
       var repoName = (resolved.via === "CESupabase" || resolved.via.indexOf("members") >= 0)
         ? "membersSupabaseAdapter"
         : (resolved.via || "pureFallback");
       return {
         dataSource: source,
         repository: repoName,
-        fallbackUsed: lastState.fallbackUsed,
-        lastQuery: lastState.lastQuery,
-        lastError: lastState.lastError,
-        lastRowsReturned: lastState.lastRowsReturned,
+        fallbackUsed: adapterInfo.fallbackUsed !== undefined ? adapterInfo.fallbackUsed : lastState.fallbackUsed,
+        lastQuery: adapterInfo.lastQuery !== undefined && adapterInfo.lastQuery !== null ? adapterInfo.lastQuery : lastState.lastQuery,
+        lastError: adapterInfo.lastError !== undefined ? adapterInfo.lastError : lastState.lastError,
+        lastRowsReturned: adapterInfo.lastRowsReturned !== undefined ? adapterInfo.lastRowsReturned : lastState.lastRowsReturned,
         version: BUILD_VERSION,
         via: resolved.via,
         ready: !!resolved.api,

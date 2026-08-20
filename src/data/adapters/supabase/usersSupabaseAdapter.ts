@@ -12,7 +12,9 @@ import {
   getRowById,
   isValidUuid,
   listRows,
+  mapSupabaseError,
   newClientUuid,
+  requireClient,
   searchRows,
   updateRow,
 } from "./supabaseRepositoryBase";
@@ -170,19 +172,50 @@ export async function getUserById(id: EntityId): Promise<DataResult<User | null>
 export async function getUserByEmail(email: string): Promise<DataResult<User | null>> {
   const norm = String(email || "").trim().toLowerCase();
   if (!norm) return ok(null);
-  const r = await filterRows<SupabaseRow>(TABLE, (q) => q.ilike("email", norm));
-  if (!r.ok) return fail(r.error, r.code);
-  const first = (r.data || [])[0];
-  return ok(mapUserFromRow(first));
+  const clientRes = requireClient();
+  if (!clientRes.ok) return clientRes as DataResult<User | null>;
+  try {
+    const { data, error } = await clientRes.data
+      .from(TABLE)
+      .select("*")
+      .ilike("email", norm);
+    if (error) {
+      const m = mapSupabaseError(error.message);
+      return fail(m.error, m.code);
+    }
+    const rows = (data || []) as SupabaseRow[];
+    if (rows.length === 0) return ok(null);
+    return ok(mapUserFromRow(rows[0]));
+  } catch (e) {
+    const m = mapSupabaseError(e instanceof Error ? e.message : "getUserByEmail failed");
+    return fail(m.error, m.code);
+  }
 }
 
 export async function getUserByAuthUserId(authUserId: string): Promise<DataResult<User | null>> {
   const authId = String(authUserId || "").trim();
   if (!authId || !isValidUuid(authId)) return ok(null);
-  const r = await filterRows<SupabaseRow>(TABLE, (q) => q.eq("auth_user_id", authId));
-  if (!r.ok) return fail(r.error, r.code);
-  const first = (r.data || [])[0];
-  return ok(mapUserFromRow(first));
+  const clientRes = requireClient();
+  if (!clientRes.ok) return clientRes as DataResult<User | null>;
+  try {
+    const { data, error } = await clientRes.data
+      .from(TABLE)
+      .select("*")
+      .eq("auth_user_id", authId);
+    if (error) {
+      const m = mapSupabaseError(error.message);
+      return fail(m.error, m.code);
+    }
+    const rows = (data || []) as SupabaseRow[];
+    if (rows.length === 0) return ok(null);
+    if (rows.length > 1) {
+      console.warn("[CE Users] Multiple user records found for auth_user_id:", authId);
+    }
+    return ok(mapUserFromRow(rows[0]));
+  } catch (e) {
+    const m = mapSupabaseError(e instanceof Error ? e.message : "getUserByAuthUserId failed");
+    return fail(m.error, m.code);
+  }
 }
 
 export async function createUser(user: Partial<User>): Promise<DataResult<User>> {

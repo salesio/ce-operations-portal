@@ -551,6 +551,7 @@ export function getMembersDataSourceInfo() {
   const provider = getDataProvider();
   const sb = useSupabaseMembers();
   const api = useApiMembers();
+  const sbInfo = sb && typeof membersSb.getMembersDataSourceInfo === "function" ? membersSb.getMembersDataSourceInfo() : {};
   return {
     source: getDataSource(),
     provider: sb ? "supabase" : api ? "api" : provider.name,
@@ -562,5 +563,6 @@ export function getMembersDataSourceInfo() {
         ? "Members API placeholder"
         : provider.description,
     pilot: sb ? "churches-members-supabase-v1" : undefined,
+    ...sbInfo,
   };
 }

@@ -15430,8 +15430,8 @@ async function hydrateChurchesFromRepository() {
  */
 function getMembersRepoSafe() {
   const repo =
-    window.CEDataLayer?.members ||
     window.CEMembers ||
+    window.CEDataLayer?.members ||
     (window.CESupabase?.createMember ? window.CESupabase : null) ||
     window.CESupabase?.repositories?.members ||
     window.CEData?.members ||
@@ -15439,8 +15439,8 @@ function getMembersRepoSafe() {
 
   if (!repo) {
     console.error("[CE Members] repository unavailable", {
-      CEDataLayer: window.CEDataLayer,
       CEMembers: window.CEMembers,
+      CEDataLayer: window.CEDataLayer,
       CESupabase: window.CESupabase,
       CEData: window.CEData
     });
@@ -22944,7 +22944,17 @@ document.addEventListener("change", (event) => {
 });
 
 function continueEnterDashboard() {
+  if (!activeUser || !activeUser.id || !activeUser.role) {
+    isUserAuthenticated = false;
+    activeUser = null;
+    if (typeof window !== "undefined") window.activeUser = null;
+    byId("appView")?.classList.add("d-none");
+    byId("loginView")?.classList.remove("d-none");
+    showLoginError(lang === "pt" ? "Sessão inválida: perfil de utilizador não encontrado no sistema. Inicie sessão novamente." : "Invalid session: user profile not found. Please sign in again.");
+    return;
+  }
   isUserAuthenticated = true;
+  if (typeof window !== "undefined") window.activeUser = activeUser;
   recordCellReportSecurityEvent("cell_report_login", `Authenticated login as ${activeUser?.role || "unknown role"}`);
   const resumeCellReport = pendingCellReportLogin;
   pendingCellReportLogin = false;
@@ -24537,6 +24547,9 @@ async function enterDashboard() {
       }
 
       if (!result || !result.ok) {
+        activeUser = null;
+        isUserAuthenticated = false;
+        if (typeof window !== "undefined") window.activeUser = null;
         const code = result?.code || "";
         let msg = result?.error || (lang === "en" ? "Could not sign in. Check your credentials." : "Não foi possível iniciar sessão. Verifique os seus dados de acesso.");
         if (code === "AUTH_NOT_CONFIGURED") {
@@ -24544,7 +24557,7 @@ async function enterDashboard() {
             lang === "en"
               ? "Real authentication is not configured. Check Supabase environment variables."
               : "Autenticação real não está configurada. Verifique as variáveis Supabase.";
-        } else if (code === "AUTH_NOT_PROVISIONED" || code === "AUTH_LOCKED" || code === "AUTH_ROLE_INACTIVE") {
+        } else if (code === "AUTH_NOT_PROVISIONED" || code === "AUTH_LOCKED" || code === "AUTH_ROLE_INACTIVE" || code === "AUTH_ROLE_NOT_FOUND" || code === "PROFILE_QUERY_ERROR" || code === "ROLE_QUERY_ERROR") {
           msg =
             result?.error ||
             (lang === "en"
@@ -24556,18 +24569,33 @@ async function enterDashboard() {
       }
 
       const mapped = mapAccountToDashboardUser(result.data);
-      if (mapped) {
-        activeUser = mapped;
-        const idx = state.users.findIndex((u) => u.id === mapped.id || String(u.email || "").toLowerCase() === email);
-        if (idx >= 0) state.users[idx] = { ...state.users[idx], ...mapped };
-        else state.users.unshift(mapped);
+      if (!mapped || !mapped.id || !mapped.role) {
+        activeUser = null;
+        isUserAuthenticated = false;
+        if (typeof window !== "undefined") window.activeUser = null;
+        showLoginError(
+          lang === "en"
+            ? "Failed to resolve internal profile. Access denied."
+            : "Falha na resolução do perfil de utilizador interno. Acesso negado."
+        );
+        return false;
       }
+
+      activeUser = mapped;
+      if (typeof window !== "undefined") window.activeUser = mapped;
+      const idx = state.users.findIndex((u) => u.id === mapped.id || String(u.email || "").toLowerCase() === email);
+      if (idx >= 0) state.users[idx] = { ...state.users[idx], ...mapped };
+      else state.users.unshift(mapped);
+
       continueEnterDashboard();
       runOptionalSupabaseLoginSync(email, password);
       return true;
     }
 
     // Fail-closed when auth repository is unavailable
+    activeUser = null;
+    isUserAuthenticated = false;
+    if (typeof window !== "undefined") window.activeUser = null;
     showLoginError(lang === "en" ? "Authentication service unavailable." : "Serviço de autenticação indisponível.");
     return false;
   } finally {
@@ -25224,22 +25252,35 @@ async function initRealAuthSession() {
     if (sbClient?.auth?.onAuthStateChange) {
       sbClient.auth.onAuthStateChange(async (event, session) => {
         if (event === "SIGNED_OUT") {
-          if (isUserAuthenticated) {
-            isUserAuthenticated = false;
-            activeUser = null;
-            byId("appView")?.classList.add("d-none");
-            byId("loginView")?.classList.remove("d-none");
-          }
+          isUserAuthenticated = false;
+          activeUser = null;
+          if (typeof window !== "undefined") window.activeUser = null;
+          byId("appView")?.classList.add("d-none");
+          byId("loginView")?.classList.remove("d-none");
         } else if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && session?.user) {
-          if (!isUserAuthenticated && auth.resolveUserAccountFromAuth) {
+          if (auth.resolveUserAccountFromAuth) {
             const res = await auth.resolveUserAccountFromAuth(session.user);
             if (res?.ok && res.data) {
               const mapped = mapAccountToDashboardUser(res.data);
-              if (mapped) {
+              if (mapped && mapped.id && mapped.role) {
                 activeUser = mapped;
+                if (typeof window !== "undefined") window.activeUser = mapped;
                 continueEnterDashboard();
+                return;
               }
             }
+            // Fail closed if profile resolution fails
+            isUserAuthenticated = false;
+            activeUser = null;
+            if (typeof window !== "undefined") window.activeUser = null;
+            byId("appView")?.classList.add("d-none");
+            byId("loginView")?.classList.remove("d-none");
+            showLoginError(
+              res?.error ||
+                (lang === "pt"
+                  ? "A sua conta não possui perfil activo no CE Operations Portal."
+                  : "Your account does not have active access.")
+            );
           }
         }
       });
@@ -25247,18 +25288,37 @@ async function initRealAuthSession() {
     const sessionRes = await auth.getCurrentSession?.();
     const rawSession = sessionRes?.data?.session || sessionRes?.data;
     const authUser = rawSession?.user || sessionRes?.data?.user;
-    if (authUser && !isUserAuthenticated && auth.resolveUserAccountFromAuth) {
+    if (authUser && auth.resolveUserAccountFromAuth) {
       const res = await auth.resolveUserAccountFromAuth(authUser);
       if (res?.ok && res.data) {
         const mapped = mapAccountToDashboardUser(res.data);
-        if (mapped) {
+        if (mapped && mapped.id && mapped.role) {
           activeUser = mapped;
+          if (typeof window !== "undefined") window.activeUser = mapped;
           continueEnterDashboard();
+          return;
         }
       }
+      // Fail closed if session restore fails to resolve user profile
+      isUserAuthenticated = false;
+      activeUser = null;
+      if (typeof window !== "undefined") window.activeUser = null;
+      byId("appView")?.classList.add("d-none");
+      byId("loginView")?.classList.remove("d-none");
+      showLoginError(
+        res?.error ||
+          (lang === "pt"
+            ? "A sua conta não possui perfil activo no CE Operations Portal."
+            : "Your account does not have active access.")
+      );
     }
   } catch (err) {
     console.warn("[CE Auth] Session restore error", err);
+    isUserAuthenticated = false;
+    activeUser = null;
+    if (typeof window !== "undefined") window.activeUser = null;
+    byId("appView")?.classList.add("d-none");
+    byId("loginView")?.classList.remove("d-none");
   }
 }
 

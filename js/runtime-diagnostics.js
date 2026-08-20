@@ -47,6 +47,11 @@
     const activeU = typeof window !== "undefined" ? (window.activeUser || null) : null;
     const membersDiag = typeof window !== "undefined" && window.CEMembers?.getInfo ? window.CEMembers.getInfo() : null;
 
+    const authUserId = authInfo?.authUserId || activeU?.auth_user_id || null;
+    const internalUserId = activeU?.id || authInfo?.appUserId || null;
+    const internalRole = activeU?.role || activeU?.role_name || authInfo?.role || null;
+    const internalStatus = activeU?.status || (internalUserId ? "Active" : null);
+
     return {
       environment: readEnv("VITE_APP_ENV") || (typeof location !== "undefined" && location.hostname.includes("github.io") ? "production" : "development"),
       dataSource: dataSource.toLowerCase(),
@@ -57,11 +62,11 @@
       buildVersion: BUILD_VERSION,
       buildTimestamp: BUILD_TIMESTAMP,
       authStatus: realAuthEnabled ? (supabaseConfigured ? "real_auth_ready" : "real_auth_missing_config") : "demo_mode",
-      authSessionPresent: Boolean(authInfo?.authenticated || activeU),
-      authUserId: authInfo?.authUserId || activeU?.auth_user_id || null,
-      internalUserPresent: Boolean(activeU?.id),
-      internalUserStatus: activeU?.status || (activeU ? "Active" : null),
-      role: activeU?.role || activeU?.role_name || null,
+      authSessionPresent: Boolean(authInfo?.authenticated || activeU || authUserId),
+      authUserId: authUserId,
+      internalUserPresent: Boolean(internalUserId),
+      internalUserStatus: internalStatus,
+      role: internalRole,
       fallbackUsed: Boolean(membersDiag?.fallbackUsed),
       membersRowsReturned: Number(membersDiag?.lastRowsReturned || 0),
     };

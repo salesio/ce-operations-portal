@@ -12,7 +12,9 @@ import {
   getRowById,
   isValidUuid,
   listRows,
+  mapSupabaseError,
   newClientUuid,
+  requireClient,
   updateRow,
 } from "./supabaseRepositoryBase";
 import type { SupabaseRow } from "./supabaseTypes";
@@ -222,10 +224,23 @@ export async function getPermissionsByRole(roleId: EntityId): Promise<DataResult
     const filtered = all.data.filter((p) => p.role_id === roleId || p.role_name === roleId);
     return ok(filtered);
   }
-  const r = await filterRows<SupabaseRow>(PERMISSIONS_TABLE, (q) => q.eq("role_id", roleId));
-  if (!r.ok) return fail(r.error, r.code);
-  const perms = (r.data || []).map(mapPermissionFromRow).filter((x): x is AccessPermission => x !== null);
-  return ok(perms);
+  const clientRes = requireClient();
+  if (!clientRes.ok) return clientRes as DataResult<AccessPermission[]>;
+  try {
+    const { data, error } = await clientRes.data
+      .from(PERMISSIONS_TABLE)
+      .select("*")
+      .eq("role_id", roleId);
+    if (error) {
+      const m = mapSupabaseError(error.message);
+      return fail(m.error, m.code);
+    }
+    const perms = ((data || []) as SupabaseRow[]).map(mapPermissionFromRow).filter((x): x is AccessPermission => x !== null);
+    return ok(perms);
+  } catch (e) {
+    const m = mapSupabaseError(e instanceof Error ? e.message : "getPermissionsByRole failed");
+    return fail(m.error, m.code);
+  }
 }
 
 export async function createPermission(perm: Partial<AccessPermission>): Promise<DataResult<AccessPermission>> {
