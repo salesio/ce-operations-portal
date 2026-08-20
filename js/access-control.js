@@ -615,10 +615,27 @@
     return "church";
   }
 
+  const CANONICAL_CHURCH_MAP = {
+    "church-hq": "a1111111-1111-4111-8111-111111111101",
+    "church-matola": "a1111111-1111-4111-8111-111111111102",
+    "church-khongolote": "a1111111-1111-4111-8111-111111111103",
+    "church-beira": "a1111111-1111-4111-8111-111111111104",
+    "church-nampula": "a1111111-1111-4111-8111-111111111105",
+    "church-choupal": "a1111111-1111-4111-8111-111111111106",
+    "church-virtual": "a1111111-1111-4111-8111-111111111107",
+    "a1111111-1111-4111-8111-111111111101": "a1111111-1111-4111-8111-111111111101",
+    "a1111111-1111-4111-8111-111111111102": "a1111111-1111-4111-8111-111111111102",
+    "a1111111-1111-4111-8111-111111111103": "a1111111-1111-4111-8111-111111111103",
+    "a1111111-1111-4111-8111-111111111104": "a1111111-1111-4111-8111-111111111104",
+    "a1111111-1111-4111-8111-111111111105": "a1111111-1111-4111-8111-111111111105",
+    "a1111111-1111-4111-8111-111111111106": "a1111111-1111-4111-8111-111111111106",
+    "a1111111-1111-4111-8111-111111111107": "a1111111-1111-4111-8111-111111111107",
+  };
+
   function recordMatchesScope(record, user, module = "dashboard") {
     const scope = getUserScope(user, module);
     if (!record || !user) return false;
-    if (["all", "national"].includes(scope)) return true;
+    if (["all", "national"].includes(scope) || user.can_view_all_churches || user.role === "Super Admin" || (user.department_permissions || []).includes("*")) return true;
     if (scope === "cell" || (["Cell Leader", "Cell Assistant", "Assistant Cell Leader"].includes(user.role) && (module === "members" || module === "cell"))) {
       const authorizedCells = new Set([
         ...(user.assigned_cells || []),
@@ -657,7 +674,12 @@
       const recordDeptName = String(record.department_name || record.departamento || record.department || record.departamento_responsavel || "").toLowerCase();
       return (recordDeptId && deptIds.has(recordDeptId)) || (recordDeptName && deptNames.has(recordDeptName));
     }
-    return !record.church_id || record.church_id === user.church_id || record.igreja_id === user.church_id || record.recipient_church_id === user.church_id;
+    const userChurch = user.church_id || user.churchId;
+    const canonUserChurch = CANONICAL_CHURCH_MAP[userChurch] || userChurch;
+    const recordChurch = record.church_id || record.igreja_id || record.recipient_church_id;
+    if (!recordChurch) return true;
+    const canonRecordChurch = CANONICAL_CHURCH_MAP[recordChurch] || recordChurch;
+    return recordChurch === userChurch || canonRecordChurch === canonUserChurch;
   }
 
   function filterDataByScope(data, user, module = "dashboard") {

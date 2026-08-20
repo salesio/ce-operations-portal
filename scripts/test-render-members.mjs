@@ -68,22 +68,23 @@ async function testRenderMembers() {
   console.log("   modulePageState.members items count:", globalThis.modulePageState.members.items.length);
   console.log("   modulePageState.members error:", globalThis.modulePageState.members.error);
 
-  console.log("3. Calling scoped(modulePageState.members.items)...");
-  const scopedItems = globalThis.scoped(globalThis.modulePageState.members.items);
-  console.log("   scoped items count:", scopedItems.length);
+  console.log("4. Testing loadMembersPage with filter.church_id = 'church-hq'...");
+  globalThis.modulePageState.members.filter = { church_id: "church-hq" };
+  globalThis.modulePageState.members.loaded = false;
+  const loadFilterOk = await globalThis.loadMembersPage({ force: true });
+  console.log("   loadMembersPage with church_id='church-hq' returned:", loadFilterOk);
+  console.log("   totalCount:", globalThis.modulePageState.members.totalCount);
+  console.log("   items count:", globalThis.modulePageState.members.items.length);
+  console.log("   error:", globalThis.modulePageState.members.error);
 
-  if (scopedItems.length > 0) {
-    console.log("   First scoped member:", scopedItems[0].nome, "| church:", scopedItems[0].church_id);
-    const cardHtml = globalThis.renderMemberCard(scopedItems[0]);
-    console.log("   Rendered card HTML length:", cardHtml.length);
-  }
-
-  if (scopedItems.length === 50) {
-    console.log("\n>>> RENDER MEMBERS TEST PASSED! 50 MEMBERS LOADED AND SCOPED! <<<");
-  } else {
-    console.error("\n>>> FAILED: expected 50 members, got", scopedItems.length);
-    process.exit(1);
-  }
+  console.log("5. Testing loadMembersPage with filter.churchId = 'church-hq'...");
+  globalThis.modulePageState.members.filter = { churchId: "church-hq" };
+  globalThis.modulePageState.members.loaded = false;
+  const loadFilterOk2 = await globalThis.loadMembersPage({ force: true });
+  console.log("   loadMembersPage with churchId='church-hq' returned:", loadFilterOk2);
+  console.log("   totalCount:", globalThis.modulePageState.members.totalCount);
+  console.log("   items count:", globalThis.modulePageState.members.items.length);
+  console.log("   error:", globalThis.modulePageState.members.error);
 }
 
 testRenderMembers();

@@ -96,6 +96,9 @@
     }
     if (module === "members") {
       store.filter = {};
+      store.page = 1;
+      store.loaded = false;
+      if (typeof window.loadMembersPage === "function") void window.loadMembersPage({ force: true });
       return;
     }
     if (module === "counseling") {
@@ -424,6 +427,9 @@
     const store = window.modulePageState?.members;
     if (!store) return;
     store.filter = { ...(payload.filterPayload || {}) };
+    store.page = 1;
+    store.loaded = false;
+    if (typeof window.loadMembersPage === "function") void window.loadMembersPage({ force: true });
     return true;
   }
 

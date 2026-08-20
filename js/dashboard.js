@@ -4866,8 +4866,33 @@ function logAccessDenied(route, module) {
   } catch (_) {}
 }
 
+const CANONICAL_CHURCH_MAP = {
+  "church-hq": "a1111111-1111-4111-8111-111111111101",
+  "church-matola": "a1111111-1111-4111-8111-111111111102",
+  "church-khongolote": "a1111111-1111-4111-8111-111111111103",
+  "church-beira": "a1111111-1111-4111-8111-111111111104",
+  "church-nampula": "a1111111-1111-4111-8111-111111111105",
+  "church-choupal": "a1111111-1111-4111-8111-111111111106",
+  "church-virtual": "a1111111-1111-4111-8111-111111111107",
+  "a1111111-1111-4111-8111-111111111101": "a1111111-1111-4111-8111-111111111101",
+  "a1111111-1111-4111-8111-111111111102": "a1111111-1111-4111-8111-111111111102",
+  "a1111111-1111-4111-8111-111111111103": "a1111111-1111-4111-8111-111111111103",
+  "a1111111-1111-4111-8111-111111111104": "a1111111-1111-4111-8111-111111111104",
+  "a1111111-1111-4111-8111-111111111105": "a1111111-1111-4111-8111-111111111105",
+  "a1111111-1111-4111-8111-111111111106": "a1111111-1111-4111-8111-111111111106",
+  "a1111111-1111-4111-8111-111111111107": "a1111111-1111-4111-8111-111111111107",
+};
+
 function scoped(records, module = "dashboard") {
   const list = Array.isArray(records) ? records : [];
+  if (!activeUser) return list;
+  const isSuperAdmin = activeUser.role === "Super Admin" ||
+    (activeUser.department_permissions || []).includes("*") ||
+    String(activeUser.role || "").toLowerCase() === "super_admin" ||
+    String(activeUser.role_name || "").toLowerCase() === "super admin";
+  if (isSuperAdmin || activeUser.can_view_all_churches || activeUser.scope === "all" || activeUser.scope === "national") {
+    return list;
+  }
   const pastoralRole = String(activeUser?.role || activeUser?.role_name || "")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -4892,8 +4917,13 @@ function scoped(records, module = "dashboard") {
   if (window.CEAccessControl?.filterDataByScope) {
     return window.CEAccessControl.filterDataByScope(list, activeUser, module);
   }
-  const ids = activeUser.can_view_all_churches ? state.churches.map((church) => church.id) : [activeUser.church_id];
-  return list.filter((record) => !record.church_id || ids.includes(record.church_id));
+  const userChurchId = activeUser.church_id || activeUser.churchId;
+  const canonicalUserChurchId = CANONICAL_CHURCH_MAP[userChurchId] || userChurchId;
+  return list.filter((record) => {
+    if (!record.church_id) return true;
+    const recordChurchId = CANONICAL_CHURCH_MAP[record.church_id] || record.church_id;
+    return recordChurchId === canonicalUserChurchId || record.church_id === userChurchId;
+  });
 }
 
 function cellGroupName(idOrName) {
@@ -9782,11 +9812,14 @@ function memberPageQuery() {
     }
   }
 
+  const rawChurchId = filters.church_id || filters.churchId || "";
+  const churchId = CANONICAL_CHURCH_MAP[rawChurchId] || rawChurchId;
+
   return {
     page: modulePageState.members.page || 1,
     pageSize: modulePageState.members.pageSize || 50,
     search: filters.search || "",
-    churchId: filters.church_id || "",
+    churchId,
     cellGroupId,
     cellGroupName,
     cellId,
@@ -11458,7 +11491,11 @@ function memberFilterOptions(list, type, selectedGroup = "") {
 function renderMembersFilterBar(list, filters = {}, view = "table") {
   const groupOptions = memberFilterOptions(list, "cellGroup");
   const cellOptions = memberFilterOptions(list, "cell", filters.cell_group || "");
-  const selected = (key, value) => String(filters[key] || "") === String(value) ? " selected" : "";
+  const selected = (key, value) => {
+    const filterVal = filters[key] || (key === "church_id" ? filters.churchId : "");
+    if (!filterVal) return "";
+    return String(filterVal) === String(value) || CANONICAL_CHURCH_MAP[filterVal] === String(value) || CANONICAL_CHURCH_MAP[value] === String(filterVal) ? " selected" : "";
+  };
   const seenChurchNames = new Set();
   const uniqueChurches = [];
   (state.churches || []).forEach((church) => {
@@ -11507,12 +11544,14 @@ function applyMemberCardFilters(list, filters = {}) {
       churchName(member.church_id), memberCellGroupLabel(member), memberCellLabel(member)
     ].some((value) => normalizedMemberFilterText(value).includes(search)));
   }
-  if (filters.church_id) {
-    const targetChurchId = String(filters.church_id);
-    const churchObj = (state.churches || []).find((c) => String(c.id) === targetChurchId || String(c.church_id) === targetChurchId);
+  if (filters.church_id || filters.churchId) {
+    const targetChurchId = String(filters.church_id || filters.churchId);
+    const canonicalTarget = CANONICAL_CHURCH_MAP[targetChurchId] || targetChurchId;
+    const churchObj = (state.churches || []).find((c) => String(c.id) === targetChurchId || String(c.church_id) === targetChurchId || CANONICAL_CHURCH_MAP[c.id] === canonicalTarget);
     const targetChurchName = churchObj?.church_name || churchObj?.public_name || targetChurchId;
     rows = rows.filter((member) => {
-      if (String(member.church_id || member.churchId || "") === targetChurchId) return true;
+      const memberChurchId = member.church_id || member.churchId || "";
+      if (memberChurchId === targetChurchId || CANONICAL_CHURCH_MAP[memberChurchId] === canonicalTarget) return true;
       if (targetChurchName && normalizedMemberFilterText(member.church_name || member.igreja).includes(normalizedMemberFilterText(targetChurchName))) return true;
       return false;
     });
@@ -11780,7 +11819,7 @@ function renderMembers() {
       ${sm("bi-check-circle", L("active"), activeDisplay, "members", { scrollTo: "members-results", filterPayload: { status: "active" } })}
       ${sm("bi-hourglass", L("inProgress"), "—", "members", { scrollTo: "members-results", filterPayload: { status: "inProgress" } })}
       ${sm("bi-arrow-left-right", L("transferred"), "—", "members", { scrollTo: "members-results", filterPayload: { status: "transferred" } })}
-      ${sm("bi-building", L("membersByChurch"), churchDisplay, "members", { scrollTo: "members-results", filterPayload: { hasChurch: true } })}
+      ${sm("bi-building", L("membersByChurch"), churchDisplay, "members", { scrollTo: "members-results", filterPayload: {} })}
       ${canReviewMemberCandidates() ? sm("bi-person-exclamation", "Pedidos por aprovar", reviewQueue.length, "members", { scrollTo: "member-candidate-queue" }) : ""}
     </div>
     ${summaryFilterChips("members")}
