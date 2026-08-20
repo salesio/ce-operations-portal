@@ -9690,7 +9690,7 @@ function setRoute(route) {
     }
   }
   history.replaceState(null, "", `#${activeRoute}`);
-  document.querySelector(".ops-sidebar").classList.remove("is-open");
+  document.querySelector(".ops-sidebar")?.classList.remove("is-open");
   const contentEl = byId("content");
   if (contentEl) {
     const stayInModuleTabs = isModuleTabRoute(prevRoute) && isModuleTabRoute(activeRoute) &&
@@ -9828,6 +9828,10 @@ async function loadMembersPage({ force = false } = {}) {
     if (requestId === pageState.requestId) { pageState.loading = false; if (activeRoute === "members") renderMembers(); }
   }
 }
+window.loadMembersPage = loadMembersPage;
+window.renderMembers = renderMembers;
+window.scoped = scoped;
+window.renderMemberCard = renderMemberCard;
 
 function setPageContent(html) {
   const el = byId("content");
