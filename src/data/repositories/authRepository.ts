@@ -155,8 +155,9 @@ async function attachPermissions(user: User): Promise<AuthAccount> {
   if (account.role_id) {
     const roleRes = await getRoleById(account.role_id);
     if (roleRes.ok && roleRes.data) {
-      account.role = roleRes.data.name || roleRes.data.display_name || account.role;
-      account.role_name = roleRes.data.display_name || roleRes.data.name || account.role_name;
+      const displayName = roleRes.data.display_name || roleRes.data.name || account.role_name || account.role || "";
+      account.role = displayName;
+      account.role_name = displayName;
       account.role_level = Number(roleRes.data.level) || 10;
       account.default_scope = roleRes.data.default_scope || "own";
     }
@@ -165,6 +166,54 @@ async function attachPermissions(user: User): Promise<AuthAccount> {
       account.permissions = perms.data as AccessPermission[];
     }
   }
+
+  // Canonical role normalization (slug -> display name)
+  const rNorm = String(account.role || "").trim().toLowerCase();
+  if (rNorm === "super_admin" || rNorm === "super admin") {
+    account.role = "Super Admin";
+    account.role_name = "Super Admin";
+    account.can_view_all_churches = true;
+    account.department_permissions = ["*"];
+    account.default_scope = "all";
+  } else if (rNorm === "main_pastor" || rNorm === "main pastor") {
+    account.role = "Main Pastor";
+    account.role_name = "Main Pastor";
+    account.can_view_all_churches = true;
+    account.default_scope = "all";
+  } else if (rNorm === "national_admin" || rNorm === "national admin") {
+    account.role = "National Admin";
+    account.role_name = "National Admin";
+    account.can_view_all_churches = true;
+    account.default_scope = "all";
+  } else if (rNorm === "church_admin" || rNorm === "church admin") {
+    account.role = "Church Admin";
+    account.role_name = "Church Admin";
+  } else if (rNorm === "church_pastor" || rNorm === "church pastor") {
+    account.role = "Church Pastor";
+    account.role_name = "Church Pastor";
+  } else if (rNorm === "finance_head" || rNorm === "finance head") {
+    account.role = "Finance Head";
+    account.role_name = "Finance Head";
+  } else if (rNorm === "finance_officer" || rNorm === "finance officer") {
+    account.role = "Finance Officer";
+    account.role_name = "Finance Officer";
+  } else if (rNorm === "hr_manager" || rNorm === "hr manager") {
+    account.role = "HR Manager";
+    account.role_name = "HR Manager";
+  } else if (rNorm === "staff_member" || rNorm === "staff member") {
+    account.role = "Staff Member";
+    account.role_name = "Staff Member";
+  } else if (rNorm === "cell_leader" || rNorm === "cell leader") {
+    account.role = "Cell Leader";
+    account.role_name = "Cell Leader";
+  } else if (rNorm === "cell_group_leader" || rNorm === "cell group leader") {
+    account.role = "Cell Group Leader";
+    account.role_name = "Cell Group Leader";
+  } else if (rNorm === "assistant_cell_leader" || rNorm === "assistant cell leader") {
+    account.role = "Assistant Cell Leader";
+    account.role_name = "Assistant Cell Leader";
+  }
+
   try {
     const cellIds = await getAuthorizedCellsForUserId(account.id);
     if (cellIds.length) {

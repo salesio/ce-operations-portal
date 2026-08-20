@@ -523,7 +523,8 @@
       return { module, ...VIEW_ONLY, scope: user.can_view_all_churches ? "all" : user.assigned_department ? "department" : "church" };
     }
 
-    if ((user.department_permissions || []).includes("*") || user.role === "Super Admin") {
+    const rNorm = String(user.role || "").trim().toLowerCase();
+    if ((user.department_permissions || []).includes("*") || user.role === "Super Admin" || rNorm === "super_admin" || rNorm === "super admin") {
       return { module, ...FULL_ACCESS, can_view_salary: true, can_review: true, can_forward: true, can_register_inventory: true };
     }
 

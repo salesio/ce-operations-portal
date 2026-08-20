@@ -9201,8 +9201,9 @@ function fallbackRouteModule(route = "dashboard") {
 
 function fallbackCanViewModule(user = activeUser, module = "dashboard") {
   const role = user.role || "";
+  const rNorm = String(role).trim().toLowerCase();
   const grants = user.department_permissions || [];
-  if (grants.includes("*") || role === "Super Admin") return true;
+  if (grants.includes("*") || role === "Super Admin" || rNorm === "super_admin" || rNorm === "super admin") return true;
   if (module === "dashboard") return true;
   if (role === "Main Pastor") return !["accessControl"].includes(module);
   if (role === "Church Pastor") return !["usersRoles", "accessControl", "auditLogs"].includes(module);
@@ -22726,14 +22727,47 @@ function mapAccountToDashboardUser(account) {
   const fromState =
     state.users.find((u) => String(u.email || "").trim().toLowerCase() === email) ||
     state.users.find((u) => u.id === account.id);
+
+  let rawRole = account.role_name || account.role || fromState?.role_name || fromState?.role || "";
+  let role = rawRole;
+  const rLow = String(rawRole).trim().toLowerCase();
+  if (rLow === "super_admin" || rLow === "super admin") {
+    role = "Super Admin";
+  } else if (rLow === "main_pastor" || rLow === "main pastor") {
+    role = "Main Pastor";
+  } else if (rLow === "national_admin" || rLow === "national admin") {
+    role = "National Admin";
+  } else if (rLow === "church_admin" || rLow === "church admin") {
+    role = "Church Admin";
+  } else if (rLow === "church_pastor" || rLow === "church pastor") {
+    role = "Church Pastor";
+  } else if (rLow === "finance_head" || rLow === "finance head") {
+    role = "Finance Head";
+  } else if (rLow === "finance_officer" || rLow === "finance officer") {
+    role = "Finance Officer";
+  } else if (rLow === "hr_manager" || rLow === "hr manager") {
+    role = "HR Manager";
+  } else if (rLow === "staff_member" || rLow === "staff member") {
+    role = "Staff Member";
+  } else if (rLow === "cell_leader" || rLow === "cell leader") {
+    role = "Cell Leader";
+  } else if (rLow === "cell_group_leader" || rLow === "cell group leader") {
+    role = "Cell Group Leader";
+  } else if (rLow === "assistant_cell_leader" || rLow === "assistant cell leader") {
+    role = "Assistant Cell Leader";
+  }
+
+  const isSuperAdmin = role === "Super Admin";
+  const isNational = isSuperAdmin || role === "Main Pastor" || role === "National Admin";
+
   return {
     ...(fromState || {}),
     ...account,
     id: account.id || fromState?.id,
     email: account.email || fromState?.email,
     name: account.name || account.full_name || account.fullName || fromState?.name,
-    role: account.role || account.role_name || fromState?.role,
-    role_name: account.role_name || account.role || fromState?.role_name,
+    role: role,
+    role_name: role,
     role_id: account.role_id || fromState?.role_id,
     church_id: account.church_id || account.churchId || fromState?.church_id,
     churchId: account.churchId || account.church_id || fromState?.churchId,
@@ -22742,8 +22776,8 @@ function mapAccountToDashboardUser(account) {
     assigned_cells: account.assigned_cells || fromState?.assigned_cells || [],
     assigned_cell_groups: account.assigned_cell_groups || fromState?.assigned_cell_groups || [],
     department_id: account.department_id || fromState?.department_id,
-    department_permissions: account.department_permissions || fromState?.department_permissions || [],
-    can_view_all_churches: account.can_view_all_churches ?? fromState?.can_view_all_churches,
+    department_permissions: isSuperAdmin ? ["*"] : (account.department_permissions || fromState?.department_permissions || []),
+    can_view_all_churches: isNational ? true : (account.can_view_all_churches ?? fromState?.can_view_all_churches),
     staff_id: account.staff_id || fromState?.staff_id,
     auth_user_id: account.auth_user_id || null,
     permissions: account.permissions || fromState?.permissions || [],
