@@ -351,3 +351,21 @@ const StatusBadgeComponent = StatusBadge;
 const ActionButtonComponent = ActionButton;
 const FormSectionComponent = FormSection;
 const EmptyStateComponent = EmptyState;
+
+if (typeof window !== "undefined") {
+  window.PageShell = PageShell;
+  window.ModuleHeroCard = ModuleHeroCard;
+  window.SummaryCard = SummaryCard;
+  window.TabButton = TabButton;
+  window.ModuleTabs = ModuleTabs;
+  window.FilterToolbar = FilterToolbar;
+  window.DataCard = DataCard;
+  window.DataCardsGrid = DataCardsGrid;
+  window.DataTable = DataTable;
+  window.StatusBadge = StatusBadge;
+  window.ActionButton = ActionButton;
+  window.FormSection = FormSection;
+  window.EmptyState = EmptyState;
+  window.ViewToggle = ViewToggle;
+  window.FollowUpCard = FollowUpCard;
+}

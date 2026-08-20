@@ -11750,11 +11750,11 @@ async function candidateAction(action, id) {
 function renderMembers() {
   const pageState = modulePageState.members;
   // A stale provider response must never paint more than the requested page.
-  const list = scoped(pageState.items || []).slice(0, pageState.pageSize || 50);
+  const list = scoped(pageState.items || [], "members").slice(0, pageState.pageSize || 50);
   const view = modulePageState.members.view;
   const filtered = list;
   const churchesCount = new Set(list.map((m) => m.church_id).filter(Boolean)).size;
-  const candidates = (state.memberRegistrationCandidates || []).filter((item) => canReviewMemberCandidates() || scoped([item]).length);
+  const candidates = (state.memberRegistrationCandidates || []).filter((item) => canReviewMemberCandidates() || scoped([item], "members").length);
   const reviewQueue = candidates.filter((item) => ["Submitted", "UnderReview"].includes(item.approval_status));
   const candidateTab = modulePageState.members.candidateTab || "pending";
   const candidateTabs = [
@@ -11770,34 +11770,39 @@ function renderMembers() {
     fullName(m), m.telefone || m.primary_phone || "—", churchName(m.church_id), memberCellGroupLabel(m) || "—", memberCellLabel(m) || "—", m.departamento, badge(m.estado), memberActions(m.id)
   ]);
   const rowAttrs = filtered.map((m) => ` data-filter-row data-filter-church-values="${churchFilterTokens(m)}" data-filter-status-values="${statusKey(m.estado)} ${m.estado || ""}"`);
+  const totalDisplay = pageState.loaded ? pageState.totalCount : (pageState.loading ? "…" : (pageState.totalCount || 0));
+  const activeDisplay = pageState.loaded ? pageState.totalCount : "—";
+  const churchDisplay = pageState.loaded ? (churchesCount || state.churches?.length || "—") : "—";
   setPageContent(`
     ${sectionHeader(L("members"), L("membersSubtitle"), "member", "bi-people", { actions: `<button type="button" class="btn btn-outline-cyan btn-touch" data-hq-members-dry-run><i class="bi bi-file-earmark-spreadsheet me-2"></i>${lang === "pt" ? "Pré-visualizar importação histórica" : "Preview legacy import"}</button><input id="hq-members-import-file" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>` })}
     <div class="row g-3 mb-4 summary-cards-row">
-      ${sm("bi-people", L("total"), pageState.totalCount || 0, "members", { scrollTo: "members-results", filterPayload: {} })}
-      ${sm("bi-check-circle", L("active"), "—", "members", { scrollTo: "members-results", filterPayload: { status: "active" } })}
+      ${sm("bi-people", L("total"), totalDisplay, "members", { scrollTo: "members-results", filterPayload: {} })}
+      ${sm("bi-check-circle", L("active"), activeDisplay, "members", { scrollTo: "members-results", filterPayload: { status: "active" } })}
       ${sm("bi-hourglass", L("inProgress"), "—", "members", { scrollTo: "members-results", filterPayload: { status: "inProgress" } })}
       ${sm("bi-arrow-left-right", L("transferred"), "—", "members", { scrollTo: "members-results", filterPayload: { status: "transferred" } })}
-      ${sm("bi-building", L("membersByChurch"), churchesCount || "—", "members", { scrollTo: "members-results", filterPayload: { hasChurch: true } })}
+      ${sm("bi-building", L("membersByChurch"), churchDisplay, "members", { scrollTo: "members-results", filterPayload: { hasChurch: true } })}
       ${canReviewMemberCandidates() ? sm("bi-person-exclamation", "Pedidos por aprovar", reviewQueue.length, "members", { scrollTo: "member-candidate-queue" }) : ""}
     </div>
     ${summaryFilterChips("members")}
-    ${canReviewMemberCandidates() ? `<article id="member-candidate-queue" class="panel glass-panel mb-4"><div class="d-flex justify-content-between align-items-center mb-3"><div><h3 class="h5 mb-1">Pedidos de Adesão</h3><p class="mb-0 text-secondary">Rascunhos ficam separados: apenas pedidos submetidos entram na fila de aprovação.</p></div><span class="badge text-bg-warning">${reviewQueue.length} em fila</span></div><div class="d-flex flex-wrap gap-2 mb-3">${candidateTabs.map(([key,label,statuses]) => `<button type="button" class="action-btn ${candidateTab === key ? "active" : ""}" data-member-candidate-tab="${key}">${label} <span class="badge text-bg-secondary">${candidates.filter((item) => statuses.includes(item.approval_status)).length}</span></button>`).join("")}</div>${dataTable(["Candidato", "Igreja / célula", "Registado por", "Telefone", "Duplicado", "Estado", "Acções"], candidateRows.map((c) => [candidateFullName(c), `${c.church_name || "—"}<br><small>${c.cell_name || "—"}</small>`, c.registered_by_name || "—", c.primary_phone || "Não informado", c.duplicate_confidence || "—", badge(candidateStatusLabel(c.approval_status)), candidateAdminActions(c)]))}</article>` : ""}
-    <article class="panel glass-panel">
+    <article class="panel glass-panel mb-4">
       ${renderMembersFilterBar(list, modulePageState.members.filter || {}, view)}
       <div id="members-results">
         ${pageState.loading
-          ? `<div class="p-4 text-secondary">${lang === "pt" ? "A carregar página de membros…" : "Loading member page…"}</div>`
+          ? `<div class="p-5 text-center text-secondary"><div class="spinner-border text-warning mb-2" role="status"></div><div>${lang === "pt" ? "A carregar membros do Supabase…" : "Loading members from Supabase…"}</div></div>`
           : pageState.error
             ? `<div class="alert alert-warning m-3 d-flex justify-content-between align-items-center">
                 <div><i class="bi bi-exclamation-triangle me-2"></i>${escapeAttr(pageState.error)}</div>
                 <button type="button" class="btn btn-sm btn-outline-dark" data-member-filter-apply>${lang === "pt" ? "Tentar novamente" : "Retry"}</button>
                </div>`
-            : view === "cards"
-              ? DataCardsGrid(filtered.map((m) => renderMemberCard(m)).join(""))
-              : dataTable([L("name"), L("phone"), L("church"), "Grupo de Célula", L("cell"), L("department"), L("status"), L("actions")], tableRows, { rowAttrs })}
+            : filtered.length === 0
+              ? (typeof EmptyState === "function" ? EmptyState({ icon: "bi-people", title: lang === "pt" ? "Nenhum membro encontrado" : "No members found", subtitle: lang === "pt" ? "Verifique os filtros aplicados ou efectue uma nova pesquisa." : "Check applied filters or try another search." }) : `<div class="p-4 text-center text-secondary">${lang === "pt" ? "Nenhum membro encontrado." : "No members found."}</div>`)
+              : view === "cards"
+                ? DataCardsGrid(filtered.map((m) => renderMemberCard(m)).join(""))
+                : dataTable([L("name"), L("phone"), L("church"), "Grupo de Célula", L("cell"), L("department"), L("status"), L("actions")], tableRows, { rowAttrs })}
       </div>
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-3 pt-3 border-top" data-members-pagination><span class="text-secondary small">${pageState.loaded ? `${pageState.totalCount} ${lang === "pt" ? "membros" : "members"} · ${lang === "pt" ? "Página" : "Page"} ${pageState.page} / ${pageState.totalPages}` : ""}</span><div class="d-flex align-items-center gap-2"><select class="form-select form-select-sm" data-members-page-size aria-label="Members per page">${[25,50,100].map((size) => `<option value="${size}"${pageState.pageSize === size ? " selected" : ""}>${size}</option>`).join("")}</select><button class="action-btn" data-members-page="prev" ${pageState.page <= 1 || pageState.loading ? "disabled" : ""}>${lang === "pt" ? "Anterior" : "Previous"}</button><button class="action-btn" data-members-page="next" ${pageState.page >= pageState.totalPages || pageState.loading ? "disabled" : ""}>${lang === "pt" ? "Próximo" : "Next"}</button></div></div>
     </article>
-    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-3" data-members-pagination><span class="text-secondary small">${pageState.loaded ? `${pageState.totalCount} ${lang === "pt" ? "membros" : "members"} · ${lang === "pt" ? "Página" : "Page"} ${pageState.page} / ${pageState.totalPages}` : ""}</span><div class="d-flex align-items-center gap-2"><select class="form-select form-select-sm" data-members-page-size aria-label="Members per page">${[25,50,100].map((size) => `<option value="${size}"${pageState.pageSize === size ? " selected" : ""}>${size}</option>`).join("")}</select><button class="action-btn" data-members-page="prev" ${pageState.page <= 1 || pageState.loading ? "disabled" : ""}>${lang === "pt" ? "Anterior" : "Previous"}</button><button class="action-btn" data-members-page="next" ${pageState.page >= pageState.totalPages || pageState.loading ? "disabled" : ""}>${lang === "pt" ? "Próximo" : "Next"}</button></div></div>
+    ${canReviewMemberCandidates() ? `<article id="member-candidate-queue" class="panel glass-panel mb-4"><div class="d-flex justify-content-between align-items-center mb-3"><div><h3 class="h5 mb-1">Pedidos de Adesão</h3><p class="mb-0 text-secondary">Rascunhos ficam separados: apenas pedidos submetidos entram na fila de aprovação.</p></div><span class="badge text-bg-warning">${reviewQueue.length} em fila</span></div><div class="d-flex flex-wrap gap-2 mb-3">${candidateTabs.map(([key,label,statuses]) => `<button type="button" class="action-btn ${candidateTab === key ? "active" : ""}" data-member-candidate-tab="${key}">${label} <span class="badge text-bg-secondary">${candidates.filter((item) => statuses.includes(item.approval_status)).length}</span></button>`).join("")}</div>${candidateRows.length ? dataTable(["Candidato", "Igreja / célula", "Registado por", "Telefone", "Duplicado", "Estado", "Acções"], candidateRows.map((c) => [candidateFullName(c), `${c.church_name || "—"}<br><small>${c.cell_name || "—"}</small>`, c.registered_by_name || "—", c.primary_phone || "Não informado", c.duplicate_confidence || "—", badge(candidateStatusLabel(c.approval_status)), candidateAdminActions(c)])) : `<div class="p-3 text-center text-secondary small">${lang === "pt" ? "Não há pedidos de adesão nesta categoria." : "No membership requests in this category."}</div>`}</article>` : ""}
     ${renderHqMembersDryRunPreview()}
   `);
   if (!pageState.loaded && !pageState.loading && !pageState.error) void loadMembersPage();
