@@ -18,7 +18,7 @@ jobs:
     env:
       CE_SUPABASE_URL: ${{ secrets.CE_SUPABASE_URL || secrets.VITE_SUPABASE_URL || 'https://kmurqbgpybrolrrumiue.supabase.co' }}
       CE_SUPABASE_ANON_KEY: ${{ secrets.CE_SUPABASE_ANON_KEY || secrets.VITE_SUPABASE_ANON_KEY || 'sb_publishable_SWyV8DiSlWMQFXt9Nh477A_SHeVUlli' }}
-      CE_ENABLE_REAL_AUTH: ${{ secrets.CE_ENABLE_REAL_AUTH || vars.VITE_ENABLE_REAL_AUTH || 'false' }}
+      CE_ENABLE_REAL_AUTH: ${{ secrets.CE_ENABLE_REAL_AUTH || vars.VITE_ENABLE_REAL_AUTH || 'true' }}
     steps:
       - name: Checkout main
         uses: actions/checkout@v4
@@ -40,7 +40,7 @@ jobs:
           echo "VITE_SUPABASE_URL=${CE_SUPABASE_URL}" >> "$GITHUB_ENV"
           echo "VITE_SUPABASE_ANON_KEY=${CE_SUPABASE_ANON_KEY}" >> "$GITHUB_ENV"
           echo "VITE_ENABLE_STORAGE=false" >> "$GITHUB_ENV"
-          echo "VITE_ENABLE_REAL_AUTH=${CE_ENABLE_REAL_AUTH:-false}" >> "$GITHUB_ENV"
+          echo "VITE_ENABLE_REAL_AUTH=${CE_ENABLE_REAL_AUTH:-true}" >> "$GITHUB_ENV"
           echo "VITE_EMBED_PUBLIC_SUPABASE_CONFIG=true" >> "$GITHUB_ENV"
 
       - name: Build public client bundle

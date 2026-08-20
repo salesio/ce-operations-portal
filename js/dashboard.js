@@ -21710,7 +21710,12 @@ document.addEventListener("click", async (event) => {
   }
   const logoutButton = event.target.closest("#logoutBtn");
   if (logoutButton) {
+    const auth = resolveAuthApi();
+    if (auth && typeof auth.logout === "function") {
+      void auth.logout();
+    }
     isUserAuthenticated = false;
+    activeUser = null;
     stopDashboardAutoRefresh();
     pendingCellReportLogin = false;
     byId("appView")?.classList.add("d-none");
@@ -24411,7 +24416,17 @@ async function enterDashboard() {
   const password = byId("loginPassword")?.value || "";
   const auth = resolveAuthApi();
   const submitBtn = document.querySelector("[data-login-enter]");
+  const spinner = byId("loginSpinner");
+  const btnText = byId("loginBtnText");
+
+  if (!email || !password) {
+    showLoginError(lang === "en" ? "Please enter your email and password." : "Por favor, introduza o seu email e senha.");
+    return false;
+  }
+
   if (submitBtn) submitBtn.disabled = true;
+  if (spinner) spinner.classList.remove("d-none");
+  if (btnText) btnText.textContent = lang === "en" ? "Signing in..." : "A iniciar sessão...";
 
   try {
     if (auth && typeof auth.login === "function") {
@@ -24422,7 +24437,7 @@ async function enterDashboard() {
           new Promise((resolve) =>
             setTimeout(
               () => resolve({ ok: false, error: "Login timeout", code: "AUTH_TIMEOUT" }),
-              12000,
+              15000,
             ),
           ),
         ]);
@@ -24436,35 +24451,18 @@ async function enterDashboard() {
 
       if (!result || !result.ok) {
         const code = result?.code || "";
-        let msg = result?.error || "Login failed";
+        let msg = result?.error || (lang === "en" ? "Could not sign in. Check your credentials." : "Não foi possível iniciar sessão. Verifique os seus dados de acesso.");
         if (code === "AUTH_NOT_CONFIGURED") {
           msg =
             lang === "en"
               ? "Real authentication is not configured. Check Supabase environment variables."
               : "Autenticação real não está configurada. Verifique as variáveis Supabase.";
-        } else if (code === "AUTH_NOT_PROVISIONED") {
+        } else if (code === "AUTH_NOT_PROVISIONED" || code === "AUTH_LOCKED" || code === "AUTH_ROLE_INACTIVE") {
           msg =
-            lang === "en"
-              ? "User account not provisioned. Ask an admin to link your Auth user."
-              : "Conta de utilizador não provisionada. Peça a um admin para ligar o utilizador Auth.";
-        } else if (code === "AUTH_DEMO_BAD_PASSWORD") {
-          msg =
-            lang === "en"
-              ? "Incorrect demo password. Use: demo"
-              : "Senha demo incorrecta. Use: demo";
-        }
-        // Only recover from an unavailable legacy adapter. Invalid demo credentials
-        // must never be converted into an authenticated session.
-        const wantReal = !!(auth.isRealAuthEnabled && auth.isRealAuthEnabled());
-        if (!wantReal && ["AUTH_ERROR", "AUTH_TIMEOUT"].includes(code)) {
-          const matchedUser = state.users.find(
-            (user) => String(user.email || "").trim().toLowerCase() === email,
-          );
-          if (matchedUser) {
-            activeUser = matchedUser;
-            continueEnterDashboard();
-            return true;
-          }
+            result?.error ||
+            (lang === "en"
+              ? "Your account does not have active access to the CE Operations Portal. Contact the Administrator."
+              : "A sua conta ainda não possui acesso activo ao CE Operations Portal. Contacte o Administrador.");
         }
         showLoginError(msg);
         return false;
@@ -24482,24 +24480,13 @@ async function enterDashboard() {
       return true;
     }
 
-    // Legacy fallback (bundle without auth pilot)
-    const matchedUser = state.users.find(
-      (user) => String(user.email || "").trim().toLowerCase() === email,
-    );
-    if (!matchedUser) {
-      showLoginError(lang === "en" ? "Demo user not found." : "Utilizador demo não encontrado.");
-      return false;
-    }
-    if (password.trim() !== "demo") {
-      showLoginError(lang === "en" ? "Incorrect demo password. Use: demo" : "Senha demo incorrecta. Use: demo");
-      return false;
-    }
-    activeUser = matchedUser;
-    continueEnterDashboard();
-    runOptionalSupabaseLoginSync(email, password);
-    return true;
+    // Fail-closed when auth repository is unavailable
+    showLoginError(lang === "en" ? "Authentication service unavailable." : "Serviço de autenticação indisponível.");
+    return false;
   } finally {
     if (submitBtn) submitBtn.disabled = false;
+    if (spinner) spinner.classList.add("d-none");
+    if (btnText) btnText.textContent = lang === "en" ? "Sign In" : "Iniciar Sessão";
   }
 }
 
@@ -24508,7 +24495,6 @@ window.enterDashboard = enterDashboard;
 function runOptionalSupabaseLoginSync(email, password) {
   (async () => {
     try {
-      // Only legacy finance bridge when real auth pilot is NOT driving login
       const auth = resolveAuthApi();
       const real = !!(auth?.isRealAuthEnabled && auth.isRealAuthEnabled());
       if (!real && window.CESupabaseBridge?.trySupabaseLogin) {
@@ -24530,6 +24516,25 @@ function runOptionalSupabaseLoginSync(email, password) {
 byId("loginForm")?.addEventListener("submit", (event) => {
   event.preventDefault();
   void enterDashboard();
+});
+
+byId("togglePasswordBtn")?.addEventListener("click", () => {
+  const input = byId("loginPassword");
+  const icon = byId("togglePasswordIcon");
+  if (!input) return;
+  if (input.type === "password") {
+    input.type = "text";
+    if (icon) {
+      icon.classList.remove("bi-eye");
+      icon.classList.add("bi-eye-slash");
+    }
+  } else {
+    input.type = "password";
+    if (icon) {
+      icon.classList.remove("bi-eye-slash");
+      icon.classList.add("bi-eye");
+    }
+  }
 });
 
 byId("loginForgotPassword")?.addEventListener("click", async () => {
@@ -25135,7 +25140,8 @@ async function initRealAuthSession() {
           if (isUserAuthenticated) {
             isUserAuthenticated = false;
             activeUser = null;
-            showLoginView();
+            byId("appView")?.classList.add("d-none");
+            byId("loginView")?.classList.remove("d-none");
           }
         } else if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && session?.user) {
           if (!isUserAuthenticated && auth.resolveUserAccountFromAuth) {
@@ -25152,8 +25158,10 @@ async function initRealAuthSession() {
       });
     }
     const sessionRes = await auth.getCurrentSession?.();
-    if (sessionRes?.ok && sessionRes.data?.user && !isUserAuthenticated) {
-      const res = await auth.resolveUserAccountFromAuth(sessionRes.data.user);
+    const rawSession = sessionRes?.data?.session || sessionRes?.data;
+    const authUser = rawSession?.user || sessionRes?.data?.user;
+    if (authUser && !isUserAuthenticated && auth.resolveUserAccountFromAuth) {
+      const res = await auth.resolveUserAccountFromAuth(authUser);
       if (res?.ok && res.data) {
         const mapped = mapAccountToDashboardUser(res.data);
         if (mapped) {

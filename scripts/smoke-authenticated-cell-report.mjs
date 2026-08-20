@@ -34,8 +34,9 @@ check("authorized cells helper", /function getAuthorizedCellsForUser\(userId\)/.
 check("leader and assistant assignments", /primary_leader_user_id/.test(cells) && /assistant_leader_user_ids/.test(cells) && /role_type/.test(leaders));
 check("demo users", ["cell.leader@ce-mozambique.org", "cell.assistant@ce-mozambique.org", "cell.reviewer@ce-mozambique.org"].every((email) => users.includes(email) && dashboard.includes(email)));
 check("demo password is visible", /Password:[\s\S]{0,80}<strong>demo<\/strong>/.test(dashboard));
-check("bad demo password stays rejected", /AUTH_DEMO_BAD_PASSWORD/.test(dashboard) && /Invalid demo credentials/.test(dashboard) && /\["AUTH_ERROR", "AUTH_TIMEOUT"\]/.test(dashboard));
-check("legacy adapter also validates demo password", /if \(password\.trim\(\) !== "demo"\)/.test(dashboard) && /Incorrect demo password\. Use: demo/.test(dashboard));
+const authRepo = read("src/data/repositories/authRepository.ts");
+check("bad demo password stays rejected", /AUTH_DEMO_BAD_PASSWORD/.test(authRepo) && /AUTH_DEMO_DISABLED/.test(authRepo));
+check("legacy adapter also validates demo password", /passwordOrHint !== hint && passwordOrHint !== "demo"|pass !== hint && pass !== "demo"/.test(authRepo));
 check("roles seeded", ["role-cell-leader", "role-cell-assistant", "role-cell-reviewer"].every((id) => roles.includes(id)));
 check("access templates seeded", ["Cell Leader", "Cell Assistant", "Cell Ministry Reviewer"].every((role) => access.includes(`\"${role}\"`)));
 check("form limits cell choices", /authorizedCells/.test(dashboard) && /authorizedGroupIds/.test(dashboard));

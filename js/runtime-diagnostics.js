@@ -22,11 +22,12 @@
   }
 
   function getRuntimeInfo() {
-    const url = readEnv("VITE_SUPABASE_URL");
-    const anonKey = readEnv("VITE_SUPABASE_ANON_KEY");
-    const dataSource = readEnv("VITE_DATA_SOURCE") || "mock";
-    const supabaseEnabled = flagTrue("VITE_ENABLE_SUPABASE");
-    const realAuthEnabled = flagTrue("VITE_ENABLE_REAL_AUTH");
+    const url = readEnv("VITE_SUPABASE_URL") || "https://kmurqbgpybrolrrumiue.supabase.co";
+    const anonKey = readEnv("VITE_SUPABASE_ANON_KEY") || "sb_publishable_SWyV8DiSlWMQFXt9Nh477A_SHeVUlli";
+    const dataSource = readEnv("VITE_DATA_SOURCE") || "supabase";
+    const supabaseEnabled = flagTrue("VITE_ENABLE_SUPABASE") || dataSource === "supabase";
+    const rawRealAuth = readEnv("VITE_ENABLE_REAL_AUTH");
+    const realAuthEnabled = rawRealAuth !== "" ? flagTrue("VITE_ENABLE_REAL_AUTH") : supabaseEnabled;
     const isUrlValid = /^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/i.test(url);
     const isKeyValid = anonKey.length > 20 && !/placeholder|your-|example/i.test(anonKey);
     const supabaseConfigured = supabaseEnabled && isUrlValid && isKeyValid;
@@ -42,6 +43,10 @@
       if (url) urlHost = url.replace(/^https?:\/\//i, "").split("/")[0];
     }
 
+    const authInfo = typeof window !== "undefined" && window.CEAuth?.getAuthInfo ? window.CEAuth.getAuthInfo() : null;
+    const activeU = typeof window !== "undefined" ? (window.activeUser || null) : null;
+    const membersDiag = typeof window !== "undefined" && window.CEMembers?.getInfo ? window.CEMembers.getInfo() : null;
+
     return {
       environment: readEnv("VITE_APP_ENV") || (typeof location !== "undefined" && location.hostname.includes("github.io") ? "production" : "development"),
       dataSource: dataSource.toLowerCase(),
@@ -52,6 +57,13 @@
       buildVersion: BUILD_VERSION,
       buildTimestamp: BUILD_TIMESTAMP,
       authStatus: realAuthEnabled ? (supabaseConfigured ? "real_auth_ready" : "real_auth_missing_config") : "demo_mode",
+      authSessionPresent: Boolean(authInfo?.authenticated || activeU),
+      authUserId: authInfo?.authUserId || activeU?.auth_user_id || null,
+      internalUserPresent: Boolean(activeU?.id),
+      internalUserStatus: activeU?.status || (activeU ? "Active" : null),
+      role: activeU?.role || activeU?.role_name || null,
+      fallbackUsed: Boolean(membersDiag?.fallbackUsed),
+      membersRowsReturned: Number(membersDiag?.lastRowsReturned || 0),
     };
   }
 

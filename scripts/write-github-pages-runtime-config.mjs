@@ -9,7 +9,7 @@ const url = String(process.env.VITE_SUPABASE_URL || process.env.CE_SUPABASE_URL 
 const anonKey = String(process.env.VITE_SUPABASE_ANON_KEY || process.env.CE_SUPABASE_ANON_KEY || DEFAULT_ANON_KEY).trim();
 const dataSource = String(process.env.VITE_DATA_SOURCE || process.env.CE_DATA_SOURCE || "supabase").trim();
 const enableSupabase = String(process.env.VITE_ENABLE_SUPABASE || "true").trim();
-const enableRealAuth = String(process.env.VITE_ENABLE_REAL_AUTH || process.env.CE_ENABLE_REAL_AUTH || "false").trim();
+const enableRealAuth = String(process.env.VITE_ENABLE_REAL_AUTH || process.env.CE_ENABLE_REAL_AUTH || "true").trim();
 const enableStorage = String(process.env.VITE_ENABLE_STORAGE || "false").trim();
 
 const liveSupabase = /^(1|true|yes|on)$/i.test(enableSupabase)

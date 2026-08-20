@@ -46,8 +46,9 @@ check("dashboard enterDashboard checks isRealAuthEnabled",
 );
 
 check("no silent demo fallback when real auth is enabled",
-  /const wantReal = !!\(auth\.isRealAuthEnabled && auth\.isRealAuthEnabled\(\)\)/.test(dashboard) &&
-  /if \(!wantReal && \["AUTH_ERROR", "AUTH_TIMEOUT"\]\.includes\(code\)\)/.test(dashboard)
+  /AUTH_DEMO_DISABLED/.test(authRepo) &&
+  /isRealAuthEnabled/.test(authRepo) &&
+  /AUTH_NOT_PROVISIONED/.test(dashboard)
 );
 
 check("auth session auto-restore on DOMContentLoaded",

@@ -153,6 +153,13 @@ export function getAuthInfo(): AuthInfo {
 async function attachPermissions(user: User): Promise<AuthAccount> {
   const account = normalizeUser(user) as AuthAccount;
   if (account.role_id) {
+    const roleRes = await getRoleById(account.role_id);
+    if (roleRes.ok && roleRes.data) {
+      account.role = roleRes.data.name || roleRes.data.display_name || account.role;
+      account.role_name = roleRes.data.display_name || roleRes.data.name || account.role_name;
+      account.role_level = Number(roleRes.data.level) || 10;
+      account.default_scope = roleRes.data.default_scope || "own";
+    }
     const perms = await getPermissionsByRole(account.role_id);
     if (perms.ok && perms.data?.length) {
       account.permissions = perms.data as AccessPermission[];
@@ -178,7 +185,7 @@ export async function resolveUserAccountFromAuth(authUser: {
   email?: string | null;
 }): Promise<LoginResult> {
   const authId = String(authUser?.id || "").trim();
-  if (!authId) return fail("Invalid auth user", "AUTH_INVALID");
+  if (!authId) return fail("Sessão Auth inválida.", "AUTH_INVALID");
 
   let linked = false;
   let byAuth = await getUserByAuthUserId(authId);
@@ -229,19 +236,36 @@ export async function resolveUserAccountFromAuth(authUser: {
       severity: "warning",
     });
     return fail(
-      "User account not provisioned. Contact an administrator to link your Auth user.",
+      "A sua conta ainda não possui acesso activo ao CE Operations Portal. Contacte o Administrador.",
       "AUTH_NOT_PROVISIONED",
     );
   }
 
-  if (/lock|bloque|suspend|inactiv|inativ/i.test(String(user.status || "")) || user.has_dashboard_access === false) {
+  const userStatus = String(user.status || "").trim().toLowerCase();
+  if ((userStatus !== "active" && userStatus !== "activo") || user.has_dashboard_access === false) {
     softAudit("auth_access_denied", {
       user_id: user.id,
       email: user.email,
       description: "User locked, suspended, inactive, or without dashboard access",
       severity: "warning",
     });
-    return fail("Conta inactiva, suspensa ou sem acesso ao dashboard.", "AUTH_LOCKED");
+    return fail("A sua conta ainda não possui acesso activo ao CE Operations Portal. Contacte o Administrador.", "AUTH_LOCKED");
+  }
+
+  if (user.role_id) {
+    const roleRes = await getRoleById(user.role_id);
+    if (roleRes.ok && roleRes.data) {
+      const roleStatus = String(roleRes.data.status || "").trim().toLowerCase();
+      if (roleStatus !== "active" && roleStatus !== "activo") {
+        softAudit("auth_access_denied", {
+          user_id: user.id,
+          email: user.email,
+          description: "User role is inactive",
+          severity: "warning",
+        });
+        return fail("O perfil de acesso atribuído a esta conta está inactivo. Contacte o Administrador.", "AUTH_ROLE_INACTIVE");
+      }
+    }
   }
 
   await markUserLastLogin(user.id);
@@ -365,7 +389,12 @@ export async function loginWithSupabase(
       description: signed.error,
       severity: "warning",
     });
-    return fail(signed.error, signed.code || "AUTH_SIGN_IN_FAILED");
+    const errLow = String(signed.error || "").toLowerCase();
+    let userMsg = "Não foi possível iniciar sessão. Verifique os seus dados de acesso.";
+    if (errLow.includes("email not confirmed") || errLow.includes("unconfirmed")) {
+      userMsg = "O seu endereço de email ainda não foi confirmado. Verifique a sua caixa de correio.";
+    }
+    return fail(userMsg, signed.code || "AUTH_SIGN_IN_FAILED");
   }
 
   const resolved = await resolveUserAccountFromAuth({

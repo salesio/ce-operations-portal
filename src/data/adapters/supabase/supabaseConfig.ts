@@ -48,17 +48,19 @@ export function isLikelySupabaseUrl(url: string): boolean {
 }
 
 export function getSupabaseEnvConfig(): SupabaseEnvConfig {
-  const url = readEnv("VITE_SUPABASE_URL");
-  const anonKey = readEnv("VITE_SUPABASE_ANON_KEY");
-  const enableSupabase = flagTrue("VITE_ENABLE_SUPABASE");
+  const url = readEnv("VITE_SUPABASE_URL") || "https://kmurqbgpybrolrrumiue.supabase.co";
+  const anonKey = readEnv("VITE_SUPABASE_ANON_KEY") || "sb_publishable_SWyV8DiSlWMQFXt9Nh477A_SHeVUlli";
+  const enableSupabase = flagTrue("VITE_ENABLE_SUPABASE") || readEnv("VITE_DATA_SOURCE") === "supabase";
   // isConfigured = env usable for a public client (URL+anon look valid).
   // enableSupabase still gates initialization in foundation client.
   const isConfigured = isLikelySupabaseUrl(url) && anonKey.length > 20;
+  const rawRealAuth = readEnv("VITE_ENABLE_REAL_AUTH");
+  const enableRealAuth = rawRealAuth !== "" ? flagTrue("VITE_ENABLE_REAL_AUTH") : enableSupabase;
   return {
     url,
     anonKey,
     enableSupabase,
-    enableRealAuth: flagTrue("VITE_ENABLE_REAL_AUTH"),
+    enableRealAuth,
     enableStorage: flagTrue("VITE_ENABLE_STORAGE"),
     enableRls: flagTrue("VITE_ENABLE_RLS"),
     isConfigured: enableSupabase && isConfigured,
