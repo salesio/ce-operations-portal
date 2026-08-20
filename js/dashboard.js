@@ -9463,7 +9463,8 @@ function applyLanguage(next = lang) {
     el.textContent = key === "login.title" ? L("loginTitle") :
       key === "login.lead" ? L("loginLead") :
       key === "login.password" ? L("loginPassword") :
-      key === "login.submit" ? L("loginSubmit") :
+      key === "login.submit" ? (lang === "en" ? "Sign In" : "Iniciar Sessão") :
+      key === "login.forgot" ? (lang === "en" ? "Forgot password?" : "Esqueci a senha") :
       key === "login.note" ? L("loginNote") :
       key === "top.site" ? L("viewSite") :
       key === "top.logout" ? L("logout") :
@@ -24481,6 +24482,10 @@ async function enterDashboard() {
           error: err instanceof Error ? err.message : "Login failed",
           code: "AUTH_ERROR",
         };
+      }
+
+      if (result && !result.ok) {
+        console.warn("[CE Auth] Login attempt failed:", result);
       }
 
       if (!result || !result.ok) {

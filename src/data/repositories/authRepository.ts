@@ -441,7 +441,13 @@ export async function loginWithSupabase(
     const errLow = String(signed.error || "").toLowerCase();
     let userMsg = "Não foi possível iniciar sessão. Verifique os seus dados de acesso.";
     if (errLow.includes("email not confirmed") || errLow.includes("unconfirmed")) {
-      userMsg = "O seu endereço de email ainda não foi confirmado. Verifique a sua caixa de correio.";
+      userMsg = "O seu endereço de email ainda não foi confirmado no Supabase Auth. Verifique a sua caixa de correio ou confirme o utilizador.";
+    } else if (errLow.includes("invalid login credentials") || errLow.includes("invalid_grant")) {
+      userMsg = "Email ou senha incorrectos. Verifique os seus dados de acesso.";
+    } else if (errLow.includes("rate limit") || errLow.includes("too many requests")) {
+      userMsg = "Demasiadas tentativas de login. Aguarde alguns minutos antes de tentar novamente.";
+    } else if (signed.error && !errLow.includes("sign in failed") && !errLow.includes("failed")) {
+      userMsg = `${signed.error}`;
     }
     return fail(userMsg, signed.code || "AUTH_SIGN_IN_FAILED");
   }
