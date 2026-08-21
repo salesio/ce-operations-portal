@@ -267,7 +267,7 @@ export function getMembersDataSourceInfo() {
     lastQuery: memberLastState.lastQuery,
     lastError: memberLastState.lastError,
     lastRowsReturned: memberLastState.lastRowsReturned,
-    version: "2026.08.21-departments-cell-flow",
+    version: "2026.08.21-fresh-excel-database",
     ready: true,
     fallback: false,
     checkedAt: new Date().toISOString(),

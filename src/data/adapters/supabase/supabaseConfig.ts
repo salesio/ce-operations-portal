@@ -97,7 +97,7 @@ export function getSupabaseConnectionInfo() {
     urlConfigured: isLikelySupabaseUrl(cfg.url),
     authSessionPresent,
     dataSource: readEnv("VITE_DATA_SOURCE") || "mock",
-    version: "2026.08.21-departments-cell-flow",
+    version: "2026.08.21-fresh-excel-database",
     enabled: cfg.enableSupabase,
     hasUrl: !!cfg.url,
     hasAnonKey: !!cfg.anonKey,

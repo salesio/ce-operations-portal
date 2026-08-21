@@ -9,7 +9,7 @@
 (function () {
   var STORAGE_KEY = "ce-data-layer:members";
   var fallbackMemory = null;
-  var BUILD_VERSION = "2026.08.21-departments-cell-flow";
+  var BRIDGE_VERSION = "2026.08.21-fresh-excel-database";
 
   var lastState = {
     lastQuery: null,
