@@ -51,12 +51,12 @@ console.log("   - Live bridge SHA256:", liveBridgeSha256);
 // 3. Inspect bundle content for token propagation and error handling
 console.log("\n3. Inspecting Live Bundle Content...");
 const hasAuthNoSession = liveBundleCode.includes("AUTH_NO_SESSION");
-const hasVersionFix = liveBundleCode.includes("2026.08.21-jwt-propagation-fix");
+const hasVersionFix = liveBundleCode.includes("2026.08.21-profile-write-guard");
 const hasOldVersion = liveBundleCode.includes("2026.08.19-members-runtime-fix");
 const hasError42501 = liveBundleCode.includes("42501");
 
 console.log("   - Contains AUTH_NO_SESSION:                  ", hasAuthNoSession);
-console.log("   - Contains 2026.08.21-jwt-propagation-fix:  ", hasVersionFix);
+console.log("   - Contains 2026.08.21-profile-write-guard:   ", hasVersionFix);
 console.log("   - Contains old 2026.08.19-members-runtime-fix:", hasOldVersion);
 console.log("   - Contains 42501 error code handling:        ", hasError42501);
 
@@ -182,7 +182,7 @@ console.log("\n4.5 Authenticated CEMembers.getInfo():", {
   fallback: authInfo.fallback,
 });
 
-if (authInfo.version !== "2026.08.21-jwt-propagation-fix") {
+if (authInfo.version !== "2026.08.21-profile-write-guard") {
   throw new Error("Version mismatch in CEMembers.getInfo(): " + authInfo.version);
 }
 if (authInfo.lastError !== null) {
@@ -193,3 +193,4 @@ if (authInfo.fallbackUsed !== false) {
 }
 
 console.log("\n>>> LIVE BROWSER FLOW VERIFICATION 100% SUCCESSFUL! <<<\n");
+process.exit(0);
