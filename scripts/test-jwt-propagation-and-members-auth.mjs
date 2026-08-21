@@ -185,3 +185,4 @@ console.log("  - Live database count query status:", countRes.status);
 console.log("  PASS: Live database queried safely with zero member writes");
 
 console.log("\n>>> ALL JWT PROPAGATION & AUTH TESTS PASSED! <<<\n");
+process.exit(0);

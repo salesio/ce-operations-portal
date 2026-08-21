@@ -5,8 +5,8 @@
  * without exposing sensitive tokens, service keys, or backend secrets.
  */
 (function () {
-  const BUILD_VERSION = "2026.08.21-jwt-propagation-fix";
-  const BUILD_TIMESTAMP = "2026-08-21T11:30:00.000Z";
+  const BUILD_VERSION = "2026.08.21-profile-write-guard";
+  const BUILD_TIMESTAMP = "2026-08-21T12:00:00.000Z";
 
   function readEnv(name) {
     try {

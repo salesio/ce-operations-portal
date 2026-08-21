@@ -97,7 +97,7 @@ export function getSupabaseConnectionInfo() {
     urlConfigured: isLikelySupabaseUrl(cfg.url),
     authSessionPresent,
     dataSource: readEnv("VITE_DATA_SOURCE") || "mock",
-    version: "2026.08.21-jwt-propagation-fix",
+    version: "2026.08.21-profile-write-guard",
     enabled: cfg.enableSupabase,
     hasUrl: !!cfg.url,
     hasAnonKey: !!cfg.anonKey,

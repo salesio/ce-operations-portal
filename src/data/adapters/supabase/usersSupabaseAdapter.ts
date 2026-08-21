@@ -88,6 +88,67 @@ export function mapUserFromRow(row: SupabaseRow | null | undefined): User | null
 
 /** UI User → DB row payload */
 export function mapUserToRow(user: Partial<User>, forUpdate = false): SupabaseRow {
+  if (forUpdate) {
+    const row: SupabaseRow = {};
+    if (user.full_name !== undefined) row.full_name = user.full_name;
+    else if (user.name !== undefined) row.full_name = user.name;
+    else if (user.fullName !== undefined) row.full_name = user.fullName;
+
+    if (user.email !== undefined) row.email = user.email ? String(user.email).trim().toLowerCase() : null;
+    if (user.phone !== undefined) row.phone = user.phone ? String(user.phone).trim() : null;
+    if (user.status !== undefined) row.status = String(user.status);
+    if (user.preferred_language !== undefined) row.preferred_language = String(user.preferred_language);
+
+    if (user.auth_user_id !== undefined) {
+      row.auth_user_id = user.auth_user_id && isValidUuid(user.auth_user_id) ? user.auth_user_id : null;
+    }
+    if (user.staff_id !== undefined) {
+      row.staff_id = user.staff_id && isValidUuid(user.staff_id) ? user.staff_id : null;
+    }
+    if (user.role_id !== undefined) {
+      row.role_id = user.role_id && isValidUuid(user.role_id) ? user.role_id : null;
+    }
+    if (user.church_id !== undefined || user.churchId !== undefined) {
+      const cId = user.church_id || user.churchId;
+      row.church_id = cId && isValidUuid(cId) ? cId : null;
+    }
+    if (user.department_id !== undefined) {
+      row.department_id = user.department_id && isValidUuid(user.department_id) ? user.department_id : null;
+    }
+    if (user.last_login_at !== undefined) row.last_login_at = user.last_login_at;
+    if (user.last_active_at !== undefined) row.last_active_at = user.last_active_at;
+    if (user.failed_login_attempts !== undefined) row.failed_login_attempts = user.failed_login_attempts;
+    if (user.locked_until !== undefined) row.locked_until = user.locked_until;
+
+    // Handle metadata selectively so unmentioned keys are not wiped out
+    const metaUpdates: Record<string, unknown> = {};
+    let hasMeta = false;
+    if (user.display_name !== undefined) { metaUpdates.display_name = user.display_name; hasMeta = true; }
+    if (user.role_name !== undefined || user.role !== undefined) { metaUpdates.role_name = user.role_name || user.role; hasMeta = true; }
+    if (user.church_name !== undefined) { metaUpdates.church_name = user.church_name; hasMeta = true; }
+    if (user.department_name !== undefined || user.assigned_department !== undefined) { metaUpdates.department_name = user.department_name || user.assigned_department; hasMeta = true; }
+    if (user.department_permissions !== undefined) { metaUpdates.department_permissions = user.department_permissions; hasMeta = true; }
+    if (user.cell_id !== undefined) { metaUpdates.cell_id = user.cell_id; hasMeta = true; }
+    if (user.cell_name !== undefined) { metaUpdates.cell_name = user.cell_name; hasMeta = true; }
+    if (user.cell_group_id !== undefined) { metaUpdates.cell_group_id = user.cell_group_id; hasMeta = true; }
+    if (user.cell_group_name !== undefined) { metaUpdates.cell_group_name = user.cell_group_name; hasMeta = true; }
+    if (user.assigned_cells !== undefined) { metaUpdates.assigned_cells = user.assigned_cells; hasMeta = true; }
+    if (user.assigned_cell_groups !== undefined) { metaUpdates.assigned_cell_groups = user.assigned_cell_groups; hasMeta = true; }
+    if (user.has_dashboard_access !== undefined) { metaUpdates.has_dashboard_access = user.has_dashboard_access; hasMeta = true; }
+    if (user.avatar_url !== undefined) { metaUpdates.avatar_url = user.avatar_url; hasMeta = true; }
+    if (user.notes !== undefined) { metaUpdates.notes = user.notes; hasMeta = true; }
+    if (user.demo_password_hint !== undefined) { metaUpdates.demo_password_hint = user.demo_password_hint; hasMeta = true; }
+    if (user.permissions !== undefined) { metaUpdates.permissions = user.permissions; hasMeta = true; }
+    if (user.created_by_name !== undefined) { metaUpdates.created_by_name = user.created_by_name; hasMeta = true; }
+
+    if (hasMeta) {
+      row.metadata = metaUpdates;
+    }
+
+    return row;
+  }
+
+  // Insert (forUpdate = false)
   const meta: Record<string, unknown> = {
     display_name: user.display_name || user.full_name || user.name || null,
     role_name: user.role_name || user.role || null,
@@ -138,12 +199,10 @@ export function mapUserToRow(user: Partial<User>, forUpdate = false): SupabaseRo
   if (user.failed_login_attempts !== undefined) row.failed_login_attempts = user.failed_login_attempts;
   if (user.locked_until !== undefined) row.locked_until = user.locked_until;
 
-  if (!forUpdate) {
-    if (user.id && isValidUuid(user.id)) {
-      row.id = user.id;
-    } else {
-      row.id = newClientUuid();
-    }
+  if (user.id && isValidUuid(user.id)) {
+    row.id = user.id;
+  } else {
+    row.id = newClientUuid();
   }
 
   return row;

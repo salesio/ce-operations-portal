@@ -255,6 +255,11 @@ export async function unlinkAuthUser(userId: EntityId): Promise<DataResult<User>
 }
 
 export async function markUserLastLogin(userId: EntityId): Promise<DataResult<User>> {
+  if (getDataSource() === "supabase") {
+    // In Supabase mode, authentication is strictly read-only on public.users
+    const existing = await getUserById(userId);
+    return existing.ok && existing.data ? ok(existing.data) : fail("Utilizador não encontrado", "NOT_FOUND");
+  }
   const now = nowIso();
   return updateUser(userId, {
     last_login_at: now,
@@ -275,6 +280,10 @@ export async function updateUserAuthStatus(
     auth_user_id?: string | null;
   },
 ): Promise<DataResult<User>> {
+  if (getDataSource() === "supabase") {
+    const existing = await getUserById(userId);
+    return existing.ok && existing.data ? ok(existing.data) : fail("Utilizador não encontrado", "NOT_FOUND");
+  }
   const patch: Partial<User> = { ...payload };
   if (payload.status) {
     patch.isActive = /active|activo/i.test(payload.status);
@@ -308,12 +317,29 @@ export async function updateUser(id: EntityId, payload: Partial<User>): Promise<
     if (!existing.ok || !existing.data) return fail("Utilizador não encontrado", "NOT_FOUND");
     const clean = { ...payload } as Partial<User> & { password?: string };
     delete clean.password;
-    const row = normalizeUser({
+
+    const merged: Partial<User> = {
       ...existing.data,
       ...clean,
       id,
       updated_at: todayIso(),
-    });
+    };
+
+    // Strictly preserve authorization fields if omitted from payload
+    if (payload.role_id === undefined && existing.data.role_id) {
+      merged.role_id = existing.data.role_id;
+    }
+    if (payload.church_id === undefined && existing.data.church_id) {
+      merged.church_id = existing.data.church_id;
+    }
+    if (payload.status === undefined && existing.data.status) {
+      merged.status = existing.data.status;
+    }
+    if (payload.auth_user_id === undefined && existing.data.auth_user_id) {
+      merged.auth_user_id = existing.data.auth_user_id;
+    }
+
+    const row = normalizeUser(merged);
     const repo = getDataProvider().users;
     if (!repo.update) return fail("update not supported", "NOT_SUPPORTED");
     const result = await repo.update(id, row);

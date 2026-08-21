@@ -33,6 +33,7 @@ import {
   updateUserAuthStatus,
 } from "./accessControlRepository";
 
+import { isValidUuid } from "../adapters/supabase/supabaseRepositoryBase";
 import { getAuthorizedCellsForUserId } from "./cellUserAssignmentsRepository";
 
 export type AuthMode = "demo" | "supabase";
@@ -76,6 +77,8 @@ function ok<T>(data: T): DataResult<T> {
 
 function softAudit(action: string, payload: Record<string, unknown> = {}): void {
   try {
+    const rawUid = payload.user_id || payload.entity_id;
+    const sanitizedUserId = rawUid && isValidUuid(String(rawUid)) ? String(rawUid) : null;
     void createAuditLog({
       action,
       module: "auth",
@@ -84,10 +87,12 @@ function softAudit(action: string, payload: Record<string, unknown> = {}): void 
       entity_label: String(payload.email || payload.user_name || ""),
       description: String(payload.description || action),
       severity: String(payload.severity || "info"),
-      user_id: (payload.user_id as string) || null,
+      user_id: sanitizedUserId,
       user_name: String(payload.user_name || ""),
       user_role: String(payload.user_role || ""),
       metadata: payload,
+    }).catch(() => {
+      /* soft fire-and-forget */
     });
   } catch {
     /* soft */
@@ -235,7 +240,8 @@ async function attachPermissions(user: User): Promise<AuthAccount> {
 
 /**
  * Resolve app user from Supabase Auth user.
- * Links by email when auth_user_id is still null (pilot helper).
+ * Strictly READ-ONLY. Resolves internal profile by auth_user_id.
+ * Never executes PATCH/PUT/POST/UPSERT on public.users during auth/session flow.
  */
 export async function resolveUserAccountFromAuth(authUser: {
   id: string;
@@ -244,8 +250,7 @@ export async function resolveUserAccountFromAuth(authUser: {
   const authId = String(authUser?.id || "").trim();
   if (!authId) return fail("Sessão Auth inválida.", "AUTH_INVALID");
 
-  let linked = false;
-  let byAuth = await getUserByAuthUserId(authId);
+  const byAuth = await getUserByAuthUserId(authId);
   if (!byAuth.ok) {
     return fail(
       byAuth.error || "Erro ao consultar perfil de utilizador.",
@@ -253,47 +258,7 @@ export async function resolveUserAccountFromAuth(authUser: {
     );
   }
 
-  let user = byAuth.data;
-  if (!user && authUser.email) {
-    const byEmail = await getUserByEmail(authUser.email);
-    if (!byEmail.ok) {
-      return fail(
-        byEmail.error || "Erro ao consultar utilizador por email.",
-        byEmail.code || "PROFILE_QUERY_ERROR",
-      );
-    }
-    if (byEmail.data) {
-      if (!byEmail.data.auth_user_id) {
-        const link = await linkAuthUserToUser(byEmail.data.id, authId);
-        if (link.ok && link.data) {
-          user = link.data;
-          linked = true;
-          softAudit("auth_user_linked", {
-            user_id: user.id,
-            email: user.email,
-            user_name: user.full_name || user.name,
-            user_role: user.role_name || user.role,
-            auth_user_id: authId,
-            description: "Linked Supabase Auth id to app user by email",
-          });
-        } else {
-          user = byEmail.data;
-        }
-      } else if (byEmail.data.auth_user_id !== authId) {
-        softAudit("auth_login_failed", {
-          email: authUser.email,
-          description: "Email user already linked to a different auth id",
-          severity: "warning",
-        });
-        return fail(
-          "Esta conta de email já está ligada a outro utilizador Auth.",
-          "AUTH_LINK_CONFLICT",
-        );
-      } else {
-        user = byEmail.data;
-      }
-    }
-  }
+  const user = byAuth.data;
 
   if (!user) {
     softAudit("auth_user_not_provisioned", {
@@ -364,7 +329,7 @@ export async function resolveUserAccountFromAuth(authUser: {
     user.role_name = "Super Admin";
   }
 
-  await markUserLastLogin(user.id);
+  // Strictly READ-ONLY: attach permissions from database without mutating public.users
   const account = await attachPermissions(user);
   account.auth_mode = "supabase";
   account.auth_user_id = authId;
@@ -374,7 +339,7 @@ export async function resolveUserAccountFromAuth(authUser: {
     (window as any).activeUser = account;
   }
 
-  return { ok: true, data: account, linked, auth_user_id: authId };
+  return { ok: true, data: account, linked: false, auth_user_id: authId };
 }
 
 export async function refreshCurrentUserPermissions(): Promise<DataResult<AuthAccount | null>> {
@@ -440,8 +405,6 @@ export async function loginDemo(
   const pass = String(passwordOrHint || "").trim();
   // Demo accepts: empty, "demo", or matching hint — never real password storage
   if (pass && pass !== hint && pass !== "demo") {
-    const attempts = Number(user.failed_login_attempts || 0) + 1;
-    await updateUserAuthStatus(user.id, { failed_login_attempts: attempts });
     softAudit("auth_login_failed", {
       user_id: user.id,
       email: user.email,
@@ -451,7 +414,6 @@ export async function loginDemo(
     return fail("Senha demo incorrecta. Use a senha de demonstração.", "AUTH_DEMO_BAD_PASSWORD");
   }
 
-  await markUserLastLogin(user.id);
   const account = await attachPermissions(user);
   account.auth_mode = "demo";
   currentAccount = account;

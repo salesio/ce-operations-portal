@@ -9,6 +9,8 @@ export type EntityId = string;
 export type IsoDate = string;
 export type IsoDateTime = string;
 
+export * from "./userDtos";
+
 // ---------------------------------------------------------------------------
 // Core identity & organisation
 // ---------------------------------------------------------------------------

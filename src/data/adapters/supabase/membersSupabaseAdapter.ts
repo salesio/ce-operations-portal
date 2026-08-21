@@ -265,7 +265,7 @@ export function getMembersDataSourceInfo() {
     lastQuery: memberLastState.lastQuery,
     lastError: memberLastState.lastError,
     lastRowsReturned: memberLastState.lastRowsReturned,
-    version: "2026.08.21-jwt-propagation-fix",
+    version: "2026.08.21-profile-write-guard",
     ready: true,
     fallback: false,
     checkedAt: new Date().toISOString(),
