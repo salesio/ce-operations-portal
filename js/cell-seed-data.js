@@ -1,105 +1,1514 @@
 /**
  * Cell Groups & Cell Registry seed builder.
- * Based on Cell Report July Week 1 group structure.
- * Attached to window for frontend-first dashboard bootstrap.
+ * Based on authoritative operational master data (17 Cell Groups, 163 Cells, 1,896 Members).
+ * Attached to window for frontend-first dashboard bootstrap and Supabase mapping.
  */
 (function () {
-  const CELL_GROUP_DEFINITIONS = [
-    { name: "Royal Sister", total_cells: 25 },
-    { name: "Phronesis", total_cells: 22 },
-    { name: "Pioneiro", total_cells: 15 },
-    { name: "Blossom", total_cells: 13 },
-    { name: "Zion Nation", total_cells: 12 },
-    { name: "MWV", total_cells: 10 },
-    { name: "Wealth Nation", total_cells: 10 },
-    { name: "Estrelas de Siao", total_cells: 9 },
-    { name: "Agathos", total_cells: 8 },
-    { name: "Diplomatas", total_cells: 7 },
-    { name: "Perolas do Reino", total_cells: 6 },
-    { name: "QOG", total_cells: 4 },
-    { name: "Vanguard", total_cells: 4 },
-    { name: "Pais da Fé", total_cells: 2 },
-    { name: "Dominio", total_cells: 1 },
-    { name: "Transformada", total_cells: 1 },
-    { name: "Visionarios", total_cells: 1 }
-  ];
+  const REAL_CELL_GROUPS = [
+  {
+    "id": "cg-001",
+    "name": "Royal Sister",
+    "group_name": "Royal Sister",
+    "total_cells": 25,
+    "total_members": 411
+  },
+  {
+    "id": "cg-002",
+    "name": "Vanguard",
+    "group_name": "Vanguard",
+    "total_cells": 4,
+    "total_members": 183
+  },
+  {
+    "id": "cg-003",
+    "name": "Pioneiro",
+    "group_name": "Pioneiro",
+    "total_cells": 15,
+    "total_members": 172
+  },
+  {
+    "id": "cg-004",
+    "name": "MWV",
+    "group_name": "MWV",
+    "total_cells": 10,
+    "total_members": 154
+  },
+  {
+    "id": "cg-005",
+    "name": "QOG",
+    "group_name": "QOG",
+    "total_cells": 13,
+    "total_members": 149
+  },
+  {
+    "id": "cg-006",
+    "name": "Phronesis",
+    "group_name": "Phronesis",
+    "total_cells": 22,
+    "total_members": 143
+  },
+  {
+    "id": "cg-007",
+    "name": "Zion Nation",
+    "group_name": "Zion Nation",
+    "total_cells": 12,
+    "total_members": 103
+  },
+  {
+    "id": "cg-008",
+    "name": "Blossom",
+    "group_name": "Blossom",
+    "total_cells": 13,
+    "total_members": 88
+  },
+  {
+    "id": "cg-009",
+    "name": "Wealth Nation",
+    "group_name": "Wealth Nation",
+    "total_cells": 10,
+    "total_members": 86
+  },
+  {
+    "id": "cg-010",
+    "name": "Pais da Fé",
+    "group_name": "Pais da Fé",
+    "total_cells": 6,
+    "total_members": 68
+  },
+  {
+    "id": "cg-011",
+    "name": "Diplomatas",
+    "group_name": "Diplomatas",
+    "total_cells": 7,
+    "total_members": 67
+  },
+  {
+    "id": "cg-012",
+    "name": "Estrelas de Siao",
+    "group_name": "Estrelas de Siao",
+    "total_cells": 9,
+    "total_members": 66
+  },
+  {
+    "id": "cg-013",
+    "name": "Perolas do Reino",
+    "group_name": "Perolas do Reino",
+    "total_cells": 6,
+    "total_members": 66
+  },
+  {
+    "id": "cg-014",
+    "name": "Agathos",
+    "group_name": "Agathos",
+    "total_cells": 8,
+    "total_members": 58
+  },
+  {
+    "id": "cg-015",
+    "name": "Transformada",
+    "group_name": "Transformada",
+    "total_cells": 1,
+    "total_members": 50
+  },
+  {
+    "id": "cg-016",
+    "name": "Dominio",
+    "group_name": "Dominio",
+    "total_cells": 1,
+    "total_members": 18
+  },
+  {
+    "id": "cg-017",
+    "name": "Visionarios",
+    "group_name": "Visionarios",
+    "total_cells": 1,
+    "total_members": 14
+  }
+];
 
-  const GROUP_STATUSES = ["Activo", "Em Crescimento", "Precisa de Ateno", "Inactivo"];
-  const LEADER_TITLES = ["Irmo", "Irm", "Pastor", "Dicono"];
+  const REAL_CELLS_REGISTRY = [
+  {
+    "id": "cr-0001",
+    "cell_name": "Royal Sister's Dominion Main",
+    "raw_cell_name": "Royal Sister's Dominion Main",
+    "group_id": "cg-001",
+    "group_name": "Royal Sister",
+    "member_count": 23
+  },
+  {
+    "id": "cr-0002",
+    "cell_name": "Royal Sisters Main Cell",
+    "raw_cell_name": "Royal Sisters Main Cell",
+    "group_id": "cg-001",
+    "group_name": "Royal Sister",
+    "member_count": 40
+  },
+  {
+    "id": "cr-0003",
+    "cell_name": "Royal Sisters Victory",
+    "raw_cell_name": "Royal Sisters Victory",
+    "group_id": "cg-001",
+    "group_name": "Royal Sister",
+    "member_count": 10
+  },
+  {
+    "id": "cr-0004",
+    "cell_name": "Royal Sisters Opportunity",
+    "raw_cell_name": "Royal Sisters Opportunity",
+    "group_id": "cg-001",
+    "group_name": "Royal Sister",
+    "member_count": 9
+  },
+  {
+    "id": "cr-0005",
+    "cell_name": "Royal Sisters Chosen",
+    "raw_cell_name": "Royal Sisters Chosen",
+    "group_id": "cg-001",
+    "group_name": "Royal Sister",
+    "member_count": 37
+  },
+  {
+    "id": "cr-0006",
+    "cell_name": "Royal Sisters Perfection",
+    "raw_cell_name": "Royal Sisters Perfection",
+    "group_id": "cg-001",
+    "group_name": "Royal Sister",
+    "member_count": 21
+  },
+  {
+    "id": "cr-0007",
+    "cell_name": "Royal Sisters Divine",
+    "raw_cell_name": "Royal Sisters Divine",
+    "group_id": "cg-001",
+    "group_name": "Royal Sister",
+    "member_count": 21
+  },
+  {
+    "id": "cr-0008",
+    "cell_name": "Royal Sisters Brightness",
+    "raw_cell_name": "Royal Sisters Brightness",
+    "group_id": "cg-001",
+    "group_name": "Royal Sister",
+    "member_count": 17
+  },
+  {
+    "id": "cr-0009",
+    "cell_name": "Royal Sisters Soul Seekers",
+    "raw_cell_name": "Royal Sisters Soul Seekers",
+    "group_id": "cg-001",
+    "group_name": "Royal Sister",
+    "member_count": 21
+  },
+  {
+    "id": "cr-0010",
+    "cell_name": "Royal Sisters Reborn",
+    "raw_cell_name": "Royal Sisters Reborn",
+    "group_id": "cg-001",
+    "group_name": "Royal Sister",
+    "member_count": 9
+  },
+  {
+    "id": "cr-0011",
+    "cell_name": "Royal Sisters Rise & Shine",
+    "raw_cell_name": "Royal Sisters Rise & Shine",
+    "group_id": "cg-001",
+    "group_name": "Royal Sister",
+    "member_count": 19
+  },
+  {
+    "id": "cr-0012",
+    "cell_name": "Royal Sisters Zoe",
+    "raw_cell_name": "Royal Sisters Zoe",
+    "group_id": "cg-001",
+    "group_name": "Royal Sister",
+    "member_count": 11
+  },
+  {
+    "id": "cr-0013",
+    "cell_name": "Royal Sisters Executives Main",
+    "raw_cell_name": "Royal Sisters Executives Main",
+    "group_id": "cg-001",
+    "group_name": "Royal Sister",
+    "member_count": 25
+  },
+  {
+    "id": "cr-0014",
+    "cell_name": "Royal Sisters Executives Choices",
+    "raw_cell_name": "Royal Sisters Executives Choices",
+    "group_id": "cg-001",
+    "group_name": "Royal Sister",
+    "member_count": 4
+  },
+  {
+    "id": "cr-0015",
+    "cell_name": "Royal Sisters Executives Bold",
+    "raw_cell_name": "Royal Sisters Executives Bold",
+    "group_id": "cg-001",
+    "group_name": "Royal Sister",
+    "member_count": 21
+  },
+  {
+    "id": "cr-0016",
+    "cell_name": "Royal Sister's Unlock Main",
+    "raw_cell_name": "Royal Sister's Unlock Main",
+    "group_id": "cg-001",
+    "group_name": "Royal Sister",
+    "member_count": 37
+  },
+  {
+    "id": "cr-0017",
+    "cell_name": "Royal Sister's Unlock Precious",
+    "raw_cell_name": "Royal Sister's Unlock Precious",
+    "group_id": "cg-001",
+    "group_name": "Royal Sister",
+    "member_count": 12
+  },
+  {
+    "id": "cr-0018",
+    "cell_name": "Royal Sister's Unlock Influence",
+    "raw_cell_name": "Royal Sister's Unlock Influence",
+    "group_id": "cg-001",
+    "group_name": "Royal Sister",
+    "member_count": 16
+  },
+  {
+    "id": "cr-0019",
+    "cell_name": "Royal Sister's Unlock Purpose",
+    "raw_cell_name": "Royal Sister's Unlock Purpose",
+    "group_id": "cg-001",
+    "group_name": "Royal Sister",
+    "member_count": 5
+  },
+  {
+    "id": "cr-0020",
+    "cell_name": "Royal Sister's Unlock Love",
+    "raw_cell_name": "Royal Sister's Unlock Love",
+    "group_id": "cg-001",
+    "group_name": "Royal Sister",
+    "member_count": 5
+  },
+  {
+    "id": "cr-0021",
+    "cell_name": "Royal Sister's Dominion Charis",
+    "raw_cell_name": "Royal Sister's Dominion Charis",
+    "group_id": "cg-001",
+    "group_name": "Royal Sister",
+    "member_count": 5
+  },
+  {
+    "id": "cr-0022",
+    "cell_name": "Royal Sister's Dominion",
+    "raw_cell_name": "Royal Sister's Dominion",
+    "group_id": "cg-001",
+    "group_name": "Royal Sister",
+    "member_count": 10
+  },
+  {
+    "id": "cr-0023",
+    "cell_name": "Royal Sisters Business Main",
+    "raw_cell_name": "Royal Sisters Business Main",
+    "group_id": "cg-001",
+    "group_name": "Royal Sister",
+    "member_count": 10
+  },
+  {
+    "id": "cr-0024",
+    "cell_name": "Royal Sisters Business A1",
+    "raw_cell_name": "Royal Sisters Business A1",
+    "group_id": "cg-001",
+    "group_name": "Royal Sister",
+    "member_count": 18
+  },
+  {
+    "id": "cr-0025",
+    "cell_name": "Royal Sisters Business A",
+    "raw_cell_name": "Royal Sisters Business A",
+    "group_id": "cg-001",
+    "group_name": "Royal Sister",
+    "member_count": 5
+  },
+  {
+    "id": "cr-0026",
+    "cell_name": "VANGUARD VISIONÁRIOS",
+    "raw_cell_name": "VANGUARD VISIONÁRIOS",
+    "group_id": "cg-002",
+    "group_name": "Vanguard",
+    "member_count": 133
+  },
+  {
+    "id": "cr-0027",
+    "cell_name": "VANGUARD SHINE",
+    "raw_cell_name": "VANGUARD SHINE",
+    "group_id": "cg-002",
+    "group_name": "Vanguard",
+    "member_count": 21
+  },
+  {
+    "id": "cr-0028",
+    "cell_name": "VANGUARD SHEEP 1",
+    "raw_cell_name": "VANGUARD SHEEP 1",
+    "group_id": "cg-002",
+    "group_name": "Vanguard",
+    "member_count": 4
+  },
+  {
+    "id": "cr-0029",
+    "cell_name": "VANGUARD MAIN",
+    "raw_cell_name": "VANGUARD MAIN",
+    "group_id": "cg-002",
+    "group_name": "Vanguard",
+    "member_count": 25
+  },
+  {
+    "id": "cr-0030",
+    "cell_name": "PIONEIROS SUBSTANCE CHARIS",
+    "raw_cell_name": "PIONEIROS SUBSTANCE CHARIS",
+    "group_id": "cg-003",
+    "group_name": "Pioneiro",
+    "member_count": 41
+  },
+  {
+    "id": "cr-0031",
+    "cell_name": "Pioneiros Sub Grace",
+    "raw_cell_name": "Pioneiros Sub Grace",
+    "group_id": "cg-003",
+    "group_name": "Pioneiro",
+    "member_count": 9
+  },
+  {
+    "id": "cr-0032",
+    "cell_name": "Pioneiros Sub Grace the choosen",
+    "raw_cell_name": "Pioneiros Sub Grace the choosen",
+    "group_id": "cg-003",
+    "group_name": "Pioneiro",
+    "member_count": 3
+  },
+  {
+    "id": "cr-0033",
+    "cell_name": "Pioneiros Sub Grace Intrépidos",
+    "raw_cell_name": "Pioneiros Sub Grace Intrépidos",
+    "group_id": "cg-003",
+    "group_name": "Pioneiro",
+    "member_count": 1
+  },
+  {
+    "id": "cr-0034",
+    "cell_name": "Pioneiros Substance Power",
+    "raw_cell_name": "Pioneiros Substance Power",
+    "group_id": "cg-003",
+    "group_name": "Pioneiro",
+    "member_count": 31
+  },
+  {
+    "id": "cr-0035",
+    "cell_name": "Pioneiros Multitude",
+    "raw_cell_name": "Pioneiros Multitude",
+    "group_id": "cg-003",
+    "group_name": "Pioneiro",
+    "member_count": 5
+  },
+  {
+    "id": "cr-0036",
+    "cell_name": "PIONEIROS SUBSTANCE ACE",
+    "raw_cell_name": "PIONEIROS SUBSTANCE ACE",
+    "group_id": "cg-003",
+    "group_name": "Pioneiro",
+    "member_count": 6
+  },
+  {
+    "id": "cr-0037",
+    "cell_name": "PIONEIROS CHARIS EXCELENTES",
+    "raw_cell_name": "PIONEIROS CHARIS EXCELENTES",
+    "group_id": "cg-003",
+    "group_name": "Pioneiro",
+    "member_count": 15
+  },
+  {
+    "id": "cr-0038",
+    "cell_name": "PIONEIROS CHARIS ATALAIA",
+    "raw_cell_name": "PIONEIROS CHARIS ATALAIA",
+    "group_id": "cg-003",
+    "group_name": "Pioneiro",
+    "member_count": 15
+  },
+  {
+    "id": "cr-0039",
+    "cell_name": "PIONEIROS CHARIS ALCANCADOS",
+    "raw_cell_name": "PIONEIROS CHARIS ALCANCADOS",
+    "group_id": "cg-003",
+    "group_name": "Pioneiro",
+    "member_count": 13
+  },
+  {
+    "id": "cr-0040",
+    "cell_name": "Pioneiros Change",
+    "raw_cell_name": "Pioneiros Change",
+    "group_id": "cg-003",
+    "group_name": "Pioneiro",
+    "member_count": 8
+  },
+  {
+    "id": "cr-0041",
+    "cell_name": "Pioneiros Substance Of Faith",
+    "raw_cell_name": "Pioneiros Substance Of Faith",
+    "group_id": "cg-003",
+    "group_name": "Pioneiro",
+    "member_count": 3
+  },
+  {
+    "id": "cr-0042",
+    "cell_name": "Pioneiros ASAH",
+    "raw_cell_name": "Pioneiros ASAH",
+    "group_id": "cg-003",
+    "group_name": "Pioneiro",
+    "member_count": 6
+  },
+  {
+    "id": "cr-0043",
+    "cell_name": "Excellence MAIN",
+    "raw_cell_name": "Excellence MAIN",
+    "group_id": "cg-003",
+    "group_name": "Pioneiro",
+    "member_count": 12
+  },
+  {
+    "id": "cr-0044",
+    "cell_name": "Pioneiros Excellence Shining",
+    "raw_cell_name": "Pioneiros Excellence Shining",
+    "group_id": "cg-003",
+    "group_name": "Pioneiro",
+    "member_count": 4
+  },
+  {
+    "id": "cr-0045",
+    "cell_name": "MIGHT WOMEN OF VALOR MAIN",
+    "raw_cell_name": "MIGHT WOMEN OF VALOR MAIN",
+    "group_id": "cg-004",
+    "group_name": "MWV",
+    "member_count": 32
+  },
+  {
+    "id": "cr-0046",
+    "cell_name": "PRECIOUS",
+    "raw_cell_name": "PRECIOUS",
+    "group_id": "cg-004",
+    "group_name": "MWV",
+    "member_count": 29
+  },
+  {
+    "id": "cr-0047",
+    "cell_name": "Teens of Wonders",
+    "raw_cell_name": "Teens of Wonders",
+    "group_id": "cg-004",
+    "group_name": "MWV",
+    "member_count": 18
+  },
+  {
+    "id": "cr-0048",
+    "cell_name": "CROWNED WITH PURPOSE",
+    "raw_cell_name": "CROWNED WITH PURPOSE",
+    "group_id": "cg-004",
+    "group_name": "MWV",
+    "member_count": 9
+  },
+  {
+    "id": "cr-0049",
+    "cell_name": "Graced By Wisdon",
+    "raw_cell_name": "Graced By Wisdon",
+    "group_id": "cg-004",
+    "group_name": "MWV",
+    "member_count": 26
+  },
+  {
+    "id": "cr-0050",
+    "cell_name": "Kairós",
+    "raw_cell_name": "Kairós",
+    "group_id": "cg-004",
+    "group_name": "MWV",
+    "member_count": 14
+  },
+  {
+    "id": "cr-0051",
+    "cell_name": "SHINING LIGHT",
+    "raw_cell_name": "SHINING LIGHT",
+    "group_id": "cg-004",
+    "group_name": "MWV",
+    "member_count": 10
+  },
+  {
+    "id": "cr-0052",
+    "cell_name": "TOW Pearls",
+    "raw_cell_name": "TOW Pearls",
+    "group_id": "cg-004",
+    "group_name": "MWV",
+    "member_count": 7
+  },
+  {
+    "id": "cr-0053",
+    "cell_name": "Phronesis",
+    "raw_cell_name": "Phronesis",
+    "group_id": "cg-004",
+    "group_name": "MWV",
+    "member_count": 7
+  },
+  {
+    "id": "cr-0054",
+    "cell_name": "Agape",
+    "raw_cell_name": "Agape",
+    "group_id": "cg-004",
+    "group_name": "MWV",
+    "member_count": 2
+  },
+  {
+    "id": "cr-0055",
+    "cell_name": "CELL MAIN-Quens Of Glory",
+    "raw_cell_name": "CELL MAIN-Quens Of Glory",
+    "group_id": "cg-005",
+    "group_name": "QOG",
+    "member_count": 14
+  },
+  {
+    "id": "cr-0056",
+    "cell_name": "CELL MAIN-Queens Of Glory",
+    "raw_cell_name": "CELL MAIN-Queens Of Glory",
+    "group_id": "cg-005",
+    "group_name": "QOG",
+    "member_count": 3
+  },
+  {
+    "id": "cr-0057",
+    "cell_name": "CELL 3 -Queens of Glory Prolifics",
+    "raw_cell_name": "CELL 3 -Queens of Glory Prolifics",
+    "group_id": "cg-005",
+    "group_name": "QOG",
+    "member_count": 11
+  },
+  {
+    "id": "cr-0058",
+    "cell_name": "CELL 3 - Queens of Glory Bold D",
+    "raw_cell_name": "CELL 3 - Queens of Glory Bold D",
+    "group_id": "cg-005",
+    "group_name": "QOG",
+    "member_count": 15
+  },
+  {
+    "id": "cr-0059",
+    "cell_name": "CELL 1-Queens of Glory Excellency",
+    "raw_cell_name": "CELL 1-Queens of Glory Excellency",
+    "group_id": "cg-005",
+    "group_name": "QOG",
+    "member_count": 12
+  },
+  {
+    "id": "cr-0060",
+    "cell_name": "CELL 2-Queens of Glory Excellency A",
+    "raw_cell_name": "CELL 2-Queens of Glory Excellency A",
+    "group_id": "cg-005",
+    "group_name": "QOG",
+    "member_count": 4
+  },
+  {
+    "id": "cr-0061",
+    "cell_name": "CELL 4-Queens of Glory Multiplied",
+    "raw_cell_name": "CELL 4-Queens of Glory Multiplied",
+    "group_id": "cg-005",
+    "group_name": "QOG",
+    "member_count": 4
+  },
+  {
+    "id": "cr-0062",
+    "cell_name": "CELL 5 - Queens of Glory Virtuous B",
+    "raw_cell_name": "CELL 5 - Queens of Glory Virtuous B",
+    "group_id": "cg-005",
+    "group_name": "QOG",
+    "member_count": 7
+  },
+  {
+    "id": "cr-0063",
+    "cell_name": "CELL 1 - Queens of Glory Bold Main",
+    "raw_cell_name": "CELL 1 - Queens of Glory Bold Main",
+    "group_id": "cg-005",
+    "group_name": "QOG",
+    "member_count": 21
+  },
+  {
+    "id": "cr-0064",
+    "cell_name": "CELL 2 - Queens of Glory Bold C",
+    "raw_cell_name": "CELL 2 - Queens of Glory Bold C",
+    "group_id": "cg-005",
+    "group_name": "QOG",
+    "member_count": 4
+  },
+  {
+    "id": "cr-0065",
+    "cell_name": "CELL 5 - Queens of Glory Bold G",
+    "raw_cell_name": "CELL 5 - Queens of Glory Bold G",
+    "group_id": "cg-005",
+    "group_name": "QOG",
+    "member_count": 19
+  },
+  {
+    "id": "cr-0066",
+    "cell_name": "CELL 5 - Queens of Glory Bold H Lider: Sabina",
+    "raw_cell_name": "CELL 5 - Queens of Glory Bold H                                                                      Lider:                            Sabina",
+    "group_id": "cg-005",
+    "group_name": "QOG",
+    "member_count": 34
+  },
+  {
+    "id": "cr-0067",
+    "cell_name": "SUB-GROUP MAIN",
+    "raw_cell_name": "SUB-GROUP MAIN",
+    "group_id": "cg-005",
+    "group_name": "QOG",
+    "member_count": 1
+  },
+  {
+    "id": "cr-0068",
+    "cell_name": "PHRONESIS CHAMPIONS A",
+    "raw_cell_name": "PHRONESIS CHAMPIONS A",
+    "group_id": "cg-006",
+    "group_name": "Phronesis",
+    "member_count": 11
+  },
+  {
+    "id": "cr-0069",
+    "cell_name": "PHRONESIS BUSINESS Main",
+    "raw_cell_name": "PHRONESIS BUSINESS Main",
+    "group_id": "cg-006",
+    "group_name": "Phronesis",
+    "member_count": 67
+  },
+  {
+    "id": "cr-0070",
+    "cell_name": "PHRONESIS BUSINESS A",
+    "raw_cell_name": "PHRONESIS BUSINESS A",
+    "group_id": "cg-006",
+    "group_name": "Phronesis",
+    "member_count": 2
+  },
+  {
+    "id": "cr-0071",
+    "cell_name": "PHRONESIS BUSINESS WELLNESS",
+    "raw_cell_name": "PHRONESIS BUSINESS WELLNESS",
+    "group_id": "cg-006",
+    "group_name": "Phronesis",
+    "member_count": 2
+  },
+  {
+    "id": "cr-0072",
+    "cell_name": "PHRONESIS BUSINESS DYNAMIC",
+    "raw_cell_name": "PHRONESIS BUSINESS DYNAMIC",
+    "group_id": "cg-006",
+    "group_name": "Phronesis",
+    "member_count": 1
+  },
+  {
+    "id": "cr-0073",
+    "cell_name": "PHRONESIS BUSINESS LIGHT IF LIFE",
+    "raw_cell_name": "PHRONESIS BUSINESS LIGHT IF LIFE",
+    "group_id": "cg-006",
+    "group_name": "Phronesis",
+    "member_count": 2
+  },
+  {
+    "id": "cr-0074",
+    "cell_name": "PHRONESIS BUSINESS CONQUERORS",
+    "raw_cell_name": "PHRONESIS BUSINESS CONQUERORS",
+    "group_id": "cg-006",
+    "group_name": "Phronesis",
+    "member_count": 2
+  },
+  {
+    "id": "cr-0075",
+    "cell_name": "PHRONESIS BUSINESS LIGHT",
+    "raw_cell_name": "PHRONESIS BUSINESS LIGHT",
+    "group_id": "cg-006",
+    "group_name": "Phronesis",
+    "member_count": 2
+  },
+  {
+    "id": "cr-0076",
+    "cell_name": "PHRONESIS CHAMPIONS E",
+    "raw_cell_name": "PHRONESIS CHAMPIONS E",
+    "group_id": "cg-006",
+    "group_name": "Phronesis",
+    "member_count": 1
+  },
+  {
+    "id": "cr-0077",
+    "cell_name": "PHRONESIS CHAMPIONS Main",
+    "raw_cell_name": "PHRONESIS CHAMPIONS Main",
+    "group_id": "cg-006",
+    "group_name": "Phronesis",
+    "member_count": 9
+  },
+  {
+    "id": "cr-0078",
+    "cell_name": "PHRONESIS CHAMPIONS B",
+    "raw_cell_name": "PHRONESIS CHAMPIONS B",
+    "group_id": "cg-006",
+    "group_name": "Phronesis",
+    "member_count": 6
+  },
+  {
+    "id": "cr-0079",
+    "cell_name": "PHRONESIS CHAMPIONS C",
+    "raw_cell_name": "PHRONESIS CHAMPIONS C",
+    "group_id": "cg-006",
+    "group_name": "Phronesis",
+    "member_count": 1
+  },
+  {
+    "id": "cr-0080",
+    "cell_name": "PHRONESIS CHAMPIONS D",
+    "raw_cell_name": "PHRONESIS CHAMPIONS D",
+    "group_id": "cg-006",
+    "group_name": "Phronesis",
+    "member_count": 1
+  },
+  {
+    "id": "cr-0081",
+    "cell_name": "PHRONESIS DOERS Main",
+    "raw_cell_name": "PHRONESIS DOERS Main",
+    "group_id": "cg-006",
+    "group_name": "Phronesis",
+    "member_count": 15
+  },
+  {
+    "id": "cr-0082",
+    "cell_name": "PHRONESIS DOERS A",
+    "raw_cell_name": "PHRONESIS DOERS A",
+    "group_id": "cg-006",
+    "group_name": "Phronesis",
+    "member_count": 12
+  },
+  {
+    "id": "cr-0083",
+    "cell_name": "PHRONESIS DOERS B",
+    "raw_cell_name": "PHRONESIS DOERS B",
+    "group_id": "cg-006",
+    "group_name": "Phronesis",
+    "member_count": 3
+  },
+  {
+    "id": "cr-0084",
+    "cell_name": "PHRONESIS DOERS C",
+    "raw_cell_name": "PHRONESIS DOERS C",
+    "group_id": "cg-006",
+    "group_name": "Phronesis",
+    "member_count": 1
+  },
+  {
+    "id": "cr-0085",
+    "cell_name": "PHRONESIS DOERS D",
+    "raw_cell_name": "PHRONESIS DOERS D",
+    "group_id": "cg-006",
+    "group_name": "Phronesis",
+    "member_count": 1
+  },
+  {
+    "id": "cr-0086",
+    "cell_name": "PHRONESIS DOERS E",
+    "raw_cell_name": "PHRONESIS DOERS E",
+    "group_id": "cg-006",
+    "group_name": "Phronesis",
+    "member_count": 1
+  },
+  {
+    "id": "cr-0087",
+    "cell_name": "PHRONESIS DOERS E1",
+    "raw_cell_name": "PHRONESIS DOERS E1",
+    "group_id": "cg-006",
+    "group_name": "Phronesis",
+    "member_count": 1
+  },
+  {
+    "id": "cr-0088",
+    "cell_name": "PHRONESIS DOERS H",
+    "raw_cell_name": "PHRONESIS DOERS H",
+    "group_id": "cg-006",
+    "group_name": "Phronesis",
+    "member_count": 1
+  },
+  {
+    "id": "cr-0089",
+    "cell_name": "PHRONESIS DOERS I",
+    "raw_cell_name": "PHRONESIS DOERS I",
+    "group_id": "cg-006",
+    "group_name": "Phronesis",
+    "member_count": 1
+  },
+  {
+    "id": "cr-0090",
+    "cell_name": "MBZ MAIN",
+    "raw_cell_name": "MBZ MAIN",
+    "group_id": "cg-007",
+    "group_name": "Zion Nation",
+    "member_count": 21
+  },
+  {
+    "id": "cr-0091",
+    "cell_name": "MBZ A",
+    "raw_cell_name": "MBZ  A",
+    "group_id": "cg-007",
+    "group_name": "Zion Nation",
+    "member_count": 4
+  },
+  {
+    "id": "cr-0092",
+    "cell_name": "MBZ B",
+    "raw_cell_name": "MBZ B",
+    "group_id": "cg-007",
+    "group_name": "Zion Nation",
+    "member_count": 8
+  },
+  {
+    "id": "cr-0093",
+    "cell_name": "MBZ C",
+    "raw_cell_name": "MBZ C",
+    "group_id": "cg-007",
+    "group_name": "Zion Nation",
+    "member_count": 19
+  },
+  {
+    "id": "cr-0094",
+    "cell_name": "MBZ F",
+    "raw_cell_name": "MBZ F",
+    "group_id": "cg-007",
+    "group_name": "Zion Nation",
+    "member_count": 5
+  },
+  {
+    "id": "cr-0095",
+    "cell_name": "MBZ H",
+    "raw_cell_name": "MBZ H",
+    "group_id": "cg-007",
+    "group_name": "Zion Nation",
+    "member_count": 2
+  },
+  {
+    "id": "cr-0096",
+    "cell_name": "MBZ I",
+    "raw_cell_name": "MBZ I",
+    "group_id": "cg-007",
+    "group_name": "Zion Nation",
+    "member_count": 1
+  },
+  {
+    "id": "cr-0097",
+    "cell_name": "DISCOVERY MAIN",
+    "raw_cell_name": "DISCOVERY MAIN",
+    "group_id": "cg-007",
+    "group_name": "Zion Nation",
+    "member_count": 9
+  },
+  {
+    "id": "cr-0098",
+    "cell_name": "EXECUTIVAS",
+    "raw_cell_name": "EXECUTIVAS",
+    "group_id": "cg-007",
+    "group_name": "Zion Nation",
+    "member_count": 7
+  },
+  {
+    "id": "cr-0099",
+    "cell_name": "THE BEAUTIE OF ZION A-1",
+    "raw_cell_name": "THE BEAUTIE OF ZION A-1",
+    "group_id": "cg-007",
+    "group_name": "Zion Nation",
+    "member_count": 15
+  },
+  {
+    "id": "cr-0100",
+    "cell_name": "LIONESS B",
+    "raw_cell_name": "LIONESS B",
+    "group_id": "cg-007",
+    "group_name": "Zion Nation",
+    "member_count": 3
+  },
+  {
+    "id": "cr-0101",
+    "cell_name": "NACAO DE HEROIS",
+    "raw_cell_name": "NACAO DE HEROIS",
+    "group_id": "cg-007",
+    "group_name": "Zion Nation",
+    "member_count": 9
+  },
+  {
+    "id": "cr-0102",
+    "cell_name": "Blossom Main: Stela Jaqueta",
+    "raw_cell_name": "Blossom Main: Stela Jaqueta",
+    "group_id": "cg-008",
+    "group_name": "Blossom",
+    "member_count": 24
+  },
+  {
+    "id": "cr-0103",
+    "cell_name": "Blossom Diamante Main: Cristina Malauene",
+    "raw_cell_name": "Blossom Diamante Main: Cristina Malauene",
+    "group_id": "cg-008",
+    "group_name": "Blossom",
+    "member_count": 13
+  },
+  {
+    "id": "cr-0104",
+    "cell_name": "Blossom Diamante A: Telma Santana",
+    "raw_cell_name": "Blossom Diamante A: Telma Santana",
+    "group_id": "cg-008",
+    "group_name": "Blossom",
+    "member_count": 4
+  },
+  {
+    "id": "cr-0105",
+    "cell_name": "Blossom Diamante B: Gervasia Lapone",
+    "raw_cell_name": "Blossom Diamante B: Gervasia Lapone",
+    "group_id": "cg-008",
+    "group_name": "Blossom",
+    "member_count": 6
+  },
+  {
+    "id": "cr-0106",
+    "cell_name": "Blossom Diamante C: Salito Jose",
+    "raw_cell_name": "Blossom Diamante C: Salito Jose",
+    "group_id": "cg-008",
+    "group_name": "Blossom",
+    "member_count": 6
+  },
+  {
+    "id": "cr-0107",
+    "cell_name": "Blossom Diamante C1:Araujo",
+    "raw_cell_name": "Blossom Diamante C1:Araujo",
+    "group_id": "cg-008",
+    "group_name": "Blossom",
+    "member_count": 2
+  },
+  {
+    "id": "cr-0108",
+    "cell_name": "Blossom Diamante C2:Elisa Bernardo",
+    "raw_cell_name": "Blossom Diamante C2:Elisa Bernardo",
+    "group_id": "cg-008",
+    "group_name": "Blossom",
+    "member_count": 2
+  },
+  {
+    "id": "cr-0109",
+    "cell_name": "Blossom Diamante C3:Fernando Caetano",
+    "raw_cell_name": "Blossom Diamante C3:Fernando Caetano",
+    "group_id": "cg-008",
+    "group_name": "Blossom",
+    "member_count": 5
+  },
+  {
+    "id": "cr-0110",
+    "cell_name": "Blossom Perfection Main: Francisca Nobre",
+    "raw_cell_name": "Blossom Perfection Main: Francisca Nobre",
+    "group_id": "cg-008",
+    "group_name": "Blossom",
+    "member_count": 8
+  },
+  {
+    "id": "cr-0111",
+    "cell_name": "Blossom Perfection Main for The Nations: Maria Telma Matsinhe",
+    "raw_cell_name": "Blossom Perfection Main for The Nations: Maria Telma Matsinhe",
+    "group_id": "cg-008",
+    "group_name": "Blossom",
+    "member_count": 4
+  },
+  {
+    "id": "cr-0112",
+    "cell_name": "Blossom Perfection A: Sheila Sitoe",
+    "raw_cell_name": "Blossom Perfection A: Sheila Sitoe",
+    "group_id": "cg-008",
+    "group_name": "Blossom",
+    "member_count": 5
+  },
+  {
+    "id": "cr-0113",
+    "cell_name": "Blossom Perfection B: Nelia Boane",
+    "raw_cell_name": "Blossom Perfection B: Nelia Boane",
+    "group_id": "cg-008",
+    "group_name": "Blossom",
+    "member_count": 6
+  },
+  {
+    "id": "cr-0114",
+    "cell_name": "Blossom Perfection C3: Marilia Magingane",
+    "raw_cell_name": "Blossom Perfection C3: Marilia Magingane",
+    "group_id": "cg-008",
+    "group_name": "Blossom",
+    "member_count": 3
+  },
+  {
+    "id": "cr-0115",
+    "cell_name": "WEALTH NATION MAIN",
+    "raw_cell_name": "WEALTH NATION MAIN",
+    "group_id": "cg-009",
+    "group_name": "Wealth Nation",
+    "member_count": 34
+  },
+  {
+    "id": "cr-0116",
+    "cell_name": "WEALTH NATION TRANSFORMATION",
+    "raw_cell_name": "WEALTH NATION TRANSFORMATION",
+    "group_id": "cg-009",
+    "group_name": "Wealth Nation",
+    "member_count": 14
+  },
+  {
+    "id": "cr-0117",
+    "cell_name": "WEALTH NATION TRANSFORMATION GRACED",
+    "raw_cell_name": "WEALTH NATION TRANSFORMATION GRACED",
+    "group_id": "cg-009",
+    "group_name": "Wealth Nation",
+    "member_count": 4
+  },
+  {
+    "id": "cr-0118",
+    "cell_name": "WEALTH NATION HELPERS",
+    "raw_cell_name": "WEALTH NATION HELPERS",
+    "group_id": "cg-009",
+    "group_name": "Wealth Nation",
+    "member_count": 5
+  },
+  {
+    "id": "cr-0119",
+    "cell_name": "WEALTH NATION ROYALTY",
+    "raw_cell_name": "WEALTH NATION ROYALTY",
+    "group_id": "cg-009",
+    "group_name": "Wealth Nation",
+    "member_count": 7
+  },
+  {
+    "id": "cr-0120",
+    "cell_name": "WEALTH NATION ROYALTY CHOSEN",
+    "raw_cell_name": "WEALTH NATION ROYALTY CHOSEN",
+    "group_id": "cg-009",
+    "group_name": "Wealth Nation",
+    "member_count": 3
+  },
+  {
+    "id": "cr-0121",
+    "cell_name": "WEALTH NATION AGAPE",
+    "raw_cell_name": "WEALTH NATION AGAPE",
+    "group_id": "cg-009",
+    "group_name": "Wealth Nation",
+    "member_count": 5
+  },
+  {
+    "id": "cr-0122",
+    "cell_name": "WEALTH NATION SALVATION",
+    "raw_cell_name": "WEALTH NATION SALVATION",
+    "group_id": "cg-009",
+    "group_name": "Wealth Nation",
+    "member_count": 3
+  },
+  {
+    "id": "cr-0123",
+    "cell_name": "WEALTH NATION HOLY",
+    "raw_cell_name": "WEALTH NATION HOLY",
+    "group_id": "cg-009",
+    "group_name": "Wealth Nation",
+    "member_count": 9
+  },
+  {
+    "id": "cr-0124",
+    "cell_name": "WEALTH NATION HOLY VIRTUE",
+    "raw_cell_name": "WEALTH NATION HOLY VIRTUE",
+    "group_id": "cg-009",
+    "group_name": "Wealth Nation",
+    "member_count": 2
+  },
+  {
+    "id": "cr-0125",
+    "cell_name": "MAES DE FE",
+    "raw_cell_name": "MAES DE FE",
+    "group_id": "cg-010",
+    "group_name": "Pais da Fé",
+    "member_count": 28
+  },
+  {
+    "id": "cr-0126",
+    "cell_name": "NOME CELULA: PAIS DE FE",
+    "raw_cell_name": "NOME CELULA: PAIS DE FE",
+    "group_id": "cg-010",
+    "group_name": "Pais da Fé",
+    "member_count": 18
+  },
+  {
+    "id": "cr-0127",
+    "cell_name": "NOME CELULA: PAIS DE FE A",
+    "raw_cell_name": "NOME CELULA: PAIS DE FE A",
+    "group_id": "cg-010",
+    "group_name": "Pais da Fé",
+    "member_count": 4
+  },
+  {
+    "id": "cr-0128",
+    "cell_name": "NOME CELULA PAIS DE FE B",
+    "raw_cell_name": "NOME CELULA PAIS DE FE B",
+    "group_id": "cg-010",
+    "group_name": "Pais da Fé",
+    "member_count": 5
+  },
+  {
+    "id": "cr-0129",
+    "cell_name": "NOME CELULA PAIS DE FE NKOBE",
+    "raw_cell_name": "NOME CELULA PAIS DE FE NKOBE",
+    "group_id": "cg-010",
+    "group_name": "Pais da Fé",
+    "member_count": 5
+  },
+  {
+    "id": "cr-0130",
+    "cell_name": "NOME CELULA PAIS DE FE NDLAVELA",
+    "raw_cell_name": "NOME CELULA PAIS DE FE NDLAVELA",
+    "group_id": "cg-010",
+    "group_name": "Pais da Fé",
+    "member_count": 8
+  },
+  {
+    "id": "cr-0131",
+    "cell_name": "Diplomatas Victory",
+    "raw_cell_name": "Diplomatas Victory",
+    "group_id": "cg-011",
+    "group_name": "Diplomatas",
+    "member_count": 16
+  },
+  {
+    "id": "cr-0132",
+    "cell_name": "Diplomata Graca Abundante",
+    "raw_cell_name": "Diplomata Graca Abundante",
+    "group_id": "cg-011",
+    "group_name": "Diplomatas",
+    "member_count": 8
+  },
+  {
+    "id": "cr-0133",
+    "cell_name": "Diplomatas The Chosen",
+    "raw_cell_name": "Diplomatas The Chosen",
+    "group_id": "cg-011",
+    "group_name": "Diplomatas",
+    "member_count": 15
+  },
+  {
+    "id": "cr-0134",
+    "cell_name": "Diplomats Victory B",
+    "raw_cell_name": "Diplomats Victory B",
+    "group_id": "cg-011",
+    "group_name": "Diplomatas",
+    "member_count": 8
+  },
+  {
+    "id": "cr-0135",
+    "cell_name": "Diplomats B1",
+    "raw_cell_name": "Diplomats B1",
+    "group_id": "cg-011",
+    "group_name": "Diplomatas",
+    "member_count": 5
+  },
+  {
+    "id": "cr-0136",
+    "cell_name": "Diplomats koinonia",
+    "raw_cell_name": "Diplomats koinonia",
+    "group_id": "cg-011",
+    "group_name": "Diplomatas",
+    "member_count": 7
+  },
+  {
+    "id": "cr-0137",
+    "cell_name": "Diplomatas Jireh A",
+    "raw_cell_name": "Diplomatas Jireh A",
+    "group_id": "cg-011",
+    "group_name": "Diplomatas",
+    "member_count": 8
+  },
+  {
+    "id": "cr-0138",
+    "cell_name": "ESTRELAS DE SIÃO",
+    "raw_cell_name": "ESTRELAS DE SIÃO",
+    "group_id": "cg-012",
+    "group_name": "Estrelas de Siao",
+    "member_count": 9
+  },
+  {
+    "id": "cr-0139",
+    "cell_name": "ESTRELAS DE SIÃO A",
+    "raw_cell_name": "ESTRELAS DE SIÃO A",
+    "group_id": "cg-012",
+    "group_name": "Estrelas de Siao",
+    "member_count": 8
+  },
+  {
+    "id": "cr-0140",
+    "cell_name": "ESTRELAS DE SIÃO B",
+    "raw_cell_name": "ESTRELAS DE SIÃO B",
+    "group_id": "cg-012",
+    "group_name": "Estrelas de Siao",
+    "member_count": 6
+  },
+  {
+    "id": "cr-0141",
+    "cell_name": "ESTRELAS DE SIÃO C",
+    "raw_cell_name": "ESTRELAS DE SIÃO C",
+    "group_id": "cg-012",
+    "group_name": "Estrelas de Siao",
+    "member_count": 5
+  },
+  {
+    "id": "cr-0142",
+    "cell_name": "ESTRELAS DE SIÃO D",
+    "raw_cell_name": "ESTRELAS DE SIÃO D",
+    "group_id": "cg-012",
+    "group_name": "Estrelas de Siao",
+    "member_count": 8
+  },
+  {
+    "id": "cr-0143",
+    "cell_name": "ESTRELAS DE SIÃO E",
+    "raw_cell_name": "ESTRELAS DE SIÃO E",
+    "group_id": "cg-012",
+    "group_name": "Estrelas de Siao",
+    "member_count": 16
+  },
+  {
+    "id": "cr-0144",
+    "cell_name": "ESTRELAS DE SIÃO E1",
+    "raw_cell_name": "ESTRELAS DE SIÃO E1",
+    "group_id": "cg-012",
+    "group_name": "Estrelas de Siao",
+    "member_count": 6
+  },
+  {
+    "id": "cr-0145",
+    "cell_name": "ESTRELAS DE SIÃO E2",
+    "raw_cell_name": "ESTRELAS  DE SIÃO E2",
+    "group_id": "cg-012",
+    "group_name": "Estrelas de Siao",
+    "member_count": 3
+  },
+  {
+    "id": "cr-0146",
+    "cell_name": "ESTRELAS DE SIÃO F",
+    "raw_cell_name": "ESTRELAS DE SIÃO F",
+    "group_id": "cg-012",
+    "group_name": "Estrelas de Siao",
+    "member_count": 5
+  },
+  {
+    "id": "cr-0147",
+    "cell_name": "Celula: PEROLAS DO REINO DIVINAS MAIN - ANTONIA PINTO",
+    "raw_cell_name": "Celula: PEROLAS DO REINO DIVINAS MAIN - ANTONIA PINTO",
+    "group_id": "cg-013",
+    "group_name": "Perolas do Reino",
+    "member_count": 7
+  },
+  {
+    "id": "cr-0148",
+    "cell_name": "Celula: PEROLAS DO REINO PAZ DE CRISTO - VERONICA MACUACUA",
+    "raw_cell_name": "Celula: PEROLAS DO REINO PAZ DE CRISTO - VERONICA MACUACUA",
+    "group_id": "cg-013",
+    "group_name": "Perolas do Reino",
+    "member_count": 12
+  },
+  {
+    "id": "cr-0149",
+    "cell_name": "Celula: PEROLAS DO REINO MAIN - EUNICE NHAVENE",
+    "raw_cell_name": "Celula: PEROLAS DO REINO MAIN - EUNICE NHAVENE",
+    "group_id": "cg-013",
+    "group_name": "Perolas do Reino",
+    "member_count": 8
+  },
+  {
+    "id": "cr-0150",
+    "cell_name": "Celula: PEROLAS DO REINO FAITH AND HOPE - MARILIA FERRÃO",
+    "raw_cell_name": "Celula: PEROLAS DO REINO FAITH AND HOPE - MARILIA FERRÃO",
+    "group_id": "cg-013",
+    "group_name": "Perolas do Reino",
+    "member_count": 22
+  },
+  {
+    "id": "cr-0151",
+    "cell_name": "Celula: PEROLAS DO REINO PERFEITAS - MERCI UBISSE",
+    "raw_cell_name": "Celula: PEROLAS DO REINO PERFEITAS - MERCI UBISSE",
+    "group_id": "cg-013",
+    "group_name": "Perolas do Reino",
+    "member_count": 12
+  },
+  {
+    "id": "cr-0152",
+    "cell_name": "Celula: PEROLAS DO REINO DIVINAS - ABENCOADAS - PASCOA MALIPA",
+    "raw_cell_name": "Celula: PEROLAS DO REINO DIVINAS - ABENCOADAS - PASCOA MALIPA",
+    "group_id": "cg-013",
+    "group_name": "Perolas do Reino",
+    "member_count": 5
+  },
+  {
+    "id": "cr-0153",
+    "cell_name": "Agathos Main",
+    "raw_cell_name": "Agathos Main",
+    "group_id": "cg-014",
+    "group_name": "Agathos",
+    "member_count": 15
+  },
+  {
+    "id": "cr-0154",
+    "cell_name": "Agathos Excellence",
+    "raw_cell_name": "Agathos Excellence",
+    "group_id": "cg-014",
+    "group_name": "Agathos",
+    "member_count": 14
+  },
+  {
+    "id": "cr-0155",
+    "cell_name": "Agathos Light",
+    "raw_cell_name": "Agathos Light",
+    "group_id": "cg-014",
+    "group_name": "Agathos",
+    "member_count": 10
+  },
+  {
+    "id": "cr-0156",
+    "cell_name": "Agathos Purpose",
+    "raw_cell_name": "Agathos Purpose",
+    "group_id": "cg-014",
+    "group_name": "Agathos",
+    "member_count": 9
+  },
+  {
+    "id": "cr-0157",
+    "cell_name": "Agathos Virtous",
+    "raw_cell_name": "Agathos Virtous",
+    "group_id": "cg-014",
+    "group_name": "Agathos",
+    "member_count": 1
+  },
+  {
+    "id": "cr-0158",
+    "cell_name": "Agathos Purpose A",
+    "raw_cell_name": "Agathos Purpose A",
+    "group_id": "cg-014",
+    "group_name": "Agathos",
+    "member_count": 1
+  },
+  {
+    "id": "cr-0159",
+    "cell_name": "Agathos Eagles",
+    "raw_cell_name": "Agathos Eagles",
+    "group_id": "cg-014",
+    "group_name": "Agathos",
+    "member_count": 2
+  },
+  {
+    "id": "cr-0160",
+    "cell_name": "Agathos Light A",
+    "raw_cell_name": "Agathos Light A",
+    "group_id": "cg-014",
+    "group_name": "Agathos",
+    "member_count": 6
+  },
+  {
+    "id": "cr-0161",
+    "cell_name": "Celula: TRANSFORMADAS",
+    "raw_cell_name": "Celula: TRANSFORMADAS",
+    "group_id": "cg-015",
+    "group_name": "Transformada",
+    "member_count": 50
+  },
+  {
+    "id": "cr-0162",
+    "cell_name": "Celula: Dominio Main",
+    "raw_cell_name": "Celula: Dominio Main",
+    "group_id": "cg-016",
+    "group_name": "Dominio",
+    "member_count": 18
+  },
+  {
+    "id": "cr-0163",
+    "cell_name": "Visionarios",
+    "raw_cell_name": "Visionarios",
+    "group_id": "cg-017",
+    "group_name": "Visionarios",
+    "member_count": 14
+  }
+];
+
+  const GROUP_STATUSES = ["Activo", "Em Crescimento", "Precisa de Atenção", "Inactivo"];
+  const LEADER_TITLES = ["Irmão", "Irmã", "Pastor", "Diácono"];
 
   function buildCellGroupsSeed() {
     const cellGroups = [];
     const cellRegistry = [];
-    let cellSeq = 1;
 
-    CELL_GROUP_DEFINITIONS.forEach((def, index) => {
-      const groupId = `cg-${String(index + 1).padStart(3, "0")}`;
+    REAL_CELL_GROUPS.forEach((def, index) => {
       const status = index % 11 === 0
         ? "Inactivo"
         : index % 7 === 0
-          ? "Precisa de Aten��o"
+          ? "Precisa de Atenção"
           : index % 4 === 0
             ? "Em Crescimento"
             : "Activo";
-      const membersPerCell = 7 + (index % 6);
-      const leaderName = index % 3 === 0 ? `Líder ${def.name.split(" ")[0]}` : "";
+      const leaderName = index % 3 === 0 ? ("Líder " + def.name.split(" ")[0]) : "";
 
       cellGroups.push({
-        id: groupId,
+        id: def.id,
         group_name: def.name,
+        name: def.name,
         leader_name: leaderName,
         church_id: "church-hq",
         total_cells: def.total_cells,
-        total_members: def.total_cells * membersPerCell,
-        status,
+        total_members: def.total_members,
+        status: status,
         responsible_area: "Sister Eduarda / Cell Reports",
-        needs_review: Boolean(def.needs_review),
+        needs_review: false,
         created_by: "Sister Eduarda",
         updated_by: "Sister Eduarda",
         created_at: "2026-07-01",
-        updated_at: "2026-07-10"
+        updated_at: "2026-08-21"
       });
+    });
 
-      for (let i = 1; i <= def.total_cells; i += 1) {
-        const seed = index * 17 + i * 3;
-        const attendance = 5 + (seed % 16);
-        const firstTimers = seed % 4;
-        const newConverts = seed % 3;
-        const offering = 350 + attendance * 90 + firstTimers * 110;
-        const rs = Math.max(1, Math.floor(attendance / 5));
-        const cellStatus = status === "Precisa de Aten��o" && i % 2 === 0
-          ? "Precisa de Aten��o"
-          : status === "Inactivo"
-            ? "Inactivo"
-            : "Activo";
+    REAL_CELLS_REGISTRY.forEach((cellDef, index) => {
+      const seed = index * 17 + 3;
+      const attendance = Math.max(5, Math.floor(cellDef.member_count * 0.8));
+      const firstTimers = seed % 4;
+      const newConverts = seed % 3;
+      const offering = 350 + attendance * 90 + firstTimers * 110;
+      const rs = Math.max(1, Math.floor(attendance / 5));
 
-        cellRegistry.push({
-          id: `cr-${String(cellSeq).padStart(4, "0")}`,
-          cell_name: `${def.name} ${i}`,
-          group_id: groupId,
-          group_name: def.name,
-          leader_title: LEADER_TITLES[seed % LEADER_TITLES.length],
-          leader_name: leaderName || `Líder ${i}`,
-          church_id: "church-hq",
-          attendance,
-          first_timers: firstTimers,
-          new_converts: newConverts,
-          offering,
-          rs,
-          observation: firstTimers + newConverts >= 4 ? "EXPLOSAO - pronta para multiplica��o." : "",
-          status: cellStatus,
-          report_week: "Julho Semana 1",
-          created_by: "Sister Eduarda",
-          updated_by: "Sister Eduarda",
-          created_at: "2026-07-05",
-          updated_at: "2026-07-10"
-        });
-        cellSeq += 1;
-      }
+      cellRegistry.push({
+        id: cellDef.id,
+        cell_name: cellDef.cell_name,
+        raw_cell_name: cellDef.raw_cell_name,
+        name: cellDef.cell_name,
+        group_id: cellDef.group_id,
+        cell_group_id: cellDef.group_id,
+        group_name: cellDef.group_name,
+        cell_group_name: cellDef.group_name,
+        leader_title: LEADER_TITLES[seed % LEADER_TITLES.length],
+        leader_name: "Líder " + (index + 1),
+        church_id: "church-hq",
+        attendance: attendance,
+        first_timers: firstTimers,
+        new_converts: newConverts,
+        offering: offering,
+        rs: rs,
+        member_count: cellDef.member_count,
+        observation: (firstTimers + newConverts >= 4) ? "EXPLOSAO - pronta para multiplicação." : "",
+        status: "Activo",
+        report_week: "Semana Actual",
+        created_by: "Sister Eduarda",
+        updated_by: "Sister Eduarda",
+        created_at: "2026-07-05",
+        updated_at: "2026-08-21"
+      });
     });
 
     return { cellGroups, cellRegistry };
   }
 
-  window.buildCellGroupsSeed = buildCellGroupsSeed;
+  const root = typeof window !== "undefined" ? window : globalThis;
+  root.buildCellGroupsSeed = buildCellGroupsSeed;
+  root.REAL_CELL_GROUPS = REAL_CELL_GROUPS;
+  root.REAL_CELLS_REGISTRY = REAL_CELLS_REGISTRY;
 })();

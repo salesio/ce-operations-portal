@@ -5,7 +5,7 @@
  * without exposing sensitive tokens, service keys, or backend secrets.
  */
 (function () {
-  const BUILD_VERSION = "2026.08.21-profile-write-guard";
+  const BUILD_VERSION = "2026.08.21-departments-cell-flow";
   const BUILD_TIMESTAMP = "2026-08-21T12:00:00.000Z";
 
   function readEnv(name) {

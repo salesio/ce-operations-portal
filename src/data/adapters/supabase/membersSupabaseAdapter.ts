@@ -19,6 +19,8 @@ import {
 import { getSupabaseFoundationClient } from "./supabaseClient";
 import { mapSupabaseError } from "./supabaseRepositoryBase";
 import type { SupabaseRow } from "./supabaseTypes";
+import { REAL_CELLS_LIST } from "../../seeds/cellsSeed";
+import { CELL_GROUP_DEFINITIONS } from "../../seeds/cellGroupsSeed";
 
 const TABLE = "members";
 const MEMBER_PAGE_DEFAULT_SIZE = 50;
@@ -265,7 +267,7 @@ export function getMembersDataSourceInfo() {
     lastQuery: memberLastState.lastQuery,
     lastError: memberLastState.lastError,
     lastRowsReturned: memberLastState.lastRowsReturned,
-    version: "2026.08.21-profile-write-guard",
+    version: "2026.08.21-departments-cell-flow",
     ready: true,
     fallback: false,
     checkedAt: new Date().toISOString(),
@@ -354,28 +356,29 @@ export async function listMembersPage(query: MemberListQuery = {}): Promise<Data
         groupTerms.push(`cell_group_id.eq.${groupIdStr}`);
       }
       if (groupNameStr) {
-        const safeGroup = groupNameStr.replace(/[%_,()]/g, " ").replace(/\s+/g, " ").trim();
+        const safeGroup = groupNameStr.replace(/['"(),.%_]/g, " ").replace(/\s+/g, " ").trim();
         if (safeGroup) {
           groupTerms.push(`cell_group_name.ilike.%${safeGroup}%`);
           groupTerms.push(`cell_name.ilike.%${safeGroup}%`);
         }
       }
-      if (typeof window !== "undefined" && (window as any).state?.cellRegistry) {
-        const registry = (window as any).state.cellRegistry || [];
-        const matchingCells = registry.filter((c: any) => {
-          if (groupIdStr && (String(c.group_id) === groupIdStr || String(c.cell_group_id) === groupIdStr)) return true;
-          if (groupNameStr) {
-            const gName = String(c.group_name || c.cell_group_name || "").toLowerCase();
-            return gName.includes(groupNameStr.toLowerCase()) || groupNameStr.toLowerCase().includes(gName);
-          }
-          return false;
-        });
-        matchingCells.forEach((c: any) => {
-          if (c.id) groupTerms.push(`cell_id.eq.${c.id}`);
-          const cNameClean = String(c.cell_name || c.name || "").replace(/[%_,()]/g, " ").replace(/\s+/g, " ").trim();
-          if (cNameClean) groupTerms.push(`cell_name.ilike.%${cNameClean}%`);
-        });
-      }
+      const allRegistry = [
+        ...((typeof window !== "undefined" && (window as any).state?.cellRegistry) || []),
+        ...REAL_CELLS_LIST
+      ];
+      const matchingCells = allRegistry.filter((c: any) => {
+        if (groupIdStr && (String(c.group_id) === groupIdStr || String(c.cell_group_id) === groupIdStr)) return true;
+        if (groupNameStr) {
+          const gName = String(c.group_name || c.cell_group_name || "").toLowerCase();
+          return gName.includes(groupNameStr.toLowerCase()) || groupNameStr.toLowerCase().includes(gName);
+        }
+        return false;
+      });
+      matchingCells.forEach((c: any) => {
+        if (c.id) groupTerms.push(`cell_id.eq.${c.id}`);
+        const rawName = String(c.raw_cell_name || c.cell_name || c.name || "").replace(/['"(),.%_]/g, " ").replace(/\s+/g, " ").trim();
+        if (rawName) groupTerms.push(`cell_name.ilike.%${rawName}%`);
+      });
       if (groupTerms.length > 0) {
         const uniqueTerms = Array.from(new Set(groupTerms));
         request = request.or(uniqueTerms.join(","));
@@ -390,27 +393,28 @@ export async function listMembersPage(query: MemberListQuery = {}): Promise<Data
         cellTerms.push(`cell_id.eq.${cellIdStr}`);
       }
       if (cellNameStr) {
-        const safeCell = cellNameStr.replace(/[%_,()]/g, " ").replace(/\s+/g, " ").trim();
+        const safeCell = cellNameStr.replace(/['"(),.%_]/g, " ").replace(/\s+/g, " ").trim();
         if (safeCell) {
           cellTerms.push(`cell_name.ilike.%${safeCell}%`);
         }
       }
-      if (typeof window !== "undefined" && (window as any).state?.cellRegistry) {
-        const registry = (window as any).state.cellRegistry || [];
-        const matchingCells = registry.filter((c: any) => {
-          if (cellIdStr && String(c.id) === cellIdStr) return true;
-          if (cellNameStr) {
-            const cName = String(c.cell_name || c.name || "").toLowerCase();
-            return cName.includes(cellNameStr.toLowerCase()) || cellNameStr.toLowerCase().includes(cName);
-          }
-          return false;
-        });
-        matchingCells.forEach((c: any) => {
-          if (c.id) cellTerms.push(`cell_id.eq.${c.id}`);
-          const cNameClean = String(c.cell_name || c.name || "").replace(/[%_,()]/g, " ").replace(/\s+/g, " ").trim();
-          if (cNameClean) cellTerms.push(`cell_name.ilike.%${cNameClean}%`);
-        });
-      }
+      const allRegistry = [
+        ...((typeof window !== "undefined" && (window as any).state?.cellRegistry) || []),
+        ...REAL_CELLS_LIST
+      ];
+      const matchingCells = allRegistry.filter((c: any) => {
+        if (cellIdStr && String(c.id) === cellIdStr) return true;
+        if (cellNameStr) {
+          const cName = String(c.cell_name || c.name || "").toLowerCase();
+          return cName.includes(cellNameStr.toLowerCase()) || cellNameStr.toLowerCase().includes(cName);
+        }
+        return false;
+      });
+      matchingCells.forEach((c: any) => {
+        if (c.id) cellTerms.push(`cell_id.eq.${c.id}`);
+        const rawName = String(c.raw_cell_name || c.cell_name || c.name || "").replace(/['"(),.%_]/g, " ").replace(/\s+/g, " ").trim();
+        if (rawName) cellTerms.push(`cell_name.ilike.%${rawName}%`);
+      });
       if (cellTerms.length > 0) {
         const uniqueTerms = Array.from(new Set(cellTerms));
         request = request.or(uniqueTerms.join(","));
@@ -433,7 +437,7 @@ export async function listMembersPage(query: MemberListQuery = {}): Promise<Data
     // A one-character search is intentionally not sent to PostgREST; it is too
     // broad for a live operational directory and causes avoidable full scans.
     if (search.length >= 2) {
-      const safe = search.replace(/[%_,()]/g, " ").replace(/\s+/g, " ").trim();
+      const safe = search.replace(/['"(),.%_]/g, " ").replace(/\s+/g, " ").trim();
       if (safe) request = request.or([
         `full_name.ilike.%${safe}%`, `first_name.ilike.%${safe}%`, `last_name.ilike.%${safe}%`,
         `primary_phone.ilike.%${safe}%`, `secondary_phone.ilike.%${safe}%`, `phone.ilike.%${safe}%`,

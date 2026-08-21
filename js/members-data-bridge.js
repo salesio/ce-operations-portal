@@ -9,7 +9,7 @@
 (function () {
   var STORAGE_KEY = "ce-data-layer:members";
   var fallbackMemory = null;
-  var BUILD_VERSION = "2026.08.21-profile-write-guard";
+  var BUILD_VERSION = "2026.08.21-departments-cell-flow";
 
   var lastState = {
     lastQuery: null,

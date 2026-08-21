@@ -5213,30 +5213,52 @@ function cellPortalMemberSource(cellId) {
   return state.members || [];
 }
 
+function portalNormalizeName(value = "") {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/^c[eé]lula\s*:\s*/i, "")
+    .replace(/^c[eé]lula\s+/i, "")
+    .replace(/^cell\s+/i, "")
+    .replace(/^nome\s+c[eé]lula\s*:\s*/i, "")
+    .replace(/^nome\s+c[eé]lula\s+/i, "")
+    .replace(/['"(),.%_-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
 function portalCellNameTokens(value = "") {
-  return portalText(value).split(/[^a-z0-9]+/).map((token) => token.replace(/s$/, "")).filter((token) => token.length >= 4 && !["cell", "celula", "main"].includes(token));
+  return portalText(value).split(/[^a-z0-9]+/).map((token) => token.replace(/s$/, "")).filter((token) => token.length >= 3 && !["cell", "celula", "main"].includes(token));
 }
 
 function portalCellNameMatchScore(selectedCell, memberCellName) {
+  const selectedNorm = portalNormalizeName(portalCellName(selectedCell));
+  const memberNorm = portalNormalizeName(memberCellName);
+  if (selectedNorm && memberNorm) {
+    if (selectedNorm === memberNorm) return 10;
+    if (selectedNorm.includes(memberNorm) || memberNorm.includes(selectedNorm)) return 8;
+  }
   const selectedTokens = portalCellNameTokens(portalCellName(selectedCell));
   const memberTokens = portalCellNameTokens(memberCellName);
   const shared = selectedTokens.filter((selected) => memberTokens.some((member) => member === selected || member.startsWith(selected) || selected.startsWith(member)));
-  return shared.length >= 2 ? shared.length : 0;
+  return shared.length >= 1 ? shared.length : 0;
 }
 
 async function resolveLegacyCellPortalName(repo, cell) {
-  const tokens = portalCellNameTokens(portalCellName(cell));
-  const anchor = tokens.sort((a, b) => b.length - a.length)[0];
-  if (!anchor) return "";
+  const cellTargetName = cell.raw_cell_name || cell.cell_name || cell.name || "";
+  const tokens = portalCellNameTokens(cellTargetName);
+  const anchor = tokens.sort((a, b) => b.length - a.length)[0] || cellTargetName.slice(0, 5);
+  if (!anchor) return cellTargetName;
   const result = await repo.listMembersPage({ page: 1, pageSize: 100, cellNameLike: anchor });
-  if (!result?.ok) return "";
+  if (!result?.ok) return cellTargetName;
   const matches = new Map();
   (result.data?.items || []).forEach((member) => {
     const name = String(member.cell_name || member.celula || "").trim();
     const score = portalCellNameMatchScore(cell, name);
     if (score) matches.set(name, Math.max(matches.get(name) || 0, score));
   });
-  return [...matches.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]?.[0] || "";
+  return [...matches.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]?.[0] || cellTargetName;
 }
 
 async function loadCellPortalMembers(cellId, { force = false } = {}) {
@@ -5252,24 +5274,25 @@ async function loadCellPortalMembers(cellId, { force = false } = {}) {
   pageState.cellId = cellId;
   pageState.resolvedCellName = "";
   try {
-    let result = await repo.listMembersPage({ page: pageState.page, pageSize: pageState.pageSize, cellId });
-    // Imported HQ records preserve the source cell name but may not have a
-    // foreign-key cell_id. Resolve a precise live name only when the ID query
-    // is empty; this keeps normal Cell Ministry records on the fast ID path.
-    if (result?.ok && !result.data?.totalCount) {
-      const cell = (state.cellRegistry || []).find((item) => String(item.id) === String(cellId));
-      const legacyName = cell ? await resolveLegacyCellPortalName(repo, cell) : "";
-      if (legacyName) {
-        result = await repo.listMembersPage({ page: pageState.page, pageSize: pageState.pageSize, cellName: legacyName });
-        pageState.resolvedCellName = legacyName;
+    const allRegistry = [...(state.cellRegistry || []), ...(window.REAL_CELLS_REGISTRY || [])];
+    const cell = allRegistry.find((item) => String(item.id) === String(cellId));
+    let result = null;
+    if (cell) {
+      const targetName = cell.raw_cell_name || cell.cell_name || cell.name || "";
+      result = await repo.listMembersPage({ page: pageState.page, pageSize: pageState.pageSize, cellName: targetName });
+      if (result?.ok && result.data?.totalCount) {
+        pageState.resolvedCellName = targetName;
       }
+    }
+    if (!result?.ok || !result.data?.totalCount) {
+      result = await repo.listMembersPage({ page: pageState.page, pageSize: pageState.pageSize, cellId });
     }
     if (requestId !== pageState.requestId) return false;
     if (!result?.ok) { pageState.error = result?.error || "Falha ao carregar membros da célula."; return false; }
     pageState.items = (result.data?.items || []).map((member) => migrateMemberRecord(member));
     pageState.page = result.data?.page || pageState.page;
     pageState.pageSize = result.data?.pageSize || pageState.pageSize;
-    pageState.totalCount = result.data?.totalCount || 0;
+    pageState.totalCount = result.data?.totalCount || pageState.items.length;
     pageState.totalPages = result.data?.totalPages || 1;
     pageState.loaded = true;
     return true;
@@ -5312,7 +5335,7 @@ function portalPersonName(person = {}) {
 }
 
 function portalCellName(cell = {}) {
-  return cell.cell_name || cell.nome_da_celula || cell.name || cell.id || "";
+  return cell.raw_cell_name || cell.cell_name || cell.nome_da_celula || cell.name || cell.id || "";
 }
 
 function getCellLeaderContext(userId, preferredCellId = "") {
@@ -5323,7 +5346,8 @@ function getCellLeaderContext(userId, preferredCellId = "") {
   const selectedId = preferredCellId || cellPortalPageState.cellId;
   const cell = authorizedCells.find((item) => item.id === selectedId) || authorizedCells[0] || null;
   const groupId = cell?.cell_group_id || cell?.group_id || "";
-  const group = (state.cellGroups || []).find((item) => item.id === groupId) || null;
+  const allGroups = [...(state.cellGroups || []), ...(window.REAL_CELL_GROUPS || [])];
+  const group = allGroups.find((item) => item.id === groupId || item.group_name === cell?.group_name) || null;
   const church = (state.churches || []).find((item) => item.id === cell?.church_id) || null;
   const roleMap = {
     "Cell Leader": "Leader",
@@ -5337,7 +5361,7 @@ function getCellLeaderContext(userId, preferredCellId = "") {
     user_name: user.name || user.full_name || user.email,
     user_role: user.role,
     church_id: cell?.church_id || user.church_id || "",
-    church_name: church?.church_name || church?.public_name || cell?.church_name || "",
+    church_name: church?.church_name || church?.public_name || cell?.church_name || "E.C. Maputo Central - Sede",
     cell_group_id: groupId,
     cell_group_name: group?.group_name || group?.name || cell?.group_name || cell?.cell_group_name || "",
     cell_id: cell?.id || "",
@@ -5385,13 +5409,12 @@ function portalInPeriod(record, filters = cellPortalPageState) {
 function portalMemberBelongsToCell(member, cell) {
   if (!member || !cell) return false;
   if (member.cell_id && String(member.cell_id) === String(cell.id)) return true;
-  if (cellPortalMembersState.resolvedCellName && String(member.cell_name || member.celula || "") === cellPortalMembersState.resolvedCellName) return true;
-  const cellNames = [portalCellName(cell), cell.name, cell.nome_da_celula].filter(Boolean).map(portalText);
-  const sameCellName = cellNames.includes(portalText(member.celula || member.cell_name));
-  // Historical imports can carry an old cell identifier that is not present in
-  // the current cell catalogue. The preserved cell name is the safe fallback.
-  const equivalentLegacyName = portalCellNameMatchScore(cell, member.celula || member.cell_name) >= 2;
-  return (sameCellName || equivalentLegacyName) && (!member.church_id || !cell.church_id || String(member.church_id) === String(cell.church_id));
+  const mName = portalNormalizeName(member.cell_name || member.celula || "");
+  const cName = portalNormalizeName(cell.raw_cell_name || cell.cell_name || cell.name || "");
+  if (!mName || !cName) return false;
+  if (mName === cName) return true;
+  if (mName.includes(cName) || cName.includes(mName)) return true;
+  return false;
 }
 
 function getCellMemberFinanceSummary(memberId, permissions = activeUser?.permissions || []) {
@@ -10972,6 +10995,7 @@ function renderCellLeaderPortal() {
   const foundationOptions = [...new Set(allMembers.map((member) => member.foundation_status).filter(Boolean))];
   const allGroups = [
     ...(state.cellGroups || []),
+    ...(window.REAL_CELL_GROUPS || []),
     ...(state.cellMinistry?.groups || [])
   ];
   const allGroupMap = new Map();
@@ -10982,8 +11006,17 @@ function renderCellLeaderPortal() {
       allGroupMap.set(String(gid), { id: gid, group_name: gname });
     }
   });
-  const allCells = state.cellRegistry?.length ? state.cellRegistry : (state.cells || []);
+  const allCells = [
+    ...(state.cellRegistry || []),
+    ...(window.REAL_CELLS_REGISTRY || []),
+    ...(state.cells || [])
+  ];
+  const allCellMap = new Map();
   allCells.forEach((c) => {
+    const cid = c.id;
+    if (cid && !allCellMap.has(String(cid))) {
+      allCellMap.set(String(cid), c);
+    }
     const gid = c.group_id || c.cell_group_id;
     const gname = c.group_name || c.cell_group_name || c.nome_do_grupo;
     if (gid && gname && !allGroupMap.has(String(gid))) {
@@ -10991,7 +11024,8 @@ function renderCellLeaderPortal() {
     }
   });
   const cellGroupsList = Array.from(allGroupMap.values());
-  const cellRegistryList = allCells.filter((c) => {
+  const uniqueAllCells = Array.from(allCellMap.values());
+  const cellRegistryList = uniqueAllCells.filter((c) => {
     if (!cellPortalPageState.cellGroupId) return true;
     return String(c.group_id || c.cell_group_id || "") === String(cellPortalPageState.cellGroupId);
   });
@@ -25134,101 +25168,120 @@ function mountAlecMemberAutocompleteControls(formEl) {
     suggestionsBox.innerHTML = "";
   };
 
+  let searchTimer = null;
   nameInput.addEventListener("input", () => {
-    const q = nameInput.value.trim().toLowerCase();
+    const q = nameInput.value.trim();
     if (q.length < 2) {
       hideSuggestions();
       badgeEl.classList.add("d-none");
+      if (searchTimer) clearTimeout(searchTimer);
       return;
     }
 
-    const members = state.members || [];
-    const matches = members.filter((m) => {
-      const haystack = [
-        m.full_name,
-        m.first_name,
-        m.last_name,
-        m.phone,
-        m.primary_phone,
-        m.secondary_phone,
-        m.member_code,
-        m.cell_name,
-        m.celula
-      ].filter(Boolean).join(" ").toLowerCase();
-      return haystack.includes(q);
-    }).slice(0, 6);
+    if (searchTimer) clearTimeout(searchTimer);
+    searchTimer = setTimeout(async () => {
+      let matches = [];
+      const repo = getMembersRepoSafe();
+      if (usesSupabaseMembers() && repo?.listMembersPage) {
+        try {
+          const res = await repo.listMembersPage({ page: 1, pageSize: 20, search: q });
+          if (res?.ok && Array.isArray(res.data?.items)) {
+            matches = res.data.items;
+          }
+        } catch (e) {
+          console.warn("[ALEC autocomplete] server search fallback", e);
+        }
+      }
+      if (!matches.length) {
+        const localMembers = state.members || [];
+        matches = localMembers.filter((m) => {
+          const haystack = [
+            m.full_name,
+            m.first_name,
+            m.last_name,
+            m.phone,
+            m.primary_phone,
+            m.secondary_phone,
+            m.member_code,
+            m.cell_name,
+            m.celula
+          ].filter(Boolean).join(" ").toLowerCase();
+          return haystack.includes(q.toLowerCase());
+        }).slice(0, 10);
+      }
 
-    if (!matches.length) {
-      suggestionsBox.innerHTML = `<div class="list-group-item bg-dark text-white-50 p-2 small">${L("noSearchResults") || "Nenhum membro encontrado na base"}</div>`;
+      if (!matches.length) {
+        suggestionsBox.innerHTML = `<div class="list-group-item bg-dark text-white-50 p-2 small">${L("noSearchResults") || "Nenhum membro encontrado na base"}</div>`;
+        suggestionsBox.classList.remove("d-none");
+        return;
+      }
+
+      suggestionsBox.innerHTML = matches.map((m) => `
+        <button type="button" class="list-group-item list-group-item-action bg-dark text-white border-secondary p-2 alec-member-suggestion-item" data-select-member-id="${m.id}">
+          <div class="d-flex w-100 justify-content-between align-items-center mb-1">
+            <strong class="text-gold">${m.full_name || `${m.first_name || ""} ${m.last_name || ""}`.trim()}</strong>
+            <span class="badge text-bg-secondary small">${m.member_code || m.cell_group_name || "Membro HQ"}</span>
+          </div>
+          <div class="small text-white-50 text-truncate">
+            ${[m.primary_phone || m.phone, churchName(m.church_id), m.cell_name || m.celula].filter(Boolean).join(" · ")}
+          </div>
+        </button>
+      `).join("");
+
       suggestionsBox.classList.remove("d-none");
-      return;
-    }
 
-    suggestionsBox.innerHTML = matches.map((m) => `
-      <button type="button" class="list-group-item list-group-item-action bg-dark text-white border-secondary p-2 alec-member-suggestion-item" data-select-member-id="${m.id}">
-        <div class="d-flex w-100 justify-content-between align-items-center mb-1">
-          <strong class="text-gold">${m.full_name || `${m.first_name || ""} ${m.last_name || ""}`.trim()}</strong>
-          <span class="badge text-bg-secondary small">${m.member_code || "Membro HQ"}</span>
-        </div>
-        <div class="small text-white-50 text-truncate">
-          ${[m.primary_phone || m.phone, churchName(m.church_id), m.cell_name || m.celula].filter(Boolean).join(" · ")}
-        </div>
-      </button>
-    `).join("");
+      suggestionsBox.querySelectorAll("[data-select-member-id]").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          e.preventDefault();
+          const id = btn.dataset.selectMemberId;
+          const member = matches.find((item) => String(item.id) === String(id));
+          if (!member) return;
 
-    suggestionsBox.classList.remove("d-none");
+          const fullName = member.full_name || `${member.first_name || ""} ${member.last_name || ""}`.trim();
+          nameInput.value = fullName;
 
-    suggestionsBox.querySelectorAll("[data-select-member-id]").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        e.preventDefault();
-        const id = btn.dataset.selectMemberId;
-        const member = members.find((item) => item.id === id);
-        if (!member) return;
+          const phoneInput = formEl.querySelector('[name="contacto"]');
+          if (phoneInput) phoneInput.value = member.primary_phone || member.phone || member.secondary_phone || "";
 
-        const fullName = member.full_name || `${member.first_name || ""} ${member.last_name || ""}`.trim();
-        nameInput.value = fullName;
+          const churchSelect = formEl.querySelector('[name="church_id"]');
+          if (churchSelect && member.church_id) {
+            churchSelect.value = member.church_id;
+            churchSelect.dispatchEvent(new Event("change", { bubbles: true }));
+          }
 
-        const phoneInput = formEl.querySelector('[name="contacto"]');
-        if (phoneInput) phoneInput.value = member.primary_phone || member.phone || member.secondary_phone || "";
+          const cellInput = formEl.querySelector('[name="celula"]');
+          if (cellInput) cellInput.value = member.cell_name || member.celula || "";
 
-        const churchSelect = formEl.querySelector('[name="church_id"]');
-        if (churchSelect && member.church_id) {
-          churchSelect.value = member.church_id;
-          churchSelect.dispatchEvent(new Event("change", { bubbles: true }));
-        }
+          const leaderInput = formEl.querySelector('[name="nome_do_lider_de_celula"]');
+          if (leaderInput) leaderInput.value = member.cell_leader_name || member.lider || "";
 
-        const cellInput = formEl.querySelector('[name="celula"]');
-        if (cellInput) cellInput.value = member.cell_name || member.celula || "";
+          const foundationCheck = formEl.querySelector('[name="fez_escola_de_fundacao"]');
+          if (foundationCheck) {
+            const isDone = ["Completed", "Graduated", "Yes", "Sim"].includes(member.legacy_foundation_status) || ["Completed", "Graduated"].includes(member.foundation_school_status);
+            foundationCheck.checked = isDone;
+          }
 
-        const leaderInput = formEl.querySelector('[name="nome_do_lider_de_celula"]');
-        if (leaderInput) leaderInput.value = member.cell_leader_name || member.lider || "";
+          const isLeaderCheck = formEl.querySelector('[name="e_lider"]');
+          if (isLeaderCheck) {
+            const isLeader = ["Leader", "Assistant", "Líder", "Assistente"].includes(member.cell_role);
+            isLeaderCheck.checked = isLeader;
+          }
 
-        const foundationCheck = formEl.querySelector('[name="fez_escola_de_fundacao"]');
-        if (foundationCheck) {
-          const isDone = ["Completed", "Graduated", "Yes", "Sim"].includes(member.legacy_foundation_status) || ["Completed", "Graduated"].includes(member.foundation_school_status);
-          foundationCheck.checked = isDone;
-        }
+          let memberIdInput = formEl.querySelector('[name="member_id"]');
+          if (!memberIdInput) {
+            memberIdInput = document.createElement("input");
+            memberIdInput.type = "hidden";
+            memberIdInput.name = "member_id";
+            formEl.appendChild(memberIdInput);
+          }
+          memberIdInput.value = member.id;
 
-        const isLeaderCheck = formEl.querySelector('[name="e_lider"]');
-        if (isLeaderCheck) {
-          const isLeader = ["Leader", "Assistant", "Líder", "Assistente"].includes(member.cell_role);
-          isLeaderCheck.checked = isLeader;
-        }
-
-        let memberIdInput = formEl.querySelector('[name="member_id"]');
-        if (!memberIdInput) {
-          memberIdInput = document.createElement("input");
-          memberIdInput.type = "hidden";
-          memberIdInput.name = "member_id";
-          formEl.appendChild(memberIdInput);
-        }
-        memberIdInput.value = member.id;
-
-        hideSuggestions();
-        badgeEl.innerHTML = `<i class="bi bi-check-circle-fill me-1"></i> Membro Vinculado: ${fullName} (${churchName(member.church_id)})`;
-        badgeEl.classList.remove("d-none");
+          hideSuggestions();
+          badgeEl.innerHTML = `<i class="bi bi-check-circle-fill me-1"></i> Membro Vinculado: ${fullName} (${churchName(member.church_id)})`;
+          badgeEl.classList.remove("d-none");
+        });
       });
-    });
+    }, 200);
   });
 
   document.addEventListener("click", (e) => {
