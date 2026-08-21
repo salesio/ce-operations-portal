@@ -9,7 +9,7 @@
 (function () {
   var STORAGE_KEY = "ce-data-layer:members";
   var fallbackMemory = null;
-  var BUILD_VERSION = "2026.08.19-members-runtime-fix";
+  var BUILD_VERSION = "2026.08.21-jwt-propagation-fix";
 
   var lastState = {
     lastQuery: null,

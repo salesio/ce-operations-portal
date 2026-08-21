@@ -566,3 +566,8 @@ export function getMembersDataSourceInfo() {
     ...sbInfo,
   };
 }
+
+export function getInfo() {
+  return getMembersDataSourceInfo();
+}
+

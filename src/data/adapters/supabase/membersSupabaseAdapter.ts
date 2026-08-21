@@ -244,9 +244,16 @@ const MOCK_CHURCH_UUID_MAP: Record<string, string> = {
   "church-virtual": "a1111111-1111-4111-8111-111111111107",
 };
 
+export interface MemberErrorState {
+  message: string;
+  code?: string;
+  status?: number;
+  details?: any;
+}
+
 const memberLastState = {
   lastQuery: null as MemberListQuery | null,
-  lastError: null as string | null,
+  lastError: null as MemberErrorState | string | null,
   lastRowsReturned: 0,
 };
 
@@ -258,11 +265,35 @@ export function getMembersDataSourceInfo() {
     lastQuery: memberLastState.lastQuery,
     lastError: memberLastState.lastError,
     lastRowsReturned: memberLastState.lastRowsReturned,
-    version: "2026.08.21-strict-auth-fix",
+    version: "2026.08.21-jwt-propagation-fix",
     ready: true,
     fallback: false,
     checkedAt: new Date().toISOString(),
   };
+}
+
+async function verifyActiveSession(
+  client: NonNullable<ReturnType<typeof getSupabaseFoundationClient>>
+): Promise<{ ok: true; token: string } | { ok: false; error: string; code: string; status: number }> {
+  try {
+    const { data, error } = await client.auth.getSession();
+    if (error || !data?.session?.access_token) {
+      return {
+        ok: false,
+        error: "Sessão expirada ou não autenticada. Inicie sessão novamente.",
+        code: "42501",
+        status: 401,
+      };
+    }
+    return { ok: true, token: data.session.access_token };
+  } catch (e) {
+    return {
+      ok: false,
+      error: "Erro ao verificar sessão de autenticação.",
+      code: "42501",
+      status: 401,
+    };
+  }
 }
 
 export async function listMembersPage(query: MemberListQuery = {}): Promise<DataResult<MemberPage>> {
@@ -270,16 +301,28 @@ export async function listMembersPage(query: MemberListQuery = {}): Promise<Data
   const client = getSupabaseFoundationClient();
   if (!client) {
     const mapped = mapSupabaseError("Supabase not configured");
-    memberLastState.lastError = mapped.error;
+    const errObj: MemberErrorState = {
+      message: mapped.error,
+      code: mapped.code,
+      status: 503,
+    };
+    memberLastState.lastError = errObj;
+    memberLastState.lastRowsReturned = 0;
     return fail(mapped.error, mapped.code);
   }
 
-  // Task 4: Verify Auth session presence safely before executing protected query
-  let sessionUserId: string | null = null;
-  try {
-    const sessionRes = await client.auth.getSession();
-    sessionUserId = sessionRes?.data?.session?.user?.id || null;
-  } catch (_) {}
+  // Strictly verify Auth session presence and access_token before executing protected query
+  const sessionCheck = await verifyActiveSession(client);
+  if (!sessionCheck.ok) {
+    const errObj: MemberErrorState = {
+      message: sessionCheck.error,
+      code: sessionCheck.code,
+      status: sessionCheck.status,
+    };
+    memberLastState.lastError = errObj;
+    memberLastState.lastRowsReturned = 0;
+    return fail(sessionCheck.error, "AUTH_NO_SESSION");
+  }
 
   const page = Math.max(1, Number(query.page) || 1);
   const pageSize = Math.min(MEMBER_PAGE_MAX_SIZE, Math.max(25, Number(query.pageSize) || MEMBER_PAGE_DEFAULT_SIZE));
@@ -398,11 +441,17 @@ export async function listMembersPage(query: MemberListQuery = {}): Promise<Data
         `church_name.ilike.%${safe}%`, `cell_group_name.ilike.%${safe}%`, `cell_name.ilike.%${safe}%`
       ].join(","));
     }
-    const { data, error, count } = await request.order("full_name", { ascending: true }).range(from, from + pageSize - 1);
+    const { data, error, count, status } = await request.order("full_name", { ascending: true }).range(from, from + pageSize - 1);
 
     if (error) {
       const mapped = mapSupabaseError(error.message);
-      memberLastState.lastError = mapped.error;
+      const errObj: MemberErrorState = {
+        message: mapped.error,
+        code: error.code || "42501",
+        status: status || (error as any).status || 401,
+        details: error.details || null,
+      };
+      memberLastState.lastError = errObj;
       memberLastState.lastRowsReturned = 0;
       return fail(mapped.error, mapped.code);
     }
@@ -414,22 +463,55 @@ export async function listMembersPage(query: MemberListQuery = {}): Promise<Data
     return ok({ items, page, pageSize, totalCount, totalPages, hasNext: page < totalPages, hasPrevious: page > 1 });
   } catch (error) {
     const mapped = mapSupabaseError(error instanceof Error ? error.message : "member page failed");
-    memberLastState.lastError = mapped.error;
+    const errObj: MemberErrorState = {
+      message: mapped.error,
+      code: mapped.code || "500",
+      status: 500,
+    };
+    memberLastState.lastError = errObj;
     memberLastState.lastRowsReturned = 0;
     return fail(mapped.error, mapped.code);
   }
 }
 
 export async function getMemberById(id: EntityId): Promise<DataResult<Member | null>> {
+  const client = getSupabaseFoundationClient();
+  if (!client) {
+    const mapped = mapSupabaseError("Supabase not configured");
+    return fail(mapped.error, mapped.code);
+  }
+  const sessionCheck = await verifyActiveSession(client);
+  if (!sessionCheck.ok) {
+    const errObj: MemberErrorState = { message: sessionCheck.error, code: sessionCheck.code, status: sessionCheck.status };
+    memberLastState.lastError = errObj;
+    return fail(sessionCheck.error, "AUTH_NO_SESSION");
+  }
   const res = await getRowById(TABLE, String(id));
-  if (!res.ok) return fail(res.error, res.code);
+  if (!res.ok) {
+    memberLastState.lastError = { message: res.error, code: res.code || "42501", status: 401 };
+    return fail(res.error, res.code);
+  }
   return ok(mapMemberFromRow(res.data));
 }
 
 export async function createMember(payload: Partial<Member>): Promise<DataResult<Member>> {
+  const client = getSupabaseFoundationClient();
+  if (!client) {
+    const mapped = mapSupabaseError("Supabase not configured");
+    return fail(mapped.error, mapped.code);
+  }
+  const sessionCheck = await verifyActiveSession(client);
+  if (!sessionCheck.ok) {
+    const errObj: MemberErrorState = { message: sessionCheck.error, code: sessionCheck.code, status: sessionCheck.status };
+    memberLastState.lastError = errObj;
+    return fail(sessionCheck.error, "AUTH_NO_SESSION");
+  }
   const row = mapMemberToRow(payload, false);
   const res = await createRow(TABLE, row);
-  if (!res.ok) return fail(res.error, res.code);
+  if (!res.ok) {
+    memberLastState.lastError = { message: res.error, code: res.code || "42501", status: 401 };
+    return fail(res.error, res.code);
+  }
   const mapped = mapMemberFromRow(res.data);
   if (!mapped) return fail("Resposta inválida do Supabase.", "SUPABASE_ERROR");
   return ok(mapped);
@@ -439,41 +521,111 @@ export async function updateMember(
   id: EntityId,
   payload: Partial<Member>,
 ): Promise<DataResult<Member>> {
+  const client = getSupabaseFoundationClient();
+  if (!client) {
+    const mapped = mapSupabaseError("Supabase not configured");
+    return fail(mapped.error, mapped.code);
+  }
+  const sessionCheck = await verifyActiveSession(client);
+  if (!sessionCheck.ok) {
+    const errObj: MemberErrorState = { message: sessionCheck.error, code: sessionCheck.code, status: sessionCheck.status };
+    memberLastState.lastError = errObj;
+    return fail(sessionCheck.error, "AUTH_NO_SESSION");
+  }
   const row = mapMemberToRow({ ...payload, id: String(id) }, true);
   delete row.id;
   const res = await updateRow(TABLE, String(id), row);
-  if (!res.ok) return fail(res.error, res.code);
+  if (!res.ok) {
+    memberLastState.lastError = { message: res.error, code: res.code || "42501", status: 401 };
+    return fail(res.error, res.code);
+  }
   const mapped = mapMemberFromRow(res.data);
   if (!mapped) return fail("Resposta inválida do Supabase.", "SUPABASE_ERROR");
   return ok(mapped);
 }
 
 export async function deleteMember(id: EntityId): Promise<DataResult<boolean>> {
+  const client = getSupabaseFoundationClient();
+  if (!client) {
+    const mapped = mapSupabaseError("Supabase not configured");
+    return fail(mapped.error, mapped.code);
+  }
+  const sessionCheck = await verifyActiveSession(client);
+  if (!sessionCheck.ok) {
+    const errObj: MemberErrorState = { message: sessionCheck.error, code: sessionCheck.code, status: sessionCheck.status };
+    memberLastState.lastError = errObj;
+    return fail(sessionCheck.error, "AUTH_NO_SESSION");
+  }
   const res = await deleteRow(TABLE, String(id));
-  if (!res.ok) return fail(res.error, res.code);
+  if (!res.ok) {
+    memberLastState.lastError = { message: res.error, code: res.code || "42501", status: 401 };
+    return fail(res.error, res.code);
+  }
   return ok(true);
 }
 
 export async function searchMembers(query: string): Promise<DataResult<Member[]>> {
+  const client = getSupabaseFoundationClient();
+  if (!client) {
+    const mapped = mapSupabaseError("Supabase not configured");
+    return fail(mapped.error, mapped.code);
+  }
+  const sessionCheck = await verifyActiveSession(client);
+  if (!sessionCheck.ok) {
+    const errObj: MemberErrorState = { message: sessionCheck.error, code: sessionCheck.code, status: sessionCheck.status };
+    memberLastState.lastError = errObj;
+    return fail(sessionCheck.error, "AUTH_NO_SESSION");
+  }
   const res = await searchRows(
     TABLE,
     ["full_name", "first_name", "last_name", "phone", "email", "church_name", "cell_name"],
     query,
   );
-  if (!res.ok) return fail(res.error, res.code);
+  if (!res.ok) {
+    memberLastState.lastError = { message: res.error, code: res.code || "42501", status: 401 };
+    return fail(res.error, res.code);
+  }
   return ok((res.data || []).map((r) => mapMemberFromRow(r)!).filter(Boolean));
 }
 
 export async function getMembersByChurch(churchId: EntityId): Promise<DataResult<Member[]>> {
+  const client = getSupabaseFoundationClient();
+  if (!client) {
+    const mapped = mapSupabaseError("Supabase not configured");
+    return fail(mapped.error, mapped.code);
+  }
+  const sessionCheck = await verifyActiveSession(client);
+  if (!sessionCheck.ok) {
+    const errObj: MemberErrorState = { message: sessionCheck.error, code: sessionCheck.code, status: sessionCheck.status };
+    memberLastState.lastError = errObj;
+    return fail(sessionCheck.error, "AUTH_NO_SESSION");
+  }
   const mappedId = MOCK_CHURCH_UUID_MAP[String(churchId)] || String(churchId);
   const res = await filterRows(TABLE, { church_id: mappedId });
-  if (!res.ok) return fail(res.error, res.code);
+  if (!res.ok) {
+    memberLastState.lastError = { message: res.error, code: res.code || "42501", status: 401 };
+    return fail(res.error, res.code);
+  }
   return ok((res.data || []).map((r) => mapMemberFromRow(r)!).filter(Boolean));
 }
 
 export async function getMembersByStatus(status: string): Promise<DataResult<Member[]>> {
+  const client = getSupabaseFoundationClient();
+  if (!client) {
+    const mapped = mapSupabaseError("Supabase not configured");
+    return fail(mapped.error, mapped.code);
+  }
+  const sessionCheck = await verifyActiveSession(client);
+  if (!sessionCheck.ok) {
+    const errObj: MemberErrorState = { message: sessionCheck.error, code: sessionCheck.code, status: sessionCheck.status };
+    memberLastState.lastError = errObj;
+    return fail(sessionCheck.error, "AUTH_NO_SESSION");
+  }
   const res = await filterRows(TABLE, { status });
-  if (!res.ok) return fail(res.error, res.code);
+  if (!res.ok) {
+    memberLastState.lastError = { message: res.error, code: res.code || "42501", status: 401 };
+    return fail(res.error, res.code);
+  }
   return ok((res.data || []).map((r) => mapMemberFromRow(r)!).filter(Boolean));
 }
 

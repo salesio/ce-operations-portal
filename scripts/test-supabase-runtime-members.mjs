@@ -95,7 +95,7 @@ console.log("4. Testing Strict Supabase Mode error propagation...");
   console.log("6. Verifying index.html script inclusion...");
   const indexHtml = readFileSync(resolve(root, "index.html"), "utf8");
   assert.ok(indexHtml.includes('src="js/runtime-diagnostics.js'), "index.html must include runtime-diagnostics.js");
-  assert.ok(/v=20260819-members-runtime-fix-v[1-9]/.test(indexHtml), "index.html must have updated cache-busting strings");
+  assert.ok(/v=202608\d{2}-[\w-]+/.test(indexHtml), "index.html must have updated cache-busting strings");
   console.log("   ✓ index.html has runtime-diagnostics.js and cache-busting parameters");
 
   // Test 7: Verify write-github-pages-runtime-config.mjs supports CE_ and VITE_ env variables

@@ -20,9 +20,9 @@ export function getSupabaseFoundationClient(): SupabaseClient | null {
   if (!cached) {
     cached = createClient(cfg.url, cfg.anonKey, {
       auth: {
-        persistSession: cfg.enableRealAuth,
-        autoRefreshToken: cfg.enableRealAuth,
-        detectSessionInUrl: cfg.enableRealAuth,
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
       },
     });
   }

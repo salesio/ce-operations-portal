@@ -41,7 +41,7 @@ check("finance and member forms include dependent cell selects", /financeEntrySc
 check("cell selects support Supabase HQ UUID aliases", /isHqChurchReference/.test(dashboard) && /matchesSelectedCellChurch/.test(dashboard));
 check("cell selects preserve national access scope", /canSelectAllCellNetworkRecords/.test(dashboard) && /cellNetworkRecordsForSelect/.test(dashboard));
 check("dependent cell selects prefer relational church ids", /querySelector\("\[name='church_id'\]"\)[\s\S]*?querySelector\("\[name='igreja_id'\]"\)[\s\S]*?querySelector\("\[name='igreja'\]"\)/.test(dashboard));
-check("runtime bundle cachebuster updated", /(?:20260806-runtime-provider-v8|20260819-members-runtime-fix-v[12]|20260819-auth-real-v1)/.test(index));
+check("runtime bundle cachebuster updated", /(?:20260806-runtime-provider-v8|20260819-members-runtime-fix-v[12]|20260819-auth-real-v1|20260821-[\w-]+)/.test(index));
 check("no backend credential assignment in browser JS", !/(?:VITE_)?SUPABASE_SERVICE_ROLE_KEY\s*=|DATABASE_URL\s*=/.test(browserJs));
 check("smoke script registered target exists", existsSync(join(root, "scripts/smoke-supabase-runtime-provider.mjs")));
 

@@ -1,4 +1,6 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { getSupabaseFoundationClient, resetSupabaseFoundationClient } from "../data/adapters/supabase/supabaseClient";
+import { getSupabaseEnvConfig } from "../data/adapters/supabase/supabaseConfig";
 
 declare global {
   interface Window {
@@ -17,44 +19,18 @@ export interface SupabaseConfig {
   isConfigured: boolean;
 }
 
-function isValidSupabaseConfig(url: string, anonKey: string): boolean {
-  if (!url || !anonKey) return false;
-  if (/YOUR_PROJECT|YOUR_SUPABASE|example\.com|placeholder/i.test(url + anonKey)) return false;
-  try {
-    const parsed = new URL(url);
-    return parsed.protocol === "https:" && parsed.hostname.endsWith(".supabase.co");
-  } catch {
-    return false;
-  }
-}
-
 export function getSupabaseConfig(): SupabaseConfig {
-  const runtimeUrl = typeof window !== "undefined" ? window.__CE_ENV__?.VITE_SUPABASE_URL : "";
-  const runtimeKey = typeof window !== "undefined" ? window.__CE_ENV__?.VITE_SUPABASE_ANON_KEY : "";
-  const url = (import.meta.env.VITE_SUPABASE_URL || runtimeUrl || "").trim();
-  const anonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY || runtimeKey || "").trim();
-  return { url, anonKey, isConfigured: isValidSupabaseConfig(url, anonKey) };
+  const cfg = getSupabaseEnvConfig();
+  return { url: cfg.url, anonKey: cfg.anonKey, isConfigured: cfg.isConfigured };
 }
 
-let cachedClient: SupabaseClient | null = null;
-
+/** Canonical singleton delegating to data-layer foundation client */
 export function getSupabaseClient(): SupabaseClient | null {
-  const { url, anonKey, isConfigured } = getSupabaseConfig();
-  if (!isConfigured) return null;
-  if (!cachedClient) {
-    cachedClient = createClient(url, anonKey, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true
-      }
-    });
-  }
-  return cachedClient;
+  return getSupabaseFoundationClient();
 }
 
 export function resetSupabaseClient(): void {
-  cachedClient = null;
+  resetSupabaseFoundationClient();
 }
 
-export const PAYMENT_PROOFS_BUCKET = "payment-proofs";
+export const PAYMENT_PROOFS_BUCKET = "payment-proofs";
