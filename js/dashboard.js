@@ -9401,8 +9401,8 @@ function renderCellSidebarNav() {
   if (["Cell Leader", "Cell Assistant"].includes(activeUser?.role)) {
     return `<div class="nav-cell-branch is-expanded ${parentActive ? "has-active" : ""}">
       <div class="nav-cell-body"><div class="nav-cell-body-inner">
-        <button type="button" class="nav-cell-item ${activeRoute === "cellPortal" || activeRoute === "dashboard" ? "active" : ""}" data-route="cellPortal"><span>${lang === "pt" ? "Minha Célula" : "My Cell"}</span></button>
-        <button type="button" class="nav-cell-item ${activeRoute === "cellReceivedReports" ? "active" : ""}" data-route="cellReceivedReports"><span>${L("receivedReports")}</span></button>
+        <button type="button" class="nav-cell-item ${activeRoute === "cellPortal" || activeRoute === "dashboard" ? "active" : ""}" data-route="cellPortal" onclick="window.setRoute && window.setRoute('cellPortal'); return false;"><span>${lang === "pt" ? "Minha Célula" : "My Cell"}</span></button>
+        <button type="button" class="nav-cell-item ${activeRoute === "cellReceivedReports" ? "active" : ""}" data-route="cellReceivedReports" onclick="window.setRoute && window.setRoute('cellReceivedReports'); return false;"><span>${L("receivedReports")}</span></button>
         <button type="button" class="nav-cell-item" data-public-cell-report><span>${L("submitCellReport")}</span></button>
       </div></div>
     </div>`;
@@ -9417,7 +9417,7 @@ function renderCellSidebarNav() {
       </button>
       <div class="nav-cell-body">
         <div class="nav-cell-body-inner">
-          ${showCellPortal ? `<button type="button" class="nav-cell-item ${activeRoute === "cellPortal" ? "active" : ""}" data-route="cellPortal"><span>${lang === "pt" ? "Portal por Célula" : "Cell Portal"}</span></button>` : ""}
+          ${showCellPortal ? `<button type="button" class="nav-cell-item ${activeRoute === "cellPortal" ? "active" : ""}" data-route="cellPortal" onclick="window.setRoute && window.setRoute('cellPortal'); return false;"><span>${lang === "pt" ? "Portal por Célula" : "Cell Portal"}</span></button>` : ""}
           ${CELL_NAV.areas.map((area) => {
             const visibleRoutes = area.routes.filter(([route]) => {
               if (workspaceRoutes && !workspaceRoutes.includes(route)) return false;
@@ -10943,8 +10943,6 @@ function renderCellLeaderPortal() {
   if (!hasCellPortalPermission("cell_portal.view")) return renderAccessDenied();
   if (usesSupabaseMembers() && !cellPortalContextState.ready) {
     void ensureCellPortalContext();
-    setPageContent(`<section class="panel glass-panel cell-portal-empty"><i class="bi bi-arrow-repeat"></i><h2>${lang === "pt" ? "A carregar células e grupos do Supabase…" : "Loading cells and groups from Supabase…"}</h2></section>`);
-    return;
   }
   const authorizedCells = getAuthorizedCellsForUser(activeUser.id);
   if (!authorizedCells.length) {
@@ -11514,11 +11512,16 @@ function isRecordInSelectedCellGroup(record = {}, selectedGroup = "") {
   if (!selectedGroup) return true;
   const filterVal = memberCellGroupFilterValue(record);
   if (filterVal === selectedGroup) return true;
+  const allGroups = [
+    ...(window.REAL_CELL_GROUPS || []),
+    ...(state.cellGroups || []),
+    ...(state.cellMinistry?.groups || [])
+  ];
   if (selectedGroup.startsWith("id:")) {
     const groupId = selectedGroup.slice(3);
     const recGroupId = String(record.cell_group_id || record.group_id || "");
     if (recGroupId === groupId) return true;
-    const groupObj = (state.cellGroups || []).find((g) => String(g.id) === groupId);
+    const groupObj = allGroups.find((g) => String(g.id || g.group_id) === groupId);
     const groupName = groupObj?.group_name || groupObj?.name;
     if (groupName && normalizedMemberFilterText(memberCellGroupLabel(record)).includes(normalizedMemberFilterText(groupName))) return true;
   } else if (selectedGroup.startsWith("name:")) {
@@ -11531,21 +11534,51 @@ function isRecordInSelectedCellGroup(record = {}, selectedGroup = "") {
 
 function memberFilterOptions(list, type, selectedGroup = "") {
   const options = new Map();
+  const seenLabels = new Set();
   const add = (value, label) => {
-    if (value && label && !options.has(value)) options.set(value, label);
-  };
-  const isSupabase = String(window.__CE_ENV__?.VITE_DATA_SOURCE || "").toLowerCase() === "supabase";
-  if (type === "cellGroup") {
-    if (!isSupabase) {
-      (state.cellGroups || []).forEach((group) => add(`id:${group.id}`, group.group_name || group.name));
+    if (!value || !label) return;
+    const normLabel = normalizedMemberFilterText(label);
+    if (!options.has(value) && !seenLabels.has(normLabel)) {
+      options.set(value, label);
+      seenLabels.add(normLabel);
     }
-    list.forEach((member) => add(memberCellGroupFilterValue(member), memberCellGroupLabel(member)));
+  };
+  const allGroups = [
+    ...(window.REAL_CELL_GROUPS || []),
+    ...(state.cellGroups || []),
+    ...(state.cellMinistry?.groups || [])
+  ];
+  const allCells = [
+    ...(window.REAL_CELLS_REGISTRY || []),
+    ...(state.cellRegistry || []),
+    ...(state.cells || [])
+  ];
+
+  if (type === "cellGroup") {
+    allGroups.forEach((group) => {
+      const gid = group.id || group.group_id;
+      const gname = group.group_name || group.name;
+      if (gid && gname) add(`id:${gid}`, gname);
+    });
+    (list || []).forEach((member) => {
+      const gname = memberCellGroupLabel(member);
+      if (gname && !seenLabels.has(normalizedMemberFilterText(gname))) {
+        add(memberCellGroupFilterValue(member), gname);
+      }
+    });
   } else {
     const inSelectedGroup = (record) => isRecordInSelectedCellGroup(record, selectedGroup);
-    if (!isSupabase) {
-      (state.cellRegistry || []).filter(inSelectedGroup).forEach((cell) => add(`id:${cell.id}`, cell.cell_name || cell.name));
-    }
-    list.filter(inSelectedGroup).forEach((member) => add(memberCellFilterValue(member), memberCellLabel(member)));
+    allCells.filter(inSelectedGroup).forEach((cell) => {
+      const cid = cell.id;
+      const cname = cell.cell_name || cell.name;
+      if (cid && cname) add(`id:${cid}`, cname);
+    });
+    (list || []).filter(inSelectedGroup).forEach((member) => {
+      const cname = memberCellLabel(member);
+      if (cname && !seenLabels.has(normalizedMemberFilterText(cname))) {
+        add(memberCellFilterValue(member), cname);
+      }
+    });
   }
   return [...options.entries()].sort(([, a], [, b]) => String(a).localeCompare(String(b), lang === "pt" ? "pt" : "en"));
 }
