@@ -8,8 +8,14 @@ function readViteEnv(name: string): string {
       typeof window !== "undefined"
         ? (window as Window & { __CE_ENV__?: Record<string, string> }).__CE_ENV__?.[name]
         : undefined;
-    const fromEnv = (import.meta.env as Record<string, string | undefined>)[name];
-    return String(runtime || fromEnv || "").trim();
+    let fromEnv: string | undefined;
+    try {
+      fromEnv = (import.meta as any)?.env?.[name];
+    } catch {
+      fromEnv = undefined;
+    }
+    const nodeEnv = typeof process !== "undefined" ? process.env?.[name] : undefined;
+    return String(runtime || fromEnv || nodeEnv || "").trim();
   } catch {
     return "";
   }
@@ -41,17 +47,28 @@ function normalizeSource(raw: string | undefined | null): DataSourceName {
 export function getDataSource(): DataSourceName {
   const runtime =
     typeof window !== "undefined" ? window.__CE_ENV__?.VITE_DATA_SOURCE : undefined;
-  // Replaced at build time with a string literal, e.g. "mock"
-  const fromEnv = import.meta.env.VITE_DATA_SOURCE as string | undefined;
-  return normalizeSource(runtime || fromEnv || "mock");
+  const nodeEnv = typeof process !== "undefined" ? process.env?.VITE_DATA_SOURCE : undefined;
+  let fromEnv: string | undefined;
+  try {
+    fromEnv = (import.meta as any)?.env?.VITE_DATA_SOURCE;
+  } catch {
+    fromEnv = undefined;
+  }
+  return normalizeSource(runtime || fromEnv || nodeEnv || "mock");
 }
 
 /** Optional future REST/API base (used only when source=api). */
 export function getApiBaseUrl(): string {
   const runtime =
     typeof window !== "undefined" ? window.__CE_ENV__?.VITE_API_BASE_URL : undefined;
-  const fromEnv = import.meta.env.VITE_API_BASE_URL as string | undefined;
-  return (runtime || fromEnv || "").trim().replace(/\/$/, "");
+  const nodeEnv = typeof process !== "undefined" ? process.env?.VITE_API_BASE_URL : undefined;
+  let fromEnv: string | undefined;
+  try {
+    fromEnv = (import.meta as any)?.env?.VITE_API_BASE_URL;
+  } catch {
+    fromEnv = undefined;
+  }
+  return (runtime || fromEnv || nodeEnv || "").trim().replace(/\/$/, "");
 }
 
 export function getAppEnv(): string {
