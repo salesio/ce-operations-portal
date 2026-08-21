@@ -37,6 +37,14 @@ async function testFullLoginFlow() {
     email: "salesiomachava@gmail.com",
   };
 
+  const client = globalThis.CESupabase.getSupabaseFoundationClient();
+  if (client) {
+    await client.auth.signInWithPassword({
+      email: "salesiomachava@gmail.com",
+      password: "Ziongate@7"
+    });
+  }
+
   try {
     const result = await auth.resolveUserAccountFromAuth(authUser);
     console.log("   Result ok:", result.ok);

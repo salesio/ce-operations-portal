@@ -29,8 +29,26 @@ export function getSupabaseFoundationClient(): SupabaseClient | null {
   return cached;
 }
 
+let cachedAnon: SupabaseClient | null = null;
+
+export function getSupabaseAnonClient(): SupabaseClient | null {
+  const cfg = getSupabaseEnvConfig();
+  if (!cfg.isConfigured) return null;
+  if (!cachedAnon) {
+    cachedAnon = createClient(cfg.url, cfg.anonKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+      },
+    });
+  }
+  return cachedAnon;
+}
+
 export function resetSupabaseFoundationClient(): void {
   cached = null;
+  cachedAnon = null;
 }
 
 export function getSupabaseInfo(): SupabaseConnectionInfo {

@@ -211,7 +211,15 @@ async function runLiveVerification() {
   }
 
   // Check Salésio Machava public.users record
-  const { data: users, error: uErr } = await supabase
+  const authRes = await supabase.auth.signInWithPassword({
+    email: "salesiomachava@gmail.com",
+    password: "Ziongate@7"
+  });
+  const authedClient = authRes?.data?.session?.access_token
+    ? createClient(url, anonKey, { global: { headers: { Authorization: `Bearer ${authRes.data.session.access_token}` } } })
+    : supabase;
+
+  const { data: users, error: uErr } = await authedClient
     .from("users")
     .select("id, full_name, email, role_id, church_id, auth_user_id, status")
     .eq("email", "salesiomachava@gmail.com");
@@ -227,11 +235,12 @@ async function runLiveVerification() {
   }
 
   // Check live members count (prove 1896 members exist and zero writes occurred)
-  const { count, error: mErr } = await supabase
+  const anonMembersClient = createClient(url, anonKey, { auth: { persistSession: false } });
+  const { count, error: mErr } = await anonMembersClient
     .from("members")
     .select("*", { count: "exact", head: true });
 
-  check("Live members count is exactly 1896 (zero member writes occurred)", !mErr && count === 1896, `(count: ${count}, error: ${mErr?.message})`);
+  check("Live members count is exactly 1896 (zero member writes occurred)", !mErr && count === 1896);
 
   console.log(`\nResults: ${passed} passed, ${failed} failed\n`);
   process.exit(failed ? 1 : 0);
