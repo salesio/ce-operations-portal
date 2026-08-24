@@ -10515,14 +10515,17 @@ function getDashboardCardsForUser(user = activeUser) {
 }
 
 function cellPortalBars(rows, emptyLabel = "Sem dados no período") {
-  const safeRows = (rows || []).slice(-8);
+  if (!Array.isArray(rows)) return `<p class="text-secondary small mb-0">${emptyLabel}</p>`;
+  const safeRows = rows.filter((r) => Array.isArray(r) && r.length >= 2).slice(-8);
   if (!safeRows.length) return `<p class="text-secondary small mb-0">${emptyLabel}</p>`;
   const max = Math.max(...safeRows.map(([, value]) => Number(value || 0)), 1);
   return `<div class="cell-portal-bars">${safeRows.map(([label, value]) => `<div class="cell-portal-bar-row"><span>${escapeAttr(label)}</span><div><i style="width:${Math.max(4, (Number(value || 0) / max) * 100)}%"></i></div><strong>${Number(value || 0)}</strong></div>`).join("")}</div>`;
 }
 
 function cellPortalDonut(rows) {
-  const values = Object.entries(rows || {});
+  if (!rows || typeof rows !== "object") return `<div class="cell-portal-donut-wrap"><div class="cell-portal-donut" style="background:#334155"><strong>0</strong><span>Total</span></div></div>`;
+  const values = Object.entries(rows).filter(([label]) => Boolean(label));
+  if (!values.length) return `<div class="cell-portal-donut-wrap"><div class="cell-portal-donut" style="background:#334155"><strong>0</strong><span>Total</span></div></div>`;
   const total = values.reduce((sum, [, value]) => sum + Number(value || 0), 0);
   let cursor = 0;
   const colors = ["#55d6be", "#ffd166", "#4ea8de", "#f78c6b", "#a78bfa"];
@@ -11087,15 +11090,68 @@ function renderCellLeaderPortal() {
       ? authorizedCells.filter((c) => String(c.group_id || c.cell_group_id || "") === String(cellPortalPageState.cellGroupId))
       : authorizedCells;
     const displayHeroCells = heroCellsList.length ? heroCellsList : authorizedCells;
+    const safeHeroCells = (displayHeroCells || []).filter((item) => Boolean(item && item.id));
+    const safeCellGroups = (cellGroupsList || []).filter((g) => Boolean(g && g.id));
+    const safeCellRegistry = (cellRegistryList || []).filter((c) => Boolean(c && c.id));
+    const safeMemberStatuses = (memberStatuses || []).filter(Boolean);
+    const safeFoundationOptions = (foundationOptions || []).filter(Boolean);
+    const safeMembers = (members || []).filter(Boolean);
+    const safeCandidates = (candidates || []).filter((item) => Boolean(item && !["Approved", "Withdrawn"].includes(item.approval_status)));
+    const safeActivities = (activities || []).filter(Boolean);
+    const safePrograms = (programs || []).filter(Boolean);
+    const safeReports = (trends?.reports || []).filter(Boolean);
+    const safeRanking = (soul?.ranking || []).filter(Boolean);
+    const safeAlerts = (alerts || []).filter(Boolean);
+
+    const partnerPercent = allMembers.length ? Math.round((partners / allMembers.length) * 100) : 0;
+    const tithePercent = allMembers.length ? Math.round((tithers / allMembers.length) * 100) : 0;
+
+    const unconfirmedMembersCount = safeMembers.filter((m) => !m.reconciliation_status || m.reconciliation_status === "Pending").length;
 
     setPageContent(`<div class="cell-portal-shell">
-      <section class="cell-portal-hero"><div><span class="eyebrow">Portal do Líder de Célula</span><h2>${escapeAttr(context?.cell_name || "Célula")}</h2><p><i class="bi bi-building me-1"></i>${escapeAttr(context?.church_name || "Christ Embassy")} <span>•</span> ${escapeAttr(context?.cell_group_name || "Grupo de Células")}</p><div class="cell-portal-identity"><span>${escapeAttr(context?.cell_role || "Líder")}</span><strong>${escapeAttr(context?.user_name || activeUser?.name || "Utilizador")}</strong></div></div><div class="cell-portal-hero-actions">${canChooseCell ? `<label>Seleccionar célula<select class="form-select" data-cell-portal-cell>${displayHeroCells.map((item) => `<option value="${escapeAttr(item.id)}" ${String(item.id) === String(context?.cell_id) ? "selected" : ""}>${escapeAttr(portalCellName(item))}</option>`).join("")}</select></label>` : ""}<button type="button" class="btn btn-ce-gold btn-touch" data-public-cell-report><i class="bi bi-clipboard-plus me-2"></i>Submeter Relatório Semanal</button>${hasCellPortalPermission("cell_portal.export_summary") ? `<button type="button" class="btn btn-outline-light btn-touch" data-cell-portal-export><i class="bi bi-download me-2"></i>Exportar resumo</button>` : ""}</div></section>
-      <section class="panel glass-panel cell-portal-filters"><div class="d-flex justify-content-end"><button type="button" class="btn btn-ce-gold btn-touch" data-open-member-candidate><i class="bi bi-person-plus me-2"></i>Registar Candidato a Membro</button></div><label>Grupo de Célula<select class="form-select" data-cell-portal-filter="cellGroupId"><option value="">Todos os Grupos</option>${cellGroupsList.map((g) => `<option value="${escapeAttr(g.id)}" ${String(g.id) === String(cellPortalPageState.cellGroupId || "") ? "selected" : ""}>${escapeAttr(g.group_name || g.name)}</option>`).join("")}</select></label><label>Célula<select class="form-select" data-cell-portal-filter="cellId"><option value="">Todas as Células</option>${cellRegistryList.map((c) => `<option value="${escapeAttr(c.id)}" ${String(c.id) === String(cellPortalPageState.cellId || "") ? "selected" : ""}>${escapeAttr(c.cell_name || c.name)}</option>`).join("")}</select></label><label>Reconciliação<select class="form-select" data-cell-portal-filter="reconciliationStatus"><option value="">Todos os Estados</option><option value="Confirmed" ${cellPortalPageState.reconciliationStatus === "Confirmed" ? "selected" : ""}>Confirmados</option><option value="Pending" ${cellPortalPageState.reconciliationStatus === "Pending" ? "selected" : ""}>Por Rever</option><option value="NeedsCorrection" ${cellPortalPageState.reconciliationStatus === "NeedsCorrection" ? "selected" : ""}>Precisa Correcção</option><option value="NotInCell" ${cellPortalPageState.reconciliationStatus === "NotInCell" ? "selected" : ""}>Não Pertence</option><option value="TransferRequested" ${cellPortalPageState.reconciliationStatus === "TransferRequested" ? "selected" : ""}>Pedido Transferência</option></select></label><label>Período<select class="form-select" data-cell-portal-filter="period">${[["week","Esta semana"],["month","Este mês"],["quarter","Último trimestre"],["year","Este ano"],["custom","Personalizado"]].map(([value,label]) => `<option value="${value}" ${cellPortalPageState.period === value ? "selected" : ""}>${label}</option>`).join("")}</select></label>${cellPortalPageState.period === "custom" ? `<label>De<input type="date" class="form-control" data-cell-portal-filter="dateFrom" value="${escapeAttr(cellPortalPageState.dateFrom)}"></label><label>Até<input type="date" class="form-control" data-cell-portal-filter="dateTo" value="${escapeAttr(cellPortalPageState.dateTo)}"></label>` : ""}<label>Estado<select class="form-select" data-cell-portal-filter="memberStatus"><option value="">Todos</option>${memberStatuses.map((value) => `<option ${cellPortalPageState.memberStatus === value ? "selected" : ""}>${escapeAttr(value)}</option>`).join("")}</select></label><label>Fundação<select class="form-select" data-cell-portal-filter="foundationStatus"><option value="">Todos</option>${foundationOptions.map((value) => `<option ${cellPortalPageState.foundationStatus === value ? "selected" : ""}>${escapeAttr(value)}</option>`).join("")}</select></label><label>Sacramentos<select class="form-select" data-cell-portal-filter="sacramentStatus"><option value="">Todos</option><option value="baptized" ${cellPortalPageState.sacramentStatus === "baptized" ? "selected" : ""}>Baptizado</option><option value="not_baptized" ${cellPortalPageState.sacramentStatus === "not_baptized" ? "selected" : ""}>Não baptizado</option></select></label><label>Parceria<select class="form-select" data-cell-portal-filter="partnership"><option value="">Todos</option><option value="true" ${cellPortalPageState.partnership === "true" ? "selected" : ""}>Sim</option><option value="false" ${cellPortalPageState.partnership === "false" ? "selected" : ""}>Não</option></select></label><label>Dizimista<select class="form-select" data-cell-portal-filter="tithe"><option value="">Todos</option><option value="true" ${cellPortalPageState.tithe === "true" ? "selected" : ""}>Sim</option><option value="false" ${cellPortalPageState.tithe === "false" ? "selected" : ""}>Não</option></select></label><label>Convidou<select class="form-select" data-cell-portal-filter="invited"><option value="">Todos</option><option value="true" ${cellPortalPageState.invited === "true" ? "selected" : ""}>Sim</option><option value="false" ${cellPortalPageState.invited === "false" ? "selected" : ""}>Não</option></select></label></section>
+      <section class="cell-portal-hero">
+        <div>
+          <span class="eyebrow">Portal do Líder de Célula</span>
+          <h2>${escapeAttr(context?.cell_name || "Célula")}</h2>
+          <p><i class="bi bi-building me-1"></i>${escapeAttr(context?.church_name || "Christ Embassy")} <span>•</span> ${escapeAttr(context?.cell_group_name || "Grupo de Células")}</p>
+          <div class="cell-portal-identity"><span>${escapeAttr(context?.cell_role || "Líder")}</span><strong>${escapeAttr(context?.user_name || activeUser?.name || "Utilizador")}</strong></div>
+        </div>
+        <div class="cell-portal-hero-actions">
+          ${canChooseCell ? `<label>Seleccionar célula<select class="form-select" data-cell-portal-cell>${safeHeroCells.map((item) => `<option value="${escapeAttr(item.id)}" ${String(item.id) === String(context?.cell_id) ? "selected" : ""}>${escapeAttr(portalCellName(item))}</option>`).join("")}</select></label>` : ""}
+          <button type="button" class="btn btn-ce-gold btn-touch" data-public-cell-report><i class="bi bi-clipboard-plus me-2"></i>Submeter Relatório Semanal</button>
+          ${hasCellPortalPermission("cell_portal.export_summary") ? `<button type="button" class="btn btn-outline-light btn-touch" data-cell-portal-export><i class="bi bi-download me-2"></i>Exportar resumo</button>` : ""}
+        </div>
+      </section>
+      <section class="panel glass-panel cell-portal-filters">
+        <div class="d-flex justify-content-end"><button type="button" class="btn btn-ce-gold btn-touch" data-open-member-candidate><i class="bi bi-person-plus me-2"></i>Registar Candidato a Membro</button></div>
+        <label>Grupo de Célula<select class="form-select" data-cell-portal-filter="cellGroupId"><option value="">Todos os Grupos</option>${safeCellGroups.map((g) => `<option value="${escapeAttr(g.id)}" ${String(g.id) === String(cellPortalPageState.cellGroupId || "") ? "selected" : ""}>${escapeAttr(g.group_name || g.name || "Grupo")}</option>`).join("")}</select></label>
+        <label>Célula<select class="form-select" data-cell-portal-filter="cellId"><option value="">Todas as Células</option>${safeCellRegistry.map((c) => `<option value="${escapeAttr(c.id)}" ${String(c.id) === String(cellPortalPageState.cellId || "") ? "selected" : ""}>${escapeAttr(c.cell_name || c.name || "Célula")}</option>`).join("")}</select></label>
+        <label>Reconciliação<select class="form-select" data-cell-portal-filter="reconciliationStatus"><option value="">Todos os Estados</option><option value="Confirmed" ${cellPortalPageState.reconciliationStatus === "Confirmed" ? "selected" : ""}>Confirmados</option><option value="Pending" ${cellPortalPageState.reconciliationStatus === "Pending" ? "selected" : ""}>Por Rever</option><option value="NeedsCorrection" ${cellPortalPageState.reconciliationStatus === "NeedsCorrection" ? "selected" : ""}>Precisa Correcção</option><option value="NotInCell" ${cellPortalPageState.reconciliationStatus === "NotInCell" ? "selected" : ""}>Não Pertence</option><option value="TransferRequested" ${cellPortalPageState.reconciliationStatus === "TransferRequested" ? "selected" : ""}>Pedido Transferência</option></select></label>
+        <label>Período<select class="form-select" data-cell-portal-filter="period">${[["week","Esta semana"],["month","Este mês"],["quarter","Último trimestre"],["year","Este ano"],["custom","Personalizado"]].map(([value,label]) => `<option value="${value}" ${cellPortalPageState.period === value ? "selected" : ""}>${label}</option>`).join("")}</select></label>
+        ${cellPortalPageState.period === "custom" ? `<label>De<input type="date" class="form-control" data-cell-portal-filter="dateFrom" value="${escapeAttr(cellPortalPageState.dateFrom || "")}"></label><label>Até<input type="date" class="form-control" data-cell-portal-filter="dateTo" value="${escapeAttr(cellPortalPageState.dateTo || "")}"></label>` : ""}
+        <label>Estado<select class="form-select" data-cell-portal-filter="memberStatus"><option value="">Todos</option>${safeMemberStatuses.map((value) => `<option ${cellPortalPageState.memberStatus === value ? "selected" : ""}>${escapeAttr(value)}</option>`).join("")}</select></label>
+        <label>Fundação<select class="form-select" data-cell-portal-filter="foundationStatus"><option value="">Todos</option>${safeFoundationOptions.map((value) => `<option ${cellPortalPageState.foundationStatus === value ? "selected" : ""}>${escapeAttr(value)}</option>`).join("")}</select></label>
+        <label>Sacramentos<select class="form-select" data-cell-portal-filter="sacramentStatus"><option value="">Todos</option><option value="baptized" ${cellPortalPageState.sacramentStatus === "baptized" ? "selected" : ""}>Baptizado</option><option value="not_baptized" ${cellPortalPageState.sacramentStatus === "not_baptized" ? "selected" : ""}>Não baptizado</option></select></label>
+        <label>Parceria<select class="form-select" data-cell-portal-filter="partnership"><option value="">Todos</option><option value="true" ${cellPortalPageState.partnership === "true" ? "selected" : ""}>Sim</option><option value="false" ${cellPortalPageState.partnership === "false" ? "selected" : ""}>Não</option></select></label>
+        <label>Dizimista<select class="form-select" data-cell-portal-filter="tithe"><option value="">Todos</option><option value="true" ${cellPortalPageState.tithe === "true" ? "selected" : ""}>Sim</option><option value="false" ${cellPortalPageState.tithe === "false" ? "selected" : ""}>Não</option></select></label>
+        <label>Convidou<select class="form-select" data-cell-portal-filter="invited"><option value="">Todos</option><option value="true" ${cellPortalPageState.invited === "true" ? "selected" : ""}>Sim</option><option value="false" ${cellPortalPageState.invited === "false" ? "selected" : ""}>Não</option></select></label>
+      </section>
       <nav class="cell-portal-nav" aria-label="Secções do portal">${[["overview","Visão Geral"],["members","Membros & Reconciliação"],["reports","Relatório"],["activities","Actividades"],["growth","Crescimento"],["finance","Parcerias & Dízimos"],["souls","Ganhar Almas"],["foundation","Fundação & Sacramentos"],["programs","Programas"],["history","Histórico"]].map(([id,label]) => `<button type="button" data-cell-portal-section="cell-portal-${id}">${label}</button>`).join("")}</nav>
-      <section id="cell-portal-overview" class="cell-portal-section">${cellPortalSectionTitle("bi-grid-1x2", "Visão Geral", "Indicadores seguros da célula autorizada")}<div class="cell-portal-kpis">${[["bi-people","Total de membros",stats.total_members],["bi-person-check","Membros activos",stats.active_members],["bi-person-plus","Novos este mês",stats.new_members_month],["bi-person-heart","Visitantes ligados",stats.visitors],["bi-clipboard-check","Relatórios este mês",stats.reports_month],["bi-activity","Estado actual",stats.current_report_status],["bi-clock-history","Último relatório",stats.latest_report ? String(portalDateValue(stats.latest_report)).slice(0,10) : "—"],["bi-calendar-week","Próxima submissão",stats.next_submission]].map(([icon,label,value]) => `<article><i class="bi ${icon}"></i><span>${label}</span><strong>${escapeAttr(value)}</strong></article>`).join("")}</div><div class="cell-portal-meta"><div><span>Igreja</span><strong>${escapeAttr(context?.church_name || "—")}</strong></div><div><span>Grupo</span><strong>${escapeAttr(context?.cell_group_name || "—")}</strong></div><div><span>Liderança</span><strong>${escapeAttr(leaders.join(", ") || context?.user_name || "—")}</strong></div><div><span>Escopo</span><strong>${(context?.authorized_cell_ids || []).length} célula(s)</strong></div></div></section>
-      <section class="cell-portal-section"><div class="cell-portal-alerts">${alerts.map((alert) => `<article class="is-${alert.tone}"><i class="bi bi-bell"></i><div><strong>${escapeAttr(alert.title)}</strong><p>${escapeAttr(alert.detail)}</p></div></article>`).join("") || `<article class="is-success"><i class="bi bi-check-circle"></i><div><strong>Sem alertas críticos</strong><p>Os principais indicadores estão actualizados.</p></div></article>`}</div></section>
+      <section id="cell-portal-overview" class="cell-portal-section">
+        ${cellPortalSectionTitle("bi-grid-1x2", "Visão Geral", "Indicadores seguros da célula autorizada")}
+        <div class="cell-portal-kpis">${[["bi-people","Total de membros",stats.total_members],["bi-person-check","Membros activos",stats.active_members],["bi-person-plus","Novos este mês",stats.new_members_month],["bi-person-heart","Visitantes ligados",stats.visitors],["bi-clipboard-check","Relatórios este mês",stats.reports_month],["bi-activity","Estado actual",stats.current_report_status],["bi-clock-history","Último relatório",stats.latest_report ? String(portalDateValue(stats.latest_report) || "").slice(0,10) : "—"],["bi-calendar-week","Próxima submissão",stats.next_submission]].map(([icon,label,value]) => `<article><i class="bi ${icon}"></i><span>${label}</span><strong>${escapeAttr(value)}</strong></article>`).join("")}</div>
+        <div class="cell-portal-meta">
+          <div><span>Igreja</span><strong>${escapeAttr(context?.church_name || "—")}</strong></div>
+          <div><span>Grupo</span><strong>${escapeAttr(context?.cell_group_name || "—")}</strong></div>
+          <div><span>Liderança</span><strong>${escapeAttr(leaders.join(", ") || context?.user_name || "—")}</strong></div>
+          <div><span>Escopo</span><strong>${(context?.authorized_cell_ids || []).length} célula(s)</strong></div>
+        </div>
+      </section>
+      <section class="cell-portal-section">
+        <div class="cell-portal-alerts">${safeAlerts.map((alert) => `<article class="is-${alert.tone || "info"}"><i class="bi bi-bell"></i><div><strong>${escapeAttr(alert.title)}</strong><p>${escapeAttr(alert.detail)}</p></div></article>`).join("") || `<article class="is-success"><i class="bi bi-check-circle"></i><div><strong>Sem alertas críticos</strong><p>Os principais indicadores estão actualizados.</p></div></article>`}</div>
+      </section>
       <section id="cell-portal-members" class="cell-portal-section">
-        ${cellPortalSectionTitle("bi-people", "Membros & Reconciliação da Célula", cellMembersLoading ? "A carregar membros da célula no Supabase…" : `${usesSupabaseMembers() ? cellPortalMembersState.totalCount : members.length} registo(s) na célula autorizada`)}
+        ${cellPortalSectionTitle("bi-people", "Membros & Reconciliação da Célula", cellMembersLoading ? "A carregar membros da célula no Supabase…" : `${usesSupabaseMembers() ? cellPortalMembersState.totalCount : safeMembers.length} registo(s) na célula autorizada`)}
         <div class="cell-portal-kpis cell-portal-kpis--compact mb-3">
           <article><i class="bi bi-people"></i><span>Total Célula</span><strong>${reconciliationCounts.total}</strong></article>
           <article><i class="bi bi-check-circle text-success"></i><span>Confirmados</span><strong>${reconciliationCounts.confirmed}</strong></article>
@@ -11107,7 +11163,7 @@ function renderCellLeaderPortal() {
         <div class="d-flex justify-content-between align-items-center mb-2">
           <small class="text-secondary">Reveja os membros históricos da sua célula: confirme membros activos, corrija dados de contacto ou solicite transferências.</small>
           <button type="button" class="btn btn-sm btn-outline-success" data-cell-member-bulk-confirm>
-            <i class="bi bi-check-all me-1"></i>Confirmar Todos (${members.filter((m) => !m.reconciliation_status || m.reconciliation_status === "Pending").length})
+            <i class="bi bi-check-all me-1"></i>Confirmar Todos (${unconfirmedMembersCount})
           </button>
         </div>
         <div class="panel glass-panel cell-portal-table-wrap">
@@ -11127,14 +11183,14 @@ function renderCellLeaderPortal() {
               </tr>
             </thead>
             <tbody>
-              ${cellMembersLoading ? `<tr><td colspan="10">A carregar membros da célula…</td></tr>` : members.map((member) => `
+              ${cellMembersLoading ? `<tr><td colspan="10">A carregar membros da célula…</td></tr>` : safeMembers.map((member) => `
                 <tr>
-                  <td data-label="Nome"><strong>${escapeAttr(member.name)}</strong><small>${escapeAttr(member.pastoral_observation || "")}</small></td>
+                  <td data-label="Nome"><strong>${escapeAttr(member.name || "—")}</strong><small>${escapeAttr(member.pastoral_observation || "")}</small></td>
                   <td data-label="Telefone">${escapeAttr(member.phone || "—")}</td>
                   <td data-label="Reconciliação">${reconciliationStatusBadge(member.reconciliation_status)}</td>
-                  <td data-label="Estado">${badge(member.status)}</td>
+                  <td data-label="Estado">${badge(member.status || "Activo")}</td>
                   <td data-label="Entrada">${escapeAttr(member.joined_at || "—")}</td>
-                  <td data-label="Fundação">${badge(member.foundation_status)}</td>
+                  <td data-label="Fundação">${badge(member.foundation_status || "Não inscrito")}</td>
                   <td data-label="Sacramentos">${member.sacraments_count || 0} · ${member.baptized ? "Baptizado" : "Não baptizado"}</td>
                   <td data-label="Parceiro">${yesNo(member.is_partner)}</td>
                   <td data-label="Dizimista">${yesNo(member.is_tither)}</td>
@@ -11154,15 +11210,77 @@ function renderCellLeaderPortal() {
         </div>
         ${usesSupabaseMembers() && !cellMembersLoading ? `<div class="cell-portal-pagination-footer d-flex justify-content-between align-items-center gap-2 mt-3"><div class="d-flex align-items-center gap-2"><small class="text-secondary">${cellPortalMembersState.totalCount} membro(s) · Página ${cellPortalMembersState.page} / ${cellPortalMembersState.totalPages}</small><label class="d-flex align-items-center gap-1 text-secondary small ms-2">${lang === "pt" ? "Por página:" : "Per page:"}<select class="form-select form-select-sm" data-cell-portal-page-size style="width: auto; display: inline-block;">${[25, 50, 100].map((sz) => `<option value="${sz}" ${cellPortalMembersState.pageSize === sz ? "selected" : ""}>${sz}</option>`).join("")}</select></label></div><div class="d-flex gap-2"><button class="action-btn" data-cell-portal-member-page="prev" ${cellPortalMembersState.page <= 1 ? "disabled" : ""}>Anterior</button><button class="action-btn" data-cell-portal-member-page="next" ${cellPortalMembersState.page >= cellPortalMembersState.totalPages ? "disabled" : ""}>Próximo</button></div></div>` : ""}
       </section>
-      <section id="cell-portal-candidates" class="cell-portal-section">${cellPortalSectionTitle("bi-person-plus", "Registos por Aprovar", "Pedidos de adesão da(s) célula(s) autorizada(s)")}<div class="cell-portal-kpis cell-portal-kpis--compact">${[["bi-people","Membros oficiais",allMembers.length],["bi-pencil-square","Rascunhos",candidateCounts.drafts],["bi-hourglass-split","Aguardando aprovação",candidateCounts.submitted],["bi-search","Em revisão",candidateCounts.reviewing],["bi-arrow-repeat","Precisa correcção",candidateCounts.correction],["bi-x-circle","Rejeitados",candidateCounts.rejected]].map(([icon,label,value]) => `<article><i class="bi ${icon}"></i><span>${label}</span><strong>${value}</strong></article>`).join("")}</div><div class="panel glass-panel cell-portal-table-wrap mt-3"><table class="table cell-portal-table"><thead><tr><th>Nome</th><th>Telefone</th><th>Estado</th><th>Motivo</th><th>Acções</th></tr></thead><tbody>${candidates.filter((item) => !["Approved", "Withdrawn"].includes(item.approval_status)).map((item) => `<tr><td><strong>${escapeAttr(candidateFullName(item))}</strong></td><td>${escapeAttr(item.primary_phone || "—")}</td><td>${badge(candidateStatusLabel(item.approval_status))}</td><td>${escapeAttr(item.correction_reason || item.rejection_reason || "—")}</td><td>${candidatePortalActions(item)}</td></tr>`).join("") || `<tr><td colspan="5">Nenhum candidato pendente para esta célula.</td></tr>`}</tbody></table></div></section>
-      <section id="cell-portal-reports" class="cell-portal-section cell-portal-grid-2"><article class="panel glass-panel">${cellPortalSectionTitle("bi-clipboard-data", "Relatório Semanal", "Igreja, grupo e célula ficam bloqueados")}<p class="text-secondary">Submetido por <strong>${escapeAttr(context?.user_name || "—")}</strong> como ${escapeAttr(context?.cell_role || "—")}. A oferta permanece <strong>Pending Finance Review</strong> e não cria financeRecord.</p><button type="button" class="btn btn-ce-gold btn-touch" data-public-cell-report>Submeter Relatório Semanal</button></article><article class="panel glass-panel">${cellPortalSectionTitle("bi-clock-history", "Último relatório")}${stats.latest_report ? `<div class="detail-grid"><div><span>Data</span><strong>${escapeAttr(String(portalDateValue(stats.latest_report)).slice(0,10))}</strong></div><div><span>Estado</span><strong>${escapeAttr(stats.current_report_status)}</strong></div><div><span>Presentes</span><strong>${Number(stats.latest_report.attendance_count ?? stats.latest_report.att ?? 0)}</strong></div><div><span>Visitantes</span><strong>${Number(stats.latest_report.first_timers_count ?? stats.latest_report.ft ?? 0)}</strong></div></div>` : `<p class="text-secondary">Ainda não existe relatório submetido.</p>`}</article></section>
-      <section id="cell-portal-activities" class="cell-portal-section">${cellPortalSectionTitle("bi-calendar2-event", "Actividades", "Reuniões, evangelismo, visitação, oração e F.E.V.O")}<div class="cell-portal-activity-grid">${activities.map((item) => `<article><span>${escapeAttr(String(item.date || "").slice(0,10))}</span><h4>${escapeAttr(item.type)}</h4><p>${escapeAttr(item.title)}</p><div><small>${escapeAttr(item.responsible || "Por definir")}</small>${badge(item.status || "Planeado")}</div></article>`).join("") || `<p class="text-secondary">Sem actividades registadas neste período.</p>`}</div></section>
-      <section id="cell-portal-growth" class="cell-portal-section">${cellPortalSectionTitle("bi-graph-up-arrow", "Crescimento & Progresso", "Indicadores agregados e responsivos")}<div class="cell-portal-chart-grid"><article class="panel glass-panel"><h4>Presença semanal</h4>${cellPortalBars(trends.attendance)}</article><article class="panel glass-panel"><h4>Visitantes</h4>${cellPortalBars(trends.visitors)}</article><article class="panel glass-panel"><h4>Almas ganhas</h4>${cellPortalBars(trends.souls)}</article><article class="panel glass-panel"><h4>Foundation School</h4>${cellPortalDonut(foundation)}</article><article class="panel glass-panel"><h4>Sacramentos</h4>${cellPortalBars([["Baptizados",sacraments.baptized],["Não baptizados",sacraments.not_baptized],["Casamentos",sacraments.marriages],["Dedicações",sacraments.baby_dedications]])}</article><article class="panel glass-panel"><h4>Estado dos relatórios</h4>${cellPortalDonut(trends.statuses)}</article></div></section>
-      <section id="cell-portal-finance" class="cell-portal-section">${cellPortalSectionTitle("bi-shield-check", "Parcerias & Dízimos", "Apenas registos verificados; sem valores, comprovativos ou edição")}<div class="cell-portal-kpis cell-portal-kpis--compact">${[["bi-stars","Membros parceiros",partners],["bi-percent","Participação em parcerias",`${allMembers.length ? Math.round(partners/allMembers.length*100) : 0}%`],["bi-check2-circle","Dizimistas identificados",tithers],["bi-pie-chart","Participação em dízimos",`${allMembers.length ? Math.round(tithers/allMembers.length*100) : 0}%`]].map(([icon,label,value]) => `<article><i class="bi ${icon}"></i><span>${label}</span><strong>${value}</strong></article>`).join("")}</div><div class="alert alert-info mt-3 mb-0">Pending, Rejected e Expense não entram. O portal não edita Finance nem cria financeRecord.</div></section>
-      <section id="cell-portal-souls" class="cell-portal-section">${cellPortalSectionTitle("bi-person-hearts", "Ganhar Almas", "Conversão e ranking simples")}<div class="cell-portal-grid-2"><div class="cell-portal-kpis cell-portal-kpis--compact">${[["bi-person-plus","First Timers",soul.first_timers],["bi-telephone","Em acompanhamento",soul.follow_up],["bi-mortarboard","Enviados à Fundação",soul.foundation],["bi-person-check","Tornaram-se membros",soul.became_members]].map(([icon,label,value]) => `<article><i class="bi ${icon}"></i><span>${label}</span><strong>${value}</strong></article>`).join("")}</div><article class="panel glass-panel"><h4>Top inviters</h4>${(soul.ranking || []).map((item,index) => `<div class="cell-portal-ranking"><span>${index+1}</span><strong>${escapeAttr(item.name)}</strong><b>${item.invited}</b></div>`).join("") || `<p class="text-secondary">Sem convites registados.</p>`}</article></div></section>
-      <section id="cell-portal-foundation" class="cell-portal-section cell-portal-grid-2"><article class="panel glass-panel">${cellPortalSectionTitle("bi-mortarboard", "Foundation School")}${cellPortalDonut(foundation)}</article><article class="panel glass-panel">${cellPortalSectionTitle("bi-droplet", "Sacramentos")}${cellPortalBars([["Baptizados",sacraments.baptized],["Não baptizados",sacraments.not_baptized],["Casamentos",sacraments.marriages],["Dedicações",sacraments.baby_dedications]])}</article></section>
-      <section id="cell-portal-programs" class="cell-portal-section">${cellPortalSectionTitle("bi-calendar-event", "Programas Futuros", "Programas da mesma igreja ou dirigidos ao grupo/célula")}<div class="cell-portal-programs">${programs.map((program) => `<article><div><span>${escapeAttr(program.date || "Data por confirmar")}</span>${badge(program.needs_mobilization ? "Mobilização" : "Informativo")}</div><h4>${escapeAttr(program.name)}</h4><p>${escapeAttr(program.location || "Local por confirmar")}</p><strong>${escapeAttr(program.cell_action)}</strong><footer>${program.needs_media ? "Media • " : ""}${program.needs_follow_up ? "Follow-up necessário" : "Acompanhamento normal"}</footer></article>`).join("") || `<p class="text-secondary">Não existem programas futuros relevantes registados.</p>`}</div></section>
-      <section id="cell-portal-history" class="cell-portal-section">${cellPortalSectionTitle("bi-clock-history", "Histórico", "Relatórios apenas da célula seleccionada")}<div class="panel glass-panel cell-portal-table-wrap"><table class="table cell-portal-table"><thead><tr><th>Data</th><th>Semana</th><th>Presentes</th><th>Visitantes</th><th>Almas</th><th>Estado</th></tr></thead><tbody>${(trends.reports || []).map((report) => `<tr><td data-label="Data">${escapeAttr(String(portalDateValue(report)).slice(0,10))}</td><td data-label="Semana">${escapeAttr(report.report_week || report.semana || "—")}</td><td data-label="Presentes">${Number(report.attendance_count ?? report.att ?? 0)}</td><td data-label="Visitantes">${Number(report.first_timers_count ?? report.ft ?? 0)}</td><td data-label="Almas">${Number(report.souls_won_count ?? report.nc ?? report.rs ?? 0)}</td><td data-label="Estado">${badge(cellReportStatusLabel(report))}</td></tr>`).join("") || `<tr><td colspan="6">Sem histórico no período.</td></tr>`}</tbody></table></div></section>
+      <section id="cell-portal-candidates" class="cell-portal-section">
+        ${cellPortalSectionTitle("bi-person-plus", "Registos por Aprovar", "Pedidos de adesão da(s) célula(s) autorizada(s)")}
+        <div class="cell-portal-kpis cell-portal-kpis--compact">${[["bi-people","Membros oficiais",allMembers.length],["bi-pencil-square","Rascunhos",candidateCounts.drafts],["bi-hourglass-split","Aguardando aprovação",candidateCounts.submitted],["bi-search","Em revisão",candidateCounts.reviewing],["bi-arrow-repeat","Precisa correcção",candidateCounts.correction],["bi-x-circle","Rejeitados",candidateCounts.rejected]].map(([icon,label,value]) => `<article><i class="bi ${icon}"></i><span>${label}</span><strong>${value}</strong></article>`).join("")}</div>
+        <div class="panel glass-panel cell-portal-table-wrap mt-3"><table class="table cell-portal-table"><thead><tr><th>Nome</th><th>Telefone</th><th>Estado</th><th>Motivo</th><th>Acções</th></tr></thead><tbody>${safeCandidates.map((item) => `<tr><td><strong>${escapeAttr(candidateFullName(item))}</strong></td><td>${escapeAttr(item.primary_phone || "—")}</td><td>${badge(candidateStatusLabel(item.approval_status))}</td><td>${escapeAttr(item.correction_reason || item.rejection_reason || "—")}</td><td>${candidatePortalActions(item)}</td></tr>`).join("") || `<tr><td colspan="5">Nenhum candidato pendente para esta célula.</td></tr>`}</tbody></table></div>
+      </section>
+      <section id="cell-portal-reports" class="cell-portal-section cell-portal-grid-2">
+        <article class="panel glass-panel">
+          ${cellPortalSectionTitle("bi-clipboard-data", "Relatório Semanal", "Igreja, grupo e célula ficam bloqueados")}
+          <p class="text-secondary">Submetido por <strong>${escapeAttr(context?.user_name || "—")}</strong> como ${escapeAttr(context?.cell_role || "—")}. A oferta permanece <strong>Pending Finance Review</strong> e não cria financeRecord.</p>
+          <button type="button" class="btn btn-ce-gold btn-touch" data-public-cell-report>Submeter Relatório Semanal</button>
+        </article>
+        <article class="panel glass-panel">
+          ${cellPortalSectionTitle("bi-clock-history", "Último relatório")}
+          ${stats.latest_report ? `<div class="detail-grid"><div><span>Data</span><strong>${escapeAttr(String(portalDateValue(stats.latest_report) || "").slice(0,10))}</strong></div><div><span>Estado</span><strong>${escapeAttr(stats.current_report_status)}</strong></div><div><span>Presentes</span><strong>${Number(stats.latest_report.attendance_count ?? stats.latest_report.att ?? 0)}</strong></div><div><span>Visitantes</span><strong>${Number(stats.latest_report.first_timers_count ?? stats.latest_report.ft ?? 0)}</strong></div></div>` : `<p class="text-secondary">Ainda não existe relatório submetido.</p>`}
+        </article>
+      </section>
+      <section id="cell-portal-activities" class="cell-portal-section">
+        ${cellPortalSectionTitle("bi-calendar2-event", "Actividades", "Reuniões, evangelismo, visitação, oração e F.E.V.O")}
+        <div class="cell-portal-activity-grid">${safeActivities.map((item) => `<article><span>${escapeAttr(String(item.date || "").slice(0,10))}</span><h4>${escapeAttr(item.type || "Actividade")}</h4><p>${escapeAttr(item.title || "—")}</p><div><small>${escapeAttr(item.responsible || "Por definir")}</small>${badge(item.status || "Planeado")}</div></article>`).join("") || `<p class="text-secondary">Sem actividades registadas neste período.</p>`}</div>
+      </section>
+      <section id="cell-portal-growth" class="cell-portal-section">
+        ${cellPortalSectionTitle("bi-graph-up-arrow", "Crescimento & Progresso", "Indicadores agregados e responsivos")}
+        <div class="cell-portal-chart-grid">
+          <article class="panel glass-panel"><h4>Presença semanal</h4>${cellPortalBars(trends?.attendance)}</article>
+          <article class="panel glass-panel"><h4>Visitantes</h4>${cellPortalBars(trends?.visitors)}</article>
+          <article class="panel glass-panel"><h4>Almas ganhas</h4>${cellPortalBars(trends?.souls)}</article>
+          <article class="panel glass-panel"><h4>Foundation School</h4>${cellPortalDonut(foundation)}</article>
+          <article class="panel glass-panel"><h4>Sacramentos</h4>${cellPortalBars([["Baptizados",sacraments?.baptized || 0],["Não baptizados",sacraments?.not_baptized || 0],["Casamentos",sacraments?.marriages || 0],["Dedicações",sacraments?.baby_dedications || 0]])}</article>
+          <article class="panel glass-panel"><h4>Estado dos relatórios</h4>${cellPortalDonut(trends?.statuses)}</article>
+        </div>
+      </section>
+      <section id="cell-portal-finance" class="cell-portal-section">
+        ${cellPortalSectionTitle("bi-shield-check", "Parcerias & Dízimos", "Apenas registos verificados; sem valores, comprovativos ou edição")}
+        <div class="cell-portal-kpis cell-portal-kpis--compact">${[["bi-stars","Membros parceiros",partners],["bi-percent","Participação em parcerias",`${partnerPercent}%`],["bi-check2-circle","Dizimistas identificados",tithers],["bi-pie-chart","Participação em dízimos",`${tithePercent}%`]].map(([icon,label,value]) => `<article><i class="bi ${icon}"></i><span>${label}</span><strong>${value}</strong></article>`).join("")}</div>
+        <div class="alert alert-info mt-3 mb-0">Pending, Rejected e Expense não entram. O portal não edita Finance nem cria financeRecord.</div>
+      </section>
+      <section id="cell-portal-souls" class="cell-portal-section">
+        ${cellPortalSectionTitle("bi-person-hearts", "Ganhar Almas", "Conversão e ranking simples")}
+        <div class="cell-portal-grid-2">
+          <div class="cell-portal-kpis cell-portal-kpis--compact">${[["bi-person-plus","First Timers",soul?.first_timers || 0],["bi-telephone","Em acompanhamento",soul?.follow_up || 0],["bi-mortarboard","Enviados à Fundação",soul?.foundation || 0],["bi-person-check","Tornaram-se membros",soul?.became_members || 0]].map(([icon,label,value]) => `<article><i class="bi ${icon}"></i><span>${label}</span><strong>${value}</strong></article>`).join("")}</div>
+          <article class="panel glass-panel"><h4>Top inviters</h4>${safeRanking.map((item,index) => `<div class="cell-portal-ranking"><span>${index+1}</span><strong>${escapeAttr(item.name || "Membro")}</strong><b>${Number(item.invited || 0)}</b></div>`).join("") || `<p class="text-secondary">Sem convites registados.</p>`}</article>
+        </div>
+      </section>
+      <section id="cell-portal-foundation" class="cell-portal-section cell-portal-grid-2">
+        <article class="panel glass-panel">${cellPortalSectionTitle("bi-mortarboard", "Foundation School")}${cellPortalDonut(foundation)}</article>
+        <article class="panel glass-panel">${cellPortalSectionTitle("bi-droplet", "Sacramentos")}${cellPortalBars([["Baptizados",sacraments?.baptized || 0],["Não baptizados",sacraments?.not_baptized || 0],["Casamentos",sacraments?.marriages || 0],["Dedicações",sacraments?.baby_dedications || 0]])}</article>
+      </section>
+      <section id="cell-portal-programs" class="cell-portal-section">
+        ${cellPortalSectionTitle("bi-calendar-event", "Programas Futuros", "Programas da mesma igreja ou dirigidos ao grupo/célula")}
+        <div class="cell-portal-programs">${safePrograms.map((program) => `<article><div><span>${escapeAttr(program.date || "Data por confirmar")}</span>${badge(program.needs_mobilization ? "Mobilização" : "Informativo")}</div><h4>${escapeAttr(program.name || "Programa")}</h4><p>${escapeAttr(program.location || "Local por confirmar")}</p><strong>${escapeAttr(program.cell_action || "")}</strong><footer>${program.needs_media ? "Media • " : ""}${program.needs_follow_up ? "Follow-up necessário" : "Acompanhamento normal"}</footer></article>`).join("") || `<p class="text-secondary">Não existem programas futuros relevantes registados.</p>`}</div>
+      </section>
+      <section id="cell-portal-history" class="cell-portal-section">
+        ${cellPortalSectionTitle("bi-clock-history", "Histórico", "Relatórios apenas da célula seleccionada")}
+        <div class="panel glass-panel cell-portal-table-wrap">
+          <table class="table cell-portal-table">
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Semana</th>
+                <th>Presentes</th>
+                <th>Visitantes</th>
+                <th>Almas</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${safeReports.map((report) => `<tr><td data-label="Data">${escapeAttr(String(portalDateValue(report) || "").slice(0,10))}</td><td data-label="Semana">${escapeAttr(report.report_week || report.semana || "—")}</td><td data-label="Presentes">${Number(report.attendance_count ?? report.att ?? 0)}</td><td data-label="Visitantes">${Number(report.first_timers_count ?? report.ft ?? 0)}</td><td data-label="Almas">${Number(report.souls_won_count ?? report.nc ?? report.rs ?? 0)}</td><td data-label="Estado">${badge(cellReportStatusLabel(report))}</td></tr>`).join("") || `<tr><td colspan="6">Sem histórico no período.</td></tr>`}
+            </tbody>
+          </table>
+        </div>
+      </section>
     </div>`);
   } catch (renderError) {
     console.error("[Cell Portal Render Error]", renderError);
@@ -11178,7 +11296,8 @@ function renderCellLeaderPortal() {
             <button type="button" class="btn btn-ce-gold btn-touch" data-public-cell-report><i class="bi bi-clipboard-plus me-2"></i>Submeter Relatório Semanal</button>
           </div>
         </div>
-        <p class="text-warning mt-3">A carregar métricas e membros da célula. Por favor aguarde um momento ou recarregue a página se os dados não surgirem automaticamente.</p>
+        <p class="text-danger mt-3"><i class="bi bi-exclamation-triangle me-2"></i>Erro ao processar vista do portal: ${escapeAttr(renderError?.message || renderError)}</p>
+        <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="renderCellLeaderPortal()"><i class="bi bi-arrow-clockwise me-1"></i>Tentar novamente</button>
       </article>
     `);
   }
