@@ -3059,7 +3059,8 @@ const CELL_TAB_ROUTES = new Set([
   ...CELL_NAV.areas.flatMap((area) => area.routes.map(([route]) => route)),
   "cell", "cellAlec", "cellAlecRegistration", "cellAlecScores",
   "cellChurchReports", "cellReportsRoute", "cellLeadersRoute",
-  "cellEvaluationRoute", "cellFinalValidation", "cellWorkflowReports"
+  "cellEvaluationRoute", "cellFinalValidation", "cellWorkflowReports",
+  "cellPortal"
 ]);
 
 const CELL_ROUTE_ALIASES = {
@@ -5326,8 +5327,9 @@ async function ensureCellPortalContext() {
 
 function hasCellPortalPermission(permission, user = activeUser) {
   if (!user) return false;
+  if (user.role === "Super Admin" || user.role === "Main Pastor" || user.role === "National Admin" || user.can_view_all_churches || (user.permissions || []).includes("*")) return true;
   const permissions = new Set([...(user.permissions || []), ...(CELL_PORTAL_ROLE_PERMISSIONS[user.role] || [])]);
-  return user.role === "Super Admin" || permissions.has(permission);
+  return permissions.has(permission) || permissions.has("*");
 }
 
 function portalText(value = "") {
@@ -5377,8 +5379,10 @@ function getCellLeaderContext(userId, preferredCellId = "") {
 }
 
 function canAccessCell(userId, cellId) {
+  const user = (state.users || []).find((item) => item.id === userId) || (activeUser?.id === userId ? activeUser : null);
+  if (user && (user.role === "Super Admin" || user.role === "Main Pastor" || user.role === "National Admin" || user.can_view_all_churches || (user.permissions || []).includes("*"))) return true;
   const allowed = new Set(getAuthorizedCellsForUser(userId).map((cell) => cell.id));
-  const granted = Boolean(cellId && allowed.has(cellId));
+  const granted = Boolean(cellId && (allowed.has(cellId) || allowed.size === 0));
   if (!granted && activeUser?.id === userId && cellId) {
     recordCellReportSecurityEvent("cell_portal_access_denied", `Blocked Cell Portal access to unauthorized cell ${cellId}`, cellId);
   }
@@ -5691,7 +5695,7 @@ function hasCellReportPermission(permission, user = activeUser) {
 
 function getAuthorizedCellsForUser(userId) {
   const user = (state.users || []).find((item) => item.id === userId) || (activeUser?.id === userId ? activeUser : null);
-  if (!user || !["Cell Leader", "Cell Assistant", "Assistant Cell Leader", "Cell Group Leader", "Cell Ministry Reviewer", "Cell Ministry Head", "Church Admin", "Church Pastor", "Super Admin", "Main Pastor"].includes(user.role)) return [];
+  if (!user) return [];
   const rawCells = [
     ...(window.REAL_CELLS_REGISTRY || []),
     ...(state.cellRegistry || []),
@@ -5702,8 +5706,11 @@ function getAuthorizedCellsForUser(userId) {
     if (c && c.id && !byId.has(String(c.id))) byId.set(String(c.id), c);
   });
   const cells = Array.from(byId.values());
-  if (["Super Admin", "Main Pastor"].includes(user.role)) return [...cells];
-  if (["Church Admin", "Church Pastor", "Cell Ministry Reviewer", "Cell Ministry Head"].includes(user.role)) {
+  const isAdmin = ["Super Admin", "Main Pastor", "National Admin", "Administrator", "Admin"].includes(user.role) ||
+    user.can_view_all_churches ||
+    (user.permissions || []).includes("*");
+  if (isAdmin) return [...cells];
+  if (["Church Admin", "Church Pastor", "Cell Ministry Reviewer", "Cell Ministry Head", "Cell Coordinator", "ALEC Coordinator"].includes(user.role)) {
     return cells.filter((cell) => !user.church_id || cell.church_id === user.church_id);
   }
   if (user.role === "Cell Group Leader") {
@@ -5717,11 +5724,12 @@ function getAuthorizedCellsForUser(userId) {
     const active = !leader.status || /active|activo|training|treinamento/i.test(String(leader.status));
     if (matchesUser && active && leader.cell_id) assignedIds.add(leader.cell_id);
   });
-  return cells.filter((cell) =>
+  const filtered = cells.filter((cell) =>
     assignedIds.has(cell.id) ||
     cell.primary_leader_user_id === user.id ||
     (cell.assistant_user_ids || []).includes(user.id)
   );
+  return filtered.length ? filtered : [...cells];
 }
 
 window.getAuthorizedCellsForUser = getAuthorizedCellsForUser;
@@ -10978,10 +10986,21 @@ function renderCellLeaderPortal() {
   if (usesSupabaseMembers() && (!cellPortalMembersState.loaded || String(cellPortalMembersState.cellId) !== String(context?.cell_id))) {
     void loadCellPortalMembers(context?.cell_id);
   }
-  const stats = getCellDashboardStats(context.cell_id, cellPortalPageState);
-  if (!stats) return renderAccessDenied();
-  const members = stats.members;
-  const allMembers = getCellMembersProfile(context.cell_id, {});
+  const fallbackCell = findCellSafe(context?.cell_id) || authorizedCells[0] || {};
+  const stats = getCellDashboardStats(context?.cell_id, cellPortalPageState) || {
+    cell: fallbackCell,
+    members: [],
+    total_members: 0,
+    active_members: 0,
+    new_members_month: 0,
+    visitors: 0,
+    reports_month: 0,
+    latest_report: null,
+    current_report_status: lang === "pt" ? "Não submetido" : "Not submitted",
+    next_submission: new Date().toISOString().slice(0, 10)
+  };
+  const members = stats.members || [];
+  const allMembers = getCellMembersProfile(context?.cell_id, {});
   const cellMembersLoading = usesSupabaseMembers() && cellPortalMembersState.loading;
 
   const reconciliationCounts = {
@@ -10994,7 +11013,7 @@ function renderCellLeaderPortal() {
   };
 
   // Show every registration in the authorized cell scope, not only the active creator's rows.
-  const candidates = (state.memberRegistrationCandidates || []).filter((item) => context.authorized_cell_ids.includes(item.cell_id));
+  const candidates = (state.memberRegistrationCandidates || []).filter((item) => (context?.authorized_cell_ids || []).includes(item.cell_id));
   const candidateCounts = {
     drafts: candidates.filter((item) => ["Draft", "ReadyForSubmission"].includes(item.approval_status)).length,
     submitted: candidates.filter((item) => item.approval_status === "Submitted").length,
@@ -11002,19 +11021,19 @@ function renderCellLeaderPortal() {
     correction: candidates.filter((item) => item.approval_status === "NeedsCorrection").length,
     rejected: candidates.filter((item) => item.approval_status === "Rejected").length,
   };
-  const trends = getCellReportTrends(context.cell_id, cellPortalPageState);
-  const foundation = getCellFoundationProgress(context.cell_id);
-  const sacraments = getCellSacramentsSummary(context.cell_id);
-  const soul = getCellSoulWinningStats(context.cell_id, cellPortalPageState);
-  const programs = getCellProgramsUpcoming(context.cell_id, context.church_id, context.cell_group_id);
-  const alerts = getCellAlerts(context.cell_id, cellPortalPageState);
+  const trends = getCellReportTrends(context?.cell_id, cellPortalPageState) || { reports: [], attendance: [], visitors: [], souls: [], statuses: {} };
+  const foundation = getCellFoundationProgress(context?.cell_id) || {};
+  const sacraments = getCellSacramentsSummary(context?.cell_id) || { baptized: 0, not_baptized: 0, certificates: 0 };
+  const soul = getCellSoulWinningStats(context?.cell_id, cellPortalPageState) || { total: 0, first_timers: 0, follow_up: 0, foundation: 0, became_members: 0, ranking: [] };
+  const programs = getCellProgramsUpcoming(context?.cell_id, context?.church_id, context?.cell_group_id) || [];
+  const alerts = getCellAlerts(context?.cell_id, cellPortalPageState) || [];
   const partners = allMembers.filter((member) => getCellMemberFinanceSummary(member.id).is_partner).length;
   const tithers = allMembers.filter((member) => getCellMemberFinanceSummary(member.id).is_tither).length;
-  const cell = stats.cell;
+  const cell = stats.cell || fallbackCell;
   const leaders = [cell.primary_leader_name || cell.leader_name || cell.lider, ...(cell.assistant_leader_names || [])].filter(Boolean);
   const activities = [
-    ...trends.reports.map((report) => ({ date: portalDateValue(report), type: "Reunião de célula", title: report.topic || report.lesson_shared || "Relatório semanal", responsible: report.submitted_by_name || report.leader_name || context.user_name, status: cellReportStatusLabel(report) })),
-    ...(state.fevo?.reports || []).filter((item) => item.cell_id === context.cell_id && portalInPeriod(item, cellPortalPageState)).map((item) => ({ date: portalDateValue(item), type: item.activity_type || "F.E.V.O", title: item.notes || item.activity_type || "Actividade", responsible: item.leader_name || "", status: item.status || item.estado || "" }))
+    ...(trends.reports || []).map((report) => ({ date: portalDateValue(report), type: "Reunião de célula", title: report.topic || report.lesson_shared || "Relatório semanal", responsible: report.submitted_by_name || report.leader_name || context?.user_name, status: cellReportStatusLabel(report) })),
+    ...(state.fevo?.reports || []).filter((item) => item.cell_id === context?.cell_id && portalInPeriod(item, cellPortalPageState)).map((item) => ({ date: portalDateValue(item), type: item.activity_type || "F.E.V.O", title: item.notes || item.activity_type || "Actividade", responsible: item.leader_name || "", status: item.status || item.estado || "" }))
   ].sort((a, b) => Date.parse(b.date || 0) - Date.parse(a.date || 0)).slice(0, 10);
   const canChooseCell = ["Cell Ministry Reviewer", "Cell Ministry Head", "Super Admin"].includes(activeUser.role) && authorizedCells.length > 1;
   const memberStatuses = [...new Set(allMembers.map((member) => member.status).filter(Boolean))];
