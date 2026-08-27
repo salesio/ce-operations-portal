@@ -1009,6 +1009,29 @@ import * as ministryMaterialsSupabase from "./data/adapters/supabase/ministryMat
 import * as reportsSupabase from "./data/adapters/supabase/reportsSupabaseAdapter";
 import * as notificationsSupabase from "./data/adapters/supabase/notificationsSupabaseAdapter";
 import * as auditSystemSupabase from "./data/adapters/supabase/auditSystemSupabaseAdapter";
+import * as cellMinistrySupabase from "./data/adapters/supabase/cellMinistrySupabaseAdapter";
+
+export * as cellMinistrySupabaseAdapter from "./data/adapters/supabase/cellMinistrySupabaseAdapter";
+export {
+  listChurchReports,
+  getChurchReportById,
+  createChurchReport,
+  updateChurchReport,
+  deleteChurchReport,
+  getChurchReportsByChurch,
+  listAlecRegistrations,
+  getAlecRegistrationById,
+  createAlecRegistration,
+  updateAlecRegistration,
+  deleteAlecRegistration,
+  getAlecRegistrationsByChurch,
+  listAlecScores,
+  getAlecScoreById,
+  createAlecScore,
+  updateAlecScore,
+  deleteAlecScore,
+  getAlecScoresByChurch,
+} from "./data/adapters/supabase/cellMinistrySupabaseAdapter";
 
 import {
   listChurches,
@@ -3332,6 +3355,8 @@ function installDataLayerGlobals(): void {
   if (!root.CENotifications) {
     root.CENotifications = notificationsApi;
   }
+  root.cellMinistrySupabaseAdapter = cellMinistrySupabase;
+  root.CECellMinistry = Object.assign(root.CECellMinistry || {}, cellMinistrySupabase);
   root.CEReports = Object.assign(root.CEReports || {}, reportsSupabase);
   root.CEReportExports = Object.assign(root.CEReportExports || {}, {
     listReportExportJobs: reportsSupabase.listReportExportJobs,
