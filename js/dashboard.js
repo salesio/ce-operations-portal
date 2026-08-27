@@ -16411,18 +16411,51 @@ async function dualWriteCellMinistryRecord(modalType, mode, record) {
     let result = null;
     if (modalType === "churchReport") {
       if (cellSb) {
-        if (mode === "create") result = await cellSb.createChurchReport(record);
-        else if (mode === "update") result = await cellSb.updateChurchReport(record.id, record);
+        if (mode === "create") {
+          result = await cellSb.createChurchReport(record);
+          if (result?.ok && result.data) {
+            Object.assign(record, result.data);
+            saveState(`Persisted churchReport to Supabase`);
+          }
+        } else if (mode === "update") {
+          result = await cellSb.updateChurchReport(record.id, record);
+          if (result?.ok && result.data) {
+            Object.assign(record, result.data);
+            saveState(`Updated churchReport in Supabase`);
+          }
+        }
       }
     } else if (modalType === "alecRegistration") {
       if (cellSb) {
-        if (mode === "create") result = await cellSb.createAlecRegistration(record);
-        else if (mode === "update") result = await cellSb.updateAlecRegistration(record.id, record);
+        if (mode === "create") {
+          result = await cellSb.createAlecRegistration(record);
+          if (result?.ok && result.data) {
+            Object.assign(record, result.data);
+            saveState(`Persisted alecRegistration to Supabase`);
+          }
+        } else if (mode === "update") {
+          result = await cellSb.updateAlecRegistration(record.id, record);
+          if (result?.ok && result.data) {
+            Object.assign(record, result.data);
+            saveState(`Updated alecRegistration in Supabase`);
+          }
+        }
       }
     } else if (modalType === "alecScore") {
       if (cellSb) {
-        if (mode === "create") result = await cellSb.createAlecScore(record);
-        else if (mode === "update") result = await cellSb.updateAlecScore(record.id, record);
+        if (mode === "create") {
+          result = await cellSb.createAlecScore(record);
+          if (result?.ok && result.data) {
+            Object.assign(record, result.data);
+            saveState(`Persisted alecScore to Supabase`);
+          }
+        } else if (mode === "update") {
+          result = await cellSb.updateAlecScore(record.id, record);
+          if (result?.ok && result.data) {
+            Object.assign(record, result.data);
+            saveState(`Updated alecScore in Supabase`);
+          }
+        }
       }
     } else if (modalType === "cellGroup") {
       if (mode === "create" && repo?.createCellGroup) result = await repo.createCellGroup(record);
@@ -16447,8 +16480,19 @@ async function dualWriteCellMinistryRecord(modalType, mode, record) {
       else if (mode === "update" && repo?.updateCellLeader) result = await repo.updateCellLeader(record.id, payload);
     } else if (modalType === "cellReport") {
       if (cellSb) {
-        if (mode === "create") result = await cellSb.createCellReport(record);
-        else if (mode === "update") result = await cellSb.updateCellReport(record.id, record);
+        if (mode === "create") {
+          result = await cellSb.createCellReport(record);
+          if (result?.ok && result.data) {
+            Object.assign(record, result.data);
+            saveState(`Persisted cellReport to Supabase`);
+          }
+        } else if (mode === "update") {
+          result = await cellSb.updateCellReport(record.id, record);
+          if (result?.ok && result.data) {
+            Object.assign(record, result.data);
+            saveState(`Updated cellReport in Supabase`);
+          }
+        }
       } else if (repo) {
         const payload = {
           ...record,
@@ -16491,7 +16535,7 @@ async function hydrateCellMinistryFromRepository() {
     if (cellSb?.listChurchReports) {
       try {
         const result = await cellSb.listChurchReports();
-        if (result?.ok && Array.isArray(result.data) && result.data.length) {
+        if (result?.ok && Array.isArray(result.data)) {
           state.cellLeadership = state.cellLeadership || {};
           state.cellLeadership.churchReports = result.data;
           hydrated = true;
@@ -16506,7 +16550,7 @@ async function hydrateCellMinistryFromRepository() {
     if (cellSb?.listAlecRegistrations) {
       try {
         const result = await cellSb.listAlecRegistrations();
-        if (result?.ok && Array.isArray(result.data) && result.data.length) {
+        if (result?.ok && Array.isArray(result.data)) {
           state.cellLeadership = state.cellLeadership || {};
           state.cellLeadership.alecRegistrations = result.data;
           hydrated = true;
@@ -16521,7 +16565,7 @@ async function hydrateCellMinistryFromRepository() {
     if (cellSb?.listAlecScores) {
       try {
         const result = await cellSb.listAlecScores();
-        if (result?.ok && Array.isArray(result.data) && result.data.length) {
+        if (result?.ok && Array.isArray(result.data)) {
           state.cellLeadership = state.cellLeadership || {};
           state.cellLeadership.alecScores = result.data;
           hydrated = true;
@@ -17259,8 +17303,8 @@ function renderCellCellsList() {
   triggerTabParallax();
 }
 
-function scopedNested(records) {
-  return scoped(records || []);
+function scopedNested(records, module = "cell") {
+  return scoped(records || [], module);
 }
 
 function prisonName(id) {

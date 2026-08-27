@@ -1,12 +1,6 @@
 -- ============================================================================
 -- Migration 0025 — Church Reports, ALEC & Cell Reports Persistence & RLS
 -- ============================================================================
--- Persists Church Reports, ALEC Registrations, ALEC Scores, and Cell Reports
--- directly to PostgreSQL / Supabase, with canonical RLS policies matching
--- production functions (current_user_role(), current_user_church_id(), has_module_permission()).
---
--- Idempotent, reproducible, and transactional.
--- ============================================================================
 
 BEGIN;
 
