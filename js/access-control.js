@@ -741,7 +741,7 @@
     }
     const userChurch = user.church_id || user.churchId;
     const canonUserChurch = CANONICAL_CHURCH_MAP[userChurch] || userChurch;
-    const recordChurch = record.church_id || record.igreja_id || record.recipient_church_id;
+    const recordChurch = record.church_id || record.igreja_id || record.recipient_church_id || record.igreja || record.church;
     if (!recordChurch) return true;
     const canonRecordChurch = CANONICAL_CHURCH_MAP[recordChurch] || recordChurch;
     return recordChurch === userChurch || canonRecordChurch === canonUserChurch;

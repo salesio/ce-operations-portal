@@ -82,8 +82,52 @@ function aliases(t: Table, x: CellMinistryRecord) {
   return r;
 }
 
+const CANONICAL_CHURCH_MAP: Record<string, string> = {
+  "church-hq": "a1111111-1111-4111-8111-111111111101",
+  "church-1": "a1111111-1111-4111-8111-111111111101",
+  "church-matola": "a1111111-1111-4111-8111-111111111102",
+  "church-2": "a1111111-1111-4111-8111-111111111102",
+  "church-beira": "a1111111-1111-4111-8111-111111111103",
+  "church-3": "a1111111-1111-4111-8111-111111111103",
+  "church-nampula": "a1111111-1111-4111-8111-111111111104",
+  "church-4": "a1111111-1111-4111-8111-111111111104",
+  "church-chimoio": "a1111111-1111-4111-8111-111111111105",
+  "church-5": "a1111111-1111-4111-8111-111111111105",
+  "church-nacala": "a1111111-1111-4111-8111-111111111106",
+  "church-6": "a1111111-1111-4111-8111-111111111106",
+  "church-quelimane": "a1111111-1111-4111-8111-111111111107",
+  "church-7": "a1111111-1111-4111-8111-111111111107",
+  "church-tete": "a1111111-1111-4111-8111-111111111108",
+  "church-8": "a1111111-1111-4111-8111-111111111108",
+  "church-xai-xai": "a1111111-1111-4111-8111-111111111109",
+  "church-9": "a1111111-1111-4111-8111-111111111109",
+  "church-pemba": "a1111111-1111-4111-8111-111111111110",
+  "church-10": "a1111111-1111-4111-8111-111111111110",
+  "church-lichinga": "a1111111-1111-4111-8111-111111111111",
+  "church-11": "a1111111-1111-4111-8111-111111111111",
+  "church-inhambane": "a1111111-1111-4111-8111-111111111112",
+  "church-12": "a1111111-1111-4111-8111-111111111112",
+  "church-vilankulo": "a1111111-1111-4111-8111-111111111113",
+  "church-13": "a1111111-1111-4111-8111-111111111113",
+  "church-mocuba": "a1111111-1111-4111-8111-111111111114",
+  "church-14": "a1111111-1111-4111-8111-111111111114",
+  "church-dondo": "a1111111-1111-4111-8111-111111111115",
+  "church-15": "a1111111-1111-4111-8111-111111111115"
+};
+
 function payload(t: Table, x: CellMinistryRecord): SupabaseRow {
   const r: { [k: string]: unknown } = { ...x };
+  if (r.church_id && CANONICAL_CHURCH_MAP[String(r.church_id)]) {
+    r.church_id = CANONICAL_CHURCH_MAP[String(r.church_id)];
+  } else if (r.igreja && CANONICAL_CHURCH_MAP[String(r.igreja)]) {
+    r.church_id = CANONICAL_CHURCH_MAP[String(r.igreja)];
+  } else if (r.church && CANONICAL_CHURCH_MAP[String(r.church)]) {
+    r.church_id = CANONICAL_CHURCH_MAP[String(r.church)];
+  }
+  if (!r.church_id || !isValidUuid(String(r.church_id))) {
+    r.church_id = "a1111111-1111-4111-8111-111111111101";
+  }
+
   if (t === "churchReports") {
     r.data_do_culto ??= r.data_inicio || r.data || r.serviceDate;
     r.estado ??= r.status || "Submetido";

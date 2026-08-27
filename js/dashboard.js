@@ -9784,6 +9784,17 @@ function setRoute(route) {
         .catch((err) => console.warn("[CE Members] route hydrate skipped", err));
     }
   }
+  if (String(activeRoute || "").startsWith("cell")) {
+    Promise.resolve(hydrateCellMinistryFromRepository())
+      .then((hydrated) => {
+        if (hydrated && String(activeRoute || "").startsWith("cell")) {
+          try {
+            (renderers[activeRoute] || renderDashboard)();
+          } catch (_) {}
+        }
+      })
+      .catch((err) => console.warn("[CE CellMinistry] route hydrate skipped", err));
+  }
   history.replaceState(null, "", `#${activeRoute}`);
   document.querySelector(".ops-sidebar")?.classList.remove("is-open");
   const contentEl = byId("content");
@@ -16543,7 +16554,10 @@ async function hydrateCellMinistryFromRepository() {
         const result = await cellSb.listChurchReports();
         if (result?.ok && Array.isArray(result.data)) {
           state.cellLeadership = state.cellLeadership || {};
-          state.cellLeadership.churchReports = result.data;
+          if (result.data.length > 0 || usingSupabase) {
+            state.cellLeadership.churchReports = result.data;
+          }
+          saveState("Hydrated church reports from Supabase");
           hydrated = true;
           console.info("[CE CellMinistry] hydrated church reports from Supabase", result.data.length);
         }
@@ -16558,7 +16572,10 @@ async function hydrateCellMinistryFromRepository() {
         const result = await cellSb.listAlecRegistrations();
         if (result?.ok && Array.isArray(result.data)) {
           state.cellLeadership = state.cellLeadership || {};
-          state.cellLeadership.alecRegistrations = result.data;
+          if (result.data.length > 0 || usingSupabase) {
+            state.cellLeadership.alecRegistrations = result.data;
+          }
+          saveState("Hydrated alec registrations from Supabase");
           hydrated = true;
           console.info("[CE CellMinistry] hydrated alec registrations from Supabase", result.data.length);
         }
@@ -16573,7 +16590,10 @@ async function hydrateCellMinistryFromRepository() {
         const result = await cellSb.listAlecScores();
         if (result?.ok && Array.isArray(result.data)) {
           state.cellLeadership = state.cellLeadership || {};
-          state.cellLeadership.alecScores = result.data;
+          if (result.data.length > 0 || usingSupabase) {
+            state.cellLeadership.alecScores = result.data;
+          }
+          saveState("Hydrated alec scores from Supabase");
           hydrated = true;
           console.info("[CE CellMinistry] hydrated alec scores from Supabase", result.data.length);
         }
@@ -23452,6 +23472,16 @@ function continueEnterDashboard() {
       }
     })
     .catch((error) => console.warn("[CE Members] background hydrate skipped", error));
+
+  // Always hydrate cell ministry & church reports asynchronously from Supabase
+  Promise.resolve()
+    .then(() => hydrateCellMinistryFromRepository())
+    .then((hydrated) => {
+      if (hydrated && String(activeRoute || "").startsWith("cell")) {
+        setRoute(activeRoute);
+      }
+    })
+    .catch((error) => console.warn("[CE CellMinistry] background hydrate skipped", error));
 
   // Kept only as an opt-in compatibility escape hatch. Normal login is lazy:
   // the visible route loads its data on demand, avoiding a burst of module calls.
