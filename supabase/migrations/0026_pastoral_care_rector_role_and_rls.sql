@@ -100,14 +100,8 @@ $$;
 -- ----------------------------------------------------------------------------
 -- 4. SCHEMA METADATA TRACKING
 -- ----------------------------------------------------------------------------
-INSERT INTO public.schema_meta (phase, description, executed_at)
-VALUES (
-  '26_pastoral_care_rector_role_and_rls',
-  'Canonical role and granular church-scoped permissions for Pastoral Care Rector',
-  now()
-)
-ON CONFLICT (phase) DO UPDATE SET
-  description = EXCLUDED.description,
-  executed_at = now();
+INSERT INTO public.schema_meta (key, value)
+VALUES ('backend_phase', '26_pastoral_care_rector_role_and_rls')
+ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now();
 
 COMMIT;

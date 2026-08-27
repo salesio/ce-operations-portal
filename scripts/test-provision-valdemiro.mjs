@@ -100,9 +100,9 @@ await db.exec(`
 
   -- public.schema_meta
   CREATE TABLE public.schema_meta (
-    phase text PRIMARY KEY,
-    description text,
-    executed_at timestamptz DEFAULT now()
+    key text PRIMARY KEY,
+    value text,
+    updated_at timestamptz DEFAULT now()
   );
 
   -- public.users
