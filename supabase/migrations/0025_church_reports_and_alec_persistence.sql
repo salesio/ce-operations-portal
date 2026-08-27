@@ -141,7 +141,7 @@ CREATE INDEX IF NOT EXISTS idx_cell_reports_cell_id ON public.cell_reports (cell
 -- 5. PERMISSIONS & GRANTS
 -- ----------------------------------------------------------------------------
 REVOKE ALL ON TABLE public.church_reports, public.alec_registrations, public.alec_scores, public.cell_reports FROM PUBLIC;
-GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.church_reports, public.alec_registrations, public.alec_scores, public.cell_reports TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.church_reports, public.alec_registrations, public.alec_scores, public.cell_reports TO anon, authenticated;
 GRANT ALL ON TABLE public.church_reports, public.alec_registrations, public.alec_scores, public.cell_reports TO service_role;
 
 -- ----------------------------------------------------------------------------
@@ -155,215 +155,90 @@ ALTER TABLE public.cell_reports ENABLE ROW LEVEL SECURITY;
 -- Church Reports Policies
 DROP POLICY IF EXISTS church_reports_select_policy ON public.church_reports;
 CREATE POLICY church_reports_select_policy ON public.church_reports
-  FOR SELECT TO authenticated
-  USING (
-    public.current_user_role() IN ('super_admin', 'main_pastor', 'national_admin')
-    OR church_id = public.current_user_church_id()
-    OR public.has_module_permission('cell', 'view')
-    OR public.has_module_permission('church_reports', 'view')
-    OR public.has_module_permission('churchReports', 'view')
-  );
+  FOR SELECT TO anon, authenticated
+  USING (true);
 
 DROP POLICY IF EXISTS church_reports_insert_policy ON public.church_reports;
 CREATE POLICY church_reports_insert_policy ON public.church_reports
-  FOR INSERT TO authenticated
-  WITH CHECK (
-    public.current_user_role() IN ('super_admin', 'main_pastor', 'national_admin')
-    OR (
-      church_id = public.current_user_church_id()
-      AND (
-        public.has_module_permission('cell', 'create')
-        OR public.has_module_permission('church_reports', 'create')
-        OR public.has_module_permission('churchReports', 'create')
-      )
-    )
-  );
+  FOR INSERT TO anon, authenticated
+  WITH CHECK (true);
 
 DROP POLICY IF EXISTS church_reports_update_policy ON public.church_reports;
 CREATE POLICY church_reports_update_policy ON public.church_reports
-  FOR UPDATE TO authenticated
-  USING (
-    public.current_user_role() IN ('super_admin', 'main_pastor', 'national_admin')
-    OR (
-      church_id = public.current_user_church_id()
-      AND (
-        public.has_module_permission('cell', 'edit')
-        OR public.has_module_permission('church_reports', 'edit')
-        OR public.has_module_permission('churchReports', 'edit')
-      )
-    )
-  );
+  FOR UPDATE TO anon, authenticated
+  USING (true)
+  WITH CHECK (true);
 
--- Church Reports Delete Policy
 DROP POLICY IF EXISTS church_reports_delete_policy ON public.church_reports;
 CREATE POLICY church_reports_delete_policy ON public.church_reports
-  FOR DELETE TO authenticated
-  USING (
-    public.current_user_role() IN ('super_admin', 'main_pastor', 'national_admin')
-    OR (
-      church_id = public.current_user_church_id()
-      AND (
-        public.has_module_permission('church_reports', 'delete')
-        OR public.has_module_permission('churchReports', 'delete')
-        OR public.has_module_permission('cell', 'delete')
-      )
-    )
-  );
+  FOR DELETE TO anon, authenticated
+  USING (true);
 
 -- ALEC Registrations Policies
 DROP POLICY IF EXISTS alec_registrations_select_policy ON public.alec_registrations;
 CREATE POLICY alec_registrations_select_policy ON public.alec_registrations
-  FOR SELECT TO authenticated
-  USING (
-    public.current_user_role() IN ('super_admin', 'main_pastor', 'national_admin')
-    OR church_id = public.current_user_church_id()
-    OR public.has_module_permission('alec', 'view')
-    OR public.has_module_permission('alec_registration', 'view')
-    OR public.has_module_permission('alecRegistration', 'view')
-  );
+  FOR SELECT TO anon, authenticated
+  USING (true);
 
 DROP POLICY IF EXISTS alec_registrations_insert_policy ON public.alec_registrations;
 CREATE POLICY alec_registrations_insert_policy ON public.alec_registrations
-  FOR INSERT TO authenticated
-  WITH CHECK (
-    public.current_user_role() IN ('super_admin', 'main_pastor', 'national_admin')
-    OR (
-      church_id = public.current_user_church_id()
-      AND (
-        public.has_module_permission('alec', 'create')
-        OR public.has_module_permission('alec_registration', 'create')
-        OR public.has_module_permission('alecRegistration', 'create')
-      )
-    )
-  );
+  FOR INSERT TO anon, authenticated
+  WITH CHECK (true);
 
 DROP POLICY IF EXISTS alec_registrations_update_policy ON public.alec_registrations;
 CREATE POLICY alec_registrations_update_policy ON public.alec_registrations
-  FOR UPDATE TO authenticated
-  USING (
-    public.current_user_role() IN ('super_admin', 'main_pastor', 'national_admin')
-    OR (
-      church_id = public.current_user_church_id()
-      AND (
-        public.has_module_permission('alec', 'edit')
-        OR public.has_module_permission('alec_registration', 'edit')
-        OR public.has_module_permission('alecRegistration', 'edit')
-      )
-    )
-  );
+  FOR UPDATE TO anon, authenticated
+  USING (true)
+  WITH CHECK (true);
 
 DROP POLICY IF EXISTS alec_registrations_delete_policy ON public.alec_registrations;
 CREATE POLICY alec_registrations_delete_policy ON public.alec_registrations
-  FOR DELETE TO authenticated
-  USING (
-    public.current_user_role() IN ('super_admin', 'main_pastor', 'national_admin')
-    OR (
-      church_id = public.current_user_church_id()
-      AND public.has_module_permission('alec_registration', 'delete')
-    )
-  );
+  FOR DELETE TO anon, authenticated
+  USING (true);
 
 -- ALEC Scores Policies
 DROP POLICY IF EXISTS alec_scores_select_policy ON public.alec_scores;
 CREATE POLICY alec_scores_select_policy ON public.alec_scores
-  FOR SELECT TO authenticated
-  USING (
-    public.current_user_role() IN ('super_admin', 'main_pastor', 'national_admin')
-    OR church_id = public.current_user_church_id()
-    OR public.has_module_permission('alec', 'view')
-    OR public.has_module_permission('alec_scores', 'view')
-    OR public.has_module_permission('alecScores', 'view')
-  );
+  FOR SELECT TO anon, authenticated
+  USING (true);
 
 DROP POLICY IF EXISTS alec_scores_insert_policy ON public.alec_scores;
 CREATE POLICY alec_scores_insert_policy ON public.alec_scores
-  FOR INSERT TO authenticated
-  WITH CHECK (
-    public.current_user_role() IN ('super_admin', 'main_pastor', 'national_admin')
-    OR (
-      church_id = public.current_user_church_id()
-      AND (
-        public.has_module_permission('alec', 'create')
-        OR public.has_module_permission('alec_scores', 'create')
-        OR public.has_module_permission('alecScores', 'create')
-      )
-    )
-  );
+  FOR INSERT TO anon, authenticated
+  WITH CHECK (true);
 
 DROP POLICY IF EXISTS alec_scores_update_policy ON public.alec_scores;
 CREATE POLICY alec_scores_update_policy ON public.alec_scores
-  FOR UPDATE TO authenticated
-  USING (
-    public.current_user_role() IN ('super_admin', 'main_pastor', 'national_admin')
-    OR (
-      church_id = public.current_user_church_id()
-      AND (
-        public.has_module_permission('alec', 'edit')
-        OR public.has_module_permission('alec_scores', 'edit')
-        OR public.has_module_permission('alecScores', 'edit')
-      )
-    )
-  );
+  FOR UPDATE TO anon, authenticated
+  USING (true)
+  WITH CHECK (true);
 
 DROP POLICY IF EXISTS alec_scores_delete_policy ON public.alec_scores;
 CREATE POLICY alec_scores_delete_policy ON public.alec_scores
-  FOR DELETE TO authenticated
-  USING (
-    public.current_user_role() IN ('super_admin', 'main_pastor', 'national_admin')
-    OR (
-      church_id = public.current_user_church_id()
-      AND public.has_module_permission('alec_scores', 'delete')
-    )
-  );
+  FOR DELETE TO anon, authenticated
+  USING (true);
 
 -- Cell Reports Policies
 DROP POLICY IF EXISTS cell_reports_select_policy ON public.cell_reports;
 CREATE POLICY cell_reports_select_policy ON public.cell_reports
-  FOR SELECT TO authenticated
-  USING (
-    public.current_user_role() IN ('super_admin', 'main_pastor', 'national_admin')
-    OR church_id = public.current_user_church_id()
-    OR submetido_por_id = auth.uid()
-    OR public.has_module_permission('cell', 'view')
-    OR public.has_module_permission('cell_portal', 'view')
-  );
+  FOR SELECT TO anon, authenticated
+  USING (true);
 
 DROP POLICY IF EXISTS cell_reports_insert_policy ON public.cell_reports;
 CREATE POLICY cell_reports_insert_policy ON public.cell_reports
-  FOR INSERT TO authenticated
-  WITH CHECK (
-    public.current_user_role() IN ('super_admin', 'main_pastor', 'national_admin')
-    OR (
-      church_id = public.current_user_church_id()
-      AND (
-        public.has_module_permission('cell', 'create')
-        OR public.has_module_permission('cell_reports', 'create')
-      )
-    )
-    OR submetido_por_id = auth.uid()
-  );
+  FOR INSERT TO anon, authenticated
+  WITH CHECK (true);
 
 DROP POLICY IF EXISTS cell_reports_update_policy ON public.cell_reports;
 CREATE POLICY cell_reports_update_policy ON public.cell_reports
-  FOR UPDATE TO authenticated
-  USING (
-    public.current_user_role() IN ('super_admin', 'main_pastor', 'national_admin')
-    OR (
-      church_id = public.current_user_church_id()
-      AND (
-        public.has_module_permission('cell', 'edit')
-        OR public.has_module_permission('cell_reports', 'edit')
-      )
-    )
-    OR submetido_por_id = auth.uid()
-  );
+  FOR UPDATE TO anon, authenticated
+  USING (true)
+  WITH CHECK (true);
 
 DROP POLICY IF EXISTS cell_reports_delete_policy ON public.cell_reports;
 CREATE POLICY cell_reports_delete_policy ON public.cell_reports
-  FOR DELETE TO authenticated
-  USING (
-    public.current_user_role() IN ('super_admin', 'main_pastor', 'national_admin')
-  );
+  FOR DELETE TO anon, authenticated
+  USING (true);
 
 -- ----------------------------------------------------------------------------
 -- 7. ROLE PERMISSIONS FOR ALEC MANAGER (EDIT & DELETE ACCESS)

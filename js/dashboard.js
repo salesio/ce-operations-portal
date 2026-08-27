@@ -16416,12 +16416,14 @@ async function dualWriteCellMinistryRecord(modalType, mode, record) {
           if (result?.ok && result.data) {
             Object.assign(record, result.data);
             saveState(`Persisted churchReport to Supabase`);
+            if (activeRoute === "cellChurchReports") setRoute(activeRoute);
           }
         } else if (mode === "update") {
           result = await cellSb.updateChurchReport(record.id, record);
           if (result?.ok && result.data) {
             Object.assign(record, result.data);
             saveState(`Updated churchReport in Supabase`);
+            if (activeRoute === "cellChurchReports") setRoute(activeRoute);
           }
         }
       }
@@ -16432,12 +16434,14 @@ async function dualWriteCellMinistryRecord(modalType, mode, record) {
           if (result?.ok && result.data) {
             Object.assign(record, result.data);
             saveState(`Persisted alecRegistration to Supabase`);
+            if (activeRoute === "cellAlecRegistration") setRoute(activeRoute);
           }
         } else if (mode === "update") {
           result = await cellSb.updateAlecRegistration(record.id, record);
           if (result?.ok && result.data) {
             Object.assign(record, result.data);
             saveState(`Updated alecRegistration in Supabase`);
+            if (activeRoute === "cellAlecRegistration") setRoute(activeRoute);
           }
         }
       }
@@ -16448,12 +16452,14 @@ async function dualWriteCellMinistryRecord(modalType, mode, record) {
           if (result?.ok && result.data) {
             Object.assign(record, result.data);
             saveState(`Persisted alecScore to Supabase`);
+            if (activeRoute === "cellAlecScores") setRoute(activeRoute);
           }
         } else if (mode === "update") {
           result = await cellSb.updateAlecScore(record.id, record);
           if (result?.ok && result.data) {
             Object.assign(record, result.data);
             saveState(`Updated alecScore in Supabase`);
+            if (activeRoute === "cellAlecScores") setRoute(activeRoute);
           }
         }
       }
