@@ -15856,6 +15856,12 @@ function syncMemberDerivedCellNetwork() {
  * Persist via data-layer first; if missing/unavailable, keep classic localStorage path.
  */
 async function persistMemberViaRepository(mode, memberRecord) {
+  const rawId = typeof memberRecord === "string" ? memberRecord : memberRecord?.id;
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(rawId || ""));
+  if (mode === "delete" && !isUuid) {
+    console.info("[CE Members] non-UUID record deleted locally", { id: rawId });
+    return { ok: true, data: memberRecord, skipped: true, via: "local-state-fallback" };
+  }
   const repo = getMembersRepoSafe();
   if (!repo) {
     console.warn("[CE Members] no repo — using dashboard localStorage only");
@@ -15879,7 +15885,7 @@ async function persistMemberViaRepository(mode, memberRecord) {
       const soft =
         result.code === "UNAVAILABLE" ||
         result.code === "NOT_IMPLEMENTED" ||
-        /indispon[ií]vel|not implemented/i.test(String(result.error || ""));
+        /indispon[ií]vel|not implemented|invalid input syntax for type uuid|22P02/i.test(String(result.error || ""));
       if (soft) {
         console.warn("[CE Members] repo soft-fail — keeping local save", result);
         return { ok: true, data: memberRecord, skipped: true, via: "local-state-fallback", repoError: result };
@@ -16009,6 +16015,12 @@ function migrateFirstTimerRecord(person) {
 }
 
 async function persistFirstTimerViaRepository(mode, personRecord) {
+  const rawId = typeof personRecord === "string" ? personRecord : personRecord?.id;
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(rawId || ""));
+  if (mode === "delete" && !isUuid) {
+    console.info("[CE FirstTimers] non-UUID record deleted locally", { id: rawId });
+    return { ok: true, data: personRecord, skipped: true, via: "local-state-fallback" };
+  }
   const repo = getFirstTimersRepoSafe();
   if (!repo) {
     console.warn("[CE FirstTimers] no repo — using dashboard localStorage only");
@@ -16032,7 +16044,7 @@ async function persistFirstTimerViaRepository(mode, personRecord) {
       const soft =
         result.code === "UNAVAILABLE" ||
         result.code === "NOT_IMPLEMENTED" ||
-        /indispon[ií]vel|not implemented/i.test(String(result.error || ""));
+        /indispon[ií]vel|not implemented|invalid input syntax for type uuid|22P02/i.test(String(result.error || ""));
       if (soft) {
         console.warn("[CE FirstTimers] repo soft-fail — keeping local save", result);
         return { ok: true, data: personRecord, skipped: true, via: "local-state-fallback", repoError: result };
@@ -21879,44 +21891,24 @@ function quickAction(action, type, id) {
     if (!window.confirm(message)) return;
     if (type === "member") {
       const previous = collection[index];
-      Promise.resolve(persistMemberViaRepository("delete", previous))
-        .then((repoResult) => {
-          if (repoResult && repoResult.ok === false) {
-            alert(repoResult.error || (lang === "pt" ? "Não foi possível guardar o membro. Tente novamente." : "Could not save the member. Please try again."));
-            return;
-          }
-          const idx = state.members.findIndex((item) => item.id === id);
-          if (idx >= 0) state.members.splice(idx, 1);
-          saveState(`Deleted member ${id}`);
-          setRoute(activeRoute);
-        })
-        .catch((error) => {
-          console.error("[CE Members] delete failed", error);
-          collection.splice(index, 1);
-          saveState(`Deleted member ${id} (local fallback)`);
-          setRoute(activeRoute);
-        });
+      const idx = state.members.findIndex((item) => item.id === id);
+      if (idx >= 0) state.members.splice(idx, 1);
+      saveState(`Deleted member ${id}`);
+      setRoute(activeRoute);
+      void Promise.resolve(persistMemberViaRepository("delete", previous)).catch((error) => {
+        console.warn("[CE Members] background delete sync error", error);
+      });
       return;
     }
     if (type === "firstTimer") {
       const previous = collection[index];
-      Promise.resolve(persistFirstTimerViaRepository("delete", previous))
-        .then((repoResult) => {
-          if (repoResult && repoResult.ok === false) {
-            alert(repoResult.error || (lang === "pt" ? "Não foi possível guardar o registo de Primeira Vez. Tente novamente." : "Could not save the first timer. Please try again."));
-            return;
-          }
-          const idx = state.firstTimers.findIndex((item) => item.id === id);
-          if (idx >= 0) state.firstTimers.splice(idx, 1);
-          saveState(`Deleted first timer ${id}`);
-          setRoute(activeRoute);
-        })
-        .catch((error) => {
-          console.error("[CE FirstTimers] delete failed", error);
-          collection.splice(index, 1);
-          saveState(`Deleted first timer ${id} (local fallback)`);
-          setRoute(activeRoute);
-        });
+      const idx = state.firstTimers.findIndex((item) => item.id === id);
+      if (idx >= 0) state.firstTimers.splice(idx, 1);
+      saveState(`Deleted first timer ${id}`);
+      setRoute(activeRoute);
+      void Promise.resolve(persistFirstTimerViaRepository("delete", previous)).catch((error) => {
+        console.warn("[CE FirstTimers] background delete sync error", error);
+      });
       return;
     }
     if (["churchReport", "alecRegistration", "alecScore", "cellReport"].includes(type)) {

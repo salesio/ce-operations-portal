@@ -186,6 +186,10 @@ export async function deleteRow(
   table: SupabaseTableName | string,
   id: string,
 ): Promise<SupabaseResult<boolean>> {
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(id || ""));
+  if (!isUuid) {
+    return ok(true);
+  }
   const clientRes = requireClient();
   if (!clientRes.ok) return clientRes as SupabaseResult<boolean>;
   try {
