@@ -487,7 +487,7 @@
         lastQuery: adapterInfo.lastQuery !== undefined && adapterInfo.lastQuery !== null ? adapterInfo.lastQuery : lastState.lastQuery,
         lastError: adapterInfo.lastError !== undefined ? adapterInfo.lastError : lastState.lastError,
         lastRowsReturned: adapterInfo.lastRowsReturned !== undefined ? adapterInfo.lastRowsReturned : lastState.lastRowsReturned,
-        version: BUILD_VERSION,
+        version: BRIDGE_VERSION,
         via: resolved.via,
         ready: !!resolved.api,
         fallback: resolved.fallback,

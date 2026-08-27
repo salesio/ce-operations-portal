@@ -5205,10 +5205,12 @@ const cellPortalMembersState = { cellId: "", resolvedCellName: "", page: 1, page
 const cellPortalContextState = { ready: false, loading: false };
 
 function usesSupabaseMembers() {
-  // CEDataLayer is an aggregate and intentionally has no getInfo method.
-  // The Members module exposes the authoritative per-module provider state.
-  const runtime = window.CEMembers?.getInfo?.() || window.CEDataLayer?.members?.getInfo?.() || window.CESupabase?.getInfo?.() || {};
-  return String(runtime.dataSource || runtime.provider || window.__CE_ENV__?.VITE_DATA_SOURCE || "").toLowerCase() === "supabase";
+  try {
+    const runtime = window.CEMembers?.getInfo?.() || window.CEDataLayer?.members?.getInfo?.() || window.CESupabase?.getInfo?.() || {};
+    return String(runtime.dataSource || runtime.provider || window.__CE_ENV__?.VITE_DATA_SOURCE || "").toLowerCase() === "supabase";
+  } catch (_) {
+    return String(window.__CE_ENV__?.VITE_DATA_SOURCE || "").toLowerCase() === "supabase";
+  }
 }
 
 function cellPortalMemberSource(cellId) {
