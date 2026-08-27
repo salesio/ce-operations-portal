@@ -11470,6 +11470,7 @@ function firstTimerActions(id) {
   if (workflow === "RECTOR_APPROVED") actions.push(["handoffFollowup", "firstTimer", id, "Encaminhar Follow-Up"]);
   if (workflow === "SENT_TO_FOLLOWUP") actions.push(["receiveFollowup", "firstTimer", id, "Confirmar recepção"]);
   if (workflow === "FOLLOWUP_RECEIVED") actions.push(["createExplicitFollowup", "firstTimer", id, "Criar Follow-Up"]);
+  actions.push(["delete", "firstTimer", id, L("delete")]);
   return actionButtons(actions);
 }
 
@@ -11662,7 +11663,13 @@ function renderFollowUp() {
 }
 
 function memberActions(id) {
-  return actionButtons([["view", "member", id, L("viewProfile")], ["edit", "member", id, L("edit")], ["moveChurch", "member", id, L("moveChurch")], ["status", "member", id, L("updateStatus")]]);
+  return actionButtons([
+    ["view", "member", id, L("viewProfile")],
+    ["edit", "member", id, L("edit")],
+    ["moveChurch", "member", id, L("moveChurch")],
+    ["status", "member", id, L("updateStatus")],
+    ["delete", "member", id, L("delete")]
+  ]);
 }
 
 function renderMemberCard(member) {
@@ -19870,7 +19877,10 @@ function canRenderAction(action, type) {
 
 function actionButtons(buttons) {
   const visible = buttons.filter(([action, type]) => canRenderAction(action, type));
-  return `<div class="action-cluster">${visible.map(([action, type, id, label]) => `<button type="button" class="action-btn" data-action="${action}" data-type="${type}" data-id="${id}">${label}</button>`).join("")}</div>`;
+  return `<div class="action-cluster">${visible.map(([action, type, id, label]) => {
+    const isDanger = ["delete", "reject", "rejectIntake"].includes(action);
+    return `<button type="button" class="action-btn ${isDanger ? "action-btn--danger text-danger border-danger-subtle" : ""}" data-action="${action}" data-type="${type}" data-id="${id}">${label}</button>`;
+  }).join("")}</div>`;
 }
 
 function notificationSafe(value) {
