@@ -38,6 +38,7 @@ import * as materialsSb from "./supabase/ministryMaterialsSupabaseAdapter";
 import * as reportsSb from "./supabase/reportsSupabaseAdapter";
 import * as notificationsSb from "./supabase/notificationsSupabaseAdapter";
 import * as auditSystemSb from "./supabase/auditSystemSupabaseAdapter";
+import * as cellMinistrySb from "./supabase/cellMinistrySupabaseAdapter";
 import * as usersSb from "./supabase/usersSupabaseAdapter";
 import * as accessControlSb from "./supabase/accessControlSupabaseAdapter";
 import type {
@@ -918,6 +919,10 @@ export function createSupabaseProvider(): DataProvider & SupabaseProviderExtras 
   map.sensitive_access_events = createPilotRepository<any>({ list: auditSystemSb.listSensitiveAccessEvents, create: auditSystemSb.createSensitiveAccessEvent }) as EntityRepository<unknown>;
   map.system_events = createPilotRepository<any>({ list: auditSystemSb.listSystemEvents, create: auditSystemSb.createSystemEvent, update: auditSystemSb.resolveSystemEvent }) as EntityRepository<unknown>;
   map.data_source_health_checks = createPilotRepository<any>({ list: auditSystemSb.listDataSourceHealthChecks, create: auditSystemSb.createDataSourceHealthCheck }) as EntityRepository<unknown>;
+  map.church_reports = createPilotRepository<any>({ list: cellMinistrySb.listChurchReports, create: cellMinistrySb.createChurchReport, update: cellMinistrySb.updateChurchReport, remove: cellMinistrySb.deleteChurchReport }) as EntityRepository<unknown>;
+  map.alec_registrations = createPilotRepository<any>({ list: cellMinistrySb.listAlecRegistrations, create: cellMinistrySb.createAlecRegistration, update: cellMinistrySb.updateAlecRegistration, remove: cellMinistrySb.deleteAlecRegistration }) as EntityRepository<unknown>;
+  map.alec_scores = createPilotRepository<any>({ list: cellMinistrySb.listAlecScores, create: cellMinistrySb.createAlecScore, update: cellMinistrySb.updateAlecScore, remove: cellMinistrySb.deleteAlecScore }) as EntityRepository<unknown>;
+  map.cell_reports = createPilotRepository<any>({ list: cellMinistrySb.listCellReports, create: cellMinistrySb.createCellReport, update: cellMinistrySb.updateCellReport, remove: cellMinistrySb.deleteCellReport }) as EntityRepository<unknown>;
 
   const foundationInfo = getSupabaseConnectionInfo();
   const envCfg = getSupabaseEnvConfig();
@@ -971,6 +976,10 @@ export function createSupabaseProvider(): DataProvider & SupabaseProviderExtras 
     cells: map.cells as EntityRepository<never>,
     cellLeaders: map.cell_leaders as EntityRepository<never>,
     cellReportSubmissions: map.cell_report_submissions as EntityRepository<never>,
+    churchReports: map.church_reports as EntityRepository<never>,
+    alecRegistrations: map.alec_registrations as EntityRepository<never>,
+    alecScores: map.alec_scores as EntityRepository<never>,
+    cellReports: map.cell_reports as EntityRepository<never>,
     mediaTechnicians: map.media_technicians as EntityRepository<never>,
     mediaSchedules: map.media_schedules as EntityRepository<never>,
     mediaRoles: map.media_roles as EntityRepository<never>,

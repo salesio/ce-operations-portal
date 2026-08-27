@@ -1287,6 +1287,7 @@ export * as ministryMaterialsApiAdapter from "./adapters/api/ministryMaterialsAp
 export * as reportsSupabaseAdapter from "./adapters/supabase/reportsSupabaseAdapter";
 export * as notificationsSupabaseAdapter from "./adapters/supabase/notificationsSupabaseAdapter";
 export * as auditSystemSupabaseAdapter from "./adapters/supabase/auditSystemSupabaseAdapter";
+export * as cellMinistrySupabaseAdapter from "./adapters/supabase/cellMinistrySupabaseAdapter";
 export * as reportsApiAdapter from "./adapters/api/reportsApiAdapter";
 export * as notificationsApiAdapter from "./adapters/api/notificationsApiAdapter";
 export * as auditSystemApiAdapter from "./adapters/api/auditSystemApiAdapter";

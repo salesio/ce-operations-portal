@@ -16404,13 +16404,29 @@ function getCellMinistryRepoSafe() {
 }
 
 async function dualWriteCellMinistryRecord(modalType, mode, record) {
+  const cellSb = window.CESupabase?.cellMinistrySupabaseAdapter || window.cellMinistrySupabaseAdapter;
   const repo = getCellMinistryRepoSafe();
-  if (!repo || !record) return { ok: true, skipped: true };
+  if (!record) return { ok: true, skipped: true };
   try {
     let result = null;
-    if (modalType === "cellGroup") {
-      if (mode === "create" && repo.createCellGroup) result = await repo.createCellGroup(record);
-      else if (mode === "update" && repo.updateCellGroup) result = await repo.updateCellGroup(record.id, record);
+    if (modalType === "churchReport") {
+      if (cellSb) {
+        if (mode === "create") result = await cellSb.createChurchReport(record);
+        else if (mode === "update") result = await cellSb.updateChurchReport(record.id, record);
+      }
+    } else if (modalType === "alecRegistration") {
+      if (cellSb) {
+        if (mode === "create") result = await cellSb.createAlecRegistration(record);
+        else if (mode === "update") result = await cellSb.updateAlecRegistration(record.id, record);
+      }
+    } else if (modalType === "alecScore") {
+      if (cellSb) {
+        if (mode === "create") result = await cellSb.createAlecScore(record);
+        else if (mode === "update") result = await cellSb.updateAlecScore(record.id, record);
+      }
+    } else if (modalType === "cellGroup") {
+      if (mode === "create" && repo?.createCellGroup) result = await repo.createCellGroup(record);
+      else if (mode === "update" && repo?.updateCellGroup) result = await repo.updateCellGroup(record.id, record);
     } else if (modalType === "cellRegistry" || modalType === "cell") {
       const payload = {
         ...record,
@@ -16418,8 +16434,8 @@ async function dualWriteCellMinistryRecord(modalType, mode, record) {
         cell_group_id: record.cell_group_id || record.group_id || record.group_cell_id,
         group_id: record.group_id || record.cell_group_id
       };
-      if (mode === "create" && repo.createCell) result = await repo.createCell(payload);
-      else if (mode === "update" && repo.updateCell) result = await repo.updateCell(record.id, payload);
+      if (mode === "create" && repo?.createCell) result = await repo.createCell(payload);
+      else if (mode === "update" && repo?.updateCell) result = await repo.updateCell(record.id, payload);
     } else if (modalType === "cellLeader") {
       const payload = {
         ...record,
@@ -16427,24 +16443,29 @@ async function dualWriteCellMinistryRecord(modalType, mode, record) {
         phone: record.phone || record.contacto,
         cell_name: record.cell_name || record.celula
       };
-      if (mode === "create" && repo.createCellLeader) result = await repo.createCellLeader(payload);
-      else if (mode === "update" && repo.updateCellLeader) result = await repo.updateCellLeader(record.id, payload);
+      if (mode === "create" && repo?.createCellLeader) result = await repo.createCellLeader(payload);
+      else if (mode === "update" && repo?.updateCellLeader) result = await repo.updateCellLeader(record.id, payload);
     } else if (modalType === "cellReport") {
-      const payload = {
-        ...record,
-        report_week: record.report_week || record.semana,
-        meeting_date: record.meeting_date || record.data_fim || record.data_inicio,
-        cell_name: record.cell_name || record.celula,
-        leader_name: record.leader_name || record.nome_do_lider,
-        attendance_count: Number(record.attendance_count ?? record.att ?? 0),
-        first_timers_count: Number(record.first_timers_count ?? record.ft ?? 0),
-        new_converts_count: Number(record.new_converts_count ?? record.nc ?? 0),
-        offering_amount: Number(record.offering_amount ?? record.oferta ?? 0),
-        souls_won_count: Number(record.souls_won_count ?? record.rs ?? 0),
-        status: record.status || record.estado
-      };
-      if (mode === "create" && repo.createCellReport) result = await repo.createCellReport(payload);
-      else if (mode === "update" && repo.updateCellReport) result = await repo.updateCellReport(record.id, payload);
+      if (cellSb) {
+        if (mode === "create") result = await cellSb.createCellReport(record);
+        else if (mode === "update") result = await cellSb.updateCellReport(record.id, record);
+      } else if (repo) {
+        const payload = {
+          ...record,
+          report_week: record.report_week || record.semana,
+          meeting_date: record.meeting_date || record.data_fim || record.data_inicio,
+          cell_name: record.cell_name || record.celula,
+          leader_name: record.leader_name || record.nome_do_lider,
+          attendance_count: Number(record.attendance_count ?? record.att ?? 0),
+          first_timers_count: Number(record.first_timers_count ?? record.ft ?? 0),
+          new_converts_count: Number(record.new_converts_count ?? record.nc ?? 0),
+          offering_amount: Number(record.offering_amount ?? record.oferta ?? 0),
+          souls_won_count: Number(record.souls_won_count ?? record.rs ?? 0),
+          status: record.status || record.estado
+        };
+        if (mode === "create" && repo.createCellReport) result = await repo.createCellReport(payload);
+        else if (mode === "update" && repo.updateCellReport) result = await repo.updateCellReport(record.id, payload);
+      }
     }
     if (result && result.ok === false) {
       console.warn("[CE CellMinistry] dual-write soft-fail", result);
@@ -16459,12 +16480,60 @@ async function dualWriteCellMinistryRecord(modalType, mode, record) {
 
 async function hydrateCellMinistryFromRepository() {
   const repo = getCellMinistryRepoSafe();
-  if (!repo) return false;
+  const cellSb = window.CESupabase?.cellMinistrySupabaseAdapter || window.cellMinistrySupabaseAdapter;
+  if (!repo && !cellSb) return false;
   try {
     const runtimeInfo = window.CEDataLayer?.getInfo?.() || window.CESupabase?.getInfo?.() || {};
     const usingSupabase = String(runtimeInfo.dataSource || runtimeInfo.provider || window.__CE_ENV__?.VITE_DATA_SOURCE || "").toLowerCase().includes("supabase");
     let hydrated = false;
-    const listGroups = repo.listCellGroups;
+
+    // 1. Church Reports from Supabase
+    if (cellSb?.listChurchReports) {
+      try {
+        const result = await cellSb.listChurchReports();
+        if (result?.ok && Array.isArray(result.data) && result.data.length) {
+          state.cellLeadership = state.cellLeadership || {};
+          state.cellLeadership.churchReports = result.data;
+          hydrated = true;
+          console.info("[CE CellMinistry] hydrated church reports from Supabase", result.data.length);
+        }
+      } catch (err) {
+        console.warn("[CE CellMinistry] church reports hydrate error", err);
+      }
+    }
+
+    // 2. ALEC Registrations from Supabase
+    if (cellSb?.listAlecRegistrations) {
+      try {
+        const result = await cellSb.listAlecRegistrations();
+        if (result?.ok && Array.isArray(result.data) && result.data.length) {
+          state.cellLeadership = state.cellLeadership || {};
+          state.cellLeadership.alecRegistrations = result.data;
+          hydrated = true;
+          console.info("[CE CellMinistry] hydrated alec registrations from Supabase", result.data.length);
+        }
+      } catch (err) {
+        console.warn("[CE CellMinistry] alec registrations hydrate error", err);
+      }
+    }
+
+    // 3. ALEC Scores from Supabase
+    if (cellSb?.listAlecScores) {
+      try {
+        const result = await cellSb.listAlecScores();
+        if (result?.ok && Array.isArray(result.data) && result.data.length) {
+          state.cellLeadership = state.cellLeadership || {};
+          state.cellLeadership.alecScores = result.data;
+          hydrated = true;
+          console.info("[CE CellMinistry] hydrated alec scores from Supabase", result.data.length);
+        }
+      } catch (err) {
+        console.warn("[CE CellMinistry] alec scores hydrate error", err);
+      }
+    }
+
+    // 4. Groups
+    const listGroups = repo?.listCellGroups;
     if (typeof listGroups === "function") {
       const result = await listGroups();
       if (result?.ok && Array.isArray(result.data) && (result.data.length || usingSupabase)) {
@@ -16488,7 +16557,9 @@ async function hydrateCellMinistryFromRepository() {
         console.info("[CE CellMinistry] hydrated groups", state.cellGroups.length);
       }
     }
-    const listCellsFn = repo.listCells;
+
+    // 5. Cells
+    const listCellsFn = repo?.listCells;
     if (typeof listCellsFn === "function") {
       const result = await listCellsFn();
       if (result?.ok && Array.isArray(result.data) && (result.data.length || usingSupabase)) {
@@ -16513,7 +16584,9 @@ async function hydrateCellMinistryFromRepository() {
         console.info("[CE CellMinistry] hydrated cells", state.cellRegistry.length);
       }
     }
-    const listLeaders = repo.listCellLeaders;
+
+    // 6. Leaders
+    const listLeaders = repo?.listCellLeaders;
     if (typeof listLeaders === "function") {
       const result = await listLeaders();
       if (result?.ok && Array.isArray(result.data) && result.data.length) {
@@ -16540,9 +16613,23 @@ async function hydrateCellMinistryFromRepository() {
         console.info("[CE CellMinistry] hydrated leaders", state.cellLeadership.leaders.length);
       }
     }
-    const listReports = repo.listCellReports;
-    if (typeof listReports === "function") {
-      const result = await listReports();
+
+    // 7. Cell Reports
+    if (cellSb?.listCellReports) {
+      try {
+        const result = await cellSb.listCellReports();
+        if (result?.ok && Array.isArray(result.data) && result.data.length) {
+          state.cellLeadership = state.cellLeadership || {};
+          state.cellLeadership.cellReports = result.data;
+          state.cellReportSubmissions = result.data.map((r) => ({ ...r }));
+          hydrated = true;
+          console.info("[CE CellMinistry] hydrated cell reports from Supabase", result.data.length);
+        }
+      } catch (err) {
+        console.warn("[CE CellMinistry] cell reports hydrate error", err);
+      }
+    } else if (typeof repo?.listCellReports === "function") {
+      const result = await repo.listCellReports();
       if (result?.ok && Array.isArray(result.data) && result.data.length) {
         state.cellLeadership = state.cellLeadership || {};
         const prev = new Map((state.cellLeadership.cellReports || []).map((r) => [r.id, r]));
@@ -20302,15 +20389,12 @@ function openForm(type, id = null) {
     });
   };
 
-  // Refresh churches from data layer so all available churches appear in selects
+  showEntryForm();
+
   if (["firstTimer", "member", "churchReport", "alecRegistration", "alecScore"].includes(type)) {
     Promise.resolve(refreshChurchesFromRepositoryForForms())
-      .catch((error) => console.warn("[CE Forms] church refresh skipped", error))
-      .finally(showEntryForm);
-    return;
+      .catch((error) => console.warn("[CE Forms] church refresh skipped", error));
   }
-
-  showEntryForm();
 }
 
 function formTitle(type) {
