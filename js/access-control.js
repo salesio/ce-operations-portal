@@ -421,6 +421,39 @@
         notifications: { ...VIEW_ONLY, scope: "church" }
       }
     },
+    pastoral_care_rector: {
+      modules: {
+        dashboard: { ...NO_ACCESS, can_view: false },
+        firstTimers: { can_view: true, can_create: true, can_edit: true, can_delete: true, can_approve: true, can_verify: true, can_export: true, scope: "church" },
+        followUp: { can_view: true, can_create: true, can_edit: true, can_delete: true, can_approve: true, can_verify: true, can_export: true, scope: "church" },
+        foundation: { can_view: true, can_create: true, can_edit: true, can_delete: true, can_approve: true, can_verify: true, can_export: true, scope: "church" },
+        sacraments: { can_view: true, can_create: true, can_edit: true, can_delete: true, can_approve: true, can_verify: true, can_export: true, scope: "church" },
+        counseling: { can_view: true, can_create: true, can_edit: true, can_delete: true, can_approve: true, can_verify: true, can_export: true, scope: "church", can_assign_counselor: true, can_schedule_counseling: true, can_write_counseling_feedback: true, can_view_sensitive_counseling_notes: true, can_refer_to_pastor: true, can_create_follow_up_from_counseling: true },
+        notifications: { ...VIEW_ONLY, scope: "church" }
+      }
+    },
+    "Pastoral Care Rector": {
+      modules: {
+        dashboard: { ...NO_ACCESS, can_view: false },
+        firstTimers: { can_view: true, can_create: true, can_edit: true, can_delete: true, can_approve: true, can_verify: true, can_export: true, scope: "church" },
+        followUp: { can_view: true, can_create: true, can_edit: true, can_delete: true, can_approve: true, can_verify: true, can_export: true, scope: "church" },
+        foundation: { can_view: true, can_create: true, can_edit: true, can_delete: true, can_approve: true, can_verify: true, can_export: true, scope: "church" },
+        sacraments: { can_view: true, can_create: true, can_edit: true, can_delete: true, can_approve: true, can_verify: true, can_export: true, scope: "church" },
+        counseling: { can_view: true, can_create: true, can_edit: true, can_delete: true, can_approve: true, can_verify: true, can_export: true, scope: "church", can_assign_counselor: true, can_schedule_counseling: true, can_write_counseling_feedback: true, can_view_sensitive_counseling_notes: true, can_refer_to_pastor: true, can_create_follow_up_from_counseling: true },
+        notifications: { ...VIEW_ONLY, scope: "church" }
+      }
+    },
+    "Reitor de Cuidados Pastorais": {
+      modules: {
+        dashboard: { ...NO_ACCESS, can_view: false },
+        firstTimers: { can_view: true, can_create: true, can_edit: true, can_delete: true, can_approve: true, can_verify: true, can_export: true, scope: "church" },
+        followUp: { can_view: true, can_create: true, can_edit: true, can_delete: true, can_approve: true, can_verify: true, can_export: true, scope: "church" },
+        foundation: { can_view: true, can_create: true, can_edit: true, can_delete: true, can_approve: true, can_verify: true, can_export: true, scope: "church" },
+        sacraments: { can_view: true, can_create: true, can_edit: true, can_delete: true, can_approve: true, can_verify: true, can_export: true, scope: "church" },
+        counseling: { can_view: true, can_create: true, can_edit: true, can_delete: true, can_approve: true, can_verify: true, can_export: true, scope: "church", can_assign_counselor: true, can_schedule_counseling: true, can_write_counseling_feedback: true, can_view_sensitive_counseling_notes: true, can_refer_to_pastor: true, can_create_follow_up_from_counseling: true },
+        notifications: { ...VIEW_ONLY, scope: "church" }
+      }
+    },
     "ALEC Coordinator": {
       modules: {
         dashboard: { ...NO_ACCESS, can_view: false },
@@ -559,6 +592,9 @@
   const EXPLICIT_DENIED_MODULES = {
     alec_manager: new Set(["dashboard", "finance", "staffHr", "requisitions", "usersRoles", "accessControl", "auditLogs", "churches", "counseling", "foundation", "fevo", "venueInventory", "sacraments", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media", "reports", "members", "firstTimers", "followUp"]),
     "ALEC Coordinator": new Set(["dashboard", "finance", "staffHr", "requisitions", "usersRoles", "accessControl", "auditLogs", "churches", "counseling", "foundation", "fevo", "venueInventory", "sacraments", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media", "reports", "members", "firstTimers", "followUp"]),
+    pastoral_care_rector: new Set(["dashboard", "churches", "members", "reports", "fevo", "cell", "finance", "publicGiving", "requisitions", "venueInventory", "staffHr", "usersRoles", "accessControl", "auditLogs", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"]),
+    "Pastoral Care Rector": new Set(["dashboard", "churches", "members", "reports", "fevo", "cell", "finance", "publicGiving", "requisitions", "venueInventory", "staffHr", "usersRoles", "accessControl", "auditLogs", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"]),
+    "Reitor de Cuidados Pastorais": new Set(["dashboard", "churches", "members", "reports", "fevo", "cell", "finance", "publicGiving", "requisitions", "venueInventory", "staffHr", "usersRoles", "accessControl", "auditLogs", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"]),
     "Cell Leader": new Set(["finance", "staffHr", "requisitions", "usersRoles", "accessControl", "auditLogs", "churches", "counseling", "foundation", "fevo", "venueInventory", "sacraments", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"]),
     "Cell Assistant": new Set(["finance", "staffHr", "requisitions", "usersRoles", "accessControl", "auditLogs", "churches", "counseling", "foundation", "fevo", "venueInventory", "sacraments", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"]),
     "Assistant Cell Leader": new Set(["finance", "staffHr", "requisitions", "usersRoles", "accessControl", "auditLogs", "churches", "counseling", "foundation", "fevo", "venueInventory", "sacraments", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"]),

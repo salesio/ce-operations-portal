@@ -3310,6 +3310,7 @@ const seedData = {
     { id: "u-21", name: "Media Supervisor Demo", email: "media.supervisor@ce-mozambique.org", role: "Media Supervisor", church_id: "church-hq", department_permissions: ["media"], assigned_department: "Mídia", can_view_all_churches: true },
     { id: "u-22", name: "Técnico A", email: "media.member@ce-mozambique.org", role: "Media Team Member", church_id: "church-hq", department_permissions: ["mediaTeam"], assigned_department: "Mídia", assigned_staff_name: "Técnico A", can_view_all_churches: false },
     { id: "u-23", name: "Head de Aconselhamento", email: "counseling.head@ce-mozambique.org", role: "Counseling Head", church_id: "church-hq", department_permissions: ["counseling", "followUp", "firstTimers", "reports"], can_view_all_churches: true },
+    { id: "u-pastor-valdemiro", name: "Pastor Valdemiro Machava", email: "valdomacha@gmail.com", role: "pastoral_care_rector", church_id: "a1111111-1111-4111-8111-111111111101", department_permissions: ["firstTimers", "followUp", "foundation", "sacraments", "counseling"], can_view_all_churches: false },
     { id: "u-26", name: "Reitor Pastoral", email: "reitor@ce-mozambique.org", role: "Reitor", church_id: "church-hq", department_permissions: ["firstTimers", "followUp", "counseling", "reports", "notifications"], can_view_all_churches: true, demo_password_hint: "demo" },
     { id: "u-27", name: "Responsável de Acompanhamento", email: "acompanhamento@ce-mozambique.org", role: "Follow-Up Coordinator", church_id: "church-hq", department_permissions: ["firstTimers", "followUp"], can_view_all_churches: true, demo_password_hint: "demo" },
     { id: "u-24", name: "Professor Joao Mazive", email: "foundation.teacher@ce-mozambique.org", role: "Foundation Teacher", church_id: "church-hq", department_permissions: ["foundation_teacher"], assigned_foundation_teacher_id: "ftch-1", can_view_all_churches: false },
@@ -9328,7 +9329,15 @@ function roleWorkspaceRoutes(user = activeUser) {
   if (role === "alec_manager" || role === "ALEC Coordinator" || role === "ALEC Manager" || role === "alec_coordinator") {
     return ["cellAlecOverview", "cellAlecRegistration", "cellAlecScores", "cellChurchReports", "cellPortal"];
   }
-  if (role === "Reitor" || role === "Rector") return ["firstTimers", "followUp", "foundation", "sacraments", "counseling"];
+  if (
+    role === "pastoral_care_rector" ||
+    role === "Pastoral Care Rector" ||
+    role === "Reitor de Cuidados Pastorais" ||
+    role === "Reitor" ||
+    role === "Rector"
+  ) {
+    return ["firstTimers", "followUp", "foundation", "sacraments", "counseling"];
+  }
   if (role === "Follow-Up Coordinator") return ["firstTimers", "followUp"];
   return null;
 }
@@ -23286,6 +23295,8 @@ function mapAccountToDashboardUser(account) {
     role = "Cell Group Leader";
   } else if (rLow === "assistant_cell_leader" || rLow === "assistant cell leader") {
     role = "Assistant Cell Leader";
+  } else if (rLow === "pastoral_care_rector" || rLow === "pastoral care rector" || rLow === "reitor de cuidados pastorais" || rLow === "reitor" || rLow === "rector") {
+    role = "pastoral_care_rector";
   }
 
   const isSuperAdmin = role === "Super Admin";
