@@ -78,6 +78,7 @@
     "test:departments-member-flow": "node scripts/test-departments-member-flow.mjs",
     "test:alec-manager-access": "node scripts/test-alec-manager-access.mjs",
     "test:migration-0024": "node scripts/test-migration-0024.mjs",
+    "test:provision-angelica": "node scripts/test-provision-angelica.mjs",
     "test:auth-full-suite": "node scripts/test-auth-real.mjs && node scripts/test-users-roles.mjs && node scripts/test-cell-access.mjs && node scripts/test-cell-member-reconciliation.mjs && node scripts/test-cell-transfer.mjs && node scripts/test-rls-cell-leader.mjs && node scripts/test-hardened-data-sources.mjs && node scripts/test-church-consolidation.mjs && node scripts/test-supabase-runtime-members.mjs && node scripts/test-real-auth-migration.mjs && node scripts/test-login-flow-full.mjs && node scripts/test-migration-0022-rls-hardening.mjs && node scripts/test-migration-0022-pglite-execution.mjs && node scripts/test-migration-0023-and-no-anon-fallback.mjs && node scripts/test-jwt-propagation-and-members-auth.mjs && node scripts/test-no-user-write-on-auth.mjs && node scripts/test-departments-member-flow.mjs",
     "dry-run:hq-members-import": "node scripts/dry-run-hq-members-import.mjs",
     "docker:up": "docker compose up -d",

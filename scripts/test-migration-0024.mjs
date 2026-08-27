@@ -68,7 +68,9 @@ assert(provisionSql.includes("angelicaamilcar27@gmail.com"), "Provisioning scrip
 assert(provisionSql.includes("a1111111-1111-4111-8111-111111111101"), "Provisioning script must validate Sede church UUID");
 assert(provisionSql.includes("alec_manager"), "Provisioning script must link role alec_manager");
 assert(provisionSql.includes("Sister Angélica"), "Provisioning script must set display name Sister Angélica");
-assert(provisionSql.includes("ON CONFLICT (auth_user_id) DO UPDATE"), "Provisioning script must safely upsert into public.users");
+assert(provisionSql.includes("full_name"), "Provisioning script must use column full_name");
+assert(!provisionSql.includes("has_dashboard_access"), "Provisioning script must NOT contain has_dashboard_access");
+assert(!provisionSql.includes("users.name"), "Provisioning script must NOT reference users.name");
 assert(!provisionSql.includes("encrypted_password") && !provisionSql.includes("crypt("), "Provisioning script must NOT set or manipulate passwords");
 
 console.log("  [PASS] Provisioning script passed all validation and idempotency checks");
