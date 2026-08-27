@@ -398,7 +398,7 @@
           can_view: true,
           can_create: true,
           can_edit: true,
-          can_delete: false,
+          can_delete: true,
           can_approve: false,
           can_verify: false,
           can_export: false,
@@ -414,7 +414,8 @@
             "alec.scores.edit",
             "alec.churchReports.view",
             "alec.churchReports.create",
-            "alec.churchReports.edit"
+            "alec.churchReports.edit",
+            "alec.churchReports.delete"
           ]
         },
         notifications: { ...VIEW_ONLY, scope: "church" }
@@ -427,7 +428,7 @@
           can_view: true,
           can_create: true,
           can_edit: true,
-          can_delete: false,
+          can_delete: true,
           can_approve: false,
           can_verify: false,
           can_export: false,
@@ -443,7 +444,8 @@
             "alec.scores.edit",
             "alec.churchReports.view",
             "alec.churchReports.create",
-            "alec.churchReports.edit"
+            "alec.churchReports.edit",
+            "alec.churchReports.delete"
           ]
         },
         notifications: { ...VIEW_ONLY, scope: "church" }

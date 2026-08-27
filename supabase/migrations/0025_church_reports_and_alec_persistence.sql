@@ -194,6 +194,7 @@ CREATE POLICY church_reports_update_policy ON public.church_reports
     )
   );
 
+-- Church Reports Delete Policy
 DROP POLICY IF EXISTS church_reports_delete_policy ON public.church_reports;
 CREATE POLICY church_reports_delete_policy ON public.church_reports
   FOR DELETE TO authenticated
@@ -201,7 +202,11 @@ CREATE POLICY church_reports_delete_policy ON public.church_reports
     public.current_user_role() IN ('super_admin', 'main_pastor', 'national_admin')
     OR (
       church_id = public.current_user_church_id()
-      AND public.has_module_permission('church_reports', 'delete')
+      AND (
+        public.has_module_permission('church_reports', 'delete')
+        OR public.has_module_permission('churchReports', 'delete')
+        OR public.has_module_permission('cell', 'delete')
+      )
     )
   );
 
@@ -359,5 +364,21 @@ CREATE POLICY cell_reports_delete_policy ON public.cell_reports
   USING (
     public.current_user_role() IN ('super_admin', 'main_pastor', 'national_admin')
   );
+
+-- ----------------------------------------------------------------------------
+-- 7. ROLE PERMISSIONS FOR ALEC MANAGER (EDIT & DELETE ACCESS)
+-- ----------------------------------------------------------------------------
+DO $$
+DECLARE
+  alec_role_id uuid;
+BEGIN
+  SELECT id INTO alec_role_id FROM public.roles WHERE lower(name) = 'alec_manager' LIMIT 1;
+  IF alec_role_id IS NOT NULL THEN
+    UPDATE public.permissions
+    SET can_delete = true, can_edit = true, can_view = true, can_create = true
+    WHERE role_id = alec_role_id
+      AND lower(module) IN ('church_reports', 'churchreports', 'alec', 'alec_registration', 'alecregistration', 'alec_scores', 'alecscores', 'cell');
+  END IF;
+END $$;
 
 COMMIT;
