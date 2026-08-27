@@ -2,7 +2,8 @@
 -- Migration 0025 — Church Reports, ALEC & Cell Reports Persistence & RLS
 -- ============================================================================
 -- Persists Church Reports, ALEC Registrations, ALEC Scores, and Cell Reports
--- directly to PostgreSQL / Supabase, with granular church-level RLS policies.
+-- directly to PostgreSQL / Supabase, with canonical RLS policies matching
+-- production functions (current_user_role(), current_user_church_id(), has_module_permission()).
 --
 -- Idempotent, reproducible, and transactional.
 -- ============================================================================
@@ -162,8 +163,8 @@ DROP POLICY IF EXISTS church_reports_select_policy ON public.church_reports;
 CREATE POLICY church_reports_select_policy ON public.church_reports
   FOR SELECT TO authenticated
   USING (
-    public.is_admin_user()
-    OR church_id = public.current_app_church_id()
+    public.current_user_role() IN ('super_admin', 'main_pastor', 'national_admin')
+    OR church_id = public.current_user_church_id()
     OR public.has_module_permission('cell', 'view')
     OR public.has_module_permission('church_reports', 'view')
     OR public.has_module_permission('churchReports', 'view')
@@ -173,9 +174,9 @@ DROP POLICY IF EXISTS church_reports_insert_policy ON public.church_reports;
 CREATE POLICY church_reports_insert_policy ON public.church_reports
   FOR INSERT TO authenticated
   WITH CHECK (
-    public.is_admin_user()
+    public.current_user_role() IN ('super_admin', 'main_pastor', 'national_admin')
     OR (
-      church_id = public.current_app_church_id()
+      church_id = public.current_user_church_id()
       AND (
         public.has_module_permission('cell', 'create')
         OR public.has_module_permission('church_reports', 'create')
@@ -188,9 +189,9 @@ DROP POLICY IF EXISTS church_reports_update_policy ON public.church_reports;
 CREATE POLICY church_reports_update_policy ON public.church_reports
   FOR UPDATE TO authenticated
   USING (
-    public.is_admin_user()
+    public.current_user_role() IN ('super_admin', 'main_pastor', 'national_admin')
     OR (
-      church_id = public.current_app_church_id()
+      church_id = public.current_user_church_id()
       AND (
         public.has_module_permission('cell', 'edit')
         OR public.has_module_permission('church_reports', 'edit')
@@ -203,9 +204,9 @@ DROP POLICY IF EXISTS church_reports_delete_policy ON public.church_reports;
 CREATE POLICY church_reports_delete_policy ON public.church_reports
   FOR DELETE TO authenticated
   USING (
-    public.is_admin_user()
+    public.current_user_role() IN ('super_admin', 'main_pastor', 'national_admin')
     OR (
-      church_id = public.current_app_church_id()
+      church_id = public.current_user_church_id()
       AND public.has_module_permission('church_reports', 'delete')
     )
   );
@@ -215,8 +216,8 @@ DROP POLICY IF EXISTS alec_registrations_select_policy ON public.alec_registrati
 CREATE POLICY alec_registrations_select_policy ON public.alec_registrations
   FOR SELECT TO authenticated
   USING (
-    public.is_admin_user()
-    OR church_id = public.current_app_church_id()
+    public.current_user_role() IN ('super_admin', 'main_pastor', 'national_admin')
+    OR church_id = public.current_user_church_id()
     OR public.has_module_permission('alec', 'view')
     OR public.has_module_permission('alec_registration', 'view')
     OR public.has_module_permission('alecRegistration', 'view')
@@ -226,9 +227,9 @@ DROP POLICY IF EXISTS alec_registrations_insert_policy ON public.alec_registrati
 CREATE POLICY alec_registrations_insert_policy ON public.alec_registrations
   FOR INSERT TO authenticated
   WITH CHECK (
-    public.is_admin_user()
+    public.current_user_role() IN ('super_admin', 'main_pastor', 'national_admin')
     OR (
-      church_id = public.current_app_church_id()
+      church_id = public.current_user_church_id()
       AND (
         public.has_module_permission('alec', 'create')
         OR public.has_module_permission('alec_registration', 'create')
@@ -241,9 +242,9 @@ DROP POLICY IF EXISTS alec_registrations_update_policy ON public.alec_registrati
 CREATE POLICY alec_registrations_update_policy ON public.alec_registrations
   FOR UPDATE TO authenticated
   USING (
-    public.is_admin_user()
+    public.current_user_role() IN ('super_admin', 'main_pastor', 'national_admin')
     OR (
-      church_id = public.current_app_church_id()
+      church_id = public.current_user_church_id()
       AND (
         public.has_module_permission('alec', 'edit')
         OR public.has_module_permission('alec_registration', 'edit')
@@ -256,9 +257,9 @@ DROP POLICY IF EXISTS alec_registrations_delete_policy ON public.alec_registrati
 CREATE POLICY alec_registrations_delete_policy ON public.alec_registrations
   FOR DELETE TO authenticated
   USING (
-    public.is_admin_user()
+    public.current_user_role() IN ('super_admin', 'main_pastor', 'national_admin')
     OR (
-      church_id = public.current_app_church_id()
+      church_id = public.current_user_church_id()
       AND public.has_module_permission('alec_registration', 'delete')
     )
   );
@@ -268,8 +269,8 @@ DROP POLICY IF EXISTS alec_scores_select_policy ON public.alec_scores;
 CREATE POLICY alec_scores_select_policy ON public.alec_scores
   FOR SELECT TO authenticated
   USING (
-    public.is_admin_user()
-    OR church_id = public.current_app_church_id()
+    public.current_user_role() IN ('super_admin', 'main_pastor', 'national_admin')
+    OR church_id = public.current_user_church_id()
     OR public.has_module_permission('alec', 'view')
     OR public.has_module_permission('alec_scores', 'view')
     OR public.has_module_permission('alecScores', 'view')
@@ -279,9 +280,9 @@ DROP POLICY IF EXISTS alec_scores_insert_policy ON public.alec_scores;
 CREATE POLICY alec_scores_insert_policy ON public.alec_scores
   FOR INSERT TO authenticated
   WITH CHECK (
-    public.is_admin_user()
+    public.current_user_role() IN ('super_admin', 'main_pastor', 'national_admin')
     OR (
-      church_id = public.current_app_church_id()
+      church_id = public.current_user_church_id()
       AND (
         public.has_module_permission('alec', 'create')
         OR public.has_module_permission('alec_scores', 'create')
@@ -294,9 +295,9 @@ DROP POLICY IF EXISTS alec_scores_update_policy ON public.alec_scores;
 CREATE POLICY alec_scores_update_policy ON public.alec_scores
   FOR UPDATE TO authenticated
   USING (
-    public.is_admin_user()
+    public.current_user_role() IN ('super_admin', 'main_pastor', 'national_admin')
     OR (
-      church_id = public.current_app_church_id()
+      church_id = public.current_user_church_id()
       AND (
         public.has_module_permission('alec', 'edit')
         OR public.has_module_permission('alec_scores', 'edit')
@@ -309,9 +310,9 @@ DROP POLICY IF EXISTS alec_scores_delete_policy ON public.alec_scores;
 CREATE POLICY alec_scores_delete_policy ON public.alec_scores
   FOR DELETE TO authenticated
   USING (
-    public.is_admin_user()
+    public.current_user_role() IN ('super_admin', 'main_pastor', 'national_admin')
     OR (
-      church_id = public.current_app_church_id()
+      church_id = public.current_user_church_id()
       AND public.has_module_permission('alec_scores', 'delete')
     )
   );
@@ -321,8 +322,8 @@ DROP POLICY IF EXISTS cell_reports_select_policy ON public.cell_reports;
 CREATE POLICY cell_reports_select_policy ON public.cell_reports
   FOR SELECT TO authenticated
   USING (
-    public.is_admin_user()
-    OR church_id = public.current_app_church_id()
+    public.current_user_role() IN ('super_admin', 'main_pastor', 'national_admin')
+    OR church_id = public.current_user_church_id()
     OR submetido_por_id = auth.uid()
     OR public.has_module_permission('cell', 'view')
     OR public.has_module_permission('cell_portal', 'view')
@@ -332,9 +333,9 @@ DROP POLICY IF EXISTS cell_reports_insert_policy ON public.cell_reports;
 CREATE POLICY cell_reports_insert_policy ON public.cell_reports
   FOR INSERT TO authenticated
   WITH CHECK (
-    public.is_admin_user()
+    public.current_user_role() IN ('super_admin', 'main_pastor', 'national_admin')
     OR (
-      church_id = public.current_app_church_id()
+      church_id = public.current_user_church_id()
       AND (
         public.has_module_permission('cell', 'create')
         OR public.has_module_permission('cell_reports', 'create')
@@ -347,9 +348,9 @@ DROP POLICY IF EXISTS cell_reports_update_policy ON public.cell_reports;
 CREATE POLICY cell_reports_update_policy ON public.cell_reports
   FOR UPDATE TO authenticated
   USING (
-    public.is_admin_user()
+    public.current_user_role() IN ('super_admin', 'main_pastor', 'national_admin')
     OR (
-      church_id = public.current_app_church_id()
+      church_id = public.current_user_church_id()
       AND (
         public.has_module_permission('cell', 'edit')
         OR public.has_module_permission('cell_reports', 'edit')
@@ -362,7 +363,7 @@ DROP POLICY IF EXISTS cell_reports_delete_policy ON public.cell_reports;
 CREATE POLICY cell_reports_delete_policy ON public.cell_reports
   FOR DELETE TO authenticated
   USING (
-    public.is_admin_user()
+    public.current_user_role() IN ('super_admin', 'main_pastor', 'national_admin')
   );
 
 COMMIT;

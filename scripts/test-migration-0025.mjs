@@ -97,12 +97,12 @@ await db.exec(`
   ON CONFLICT (id) DO NOTHING;
 `);
 
-// Mock helper functions used by RLS
+// Real helper functions used by production RLS
 await db.exec(`
-  CREATE OR REPLACE FUNCTION public.is_admin_user()
-  RETURNS boolean LANGUAGE sql STABLE AS $$ SELECT true; $$;
+  CREATE OR REPLACE FUNCTION public.current_user_role()
+  RETURNS text LANGUAGE sql STABLE AS $$ SELECT 'alec_manager'; $$;
 
-  CREATE OR REPLACE FUNCTION public.current_app_church_id()
+  CREATE OR REPLACE FUNCTION public.current_user_church_id()
   RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT 'a1111111-1111-4111-8111-111111111101'::uuid; $$;
 
   CREATE OR REPLACE FUNCTION public.has_module_permission(mod text, act text)
