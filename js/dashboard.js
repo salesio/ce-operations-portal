@@ -11470,6 +11470,18 @@ function firstTimerActions(id) {
   if (workflow === "RECTOR_APPROVED") actions.push(["handoffFollowup", "firstTimer", id, "Encaminhar Follow-Up"]);
   if (workflow === "SENT_TO_FOLLOWUP") actions.push(["receiveFollowup", "firstTimer", id, "Confirmar recepção"]);
   if (workflow === "FOLLOWUP_RECEIVED") actions.push(["createExplicitFollowup", "firstTimer", id, "Criar Follow-Up"]);
+
+  // Downstream flows
+  const isEnrolledFS = (state.foundationStudents || []).some((s) => s.first_timer_id === id || (s.phone && s.phone === (row.telefone || row.phone)));
+  if ((row.foundation_school_interest || row.quer_escola_de_fundacao) && !isEnrolledFS) {
+    actions.push(["enrollFoundation", "firstTimer", id, "Matricular na ESF"]);
+  }
+
+  const isConvertedMember = row.converted_to_member || (state.members || []).some((m) => m.first_timer_id === id || (m.telefone && m.telefone === (row.telefone || row.phone)));
+  if (!isConvertedMember && ["RECTOR_APPROVED", "FOLLOWUP_RECEIVED", "FOLLOWUP_IN_PROGRESS", "COMPLETED"].includes(workflow)) {
+    actions.push(["convertToMember", "firstTimer", id, "Converter em Membro"]);
+  }
+
   actions.push(["delete", "firstTimer", id, L("delete")]);
   return actionButtons(actions);
 }
@@ -11511,44 +11523,281 @@ function processFirstTimerBulkReview(decision) {
   setRoute("firstTimers");
 }
 
-const FIRST_TIMER_IMPORT_HEADERS = ["full_name", "phone", "date_of_birth", "neighborhood", "profession", "invited_by_name", "born_again", "foundation_school_interest", "cell_interest", "next_service_interest", "church_id"];
+function parseExcelDateValue(value) {
+  if (!value) return "";
+  if (value instanceof Date) {
+    if (isNaN(value.getTime())) return "";
+    return value.toISOString().slice(0, 10);
+  }
+  if (typeof value === "number" || (/^\d{4,6}$/.test(String(value || "").trim()))) {
+    const num = Number(value);
+    if (window.XLSX?.SSF?.parse_date_code) {
+      const parsed = window.XLSX.SSF.parse_date_code(num);
+      if (parsed?.y && parsed?.m && parsed?.d) {
+        return `${parsed.y}-${String(parsed.m).padStart(2, "0")}-${String(parsed.d).padStart(2, "0")}`;
+      }
+    }
+    const utcDays = Math.floor(num - 25569);
+    const dateInfo = new Date(utcDays * 86400 * 1000);
+    if (!isNaN(dateInfo.getTime())) return dateInfo.toISOString().slice(0, 10);
+  }
+  const str = String(value).trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(str)) {
+    const [d, m, y] = str.split("/");
+    return `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
+  }
+  if (/^\d{2}\.\d{2}\.\d{4}$/.test(str)) {
+    const [d, m, y] = str.split(".");
+    return `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
+  }
+  return str;
+}
+
+function parseExcelBooleanValue(value, defaultVal = false) {
+  if (value === true || value === 1 || value === "1") return true;
+  if (value === false || value === 0 || value === "0") return false;
+  const s = String(value || "").toLowerCase().trim();
+  if (s === "sim" || s === "yes" || s === "true" || s === "s" || s === "y") return true;
+  if (s === "não" || s === "nao" || s === "no" || s === "false" || s === "n") return false;
+  return defaultVal;
+}
+
+function parseExcelPhoneValue(value) {
+  if (!value) return "";
+  const str = String(value).trim();
+  if (str === "N" || str === "n" || str.toLowerCase() === "sem contacto") return "";
+  return str.replace(/[^\d+]/g, "");
+}
+
+function normalizeHeaderName(header) {
+  return String(header || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+}
+
+function mapExcelRowToFirstTimerRecord(rowMap, defaultChurchId) {
+  const findValue = (...patterns) => {
+    for (const pat of patterns) {
+      for (const [k, v] of Object.entries(rowMap)) {
+        const normK = normalizeHeaderName(k);
+        if (normK.includes(pat)) return v;
+      }
+    }
+    return "";
+  };
+
+  const firstName = String(findValue("primeiro nome", "first_name", "primeiro", "nome") || "").trim();
+  const lastName = String(findValue("ultimos nomes", "ultimo nome", "apelido", "last_name", "sobrenome") || "").trim();
+  const rawFullName = String(findValue("nome completo", "full_name", "nome_completo") || "").trim();
+
+  let fullNameStr = rawFullName;
+  if (!fullNameStr) {
+    if (firstName && lastName && !firstName.includes(lastName)) {
+      fullNameStr = `${firstName} ${lastName}`.trim();
+    } else {
+      fullNameStr = firstName || lastName;
+    }
+  }
+
+  const phone = parseExcelPhoneValue(findValue("contacto", "telefone", "whatsapp", "phone", "celular"));
+  const dateOfBirth = parseExcelDateValue(findValue("nascimento", "data de nascimento", "date_of_birth", "dob", "birth"));
+  const invitedByName = String(findValue("quem convidou", "convidado por", "invited_by") || "").trim();
+  const profession = String(findValue("profissao", "ocupacao", "profession") || "").trim();
+  const neighborhood = String(findValue("bairro", "endereco", "localizacao", "neighborhood", "address") || "").trim();
+
+  const foundationInterestRaw = findValue("escola de fundacao", "esf", "foundation_school_interest", "foundation_interest");
+  const foundationInterest = parseExcelBooleanValue(foundationInterestRaw, false);
+
+  const cellInterestRaw = findValue("celula", "cell_interest", "interested_in_cell");
+  const cellInterest = parseExcelBooleanValue(cellInterestRaw, false);
+
+  const bornAgainRaw = findValue("nasceu de novo", "born_again");
+  const bornAgain = parseExcelBooleanValue(bornAgainRaw, true);
+
+  const nextServiceRaw = findValue("proximo culto", "next_service_interest");
+  const nextServiceInterest = parseExcelBooleanValue(nextServiceRaw, true);
+
+  return {
+    first_name: firstName,
+    last_name: lastName,
+    full_name: fullNameStr,
+    phone: phone,
+    telefone: phone,
+    date_of_birth: dateOfBirth,
+    data_de_nascimento: dateOfBirth,
+    invited_by_name: invitedByName,
+    invited_by: invitedByName,
+    convidado_por: invitedByName,
+    profession: profession,
+    neighborhood: neighborhood,
+    endereco: neighborhood,
+    born_again: bornAgain,
+    nasceu_de_novo: bornAgain,
+    foundation_school_interest: foundationInterest,
+    quer_escola_de_fundacao: foundationInterest,
+    cell_interest: cellInterest,
+    interesse_em_celula: cellInterest,
+    next_service_interest: nextServiceInterest,
+    church_id: defaultChurchId || activeUser?.church_id,
+    workflow_status: "DRAFT",
+    estado_do_seguimento: "Pending"
+  };
+}
+
+const FIRST_TIMER_IMPORT_HEADERS = [
+  "NO",
+  "NOME",
+  "APELIDO",
+  "CONTACTO",
+  "NASCIMENTO",
+  "QUEM CONVIDOU",
+  "PROFISSÃO",
+  "BAIRRO",
+  "NASCEU DE NOVO",
+  "ESCOLA DE FUNDAÇÃO",
+  "CÉLULA",
+  "PRÓXIMO CULTO"
+];
 
 function downloadFirstTimerExcelTemplate() {
-  const csv = `${FIRST_TIMER_IMPORT_HEADERS.join(",")}\nAna Exemplo,840000000,1996-01-01,Maputo,Estudante,João Exemplo,true,true,false,true,\n`;
+  const sampleRow1 = "1,Carlos,Rita macule,843751405,1996-01-01,Tânia,Estudante,Bobole,Sim,Sim,Sim,Sim";
+  const sampleRow2 = "2,Maicon,Nguiliza,86682698,1998-08-27,Mãe de Lordes,Biscateiro,Costa de Sol,Sim,Não,Não,Sim";
+  const csv = `${FIRST_TIMER_IMPORT_HEADERS.join(",")}\n${sampleRow1}\n${sampleRow2}\n`;
   const link = document.createElement("a");
-  link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
-  link.download = "modelo-primeira-vez-intake.csv";
+  link.href = URL.createObjectURL(new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" }));
+  link.download = "modelo-primeiras-vezes.csv";
   link.click();
   URL.revokeObjectURL(link.href);
 }
 
-function importFirstTimerCsv(file) {
+function importFirstTimerExcel(file) {
   if (!file) return;
+  const isBinary = /\.(xlsx|xls)$/i.test(file.name);
   const reader = new FileReader();
-  reader.onload = () => {
-    const lines = String(reader.result || "").split(/\r?\n/).filter(Boolean);
-    const headers = (lines.shift() || "").split(/[,;\t]/).map((value) => value.trim());
-    const missing = FIRST_TIMER_IMPORT_HEADERS.filter((header) => !headers.includes(header));
-    if (missing.length) return alert(`Modelo inválido. Faltam: ${missing.join(", ")}`);
-    const rows = lines.map((line) => {
-      const values = line.split(/[,;\t]/);
-      return Object.fromEntries(headers.map((header, index) => [header, String(values[index] || "").trim()]));
-    }).filter((row) => row.full_name && row.phone);
-    if (!rows.length) return alert("Não foram encontradas linhas válidas para pré-visualização.");
-    const preview = rows.slice(0, 10).map((row) => `${row.full_name} — ${row.phone}`).join("\n");
-    if (!confirm(`Pré-visualização (${rows.length} registos):\n${preview}\n\nGuardar como rascunhos?`)) return;
-    const now = new Date().toISOString();
-    rows.forEach((row, index) => {
-      const duplicate = (state.firstTimers || []).some((item) => String(item.phone || item.telefone || "").replace(/\D/g, "") === String(row.phone).replace(/\D/g, "") || String(fullName(item)).toLowerCase() === row.full_name.toLowerCase());
-      if (duplicate) return;
-      const created = migrateFirstTimerRecord({ id: `ft-${Date.now()}-${index}`, first_timer_number: `FT-${new Date().getFullYear()}-${String((state.firstTimers || []).length + 1).padStart(4, "0")}`, full_name: row.full_name, phone: row.phone, telefone: row.phone, date_of_birth: row.date_of_birth || null, neighborhood: row.neighborhood || "", profession: row.profession || "", invited_by_name: row.invited_by_name || "", invited_by: row.invited_by_name || "", born_again: row.born_again === "true", foundation_school_interest: row.foundation_school_interest === "true", cell_interest: row.cell_interest === "true", next_service_interest: row.next_service_interest === "true", church_id: row.church_id || activeUser.church_id, workflow_status: "DRAFT", estado_do_seguimento: "Pending", created_by: activeUser.name, updated_by: activeUser.name, created_at: now, updated_at: now });
-      state.firstTimers.push(created);
-      void persistFirstTimerViaRepository("create", created);
+
+  reader.onload = (e) => {
+    let rowsData = [];
+    try {
+      if (isBinary && window.XLSX) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = window.XLSX.read(data, { type: "array" });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        rowsData = window.XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+      } else {
+        const text = isBinary ? "" : String(e.target.result || "");
+        if (window.XLSX) {
+          const workbook = window.XLSX.read(text, { type: "string" });
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          rowsData = window.XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+        } else {
+          const lines = text.split(/\r?\n/).filter(Boolean);
+          const headers = (lines.shift() || "").split(/[,;\t]/).map((v) => v.trim());
+          rowsData = lines.map((line) => {
+            const values = line.split(/[,;\t]/);
+            return Object.fromEntries(headers.map((h, i) => [h, String(values[i] || "").trim()]));
+          });
+        }
+      }
+    } catch (err) {
+      console.error("[CE FirstTimers] Excel parsing error", err);
+      alert("Erro ao ler o ficheiro Excel. Verifique se o formato é válido (.xlsx, .xls ou .csv).");
+      return;
+    }
+
+    if (!rowsData.length) {
+      alert("Nenhum dado encontrado na folha carregada.");
+      return;
+    }
+
+    const defaultChurch = activeUser?.church_id || relationalChurches()[0]?.id;
+    const mappedRows = rowsData
+      .map((row) => mapExcelRowToFirstTimerRecord(row, defaultChurch))
+      .filter((r) => r.full_name && r.full_name.trim().length > 1);
+
+    if (!mappedRows.length) {
+      alert("Não foram encontrados nomes válidos nas colunas do ficheiro.");
+      return;
+    }
+
+    let newCount = 0;
+    let duplicateCount = 0;
+    const existingList = state.firstTimers || [];
+
+    const toImport = [];
+    mappedRows.forEach((row) => {
+      const cleanPhone = String(row.phone || "").replace(/\D/g, "");
+      const isDuplicate = existingList.some((item) => {
+        const itemPhone = String(item.phone || item.telefone || "").replace(/\D/g, "");
+        if (cleanPhone && itemPhone && cleanPhone === itemPhone) return true;
+        return String(fullName(item)).toLowerCase().trim() === row.full_name.toLowerCase().trim();
+      });
+
+      if (isDuplicate) {
+        duplicateCount++;
+      } else {
+        newCount++;
+        toImport.push(row);
+      }
     });
-    saveState(`Imported ${rows.length} first timer intake drafts`);
+
+    const previewList = toImport.slice(0, 8).map((r, i) =>
+      `${i + 1}. ${r.full_name} (${r.phone || "Sem tel."}) - ${r.neighborhood || "Sem bairro"} | ESF: ${r.foundation_school_interest ? "Sim" : "Não"}`
+    ).join("\n");
+
+    const message = `Ficheiro: ${file.name}\n` +
+      `Total lidos: ${mappedRows.length}\n` +
+      `Novos registos: ${newCount}\n` +
+      `Duplicados existentes (ignorados): ${duplicateCount}\n\n` +
+      `Amostra dos primeiros registos:\n${previewList || "Nenhum novo registo"}\n\n` +
+      `Deseja importar estes ${newCount} novos registos como Rascunhos de Primeira Vez?`;
+
+    if (!newCount) {
+      alert(`Todos os ${mappedRows.length} registos lidos já existem na base de dados (duplicados).`);
+      return;
+    }
+
+    if (!window.confirm(message)) return;
+
+    const now = new Date().toISOString();
+    toImport.forEach((row, index) => {
+      const created = migrateFirstTimerRecord({
+        id: `ft-${Date.now()}-${index}`,
+        first_timer_number: `FT-${new Date().getFullYear()}-${String((state.firstTimers || []).length + 1).padStart(4, "0")}`,
+        ...row,
+        church_id: row.church_id || activeUser?.church_id,
+        workflow_status: "DRAFT",
+        estado_do_seguimento: "Pending",
+        created_by: activeUser?.name || "Admin",
+        updated_by: activeUser?.name || "Admin",
+        created_at: now,
+        updated_at: now
+      });
+      state.firstTimers.push(created);
+      void persistFirstTimerViaRepository("create", created).catch((e) => {
+        console.warn("[CE FirstTimers] background import persist error", e);
+      });
+    });
+
+    saveState(`Imported ${newCount} first timers from Excel ${file.name}`);
+    alert(`Sucesso: ${newCount} registos de Primeira Vez foram importados com sucesso!`);
     setRoute(activeRoute);
   };
-  reader.readAsText(file);
+
+  if (isBinary) {
+    reader.readAsArrayBuffer(file);
+  } else {
+    reader.readAsText(file);
+  }
+}
+
+// Alias for backward compatibility
+function importFirstTimerCsv(file) {
+  return importFirstTimerExcel(file);
 }
 
 function renderFirstTimerIntakeForm(record = {}) {
@@ -11556,16 +11805,19 @@ function renderFirstTimerIntakeForm(record = {}) {
   const yesNo = (key, label) => `<div class="col-md-6"><label class="form-label d-block">${label}</label><div class="btn-group" role="group"><input class="btn-check" type="radio" name="${key}" id="${key}-yes" value="true" ${(record[key] || record[{ nasceu_de_novo: "born_again", foundation_school_interest: "quer_escola_de_fundacao", interesse_em_celula: "cell_interest", next_service_interest: "willAttendNextService" }[key]]) ? "checked" : ""}><label class="btn btn-outline-success" for="${key}-yes">Sim</label><input class="btn-check" type="radio" name="${key}" id="${key}-no" value="false" ${!(record[key] || record[{ nasceu_de_novo: "born_again", foundation_school_interest: "quer_escola_de_fundacao", interesse_em_celula: "cell_interest", next_service_interest: "willAttendNextService" }[key]]) ? "checked" : ""}><label class="btn btn-outline-secondary" for="${key}-no">Não</label></div></div>`;
   const churches = getChurchOptions(relationalChurches());
   const members = scoped(state.members || [], "members").slice(0, 150);
-  return `<div class="col-12"><div class="alert alert-info mb-2">Intake pastoral: interesses não criam células, matrícula na ESF, membro nem follow-up automaticamente.</div></div>
-    <div class="col-md-6"><label class="form-label">Nome completo *</label><input required name="full_name" class="form-control" value="${value("full_name", fullName(record))}"></div>
-    <div class="col-md-6"><label class="form-label">Telefone *</label><input required name="phone" class="form-control" value="${value("phone", record.telefone || "")}"></div>
+  return `<div class="col-12"><div class="alert alert-info mb-2">Ficha de Intake: dados da folha de culto ou formulário. Permite transição para Follow-Up, ESF, Célula e Membro.</div></div>
+    <div class="col-md-6"><label class="form-label">Primeiro Nome *</label><input required name="first_name" class="form-control" value="${value("first_name", record.nome || "")}" placeholder="Ex: Maicon"></div>
+    <div class="col-md-6"><label class="form-label">Último Nome / Apelido *</label><input required name="last_name" class="form-control" value="${value("last_name", record.apelido || "")}" placeholder="Ex: Nguiliza"></div>
+    <div class="col-md-6"><label class="form-label">Nome Completo</label><input name="full_name" class="form-control" value="${value("full_name", fullName(record))}" placeholder="Preenchido automaticamente se omitido"></div>
+    <div class="col-md-6"><label class="form-label">Telefone / Contacto *</label><input required name="phone" class="form-control" value="${value("phone", record.telefone || "")}" placeholder="Ex: 843751405"></div>
     <div class="col-md-6"><label class="form-label">Data de nascimento</label><input type="date" name="date_of_birth" class="form-control" value="${value("date_of_birth", record.data_de_nascimento || "")}"></div>
-    <div class="col-md-6"><label class="form-label">Bairro</label><input name="neighborhood" class="form-control" value="${value("neighborhood", record.neighbourhood || record.endereco || "")}"></div>
-    <div class="col-md-6"><label class="form-label">Profissão</label><input name="profession" class="form-control" value="${value("profession")}"></div>
-    <div class="col-md-6"><label class="form-label">Quem convidou?</label><input name="invited_by_name" list="firstTimerMemberSuggestions" class="form-control" value="${value("invited_by_name", record.convidado_por || "")}"><datalist id="firstTimerMemberSuggestions">${members.map((member) => `<option value="${escapeAttr(fullName(member))}"></option>`).join("")}</datalist><div class="form-text">Sugestão de membro; a ligação é opcional.</div></div>
+    <div class="col-md-6"><label class="form-label">Bairro / Residência</label><input name="neighborhood" class="form-control" value="${value("neighborhood", record.neighbourhood || record.endereco || "")}" placeholder="Ex: Polana Caniço, Costa de Sol"></div>
+    <div class="col-md-6"><label class="form-label">Profissão / Ocupação</label><input name="profession" class="form-control" value="${value("profession")}" placeholder="Ex: Estudante, Doméstica"></div>
+    <div class="col-md-6"><label class="form-label">Quem convidou?</label><input name="invited_by_name" list="firstTimerMemberSuggestions" class="form-control" value="${value("invited_by_name", record.convidado_por || record.invited_by || "")}" placeholder="Ex: Irmão Avelino, Sis Sintia"><datalist id="firstTimerMemberSuggestions">${members.map((member) => `<option value="${escapeAttr(fullName(member))}"></option>`).join("")}</datalist><div class="form-text">Membro ou pessoa que trouxe o visitante.</div></div>
     ${yesNo("nasceu_de_novo", "Nasceu de novo?")}${yesNo("foundation_school_interest", "Tem interesse na ESF?")}${yesNo("interesse_em_celula", "Tem interesse numa célula?")}${yesNo("next_service_interest", "Pretende vir ao próximo culto?")}
-    <div class="col-md-6"><label class="form-label">Igreja *</label><select required name="church_id" class="form-select"><option value="">Seleccionar igreja</option>${churches.map((church) => `<option value="${escapeAttr(church.id)}" ${String(record.church_id || "") === String(church.id) ? "selected" : ""}>${cleanDisplayText(churchOptionLabel(church))}</option>`).join("")}</select></div>
-    <div class="col-md-6"><label class="form-label">Estado do intake</label><select name="workflow_status" class="form-select"><option value="DRAFT" ${(record.workflow_status || "DRAFT") === "DRAFT" ? "selected" : ""}>Rascunho</option><option value="READY_FOR_REVIEW" ${record.workflow_status === "READY_FOR_REVIEW" ? "selected" : ""}>Pronto para revisão</option></select></div>`;
+    <div class="col-md-6"><label class="form-label">Igreja *</label><select required name="church_id" class="form-select"><option value="">Seleccionar igreja</option>${churches.map((church) => `<option value="${escapeAttr(church.id)}" ${String(record.church_id || activeUser?.church_id || "") === String(church.id) ? "selected" : ""}>${cleanDisplayText(churchOptionLabel(church))}</option>`).join("")}</select></div>
+    <div class="col-md-6"><label class="form-label">Estado do intake</label><select name="workflow_status" class="form-select"><option value="DRAFT" ${(record.workflow_status || "DRAFT") === "DRAFT" ? "selected" : ""}>Rascunho</option><option value="READY_FOR_REVIEW" ${record.workflow_status === "READY_FOR_REVIEW" ? "selected" : ""}>Pronto para revisão</option><option value="SUBMITTED_TO_RECTOR" ${record.workflow_status === "SUBMITTED_TO_RECTOR" ? "selected" : ""}>Submetido ao Reitor</option></select></div>
+    <div class="col-12"><label class="form-label">Observações / Notas</label><textarea name="notes" class="form-control" rows="2" placeholder="Detalhes adicionais, pedidos de oração, etc.">${value("notes")}</textarea></div>`;
 }
 
 function renderFirstTimerCard(person) {
@@ -11575,11 +11827,11 @@ function renderFirstTimerCard(person) {
     subtitle: person.culto || L("service"),
     badges: [badge(person.estado_do_seguimento)],
     meta: [
-      [L("phone"), person.telefone, "bi-telephone"],
+      [L("phone"), person.telefone || person.phone, "bi-telephone"],
       [L("church"), churchName(person.church_id), "bi-building"],
       [L("service"), person.culto || "-", "bi-calendar-event"]
     ],
-    pills: [person.nasceu_de_novo ? L("bornAgainHint") : null, person.quer_escola_de_fundacao ? L("foundationSchool") : null].filter(Boolean),
+    pills: [person.nasceu_de_novo ? L("bornAgainHint") : null, person.quer_escola_de_fundacao || person.foundation_school_interest ? L("foundationSchool") : null].filter(Boolean),
     actions: firstTimerActions(person.id)
   });
 }
@@ -11601,7 +11853,12 @@ function renderFirstTimers() {
     ${summaryFilterChips("firstTimers")}
     ${renderFirstTimerRectorPanel(list)}
     <article id="first-timers-results" class="panel glass-panel">
-      <div class="d-flex gap-2 flex-wrap mb-3"><button class="btn btn-outline-cyan" type="button" data-first-timer-csv-template>Baixar Modelo Excel</button><label class="btn btn-outline-light mb-0">Importar Excel<input type="file" accept=".csv,.tsv,text/csv" data-first-timer-import hidden></label><span class="small text-secondary align-self-center">Importação CSV compatível com Excel; pré-visualização antes de gravar.</span></div>
+      <div class="d-flex gap-2 flex-wrap mb-3 align-items-center">
+        <button class="btn btn-primary" type="button" data-first-timer-new-entry><i class="bi bi-person-plus me-1"></i>Novo Registo (Manual)</button>
+        <button class="btn btn-outline-cyan" type="button" data-first-timer-csv-template><i class="bi bi-download me-1"></i>Baixar Modelo Excel</button>
+        <label class="btn btn-outline-light mb-0"><i class="bi bi-file-earmark-excel me-1 text-success"></i>Importar Excel (.xlsx / .csv)<input type="file" accept=".xlsx,.xls,.csv,.tsv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" data-first-timer-import hidden></label>
+        <span class="small text-secondary align-self-center">Compatível com Excel (.xlsx / .xls) e CSV; pré-visualização antes de gravar.</span>
+      </div>
       ${filterBar({ viewToggle: ViewToggle(view), statusOptions: followupStatuses })}
       ${(() => {
         const filtered = applyFirstTimerCardFilters(list, firstTimersPageState.filter);
@@ -21697,6 +21954,86 @@ function quickAction(action, type, id) {
     if (action === "createExplicitFollowup") return openFollowup(id);
     return setRoute(activeRoute);
   }
+  if (type === "firstTimer" && action === "enrollFoundation") {
+    const record = (state.firstTimers || []).find((item) => item.id === id);
+    if (!record) return;
+    const cleanPhone = String(record.telefone || record.phone || "").replace(/\D/g, "");
+    const existing = (state.foundationStudents || []).find((s) => s.first_timer_id === id || (cleanPhone && String(s.phone || s.telefone || "").replace(/\D/g, "") === cleanPhone));
+    if (existing) {
+      alert(`Este visitante já está matriculado na Escola de Fundação (${existing.full_name || fullName(existing)}).`);
+      return;
+    }
+    const studentId = `fs-${Date.now()}`;
+    const studentRecord = {
+      id: studentId,
+      first_timer_id: record.id,
+      full_name: fullName(record),
+      phone: record.telefone || record.phone || "",
+      whatsapp: record.whatsapp || record.telefone || record.phone || "",
+      church_id: record.church_id || activeUser?.church_id,
+      church_name: record.church_name || churchName(record.church_id),
+      class_group_id: "",
+      status: "Inscrito",
+      registered_at: new Date().toISOString().slice(0, 10),
+      source: "Primeira Vez",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    state.foundationStudents = state.foundationStudents || [];
+    state.foundationStudents.push(studentRecord);
+    record.quer_escola_de_fundacao = true;
+    record.foundation_school_interest = true;
+    record.foundation_student_id = studentId;
+    saveState(`Enrolled first timer ${fullName(record)} in Foundation School`);
+    void persistFoundationStudentViaRepository("create", studentRecord).catch((e) => console.warn("[CE Foundation] sync student error", e));
+    alert(`${fullName(record)} foi matriculado(a) na Escola de Fundação com sucesso!`);
+    return setRoute(activeRoute);
+  }
+  if (type === "firstTimer" && action === "convertToMember") {
+    const record = (state.firstTimers || []).find((item) => item.id === id);
+    if (!record) return;
+    const cleanPhone = String(record.telefone || record.phone || "").replace(/\D/g, "");
+    const existing = (state.members || []).find((m) => m.first_timer_id === id || (cleanPhone && String(m.telefone || m.phone || "").replace(/\D/g, "") === cleanPhone));
+    if (existing) {
+      alert(`Este visitante já é membro registado (${fullName(existing)}).`);
+      return;
+    }
+    const nameParts = fullName(record).split(/\s+/).filter(Boolean);
+    const memberId = `mem-${Date.now()}`;
+    const memberRecord = {
+      id: memberId,
+      first_timer_id: record.id,
+      first_name: record.first_name || nameParts[0] || "",
+      nome: record.nome || record.first_name || nameParts[0] || "",
+      last_name: record.last_name || nameParts.slice(1).join(" ") || "",
+      apelido: record.apelido || record.last_name || nameParts.slice(1).join(" ") || "",
+      full_name: fullName(record),
+      fullName: fullName(record),
+      telefone: record.telefone || record.phone || "",
+      whatsapp: record.whatsapp || record.telefone || record.phone || "",
+      data_de_nascimento: record.data_de_nascimento || record.date_of_birth || "",
+      endereco: record.endereco || record.neighborhood || "",
+      bairro: record.neighborhood || record.endereco || "",
+      profissao: record.profession || "",
+      church_id: record.church_id || activeUser?.church_id,
+      church_name: record.church_name || churchName(record.church_id),
+      cell_id: record.cell_id || "",
+      cell_name: record.cell_name || record.celula || "",
+      estado: "Activo",
+      origem: "Primeira Vez",
+      created_at: new Date().toISOString().slice(0, 10),
+      updated_at: new Date().toISOString().slice(0, 10)
+    };
+    state.members = state.members || [];
+    state.members.push(memberRecord);
+    record.converted_to_member = true;
+    record.member_id = memberId;
+    record.workflow_status = "COMPLETED";
+    saveState(`Converted first timer ${fullName(record)} to Member`);
+    void persistMemberViaRepository("create", memberRecord).catch((e) => console.warn("[CE Members] sync member error", e));
+    alert(`${fullName(record)} foi registado(a) como Membro oficial com sucesso!`);
+    return setRoute(activeRoute);
+  }
   if (type === "foundationTeacher") {
     if (action === "view") return openFoundationTeacherForm(id, "view");
     if (action === "edit") return openFoundationTeacherForm(id, "edit");
@@ -22121,6 +22458,9 @@ document.addEventListener("click", async (event) => {
   if (event.target.closest("[data-first-timer-csv-template]")) {
     downloadFirstTimerExcelTemplate();
     return;
+  }
+  if (event.target.closest("[data-first-timer-new-entry]")) {
+    return openForm("firstTimer");
   }
   const langButton = event.target.closest("[data-lang]");
   if (langButton) return applyLanguage(langButton.dataset.lang);

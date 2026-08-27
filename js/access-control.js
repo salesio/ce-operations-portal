@@ -721,7 +721,9 @@
       status: "can_edit",
       moveChurch: "can_edit",
       followup: "can_edit",
-      updateReport: "can_edit"
+      updateReport: "can_edit",
+      enrollFoundation: "can_edit",
+      convertToMember: "can_create"
     };
     if (action === "sendToInventory") return Boolean(access.can_approve || access.can_verify || access.can_edit);
     if (action === "markClass" || action === "score") return Boolean(access.can_edit || access.can_approve);
