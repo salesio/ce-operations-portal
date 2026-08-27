@@ -9325,20 +9325,20 @@ function fallbackCanViewModule(user = activeUser, module = "dashboard") {
 }
 
 function roleWorkspaceRoutes(user = activeUser) {
-  const role = String(user?.role || user?.role_name || "");
-  if (role === "alec_manager" || role === "ALEC Coordinator" || role === "ALEC Manager" || role === "alec_coordinator") {
+  const role = String(user?.role || user?.role_name || "").toLowerCase().trim();
+  if (role === "alec_manager" || role === "alec coordinator" || role === "alec manager" || role === "alec_coordinator") {
     return ["cellAlecOverview", "cellAlecRegistration", "cellAlecScores", "cellChurchReports", "cellPortal"];
   }
   if (
     role === "pastoral_care_rector" ||
-    role === "Pastoral Care Rector" ||
-    role === "Reitor de Cuidados Pastorais" ||
-    role === "Reitor" ||
-    role === "Rector"
+    role === "pastoral care rector" ||
+    role === "reitor de cuidados pastorais" ||
+    role === "reitor" ||
+    role === "rector"
   ) {
     return ["firstTimers", "followUp", "foundation", "sacraments", "counseling"];
   }
-  if (role === "Follow-Up Coordinator") return ["firstTimers", "followUp"];
+  if (role === "follow-up coordinator" || role === "follow_up_coordinator") return ["firstTimers", "followUp"];
   return null;
 }
 
@@ -9522,8 +9522,6 @@ function renderShell() {
     const workspaceRoutes = roleWorkspaceRoutes();
     const items = group.items.map(([route, icon, label]) => ({ route, icon: sidebarIcon(icon, route), label, nav: resolveRouteAccess(route) }))
       .filter((item) => (!workspaceRoutes || workspaceRoutes.includes(item.route)) && item.nav.visible && (item.route !== "venueInventory" || canViewVenueModule()));
-    if (!items.length && group.key !== "departments") return "";
-    const expanded = isSidebarGroupExpanded(group.key);
     const cellNav = group.key === "departments" && (!workspaceRoutes || workspaceRoutes.some((r) => r.startsWith("cell"))) ? renderCellSidebarNav() : "";
     const navItems = items.map(({ route, icon, label, nav }) => `
       <button type="button" class="nav-item-btn ${nav.locked ? "is-locked" : ""}" ${nav.locked ? `data-locked-route="${route}" aria-disabled="true"` : `data-route="${route}" onclick="window.setRoute && window.setRoute('${route}'); return false;"`} title="${nav.locked ? L("navLockedTooltip") : L(label)}">
@@ -9531,6 +9529,7 @@ function renderShell() {
       </button>
     `).join("");
     if (!navItems && !cellNav) return "";
+    const expanded = isSidebarGroupExpanded(group.key);
     return `
     <div class="nav-group ${expanded ? "is-expanded" : ""}" data-nav-group="${group.key}">
       <button type="button" class="nav-group-toggle" aria-expanded="${expanded}" aria-label="${L("navGroupToggle")}: ${L(group.key)}">
@@ -14123,15 +14122,19 @@ function activeFoundationTeacherProfile() {
 }
 
 function foundationCanViewAllClasses() {
-  const role = String(activeUser?.role || "").toLowerCase();
+  const role = String(activeUser?.role || activeUser?.role_name || "").toLowerCase().trim();
   const perms = foundationPermissions();
   return role.includes("admin") ||
     role.includes("church pastor") ||
+    role.includes("rector") ||
+    role.includes("reitor") ||
+    role.includes("pastoral_care") ||
     activeUser?.can_view_all_churches ||
     perms.includes("*") ||
     perms.includes("foundation") ||
     perms.includes("foundation_rector") ||
-    perms.includes("foundation_coordinator");
+    perms.includes("foundation_coordinator") ||
+    (window.CEAccessControl && typeof window.CEAccessControl.canViewModule === "function" && window.CEAccessControl.canViewModule(activeUser, "foundation"));
 }
 
 function foundationLessonRecords(studentId) {
@@ -14148,7 +14151,7 @@ function foundationSoulWinningForStudent(studentId) {
 }
 
 function foundationCanManage(area = "overview") {
-  const role = String(activeUser?.role || "").toLowerCase();
+  const role = String(activeUser?.role || activeUser?.role_name || "").toLowerCase().trim();
   const perms = foundationPermissions();
   if (foundationCanViewAllClasses()) return true;
   const teacherTabs = new Set(["overview", "classes", "students", "lessons", "onlineTests", "soulWinning", "reports"]);

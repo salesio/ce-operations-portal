@@ -606,10 +606,30 @@
     "Staff Member": new Set(["finance", "reports", "usersRoles", "accessControl", "auditLogs"])
   };
 
+  function normalizeRoleKey(role) {
+    const r = String(role || "").toLowerCase().trim();
+    if (r === "pastoral_care_rector" || r === "pastoral care rector" || r === "reitor de cuidados pastorais" || r === "reitor" || r === "rector") {
+      return "pastoral_care_rector";
+    }
+    if (r === "alec_manager" || r === "alec manager" || r === "alec coordinator" || r === "alec_coordinator") {
+      return "alec_manager";
+    }
+    if (r === "super_admin" || r === "super admin") return "Super Admin";
+    if (r === "main_pastor" || r === "main pastor") return "Main Pastor";
+    if (r === "cell_leader" || r === "cell leader") return "Cell Leader";
+    if (r === "cell_assistant" || r === "cell assistant" || r === "assistant cell leader" || r === "assistant_cell_leader") return "Cell Assistant";
+    if (r === "cell_group_leader" || r === "cell group leader") return "Cell Group Leader";
+    if (r === "counseling_head" || r === "counseling head" || r === "head de aconselhamento") return "Counseling Head";
+    if (r === "counselor" || r === "conselheiro") return "Counselor";
+    if (r === "follow_up_coordinator" || r === "follow-up coordinator" || r === "coordenador de acompanhamento") return "Follow-Up Coordinator";
+    return role;
+  }
+
   function isExplicitlyDenied(user, module) {
     if (!user || !module) return false;
-    const roleKey = user.role || user.role_name || "";
-    return Boolean(EXPLICIT_DENIED_MODULES[roleKey]?.has(module));
+    const rawRole = user.role || user.role_name || "";
+    const norm = normalizeRoleKey(rawRole);
+    return Boolean(EXPLICIT_DENIED_MODULES[norm]?.has(module) || EXPLICIT_DENIED_MODULES[rawRole]?.has(module));
   }
 
   function resolveModuleAccess(user, module) {
@@ -620,7 +640,7 @@
       return base;
     }
 
-    const rNorm = String(user.role || "").trim().toLowerCase();
+    const rNorm = String(user.role || user.role_name || "").trim().toLowerCase();
     if ((user.department_permissions || []).includes("*") || user.role === "Super Admin" || rNorm === "super_admin" || rNorm === "super admin") {
       return { module, ...FULL_ACCESS, can_view_salary: true, can_review: true, can_forward: true, can_register_inventory: true };
     }
@@ -629,7 +649,9 @@
       return { module, ...VIEW_ONLY, scope: user.can_view_all_churches ? "all" : user.assigned_department ? "department" : "church" };
     }
 
-    const roleTemplate = ROLE_TEMPLATES[user.role];
+    const rawRole = user.role || user.role_name || "";
+    const roleKey = normalizeRoleKey(rawRole);
+    const roleTemplate = ROLE_TEMPLATES[roleKey] || ROLE_TEMPLATES[rawRole];
     if (roleTemplate?.modules?.[module]) {
       const access = mergeAccess(base, roleTemplate.modules[module]);
       access.module = module;

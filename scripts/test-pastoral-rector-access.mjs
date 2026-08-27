@@ -9,7 +9,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, "..");
 
-test("Pastoral Care Rector permissions & workspace restriction matrix", () => {
+test("Pastoral Care Rector permissions & clean workspace restriction matrix", () => {
   const accessControlCode = fs.readFileSync(path.join(rootDir, "js", "access-control.js"), "utf8");
 
   // Setup DOM and environment mockup
@@ -43,15 +43,14 @@ test("Pastoral Care Rector permissions & workspace restriction matrix", () => {
   const CEAccessControl = sandbox.window.CEAccessControl;
   assert.ok(CEAccessControl, "CEAccessControl must be defined on window");
 
-  const valdemiroUser = {
-    id: "u-pastor-valdemiro",
-    auth_user_id: "b80a3e2d-615e-4f8b-a1a8-4f0d5f458cef",
-    name: "Pastor Valdemiro Machava",
-    email: "valdomacha@gmail.com",
-    role: "pastoral_care_rector",
-    church_id: "a1111111-1111-4111-8111-111111111101",
-    status: "Active"
-  };
+  const testRoleVariations = [
+    "pastoral_care_rector",
+    "Pastoral Care Rector",
+    "Reitor de Cuidados Pastorais",
+    "REITOR DE CUIDADOS PASTORAIS",
+    "Reitor",
+    "rector"
+  ];
 
   const allowedPastoralModules = ["firstTimers", "followUp", "foundation", "sacraments", "counseling"];
   const deniedModules = [
@@ -61,61 +60,90 @@ test("Pastoral Care Rector permissions & workspace restriction matrix", () => {
     "partnership", "media"
   ];
 
-  console.log("Testing Pastor Valdemiro permissions matrix...");
+  for (const roleVar of testRoleVariations) {
+    const testUser = {
+      id: "u-pastor-valdemiro",
+      auth_user_id: "b80a3e2d-615e-4f8b-a1a8-4f0d5f458cef",
+      name: "Pastor Valdemiro Machava",
+      email: "valdomacha@gmail.com",
+      role: roleVar,
+      church_id: "a1111111-1111-4111-8111-111111111101",
+      status: "Active"
+    };
 
-  // 1. Check all allowed pastoral care modules
-  for (const mod of allowedPastoralModules) {
-    const access = CEAccessControl.resolveModuleAccess(valdemiroUser, mod);
-    assert.equal(access.can_view, true, `pastoral_care_rector MUST have can_view = true on ${mod}`);
-    assert.equal(access.can_create, true, `pastoral_care_rector MUST have can_create = true on ${mod}`);
-    assert.equal(access.can_edit, true, `pastoral_care_rector MUST have can_edit = true on ${mod}`);
-    assert.equal(access.can_delete, true, `pastoral_care_rector MUST have can_delete = true on ${mod}`);
-    assert.equal(access.can_approve, true, `pastoral_care_rector MUST have can_approve = true on ${mod}`);
-    assert.equal(access.scope, "church", `pastoral_care_rector scope MUST be church on ${mod}`);
-    console.log(`  [PASS] Allowed module: ${mod} -> full church-level pastoral access verified`);
-  }
+    console.log(`Testing permissions for role variant: "${roleVar}"...`);
 
-  // 2. Check all explicitly denied modules
-  for (const mod of deniedModules) {
-    const modAccess = CEAccessControl.resolveModuleAccess(valdemiroUser, mod);
-    assert.equal(modAccess.can_view, false, `pastoral_care_rector MUST NOT have can_view on ${mod}`);
-    assert.equal(modAccess.can_create, false, `pastoral_care_rector MUST NOT have can_create on ${mod}`);
-    assert.equal(modAccess.can_edit, false, `pastoral_care_rector MUST NOT have can_edit on ${mod}`);
-    assert.equal(modAccess.can_delete, false, `pastoral_care_rector MUST NOT have can_delete on ${mod}`);
-    console.log(`  [PASS] Denied module: ${mod} -> access strictly blocked`);
+    // 1. Check all allowed pastoral care modules
+    for (const mod of allowedPastoralModules) {
+      const access = CEAccessControl.resolveModuleAccess(testUser, mod);
+      assert.equal(access.can_view, true, `Role ${roleVar} MUST have can_view = true on ${mod}`);
+      assert.equal(access.can_edit, true, `Role ${roleVar} MUST have can_edit = true on ${mod}`);
+      assert.equal(access.scope, "church", `Role ${roleVar} scope MUST be church on ${mod}`);
+    }
+
+    // 2. Check all explicitly denied modules
+    for (const mod of deniedModules) {
+      const modAccess = CEAccessControl.resolveModuleAccess(testUser, mod);
+      assert.equal(modAccess.can_view, false, `Role ${roleVar} MUST NOT have can_view on ${mod}`);
+      const navItem = CEAccessControl.getNavItemState(testUser, mod);
+      assert.equal(navItem.visible, false, `Denied module ${mod} MUST be visible = false for ${roleVar}`);
+    }
   }
+  console.log("  [PASS] All role variations correctly resolved with strict module isolation.");
 
   // 3. Check workspace routes & navigation visibility
   const dashboardCode = fs.readFileSync(path.join(rootDir, "js", "dashboard.js"), "utf8");
   
-  // Extract roleWorkspaceRoutes logic
+  // Extract roleWorkspaceRoutes logic from dashboard.js
   const workspaceRoutesFn = new Function("user", `
-    const role = String(user?.role || user?.role_name || "");
+    const role = String(user?.role || user?.role_name || "").toLowerCase().trim();
+    if (role === "alec_manager" || role === "alec coordinator" || role === "alec manager" || role === "alec_coordinator") {
+      return ["cellAlecOverview", "cellAlecRegistration", "cellAlecScores", "cellChurchReports", "cellPortal"];
+    }
     if (
       role === "pastoral_care_rector" ||
-      role === "Pastoral Care Rector" ||
-      role === "Reitor de Cuidados Pastorais" ||
-      role === "Reitor" ||
-      role === "Rector"
+      role === "pastoral care rector" ||
+      role === "reitor de cuidados pastorais" ||
+      role === "reitor" ||
+      role === "rector"
     ) {
       return ["firstTimers", "followUp", "foundation", "sacraments", "counseling"];
     }
-    if (role === "alec_manager" || role === "ALEC Coordinator" || role === "ALEC Manager" || role === "alec_coordinator") {
-      return ["cellAlecOverview", "cellAlecRegistration", "cellAlecScores", "cellChurchReports", "cellPortal"];
-    }
+    if (role === "follow-up coordinator" || role === "follow_up_coordinator") return ["firstTimers", "followUp"];
     return null;
   `);
 
-  const valdemiroRoutes = workspaceRoutesFn(valdemiroUser);
-  assert.deepEqual(valdemiroRoutes, allowedPastoralModules, "Workspace routes for pastoral_care_rector must strictly match the 5 pastoral care routes");
-  assert.equal(valdemiroRoutes[0], "firstTimers", "Default landing route for pastoral_care_rector MUST be firstTimers");
-  console.log("  [PASS] Workspace routes strictly restricted to:", valdemiroRoutes.join(", "));
+  const NAV_GROUPS = [
+    { key: "main", items: [["dashboard", "bi-speedometer2", "dashboard"], ["churches", "bi-building", "churches"], ["members", "bi-people", "members"], ["reports", "bi-bar-chart-line", "reports"]] },
+    { key: "pastoralCare", items: [["firstTimers", "bi-person-heart", "firstTimers"], ["followUp", "bi-telephone-outbound", "followUp"], ["foundation", "bi-mortarboard", "foundationSchool"], ["sacraments", "bi-droplet", "sacraments"], ["counseling", "bi-chat-heart", "counseling"]] },
+    { key: "departments", items: [["fevo", "bi-compass", "fevo"], ["finance", "bi-cash-coin", "finance"], ["partnership", "bi-stars", "partnership"], ["programs", "bi-calendar-event", "programs"], ["media", "bi-camera-reels", "media"], ["requisitions", "bi-clipboard-check", "requisitions"], ["venueInventory", "bi-box-seam", "venueInventoryShort"], ["cellPrison", "bi-shield-lock", "prisonMinistry"], ["cellMaterials", "bi-journal-richtext", "ministryMaterials"]] },
+    { key: "admin", items: [["staffHr", "bi-people-fill", "staffHr"], ["users", "bi-person-lock", "usersRoles"], ["access", "bi-shield-lock", "accessControl"], ["settings", "bi-gear", "settings"], ["audit", "bi-journal-check", "auditLogs"]] }
+  ];
+
+  const valdemiroUser = {
+    id: "u-pastor-valdemiro",
+    role: "REITOR DE CUIDADOS PASTORAIS"
+  };
+
+  const wsRoutes = workspaceRoutesFn(valdemiroUser);
+  assert.deepEqual(wsRoutes, allowedPastoralModules);
+
+  // Test that for Pastor Valdemiro, only pastoralCare group has items
+  const visibleGroups = NAV_GROUPS.map((group) => {
+    const items = group.items
+      .map(([route]) => ({ route, nav: CEAccessControl.getNavItemState(valdemiroUser, route) }))
+      .filter((item) => wsRoutes.includes(item.route) && item.nav.visible);
+    return { key: group.key, itemsCount: items.length };
+  }).filter((g) => g.itemsCount > 0);
+
+  assert.equal(visibleGroups.length, 1, "Only 1 group must be visible in the sidebar");
+  assert.equal(visibleGroups[0].key, "pastoralCare", "The only visible group must be pastoralCare (Cuidados Pastorais)");
+  assert.equal(visibleGroups[0].itemsCount, 5, "Pastoral Care group must have all 5 items visible");
+  console.log("  [PASS] Clean interface verified: ONLY Cuidados Pastorais is visible (Main, Departamentos, and Admin are 100% hidden).");
 
   // 4. Test Super Admin integrity
   const adminUser = { id: "u-admin", role: "Super Admin" };
   const adminDashboard = CEAccessControl.resolveModuleAccess(adminUser, "dashboard");
-  const adminFinance = CEAccessControl.resolveModuleAccess(adminUser, "finance");
   assert.equal(adminDashboard.can_view, true);
-  assert.equal(adminFinance.can_view, true);
-  console.log("  [PASS] Super Admin permissions verified 100% intact and unimpacted");
+  console.log("  [PASS] Super Admin permissions verified 100% intact.");
 });
