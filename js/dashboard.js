@@ -9555,6 +9555,7 @@ function applyLanguage(next = lang) {
       key === "login.submit" ? (lang === "en" ? "Sign In" : "Iniciar Sessão") :
       key === "login.forgot" ? (lang === "en" ? "Forgot password?" : "Esqueci a senha") :
       key === "login.note" ? L("loginNote") :
+      key === "top.refresh" ? (lang === "en" ? "Refresh" : "Actualizar") :
       key === "top.site" ? L("viewSite") :
       key === "top.logout" ? L("logout") :
       key === "cancel" ? L("cancel") :
@@ -9785,15 +9786,17 @@ function setRoute(route) {
     }
   }
   if (String(activeRoute || "").startsWith("cell")) {
-    Promise.resolve(hydrateCellMinistryFromRepository())
-      .then((hydrated) => {
-        if (hydrated && String(activeRoute || "").startsWith("cell")) {
-          try {
-            (renderers[activeRoute] || renderDashboard)();
-          } catch (_) {}
-        }
-      })
-      .catch((err) => console.warn("[CE CellMinistry] route hydrate skipped", err));
+    if (!state.cellLeadership || !state.cellLeadership.churchReports || !state.cellLeadership.churchReports.length) {
+      Promise.resolve(hydrateCellMinistryFromRepository())
+        .then((hydrated) => {
+          if (hydrated && String(activeRoute || "").startsWith("cell")) {
+            try {
+              (renderers[activeRoute] || renderDashboard)();
+            } catch (_) {}
+          }
+        })
+        .catch((err) => console.warn("[CE CellMinistry] route hydrate skipped", err));
+    }
   }
   history.replaceState(null, "", `#${activeRoute}`);
   document.querySelector(".ops-sidebar")?.classList.remove("is-open");
@@ -23357,17 +23360,54 @@ function stopDashboardAutoRefresh() {
   dashboardAutoRefreshTimer = null;
 }
 
+// Auto-refresh disabled per user request to eliminate UI flashing. Manual refresh button added to topbar.
 function startDashboardAutoRefresh() {
   stopDashboardAutoRefresh();
   dashboardLastRefreshAt = Date.now();
-  dashboardAutoRefreshTimer = window.setInterval(() => {
-    if (document.visibilityState === "visible") void refreshDashboardData();
-  }, DASHBOARD_AUTO_REFRESH_MS);
 }
 
-document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "visible" && isUserAuthenticated && Date.now() - dashboardLastRefreshAt >= DASHBOARD_AUTO_REFRESH_MS) {
-    void refreshDashboardData();
+function showQuickFeedback(message, type = "success") {
+  let toastEl = byId("dashQuickFeedbackToast");
+  if (!toastEl) {
+    toastEl = document.createElement("div");
+    toastEl.id = "dashQuickFeedbackToast";
+    toastEl.className = "dash-quick-toast";
+    document.body.appendChild(toastEl);
+  }
+  toastEl.textContent = message;
+  toastEl.className = `dash-quick-toast is-visible is-${type}`;
+  window.clearTimeout(toastEl._timer);
+  toastEl._timer = window.setTimeout(() => {
+    toastEl.className = "dash-quick-toast";
+  }, 2500);
+}
+window.showQuickFeedback = showQuickFeedback;
+
+async function manualRefreshDashboardData() {
+  const btn = byId("manualRefreshBtn");
+  const icon = byId("manualRefreshIcon") || btn?.querySelector("i");
+  if (icon) icon.classList.add("spin-animation");
+  if (btn) btn.disabled = true;
+  try {
+    await refreshDashboardData({ render: true });
+    showQuickFeedback(lang === "pt" ? "Dados actualizados com sucesso!" : "Data refreshed successfully!", "success");
+  } catch (err) {
+    console.warn("[CE Dashboard] manual refresh error", err);
+    showQuickFeedback(lang === "pt" ? "Erro ao actualizar dados." : "Error refreshing data.", "error");
+  } finally {
+    window.setTimeout(() => {
+      if (icon) icon.classList.remove("spin-animation");
+      if (btn) btn.disabled = false;
+    }, 500);
+  }
+}
+window.manualRefreshDashboardData = manualRefreshDashboardData;
+
+document.addEventListener("click", (event) => {
+  const btn = event.target.closest("#manualRefreshBtn");
+  if (btn) {
+    event.preventDefault();
+    void manualRefreshDashboardData();
   }
 });
 
