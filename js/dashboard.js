@@ -5182,6 +5182,9 @@ const CELL_PORTAL_ROLE_PERMISSIONS = {
   "Cell Assistant": CELL_PORTAL_PERMISSION_CODES.filter((code) => code !== "cell_portal.export_summary"),
   "Cell Ministry Reviewer": CELL_PORTAL_PERMISSION_CODES.filter((code) => code !== "cell_portal.submit_report"),
   "Cell Ministry Head": [...CELL_PORTAL_PERMISSION_CODES],
+  "alec_manager": ["cell_portal.view", "cell_portal.view_members", "cell_portal.view_charts", "cell_portal.view_indicators", "cell_portal.view_programs", "cell_portal.view_member_profile"],
+  "ALEC Coordinator": ["cell_portal.view", "cell_portal.view_members", "cell_portal.view_charts", "cell_portal.view_indicators", "cell_portal.view_programs", "cell_portal.view_member_profile"],
+  "ALEC Manager": ["cell_portal.view", "cell_portal.view_members", "cell_portal.view_charts", "cell_portal.view_indicators", "cell_portal.view_programs", "cell_portal.view_member_profile"],
   "Super Admin": [...CELL_PORTAL_PERMISSION_CODES]
 };
 
@@ -9322,7 +9325,7 @@ function fallbackCanViewModule(user = activeUser, module = "dashboard") {
 function roleWorkspaceRoutes(user = activeUser) {
   const role = String(user?.role || user?.role_name || "");
   if (role === "alec_manager" || role === "ALEC Coordinator" || role === "ALEC Manager" || role === "alec_coordinator") {
-    return ["cellPortal", "cellAlecOverview", "cellAlecRegistration", "cellAlecScores", "cellChurchReports"];
+    return ["cellAlecOverview", "cellAlecRegistration", "cellAlecScores", "cellChurchReports", "cellPortal"];
   }
   if (role === "Reitor" || role === "Rector") return ["firstTimers", "followUp", "foundation", "sacraments", "counseling"];
   if (role === "Follow-Up Coordinator") return ["firstTimers", "followUp"];
@@ -16925,7 +16928,7 @@ function renderCellMinistry(activeTab = "alecOverview") {
     const panels = {
       alecRegistration: () => modulePanel("alecRegistration", L("alecRegistration"), "alecRegistration", [L("fullName"), L("contact"), L("church"), L("cell"), L("cellLeaderName"), L("didFoundation"), L("isLeader"), L("status"), L("actions")], alecRegistrations.map((item) => [item.nome_completo, item.contacto, churchName(item.igreja), item.celula, item.nome_do_lider_de_celula, yesNo(item.fez_escola_de_fundacao), yesNo(item.e_lider), badge(item.estado), backendActions("alecRegistration", item.id)]), true),
       alecScores: () => modulePanel("alecScore", L("alecScores"), "alecScore", [L("fullName"), L("church"), L("cell"), L("phase1Average"), L("phase2Average"), L("finalAverage"), L("finished"), L("status"), L("progress"), L("actions")], alecScores.map((item) => [item.nome_completo, churchName(item.igreja), item.celula, alecPhaseAverage(item, 1), alecPhaseAverage(item, 2), alecFinalAverage(item), yesNo(item.terminou), badge(item.estado), alecProgress(item), backendActions("alecScore", item.id)]), true),
-      churchReports: () => modulePanel("churchReport", L("churchReports"), "churchReport", [L("week"), L("worshipService"), L("cell"), L("leaderName"), "ATT", "FT", "NC", "RS", L("status"), L("actions")], churchReports.map((item) => [item.semana, item.culto, item.celula, item.nome_do_lider, item.att, item.ft, item.nc, item.rs, badge(item.estado), backendActions("churchReport", item.id)]), true),
+      churchReports: () => modulePanel("churchReport", L("churchReports"), "churchReport", [L("week"), L("serviceDate"), L("worshipService"), L("church"), "FT", "NC", "RS", L("totalFirstTime"), L("status"), L("actions")], churchReports.map((item) => [item.semana, item.data_do_culto || item.data_inicio || item.data, item.culto, churchName(item.church_id || item.igreja), item.ft, item.nc, item.rs, item.total_ft_reached, badge(item.estado), backendActions("churchReport", item.id)]), true),
       receivedReports: () => modulePanel("cellReport", L("receivedReports"), "cellReport", cellReportHeaders(), cellReportRows(cellReports), true, false, { rowAttrs: cellReportRowAttrs(cellReports) }),
       cellEvaluation: () => modulePanel("cellEvaluation", L("cellEvaluation"), "cellEvaluation", [L("reports"), L("evaluator"), L("evaluationDate"), L("classification"), L("needsFollowup"), L("recommendedAction"), L("status"), L("actions")], evaluations.map((item) => [item.report_id, item.avaliador, item.data_da_avaliacao, badge(item.classificacao), yesNo(item.precisa_followup), item.acao_recomendada, badge(item.estado), backendActions("cellEvaluation", item.id)]), true),
       cellLeaders: () => modulePanel("cellLeader", L("cellLeaders"), "cellLeader", [L("fullName"), L("contact"), L("church"), L("cell"), L("actualLeader"), L("cameFromAlec"), L("alecFinished"), L("supervisor"), L("status"), L("actions")], leaders.map((item) => [item.nome_completo, item.contacto, churchName(item.igreja), item.celula, yesNo(item.e_lider_actual), yesNo(item.veio_do_alec), yesNo(item.alec_concluido), item.supervisor, badge(item.estado), backendActions("cellLeader", item.id)]), true),
@@ -20131,7 +20134,7 @@ const formSchemas = {
   materialFund: [["campanha", "campaign"], ["valor_alvo", "targetAmount", "number"], ["valor_levantado", "raisedAmount", "number"], ["materiais_a_distribuir", "materialsToDistribute", "textarea"], ["igrejas_beneficiadas", "beneficiaryChurches", "textarea"], ["church_id", "church", "church"], ["estado", "status", "select", fundStatuses], ["observacoes", "observations", "textarea"]],
   alecRegistration: [["nome_completo", "fullName"], ["contacto", "contact"], ["church_id", "church", "church"], ["celula", "cell"], ["nome_do_lider_de_celula", "cellLeaderName"], ["fez_escola_de_fundacao", "didFoundation", "checkbox"], ["e_lider", "isLeader", "checkbox"], ["motivo_de_fazer_alec", "alecReason", "textarea"], ["estado", "status", "select", alecRegistrationStatuses], ["observacoes", "observations", "textarea"]],
   alecScore: [["nome_completo", "fullName"], ["contacto", "contact"], ["church_id", "church", "church"], ["celula", "cell"], ["fase_1_aula_1", "phase1", "number"], ["fase_1_aula_2", "phase1", "number"], ["fase_1_aula_3", "phase1", "number"], ["fase_1_aula_4", "phase1", "number"], ["fase_2_aula_1", "phase2", "number"], ["fase_2_aula_2", "phase2", "number"], ["fase_2_aula_3", "phase2", "number"], ["terminou", "finished", "checkbox"], ["faixa_certificado_pago", "certificateBandPaid", "checkbox"], ["certificado_emitido", "certificateIssued", "checkbox"], ["estado", "status", "select", alecScoreStatuses]],
-  churchReport: [["semana", "week"], ["data_inicio", "startDate", "date"], ["data_fim", "endDate", "date"], ["culto", "worshipService", "select", ["Domingo", "Quarta-feira", "Outro"]], ["church_id", "church", "church"], ["celula", "cell"], ["titulo_do_lider", "leaderTitle"], ["nome_do_lider", "leaderName"], ["att", "attendance", "number"], ["ft", "firstTimeShort", "number"], ["nc", "newConvertsShort", "number"], ["rs", "RS", "number"], ["total_ft_reached", "totalFirstTime", "number"], ["comentarios", "comments", "textarea"], ["submetido_por", "submittedBy"], ["estado", "status", "select", churchReportStatuses]],
+  churchReport: [["semana", "week"], ["data_do_culto", "serviceDate", "date"], ["culto", "worshipService", "select", ["Domingo", "Quarta-feira", "Outro"]], ["church_id", "church", "church"], ["ft", "firstTimeShort", "number"], ["nc", "newConvertsShort", "number"], ["rs", "RS", "number"], ["total_ft_reached", "totalFirstTime", "number"], ["comentarios", "comments", "textarea"], ["submetido_por", "submittedBy"], ["estado", "status", "select", churchReportStatuses]],
   cellGroup: [["group_name", "name"], ["church_id", "church", "church"], ["leader_name", "leaderName"], ["leader_phone", "phone"], ["status", "status", "select", ["Active", "Inactive", "Needs Review", "Closed", "Activo", "Inactivo"]], ["needs_review", "needsReview", "checkbox"], ["notes", "notes", "textarea"]],
   cellRegistry: [["cell_name", "cell"], ["group_id", "cellGroup", "cellGroupSelect"], ["church_id", "church", "church"], ["leader_name", "leaderName"], ["leader_phone", "phone"], ["leader_title", "leaderTitle"], ["meeting_day", "weekday"], ["meeting_time", "time", "time"], ["meeting_type", "meetingType", "select", ["Presencial", "Online", "Híbrido", "Outro"]], ["meeting_location", "location"], ["status", "status", "select", ["Active", "Inactive", "Needs Review", "Activo", "Inactivo"]], ["needs_review", "needsReview", "checkbox"], ["notes", "notes", "textarea"]],
   cellReport: [["semana", "week"], ["data_inicio", "startDate", "date"], ["data_fim", "endDate", "date"], ["report_week", "week"], ["meeting_date", "date", "date"], ["church_id", "church", "church"], ["cell_group_id", "cellGroup", "cellGroupSelect"], ["cell_id", "cell", "cellRegistrySelect"], ["celula", "cell"], ["titulo_do_lider", "leaderTitle"], ["nome_do_lider", "leaderName"], ["leader_phone", "phone"], ["att", "attendance", "number"], ["ft", "firstTimeShort", "number"], ["nc", "newConvertsShort", "number"], ["oferta", "offering", "number"], ["rs", "RS", "number"], ["cell_health_status", "cellHealth", "select", ["Saudável", "Estável", "Precisa de Acompanhamento", "Precisa de Visita Pastoral", "Pronta para Multiplicar", "Sem Encontro Esta Semana"]], ["observacoes", "observations", "textarea"], ["submetido_por", "submittedBy"], ["avaliado_por", "evaluatedBy"], ["validado_por", "validatedBy"], ["estado", "status", "select", cellReportStatuses]],
@@ -20289,19 +20292,18 @@ function openForm(type, id = null) {
       mountRelationalControls(byId("entryForm"));
       mountMediaScheduleFormControls(byId("entryForm"));
       mountAlecMemberAutocompleteControls(byId("entryForm"));
-      if (["alecRegistration", "alecScore", "churchReport"].includes(type) && ["alec_manager", "ALEC Coordinator", "ALEC Manager"].includes(activeUser?.role)) {
+      if (["alecRegistration", "alecScore", "churchReport"].includes(type)) {
         const churchSelectEl = byId("entryForm")?.querySelector('[name="church_id"]');
-        if (churchSelectEl) {
-          churchSelectEl.value = activeUser.church_id || "a1111111-1111-4111-8111-111111111101";
-          churchSelectEl.setAttribute("disabled", "disabled");
+        if (churchSelectEl && !record.church_id && activeUser?.church_id) {
+          churchSelectEl.value = activeUser.church_id;
         }
       }
       cleanRenderedText(byId("entryModal"));
     });
   };
 
-  // First Timers / Members: refresh churches from data layer so local-created churches appear in selects
-  if (type === "firstTimer" || type === "member") {
+  // Refresh churches from data layer so all available churches appear in selects
+  if (["firstTimer", "member", "churchReport", "alecRegistration", "alecScore"].includes(type)) {
     Promise.resolve(refreshChurchesFromRepositoryForForms())
       .catch((error) => console.warn("[CE Forms] church refresh skipped", error))
       .finally(showEntryForm);
@@ -20642,7 +20644,7 @@ async function submitForm(form) {
 
   if (["alecRegistration", "alecScore", "churchReport"].includes(modalType)) {
     if (["alec_manager", "ALEC Coordinator", "ALEC Manager"].includes(activeUser?.role)) {
-      data.church_id = activeUser.church_id || "a1111111-1111-4111-8111-111111111101";
+      data.church_id = data.church_id || activeUser.church_id || "a1111111-1111-4111-8111-111111111101";
       data.igreja = churchName(data.church_id);
       data.church_name = data.igreja;
     }

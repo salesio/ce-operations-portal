@@ -101,8 +101,9 @@ assert(roleWorkspaceRoutesMatch, "roleWorkspaceRoutes function must exist in das
 const evalRoleWorkspace = new Function("activeUser", `${roleWorkspaceRoutesMatch[0]}; return roleWorkspaceRoutes(activeUser);`);
 const angelicaRoutes = evalRoleWorkspace(angelicaUser);
 
-const expectedRoutes = ["cellPortal", "cellAlecOverview", "cellAlecRegistration", "cellAlecScores", "cellChurchReports"];
+const expectedRoutes = ["cellAlecOverview", "cellAlecRegistration", "cellAlecScores", "cellChurchReports", "cellPortal"];
 assert.deepEqual(angelicaRoutes, expectedRoutes, "Workspace routes for alec_manager must strictly match the 5 allowed routes");
+assert.equal(angelicaRoutes[0], "cellAlecOverview", "Default landing route for alec_manager MUST be cellAlecOverview (Visão Geral ALEC)");
 console.log("  [PASS] Workspace routes strictly restricted to: " + expectedRoutes.join(", "));
 
 // 5. Test Route Access via getNavItemState
