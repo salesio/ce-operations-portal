@@ -13,7 +13,7 @@
 
   const ROUTE_MODULE_MAP = {
     dashboard: "dashboard",
-    cellPortal: "dashboard",
+    cellPortal: "cell",
     churches: "churches",
     members: "members",
     firstTimers: "firstTimers",
@@ -95,6 +95,11 @@
   const VIEW_ONLY = {
     can_view: true, can_create: false, can_edit: false, can_delete: false,
     can_approve: false, can_verify: false, can_release_resources: false, can_export: false, scope: "church"
+  };
+
+  const NO_ACCESS = {
+    can_view: false, can_create: false, can_edit: false, can_delete: false,
+    can_approve: false, can_verify: false, can_release_resources: false, can_export: false, scope: "own"
   };
 
   const ROLE_TEMPLATES = {
@@ -386,8 +391,63 @@
         notifications: { ...VIEW_ONLY, scope: "church" }
       }
     },
+    alec_manager: {
+      modules: {
+        dashboard: { ...NO_ACCESS, can_view: false },
+        cell: {
+          can_view: true,
+          can_create: true,
+          can_edit: true,
+          can_delete: false,
+          can_approve: false,
+          can_verify: false,
+          can_export: false,
+          scope: "church",
+          cell_portal_permissions: ["cell_portal.view"],
+          alec_permissions: [
+            "alec.overview.view",
+            "alec.registration.view",
+            "alec.registration.create",
+            "alec.registration.edit",
+            "alec.scores.view",
+            "alec.scores.create",
+            "alec.scores.edit",
+            "alec.churchReports.view",
+            "alec.churchReports.create",
+            "alec.churchReports.edit"
+          ]
+        },
+        notifications: { ...VIEW_ONLY, scope: "church" }
+      }
+    },
     "ALEC Coordinator": {
-      modules: { dashboard: { ...VIEW_ONLY }, cell: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "all" } }
+      modules: {
+        dashboard: { ...NO_ACCESS, can_view: false },
+        cell: {
+          can_view: true,
+          can_create: true,
+          can_edit: true,
+          can_delete: false,
+          can_approve: false,
+          can_verify: false,
+          can_export: false,
+          scope: "church",
+          cell_portal_permissions: ["cell_portal.view"],
+          alec_permissions: [
+            "alec.overview.view",
+            "alec.registration.view",
+            "alec.registration.create",
+            "alec.registration.edit",
+            "alec.scores.view",
+            "alec.scores.create",
+            "alec.scores.edit",
+            "alec.churchReports.view",
+            "alec.churchReports.create",
+            "alec.churchReports.edit"
+          ]
+        },
+        notifications: { ...VIEW_ONLY, scope: "church" }
+      }
     },
     "F.E.V.O Coordinator": {
       modules: { dashboard: { ...VIEW_ONLY }, fevo: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: true, can_verify: false, can_export: true, scope: "all" } }
@@ -452,11 +512,6 @@
     access: "accessControl"
   };
 
-  const NO_ACCESS = {
-    can_view: false, can_create: false, can_edit: false, can_delete: false,
-    can_approve: false, can_verify: false, can_release_resources: false, can_export: false, scope: "own"
-  };
-
   function routeToModule(route) {
     if (!route) return "dashboard";
     if (ROUTE_MODULE_MAP[route]) return ROUTE_MODULE_MAP[route];
@@ -499,33 +554,41 @@
     return null;
   }
 
+  const EXPLICIT_DENIED_MODULES = {
+    alec_manager: new Set(["dashboard", "finance", "staffHr", "requisitions", "usersRoles", "accessControl", "auditLogs", "churches", "counseling", "foundation", "fevo", "venueInventory", "sacraments", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media", "reports", "members", "firstTimers", "followUp"]),
+    "ALEC Coordinator": new Set(["dashboard", "finance", "staffHr", "requisitions", "usersRoles", "accessControl", "auditLogs", "churches", "counseling", "foundation", "fevo", "venueInventory", "sacraments", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media", "reports", "members", "firstTimers", "followUp"]),
+    "Cell Leader": new Set(["finance", "staffHr", "requisitions", "usersRoles", "accessControl", "auditLogs", "churches", "counseling", "foundation", "fevo", "venueInventory", "sacraments", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"]),
+    "Cell Assistant": new Set(["finance", "staffHr", "requisitions", "usersRoles", "accessControl", "auditLogs", "churches", "counseling", "foundation", "fevo", "venueInventory", "sacraments", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"]),
+    "Assistant Cell Leader": new Set(["finance", "staffHr", "requisitions", "usersRoles", "accessControl", "auditLogs", "churches", "counseling", "foundation", "fevo", "venueInventory", "sacraments", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"]),
+    "Cell Group Leader": new Set(["finance", "staffHr", "requisitions", "usersRoles", "accessControl", "auditLogs", "churches", "counseling", "foundation", "fevo", "venueInventory", "sacraments", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"]),
+    "Finance Head": new Set(["staffHr", "usersRoles", "accessControl"]),
+    "Finance Officer": new Set(["staffHr", "usersRoles", "accessControl", "auditLogs"]),
+    "HR Manager": new Set(["finance", "requisitions", "usersRoles", "accessControl", "auditLogs"]),
+    "Requisition Officer": new Set(["finance", "staffHr", "usersRoles", "accessControl", "auditLogs"]),
+    "Staff Member": new Set(["finance", "reports", "usersRoles", "accessControl", "auditLogs"])
+  };
+
+  function isExplicitlyDenied(user, module) {
+    if (!user || !module) return false;
+    const roleKey = user.role || user.role_name || "";
+    return Boolean(EXPLICIT_DENIED_MODULES[roleKey]?.has(module));
+  }
+
   function resolveModuleAccess(user, module) {
     if (!user || !module) return emptyAccess();
     const base = { module, ...NO_ACCESS };
-    const explicitDeniedModules = {
-      "ALEC Coordinator": new Set(["finance", "staffHr", "requisitions", "usersRoles", "accessControl", "auditLogs", "churches", "counseling", "foundation", "fevo", "venueInventory", "sacraments", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"]),
-      "Cell Leader": new Set(["finance", "staffHr", "requisitions", "usersRoles", "accessControl", "auditLogs", "churches", "counseling", "foundation", "fevo", "venueInventory", "sacraments", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"]),
-      "Cell Assistant": new Set(["finance", "staffHr", "requisitions", "usersRoles", "accessControl", "auditLogs", "churches", "counseling", "foundation", "fevo", "venueInventory", "sacraments", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"]),
-      "Assistant Cell Leader": new Set(["finance", "staffHr", "requisitions", "usersRoles", "accessControl", "auditLogs", "churches", "counseling", "foundation", "fevo", "venueInventory", "sacraments", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"]),
-      "Cell Group Leader": new Set(["finance", "staffHr", "requisitions", "usersRoles", "accessControl", "auditLogs", "churches", "counseling", "foundation", "fevo", "venueInventory", "sacraments", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"]),
-      "Finance Head": new Set(["staffHr", "usersRoles", "accessControl"]),
-      "Finance Officer": new Set(["staffHr", "usersRoles", "accessControl", "auditLogs"]),
-      "HR Manager": new Set(["finance", "requisitions", "usersRoles", "accessControl", "auditLogs"]),
-      "Requisition Officer": new Set(["finance", "staffHr", "usersRoles", "accessControl", "auditLogs"]),
-      "Staff Member": new Set(["finance", "reports", "usersRoles", "accessControl", "auditLogs"])
-    };
 
-    if (explicitDeniedModules[user.role]?.has(module)) {
+    if (isExplicitlyDenied(user, module)) {
       return base;
-    }
-
-    if (module === "notifications") {
-      return { module, ...VIEW_ONLY, scope: user.can_view_all_churches ? "all" : user.assigned_department ? "department" : "church" };
     }
 
     const rNorm = String(user.role || "").trim().toLowerCase();
     if ((user.department_permissions || []).includes("*") || user.role === "Super Admin" || rNorm === "super_admin" || rNorm === "super admin") {
       return { module, ...FULL_ACCESS, can_view_salary: true, can_review: true, can_forward: true, can_register_inventory: true };
+    }
+
+    if (module === "notifications") {
+      return { module, ...VIEW_ONLY, scope: user.can_view_all_churches ? "all" : user.assigned_department ? "department" : "church" };
     }
 
     const roleTemplate = ROLE_TEMPLATES[user.role];
@@ -695,9 +758,14 @@
     const module = routeToModule(route);
     const access = resolveModuleAccess(user, module);
     const sensitive = isSensitiveModule(module);
+    const explicitlyDenied = isExplicitlyDenied(user, module);
 
-    if (access.can_view) {
+    if (access.can_view && !explicitlyDenied) {
       return { route, module, visible: true, locked: false, access, sensitive };
+    }
+
+    if (explicitlyDenied) {
+      return { route, module, visible: false, locked: true, access, sensitive };
     }
 
     if (SHOW_LOCKED_MODULES && (!sensitive || user.role === "Super Admin" || user.role === "Main Pastor")) {

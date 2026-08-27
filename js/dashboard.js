@@ -9320,8 +9320,10 @@ function fallbackCanViewModule(user = activeUser, module = "dashboard") {
 }
 
 function roleWorkspaceRoutes(user = activeUser) {
-  const role = String(user?.role || "");
-  if (role === "ALEC Coordinator") return ["cellAlecOverview", "cellAlecRegistration", "cellAlecScores", "cellChurchReports"];
+  const role = String(user?.role || user?.role_name || "");
+  if (role === "alec_manager" || role === "ALEC Coordinator" || role === "ALEC Manager" || role === "alec_coordinator") {
+    return ["cellPortal", "cellAlecOverview", "cellAlecRegistration", "cellAlecScores", "cellChurchReports"];
+  }
   if (role === "Reitor" || role === "Rector") return ["firstTimers", "followUp", "foundation", "sacraments", "counseling"];
   if (role === "Follow-Up Coordinator") return ["firstTimers", "followUp"];
   return null;
@@ -11109,6 +11111,7 @@ function renderCellLeaderPortal() {
     const tithePercent = allMembers.length ? Math.round((tithers / allMembers.length) * 100) : 0;
 
     const unconfirmedMembersCount = safeMembers.filter((m) => !m.reconciliation_status || m.reconciliation_status === "Pending").length;
+    const isReadOnlyPortal = ["alec_manager", "ALEC Coordinator", "ALEC Manager"].includes(activeUser?.role) || !hasCellPortalPermission("cell_portal.edit");
 
     setPageContent(`<div class="cell-portal-shell">
       <section class="cell-portal-hero">
@@ -11120,12 +11123,12 @@ function renderCellLeaderPortal() {
         </div>
         <div class="cell-portal-hero-actions">
           ${canChooseCell ? `<label>Seleccionar célula<select class="form-select" data-cell-portal-cell>${safeHeroCells.map((item) => `<option value="${escapeAttr(item.id)}" ${String(item.id) === String(context?.cell_id) ? "selected" : ""}>${escapeAttr(portalCellName(item))}</option>`).join("")}</select></label>` : ""}
-          <button type="button" class="btn btn-ce-gold btn-touch" data-public-cell-report><i class="bi bi-clipboard-plus me-2"></i>Submeter Relatório Semanal</button>
+          ${!isReadOnlyPortal ? `<button type="button" class="btn btn-ce-gold btn-touch" data-public-cell-report><i class="bi bi-clipboard-plus me-2"></i>Submeter Relatório Semanal</button>` : ""}
           ${hasCellPortalPermission("cell_portal.export_summary") ? `<button type="button" class="btn btn-outline-light btn-touch" data-cell-portal-export><i class="bi bi-download me-2"></i>Exportar resumo</button>` : ""}
         </div>
       </section>
       <section class="panel glass-panel cell-portal-filters">
-        <div class="d-flex justify-content-end"><button type="button" class="btn btn-ce-gold btn-touch" data-open-member-candidate><i class="bi bi-person-plus me-2"></i>Registar Candidato a Membro</button></div>
+        ${!isReadOnlyPortal ? `<div class="d-flex justify-content-end"><button type="button" class="btn btn-ce-gold btn-touch" data-open-member-candidate><i class="bi bi-person-plus me-2"></i>Registar Candidato a Membro</button></div>` : ""}
         <label>Grupo de Célula<select class="form-select" data-cell-portal-filter="cellGroupId"><option value="">Todos os Grupos</option>${safeCellGroups.map((g) => `<option value="${escapeAttr(g.id)}" ${String(g.id) === String(cellPortalPageState.cellGroupId || "") ? "selected" : ""}>${escapeAttr(g.group_name || g.name || "Grupo")}</option>`).join("")}</select></label>
         <label>Célula<select class="form-select" data-cell-portal-filter="cellId"><option value="">Todas as Células</option>${safeCellRegistry.map((c) => `<option value="${escapeAttr(c.id)}" ${String(c.id) === String(cellPortalPageState.cellId || "") ? "selected" : ""}>${escapeAttr(c.cell_name || c.name || "Célula")}</option>`).join("")}</select></label>
         <label>Reconciliação<select class="form-select" data-cell-portal-filter="reconciliationStatus"><option value="">Todos os Estados</option><option value="Confirmed" ${cellPortalPageState.reconciliationStatus === "Confirmed" ? "selected" : ""}>Confirmados</option><option value="Pending" ${cellPortalPageState.reconciliationStatus === "Pending" ? "selected" : ""}>Por Rever</option><option value="NeedsCorrection" ${cellPortalPageState.reconciliationStatus === "NeedsCorrection" ? "selected" : ""}>Precisa Correcção</option><option value="NotInCell" ${cellPortalPageState.reconciliationStatus === "NotInCell" ? "selected" : ""}>Não Pertence</option><option value="TransferRequested" ${cellPortalPageState.reconciliationStatus === "TransferRequested" ? "selected" : ""}>Pedido Transferência</option></select></label>
@@ -11164,9 +11167,10 @@ function renderCellLeaderPortal() {
         </div>
         <div class="d-flex justify-content-between align-items-center mb-2">
           <small class="text-secondary">Reveja os membros históricos da sua célula: confirme membros activos, corrija dados de contacto ou solicite transferências.</small>
+          ${!isReadOnlyPortal ? `
           <button type="button" class="btn btn-sm btn-outline-success" data-cell-member-bulk-confirm>
             <i class="bi bi-check-all me-1"></i>Confirmar Todos (${unconfirmedMembersCount})
-          </button>
+          </button>` : ""}
         </div>
         <div class="panel glass-panel cell-portal-table-wrap">
           <table class="table cell-portal-table">
@@ -11198,11 +11202,15 @@ function renderCellLeaderPortal() {
                   <td data-label="Dizimista">${yesNo(member.is_tither)}</td>
                   <td data-label="Acções">
                     <div class="btn-group btn-group-sm">
-                      ${member.reconciliation_status !== "Confirmed" ? `<button type="button" class="btn btn-outline-success btn-sm" data-cell-member-confirm="${escapeAttr(member.id)}" title="Confirmar membro activo"><i class="bi bi-check"></i></button>` : ""}
-                      <button type="button" class="btn btn-outline-primary btn-sm" data-cell-portal-member="${escapeAttr(member.id)}" title="Ver Perfil"><i class="bi bi-person-lines-fill"></i></button>
-                      <button type="button" class="btn btn-outline-warning btn-sm" data-cell-member-edit="${escapeAttr(member.id)}" title="Corrigir Dados"><i class="bi bi-pencil"></i></button>
-                      <button type="button" class="btn btn-outline-info btn-sm" data-cell-member-transfer="${escapeAttr(member.id)}" title="Pedir Transferência"><i class="bi bi-arrow-left-right"></i></button>
-                      <button type="button" class="btn btn-outline-danger btn-sm" data-cell-member-remove="${escapeAttr(member.id)}" title="Não Pertence à Célula"><i class="bi bi-person-x"></i></button>
+                      ${isReadOnlyPortal ? `
+                        <button type="button" class="btn btn-outline-primary btn-sm" data-cell-portal-member="${escapeAttr(member.id)}" title="Ver Perfil"><i class="bi bi-person-lines-fill"></i></button>
+                      ` : `
+                        ${member.reconciliation_status !== "Confirmed" ? `<button type="button" class="btn btn-outline-success btn-sm" data-cell-member-confirm="${escapeAttr(member.id)}" title="Confirmar membro activo"><i class="bi bi-check"></i></button>` : ""}
+                        <button type="button" class="btn btn-outline-primary btn-sm" data-cell-portal-member="${escapeAttr(member.id)}" title="Ver Perfil"><i class="bi bi-person-lines-fill"></i></button>
+                        <button type="button" class="btn btn-outline-warning btn-sm" data-cell-member-edit="${escapeAttr(member.id)}" title="Corrigir Dados"><i class="bi bi-pencil"></i></button>
+                        <button type="button" class="btn btn-outline-info btn-sm" data-cell-member-transfer="${escapeAttr(member.id)}" title="Pedir Transferência"><i class="bi bi-arrow-left-right"></i></button>
+                        <button type="button" class="btn btn-outline-danger btn-sm" data-cell-member-remove="${escapeAttr(member.id)}" title="Não Pertence à Célula"><i class="bi bi-person-x"></i></button>
+                      `}
                     </div>
                   </td>
                 </tr>
@@ -20281,6 +20289,13 @@ function openForm(type, id = null) {
       mountRelationalControls(byId("entryForm"));
       mountMediaScheduleFormControls(byId("entryForm"));
       mountAlecMemberAutocompleteControls(byId("entryForm"));
+      if (["alecRegistration", "alecScore", "churchReport"].includes(type) && ["alec_manager", "ALEC Coordinator", "ALEC Manager"].includes(activeUser?.role)) {
+        const churchSelectEl = byId("entryForm")?.querySelector('[name="church_id"]');
+        if (churchSelectEl) {
+          churchSelectEl.value = activeUser.church_id || "a1111111-1111-4111-8111-111111111101";
+          churchSelectEl.setAttribute("disabled", "disabled");
+        }
+      }
       cleanRenderedText(byId("entryModal"));
     });
   };
@@ -20624,6 +20639,14 @@ async function submitForm(form) {
   });
   enrichRecordChurchFields(data);
   enrichCellSelectionFields(data);
+
+  if (["alecRegistration", "alecScore", "churchReport"].includes(modalType)) {
+    if (["alec_manager", "ALEC Coordinator", "ALEC Manager"].includes(activeUser?.role)) {
+      data.church_id = activeUser.church_id || "a1111111-1111-4111-8111-111111111101";
+      data.igreja = churchName(data.church_id);
+      data.church_name = data.igreja;
+    }
+  }
 
   // Members pilot: dual-write via data layer (same pattern as Churches)
   if (modalType === "member") {
@@ -25432,19 +25455,42 @@ function mountAlecMemberAutocompleteControls(formEl) {
     if (searchTimer) clearTimeout(searchTimer);
     searchTimer = setTimeout(async () => {
       let matches = [];
-      const repo = getMembersRepoSafe();
-      if (usesSupabaseMembers() && repo?.listMembersPage) {
+      const isAlecScoped = ["alec_manager", "ALEC Coordinator", "ALEC Manager"].includes(activeUser?.role);
+      const targetChurchId = String(activeUser?.church_id || "a1111111-1111-4111-8111-111111111101");
+
+      if (usesSupabaseMembers()) {
         try {
-          const res = await repo.listMembersPage({ page: 1, pageSize: 20, search: q });
-          if (res?.ok && Array.isArray(res.data?.items)) {
-            matches = res.data.items;
+          const client = window.CESupabase?.getRawClient?.() || window.supabase;
+          if (client && typeof client.rpc === "function") {
+            const { data, error } = await client.rpc("search_alec_candidate_members", { p_query: q });
+            if (!error && Array.isArray(data) && data.length) {
+              matches = data;
+            }
           }
-        } catch (e) {
-          console.warn("[ALEC autocomplete] server search fallback", e);
+        } catch (rpcErr) {
+          console.warn("[ALEC autocomplete] search_alec_candidate_members rpc error", rpcErr);
+        }
+
+        if (!matches.length && !isAlecScoped) {
+          const repo = getMembersRepoSafe();
+          if (repo?.listMembersPage) {
+            try {
+              const res = await repo.listMembersPage({ page: 1, pageSize: 20, search: q });
+              if (res?.ok && Array.isArray(res.data?.items)) {
+                matches = res.data.items;
+              }
+            } catch (e) {
+              console.warn("[ALEC autocomplete] server search fallback", e);
+            }
+          }
         }
       }
+
       if (!matches.length) {
-        const localMembers = state.members || [];
+        const localMembers = (state.members || []).filter((m) => {
+          if (!isAlecScoped) return true;
+          return String(m.church_id || "") === targetChurchId || m.igreja === "E.C. Maputo Central – Sede" || m.church_name === "E.C. Maputo Central – Sede";
+        });
         matches = localMembers.filter((m) => {
           const haystack = [
             m.full_name,
@@ -25474,7 +25520,7 @@ function mountAlecMemberAutocompleteControls(formEl) {
             <span class="badge text-bg-secondary small">${m.member_code || m.cell_group_name || "Membro HQ"}</span>
           </div>
           <div class="small text-white-50 text-truncate">
-            ${[m.primary_phone || m.phone, churchName(m.church_id), m.cell_name || m.celula].filter(Boolean).join(" · ")}
+            ${[m.primary_phone || m.phone, churchName(m.church_id || targetChurchId), m.cell_name || m.celula].filter(Boolean).join(" · ")}
           </div>
         </button>
       `).join("");
@@ -25495,8 +25541,9 @@ function mountAlecMemberAutocompleteControls(formEl) {
           if (phoneInput) phoneInput.value = member.primary_phone || member.phone || member.secondary_phone || "";
 
           const churchSelect = formEl.querySelector('[name="church_id"]');
-          if (churchSelect && member.church_id) {
-            churchSelect.value = member.church_id;
+          if (churchSelect) {
+            const selectedChurch = isAlecScoped ? targetChurchId : (member.church_id || targetChurchId);
+            churchSelect.value = selectedChurch;
             churchSelect.dispatchEvent(new Event("change", { bubbles: true }));
           }
 
