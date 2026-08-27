@@ -3860,6 +3860,7 @@ if (Array.isArray(state.churches)) {
 }
 let activeUser = state.users[0];
 let isUserAuthenticated = false;
+let isDashboardEntered = false;
 let pendingCellReportLogin = false;
 let activeRoute = "dashboard";
 const DASHBOARD_AUTO_REFRESH_MS = 5 * 60 * 1000;
@@ -9699,7 +9700,10 @@ function setRoute(route) {
     const activeArea = CELL_NAV.areas.find((area) => area.routes.some(([route]) => route === activeRoute));
     if (activeArea) sidebarGroupState[activeArea.key] = true;
     localStorage.setItem(SIDEBAR_GROUPS_KEY, JSON.stringify(sidebarGroupState));
-    renderShell();
+    const deptGroup = document.querySelector('[data-nav-group="departments"]');
+    if (deptGroup && !deptGroup.classList.contains("is-expanded")) {
+      deptGroup.classList.add("is-expanded");
+    }
   }
   const renderers = {
     dashboard: renderDashboard,
@@ -22229,6 +22233,7 @@ document.addEventListener("click", async (event) => {
       void auth.logout();
     }
     isUserAuthenticated = false;
+    isDashboardEntered = false;
     activeUser = null;
     stopDashboardAutoRefresh();
     pendingCellReportLogin = false;
@@ -23460,6 +23465,7 @@ document.addEventListener("change", (event) => {
 function continueEnterDashboard() {
   if (!activeUser || !activeUser.id || !activeUser.role) {
     isUserAuthenticated = false;
+    isDashboardEntered = false;
     activeUser = null;
     if (typeof window !== "undefined") window.activeUser = null;
     byId("appView")?.classList.add("d-none");
@@ -23475,12 +23481,19 @@ function continueEnterDashboard() {
   const allowedPortalRoles = ["Cell Leader", "Cell Assistant", "Cell Ministry Reviewer", "Cell Ministry Head", "Super Admin"];
   if (resumeCellReport && !allowedPortalRoles.includes(activeUser?.role)) {
     isUserAuthenticated = false;
+    isDashboardEntered = false;
     byId("appView")?.classList.add("d-none");
     byId("loginView")?.classList.remove("d-none");
     showLoginError(lang === "pt" ? "Apenas líderes ou assistentes de célula autorizados podem submeter relatórios." : "Only authorized cell leaders or assistants can submit cell reports.");
     recordCellReportSecurityEvent("cell_report_access_denied", "Authenticated role is not allowed in the Cell Leader Portal");
     return;
   }
+
+  if (isDashboardEntered && byId("appView") && !byId("appView").classList.contains("d-none")) {
+    return;
+  }
+  isDashboardEntered = true;
+
   byId("loginView")?.classList.add("d-none");
   byId("appView")?.classList.remove("d-none");
   renderShell();
@@ -23489,8 +23502,6 @@ function continueEnterDashboard() {
   const requestedRoute = location.hash.replace("#", "");
   const isCellPortalMember = ["Cell Leader", "Cell Assistant"].includes(activeUser?.role);
   if (isCellPortalMember) {
-    // Always land leaders and assistants on their independent dashboard first.
-    // The authorized weekly-report action remains available inside that portal.
     setRoute("cellPortal");
   } else if (resumeCellReport && hasCellReportPermission("cell_reports.create_own")) {
     history.replaceState(null, "", "#cell-report-submit");
@@ -23503,22 +23514,24 @@ function continueEnterDashboard() {
   }
   updateBackToTopVisibility();
   startDashboardAutoRefresh();
-  // Always hydrate members asynchronously so state.members is populated across departments
+
+  // Hydrate members in background to cache in state
   Promise.resolve()
     .then(() => hydrateMembersFromRepository())
-    .then((hydrated) => {
-      if (hydrated && (activeRoute === "cellMembers" || activeRoute === "cellGroups" || activeRoute === "members" || String(activeRoute || "").startsWith("cell"))) {
-        setRoute(activeRoute);
-      }
-    })
     .catch((error) => console.warn("[CE Members] background hydrate skipped", error));
 
-  // Always hydrate cell ministry & church reports asynchronously from Supabase
+  // Hydrate cell ministry & church reports asynchronously in background without full-screen re-renders
   Promise.resolve()
     .then(() => hydrateCellMinistryFromRepository())
     .then((hydrated) => {
       if (hydrated && String(activeRoute || "").startsWith("cell")) {
-        setRoute(activeRoute);
+        try {
+          if (activeRoute === "cellChurchReports") renderCellMinistry("churchReports");
+          else if (activeRoute === "cellAlecRegistration") renderCellMinistry("alecRegistration");
+          else if (activeRoute === "cellAlecScores") renderCellMinistry("alecScores");
+          else if (activeRoute === "cellAlecOverview") renderCellMinistry("alecOverview");
+          else if (activeRoute === "cellPortal") renderCellLeaderPortal();
+        } catch (_) {}
       }
     })
     .catch((error) => console.warn("[CE CellMinistry] background hydrate skipped", error));
@@ -25825,6 +25838,7 @@ async function initRealAuthSession() {
           byId("appView")?.classList.add("d-none");
           byId("loginView")?.classList.remove("d-none");
         } else if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && session?.user) {
+          if (isDashboardEntered && isUserAuthenticated && activeUser?.id) return;
           if (auth.resolveUserAccountFromAuth) {
             const res = await auth.resolveUserAccountFromAuth(session.user);
             if (res?.ok && res.data) {
@@ -25832,12 +25846,13 @@ async function initRealAuthSession() {
               if (mapped && mapped.id && mapped.role) {
                 activeUser = mapped;
                 if (typeof window !== "undefined") window.activeUser = mapped;
-                continueEnterDashboard();
+                if (!isDashboardEntered) continueEnterDashboard();
                 return;
               }
             }
             // Fail closed if profile resolution fails
             isUserAuthenticated = false;
+            isDashboardEntered = false;
             activeUser = null;
             if (typeof window !== "undefined") window.activeUser = null;
             byId("appView")?.classList.add("d-none");
@@ -25852,6 +25867,7 @@ async function initRealAuthSession() {
         }
       });
     }
+    if (isDashboardEntered && isUserAuthenticated && activeUser?.id) return;
     const sessionRes = await auth.getCurrentSession?.();
     const rawSession = sessionRes?.data?.session || sessionRes?.data;
     const authUser = rawSession?.user || sessionRes?.data?.user;
@@ -25862,12 +25878,13 @@ async function initRealAuthSession() {
         if (mapped && mapped.id && mapped.role) {
           activeUser = mapped;
           if (typeof window !== "undefined") window.activeUser = mapped;
-          continueEnterDashboard();
+          if (!isDashboardEntered) continueEnterDashboard();
           return;
         }
       }
       // Fail closed if session restore fails to resolve user profile
       isUserAuthenticated = false;
+      isDashboardEntered = false;
       activeUser = null;
       if (typeof window !== "undefined") window.activeUser = null;
       byId("appView")?.classList.add("d-none");
