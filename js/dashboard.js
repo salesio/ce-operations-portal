@@ -9409,7 +9409,7 @@ function renderCellSidebarNav() {
   const workspaceRoutes = roleWorkspaceRoutes();
   const parentExpanded = isSidebarGroupExpanded(CELL_NAV.parentKey);
   const parentActive = isCellRoute(activeRoute);
-  if (["Cell Leader", "Cell Assistant"].includes(activeUser?.role)) {
+  if (isCellLeaderOrAssistant(activeUser) || ["Cell Leader", "Cell Assistant"].includes(activeUser?.role)) {
     return `<div class="nav-cell-branch is-expanded ${parentActive ? "has-active" : ""}">
       <div class="nav-cell-body"><div class="nav-cell-body-inner">
         <button type="button" class="nav-cell-item ${activeRoute === "cellPortal" || activeRoute === "dashboard" ? "active" : ""}" data-route="cellPortal" onclick="window.setRoute && window.setRoute('cellPortal'); return false;"><span>${lang === "pt" ? "Minha Célula" : "My Cell"}</span></button>
@@ -9489,12 +9489,11 @@ function applySidebarCollapse(collapsed = isSidebarCollapsed()) {
 }
 
 function renderShell() {
-  if (["Cell Leader", "Cell Assistant"].includes(activeUser?.role)) {
+  if (isCellLeaderOrAssistant(activeUser) || ["Cell Leader", "Cell Assistant"].includes(activeUser?.role)) {
     byId("sidebarNav").innerHTML = `<div class="nav-group is-expanded"><div class="nav-group-body"><div class="nav-group-body-inner">
       <button type="button" class="nav-item-btn ${["dashboard", "cellPortal"].includes(activeRoute) ? "active" : ""}" data-route="cellPortal"><i class="bi bi-grid-1x2"></i><span>${lang === "pt" ? "Minha Célula" : "My Cell"}</span></button>
       <button type="button" class="nav-item-btn ${activeRoute === "cellReceivedReports" ? "active" : ""}" data-route="cellReceivedReports"><i class="bi bi-clock-history"></i><span>${lang === "pt" ? "Relatórios Submetidos" : "Submitted Reports"}</span></button>
       <button type="button" class="nav-item-btn" data-public-cell-report><i class="bi bi-clipboard-plus"></i><span>${lang === "pt" ? "Submeter Relatório" : "Submit Report"}</span></button>
-      <button type="button" class="nav-item-btn ${activeRoute === "notifications" ? "active" : ""}" data-route="notifications"><i class="bi bi-bell"></i><span>${lang === "pt" ? "Notificações" : "Notifications"}</span></button>
     </div></div></div>`;
     byId("activeUserName").textContent = activeUser.name;
     byId("activeUserRole").textContent = activeUser.role;
