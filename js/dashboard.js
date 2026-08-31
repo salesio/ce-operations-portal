@@ -6586,6 +6586,7 @@ function updateCellReportReviewAction(action, reportId) {
       : "cell_reports.review";
   if (!hasCellReportPermission(requiredPermission)) {
     recordCellReportSecurityEvent("cell_report_review_denied", `Missing ${requiredPermission}`, reportId);
+    currentSessionVisitors = [];
     alert(lang === "pt" ? "Não tem permissão para executar esta acção." : "You do not have permission to perform this action.");
     return;
   }
@@ -11156,14 +11157,13 @@ function renderCellLeaderPortal() {
         <div class="cell-portal-alerts">${safeAlerts.map((alert) => `<article class="is-${alert.tone || "info"}"><i class="bi bi-bell"></i><div><strong>${escapeAttr(alert.title)}</strong><p>${escapeAttr(alert.detail)}</p></div></article>`).join("") || `<article class="is-success"><i class="bi bi-check-circle"></i><div><strong>Sem alertas críticos</strong><p>Os principais indicadores estão actualizados.</p></div></article>`}</div>
       </section>
             <section id="cell-portal-attendance" class="cell-portal-section">
-        ${cellPortalSectionTitle("bi-calendar-check-fill", "Registo de Presenças & Visitantes da Célula", "Marque os membros presentes e adicione First Timers (FT) e Novos Convertidos (NC). As presenças serão consolidadas automaticamente no relatório geral da Igreja.")}
+        ${cellPortalSectionTitle("bi-calendar-check-fill", "Registo de Presenças & Visitantes da Célula", "Marque os membros presentes e registe os novos visitantes (First Timers e Novos Convertidos). As presenças serão consolidadas automaticamente no relatório geral da Igreja.")}
         <form class="panel glass-panel mb-4" data-cell-attendance-form>
           <div class="row g-3 mb-3">
             <div class="col-md-4">
               <label class="form-label">Culto / Serviço</label>
               <select class="form-select" name="serviceType" data-attendance-field="serviceType">
-                <option value="Domingo - 1º Culto">Domingo - 1º Culto</option>
-                <option value="Domingo - 2º Culto">Domingo - 2º Culto</option>
+                <option value="Domingo" selected>Domingo (Culto Geral)</option>
                 <option value="Quarta-feira">Quarta-feira</option>
                 <option value="Reunião de Célula">Reunião de Célula</option>
                 <option value="Culto Especial">Culto Especial</option>
@@ -11188,7 +11188,7 @@ function renderCellLeaderPortal() {
             </div>
           </div>
 
-          <div class="cell-portal-table-wrap mb-4" style="max-height: 280px; overflow-y: auto;">
+          <div class="cell-portal-table-wrap mb-4" style="max-height: 240px; overflow-y: auto;">
             <table class="table cell-portal-table mb-0">
               <thead>
                 <tr>
@@ -11213,39 +11213,72 @@ function renderCellLeaderPortal() {
             </table>
           </div>
 
-          <!-- FT, NC, RS & Offering Section -->
+          <!-- Add New Visitors / First Timers / New Converts Section -->
+          <div class="panel glass-panel mb-4 p-3" style="background: rgba(15, 23, 42, 0.55); border: 1px solid rgba(234, 179, 8, 0.25);">
+            <h4 class="fs-6 mb-3 text-warning"><i class="bi bi-person-plus-fill me-2"></i>Registar Novo Membro ou First Timer (Primeira Vez)</h4>
+            <div class="row g-2 align-items-end mb-3">
+              <div class="col-md-5">
+                <label class="form-label small mb-1">Nome Completo</label>
+                <input type="text" class="form-control form-control-sm" id="newVisitorName" placeholder="Ex: Lucas Manuel">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label small mb-1">Telefone</label>
+                <input type="tel" class="form-control form-control-sm" id="newVisitorPhone" placeholder="Ex: 841234567">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label small mb-1">Tipo</label>
+                <select class="form-select form-select-sm" id="newVisitorType">
+                  <option value="FT">First Timer (FT)</option>
+                  <option value="NC">Novo Convertido (NC)</option>
+                  <option value="FT_NC">FT & NC (Ambos)</option>
+                </select>
+              </div>
+              <div class="col-md-2">
+                <button type="button" class="btn btn-sm btn-warning w-100" data-add-visitor-row>
+                  <i class="bi bi-plus-lg me-1"></i>Adicionar
+                </button>
+              </div>
+            </div>
+
+            <!-- Dynamic Visitors List Container -->
+            <div id="cellAttendanceVisitorsList" class="table-responsive" style="display: none;">
+              <table class="table table-sm text-light mb-2">
+                <thead>
+                  <tr>
+                    <th>Nome</th>
+                    <th>Telefone</th>
+                    <th>Classificação</th>
+                    <th style="width: 50px;">Acção</th>
+                  </tr>
+                </thead>
+                <tbody id="cellAttendanceVisitorsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- FT & NC Counters and Notes -->
           <div class="row g-3 p-3 glass-panel mb-3 rounded" style="background: rgba(15, 23, 42, 0.45);">
-            <div class="col-md-3">
-              <label class="form-label text-warning font-weight-bold"><i class="bi bi-person-heart me-1"></i>First Timers (FT)</label>
+            <div class="col-md-6">
+              <label class="form-label text-warning font-weight-bold"><i class="bi bi-person-heart me-1"></i>Total First Timers (FT)</label>
               <div class="input-group">
                 <button class="btn btn-outline-secondary" type="button" data-step-counter="ftCount" data-step-delta="-1">-</button>
-                <input type="number" min="0" class="form-control text-center" name="ftCount" value="0" data-attendance-field="ftCount">
+                <input type="number" min="0" class="form-control text-center font-weight-bold fs-5 text-warning" name="ftCount" value="0" data-attendance-field="ftCount">
                 <button class="btn btn-outline-secondary" type="button" data-step-counter="ftCount" data-step-delta="1">+</button>
               </div>
-              <small class="text-secondary">Pessoas pela 1ª vez</small>
+              <small class="text-secondary">Pessoas que vieram pela 1ª vez</small>
             </div>
-            <div class="col-md-3">
-              <label class="form-label text-success font-weight-bold"><i class="bi bi-stars me-1"></i>Novos Convertidos (NC)</label>
+            <div class="col-md-6">
+              <label class="form-label text-success font-weight-bold"><i class="bi bi-stars me-1"></i>Total Novos Convertidos (NC)</label>
               <div class="input-group">
                 <button class="btn btn-outline-secondary" type="button" data-step-counter="ncCount" data-step-delta="-1">-</button>
-                <input type="number" min="0" class="form-control text-center" name="ncCount" value="0" data-attendance-field="ncCount">
+                <input type="number" min="0" class="form-control text-center font-weight-bold fs-5 text-success" name="ncCount" value="0" data-attendance-field="ncCount">
                 <button class="btn btn-outline-secondary" type="button" data-step-counter="ncCount" data-step-delta="1">+</button>
               </div>
-              <small class="text-secondary">Entregaram a vida a Cristo</small>
-            </div>
-            <div class="col-md-3">
-              <label class="form-label text-primary"><i class="bi bi-book me-1"></i>Rapsódia (RS)</label>
-              <input type="number" min="0" class="form-control text-center" name="rsCount" value="0" data-attendance-field="rsCount">
-              <small class="text-secondary">Rapsódias distribuídas</small>
-            </div>
-            <div class="col-md-3">
-              <label class="form-label"><i class="bi bi-cash-coin me-1"></i>Oferta (MT)</label>
-              <input type="number" min="0" step="10" class="form-control text-center" name="offeringAmount" value="0" data-attendance-field="offeringAmount">
-              <small class="text-secondary">Opcional</small>
+              <small class="text-secondary">Entregaram a sua vida a Cristo no culto</small>
             </div>
             <div class="col-12">
               <label class="form-label"><i class="bi bi-chat-left-text me-1"></i>Observações / Testemunhos do Culto</label>
-              <textarea class="form-control" name="attendanceNotes" rows="2" placeholder="Notas sobre a reunião ou cultos..." data-attendance-field="attendanceNotes"></textarea>
+              <textarea class="form-control" name="attendanceNotes" rows="2" placeholder="Notas sobre a reunião ou culto de domingo..." data-attendance-field="attendanceNotes"></textarea>
             </div>
           </div>
 
@@ -17175,7 +17208,7 @@ const churchReportPageState = {
 };
 
 const cellAttendancePageState = {
-  service: "Domingo - 1º Culto",
+  service: "Domingo",
   date: new Date().toISOString().slice(0, 10),
   week: "",
   search: "",
@@ -17553,7 +17586,7 @@ function renderChurchReportsAnalyticalView() {
     nc: Number(r.nc || 0)
   }));
 
-  const servicesList = ["Domingo - 1º Culto", "Domingo - 2º Culto", "Quarta-feira", "Reunião de Célula", "Culto Especial"];
+  const servicesList = ["Domingo", "Quarta-feira", "Reunião de Célula", "Culto Especial"];
 
   return `
     <section class="panel glass-panel mb-4">
@@ -27005,6 +27038,94 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
+
+// Track current attendance session dynamic visitors
+let currentSessionVisitors = [];
+
+function refreshAttendanceVisitorsList() {
+  const container = document.getElementById("cellAttendanceVisitorsList");
+  const tbody = document.getElementById("cellAttendanceVisitorsTableBody");
+  if (!container || !tbody) return;
+
+  if (!currentSessionVisitors.length) {
+    container.style.display = "none";
+    tbody.innerHTML = "";
+    return;
+  }
+
+  container.style.display = "block";
+  tbody.innerHTML = currentSessionVisitors.map((v, idx) => `
+    <tr>
+      <td><strong>${escapeAttr(v.name)}</strong></td>
+      <td>${escapeAttr(v.phone || "—")}</td>
+      <td>
+        ${v.isFT ? '<span class="badge bg-warning text-dark me-1">FT</span>' : ""}
+        ${v.isNC ? '<span class="badge bg-success">NC</span>' : ""}
+      </td>
+      <td>
+        <button type="button" class="btn btn-sm btn-outline-danger py-0 px-1" data-remove-visitor-idx="${idx}" title="Remover">&times;</button>
+      </td>
+    </tr>
+  `).join("");
+
+  // Sync counters
+  const ftTotal = currentSessionVisitors.filter((v) => v.isFT).length;
+  const ncTotal = currentSessionVisitors.filter((v) => v.isNC).length;
+  const ftInput = document.querySelector('[data-attendance-field="ftCount"]');
+  const ncInput = document.querySelector('[data-attendance-field="ncCount"]');
+  if (ftInput) ftInput.value = ftTotal;
+  if (ncInput) ncInput.value = ncTotal;
+}
+
+document.addEventListener("click", (event) => {
+  // Add visitor row
+  if (event.target.closest("[data-add-visitor-row]")) {
+    const nameInput = document.getElementById("newVisitorName");
+    const phoneInput = document.getElementById("newVisitorPhone");
+    const typeSelect = document.getElementById("newVisitorType");
+
+    const name = (nameInput?.value || "").trim();
+    const phone = (phoneInput?.value || "").trim();
+    const type = typeSelect?.value || "FT";
+
+    if (!name) {
+      alert("Por favor introduza o nome do visitante / novo membro.");
+      nameInput?.focus();
+      return;
+    }
+
+    const isFT = type === "FT" || type === "FT_NC";
+    const isNC = type === "NC" || type === "FT_NC";
+
+    currentSessionVisitors.push({
+      name,
+      phone,
+      type,
+      isFT,
+      isNC,
+      id: typeof generateUuid === "function" ? generateUuid() : "v-" + Date.now()
+    });
+
+    if (nameInput) nameInput.value = "";
+    if (phoneInput) phoneInput.value = "";
+    nameInput?.focus();
+
+    refreshAttendanceVisitorsList();
+    return;
+  }
+
+  // Remove visitor row
+  const removeVisitorBtn = event.target.closest("[data-remove-visitor-idx]");
+  if (removeVisitorBtn) {
+    const idx = Number(removeVisitorBtn.dataset.removeVisitorIdx);
+    if (!isNaN(idx) && idx >= 0 && idx < currentSessionVisitors.length) {
+      currentSessionVisitors.splice(idx, 1);
+      refreshAttendanceVisitorsList();
+    }
+    return;
+  }
+});
+
 // ============================================================================
 // EVENT LISTENERS FOR CHURCH REPORTS & CELL ATTENDANCE
 // ============================================================================
@@ -27077,14 +27198,47 @@ document.addEventListener("click", (event) => {
     const form = document.querySelector("[data-cell-attendance-form]");
     if (!form) return;
 
-    const serviceType = form.querySelector('[data-attendance-field="serviceType"]')?.value || "Domingo - 1º Culto";
+    const serviceType = form.querySelector('[data-attendance-field="serviceType"]')?.value || "Domingo";
     const serviceDate = form.querySelector('[data-attendance-field="serviceDate"]')?.value || new Date().toISOString().slice(0, 10);
     const reportWeek = form.querySelector('[data-attendance-field="reportWeek"]')?.value || "Semana 1";
     const ftCount = Number(form.querySelector('[data-attendance-field="ftCount"]')?.value || 0);
     const ncCount = Number(form.querySelector('[data-attendance-field="ncCount"]')?.value || 0);
-    const rsCount = Number(form.querySelector('[data-attendance-field="rsCount"]')?.value || 0);
-    const offeringAmount = Number(form.querySelector('[data-attendance-field="offeringAmount"]')?.value || 0);
     const notes = form.querySelector('[data-attendance-field="attendanceNotes"]')?.value || "";
+
+    // Register any new FT/NC visitors into state.firstTimers if present
+    if (currentSessionVisitors && currentSessionVisitors.length) {
+      if (!Array.isArray(state.firstTimers)) state.firstTimers = [];
+      const cellId = cellPortalPageState.cellId || "cell-1";
+      const cell = findCellSafe(cellId) || {};
+      const churchId = cell.church_id || activeUser?.church_id || "church-hq";
+
+      currentSessionVisitors.forEach((v) => {
+        const parts = v.name.split(" ");
+        const firstName = parts[0] || v.name;
+        const lastName = parts.slice(1).join(" ") || "";
+
+        const ftRecord = {
+          id: typeof generateUuid === "function" ? generateUuid() : "ft-" + Date.now(),
+          first_name: firstName,
+          last_name: lastName,
+          full_name: v.name,
+          phone: v.phone || "",
+          telefone: v.phone || "",
+          church_id: churchId,
+          cell_id: cellId,
+          convidado_por: activeUser?.name || "Líder de Célula",
+          data_do_culto: serviceDate,
+          culto: serviceType,
+          born_again: v.isNC,
+          nasceu_de_novo: v.isNC,
+          workflow_status: "DRAFT",
+          estado_do_seguimento: "Pending",
+          created_at: serviceDate,
+          updated_at: serviceDate
+        };
+        state.firstTimers.unshift(ftRecord);
+      });
+    }
 
     const checkedBoxes = Array.from(form.querySelectorAll("[data-attendance-member-check]:checked"));
     const checkedMemberIds = checkedBoxes.map((cb) => cb.dataset.attendanceMemberCheck);
