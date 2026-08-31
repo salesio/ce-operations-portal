@@ -7722,7 +7722,7 @@ function financeApprovedReqFilterBar(filters) {
     </div>
     <div class="col-md-4 d-flex align-items-end gap-2">
       <button type="submit" class="btn btn-ce-gold"><i class="bi bi-search me-1"></i>${L("search")}</button>
-      <button type="button" class="btn btn-outline-glass" data-finance-approved-req-clear>${L("clearFilters")}</button>
+      <button type="button" class="btn btn-outline-cyan" data-finance-approved-req-clear>${L("clearFilters")}</button>
     </div>
   </form>`;
 }
@@ -7881,7 +7881,7 @@ function requisitionReportFilterBar(filters, formAttr = "data-requisition-report
     <div class="col-md-1"><label class="form-label">Max</label><input name="maxValue" type="number" class="form-control" value="${filters.maxValue || ""}"></div>
     <div class="col-md-4 d-flex align-items-end gap-2">
       <button type="submit" class="btn btn-ce-gold"><i class="bi bi-search me-1"></i>${L("search")}</button>
-      <button type="button" class="btn btn-outline-glass" data-requisition-report-clear>${L("clearFilters")}</button>
+      <button type="button" class="btn btn-outline-cyan" data-requisition-report-clear>${L("clearFilters")}</button>
     </div>
   </form>`;
 }
@@ -8031,10 +8031,10 @@ function renderRequisitionReportsPanel(options = {}) {
 
   const exportBtns = rep.canExportReports(activeUser) ? `
     <div class="requisition-report-export d-flex flex-wrap gap-2 mb-4">
-      <button type="button" class="btn btn-outline-glass" data-req-report-export="csv"><i class="bi bi-filetype-csv me-1"></i>${L("reqExportCsv")}</button>
+      <button type="button" class="btn btn-outline-cyan" data-req-report-export="csv"><i class="bi bi-filetype-csv me-1"></i>${L("reqExportCsv")}</button>
       <button type="button" class="btn btn-ce-gold" data-req-report-export="excel"><i class="bi bi-file-earmark-excel me-1"></i>${L("reqExportExcel")}</button>
       <button type="button" class="btn btn-outline-cyan" data-req-report-export="print"><i class="bi bi-printer me-1"></i>${L("reqPrintReport")}</button>
-      <button type="button" class="btn btn-outline-glass" data-req-report-export="pdf"><i class="bi bi-file-earmark-pdf me-1"></i>${L("reqExportPdf")}</button>
+      <button type="button" class="btn btn-outline-danger" data-req-report-export="pdf"><i class="bi bi-file-earmark-pdf me-1"></i>${L("reqExportPdf")}</button>
     </div>` : "";
 
   if (compact) {
@@ -9113,7 +9113,7 @@ function renderChurchServiceTimeRow(record, index) {
         </label>
       </div>
       <div class="church-service-field church-service-remove-wrap">
-        <button type="button" class="btn btn-sm btn-outline-light church-service-remove" data-church-service-remove="${index}">${L("remove")}</button>
+        <button type="button" class="btn btn-sm btn-outline-danger church-service-remove" data-church-service-remove="${index}">${L("remove")}</button>
       </div>
     </div>`;
 }
@@ -11153,7 +11153,7 @@ function renderCellLeaderPortal() {
         <div class="cell-portal-hero-actions">
           ${canChooseCell ? `<label>Seleccionar célula<select class="form-select" data-cell-portal-cell>${safeHeroCells.map((item) => `<option value="${escapeAttr(item.id)}" ${String(item.id) === String(context?.cell_id) ? "selected" : ""}>${escapeAttr(portalCellName(item))}</option>`).join("")}</select></label>` : ""}
           ${!isReadOnlyPortal ? `<button type="button" class="btn btn-ce-gold btn-touch" data-public-cell-report><i class="bi bi-clipboard-plus me-2"></i>Submeter Relatório Semanal</button>` : ""}
-          ${hasCellPortalPermission("cell_portal.export_summary") ? `<button type="button" class="btn btn-outline-light btn-touch" data-cell-portal-export><i class="bi bi-download me-2"></i>Exportar resumo</button>` : ""}
+          ${hasCellPortalPermission("cell_portal.export_summary") ? `<button type="button" class="btn btn-outline-cyan btn-touch" data-cell-portal-export><i class="bi bi-download me-2"></i>Exportar resumo</button>` : ""}
         </div>
       </section>
       <section class="panel glass-panel cell-portal-filters">
@@ -11856,7 +11856,7 @@ function renderFirstTimers() {
       <div class="d-flex gap-2 flex-wrap mb-3 align-items-center">
         <button class="btn btn-primary" type="button" data-first-timer-new-entry><i class="bi bi-person-plus me-1"></i>Novo Registo (Manual)</button>
         <button class="btn btn-outline-cyan" type="button" data-first-timer-csv-template><i class="bi bi-download me-1"></i>Baixar Modelo Excel</button>
-        <label class="btn btn-outline-light mb-0"><i class="bi bi-file-earmark-excel me-1 text-success"></i>Importar Excel (.xlsx / .csv)<input type="file" accept=".xlsx,.xls,.csv,.tsv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" data-first-timer-import hidden></label>
+        <label class="btn btn-outline-success mb-0"><i class="bi bi-file-earmark-excel me-1"></i>Importar Excel (.xlsx / .csv)<input type="file" accept=".xlsx,.xls,.csv,.tsv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" data-first-timer-import hidden></label>
         <span class="small text-secondary align-self-center">Compatível com Excel (.xlsx / .xls) e CSV; pré-visualização antes de gravar.</span>
       </div>
       ${filterBar({ viewToggle: ViewToggle(view), statusOptions: followupStatuses })}
@@ -15633,7 +15633,7 @@ function renderFinance() {
         ${financeAccess.canExport ? `
           <button type="button" class="btn btn-ce-gold" data-finance-export="pdf"><i class="bi bi-file-earmark-pdf me-2"></i>${L("financeExportPdf")}</button>
           <button type="button" class="btn btn-outline-cyan" data-finance-export="excel"><i class="bi bi-file-earmark-excel me-2"></i>${L("financeExportExcel")}</button>
-          <button type="button" class="btn btn-outline-glass" data-finance-export="print"><i class="bi bi-printer me-2"></i>${L("financePrintReport")}</button>
+          <button type="button" class="btn btn-outline-cyan" data-finance-export="print"><i class="bi bi-printer me-2"></i>${L("financePrintReport")}</button>
           <button type="button" class="btn btn-outline-cyan" data-finance-export="csv"><i class="bi bi-filetype-csv me-2"></i>${L("financeExportCsv")}</button>
           <button type="button" class="btn btn-outline-cyan" data-finance-export="json"><i class="bi bi-braces me-2"></i>${L("financeExportJson")}</button>` : `<p class="text-secondary mb-0">${L("financeAggregatedOnly")}</p>`}
       </div>
@@ -17495,7 +17495,7 @@ function renderCellGroups() {
       <div class="cell-accordion-search"><i class="bi bi-search"></i><input class="form-control" type="search" data-cell-accordion-search placeholder="${L("search")}"></div>
       <div class="cell-accordion-actions">
         <button type="button" class="btn btn-sm btn-outline-cyan" data-action="expandCellGroups">${L("expandAll")}</button>
-        <button type="button" class="btn btn-sm btn-outline-light" data-action="collapseCellGroups">${L("collapseAll")}</button>
+        <button type="button" class="btn btn-sm btn-outline-cyan" data-action="collapseCellGroups">${L("collapseAll")}</button>
       </div>
     </div>
     ${renderCellGroupAccordion(groups, registry, { showMetrics: true, showActions: true, membership })}`;
@@ -17576,7 +17576,7 @@ function renderCellCellsList() {
   const filterBanner = filterGroup ? `
     <div class="cell-filter-banner mb-3">
       <span>${L("filteredByGroup")}: <strong>${filterGroup.group_name}</strong></span>
-      <button type="button" class="btn btn-sm btn-outline-light" data-action="clearCellFilter">${L("clearFilter")}</button>
+      <button type="button" class="btn btn-sm btn-outline-cyan" data-action="clearCellFilter">${L("clearFilter")}</button>
     </div>` : "";
   const bodyHtml = `
     ${filterBanner}
@@ -20492,7 +20492,7 @@ function renderNotifications() {
     <article class="panel glass-panel notification-inbox">
       <div class="notification-page-toolbar">
         <div class="notification-filter-row">${notificationFilters(notificationPageFilter, "page")}</div>
-        <button type="button" class="btn btn-sm btn-outline-light action-secondary" data-notification-mark-all>${L("markAllRead")}</button>
+        <button type="button" class="btn btn-sm btn-outline-cyan action-secondary" data-notification-mark-all>${L("markAllRead")}</button>
       </div>
       <div class="notification-page-list">
         ${filtered.length ? filtered.map((item) => notificationItem(item)).join("") : EmptyState({ compact: true, title: L("empty"), icon: "bi-bell" })}
@@ -25968,21 +25968,21 @@ function renderDataHealthDashboard() {
       </div>
       <div class="row g-3">
         <div class="col-md-4">
-          <div class="p-3 rounded bg-body-tertiary border border-secondary border-opacity-25">
+          <div class="p-3 rounded border border-secondary border-opacity-25" style="background: rgba(255, 255, 255, 0.06);">
             <span class="small text-white-50 d-block">Telefones Duplicados</span>
             <strong class="fs-4 text-warning">${duplicatePhones} Números</strong>
             <small class="d-block text-white-50 mt-1">Identificados em mais de um registo</small>
           </div>
         </div>
         <div class="col-md-4">
-          <div class="p-3 rounded bg-body-tertiary border border-secondary border-opacity-25">
+          <div class="p-3 rounded border border-secondary border-opacity-25" style="background: rgba(255, 255, 255, 0.06);">
             <span class="small text-white-50 d-block">Membros sem Célula Vinculada</span>
             <strong class="fs-4 text-info">${missingCell} Membros</strong>
             <small class="d-block text-white-50 mt-1">Aguardam atribuição de célula</small>
           </div>
         </div>
         <div class="col-md-4">
-          <div class="p-3 rounded bg-body-tertiary border border-secondary border-opacity-25">
+          <div class="p-3 rounded border border-secondary border-opacity-25" style="background: rgba(255, 255, 255, 0.06);">
             <span class="small text-white-50 d-block">Taxa de Integridade</span>
             <strong class="fs-4 text-gold">98.4%</strong>
             <small class="d-block text-white-50 mt-1">Registo reconciliado com HQ</small>

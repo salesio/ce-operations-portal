@@ -154,7 +154,7 @@
       <div class="col-md-2"><label class="form-label">${labelFn("search")}</label><input name="search" class="form-control" value="${filters.search || ""}" placeholder="${labelFn("search")}"></div>
       <div class="col-md-4 d-flex align-items-end gap-2 flex-wrap">
         <button type="submit" class="btn btn-ce-gold"><i class="bi bi-search me-1"></i>${labelFn("search")}</button>
-        <button type="button" class="btn btn-outline-glass" data-domain-report-clear data-report-domain="${domain}">${labelFn("clearFilters")}</button>
+        <button type="button" class="btn btn-outline-cyan" data-domain-report-clear data-report-domain="${domain}">${labelFn("clearFilters")}</button>
       </div>
     </form>`;
   }
@@ -231,10 +231,10 @@
     const tablesHtml = buildTables(tables, dataTableFn, labelFn);
     const exportBtns = canExportDomain(user, adapter.id) ? `
       <div class="domain-report-export d-flex flex-wrap gap-2 mb-4">
-        <button type="button" class="btn btn-outline-glass" data-domain-report-export="csv" data-report-domain="${adapter.id}"><i class="bi bi-filetype-csv me-1"></i>${labelFn("reqExportCsv")}</button>
+        <button type="button" class="btn btn-outline-cyan" data-domain-report-export="csv" data-report-domain="${adapter.id}"><i class="bi bi-filetype-csv me-1"></i>${labelFn("reqExportCsv")}</button>
         <button type="button" class="btn btn-ce-gold" data-domain-report-export="excel" data-report-domain="${adapter.id}"><i class="bi bi-file-earmark-excel me-1"></i>${labelFn("reqExportExcel")}</button>
         <button type="button" class="btn btn-outline-cyan" data-domain-report-export="print" data-report-domain="${adapter.id}"><i class="bi bi-printer me-1"></i>${labelFn("reqPrintReport")}</button>
-        <button type="button" class="btn btn-outline-glass" data-domain-report-export="pdf" data-report-domain="${adapter.id}"><i class="bi bi-file-earmark-pdf me-1"></i>${labelFn("reqExportPdf")}</button>
+        <button type="button" class="btn btn-outline-danger" data-domain-report-export="pdf" data-report-domain="${adapter.id}"><i class="bi bi-file-earmark-pdf me-1"></i>${labelFn("reqExportPdf")}</button>
       </div>` : "";
 
     if (compact) return chartsHtml;

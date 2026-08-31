@@ -81,7 +81,7 @@ function churchSelect(name, label, record = {}, options = {}) {
 
   let addChurchHtml = "";
   if (showAddLink) {
-    addChurchHtml = `<button type="button" class="btn btn-sm btn-outline-light church-select-add-btn" data-open-church-form>${t("addNewChurch")}</button>`;
+    addChurchHtml = `<button type="button" class="btn btn-sm btn-outline-cyan church-select-add-btn" data-open-church-form>${t("addNewChurch")}</button>`;
   }
 
   return `
