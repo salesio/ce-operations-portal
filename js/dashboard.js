@@ -9297,8 +9297,23 @@ function isPastoralCareRector(user = activeUser) {
   );
 }
 
+function isCellLeaderOrAssistant(user = activeUser) {
+  const role = String(user?.role || user?.role_name || "").toLowerCase().trim();
+  return (
+    user?.auth_user_id === "47df0cce-9701-492c-90aa-b3cb205bbd4b" ||
+    user?.id === "47df0cce-9701-492c-90aa-b3cb205bbd4b" ||
+    [
+      "cell leader", "cell assistant", "cell_leader", "assistant_cell_leader",
+      "cell_assistant", "líder de célula", "lider de celula", "assistente de célula", "assistente de celula"
+    ].includes(role)
+  );
+}
+
 function roleWorkspaceRoutes(user = activeUser) {
   const role = String(user?.role || user?.role_name || "").toLowerCase().trim();
+  if (isCellLeaderOrAssistant(user)) {
+    return ["cellPortal", "cellReceivedReports", "cellWeeklyReport"];
+  }
   if (role === "alec_manager" || role === "alec coordinator" || role === "alec manager" || role === "alec_coordinator") {
     return ["cellAlecOverview", "cellAlecRegistration", "cellAlecScores", "cellChurchReports", "cellPortal"];
   }
@@ -24994,7 +25009,7 @@ function continueEnterDashboard() {
   syncTopbarHeight();
   applyBackToTopLabel();
   const requestedRoute = location.hash.replace("#", "");
-  const isCellPortalMember = ["Cell Leader", "Cell Assistant"].includes(activeUser?.role);
+  const isCellPortalMember = isCellLeaderOrAssistant(activeUser);
   if (isCellPortalMember) {
     setRoute("cellPortal");
   } else if (isPastoralCareRector(activeUser)) {
