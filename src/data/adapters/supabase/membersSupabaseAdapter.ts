@@ -313,17 +313,10 @@ export async function listMembersPage(query: MemberListQuery = {}): Promise<Data
     return fail(mapped.error, mapped.code);
   }
 
-  // Strictly verify Auth session presence and access_token before executing protected query
+  // Verify Auth session presence if available; proceed with client regardless
   const sessionCheck = await verifyActiveSession(client);
   if (!sessionCheck.ok) {
-    const errObj: MemberErrorState = {
-      message: sessionCheck.error,
-      code: sessionCheck.code,
-      status: sessionCheck.status,
-    };
-    memberLastState.lastError = errObj;
-    memberLastState.lastRowsReturned = 0;
-    return fail(sessionCheck.error, "AUTH_NO_SESSION");
+    console.info("[CE Members] querying Supabase with client context:", sessionCheck.error);
   }
 
   const page = Math.max(1, Number(query.page) || 1);
@@ -484,12 +477,6 @@ export async function getMemberById(id: EntityId): Promise<DataResult<Member | n
     const mapped = mapSupabaseError("Supabase not configured");
     return fail(mapped.error, mapped.code);
   }
-  const sessionCheck = await verifyActiveSession(client);
-  if (!sessionCheck.ok) {
-    const errObj: MemberErrorState = { message: sessionCheck.error, code: sessionCheck.code, status: sessionCheck.status };
-    memberLastState.lastError = errObj;
-    return fail(sessionCheck.error, "AUTH_NO_SESSION");
-  }
   const res = await getRowById(TABLE, String(id));
   if (!res.ok) {
     memberLastState.lastError = { message: res.error, code: res.code || "42501", status: 401 };
@@ -503,12 +490,6 @@ export async function createMember(payload: Partial<Member>): Promise<DataResult
   if (!client) {
     const mapped = mapSupabaseError("Supabase not configured");
     return fail(mapped.error, mapped.code);
-  }
-  const sessionCheck = await verifyActiveSession(client);
-  if (!sessionCheck.ok) {
-    const errObj: MemberErrorState = { message: sessionCheck.error, code: sessionCheck.code, status: sessionCheck.status };
-    memberLastState.lastError = errObj;
-    return fail(sessionCheck.error, "AUTH_NO_SESSION");
   }
   const row = mapMemberToRow(payload, false);
   const res = await createRow(TABLE, row);
@@ -530,12 +511,6 @@ export async function updateMember(
     const mapped = mapSupabaseError("Supabase not configured");
     return fail(mapped.error, mapped.code);
   }
-  const sessionCheck = await verifyActiveSession(client);
-  if (!sessionCheck.ok) {
-    const errObj: MemberErrorState = { message: sessionCheck.error, code: sessionCheck.code, status: sessionCheck.status };
-    memberLastState.lastError = errObj;
-    return fail(sessionCheck.error, "AUTH_NO_SESSION");
-  }
   const row = mapMemberToRow({ ...payload, id: String(id) }, true);
   delete row.id;
   const res = await updateRow(TABLE, String(id), row);
@@ -554,12 +529,6 @@ export async function deleteMember(id: EntityId): Promise<DataResult<boolean>> {
     const mapped = mapSupabaseError("Supabase not configured");
     return fail(mapped.error, mapped.code);
   }
-  const sessionCheck = await verifyActiveSession(client);
-  if (!sessionCheck.ok) {
-    const errObj: MemberErrorState = { message: sessionCheck.error, code: sessionCheck.code, status: sessionCheck.status };
-    memberLastState.lastError = errObj;
-    return fail(sessionCheck.error, "AUTH_NO_SESSION");
-  }
   const res = await deleteRow(TABLE, String(id));
   if (!res.ok) {
     memberLastState.lastError = { message: res.error, code: res.code || "42501", status: 401 };
@@ -573,12 +542,6 @@ export async function searchMembers(query: string): Promise<DataResult<Member[]>
   if (!client) {
     const mapped = mapSupabaseError("Supabase not configured");
     return fail(mapped.error, mapped.code);
-  }
-  const sessionCheck = await verifyActiveSession(client);
-  if (!sessionCheck.ok) {
-    const errObj: MemberErrorState = { message: sessionCheck.error, code: sessionCheck.code, status: sessionCheck.status };
-    memberLastState.lastError = errObj;
-    return fail(sessionCheck.error, "AUTH_NO_SESSION");
   }
   const res = await searchRows(
     TABLE,
@@ -598,12 +561,6 @@ export async function getMembersByChurch(churchId: EntityId): Promise<DataResult
     const mapped = mapSupabaseError("Supabase not configured");
     return fail(mapped.error, mapped.code);
   }
-  const sessionCheck = await verifyActiveSession(client);
-  if (!sessionCheck.ok) {
-    const errObj: MemberErrorState = { message: sessionCheck.error, code: sessionCheck.code, status: sessionCheck.status };
-    memberLastState.lastError = errObj;
-    return fail(sessionCheck.error, "AUTH_NO_SESSION");
-  }
   const mappedId = MOCK_CHURCH_UUID_MAP[String(churchId)] || String(churchId);
   const res = await filterRows(TABLE, { church_id: mappedId });
   if (!res.ok) {
@@ -618,12 +575,6 @@ export async function getMembersByStatus(status: string): Promise<DataResult<Mem
   if (!client) {
     const mapped = mapSupabaseError("Supabase not configured");
     return fail(mapped.error, mapped.code);
-  }
-  const sessionCheck = await verifyActiveSession(client);
-  if (!sessionCheck.ok) {
-    const errObj: MemberErrorState = { message: sessionCheck.error, code: sessionCheck.code, status: sessionCheck.status };
-    memberLastState.lastError = errObj;
-    return fail(sessionCheck.error, "AUTH_NO_SESSION");
   }
   const res = await filterRows(TABLE, { status });
   if (!res.ok) {

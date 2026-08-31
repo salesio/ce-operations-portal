@@ -313,28 +313,38 @@ function KanbanBoard(columns = []) {
             <h4>${title}</h4>
             <span class="kanban-count">${count}</span>
           </header>
-          <div class="kanban-column-body">${cardsHtml || EmptyState({ compact: true, title: uiT("empty", "Vazio") })}</div>
+          <div class="kanban-column-body">${cardsHtml || `<div class="kanban-empty-dropzone py-4 text-center text-secondary border border-dashed rounded-3 my-2"><i class="bi bi-inbox fs-4 d-block mb-1 text-muted"></i><span class="small text-muted">${uiT("empty", "Sem registos")}</span></div>`}</div>
         </section>`).join("")}
     </div>`;
 }
 
 function FollowUpCard(person) {
-  const name = typeof fullName === "function" ? fullName(person) : person.nome;
-  const church = typeof churchName === "function" ? churchName(person.church_id) : "";
+  const clean = typeof cleanDisplayText === "function" ? cleanDisplayText : (s) => (s || "");
+  const name = clean(typeof fullName === "function" ? fullName(person) : (person.nome || person.full_name || ""));
+  const church = clean(typeof churchName === "function" ? churchName(person.church_id) : (person.church_name || ""));
   const followup = (state?.followUps || []).find((f) => f.first_timer_id === person.id);
-  const nextDate = followup?.proxima_data_de_contacto || "-";
+  const nextDate = followup?.proxima_data_de_contacto || person.proxima_data_de_contacto || person.next_follow_up_date || "-";
+  const cellTarget = clean(person.celula || person.cell_name || person.celula_preferida || "-");
   return DataCard({
     title: name,
     subtitle: uiT("followUp", "Acompanhamento"),
-    badges: [StatusBadge(person.estado_do_seguimento)],
+    badges: [StatusBadge(person.estado_do_seguimento || person.follow_up_status || "Pending")],
     meta: [
-      [uiT("phone", "Telefone"), person.telefone, "bi-telephone"],
-      [uiT("church", "Igreja"), church, "bi-building"],
-      [uiT("nextContact", "Próximo Contacto"), nextDate, "bi-calendar-event"]
+      [uiT("phone", "Telefone"), person.telefone || person.phone || "-", "bi-telephone"],
+      [uiT("church", "Igreja"), church || "-", "bi-building"],
+      [uiT("nextContact", "Próximo Contacto"), nextDate, "bi-calendar-event"],
+      [uiT("cell", "Célula / Alvo"), cellTarget, "bi-diagram-3"]
     ],
-    pills: [person.culto, person.quer_escola_de_fundacao ? uiT("foundationSchool", "Escola de Funda��o") : null].filter(Boolean),
+    pills: [
+      person.culto || null,
+      (person.quer_escola_de_fundacao || person.foundation_school_interest) ? "Interesse ESF" : null,
+      (person.interesse_em_celula || person.cell_interest) ? "Interesse Célula" : null
+    ].filter(Boolean),
     actions: typeof actionButtons === "function"
-      ? actionButtons([["view", "firstTimer", person.id, uiT("view", "Ver")], ["followup", "firstTimer", person.id, uiT("updateFollowup", "Actualizar Acompanhamento")]])
+      ? actionButtons([
+          ["view", "firstTimer", person.id, uiT("view", "Ver")],
+          ["followup", "firstTimer", person.id, uiT("updateFollowup", "Actualizar Acompanhamento")]
+        ])
       : ""
   });
 }

@@ -1,8 +1,18 @@
 const STORAGE_KEY = "ce-ops-dashboard-v3";
 const LANG_KEY = "ce-dashboard-lang";
 const SIDEBAR_GROUPS_KEY = "ce-dashboard-sidebar-groups";
-const SIDEBAR_COLLAPSED_KEY = "ce-dashboard-sidebar-collapsed";
 const MODULE_NAV_KEY = "ce-dashboard-module-nav";
+
+function generateUuid() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+    var r = (Math.random() * 16) | 0,
+      v = c === "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
 
 /**
  * Frontend-first state model.
@@ -3389,10 +3399,14 @@ const seedData = {
     { id: "att-2", staff_id: "staff-4", date: "2026-07-10", church_id: "church-hq", department_id: "dept-finance", attendance_status: "Presente", check_in_time: "09:00", check_out_time: "18:00", notes: "" },
     { id: "att-3", staff_id: "staff-3", date: "2026-07-10", church_id: "church-hq", department_id: "dept-venue", attendance_status: "Atrasado", check_in_time: "09:35", check_out_time: "17:00", notes: "Tr�nsito." }
   ],
-  staffDocuments: [
-    { id: "doc-1", staff_id: "staff-1", document_type: "BI", file_url: "/docs/staff-1-bi.pdf", expiry_date: "", notes: "" },
-    { id: "doc-2", staff_id: "staff-3", document_type: "Contrato", file_url: "/docs/staff-3-contract.pdf", expiry_date: "2027-11-01", notes: "Contrato anual renovável." }
-  ],
+  staffDocuments: [],
+  notifications: [],
+  requisitions: [],
+  financeDisbursements: [],
+  staffProfiles: [],
+  staffSalaries: [],
+  staffPerformance: [],
+  staffAttendance: [],
   churches: [
     { id: "church-hq", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", public_name: "E.C. Maputo Central - Sede", type: "Sede Nacional", province: "Maputo Cidade", city: "KaMpfumo", district_or_area: "Maputo", address: "Avenida de Angola, ao lado da CETRACO, Maputo", pastor_in_charge: "Pastor Kene Ume", phone_primary: "+258 86 227 0000", phone_secondary: "", email: "info@embaixada-de-cristo.obiuba.com", facebook: "Embaixada de Cristo Moçambique", instagram: "@embaixada_de_cristo_mocambique", youtube: "", service_times: defaultSeedServiceTimes("church-hq", "Sede Nacional"), parent_church_id: "", status: "Activa", information_status: "Por Confirmar", notes: "Dados iniciais importados para o protótipo. Confirmar detalhes com a equipa local.", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2024-01-01", updated_at: "2026-07-10", attendance_last_4_weeks: [112, 98, 104, 92] },
     { id: "church-matola", church_id: "church-matola", church_name: "Igreja Embaixada de Cristo Matola", public_name: "Embaixada de Cristo Matola", type: "Igreja Local", province: "Maputo Província", city: "Matola", district_or_area: "Matola", address: "Rua Mário Estêves Coluna, Nr 63B, perto do KFC / DNIC", pastor_in_charge: "", phone_primary: "+258 84 372 2630", phone_secondary: "+258 84 643 5951 / +258 87 780 9005", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("church-matola", "Igreja Local"), parent_church_id: "church-hq", status: "Activa", information_status: "Por Confirmar", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [48, 52, 46, 50] },
@@ -3402,75 +3416,21 @@ const seedData = {
     { id: "church-nampula", church_id: "church-nampula", church_name: "Igreja Embaixada de Cristo Nampula", public_name: "Embaixada De Cristo Nampula", type: "Igreja Local", province: "Nampula", city: "Nampula", district_or_area: "Muhala-Expansão", address: "Terminal de Chapa Muhala-Expansão, Paragem Igreja", pastor_in_charge: "Pastor Armando de Jesus", phone_primary: "", phone_secondary: "", email: "", facebook: "Embaixada De Cristo Nampula", instagram: "@embaixada_de_cristo.nampula", youtube: "", service_times: defaultSeedServiceTimes("church-nampula", "Igreja Local"), parent_church_id: "church-hq", status: "Activa", information_status: "Por Confirmar", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [36, 34, 35, 37] },
     { id: "church-virtual", church_id: "church-virtual", church_name: "CE Mozambique Online Church", public_name: "Igreja Embaixada de Cristo Online", type: "Igreja Online", province: "Online", city: "Online", district_or_area: "Virtual", address: "Transmissão online", pastor_in_charge: "Equipa de Media", phone_primary: "+258 86 877 389", phone_secondary: "", email: "online@embaixada-de-cristo.obiuba.com", facebook: "", instagram: "", youtube: "Christ Embassy Mozambique Online", service_times: defaultSeedServiceTimes("church-virtual", "Igreja Online"), parent_church_id: "church-hq", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2024-06-01", updated_at: "2026-07-10", attendance_last_4_weeks: [54, 61, 48, 57] }
   ],
-  firstTimers: [
-    { id: "ft-1", tratamento: "Irmã", nome: "Aminata", apelido: "Chivinda", genero: "Feminino", data_de_nascimento: "1991-05-05", telefone: "848287179", whatsapp: "848287179", email: "", endereco: "Mavalane A", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", data_do_culto: "2026-07-05", culto: "Domingo 1º Culto", convidado_por: "Irmão da igreja", nasceu_de_novo: false, quer_escola_de_fundacao: true, quer_aconselhamento: true, interesse_em_celula: true, celula_preferida: "Mavalane", estado_do_seguimento: "Pending", conselheiro_responsavel: "Líder de Aconselhamento", notas: "Exemplo baseado na ficha partilhada." },
-    { id: "ft-2", tratamento: "Sr.", nome: "Mateus", apelido: "Nhantumbo", genero: "Masculino", data_de_nascimento: "1998-11-12", telefone: "862720011", whatsapp: "862720011", email: "mateus@example.com", endereco: "Matola", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", data_do_culto: "2026-06-28", culto: "Domingo 1º Culto", convidado_por: "Cell Central", nasceu_de_novo: true, quer_escola_de_fundacao: true, quer_aconselhamento: false, interesse_em_celula: true, celula_preferida: "Cell Central", estado_do_seguimento: "Contacted", conselheiro_responsavel: "Líder de Aconselhamento", notas: "Quer integrar uma célula perto de casa." },
-    { id: "ft-3", tratamento: "Sra.", nome: "Helena", apelido: "Cossa", genero: "Feminino", data_de_nascimento: "1988-03-20", telefone: "843332211", whatsapp: "843332211", email: "", endereco: "Beira", church_id: "church-beira", church_name: "Igreja Embaixada de Cristo Beira", data_do_culto: "2026-07-12", culto: "Domingo 2º Culto", convidado_por: "Pastor local", nasceu_de_novo: true, quer_escola_de_fundacao: false, quer_aconselhamento: true, interesse_em_celula: false, celula_preferida: "", estado_do_seguimento: "Pending", conselheiro_responsavel: "Líder de Aconselhamento", notas: "Novo convertida — acompanhamento pendente." }
-  ],
-  followUps: [
-    { id: "fu-1", first_timer_id: "ft-1", person_type: "First Timer", full_name: "Irmã Aminata Chivinda", phone: "848287179", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", responsible_name: "Líder de Aconselhamento", data_do_contacto: "2026-07-06", metodo: "WhatsApp", resultado: "Mensagem enviada", proximo_passo: "Confirmar presença no próximo culto", proxima_data_de_contacto: "2026-07-09", status: "Pending", notas: "Aguardando resposta.", actualizado_por: "Líder de Aconselhamento" },
-    { id: "fu-2", first_timer_id: "ft-1", person_type: "First Timer", full_name: "Irmã Aminata Chivinda", phone: "848287179", church_id: "church-hq", data_do_contacto: "2026-07-08", metodo: "Chamada", resultado: "Sem resposta — caixa postal", proxima_data_de_contacto: "2026-07-09", status: "No Response", notas: "Segunda tentativa.", actualizado_por: "Líder de Aconselhamento" },
-    { id: "fu-3", first_timer_id: "ft-2", person_type: "First Timer", full_name: "Sr. Mateus Nhantumbo", phone: "862720011", church_id: "church-hq", data_do_contacto: "2026-06-30", metodo: "WhatsApp", resultado: "Contactado — interessado na célula", proxima_data_de_contacto: "2026-07-05", status: "Contacted", notas: "Novo convertido — bom feedback.", actualizado_por: "Líder de Aconselhamento" },
-    { id: "fu-4", first_timer_id: "ft-2", person_type: "First Timer", full_name: "Sr. Mateus Nhantumbo", phone: "862720011", church_id: "church-hq", data_do_contacto: "2026-07-03", metodo: "Presencial", resultado: "Encaminhado para Escola de Fundação", status: "Sent to Foundation School", estado: "Enrolled in Foundation School", notas: "Inscrição na Escola de Fundação recomendada.", actualizado_por: "Líder de Aconselhamento" },
-    { id: "fu-5", first_timer_id: "ft-3", person_type: "First Timer", full_name: "Sra. Helena Cossa", phone: "843332211", church_id: "church-beira", church_name: "Igreja Embaixada de Cristo Beira", data_do_contacto: "2026-07-13", metodo: "Chamada", resultado: "Pendente — contacto inicial agendado", proxima_data_de_contacto: "2026-07-14", status: "Pending", notas: "Novo convertida — acompanhamento pendente.", actualizado_por: "Líder de Aconselhamento" },
-    { id: "fu-6", first_timer_id: "ft-2", person_type: "First Timer", full_name: "Sr. Mateus Nhantumbo", phone: "862720011", church_id: "church-hq", data_do_contacto: "2026-07-15", metodo: "Presencial", resultado: "Tornou-se membro da igreja", status: "Became Member", became_member: true, member_id: "m-2", notas: "Conversão para membro registada.", actualizado_por: "Admin Principal" }
-  ],
+  firstTimers: [],
+  followUps: [],
   counseling: {
-    requests: [
-      { id: "cr-1", request_number: "CON-2026-0001", person_type: "First Timer", member_id: "", first_timer_id: "ft-1", full_name: "Aminata Chivinda", phone: "848287179", whatsapp: "848287179", email: "", gender: "Feminino", age: 35, church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", cell_group_id: "group-1", cell_group_name: "Grupo Mavalane", cell_id: "cell-1", cell_name: "Mavalane", counseling_category: "Crescimento Espiritual", counseling_subject: "Integra��o e crescimento espiritual", issue_summary: "Deseja orienta��o pastoral para crescer na Palavra e integrar uma c�lula.", urgency: "Normal", confidentiality_level: "Normal", preferred_date: "2026-07-16", preferred_time: "10:00", preferred_counselor_gender: "Feminino", preferred_language: "Portugu�s", requested_by_user_id: "u-2", requested_by_name: "L�der de Aconselhamento", source: "First Timer", assigned_counselor_id: "coun-1", assigned_counselor_name: "L�der de Aconselhamento", assigned_by_user_id: "u-1", assigned_by_name: "Admin Principal", assigned_at: "2026-07-15T09:00:00.000Z", status: "Scheduled", notes: "Precisa de acompanhamento ap�s a sess�o.", created_at: "2026-07-15", updated_at: "2026-07-15" },
-      { id: "cr-2", request_number: "CON-2026-0002", person_type: "Member", member_id: "m-1", first_timer_id: "", full_name: "Jo�o Nhaca", phone: "845551122", whatsapp: "845551122", email: "", gender: "Masculino", age: 42, church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", cell_group_id: "group-2", cell_group_name: "Grupo Central", cell_id: "cell-2", cell_name: "Central", counseling_category: "Fam�lia", counseling_subject: "Desafio familiar", issue_summary: "Solicita aconselhamento sobre reconcilia��o familiar.", urgency: "High", confidentiality_level: "Sensitive", preferred_date: "2026-07-15", preferred_time: "15:00", preferred_counselor_gender: "Masculino", preferred_language: "Portugu�s", requested_by_user_id: "u-8", requested_by_name: "Pastor da Igreja", source: "Pastor Referral", assigned_counselor_id: "coun-2", assigned_counselor_name: "Pastor da Igreja", assigned_by_user_id: "u-8", assigned_by_name: "Pastor da Igreja", assigned_at: "2026-07-14T11:00:00.000Z", status: "Referred to Church Pastor", notes: "Caso sens�vel.", created_at: "2026-07-14", updated_at: "2026-07-15" },
-      { id: "cr-3", request_number: "CON-2026-0003", person_type: "Staff", member_id: "", first_timer_id: "", full_name: "Maria Zitha", phone: "866000111", whatsapp: "866000111", email: "maria@example.com", gender: "Feminino", age: 29, church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", cell_group_id: "", cell_group_name: "", cell_id: "", cell_name: "", counseling_category: "Carreira", counseling_subject: "Decis�o profissional", issue_summary: "Precisa de orienta��o para decis�o de carreira e servi�o ministerial.", urgency: "Normal", confidentiality_level: "Normal", preferred_date: "2026-07-18", preferred_time: "11:30", preferred_counselor_gender: "", preferred_language: "Portugu�s", requested_by_user_id: "u-13", requested_by_name: "Staff Member Demo", source: "Manual", assigned_counselor_id: "", assigned_counselor_name: "", assigned_by_user_id: "", assigned_by_name: "", assigned_at: "", status: "Pending Review", notes: "", created_at: "2026-07-15", updated_at: "2026-07-15" }
-    ],
+    requests: [],
     counselors: [
-      { id: "coun-1", user_id: "u-2", staff_id: "", full_name: "L�der de Aconselhamento", title: "Irm�", gender: "Feminino", phone: "860000201", email: "aconselhamento@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", counseling_categories: ["Crescimento Espiritual", "Ora��o", "Apoio Emocional"], languages: ["Portugu�s"], availability: "Ter�a e Quinta, 09:00-13:00", max_cases_per_week: 8, current_active_cases: 3, status: "Activo", notes: "", created_at: "2026-07-01", updated_at: "2026-07-15" },
-      { id: "coun-2", user_id: "u-8", staff_id: "", full_name: "Pastor da Igreja", title: "Pastor", gender: "Masculino", phone: "862270000", email: "pastor.branch@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", counseling_categories: ["Família", "Casamento", "Liderança"], languages: ["Português", "Inglês"], availability: "Quarta e Sexta, 14:00-17:00", max_cases_per_week: 6, current_active_cases: 2, status: "Activo", notes: "Recebe casos sensíveis da igreja.", created_at: "2026-07-01", updated_at: "2026-07-15" }
+      { id: "coun-1", user_id: "u-2", staff_id: "", full_name: "Líder de Aconselhamento", title: "Irmã", gender: "Feminino", phone: "860000201", email: "aconselhamento@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", counseling_categories: ["Crescimento Espiritual", "Oração", "Apoio Emocional"], languages: ["Português"], availability: "Terça e Quinta, 09:00-13:00", max_cases_per_week: 8, current_active_cases: 0, status: "Activo", notes: "", created_at: "2026-07-01", updated_at: "2026-07-15" },
+      { id: "coun-2", user_id: "u-8", staff_id: "", full_name: "Pastor da Igreja", title: "Pastor", gender: "Masculino", phone: "862270000", email: "pastor.branch@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", counseling_categories: ["Família", "Casamento", "Liderança"], languages: ["Português", "Inglês"], availability: "Quarta e Sexta, 14:00-17:00", max_cases_per_week: 6, current_active_cases: 0, status: "Activo", notes: "Recebe casos sensíveis da igreja.", created_at: "2026-07-01", updated_at: "2026-07-15" }
     ],
-    appointments: [
-      { id: "ca-1", counseling_request_id: "cr-1", person_name: "Aminata Chivinda", counselor_id: "coun-1", counselor_name: "Líder de Aconselhamento", church_id: "church-hq", appointment_date: "2026-07-16", appointment_time: "10:00", duration_minutes: 45, location_type: "Presencial", location_details: "Sala de Aconselhamento", meeting_link: "", status: "Agendado", reminder_sent: false, notes: "", created_at: "2026-07-15", updated_at: "2026-07-15" },
-      { id: "ca-2", counseling_request_id: "cr-2", person_name: "Jo�o Nhaca", counselor_id: "coun-2", counselor_name: "Pastor da Igreja", church_id: "church-hq", appointment_date: "2026-07-15", appointment_time: "15:00", duration_minutes: 60, location_type: "Presencial", location_details: "Gabinete Pastoral", meeting_link: "", status: "Confirmado", reminder_sent: true, notes: "Caso sens�vel.", created_at: "2026-07-14", updated_at: "2026-07-15" }
-    ],
-    referrals: [
-      { id: "cref-1", counseling_request_id: "cr-2", referred_to_type: "Church Pastor", referred_to_user_id: "u-8", referred_to_role: "Church Pastor", referred_to_department: "", reason: "Caso familiar sensível requer acompanhamento pastoral.", urgency: "High", referred_by_user_id: "u-2", referred_by_name: "Líder de Aconselhamento", referred_at: "2026-07-15T08:30:00.000Z", status: "Em Curso", response_notes: "", completed_at: "", church_id: "church-hq", created_at: "2026-07-15", updated_at: "2026-07-15" }
-    ],
-    feedback: [
-      { id: "cfb-1", counseling_request_id: "cr-1", appointment_id: "ca-1", counselor_id: "coun-1", counselor_name: "Líder de Aconselhamento", feedback_summary: "", outcome: "Precisa de Acompanhamento", next_step: "Criar Acompanhamento", needs_follow_up: true, follow_up_date: "2026-07-20", needs_pastor_review: false, referred_to_pastor: "", confidentiality_note: "", visible_to_roles: ["Counseling Head", "Super Admin"], church_id: "church-hq", status: "Pendente", created_at: "2026-07-15", updated_at: "2026-07-15" }
-    ],
-    timeline: [
-      { id: "ctl-1", counseling_request_id: "cr-1", event_type: "created", title: "Pedido criado", description: "Pedido de aconselhamento criado a partir de Primeira Vez.", created_by: "Líder de Aconselhamento", created_at: "2026-07-15T09:00:00.000Z", metadata: {}, church_id: "church-hq" },
-      { id: "ctl-2", counseling_request_id: "cr-2", event_type: "referred", title: "Encaminhado ao Pastor da Igreja", description: "Caso encaminhado por sensibilidade pastoral.", created_by: "Líder de Aconselhamento", created_at: "2026-07-15T08:30:00.000Z", metadata: {}, church_id: "church-hq" }
-    ]
+    appointments: [],
+    referrals: [],
+    feedback: [],
+    timeline: []
   },
-  members: [
-    { id: "m-1", tratamento: "Pastor", nome: "Kene", apelido: "Ume", telefone: "+258 86 227 0000", email: "", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", celula: "Sede", departamento: "Leadership", estado: "Active", data_de_entrada: "2024-01-01", origem: "Manual", notas: "" },
-    { id: "m-2", tratamento: "Irmã", nome: "Aminata", apelido: "Chivinda", telefone: "848287179", email: "", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", cell_group_id: "cg-001", cell_id: "cr-0001", celula: "Dominio 1", departamento: "Acompanhamento", estado: "Active", data_de_entrada: "2026-07-05", origem: "Primeira Vez", invited_count: 1, last_cell_attendance: "2026-07-30", cell_pastoral_observation: "Acompanhamento de integração em curso." },
-    { id: "m-3", tratamento: "Sr.", nome: "Mateus", apelido: "Nhantumbo", telefone: "862720011", email: "mateus@example.com", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", cell_group_id: "cg-001", cell_id: "cr-0001", celula: "Dominio 1", departamento: "Células", estado: "Active", data_de_entrada: "2026-06-28", origem: "Primeira Vez", invited_count: 2, last_cell_attendance: "2026-08-02", cell_pastoral_observation: "Participa regularmente e está na Escola de Fundação." }
-  ],
-  foundationStudents: [
-    {
-      id: "fs-1",
-      first_timer_id: "ft-2",
-      member_id: "",
-      church_id: "church-hq",
-      nome: "Mateus",
-      apelido: "Nhantumbo",
-      telefone: "862720011",
-      celula: "Cell Central",
-      mes_de_inscricao: "2026-07",
-      class_attendance: { class_1: true, class_2: true, class_3: true, class_4: true, class_5: false, class_6: false, class_7: false },
-      completed_classes: 4,
-      class_progress_percent: 57,
-      estado: "Em Curso",
-      nota_exame: 0,
-      pratica_evangelismo: true,
-      numero_de_almas_ganhas: 2,
-      aprovado: false,
-      graduado: false,
-      certificado_emitido: false,
-      notes: "",
-      created_at: "2026-07-01",
-      updated_at: "2026-07-10"
-    }
-  ],
+  members: [],
+  foundationStudents: [],
   contributors: [],
   publicGivingSubmissions: [],
   finance: [
@@ -4659,15 +4619,12 @@ function normalizeState(saved) {
     const mergedUser = seedUser ? { ...user, department_permissions: [...seedUser.department_permissions], assigned_department: seedUser.assigned_department, assigned_staff_name: seedUser.assigned_staff_name } : user;
     return normalizeUserProfile(mergedUser, merged.churches || [], merged.departments || []);
   });
-  const portalMemberSeeds = new Map(seedData.members.filter((member) => member.cell_id).map((member) => [member.id, member]));
-  const savedMemberIds = new Set((merged.members || []).map((member) => member.id));
-  portalMemberSeeds.forEach((member, id) => {
-    if (!savedMemberIds.has(id)) merged.members.push(structuredClone(member));
-  });
-  merged.members = (merged.members || []).map((member) => {
-    const portalSeed = portalMemberSeeds.get(member.id);
-    return portalSeed ? { ...member, cell_group_id: portalSeed.cell_group_id, cell_id: portalSeed.cell_id, celula: portalSeed.celula, invited_count: member.invited_count ?? portalSeed.invited_count, last_cell_attendance: member.last_cell_attendance || portalSeed.last_cell_attendance, cell_pastoral_observation: member.cell_pastoral_observation || portalSeed.cell_pastoral_observation } : member;
-  });
+  // Purge legacy mock data
+  const isLegacyMockId = (id) => /^m-[123]$|^ft-[123]$|^fu-[123456]$|^fs-[123]$|^cr-[123]$|^ca-[12]$|^fin-[12345678]$|^disb-req-[489]$|^req-[123456789]$/.test(String(id || ""));
+  merged.members = (merged.members || []).filter((m) => !isLegacyMockId(m?.id));
+  merged.firstTimers = (merged.firstTimers || []).filter((ft) => !isLegacyMockId(ft?.id));
+  merged.followUps = (merged.followUps || []).filter((fu) => !isLegacyMockId(fu?.id));
+  merged.foundationStudents = (merged.foundationStudents || []).filter((fs) => !isLegacyMockId(fs?.id));
   merged.prisonMinistry = {
     ...structuredClone(seedData.prisonMinistry),
     ...(saved.prisonMinistry || {})
@@ -10109,35 +10066,46 @@ function applyFirstTimerCardFilters(list, filters = {}) {
   const query = String(filters.q || filters.search || filters.query || "").trim().toLowerCase();
 
   if (churchFilter) {
-    rows = rows.filter((p) => p.church_id === churchFilter || p.churchId === churchFilter);
+    rows = rows.filter((p) => String(p.church_id || p.churchId || "") === String(churchFilter));
   }
   if (cellFilter) {
-    rows = rows.filter((p) => p.cell_id === cellFilter);
+    rows = rows.filter((p) => String(p.cell_id || p.cellId || "") === String(cellFilter));
   }
   if (groupFilter) {
-    rows = rows.filter((p) => p.cell_group_id === groupFilter);
+    rows = rows.filter((p) => String(p.cell_group_id || p.cellGroupId || "") === String(groupFilter));
   }
   if (statusFilter) {
-    rows = rows.filter((p) => statusKey(p.estado_do_seguimento || p.follow_up_status || p.status) === statusKey(statusFilter));
+    rows = rows.filter((p) => {
+      const recStatus = p.estado_do_seguimento || p.follow_up_status || p.status || "Pending";
+      const key1 = statusKey(recStatus);
+      const key2 = statusKey(statusFilter);
+      return key1 === key2 || String(recStatus).toLowerCase() === String(statusFilter).toLowerCase();
+    });
   }
   if (workflowFilter) rows = rows.filter((p) => p.workflow_status === workflowFilter);
   if (workflowFilters.length) rows = rows.filter((p) => workflowFilters.includes(p.workflow_status));
   if (filters.quer_escola_de_fundacao || filters.wants_foundation_school) {
-    rows = rows.filter((p) => p.quer_escola_de_fundacao || p.wants_foundation_school || p.wantsFoundationSchool);
+    rows = rows.filter((p) => p.quer_escola_de_fundacao || p.wants_foundation_school || p.wantsFoundationSchool || p.foundation_school_interest);
   }
   if (filters.born_again || filters.nasceu_de_novo) {
     rows = rows.filter((p) => p.nasceu_de_novo || p.born_again || p.bornAgain);
   }
   if (filters.became_member) {
-    rows = rows.filter((p) => statusKey(p.estado_do_seguimento) === "becameMember" || p.converted_to_member);
+    rows = rows.filter((p) => ["becameMember", "closed"].includes(statusKey(p.estado_do_seguimento || p.follow_up_status)) || p.converted_to_member);
   }
   if (filters.sent_to_cell) {
-    rows = rows.filter((p) => ["Sent to Cell", "Enrolled in Foundation School"].includes(p.estado_do_seguimento));
+    rows = rows.filter((p) => ["Sent to Cell", "sentToCell", "Enrolled in Foundation School"].includes(p.estado_do_seguimento || p.follow_up_status) || p.cell_interest || p.interesse_em_celula);
   }
   if (query) {
     rows = rows.filter((p) =>
-      [p.full_name, p.fullName, p.nome, p.apelido, p.telefone, p.whatsapp, p.email, p.culto, p.endereco, p.celula, p.celula_preferida, p.conselheiro_responsavel, p.estado_do_seguimento]
-        .some((value) => String(value || "").toLowerCase().includes(query))
+      [
+        p.full_name, p.fullName, p.nome, p.apelido, p.first_name, p.last_name,
+        p.telefone, p.phone, p.whatsapp, p.email, p.culto, p.service_name,
+        p.endereco, p.address, p.neighborhood, p.bairro,
+        p.celula, p.cell_name, p.celula_preferida,
+        p.conselheiro_responsavel, p.responsible_name,
+        p.estado_do_seguimento, p.follow_up_status, p.first_timer_number
+      ].some((value) => String(value || "").toLowerCase().includes(query))
     );
   }
   return rows;
@@ -11764,9 +11732,9 @@ function importFirstTimerExcel(file) {
     if (!window.confirm(message)) return;
 
     const now = new Date().toISOString();
-    toImport.forEach((row, index) => {
+    toImport.forEach((row) => {
       const created = migrateFirstTimerRecord({
-        id: `ft-${Date.now()}-${index}`,
+        id: generateUuid(),
         first_timer_number: `FT-${new Date().getFullYear()}-${String((state.firstTimers || []).length + 1).padStart(4, "0")}`,
         ...row,
         church_id: row.church_id || activeUser?.church_id,
@@ -11786,6 +11754,184 @@ function importFirstTimerExcel(file) {
     saveState(`Imported ${newCount} first timers from Excel ${file.name}`);
     alert(`Sucesso: ${newCount} registos de Primeira Vez foram importados com sucesso!`);
     setRoute(activeRoute);
+  };
+
+  if (isBinary) {
+    reader.readAsArrayBuffer(file);
+  } else {
+    reader.readAsText(file);
+  }
+}
+
+function mapExcelRowToMemberRecord(row = {}, defaultChurchId = null) {
+  const normKey = (k) => String(k || "").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const get = (...candidates) => {
+    for (const c of candidates) {
+      const match = Object.keys(row).find((k) => normKey(k) === normKey(c) || normKey(k).includes(normKey(c)));
+      if (match && row[match] !== undefined && String(row[match]).trim() !== "") {
+        return String(row[match]).trim();
+      }
+    }
+    return "";
+  };
+
+  let fullNameVal = get("nome completo", "nome", "full name", "membro", "nome do membro", "name");
+  let phone = get("telefone", "contacto", "phone", "celular", "whatsapp", "contact");
+  let email = get("email", "e-mail", "correio");
+  let cellName = get("celula", "célula", "cell", "cell name", "nome da celula");
+  let cellGroup = get("grupo de celula", "grupo", "cell group", "zona");
+  let department = get("departamento", "department", "ministerio", "sector") || "Geral";
+  let churchNameVal = get("igreja", "church", "sede", "branch");
+  let neighborhood = get("bairro", "residencia", "endereco", "morada", "address");
+  let dob = get("data de nascimento", "nascimento", "data nascimento", "dob", "birth date");
+  let gender = get("genero", "género", "sexo", "gender");
+
+  const church = (state.churches || []).find((c) =>
+    (churchNameVal && (c.church_name?.toLowerCase().includes(churchNameVal.toLowerCase()) || c.public_name?.toLowerCase().includes(churchNameVal.toLowerCase())))
+  );
+
+  return {
+    nome: fullNameVal,
+    full_name: fullNameVal,
+    telefone: phone,
+    primary_phone: phone,
+    email: email,
+    celula: cellName,
+    cell_name: cellName,
+    cell_group_name: cellGroup,
+    departamento: department,
+    church_id: church?.id || defaultChurchId || activeUser?.church_id,
+    church_name: church?.church_name || churchNameVal || "E.C. Maputo Central - Sede",
+    neighborhood: neighborhood,
+    data_de_nascimento: dob,
+    genero: gender,
+    estado: "Active",
+    origem: "Excel Import",
+    data_de_entrada: new Date().toISOString().slice(0, 10),
+  };
+}
+
+async function importMembersExcel(file) {
+  if (!file) return;
+  const isBinary = /\.(xlsx|xls)$/i.test(file.name);
+  const reader = new FileReader();
+
+  reader.onload = async (e) => {
+    let rowsData = [];
+    try {
+      if (isBinary && window.XLSX) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = window.XLSX.read(data, { type: "array" });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        rowsData = window.XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+      } else {
+        const text = isBinary ? "" : String(e.target.result || "");
+        if (window.XLSX) {
+          const workbook = window.XLSX.read(text, { type: "string" });
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          rowsData = window.XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+        } else {
+          const lines = text.split(/\r?\n/).filter(Boolean);
+          const headers = (lines.shift() || "").split(/[,;\t]/).map((v) => v.trim());
+          rowsData = lines.map((line) => {
+            const values = line.split(/[,;\t]/);
+            return Object.fromEntries(headers.map((h, i) => [h, String(values[i] || "").trim()]));
+          });
+        }
+      }
+    } catch (err) {
+      console.error("[CE Members] Excel parsing error", err);
+      alert("Erro ao ler o ficheiro Excel de membros. Verifique o formato (.xlsx, .xls ou .csv).");
+      return;
+    }
+
+    if (!rowsData.length) {
+      alert("Nenhum dado encontrado na folha de membros carregada.");
+      return;
+    }
+
+    const defaultChurch = activeUser?.church_id || relationalChurches()[0]?.id;
+    const mappedRows = rowsData
+      .map((row) => mapExcelRowToMemberRecord(row, defaultChurch))
+      .filter((r) => r.full_name && r.full_name.trim().length > 1);
+
+    if (!mappedRows.length) {
+      alert("Não foram encontrados nomes de membros válidos no ficheiro.");
+      return;
+    }
+
+    let newCount = 0;
+    let duplicateCount = 0;
+    const existingList = state.members || [];
+    const toImport = [];
+
+    mappedRows.forEach((row) => {
+      const cleanPhone = String(row.telefone || "").replace(/\D/g, "");
+      const isDuplicate = existingList.some((item) => {
+        const itemPhone = String(item.telefone || item.primary_phone || item.phone || "").replace(/\D/g, "");
+        if (cleanPhone && itemPhone && cleanPhone === itemPhone) return true;
+        return String(fullName(item)).toLowerCase().trim() === row.full_name.toLowerCase().trim();
+      });
+
+      if (isDuplicate) {
+        duplicateCount++;
+      } else {
+        newCount++;
+        toImport.push(row);
+      }
+    });
+
+    if (!newCount) {
+      alert(`Todos os ${mappedRows.length} membros lidos já existem na base de dados (duplicados).`);
+      return;
+    }
+
+    const previewList = toImport.slice(0, 8).map((r, i) =>
+      `${i + 1}. ${r.full_name} (${r.telefone || "Sem tel."}) - ${r.church_name || "Igreja"} | Célula: ${r.celula || "Geral"}`
+    ).join("\n");
+
+    const message = `Ficheiro: ${file.name}\n` +
+      `Total lidos: ${mappedRows.length}\n` +
+      `Novos membros a importar: ${newCount}\n` +
+      `Duplicados existentes (ignorados): ${duplicateCount}\n\n` +
+      `Amostra dos primeiros membros:\n${previewList}\n\n` +
+      `Deseja importar e gravar estes ${newCount} membros no Supabase e na base de dados local?`;
+
+    if (!window.confirm(message)) return;
+
+    const now = new Date().toISOString();
+    const createdRecords = [];
+    toImport.forEach((row) => {
+      const created = migrateMemberRecord({
+        id: generateUuid(),
+        ...row,
+        created_at: now,
+        updated_at: now
+      });
+      state.members.push(created);
+      createdRecords.push(created);
+    });
+
+    saveState(`Imported ${newCount} members from Excel ${file.name}`);
+
+    // Persist each member to Supabase via repository
+    let successPersist = 0;
+    for (const record of createdRecords) {
+      try {
+        await persistMemberViaRepository("create", record);
+        successPersist++;
+      } catch (err) {
+        console.warn("[CE Members] Error persisting member to Supabase:", record.full_name, err);
+      }
+    }
+
+    alert(`Sucesso: ${newCount} membros foram importados e sincronizados com a base de dados!`);
+    if (activeRoute === "members") {
+      modulePageState.members.loaded = false;
+      void loadMembersPage({ force: true });
+    }
   };
 
   if (isBinary) {
@@ -11878,16 +12024,19 @@ function renderFirstTimers() {
 
 function renderFollowUpKanban(list) {
   const columns = [
-    [L("pending"), ["Pending"], "pending"],
-    [L("contacted"), ["Contacted"], "contacted"],
-    [L("noAnswer"), ["No Answer"], "pending"],
-    [L("visitScheduled"), ["Interested"], "contacted"],
-    [L("sentToCell"), ["Sent to Cell", "Enrolled in Foundation School"], "success"],
-    [L("closed"), ["Became Member", "Closed"], "closed"]
+    [cleanDisplayText(L("pending")), ["Pending", "Pendente"], "pending"],
+    [cleanDisplayText(L("contacted")), ["Contacted", "Contactado"], "contacted"],
+    [cleanDisplayText(L("noAnswer")), ["No Answer", "Sem Resposta"], "pending"],
+    [cleanDisplayText(L("visitScheduled")), ["Interested", "Interessado", "Visita Marcada", "Scheduled", "Agendado"], "contacted"],
+    [cleanDisplayText(L("sentToCell")), ["Sent to Cell", "Encaminhado para Célula", "Enrolled in Foundation School", "Inscrito na Escola de Fundação"], "success"],
+    [cleanDisplayText(L("closed")), ["Became Member", "Tornou-se Membro", "Closed", "Fechado", "Concluído"], "closed"]
   ];
   if (typeof KanbanBoard !== "function") return "";
   return KanbanBoard(columns.map(([title, statuses, tone]) => {
-    const items = list.filter((p) => statuses.includes(p.estado_do_seguimento));
+    const items = list.filter((p) => {
+      const st = String(p.estado_do_seguimento || p.follow_up_status || "Pending").trim();
+      return statuses.some((s) => s.toLowerCase() === st.toLowerCase() || statusKey(s) === statusKey(st));
+    });
     return [title, items.length, items.map((p) => typeof FollowUpCard === "function" ? FollowUpCard(p) : renderFirstTimerCard(p)).join(""), tone];
   }));
 }
@@ -11896,26 +12045,80 @@ function renderFollowUp() {
   const list = scoped(state.firstTimers, "followUp");
   const view = modulePageState.followUp.view;
   const filtered = applyFirstTimerCardFilters(list, followUpPageState.filter);
+
+  const pendingCount = list.filter((p) => ["pending", "Pending"].includes(statusKey(p.estado_do_seguimento || p.follow_up_status || "Pending"))).length;
+  const contactedCount = list.filter((p) => ["contacted", "Contacted"].includes(statusKey(p.estado_do_seguimento || p.follow_up_status))).length;
+  const noAnswerCount = list.filter((p) => ["noAnswer", "No Answer"].includes(statusKey(p.estado_do_seguimento || p.follow_up_status))).length;
+  const visitScheduledCount = list.filter((p) => ["interested", "Interested", "visitScheduled", "Scheduled"].includes(statusKey(p.estado_do_seguimento || p.follow_up_status))).length;
+  const sentToCellCount = list.filter((p) => ["Sent to Cell", "sentToCell", "Enrolled in Foundation School"].includes(p.estado_do_seguimento || p.follow_up_status) || p.cell_interest || p.interesse_em_celula).length;
+  const closedCount = list.filter((p) => ["Became Member", "becameMember", "Closed", "closed"].includes(p.estado_do_seguimento || p.follow_up_status) || p.converted_to_member).length;
+
+  const followupStatusOptions = [
+    { value: "Pending", label: cleanDisplayText(L("pending")) || "Pendente" },
+    { value: "Contacted", label: cleanDisplayText(L("contacted")) || "Contactado" },
+    { value: "No Answer", label: cleanDisplayText(L("noAnswer")) || "Sem Resposta" },
+    { value: "Interested", label: cleanDisplayText(L("visitScheduled")) || "Visita Marcada / Interessado" },
+    { value: "Sent to Cell", label: cleanDisplayText(L("sentToCell")) || "Encaminhado para Célula" },
+    { value: "Enrolled in Foundation School", label: cleanDisplayText(L("enrolledFoundation")) || "Inscrito na Escola de Fundação" },
+    { value: "Became Member", label: cleanDisplayText(L("becameMember")) || "Tornou-se Membro" },
+    { value: "Closed", label: cleanDisplayText(L("closed")) || "Fechado" }
+  ];
+
   setPageContent(`
-    ${sectionHeader(L("followUp"), L("followupSubtitle"), null, "bi-telephone-outbound")}
+    ${sectionHeader(cleanDisplayText(L("followUp")), cleanDisplayText(L("followupSubtitle")), null, "bi-telephone-outbound")}
     <div class="row g-3 mb-4 summary-cards-row">
-      ${sm("bi-hourglass-split", L("pending"), list.filter((p) => statusKey(p.estado_do_seguimento) === "pending").length, "followUp", { scrollTo: "follow-up-results", filterPayload: { followup: "pending" } })}
-      ${sm("bi-check2-circle", L("contacted"), list.filter((p) => statusKey(p.estado_do_seguimento) === "contacted").length, "followUp", { scrollTo: "follow-up-results", filterPayload: { followup: "contacted" } })}
-      ${sm("bi-telephone-x", L("noAnswer"), list.filter((p) => statusKey(p.estado_do_seguimento) === "noAnswer").length, "followUp", { scrollTo: "follow-up-results", filterPayload: { followup: "noAnswer" } })}
-      ${sm("bi-calendar-check", L("visitScheduled"), list.filter((p) => statusKey(p.estado_do_seguimento) === "interested").length, "followUp", { scrollTo: "follow-up-results", filterPayload: { followup: "interested" } })}
-      ${sm("bi-diagram-3", L("sentToCell"), list.filter((p) => ["Sent to Cell", "Enrolled in Foundation School"].includes(p.estado_do_seguimento)).length, "followUp", { scrollTo: "follow-up-results", filterPayload: { sent_to_cell: true } })}
+      ${sm("bi-telephone-outbound", cleanDisplayText(L("total")), list.length, "followUp", { scrollTo: "follow-up-results", filterPayload: {}, colClass: "col-sm-6 col-md-4 col-xl" })}
+      ${sm("bi-hourglass-split", cleanDisplayText(L("pending")), pendingCount, "followUp", { scrollTo: "follow-up-results", filterPayload: { followup: "Pending" }, colClass: "col-sm-6 col-md-4 col-xl" })}
+      ${sm("bi-check2-circle", cleanDisplayText(L("contacted")), contactedCount, "followUp", { scrollTo: "follow-up-results", filterPayload: { followup: "Contacted" }, colClass: "col-sm-6 col-md-4 col-xl" })}
+      ${sm("bi-telephone-x", cleanDisplayText(L("noAnswer")), noAnswerCount, "followUp", { scrollTo: "follow-up-results", filterPayload: { followup: "No Answer" }, colClass: "col-sm-6 col-md-4 col-xl" })}
+      ${sm("bi-calendar-check", cleanDisplayText(L("visitScheduled")), visitScheduledCount, "followUp", { scrollTo: "follow-up-results", filterPayload: { followup: "Interested" }, colClass: "col-sm-6 col-md-4 col-xl" })}
+      ${sm("bi-diagram-3", cleanDisplayText(L("sentToCell")), sentToCellCount, "followUp", { scrollTo: "follow-up-results", filterPayload: { followup: "Sent to Cell" }, colClass: "col-sm-6 col-md-4 col-xl" })}
+      ${sm("bi-person-check", cleanDisplayText(L("becameMember")), closedCount, "followUp", { scrollTo: "follow-up-results", filterPayload: { followup: "Became Member" }, colClass: "col-sm-6 col-md-4 col-xl" })}
     </div>
     ${summaryFilterChips("followUp")}
     <article id="follow-up-results" class="panel glass-panel">
-      ${filterBar({ month: false, viewToggle: `<div class="view-toggle" role="group"><button type="button" class="view-toggle-btn ${view === "kanban" ? "active" : ""}" data-followup-view="kanban"><i class="bi bi-kanban"></i><span>Kanban</span></button><button type="button" class="view-toggle-btn ${view === "table" ? "active" : ""}" data-followup-view="table"><i class="bi bi-table"></i><span>${L("tableView")}</span></button></div>` })}
+      ${filterBar({
+        filterScope: "followUp",
+        month: false,
+        statusOptions: followupStatusOptions,
+        searchValue: followUpPageState.filter.search || followUpPageState.filter.q || "",
+        churchValue: followUpPageState.filter.churchId || followUpPageState.filter.church_id || "",
+        statusValue: followUpPageState.filter.followup || followUpPageState.filter.status || "",
+        viewToggle: `<div class="view-toggle light-surface" role="group" aria-label="${cleanDisplayText(L("viewMode"))}"><button type="button" class="view-toggle-btn ${view === "kanban" ? "active" : ""}" data-followup-view="kanban"><i class="bi bi-kanban"></i><span>Kanban</span></button><button type="button" class="view-toggle-btn ${view === "table" ? "active" : ""}" data-followup-view="table"><i class="bi bi-table"></i><span>${cleanDisplayText(L("tableView"))}</span></button></div>`
+      })}
       ${view === "kanban"
-        ? renderFollowUpKanban(filtered.length ? filtered : list)
-        : (filtered.length ? dataTable([L("name"), L("phone"), L("counselor"), L("cellInterest"), L("counseling"), L("status"), L("actions")], filtered.map((p) => [
-          fullName(p), p.telefone, p.conselheiro_responsavel, yesNo(p.interesse_em_celula), yesNo(p.quer_aconselhamento), badge(p.estado_do_seguimento),
-          actionButtons([["view", "firstTimer", p.id, L("view")], ["followup", "firstTimer", p.id, L("updateFollowup")]])
-        ])) : noResultsHtml())}
+        ? renderFollowUpKanban(filtered)
+        : (filtered.length ? dataTable([
+            "Nº",
+            cleanDisplayText(L("name")),
+            cleanDisplayText(L("phone")),
+            cleanDisplayText(L("church")),
+            cleanDisplayText(L("cell")),
+            cleanDisplayText(L("status")),
+            cleanDisplayText(L("nextContact")),
+            "ESF",
+            "Célula",
+            cleanDisplayText(L("actions"))
+          ], filtered.map((p) => {
+            const fu = (state.followUps || []).find((f) => f.first_timer_id === p.id);
+            return [
+              p.first_timer_number || "—",
+              cleanDisplayText(fullName(p)),
+              p.telefone || p.phone || "—",
+              cleanDisplayText(churchName(p.church_id)),
+              cleanDisplayText(p.celula || p.cell_name || p.celula_preferida || "—"),
+              badge(p.estado_do_seguimento || p.follow_up_status || "Pending"),
+              fu?.proxima_data_de_contacto || p.next_follow_up_date || "—",
+              yesNo(p.foundation_school_interest ?? p.quer_escola_de_fundacao),
+              yesNo(p.cell_interest ?? p.interesse_em_celula),
+              actionButtons([
+                ["view", "firstTimer", p.id, cleanDisplayText(L("view"))],
+                ["followup", "firstTimer", p.id, cleanDisplayText(L("updateFollowup"))]
+              ])
+            ];
+          })) : noResultsHtml())}
     </article>
-    ${moduleSection(L("rptFunnelTitle"), L("rptFunnelHint"), "bi-funnel", "", renderDomainReportsPanel("funnel", { module: "followUp", showTitle: false }))}
+    ${moduleSection(cleanDisplayText(L("rptFunnelTitle")), cleanDisplayText(L("rptFunnelHint")), "bi-funnel", "", renderDomainReportsPanel("funnel", { module: "followUp", showTitle: false }))}
   `);
 }
 
@@ -12332,7 +12535,7 @@ async function candidateAction(action, id) {
           return alert("O membro existente pertence a outra célula. Decida manualmente a transferência antes de concluir a aprovação.");
         }
         if (!member) {
-          member = { id: `m-${Date.now()}`, nome: candidate.full_name.split(" ")[0], apelido: candidate.full_name.split(" ").slice(1).join(" "), full_name: candidate.full_name, telefone: candidate.primary_phone, primary_phone: candidate.primary_phone, email: candidate.email || "", church_id: candidate.church_id, church_name: candidate.church_name, cell_group_id: candidate.cell_group_id, cell_group_name: candidate.cell_group_name, cell_id: candidate.cell_id, cell_name: candidate.cell_name, celula: candidate.cell_name, origem: candidate.registration_source, estado: "Active", status: "Active", membership_status: "Active", data_quality_status: candidate.data_quality_status, created_at: now, updated_at: now };
+          member = { id: generateUuid(), nome: candidate.full_name.split(" ")[0], apelido: candidate.full_name.split(" ").slice(1).join(" "), full_name: candidate.full_name, telefone: candidate.primary_phone, primary_phone: candidate.primary_phone, email: candidate.email || "", church_id: candidate.church_id, church_name: candidate.church_name, cell_group_id: candidate.cell_group_id, cell_group_name: candidate.cell_group_name, cell_id: candidate.cell_id, cell_name: candidate.cell_name, celula: candidate.cell_name, origem: candidate.registration_source, estado: "Active", status: "Active", membership_status: "Active", data_quality_status: candidate.data_quality_status, created_at: now, updated_at: now };
           const memberResult = await persistMemberViaRepository("create", member); if (memberResult?.ok === false) return alert(memberResult.error || "Não foi possível criar o membro oficial.");
           // Keep a visible local fallback when the active provider cannot yet write.
           // It is preserved during hydration instead of disappearing after refresh.
@@ -12376,7 +12579,7 @@ function renderMembers() {
   const activeDisplay = pageState.loaded ? pageState.totalCount : "—";
   const churchDisplay = pageState.loaded ? (churchesCount || state.churches?.length || "—") : "—";
   setPageContent(`
-    ${sectionHeader(L("members"), L("membersSubtitle"), "member", "bi-people", { actions: `<button type="button" class="btn btn-outline-cyan btn-touch" data-hq-members-dry-run><i class="bi bi-file-earmark-spreadsheet me-2"></i>${lang === "pt" ? "Pré-visualizar importação histórica" : "Preview legacy import"}</button><input id="hq-members-import-file" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>` })}
+    ${sectionHeader(L("members"), L("membersSubtitle"), "member", "bi-people", { actions: `<button type="button" class="btn btn-outline-cyan btn-touch" data-hq-members-dry-run><i class="bi bi-eye me-2"></i>${lang === "pt" ? "Pré-visualizar histórico" : "Preview legacy import"}</button><input id="hq-members-import-file" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden><label class="btn btn-outline-success btn-touch mb-0"><i class="bi bi-file-earmark-excel me-2"></i>${lang === "pt" ? "Importar Excel (.xlsx / .csv)" : "Import Excel"}<input id="members-import-file-input" type="file" accept=".xlsx,.xls,.csv" data-members-import hidden></label>` })}
     <div class="row g-3 mb-4 summary-cards-row">
       ${sm("bi-people", L("total"), totalDisplay, "members", { scrollTo: "members-results", filterPayload: {} })}
       ${sm("bi-check-circle", L("active"), activeDisplay, "members", { scrollTo: "members-results", filterPayload: { status: "active" } })}
@@ -21128,7 +21331,7 @@ async function submitForm(form) {
       saveState(`Updated member ${fullName(state.members[index])}`);
     } else {
       const created = migrateMemberRecord({
-        id: `m-${Date.now()}`,
+        id: generateUuid(),
         church_id: data.church_id || activeUser.church_id,
         created_by: activeUser.name,
         updated_by: activeUser.name,
@@ -21176,7 +21379,7 @@ async function submitForm(form) {
       saveState(`Updated first timer ${fullName(state.firstTimers[index])}`);
     } else {
       const created = migrateFirstTimerRecord({
-        id: `ft-${Date.now()}`,
+        id: generateUuid(),
         church_id: data.church_id || activeUser.church_id,
         created_by: activeUser.name,
         updated_by: activeUser.name,
@@ -21861,7 +22064,7 @@ async function submitFollowup(form) {
     if (repoResult?.ok && repoResult.data) Object.assign(person, migrateFirstTimerRecord(repoResult.data));
 
     const followUpPayload = migrateFollowUpRecord({
-      id: `fu-${Date.now()}`,
+      id: generateUuid(),
       first_timer_id: person.id,
       person_type: "First Timer",
       full_name: fullName(person),
@@ -21999,7 +22202,7 @@ function quickAction(action, type, id) {
       return;
     }
     const nameParts = fullName(record).split(/\s+/).filter(Boolean);
-    const memberId = `mem-${Date.now()}`;
+    const memberId = generateUuid();
     const memberRecord = {
       id: memberId,
       first_timer_id: record.id,
@@ -22368,8 +22571,159 @@ function quickAction(action, type, id) {
   if (action === "export") return alert(`${L("export")}: ${id}`);
 }
 
+function exportFollowUpCsv() {
+  const list = scoped(state.firstTimers, "followUp");
+  const filtered = applyFirstTimerCardFilters(list, followUpPageState.filter);
+  const headers = [
+    "Nº",
+    "Nome Completo",
+    "Telefone",
+    "WhatsApp",
+    "Igreja",
+    "Célula",
+    "Bairro",
+    "Profissão",
+    "Nasceu de Novo",
+    "Interesse ESF",
+    "Interesse Célula",
+    "Próximo Culto",
+    "Estado do Seguimento",
+    "Conselheiro Responsável",
+    "Último Contacto",
+    "Próximo Contacto",
+    "Observações"
+  ];
+  const rows = filtered.map((p, idx) => {
+    const fu = (state.followUps || []).find((f) => f.first_timer_id === p.id);
+    return [
+      p.first_timer_number || `FT-${idx + 1}`,
+      `"${cleanDisplayText(fullName(p)).replace(/"/g, '""')}"`,
+      `"${p.telefone || p.phone || ""}"`,
+      `"${p.whatsapp || p.telefone || p.phone || ""}"`,
+      `"${cleanDisplayText(churchName(p.church_id)).replace(/"/g, '""')}"`,
+      `"${cleanDisplayText(p.celula || p.cell_name || p.celula_preferida || "").replace(/"/g, '""')}"`,
+      `"${cleanDisplayText(p.neighborhood || p.endereco || "").replace(/"/g, '""')}"`,
+      `"${cleanDisplayText(p.profession || "").replace(/"/g, '""')}"`,
+      p.nasceu_de_novo ? "Sim" : "Não",
+      (p.foundation_school_interest || p.quer_escola_de_fundacao) ? "Sim" : "Não",
+      (p.cell_interest || p.interesse_em_celula) ? "Sim" : "Não",
+      (p.next_service_interest || p.proximo_culto) ? "Sim" : "Não",
+      `"${p.estado_do_seguimento || p.follow_up_status || "Pendente"}"`,
+      `"${cleanDisplayText(p.conselheiro_responsavel || fu?.responsible_name || "").replace(/"/g, '""')}"`,
+      `"${fu?.data_do_contacto || ""}"`,
+      `"${fu?.proxima_data_de_contacto || p.next_follow_up_date || ""}"`,
+      `"${cleanDisplayText(p.notas || fu?.notas || "").replace(/"/g, '""')}"`
+    ].join(",");
+  });
+  const csvContent = "\uFEFF" + [headers.join(","), ...rows].join("\n");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `acompanhamento-export-${new Date().toISOString().slice(0, 10)}.csv`;
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
+function exportFirstTimersCsv() {
+  const list = scoped(state.firstTimers, "firstTimers");
+  const filtered = applyFirstTimerCardFilters(list, firstTimersPageState.filter);
+  const headers = [
+    "Nº",
+    "Nome Completo",
+    "Telefone",
+    "WhatsApp",
+    "Igreja",
+    "Culto",
+    "Bairro",
+    "Profissão",
+    "Convidado Por",
+    "Nasceu de Novo",
+    "Interesse ESF",
+    "Interesse Célula",
+    "Próximo Culto",
+    "Workflow Status",
+    "Estado do Seguimento"
+  ];
+  const rows = filtered.map((p, idx) => [
+    p.first_timer_number || `FT-${idx + 1}`,
+    `"${cleanDisplayText(fullName(p)).replace(/"/g, '""')}"`,
+    `"${p.telefone || p.phone || ""}"`,
+    `"${p.whatsapp || p.telefone || p.phone || ""}"`,
+    `"${cleanDisplayText(churchName(p.church_id)).replace(/"/g, '""')}"`,
+    `"${cleanDisplayText(p.culto || p.service_name || "").replace(/"/g, '""')}"`,
+    `"${cleanDisplayText(p.neighborhood || p.endereco || "").replace(/"/g, '""')}"`,
+    `"${cleanDisplayText(p.profession || "").replace(/"/g, '""')}"`,
+    `"${cleanDisplayText(p.invited_by_name || p.convidado_por || "").replace(/"/g, '""')}"`,
+    p.nasceu_de_novo ? "Sim" : "Não",
+    (p.foundation_school_interest || p.quer_escola_de_fundacao) ? "Sim" : "Não",
+    (p.cell_interest || p.interesse_em_celula) ? "Sim" : "Não",
+    (p.next_service_interest || p.proximo_culto) ? "Sim" : "Não",
+    `"${firstTimerWorkflowLabel(p.workflow_status)}"`,
+    `"${p.estado_do_seguimento || p.follow_up_status || "Pendente"}"`
+  ].join(","));
+  const csvContent = "\uFEFF" + [headers.join(","), ...rows].join("\n");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `primeiras-vezes-export-${new Date().toISOString().slice(0, 10)}.csv`;
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
+function exportMembersCsv() {
+  const list = scoped(state.members, "members");
+  const filtered = applyMemberCardFilters(list, modulePageState?.members?.filter || {});
+  const headers = [
+    "ID",
+    "Nome Completo",
+    "Telefone",
+    "Email",
+    "Igreja",
+    "Célula",
+    "Departamento",
+    "Morada",
+    "Estado",
+    "Data de Entrada"
+  ];
+  const rows = filtered.map((m) => [
+    m.id,
+    `"${cleanDisplayText(fullName(m)).replace(/"/g, '""')}"`,
+    `"${m.telefone || m.phone || m.primary_phone || ""}"`,
+    `"${m.email || ""}"`,
+    `"${cleanDisplayText(churchName(m.church_id)).replace(/"/g, '""')}"`,
+    `"${cleanDisplayText(m.celula || m.cell_name || "").replace(/"/g, '""')}"`,
+    `"${cleanDisplayText(m.departamento || m.department_name || "").replace(/"/g, '""')}"`,
+    `"${cleanDisplayText(m.endereco || m.address || m.neighborhood || "").replace(/"/g, '""')}"`,
+    `"${m.estado || m.status || "Activo"}"`,
+    `"${m.data_de_entrada || m.member_since || ""}"`
+  ].join(","));
+  const csvContent = "\uFEFF" + [headers.join(","), ...rows].join("\n");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `membros-export-${new Date().toISOString().slice(0, 10)}.csv`;
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
 function applyFilterToolbar(scope, sourceElement = document) {
   const toolbar = sourceElement.closest?.(".filter-toolbar") || document;
+  if (scope === "followUp") {
+    const search = toolbar.querySelector(`[data-filter-search="${scope}"]`)?.value.trim() || "";
+    const churchId = toolbar.querySelector(`[data-filter-church="${scope}"]`)?.value || "";
+    const status = toolbar.querySelector(`[data-filter-status="${scope}"]`)?.value || "";
+    followUpPageState.filter = { search, churchId, status };
+    if (activeRoute === "followUp") renderFollowUp();
+    return true;
+  }
+  if (scope === "firstTimers") {
+    const search = toolbar.querySelector(`[data-filter-search="${scope}"]`)?.value.trim() || "";
+    const churchId = toolbar.querySelector(`[data-filter-church="${scope}"]`)?.value || "";
+    const status = toolbar.querySelector(`[data-filter-status="${scope}"]`)?.value || "";
+    firstTimersPageState.filter = { search, churchId, status };
+    if (activeRoute === "firstTimers") renderFirstTimers();
+    return true;
+  }
   if (scope !== "cellRegistry") {
     const search = toolbar.querySelector(`[data-filter-search="${scope}"]`)?.value.trim().toLowerCase() || "";
     const churchSelect = toolbar.querySelector(`[data-filter-church="${scope}"]`);
@@ -23127,6 +23481,22 @@ document.addEventListener("click", async (event) => {
   if (openButton) return openForm(openButton.dataset.openForm);
   const applyFilterButton = event.target.closest("[data-filter-apply]");
   if (applyFilterButton && applyFilterToolbar(applyFilterButton.dataset.filterApply, applyFilterButton)) return;
+  const exportButton = event.target.closest("[data-filter-export], .filter-toolbar .action-secondary, [data-action='export']");
+  if (exportButton) {
+    const scope = exportButton.dataset?.filterExport || (activeRoute === "followUp" ? "followUp" : activeRoute === "firstTimers" ? "firstTimers" : activeRoute === "members" ? "members" : "");
+    if (scope === "followUp") {
+      exportFollowUpCsv();
+      return;
+    }
+    if (scope === "firstTimers") {
+      exportFirstTimersCsv();
+      return;
+    }
+    if (scope === "members") {
+      exportMembersCsv();
+      return;
+    }
+  }
   const firstTimerBulkButton = event.target.closest("[data-first-timer-bulk]");
   if (firstTimerBulkButton) return processFirstTimerBulkReview(firstTimerBulkButton.dataset.firstTimerBulk);
   const actionButton = event.target.closest("[data-action]");
@@ -23354,7 +23724,74 @@ byId("entryModal")?.addEventListener("hidden.bs.modal", () => {
   byId("entryForm")?.querySelector('button[type="submit"]')?.classList.remove("d-none");
 });
 
+document.addEventListener("input", (event) => {
+  if (event.target.matches('[data-filter-search="followUp"]')) {
+    const toolbar = event.target.closest(".filter-toolbar");
+    if (toolbar) {
+      const search = event.target.value.trim();
+      const churchId = toolbar.querySelector('[data-filter-church="followUp"]')?.value || "";
+      const status = toolbar.querySelector('[data-filter-status="followUp"]')?.value || "";
+      followUpPageState.filter = { search, churchId, status };
+      if (activeRoute === "followUp") {
+        clearTimeout(window.__followupSearchDebounce);
+        window.__followupSearchDebounce = setTimeout(() => {
+          renderFollowUp();
+          const inp = document.querySelector('[data-filter-search="followUp"]');
+          if (inp) {
+            inp.focus();
+            inp.setSelectionRange(inp.value.length, inp.value.length);
+          }
+        }, 180);
+      }
+    }
+    return;
+  }
+  if (event.target.matches('[data-filter-search="firstTimers"]')) {
+    const toolbar = event.target.closest(".filter-toolbar");
+    if (toolbar) {
+      const search = event.target.value.trim();
+      const churchId = toolbar.querySelector('[data-filter-church="firstTimers"]')?.value || "";
+      const status = toolbar.querySelector('[data-filter-status="firstTimers"]')?.value || "";
+      firstTimersPageState.filter = { search, churchId, status };
+      if (activeRoute === "firstTimers") {
+        clearTimeout(window.__firstTimersSearchDebounce);
+        window.__firstTimersSearchDebounce = setTimeout(() => {
+          renderFirstTimers();
+          const inp = document.querySelector('[data-filter-search="firstTimers"]');
+          if (inp) {
+            inp.focus();
+            inp.setSelectionRange(inp.value.length, inp.value.length);
+          }
+        }, 180);
+      }
+    }
+    return;
+  }
+});
+
 document.addEventListener("change", (event) => {
+  if (event.target.matches('[data-filter-church="followUp"], [data-filter-status="followUp"]')) {
+    const toolbar = event.target.closest(".filter-toolbar");
+    if (toolbar) {
+      const search = toolbar.querySelector('[data-filter-search="followUp"]')?.value.trim() || "";
+      const churchId = toolbar.querySelector('[data-filter-church="followUp"]')?.value || "";
+      const status = toolbar.querySelector('[data-filter-status="followUp"]')?.value || "";
+      followUpPageState.filter = { search, churchId, status };
+      if (activeRoute === "followUp") renderFollowUp();
+    }
+    return;
+  }
+  if (event.target.matches('[data-filter-church="firstTimers"], [data-filter-status="firstTimers"]')) {
+    const toolbar = event.target.closest(".filter-toolbar");
+    if (toolbar) {
+      const search = toolbar.querySelector('[data-filter-search="firstTimers"]')?.value.trim() || "";
+      const churchId = toolbar.querySelector('[data-filter-church="firstTimers"]')?.value || "";
+      const status = toolbar.querySelector('[data-filter-status="firstTimers"]')?.value || "";
+      firstTimersPageState.filter = { search, churchId, status };
+      if (activeRoute === "firstTimers") renderFirstTimers();
+    }
+    return;
+  }
   if (event.target.matches("#hq-members-import-file")) {
     const file = event.target.files?.[0];
     const parse = window.CEMembers?.parseHqMembersWorkbook;
@@ -23383,6 +23820,11 @@ document.addEventListener("change", (event) => {
   }
   if (event.target.matches("[data-first-timer-import]")) {
     importFirstTimerCsv(event.target.files?.[0]);
+    event.target.value = "";
+    return;
+  }
+  if (event.target.matches("[data-members-import]")) {
+    importMembersExcel(event.target.files?.[0]);
     event.target.value = "";
     return;
   }
