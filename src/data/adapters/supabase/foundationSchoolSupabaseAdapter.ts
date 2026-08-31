@@ -90,7 +90,15 @@ async function listRows(table: string, filters: Filters = {}, order = "created_a
   let query = connection.client.from(table).select("*");
   for (const [key, value] of Object.entries(filters)) query = query.eq(key, value);
   const { data, error } = await query.order(order, { ascending: order === "lesson_number" || order.endsWith("_date") });
-  return error ? errorResult(error) : ok((data || []) as FoundationRecord[]);
+  if (error) return errorResult(error);
+  const rows = (data || []) as FoundationRecord[];
+  const realRows = rows.filter((row) => {
+    if (row?.metadata && typeof row.metadata === "object" && (row.metadata as Record<string, unknown>).demo === true) return false;
+    const name = String(row?.name || row?.full_name || "");
+    if (/Aluno Demo|Professor Demo|Turma.*Demo|^FST-DEMO|^FSC-DEMO|^FSS-DEMO/i.test(name)) return false;
+    return true;
+  });
+  return ok(realRows);
 }
 
 async function getRow(table: string, id: EntityId): Promise<DataResult<FoundationRecord | null>> {
