@@ -3422,10 +3422,7 @@ const seedData = {
   followUps: [],
   counseling: {
     requests: [],
-    counselors: [
-      { id: "coun-1", user_id: "u-2", staff_id: "", full_name: "Líder de Aconselhamento", title: "Irmã", gender: "Feminino", phone: "860000201", email: "aconselhamento@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", counseling_categories: ["Crescimento Espiritual", "Oração", "Apoio Emocional"], languages: ["Português"], availability: "Terça e Quinta, 09:00-13:00", max_cases_per_week: 8, current_active_cases: 0, status: "Activo", notes: "", created_at: "2026-07-01", updated_at: "2026-07-15" },
-      { id: "coun-2", user_id: "u-8", staff_id: "", full_name: "Pastor da Igreja", title: "Pastor", gender: "Masculino", phone: "862270000", email: "pastor.branch@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", counseling_categories: ["Família", "Casamento", "Liderança"], languages: ["Português", "Inglês"], availability: "Quarta e Sexta, 14:00-17:00", max_cases_per_week: 6, current_active_cases: 0, status: "Activo", notes: "Recebe casos sensíveis da igreja.", created_at: "2026-07-01", updated_at: "2026-07-15" }
-    ],
+    counselors: [],
     appointments: [],
     referrals: [],
     feedback: [],
@@ -3612,9 +3609,9 @@ const seedData = {
     ]
   },
   sacraments: {
-    baptisms: [{ id: "bap-1", church_id: "church-hq", nome: "Mateus", apelido: "Nhantumbo", telefone: "862720011", celula: "Cell Central", idade: 28, data_do_baptismo: "2026-07-20", local_do_baptismo: "Sede", baptizado_por: "Pastor Kene Ume", quer_certificado: true, certificado_pago: true, certificado_emitido: false, estado: "Scheduled", observacoes: "" }],
-    marriages: [{ id: "mar-1", church_id: "church-hq", nome_do_noivo: "Paulo M.", telefone_do_noivo: "860000001", nome_da_noiva: "Helena C.", telefone_da_noiva: "860000002", aconselhamento_concluido: false, data_do_casamento: "2026-08-24", pastor_responsavel: "Pastor Kene Ume", documentos_entregues: true, estado: "In Progress", observacoes: "" }],
-    babies: [{ id: "baby-1", church_id: "church-hq", nome_da_crianca: "Grace Ana", data_de_nascimento: "2026-03-14", nome_do_pai: "Tomas", nome_da_mae: "Ana", telefone_dos_pais: "874520011", data_da_dedicacao: "2026-07-26", pastor_responsavel: "Pastor Kene Ume", certificado_emitido: false, estado: "Scheduled", observacoes: "" }]
+    baptisms: [],
+    marriages: [],
+    babies: []
   },
   programs: [
     { id: "prog-1", church_id: "church-hq", name: "Sunday Service", owner: "Programs Team", category: "Local Church", status: "Scheduled", program_type: "Service", start_date: "2026-07-20" },
@@ -4619,7 +4616,7 @@ function normalizeState(saved) {
     return normalizeUserProfile(mergedUser, merged.churches || [], merged.departments || []);
   });
   // Purge legacy mock data
-  const isLegacyMockId = (id) => /^m-[123]$|^ft-[123]$|^fu-[123456]$|^fs-[123]$|^cr-[123]$|^ca-[12]$|^fin-[12345678]$|^disb-req-[489]$|^req-[123456789]$/.test(String(id || ""));
+  const isLegacyMockId = (id) => /^m-[123]$|^ft-[123]$|^fu-[123456]$|^fs-[123]$|^cr-[123]$|^ca-[12]$|^fin-[12345678]$|^disb-req-[489]$|^req-[123456789]$|^bap-[0-9]+|^mar-[0-9]+|^baby-[0-9]+|^coun-[0-9]+|^counselor-[0-9]+|^apt-[0-9]+|^ref-[0-9]+|^fb-[0-9]+/i.test(String(id || ""));
   merged.members = (merged.members || []).filter((m) => !isLegacyMockId(m?.id));
   merged.firstTimers = (merged.firstTimers || []).filter((ft) => !isLegacyMockId(ft?.id));
   merged.followUps = (merged.followUps || []).filter((fu) => !isLegacyMockId(fu?.id));
