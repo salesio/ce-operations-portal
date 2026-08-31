@@ -4620,7 +4620,15 @@ function normalizeState(saved) {
   merged.members = (merged.members || []).filter((m) => !isLegacyMockId(m?.id));
   merged.firstTimers = (merged.firstTimers || []).filter((ft) => !isLegacyMockId(ft?.id));
   merged.followUps = (merged.followUps || []).filter((fu) => !isLegacyMockId(fu?.id));
-  merged.foundationStudents = (merged.foundationStudents || []).filter((fs) => !isLegacyMockId(fs?.id));
+  merged.foundationStudents = (merged.foundationStudents || []).filter((fs) => !isLegacyMockId(fs?.id) && !isDemoFoundationRecord(fs));
+  merged.foundationClassGroups = (merged.foundationClassGroups || []).filter((fc) => !isDemoFoundationRecord(fc));
+  merged.foundationTeachers = (merged.foundationTeachers || []).filter((ft) => !isDemoFoundationRecord(ft));
+  merged.foundationLessonSessions = (merged.foundationLessonSessions || []).filter((fls) => !isDemoFoundationRecord(fls));
+  merged.foundationLessonProgress = (merged.foundationLessonProgress || []).filter((flp) => !isDemoFoundationRecord(flp));
+  merged.foundationLessonAttendance = (merged.foundationLessonAttendance || []).filter((fla) => !isDemoFoundationRecord(fla));
+  merged.foundationLessonTestSubmissions = (merged.foundationLessonTestSubmissions || []).filter((flt) => !isDemoFoundationRecord(flt));
+  merged.foundationSoulWinning = (merged.foundationSoulWinning || []).filter((fsw) => !isDemoFoundationRecord(fsw));
+  merged.foundationFinalExams = (merged.foundationFinalExams || []).filter((ffe) => !isDemoFoundationRecord(ffe));
   merged.prisonMinistry = {
     ...structuredClone(seedData.prisonMinistry),
     ...(saved.prisonMinistry || {})
@@ -11579,8 +11587,8 @@ function firstTimerActions(id) {
 
   // Downstream flows
   const isEnrolledFS = (state.foundationStudents || []).some((s) => s.first_timer_id === id || (s.phone && s.phone === (row.telefone || row.phone)));
-  if ((row.foundation_school_interest || row.quer_escola_de_fundacao) && !isEnrolledFS) {
-    actions.push(["enrollFoundation", "firstTimer", id, "Matricular na ESF"]);
+  if (!isEnrolledFS) {
+    actions.push(["enrollFoundation", "firstTimer", id, "Enroll FS / Matricular na ESF"]);
   }
 
   const isConvertedMember = row.converted_to_member || (state.members || []).some((m) => m.first_timer_id === id || (m.telefone && m.telefone === (row.telefone || row.phone)));
@@ -13965,6 +13973,15 @@ function ensureFoundationClassGroupContexts(hq, churchLabel) {
   });
 }
 
+function isDemoFoundationRecord(item) {
+  if (!item) return false;
+  const str = String(item.id || "") + " " + String(item.name || "") + " " + String(item.full_name || "") + " " + String(item.student_number || "") + " " + String(item.class_code || "") + " " + String(item.teacher_number || "") + " " + String(item.enrollment_number || "");
+  if (/demo|^8[1-5]000000-|^fs-[1-9]$|^fst-[1-9]$|^fsc-[1-9]$|^fse-[1-9]$|^fss-[1-9]$/i.test(str)) return true;
+  if (/Aluno Demo|Professor Demo|Turma.*Demo|FSC-DEMO|FST-DEMO|FSS-DEMO|FSE-DEMO/i.test(str)) return true;
+  if (item.metadata && typeof item.metadata === "object" && item.metadata.demo === true) return true;
+  return false;
+}
+
 function ensureFoundationData() {
   const today = new Date().toISOString().slice(0, 10);
   const hq = state.churches?.[0]?.id || "church-hq";
@@ -13972,6 +13989,11 @@ function ensureFoundationData() {
   if (!Array.isArray(state.foundationTeachers)) state.foundationTeachers = [];
   if (!Array.isArray(state.foundationClassGroups)) state.foundationClassGroups = [];
   if (!Array.isArray(state.foundationStudents)) state.foundationStudents = [];
+
+  // Purge any legacy mock foundation records
+  state.foundationStudents = state.foundationStudents.filter((s) => !isDemoFoundationRecord(s));
+  state.foundationClassGroups = state.foundationClassGroups.filter((c) => !isDemoFoundationRecord(c));
+  state.foundationTeachers = state.foundationTeachers.filter((t) => !isDemoFoundationRecord(t));
   if (!Array.isArray(state.foundationLessonSessions)) state.foundationLessonSessions = [];
   if (!Array.isArray(state.foundationLessonProgress)) state.foundationLessonProgress = [];
   if (!Array.isArray(state.foundationLessonAttendance)) state.foundationLessonAttendance = [];

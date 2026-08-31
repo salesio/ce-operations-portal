@@ -94,8 +94,8 @@ async function listRows(table: string, filters: Filters = {}, order = "created_a
   const rows = (data || []) as FoundationRecord[];
   const realRows = rows.filter((row) => {
     if (row?.metadata && typeof row.metadata === "object" && (row.metadata as Record<string, unknown>).demo === true) return false;
-    const name = String(row?.name || row?.full_name || "");
-    if (/Aluno Demo|Professor Demo|Turma.*Demo|^FST-DEMO|^FSC-DEMO|^FSS-DEMO/i.test(name)) return false;
+    const str = String(row?.id || "") + " " + String(row?.name || "") + " " + String(row?.full_name || "") + " " + String(row?.class_code || "") + " " + String(row?.teacher_number || "") + " " + String(row?.student_number || "") + " " + String(row?.enrollment_number || "");
+    if (/Aluno Demo|Professor Demo|Turma.*Demo|^FST-DEMO|^FSC-DEMO|^FSS-DEMO|^FSE-DEMO|^8[1-5]000000-/i.test(str)) return false;
     return true;
   });
   return ok(realRows);
