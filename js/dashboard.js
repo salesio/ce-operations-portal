@@ -9358,6 +9358,7 @@ function canAccessNavRoute(route) {
 }
 
 function canEnterRoute(route) {
+  if (isCellLeaderOrAssistant(activeUser) && ["cellPortal", "cellReceivedReports", "cellWeeklyReport"].includes(route)) return true;
   if (!isRouteInRoleWorkspace(route)) return false;
   const nav = resolveRouteAccess(route);
   return nav.access?.can_view && !nav.locked;
@@ -9613,12 +9614,21 @@ function renderAccessDenied() {
 }
 
 function setRoute(route) {
-  if (isPastoralCareRector(activeUser) && (!route || route === "dashboard" || route === "login")) {
+  if (isCellLeaderOrAssistant(activeUser) && (!route || route === "dashboard" || route === "login")) {
+    route = "cellPortal";
+  } else if (isPastoralCareRector(activeUser) && (!route || route === "dashboard" || route === "login")) {
     route = "firstTimers";
   }
   const prevRoute = activeRoute;
-  activeRoute = route || (isPastoralCareRector(activeUser) ? "firstTimers" : "dashboard");
+  activeRoute = route || (isCellLeaderOrAssistant(activeUser) ? "cellPortal" : isPastoralCareRector(activeUser) ? "firstTimers" : "dashboard");
+  if (isCellLeaderOrAssistant(activeUser) && (!activeRoute || activeRoute === "dashboard" || activeRoute === "login")) {
+    activeRoute = "cellPortal";
+  }
   if (CELL_ROUTE_ALIASES[activeRoute]) activeRoute = CELL_ROUTE_ALIASES[activeRoute];
+  if (isCellLeaderOrAssistant(activeUser) && isCellRoute(activeRoute) && !["cellPortal", "cellReceivedReports", "cellWeeklyReport"].includes(activeRoute)) {
+    recordCellReportSecurityEvent("cell_report_route_denied", `Restricted cell portal route: ${activeRoute}`);
+    activeRoute = "cellPortal";
+  }
   if (["Cell Leader", "Cell Assistant"].includes(activeUser?.role) && isCellRoute(activeRoute) && !["cellPortal", "cellReceivedReports"].includes(activeRoute)) {
     recordCellReportSecurityEvent("cell_report_route_denied", `Restricted cell portal route: ${activeRoute}`);
     activeRoute = "cellReceivedReports";
@@ -25034,6 +25044,7 @@ function continueEnterDashboard() {
   const requestedRoute = location.hash.replace("#", "");
   const isCellPortalMember = isCellLeaderOrAssistant(activeUser);
   if (isCellPortalMember) {
+    history.replaceState(null, "", "#cellPortal");
     setRoute("cellPortal");
   } else if (isPastoralCareRector(activeUser)) {
     setRoute("firstTimers");
@@ -27376,7 +27387,12 @@ async function initRealAuthSession() {
           byId("appView")?.classList.add("d-none");
           byId("loginView")?.classList.remove("d-none");
         } else if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && session?.user) {
-          if (isDashboardEntered && isUserAuthenticated && activeUser?.id) return;
+          if (isDashboardEntered && isUserAuthenticated && activeUser?.id) {
+            if (isCellLeaderOrAssistant(activeUser) && (activeRoute === "dashboard" || !activeRoute)) {
+              setRoute("cellPortal");
+            }
+            return;
+          }
           if (auth.resolveUserAccountFromAuth) {
             const res = await auth.resolveUserAccountFromAuth(session.user);
             if (res?.ok && res.data) {
@@ -27405,7 +27421,12 @@ async function initRealAuthSession() {
         }
       });
     }
-    if (isDashboardEntered && isUserAuthenticated && activeUser?.id) return;
+    if (isDashboardEntered && isUserAuthenticated && activeUser?.id) {
+            if (isCellLeaderOrAssistant(activeUser) && (activeRoute === "dashboard" || !activeRoute)) {
+              setRoute("cellPortal");
+            }
+            return;
+          }
     const sessionRes = await auth.getCurrentSession?.();
     const rawSession = sessionRes?.data?.session || sessionRes?.data;
     const authUser = rawSession?.user || sessionRes?.data?.user;
