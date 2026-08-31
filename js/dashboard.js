@@ -9276,18 +9276,23 @@ function fallbackCanViewModule(user = activeUser, module = "dashboard") {
   return (legacyModuleKeys[module] || [module]).some((key) => grants.includes(key));
 }
 
-function roleWorkspaceRoutes(user = activeUser) {
+function isPastoralCareRector(user = activeUser) {
   const role = String(user?.role || user?.role_name || "").toLowerCase().trim();
-  if (role === "alec_manager" || role === "alec coordinator" || role === "alec manager" || role === "alec_coordinator") {
-    return ["cellAlecOverview", "cellAlecRegistration", "cellAlecScores", "cellChurchReports", "cellPortal"];
-  }
-  if (
+  return (
     role === "pastoral_care_rector" ||
     role === "pastoral care rector" ||
     role === "reitor de cuidados pastorais" ||
     role === "reitor" ||
     role === "rector"
-  ) {
+  );
+}
+
+function roleWorkspaceRoutes(user = activeUser) {
+  const role = String(user?.role || user?.role_name || "").toLowerCase().trim();
+  if (role === "alec_manager" || role === "alec coordinator" || role === "alec manager" || role === "alec_coordinator") {
+    return ["cellAlecOverview", "cellAlecRegistration", "cellAlecScores", "cellChurchReports", "cellPortal"];
+  }
+  if (isPastoralCareRector(user)) {
     return ["firstTimers", "followUp", "foundation", "sacraments", "counseling"];
   }
   if (role === "follow-up coordinator" || role === "follow_up_coordinator") return ["firstTimers", "followUp"];
@@ -9582,8 +9587,11 @@ function renderAccessDenied() {
 }
 
 function setRoute(route) {
+  if (isPastoralCareRector(activeUser) && (!route || route === "dashboard" || route === "login")) {
+    route = "firstTimers";
+  }
   const prevRoute = activeRoute;
-  activeRoute = route || "dashboard";
+  activeRoute = route || (isPastoralCareRector(activeUser) ? "firstTimers" : "dashboard");
   if (CELL_ROUTE_ALIASES[activeRoute]) activeRoute = CELL_ROUTE_ALIASES[activeRoute];
   if (["Cell Leader", "Cell Assistant"].includes(activeUser?.role) && isCellRoute(activeRoute) && !["cellPortal", "cellReceivedReports"].includes(activeRoute)) {
     recordCellReportSecurityEvent("cell_report_route_denied", `Restricted cell portal route: ${activeRoute}`);
@@ -23888,6 +23896,8 @@ function continueEnterDashboard() {
   const isCellPortalMember = ["Cell Leader", "Cell Assistant"].includes(activeUser?.role);
   if (isCellPortalMember) {
     setRoute("cellPortal");
+  } else if (isPastoralCareRector(activeUser)) {
+    setRoute("firstTimers");
   } else if (resumeCellReport && hasCellReportPermission("cell_reports.create_own")) {
     history.replaceState(null, "", "#cell-report-submit");
     void showPublicCellReport();
@@ -25692,7 +25702,11 @@ window.addEventListener("hashchange", () => {
     return;
   }
   if (byId("appView")?.classList.contains("d-none")) return;
-  setRoute(route || "dashboard");
+  if (isPastoralCareRector(activeUser) && (!route || route === "dashboard")) {
+    setRoute("firstTimers");
+    return;
+  }
+  setRoute(route || (isPastoralCareRector(activeUser) ? "firstTimers" : "dashboard"));
 });
 
 byId("menuToggle")?.addEventListener("click", () => {
