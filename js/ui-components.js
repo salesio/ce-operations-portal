@@ -313,7 +313,7 @@ function KanbanBoard(columns = []) {
             <h4>${title}</h4>
             <span class="kanban-count">${count}</span>
           </header>
-          <div class="kanban-column-body">${cardsHtml || `<div class="kanban-empty-dropzone py-4 text-center text-secondary border border-dashed rounded-3 my-2"><i class="bi bi-inbox fs-4 d-block mb-1 text-muted"></i><span class="small text-muted">${uiT("empty", "Sem registos")}</span></div>`}</div>
+          <div class="kanban-column-body">${cardsHtml || ""}</div>
         </section>`).join("")}
     </div>`;
 }
