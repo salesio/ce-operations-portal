@@ -12631,6 +12631,65 @@ async function persistMemberCandidateViaRepository(mode, candidate) {
 }
 
 
+
+// ============================================================================
+// CELL ATTENDANCE MODAL CONTROLS & HELPERS
+// ============================================================================
+
+function toggleCellAttendanceCheckboxes(checkAll) {
+  const targetState = Boolean(checkAll);
+  const container = document.getElementById("entryModal") || document;
+  const checkboxes = container.querySelectorAll("[data-attendance-member-check]");
+  checkboxes.forEach((cb) => {
+    cb.checked = targetState;
+  });
+}
+if (typeof window !== "undefined") window.toggleCellAttendanceCheckboxes = toggleCellAttendanceCheckboxes;
+
+function stepAttendanceCounter(field, delta) {
+  const container = document.getElementById("entryModal") || document;
+  const input = container.querySelector(`[data-attendance-field="${field}"]`) || container.querySelector(`input[name="${field}"]`);
+  if (input) {
+    input.value = Math.max(0, (Number(input.value) || 0) + Number(delta));
+  }
+}
+if (typeof window !== "undefined") window.stepAttendanceCounter = stepAttendanceCounter;
+
+function addCellAttendanceVisitorFromInput() {
+  const nameInput = document.getElementById("newVisitorName");
+  const phoneInput = document.getElementById("newVisitorPhone");
+  const typeSelect = document.getElementById("newVisitorType");
+
+  const name = (nameInput?.value || "").trim();
+  const phone = (phoneInput?.value || "").trim();
+  const type = typeSelect?.value || "FT";
+
+  if (!name) {
+    alert(typeof lang !== "undefined" && lang === "en" ? "Please enter visitor's full name." : "Por favor introduza o nome completo do visitante / novo membro.");
+    nameInput?.focus();
+    return;
+  }
+
+  const isFT = type === "FT" || type === "FT_NC";
+  const isNC = type === "NC" || type === "FT_NC";
+
+  currentSessionVisitors.push({
+    name,
+    phone,
+    type,
+    isFT,
+    isNC,
+    id: typeof generateUuid === "function" ? generateUuid() : "v-" + Date.now()
+  });
+
+  if (nameInput) nameInput.value = "";
+  if (phoneInput) phoneInput.value = "";
+  nameInput?.focus();
+
+  refreshAttendanceVisitorsList();
+}
+if (typeof window !== "undefined") window.addCellAttendanceVisitorFromInput = addCellAttendanceVisitorFromInput;
+
 function openCellAttendanceModal() {
   try {
     const context = getCellLeaderContext(activeUser?.id, cellPortalPageState.cellId);
@@ -12653,9 +12712,12 @@ function openCellAttendanceModal() {
     if (modalFields) {
       modalFields.innerHTML = `
         <div class="col-12">
-          <div class="alert alert-info mb-2 small">
-            <i class="bi bi-info-circle me-1"></i>Marque os membros oficiais presentes no culto e adicione novos visitantes.
-            <strong>Regra de Membresia:</strong> Novos visitantes que atingirem <strong>3 presenças</strong> em cultos/reuniões tornam-se membros oficiais da célula.
+          <div class="p-3 rounded mb-2 small d-flex align-items-start gap-2" style="background: rgba(14, 165, 233, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); color: #f0f9ff;">
+            <i class="bi bi-info-circle-fill text-info fs-5 flex-shrink-0 mt-0"></i>
+            <div style="line-height: 1.55; color: #e0f2fe;">
+              Marque os membros oficiais presentes no culto e adicione novos visitantes.
+              <div class="mt-1"><strong style="color: #38bdf8; font-weight: 700;">Regra de Membresia:</strong> Novos visitantes que atingirem <strong style="color: #facc15; font-weight: 700;">3 presenças</strong> em cultos/reuniões tornam-se membros oficiais da célula.</div>
+            </div>
           </div>
         </div>
         <div class="col-md-4">
@@ -12681,31 +12743,31 @@ function openCellAttendanceModal() {
           <div class="d-flex justify-content-between align-items-center mb-2">
             <label class="form-label mb-0 fw-bold text-info"><i class="bi bi-people-fill me-1"></i>Membros Oficiais da Célula (${members.length})</label>
             <div class="btn-group btn-group-sm">
-              <button type="button" class="btn btn-outline-success" data-cell-attendance-check-all="1"><i class="bi bi-check-all me-1"></i>Marcar Todos</button>
-              <button type="button" class="btn btn-outline-secondary" data-cell-attendance-check-all="0"><i class="bi bi-x-lg me-1"></i>Desmarcar</button>
+              <button type="button" class="btn btn-outline-success" data-cell-attendance-check-all="1" onclick="window.toggleCellAttendanceCheckboxes &amp;&amp; window.toggleCellAttendanceCheckboxes(true); return false;"><i class="bi bi-check-all me-1"></i>Marcar Todos</button>
+              <button type="button" class="btn btn-outline-secondary" data-cell-attendance-check-all="0" onclick="window.toggleCellAttendanceCheckboxes &amp;&amp; window.toggleCellAttendanceCheckboxes(false); return false;"><i class="bi bi-x-lg me-1"></i>Desmarcar</button>
             </div>
           </div>
-          <div class="table-responsive border rounded p-2" style="max-height: 220px; overflow-y: auto; background: rgba(15, 23, 42, 0.45);">
-            <table class="table table-sm text-light mb-0 align-middle">
+          <div class="table-responsive border rounded p-2" style="max-height: 220px; overflow-y: auto; background: #0b132b; border-color: #1e293b !important;">
+            <table class="table table-sm mb-0 align-middle" style="color: #f8fafc;">
               <thead>
-                <tr>
-                  <th style="width: 45px;">Presença</th>
-                  <th>Nome do Membro</th>
-                  <th>Telefone</th>
-                  <th>Estado</th>
+                <tr style="color: #93c5fd; border-bottom: 1px solid #1e293b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                  <th style="width: 45px; color: #93c5fd;">Presença</th>
+                  <th style="color: #93c5fd;">Nome do Membro</th>
+                  <th style="color: #93c5fd;">Telefone</th>
+                  <th style="color: #93c5fd;">Estado</th>
                 </tr>
               </thead>
               <tbody>
                 ${members.map((m) => `
-                  <tr>
+                  <tr style="border-bottom: 1px solid #1e293b;">
                     <td>
                       <input type="checkbox" class="form-check-input" data-attendance-member-check="${escapeAttr(m.id)}" style="width: 1.25rem; height: 1.25rem; cursor: pointer;">
                     </td>
-                    <td><strong>${escapeAttr(m.name || "—")}</strong></td>
-                    <td>${escapeAttr(m.phone || "—")}</td>
+                    <td style="color: #ffffff;"><strong style="color: #ffffff; font-size: 0.92rem;">${escapeAttr(m.name || "—")}</strong></td>
+                    <td style="color: #38bdf8 !important; font-weight: 700; font-size: 0.9rem; font-family: monospace;">${escapeAttr(m.phone || "—")}</td>
                     <td>${badge(m.status || "Activo")}</td>
                   </tr>
-                `).join("") || `<tr><td colspan="4" class="text-secondary text-center">Nenhum membro oficial registado na célula.</td></tr>`}
+                `).join("") || `<tr><td colspan="4" class="text-secondary text-center py-3">Nenhum membro oficial registado na célula.</td></tr>`}
               </tbody>
             </table>
           </div>
@@ -12733,19 +12795,19 @@ function openCellAttendanceModal() {
                 </select>
               </div>
               <div class="col-md-2">
-                <button type="button" class="btn btn-sm btn-warning w-100" data-add-visitor-row>
+                <button type="button" class="btn btn-sm btn-warning w-100" data-add-visitor-row onclick="window.addCellAttendanceVisitorFromInput &amp;&amp; window.addCellAttendanceVisitorFromInput(); return false;">
                   <i class="bi bi-plus-lg me-1"></i>Adicionar
                 </button>
               </div>
             </div>
-            <div id="cellAttendanceVisitorsList" class="table-responsive" style="display: none;">
-              <table class="table table-sm text-light mb-0">
+            <div id="cellAttendanceVisitorsList" class="table-responsive mt-2" style="display: none; background: #0b132b; border: 1px solid #1e293b; border-radius: 6px; padding: 6px;">
+              <table class="table table-sm mb-0 align-middle" style="color: #f8fafc;">
                 <thead>
-                  <tr>
-                    <th>Nome</th>
-                    <th>Telefone</th>
-                    <th>Classificação</th>
-                    <th style="width: 50px;">Acção</th>
+                  <tr style="color: #93c5fd; border-bottom: 1px solid #1e293b; font-size: 0.75rem; text-transform: uppercase;">
+                    <th style="color: #93c5fd;">Nome</th>
+                    <th style="color: #93c5fd;">Telefone</th>
+                    <th style="color: #93c5fd;">Classificação</th>
+                    <th style="width: 50px; color: #93c5fd;">Acção</th>
                   </tr>
                 </thead>
                 <tbody id="cellAttendanceVisitorsTableBody"></tbody>
@@ -12758,18 +12820,18 @@ function openCellAttendanceModal() {
         <div class="col-md-6 mt-3">
           <label class="form-label text-warning fw-bold"><i class="bi bi-person-heart me-1"></i>Total First Timers (FT)</label>
           <div class="input-group">
-            <button class="btn btn-outline-secondary" type="button" data-step-counter="ftCount" data-step-delta="-1">-</button>
+            <button class="btn btn-outline-secondary" type="button" data-step-counter="ftCount" data-step-delta="-1" onclick="window.stepAttendanceCounter &amp;&amp; window.stepAttendanceCounter('ftCount', -1); return false;">-</button>
             <input type="number" min="0" class="form-control text-center fw-bold fs-5 text-warning" name="ftCount" value="0" data-attendance-field="ftCount">
-            <button class="btn btn-outline-secondary" type="button" data-step-counter="ftCount" data-step-delta="1">+</button>
+            <button class="btn btn-outline-secondary" type="button" data-step-counter="ftCount" data-step-delta="1" onclick="window.stepAttendanceCounter &amp;&amp; window.stepAttendanceCounter('ftCount', 1); return false;">+</button>
           </div>
           <small class="text-secondary">Pessoas que vieram pela 1ª vez</small>
         </div>
         <div class="col-md-6 mt-3">
           <label class="form-label text-success fw-bold"><i class="bi bi-stars me-1"></i>Total Novos Convertidos (NC)</label>
           <div class="input-group">
-            <button class="btn btn-outline-secondary" type="button" data-step-counter="ncCount" data-step-delta="-1">-</button>
+            <button class="btn btn-outline-secondary" type="button" data-step-counter="ncCount" data-step-delta="-1" onclick="window.stepAttendanceCounter &amp;&amp; window.stepAttendanceCounter('ncCount', -1); return false;">-</button>
             <input type="number" min="0" class="form-control text-center fw-bold fs-5 text-success" name="ncCount" value="0" data-attendance-field="ncCount">
-            <button class="btn btn-outline-secondary" type="button" data-step-counter="ncCount" data-step-delta="1">+</button>
+            <button class="btn btn-outline-secondary" type="button" data-step-counter="ncCount" data-step-delta="1" onclick="window.stepAttendanceCounter &amp;&amp; window.stepAttendanceCounter('ncCount', 1); return false;">+</button>
           </div>
           <small class="text-secondary">Entregaram a vida a Cristo</small>
         </div>
@@ -27492,9 +27554,9 @@ function refreshAttendanceVisitorsList() {
 
   container.style.display = "block";
   tbody.innerHTML = currentSessionVisitors.map((v, idx) => `
-    <tr>
-      <td><strong>${escapeAttr(v.name)}</strong></td>
-      <td>${escapeAttr(v.phone || "—")}</td>
+    <tr style="border-bottom: 1px solid #1e293b;">
+      <td style="color: #ffffff;"><strong style="color: #ffffff;">${escapeAttr(v.name)}</strong></td>
+      <td style="color: #38bdf8 !important; font-weight: 700; font-family: monospace;">${escapeAttr(v.phone || "—")}</td>
       <td>
         ${v.isFT ? '<span class="badge bg-warning text-dark me-1">FT</span>' : ""}
         ${v.isNC ? '<span class="badge bg-success">NC</span>' : ""}
