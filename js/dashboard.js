@@ -11141,7 +11141,7 @@ function renderCellLeaderPortal() {
         <label>Dizimista<select class="form-select" data-cell-portal-filter="tithe"><option value="">Todos</option><option value="true" ${cellPortalPageState.tithe === "true" ? "selected" : ""}>Sim</option><option value="false" ${cellPortalPageState.tithe === "false" ? "selected" : ""}>Não</option></select></label>
         <label>Convidou<select class="form-select" data-cell-portal-filter="invited"><option value="">Todos</option><option value="true" ${cellPortalPageState.invited === "true" ? "selected" : ""}>Sim</option><option value="false" ${cellPortalPageState.invited === "false" ? "selected" : ""}>Não</option></select></label>
       </section>
-      <nav class="cell-portal-nav" aria-label="Secções do portal">${[["overview","Visão Geral"],["members","Membros & Reconciliação"],["reports","Relatório"],["activities","Actividades"],["growth","Crescimento"],["finance","Parcerias & Dízimos"],["souls","Ganhar Almas"],["foundation","Fundação & Sacramentos"],["programs","Programas"],["history","Histórico"]].map(([id,label]) => `<button type="button" data-cell-portal-section="cell-portal-${id}">${label}</button>`).join("")}</nav>
+      <nav class="cell-portal-nav" aria-label="Secções do portal">${[["overview","Visão Geral"],["attendance","Presenças & Visitantes"],["members","Membros & Reconciliação"],["reports","Relatório"],["activities","Actividades"],["growth","Crescimento"],["finance","Parcerias & Dízimos"],["souls","Ganhar Almas"],["foundation","Fundação & Sacramentos"],["programs","Programas"],["history","Histórico"]].map(([id,label]) => `<button type="button" data-cell-portal-section="cell-portal-${id}">${label}</button>`).join("")}</nav>
       <section id="cell-portal-overview" class="cell-portal-section">
         ${cellPortalSectionTitle("bi-grid-1x2", "Visão Geral", "Indicadores seguros da célula autorizada")}
         <div class="cell-portal-kpis">${[["bi-people","Total de membros",stats.total_members],["bi-person-check","Membros activos",stats.active_members],["bi-person-plus","Novos este mês",stats.new_members_month],["bi-person-heart","Visitantes ligados",stats.visitors],["bi-clipboard-check","Relatórios este mês",stats.reports_month],["bi-activity","Estado actual",stats.current_report_status],["bi-clock-history","Último relatório",stats.latest_report ? String(portalDateValue(stats.latest_report) || "").slice(0,10) : "—"],["bi-calendar-week","Próxima submissão",stats.next_submission]].map(([icon,label,value]) => `<article><i class="bi ${icon}"></i><span>${label}</span><strong>${escapeAttr(value)}</strong></article>`).join("")}</div>
@@ -11154,6 +11154,107 @@ function renderCellLeaderPortal() {
       </section>
       <section class="cell-portal-section">
         <div class="cell-portal-alerts">${safeAlerts.map((alert) => `<article class="is-${alert.tone || "info"}"><i class="bi bi-bell"></i><div><strong>${escapeAttr(alert.title)}</strong><p>${escapeAttr(alert.detail)}</p></div></article>`).join("") || `<article class="is-success"><i class="bi bi-check-circle"></i><div><strong>Sem alertas críticos</strong><p>Os principais indicadores estão actualizados.</p></div></article>`}</div>
+      </section>
+            <section id="cell-portal-attendance" class="cell-portal-section">
+        ${cellPortalSectionTitle("bi-calendar-check-fill", "Registo de Presenças & Visitantes da Célula", "Marque os membros presentes e adicione First Timers (FT) e Novos Convertidos (NC). As presenças serão consolidadas automaticamente no relatório geral da Igreja.")}
+        <form class="panel glass-panel mb-4" data-cell-attendance-form>
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <label class="form-label">Culto / Serviço</label>
+              <select class="form-select" name="serviceType" data-attendance-field="serviceType">
+                <option value="Domingo - 1º Culto">Domingo - 1º Culto</option>
+                <option value="Domingo - 2º Culto">Domingo - 2º Culto</option>
+                <option value="Quarta-feira">Quarta-feira</option>
+                <option value="Reunião de Célula">Reunião de Célula</option>
+                <option value="Culto Especial">Culto Especial</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Data do Culto</label>
+              <input type="date" class="form-control" name="serviceDate" value="${new Date().toISOString().slice(0, 10)}" data-attendance-field="serviceDate">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Semana do Relatório</label>
+              <input type="text" class="form-control" name="reportWeek" value="${new Date().toLocaleString(lang === "pt" ? "pt-PT" : "en-US", { month: "long" })} Semana ${Math.ceil(new Date().getDate() / 7)}" data-attendance-field="reportWeek">
+            </div>
+          </div>
+
+          <!-- Members Checklist -->
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h4 class="fs-6 mb-0 text-info"><i class="bi bi-people-fill me-2"></i>Membros da Célula (${safeMembers.length})</h4>
+            <div class="btn-group btn-group-sm">
+              <button type="button" class="btn btn-outline-success" data-cell-attendance-check-all="1"><i class="bi bi-check-all me-1"></i>Marcar Todos</button>
+              <button type="button" class="btn btn-outline-secondary" data-cell-attendance-check-all="0"><i class="bi bi-x-lg me-1"></i>Desmarcar</button>
+            </div>
+          </div>
+
+          <div class="cell-portal-table-wrap mb-4" style="max-height: 280px; overflow-y: auto;">
+            <table class="table cell-portal-table mb-0">
+              <thead>
+                <tr>
+                  <th style="width: 45px;">Presença</th>
+                  <th>Nome do Membro</th>
+                  <th>Telefone</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${safeMembers.map((m) => `
+                  <tr>
+                    <td>
+                      <input type="checkbox" class="form-check-input" data-attendance-member-check="${escapeAttr(m.id)}" checked style="width: 1.3rem; height: 1.3rem; cursor: pointer;">
+                    </td>
+                    <td><strong>${escapeAttr(m.name || "—")}</strong></td>
+                    <td>${escapeAttr(m.phone || "—")}</td>
+                    <td>${badge(m.status || "Activo")}</td>
+                  </tr>
+                `).join("") || `<tr><td colspan="4">Nenhum membro registado na célula.</td></tr>`}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- FT, NC, RS & Offering Section -->
+          <div class="row g-3 p-3 glass-panel mb-3 rounded" style="background: rgba(15, 23, 42, 0.45);">
+            <div class="col-md-3">
+              <label class="form-label text-warning font-weight-bold"><i class="bi bi-person-heart me-1"></i>First Timers (FT)</label>
+              <div class="input-group">
+                <button class="btn btn-outline-secondary" type="button" data-step-counter="ftCount" data-step-delta="-1">-</button>
+                <input type="number" min="0" class="form-control text-center" name="ftCount" value="0" data-attendance-field="ftCount">
+                <button class="btn btn-outline-secondary" type="button" data-step-counter="ftCount" data-step-delta="1">+</button>
+              </div>
+              <small class="text-secondary">Pessoas pela 1ª vez</small>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label text-success font-weight-bold"><i class="bi bi-stars me-1"></i>Novos Convertidos (NC)</label>
+              <div class="input-group">
+                <button class="btn btn-outline-secondary" type="button" data-step-counter="ncCount" data-step-delta="-1">-</button>
+                <input type="number" min="0" class="form-control text-center" name="ncCount" value="0" data-attendance-field="ncCount">
+                <button class="btn btn-outline-secondary" type="button" data-step-counter="ncCount" data-step-delta="1">+</button>
+              </div>
+              <small class="text-secondary">Entregaram a vida a Cristo</small>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label text-primary"><i class="bi bi-book me-1"></i>Rapsódia (RS)</label>
+              <input type="number" min="0" class="form-control text-center" name="rsCount" value="0" data-attendance-field="rsCount">
+              <small class="text-secondary">Rapsódias distribuídas</small>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label"><i class="bi bi-cash-coin me-1"></i>Oferta (MT)</label>
+              <input type="number" min="0" step="10" class="form-control text-center" name="offeringAmount" value="0" data-attendance-field="offeringAmount">
+              <small class="text-secondary">Opcional</small>
+            </div>
+            <div class="col-12">
+              <label class="form-label"><i class="bi bi-chat-left-text me-1"></i>Observações / Testemunhos do Culto</label>
+              <textarea class="form-control" name="attendanceNotes" rows="2" placeholder="Notas sobre a reunião ou cultos..." data-attendance-field="attendanceNotes"></textarea>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end">
+            <button type="button" class="btn btn-ce-gold btn-lg btn-touch" data-save-cell-attendance>
+              <i class="bi bi-cloud-arrow-up-fill me-2"></i>Guardar Presenças & Consolidar no Relatório de Igreja
+            </button>
+          </div>
+        </form>
       </section>
       <section id="cell-portal-members" class="cell-portal-section">
         ${cellPortalSectionTitle("bi-people", "Membros & Reconciliação da Célula", cellMembersLoading ? "A carregar membros da célula no Supabase…" : `${usesSupabaseMembers() ? cellPortalMembersState.totalCount : safeMembers.length} registo(s) na célula autorizada`)}
@@ -17054,6 +17155,595 @@ function cellReportRowAttrs(reports) {
   });
 }
 
+
+
+// ============================================================================
+// CHURCH REPORTS & CELL ATTENDANCE ANALYTICS ENGINE
+// ============================================================================
+
+const churchReportPageState = {
+  level: "church", // "church" | "group" | "cell"
+  service: "", // "", "Domingo - 1º Culto", "Domingo - 2º Culto", "Quarta-feira", etc.
+  period: "month", // "week" | "month" | "quarter" | "semester" | "year" | "custom"
+  dateFrom: "",
+  dateTo: "",
+  churchId: "",
+  cellGroupId: "",
+  cellId: "",
+  search: "",
+  chartType: "trend" // "trend" | "comparative"
+};
+
+const cellAttendancePageState = {
+  service: "Domingo - 1º Culto",
+  date: new Date().toISOString().slice(0, 10),
+  week: "",
+  search: "",
+  checkedMembers: new Set(),
+  ft: 0,
+  nc: 0,
+  rs: 0,
+  offering: 0,
+  notes: ""
+};
+
+/**
+ * Generates an interactive SVG line chart highlighting Peaks and Lows.
+ */
+function renderPeakLowChartSvg(dataPoints = [], options = {}) {
+  const width = options.width || 760;
+  const height = options.height || 260;
+  const padding = { top: 35, right: 40, bottom: 45, left: 55 };
+  const chartW = width - padding.left - padding.right;
+  const chartH = height - padding.top - padding.bottom;
+
+  if (!dataPoints.length) {
+    return `<div class="p-4 text-center text-secondary"><i class="bi bi-graph-up me-2"></i>Sem dados para o período seleccionado.</div>`;
+  }
+
+  const values = dataPoints.map((d) => Number(d.value || 0));
+  const maxVal = Math.max(...values, 10);
+  const minVal = Math.min(...values);
+  const avgVal = Math.round(values.reduce((a, b) => a + b, 0) / (values.length || 1));
+
+  const maxIndex = values.indexOf(maxVal);
+  let minIndex = -1;
+  let lowestNonZero = Infinity;
+  values.forEach((v, idx) => {
+    if (v < lowestNonZero) {
+      lowestNonZero = v;
+      minIndex = idx;
+    }
+  });
+  if (minIndex < 0) minIndex = 0;
+
+  const getX = (i) => padding.left + (dataPoints.length === 1 ? chartW / 2 : (i / (dataPoints.length - 1)) * chartW);
+  const getY = (val) => padding.top + chartH - (maxVal > 0 ? (val / maxVal) * chartH : 0);
+
+  const points = dataPoints.map((d, i) => ({ x: getX(i), y: getY(d.value), val: d.value, label: d.label, date: d.date }));
+
+  let pathD = `M ${points[0].x} ${points[0].y}`;
+  for (let i = 1; i < points.length; i++) {
+    const prev = points[i - 1];
+    const curr = points[i];
+    const cpX = (prev.x + curr.x) / 2;
+    pathD += ` C ${cpX} ${prev.y}, ${cpX} ${curr.y}, ${curr.x} ${curr.y}`;
+  }
+
+  const areaD = `${pathD} L ${points[points.length - 1].x} ${padding.top + chartH} L ${points[0].x} ${padding.top + chartH} Z`;
+  const avgY = getY(avgVal);
+
+  return `
+    <div class="peak-low-chart-wrap" style="position:relative; width:100%;">
+      <svg viewBox="0 0 ${width} ${height}" class="peak-low-svg" style="width:100%; height:auto; overflow:visible;">
+        <defs>
+          <linearGradient id="peakAreaGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.35"/>
+            <stop offset="100%" stop-color="#06b6d4" stop-opacity="0.0"/>
+          </linearGradient>
+          <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
+        </defs>
+
+        <!-- Grid Lines -->
+        <line x1="${padding.left}" y1="${padding.top}" x2="${padding.left + chartW}" y2="${padding.top}" stroke="rgba(255,255,255,0.08)" stroke-dasharray="4"/>
+        <line x1="${padding.left}" y1="${padding.top + chartH / 2}" x2="${padding.left + chartW}" y2="${padding.top + chartH / 2}" stroke="rgba(255,255,255,0.08)" stroke-dasharray="4"/>
+        <line x1="${padding.left}" y1="${padding.top + chartH}" x2="${padding.left + chartW}" y2="${padding.top + chartH}" stroke="rgba(255,255,255,0.15)"/>
+
+        <!-- Y Axis Labels -->
+        <text x="${padding.left - 10}" y="${padding.top + 4}" fill="#94a3b8" font-size="11" text-anchor="end">${maxVal}</text>
+        <text x="${padding.left - 10}" y="${padding.top + chartH / 2 + 4}" fill="#94a3b8" font-size="11" text-anchor="end">${Math.round(maxVal / 2)}</text>
+        <text x="${padding.left - 10}" y="${padding.top + chartH + 4}" fill="#94a3b8" font-size="11" text-anchor="end">0</text>
+
+        <!-- Average Dotted Line -->
+        <line x1="${padding.left}" y1="${avgY}" x2="${padding.left + chartW}" y2="${avgY}" stroke="#eab308" stroke-dasharray="4" stroke-width="1.5" opacity="0.75"/>
+        <text x="${padding.left + chartW - 5}" y="${avgY - 6}" fill="#eab308" font-size="10" font-weight="600" text-anchor="end">Média: ${avgVal}</text>
+
+        <!-- Area & Line -->
+        <path d="${areaD}" fill="url(#peakAreaGrad)"/>
+        <path d="${pathD}" fill="none" stroke="#06b6d4" stroke-width="3" stroke-linecap="round"/>
+
+        <!-- Data Nodes -->
+        ${points.map((p, i) => {
+          const isMax = i === maxIndex;
+          const isMin = i === minIndex && minIndex !== maxIndex && points.length > 1;
+          const nodeColor = isMax ? "#10b981" : isMin ? "#ef4444" : "#38bdf8";
+          const nodeRadius = isMax || isMin ? 6.5 : 4;
+          return `
+            <g class="chart-node" tabindex="0">
+              ${isMax || isMin ? `<circle cx="${p.x}" cy="${p.y}" r="${nodeRadius + 4}" fill="${nodeColor}" opacity="0.25"/>` : ""}
+              <circle cx="${p.x}" cy="${p.y}" r="${nodeRadius}" fill="${nodeColor}" stroke="#0f172a" stroke-width="2"/>
+              <!-- X Label -->
+              <text x="${p.x}" y="${padding.top + chartH + 20}" fill="#94a3b8" font-size="10.5" text-anchor="middle">${p.label || ""}</text>
+              ${isMax ? `
+                <!-- Peak Flag -->
+                <rect x="${p.x - 38}" y="${p.y - 30}" width="76" height="20" rx="4" fill="#10b981" filter="url(#glow)"/>
+                <text x="${p.x}" y="${p.y - 16}" fill="#ffffff" font-size="10" font-weight="bold" text-anchor="middle">▲ Pico: ${p.val}</text>
+              ` : isMin ? `
+                <!-- Low Flag -->
+                <rect x="${p.x - 40}" y="${p.y + 10}" width="80" height="20" rx="4" fill="#ef4444" filter="url(#glow)"/>
+                <text x="${p.x}" y="${p.y + 24}" fill="#ffffff" font-size="10" font-weight="bold" text-anchor="middle">▼ Baixa: ${p.val}</text>
+              ` : ""}
+            </g>
+          `;
+        }).join("")}
+      </svg>
+    </div>
+  `;
+}
+
+/**
+ * Generates an interactive SVG Bar chart comparing Attendance, FT and NC.
+ */
+function renderComparativeBarsSvg(seriesData = [], options = {}) {
+  const width = options.width || 760;
+  const height = options.height || 260;
+  const padding = { top: 30, right: 30, bottom: 45, left: 55 };
+  const chartW = width - padding.left - padding.right;
+  const chartH = height - padding.top - padding.bottom;
+
+  if (!seriesData.length) {
+    return `<div class="p-4 text-center text-secondary"><i class="bi bi-bar-chart me-2"></i>Sem dados para comparação no período.</div>`;
+  }
+
+  const maxVal = Math.max(...seriesData.map((d) => Math.max(Number(d.att || 0), Number(d.ft || 0) + Number(d.nc || 0))), 10);
+  const barGroupWidth = chartW / seriesData.length;
+  const barWidth = Math.min(Math.max(barGroupWidth * 0.22, 10), 28);
+
+  return `
+    <div class="comparative-bar-chart-wrap" style="position:relative; width:100%;">
+      <div class="d-flex gap-4 justify-content-end mb-2 small">
+        <span><span class="d-inline-block rounded-circle me-1" style="width:10px;height:10px;background:#38bdf8;"></span>Presentes (Membros)</span>
+        <span><span class="d-inline-block rounded-circle me-1" style="width:10px;height:10px;background:#eab308;"></span>Primeiras Vezes (FT)</span>
+        <span><span class="d-inline-block rounded-circle me-1" style="width:10px;height:10px;background:#10b981;"></span>Novos Convertidos (NC)</span>
+      </div>
+      <svg viewBox="0 0 ${width} ${height}" style="width:100%; height:auto; overflow:visible;">
+        <!-- Grid -->
+        <line x1="${padding.left}" y1="${padding.top}" x2="${padding.left + chartW}" y2="${padding.top}" stroke="rgba(255,255,255,0.08)" stroke-dasharray="4"/>
+        <line x1="${padding.left}" y1="${padding.top + chartH / 2}" x2="${padding.left + chartW}" y2="${padding.top + chartH / 2}" stroke="rgba(255,255,255,0.08)" stroke-dasharray="4"/>
+        <line x1="${padding.left}" y1="${padding.top + chartH}" x2="${padding.left + chartW}" y2="${padding.top + chartH}" stroke="rgba(255,255,255,0.15)"/>
+
+        <!-- Y Axis -->
+        <text x="${padding.left - 10}" y="${padding.top + 4}" fill="#94a3b8" font-size="11" text-anchor="end">${maxVal}</text>
+        <text x="${padding.left - 10}" y="${padding.top + chartH / 2 + 4}" fill="#94a3b8" font-size="11" text-anchor="end">${Math.round(maxVal / 2)}</text>
+        <text x="${padding.left - 10}" y="${padding.top + chartH + 4}" fill="#94a3b8" font-size="11" text-anchor="end">0</text>
+
+        <!-- Bars -->
+        ${seriesData.map((d, i) => {
+          const groupCenterX = padding.left + i * barGroupWidth + barGroupWidth / 2;
+          const attH = maxVal > 0 ? (Number(d.att || 0) / maxVal) * chartH : 0;
+          const ftH = maxVal > 0 ? (Number(d.ft || 0) / maxVal) * chartH : 0;
+          const ncH = maxVal > 0 ? (Number(d.nc || 0) / maxVal) * chartH : 0;
+
+          const attX = groupCenterX - barWidth * 1.6;
+          const ftX = groupCenterX - barWidth * 0.5;
+          const ncX = groupCenterX + barWidth * 0.6;
+
+          const baseY = padding.top + chartH;
+
+          return `
+            <g class="bar-group">
+              <!-- Att Bar -->
+              <rect x="${attX}" y="${baseY - attH}" width="${barWidth}" height="${attH}" rx="3" fill="#38bdf8" opacity="0.9"/>
+              ${attH > 14 ? `<text x="${attX + barWidth / 2}" y="${baseY - attH - 4}" fill="#38bdf8" font-size="9.5" font-weight="bold" text-anchor="middle">${d.att}</text>` : ""}
+
+              <!-- FT Bar -->
+              <rect x="${ftX}" y="${baseY - ftH}" width="${barWidth}" height="${ftH}" rx="3" fill="#eab308" opacity="0.9"/>
+              ${ftH > 14 ? `<text x="${ftX + barWidth / 2}" y="${baseY - ftH - 4}" fill="#eab308" font-size="9.5" font-weight="bold" text-anchor="middle">${d.ft}</text>` : ""}
+
+              <!-- NC Bar -->
+              <rect x="${ncX}" y="${baseY - ncH}" width="${barWidth}" height="${ncH}" rx="3" fill="#10b981" opacity="0.9"/>
+              ${ncH > 14 ? `<text x="${ncX + barWidth / 2}" y="${baseY - ncH - 4}" fill="#10b981" font-size="9.5" font-weight="bold" text-anchor="middle">${d.nc}</text>` : ""}
+
+              <!-- X Label -->
+              <text x="${groupCenterX}" y="${baseY + 20}" fill="#94a3b8" font-size="10.5" text-anchor="middle">${d.label || ""}</text>
+            </g>
+          `;
+        }).join("")}
+      </svg>
+    </div>
+  `;
+}
+
+/**
+ * Filter and consolidate reports by temporal period.
+ */
+function filterReportsByPeriod(records = [], period = "month", dateFrom = "", dateTo = "") {
+  const now = new Date();
+  return records.filter((r) => {
+    const rawDate = r.data_do_culto || r.data_inicio || r.data || r.created_at || "";
+    if (!rawDate) return true;
+    const d = new Date(rawDate);
+    if (isNaN(d.getTime())) return true;
+
+    if (period === "week") {
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(now.getDate() - 7);
+      return d >= oneWeekAgo && d <= now;
+    } else if (period === "month") {
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    } else if (period === "quarter") {
+      const threeMonthsAgo = new Date();
+      threeMonthsAgo.setMonth(now.getMonth() - 3);
+      return d >= threeMonthsAgo && d <= now;
+    } else if (period === "semester") {
+      const sixMonthsAgo = new Date();
+      sixMonthsAgo.setMonth(now.getMonth() - 6);
+      return d >= sixMonthsAgo && d <= now;
+    } else if (period === "year") {
+      return d.getFullYear() === now.getFullYear();
+    } else if (period === "custom") {
+      if (dateFrom && d < new Date(dateFrom)) return false;
+      if (dateTo && d > new Date(dateTo + "T23:59:59")) return false;
+      return true;
+    }
+    return true;
+  });
+}
+
+/**
+ * Automatically consolidates cell attendance into the general Church Report.
+ */
+function consolidateCellReportToChurchReport(cellReport) {
+  if (!cellReport || !state.cellLeadership) return;
+  if (!Array.isArray(state.cellLeadership.churchReports)) state.cellLeadership.churchReports = [];
+
+  const churchId = cellReport.church_id || state.churches?.[0]?.id || "church-hq";
+  const serviceDate = cellReport.data_do_culto || cellReport.data_inicio || new Date().toISOString().slice(0, 10);
+  const serviceType = cellReport.culto || "Domingo";
+  const reportWeek = cellReport.semana || `${new Date(serviceDate).toLocaleString(lang === "pt" ? "pt-PT" : "en-US", { month: "long" })} Semana ${Math.ceil(new Date(serviceDate).getDate() / 7)}`;
+
+  // Collect all cell reports for this church, date and service
+  const matchingCellReports = (state.cellLeadership.cellReports || []).filter((r) => {
+    const rDate = r.data_do_culto || r.data_inicio;
+    return (r.church_id === churchId || !r.church_id) && rDate === serviceDate && (r.culto === serviceType || !r.culto || !serviceType);
+  });
+
+  const totalAtt = matchingCellReports.reduce((sum, r) => sum + Number(r.att || r.members_present_count || 0), 0);
+  const totalFt = matchingCellReports.reduce((sum, r) => sum + Number(r.ft || r.first_timers_count || 0), 0);
+  const totalNc = matchingCellReports.reduce((sum, r) => sum + Number(r.nc || r.new_converts || 0), 0);
+  const totalRs = matchingCellReports.reduce((sum, r) => sum + Number(r.rs || 0), 0);
+  const totalOffering = matchingCellReports.reduce((sum, r) => sum + Number(r.oferta || 0), 0);
+
+  let existing = state.cellLeadership.churchReports.find((r) => {
+    const rDate = r.data_do_culto || r.data_inicio;
+    return r.church_id === churchId && rDate === serviceDate && r.culto === serviceType;
+  });
+
+  if (existing) {
+    existing.att = totalAtt;
+    existing.ft = totalFt;
+    existing.nc = totalNc;
+    existing.rs = totalRs;
+    existing.total_ft_reached = totalFt;
+    existing.oferta = totalOffering;
+    existing.updated_at = new Date().toISOString().slice(0, 10);
+  } else {
+    existing = {
+      id: typeof generateUuid === "function" ? generateUuid() : `church-report-${Date.now()}`,
+      church_id: churchId,
+      created_by: activeUser?.name || "Consolidação Automática (Células)",
+      updated_by: activeUser?.name || "Consolidação Automática (Células)",
+      created_at: new Date().toISOString().slice(0, 10),
+      updated_at: new Date().toISOString().slice(0, 10),
+      status: "Submetido",
+      semana: reportWeek,
+      data_do_culto: serviceDate,
+      data_inicio: serviceDate,
+      data_fim: serviceDate,
+      culto: serviceType,
+      att: totalAtt,
+      ft: totalFt,
+      nc: totalNc,
+      rs: totalRs,
+      total_ft_reached: totalFt,
+      comentarios: `Consolidação automática de presenças das células (${matchingCellReports.length} célula(s) reportadas).`,
+      submetido_por: "Portal de Células",
+      estado: "Submetido"
+    };
+    state.cellLeadership.churchReports.unshift(existing);
+  }
+
+  saveState("Consolidated cell attendance into church report");
+  return existing;
+}
+
+window.consolidateCellReportToChurchReport = consolidateCellReportToChurchReport;
+
+function renderChurchReportsAnalyticalView() {
+  const leadership = state.cellLeadership || seedData.cellLeadership;
+  const churchReports = scopedNested(leadership.churchReports || []);
+  const cellReports = sortCellReportsNewestFirst(scopedNested(leadership.cellReports || []));
+  const groups = scopedNested(state.cellGroups || []);
+  const cells = scopedNested(state.cellRegistry || state.cells || []);
+
+  const st = churchReportPageState;
+
+  // Filter church reports by level, service, period, church, group, cell and search
+  let filteredChurch = filterReportsByPeriod(churchReports, st.period, st.dateFrom, st.dateTo);
+  let filteredCells = filterReportsByPeriod(cellReports, st.period, st.dateFrom, st.dateTo);
+
+  if (st.service) {
+    filteredChurch = filteredChurch.filter((r) => String(r.culto || "").toLowerCase().includes(st.service.toLowerCase()));
+    filteredCells = filteredCells.filter((r) => String(r.culto || "").toLowerCase().includes(st.service.toLowerCase()));
+  }
+
+  if (st.churchId) {
+    filteredChurch = filteredChurch.filter((r) => r.church_id === st.churchId);
+    filteredCells = filteredCells.filter((r) => r.church_id === st.churchId);
+  }
+
+  if (st.cellGroupId) {
+    filteredCells = filteredCells.filter((r) => String(r.cell_group_id || r.group_id) === String(st.cellGroupId));
+  }
+
+  if (st.cellId) {
+    filteredCells = filteredCells.filter((r) => String(r.cell_id) === String(st.cellId));
+  }
+
+  if (st.search) {
+    const q = st.search.toLowerCase();
+    filteredChurch = filteredChurch.filter((r) => (r.semana || "").toLowerCase().includes(q) || (r.culto || "").toLowerCase().includes(q) || (r.comentarios || "").toLowerCase().includes(q));
+    filteredCells = filteredCells.filter((r) => (r.celula || "").toLowerCase().includes(q) || (r.nome_do_lider || "").toLowerCase().includes(q) || (r.semana || "").toLowerCase().includes(q));
+  }
+
+  // Calculate summary metrics
+  const activeDataset = st.level === "cell" ? filteredCells : filteredChurch;
+  const totalAtt = activeDataset.reduce((sum, r) => sum + Number(r.att || r.members_present_count || 0), 0);
+  const totalFt = activeDataset.reduce((sum, r) => sum + Number(r.ft || r.first_timers_count || 0), 0);
+  const totalNc = activeDataset.reduce((sum, r) => sum + Number(r.nc || r.new_converts || 0), 0);
+  const totalRs = activeDataset.reduce((sum, r) => sum + Number(r.rs || 0), 0);
+
+  // Peak & Low calculations
+  const attValues = activeDataset.map((r) => ({
+    val: Number(r.att || r.members_present_count || 0),
+    date: r.data_do_culto || r.data_inicio || r.data || "",
+    service: r.culto || "Domingo",
+    label: `${String(r.data_do_culto || r.data_inicio || "").slice(5)} (${r.culto || "Culto"})`
+  }));
+
+  let peakPoint = { val: 0, label: "—", date: "—" };
+  let lowPoint = { val: 0, label: "—", date: "—" };
+
+  if (attValues.length) {
+    attValues.sort((a, b) => b.val - a.val);
+    peakPoint = attValues[0];
+    lowPoint = attValues[attValues.length - 1];
+  }
+
+  // Prepare chart data points sorted chronologically
+  const chronological = [...activeDataset].sort((a, b) => {
+    const da = Date.parse(a.data_do_culto || a.data_inicio || a.created_at || 0);
+    const db = Date.parse(b.data_do_culto || b.data_inicio || b.created_at || 0);
+    return da - db;
+  });
+
+  const chartDataPoints = chronological.map((r) => ({
+    label: `${String(r.data_do_culto || r.data_inicio || "").slice(5)} (${(r.culto || "Culto").split(" ")[0]})`,
+    value: Number(r.att || r.members_present_count || 0),
+    date: r.data_do_culto || r.data_inicio || ""
+  }));
+
+  const comparativeSeries = chronological.slice(-8).map((r) => ({
+    label: `${String(r.data_do_culto || r.data_inicio || "").slice(5)} ${(r.culto || "").slice(0, 4)}`,
+    att: Number(r.att || r.members_present_count || 0),
+    ft: Number(r.ft || 0),
+    nc: Number(r.nc || 0)
+  }));
+
+  const servicesList = ["Domingo - 1º Culto", "Domingo - 2º Culto", "Quarta-feira", "Reunião de Célula", "Culto Especial"];
+
+  return `
+    <section class="panel glass-panel mb-4">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <div>
+          <h3 class="panel-title mb-1"><i class="bi bi-diagram-3-fill me-2 text-info"></i>Relatórios de Igreja & Células</h3>
+          <p class="text-secondary mb-0">Consolidação de presenças, visitantes (FT) e novos convertidos (NC) de todas as células e cultos.</p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+          <button type="button" class="btn btn-ce-gold btn-touch" data-open-form="churchReport"><i class="bi bi-plus-lg me-1"></i>Adicionar Relatório Manual</button>
+          <button type="button" class="btn btn-outline-cyan btn-touch" data-export-church-reports><i class="bi bi-download me-1"></i>Exportar Relatórios</button>
+        </div>
+      </div>
+
+      <!-- Level Selector Tabs -->
+      <div class="btn-group w-100 mb-3" role="group" aria-label="Nível de Relatório">
+        <button type="button" class="btn ${st.level === "church" ? "btn-primary" : "btn-outline-primary"}" data-church-report-level="church"><i class="bi bi-building me-1"></i>Relatório Geral de Igreja</button>
+        <button type="button" class="btn ${st.level === "group" ? "btn-primary" : "btn-outline-primary"}" data-church-report-level="group"><i class="bi bi-collection me-1"></i>Por Grupo de Célula</button>
+        <button type="button" class="btn ${st.level === "cell" ? "btn-primary" : "btn-outline-primary"}" data-church-report-level="cell"><i class="bi bi-diagram-3 me-1"></i>Por Célula Individual</button>
+      </div>
+
+      <!-- Filters Toolbar -->
+      <form class="filter-toolbar filter-bar mb-4" data-church-report-filters>
+        <select class="form-select" name="service" data-church-filter-field>
+          <option value="">Todos os Cultos</option>
+          ${servicesList.map((svc) => `<option value="${svc}" ${st.service === svc ? "selected" : ""}>${svc}</option>`).join("")}
+        </select>
+
+        <select class="form-select" name="period" data-church-filter-field>
+          <option value="week" ${st.period === "week" ? "selected" : ""}>Esta Semana (Últimos 7 dias)</option>
+          <option value="month" ${st.period === "month" ? "selected" : ""}>Este Mês</option>
+          <option value="quarter" ${st.period === "quarter" ? "selected" : ""}>Trimestre</option>
+          <option value="semester" ${st.period === "semester" ? "selected" : ""}>Semestre</option>
+          <option value="year" ${st.period === "year" ? "selected" : ""}>Este Ano</option>
+          <option value="custom" ${st.period === "custom" ? "selected" : ""}>Personalizado</option>
+        </select>
+
+        ${st.period === "custom" ? `
+          <input type="date" class="form-control" name="dateFrom" value="${st.dateFrom || ""}" data-church-filter-field title="Data Início">
+          <input type="date" class="form-control" name="dateTo" value="${st.dateTo || ""}" data-church-filter-field title="Data Fim">
+        ` : ""}
+
+        ${st.level !== "church" ? `
+          <select class="form-select" name="cellGroupId" data-church-filter-field>
+            <option value="">Todos os Grupos</option>
+            ${groups.map((g) => `<option value="${g.id}" ${String(st.cellGroupId) === String(g.id) ? "selected" : ""}>${g.group_name || g.name || "Grupo"}</option>`).join("")}
+          </select>
+        ` : ""}
+
+        ${st.level === "cell" ? `
+          <select class="form-select" name="cellId" data-church-filter-field>
+            <option value="">Todas as Células</option>
+            ${cells.map((c) => `<option value="${c.id}" ${String(st.cellId) === String(c.id) ? "selected" : ""}>${c.cell_name || c.name || "Célula"}</option>`).join("")}
+          </select>
+        ` : ""}
+
+        <input type="text" class="form-control" name="search" placeholder="Pesquisar..." value="${st.search || ""}" data-church-filter-field>
+        <button type="button" class="btn btn-outline-cyan btn-touch" data-church-filter-reset><i class="bi bi-arrow-counterclockwise me-1"></i>Limpar</button>
+      </form>
+
+      <!-- KPI Summary Cards with Peaks & Lows -->
+      <div class="row g-3 summary-cards-row mb-4">
+        <div class="col-sm-6 col-xl-2">
+          <div class="kpi-card glass-panel text-center p-3">
+            <span class="text-secondary small d-block mb-1"><i class="bi bi-people me-1"></i>Total Presentes</span>
+            <h3 class="mb-0 text-info font-weight-bold">${totalAtt}</h3>
+          </div>
+        </div>
+        <div class="col-sm-6 col-xl-2">
+          <div class="kpi-card glass-panel text-center p-3">
+            <span class="text-secondary small d-block mb-1"><i class="bi bi-person-heart me-1"></i>Primeira Vez (FT)</span>
+            <h3 class="mb-0 text-warning font-weight-bold">${totalFt}</h3>
+          </div>
+        </div>
+        <div class="col-sm-6 col-xl-2">
+          <div class="kpi-card glass-panel text-center p-3">
+            <span class="text-secondary small d-block mb-1"><i class="bi bi-stars me-1"></i>Novos Convertidos</span>
+            <h3 class="mb-0 text-success font-weight-bold">${totalNc}</h3>
+          </div>
+        </div>
+        <div class="col-sm-6 col-xl-2">
+          <div class="kpi-card glass-panel text-center p-3">
+            <span class="text-secondary small d-block mb-1"><i class="bi bi-book me-1"></i>Rapsódia (RS)</span>
+            <h3 class="mb-0 text-primary font-weight-bold">${totalRs}</h3>
+          </div>
+        </div>
+        <div class="col-sm-6 col-xl-2">
+          <div class="kpi-card glass-panel text-center p-3" style="border-left: 3px solid #10b981;">
+            <span class="text-success small d-block mb-1"><i class="bi bi-arrow-up-circle-fill me-1"></i>Pico Máximo</span>
+            <h3 class="mb-0 text-success font-weight-bold">${peakPoint.val}</h3>
+            <small class="text-secondary d-block text-truncate" title="${peakPoint.date}">${peakPoint.date || "—"}</small>
+          </div>
+        </div>
+        <div class="col-sm-6 col-xl-2">
+          <div class="kpi-card glass-panel text-center p-3" style="border-left: 3px solid #ef4444;">
+            <span class="text-danger small d-block mb-1"><i class="bi bi-arrow-down-circle-fill me-1"></i>Baixa Mínima</span>
+            <h3 class="mb-0 text-danger font-weight-bold">${lowPoint.val}</h3>
+            <small class="text-secondary d-block text-truncate" title="${lowPoint.date}">${lowPoint.date || "—"}</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Two Analytical Charts: Trend with Peaks/Lows and Comparative Bars -->
+      <div class="row g-4 mb-4">
+        <div class="col-xl-7">
+          <article class="chart-card glass-panel light-surface h-100 p-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h4 class="panel-title mb-0 fs-6"><i class="bi bi-graph-up-arrow me-2 text-info"></i>Tendência Temporal com Picos & Baixas</h4>
+              <span class="badge bg-dark-subtle text-info">${st.period.toUpperCase()}</span>
+            </div>
+            ${renderPeakLowChartSvg(chartDataPoints)}
+          </article>
+        </div>
+        <div class="col-xl-5">
+          <article class="chart-card glass-panel light-surface h-100 p-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h4 class="panel-title mb-0 fs-6"><i class="bi bi-bar-chart-steps me-2 text-warning"></i>Composição (Presentes vs FT vs NC)</h4>
+              <span class="badge bg-dark-subtle text-warning">Últimos Cultos</span>
+            </div>
+            ${renderComparativeBarsSvg(comparativeSeries)}
+          </article>
+        </div>
+      </div>
+
+      <!-- Data Table -->
+      <div class="panel glass-panel">
+        ${st.level === "church" ? `
+          ${filteredChurch.length ? dataTable([L("week"), L("serviceDate"), L("worshipService"), L("church"), "ATT", "FT", "NC", "RS", L("totalFirstTime"), L("status"), L("actions")], filteredChurch.map((item) => [
+            item.semana || "—",
+            item.data_do_culto || item.data_inicio || item.data || "—",
+            badge(item.culto || "Domingo"),
+            churchName(item.church_id || item.igreja),
+            `<strong>${item.att || 0}</strong>`,
+            item.ft || 0,
+            item.nc || 0,
+            item.rs || 0,
+            item.total_ft_reached || item.ft || 0,
+            badge(item.estado || item.status || "Submetido"),
+            actionButtons([["view", "churchReport", item.id, L("view")], ["edit", "churchReport", item.id, L("edit")], ["delete", "churchReport", item.id, L("delete")], ["export", "churchReport", item.id, L("export")]])
+          ])) : EmptyState({ compact: true, title: "Sem relatórios de igreja", description: "Os relatórios submetidos pelas células serão consolidados aqui automaticamente." })}
+        ` : st.level === "group" ? `
+          ${(() => {
+            const groupMap = new Map();
+            filteredCells.forEach((r) => {
+              const gid = r.cell_group_id || r.group_id || "outros";
+              const gname = r.cell_group_name || (groups.find((g) => g.id === gid)?.group_name) || "Grupo Geral";
+              if (!groupMap.has(gid)) {
+                groupMap.set(gid, { gid, gname, semana: r.semana, data: r.data_do_culto || r.data_inicio, culto: r.culto, att: 0, ft: 0, nc: 0, rs: 0, cellCount: 0 });
+              }
+              const gObj = groupMap.get(gid);
+              gObj.att += Number(r.att || r.members_present_count || 0);
+              gObj.ft += Number(r.ft || 0);
+              gObj.nc += Number(r.nc || 0);
+              gObj.rs += Number(r.rs || 0);
+              gObj.cellCount += 1;
+            });
+            const groupRows = Array.from(groupMap.values());
+            return groupRows.length ? dataTable(["Grupo de Célula", L("week"), L("serviceDate"), L("worshipService"), "Células Reportadas", "ATT Total", "FT Total", "NC Total", "RS Total", L("actions")], groupRows.map((g) => [
+              `<strong>${g.gname}</strong>`,
+              g.semana || "—",
+              g.data || "—",
+              badge(g.culto || "Domingo"),
+              `<span class="badge bg-secondary">${g.cellCount} célula(s)</span>`,
+              `<strong>${g.att}</strong>`,
+              g.ft,
+              g.nc,
+              g.rs,
+              `<button type="button" class="btn btn-sm btn-outline-cyan" data-church-report-filter-group="${g.gid}">Ver Células</button>`
+            ])) : EmptyState({ compact: true, title: "Sem dados por grupo", description: "Nenhum relatório de grupo disponível para os filtros seleccionados." });
+          })()}
+        ` : `
+          ${filteredCells.length ? dataTable([L("cell"), "Grupo", L("week"), L("serviceDate"), L("worshipService"), "Presentes", "FT", "NC", "RS", L("status"), L("actions")], filteredCells.map((item) => [
+            `<strong>${item.celula || "Célula"}</strong><small class="d-block text-secondary">${item.nome_do_lider || item.submetido_por || ""}</small>`,
+            item.cell_group_name || "—",
+            item.semana || "—",
+            item.data_do_culto || item.data_inicio || item.data || "—",
+            badge(item.culto || "Domingo"),
+            `<strong>${item.att || item.members_present_count || 0}</strong>`,
+            item.ft || 0,
+            item.nc || 0,
+            item.rs || 0,
+            badge(cellReportStatusLabel(item)),
+            actionButtons([["view", "cellReport", item.id, L("view")], ["edit", "cellReport", item.id, L("edit")], ["export", "cellReport", item.id, L("export")]])
+          ])) : EmptyState({ compact: true, title: "Sem relatórios de célula", description: "Nenhum relatório de célula submetido para este período." })}
+        `}
+      </div>
+    </section>
+  `;
+}
+
 function renderCellMinistry(activeTab = "alecOverview") {
   const leadership = state.cellLeadership || seedData.cellLeadership;
   const registry = scopedNested(state.cellRegistry || []);
@@ -17178,7 +17868,7 @@ function renderCellMinistry(activeTab = "alecOverview") {
     const panels = {
       alecRegistration: () => modulePanel("alecRegistration", L("alecRegistration"), "alecRegistration", [L("fullName"), L("contact"), L("church"), L("cell"), L("cellLeaderName"), L("didFoundation"), L("isLeader"), L("status"), L("actions")], alecRegistrations.map((item) => [item.nome_completo, item.contacto, churchName(item.igreja), item.celula, item.nome_do_lider_de_celula, yesNo(item.fez_escola_de_fundacao), yesNo(item.e_lider), badge(item.estado), backendActions("alecRegistration", item.id)]), true),
       alecScores: () => modulePanel("alecScore", L("alecScores"), "alecScore", [L("fullName"), L("church"), L("cell"), L("phase1Average"), L("phase2Average"), L("finalAverage"), L("finished"), L("status"), L("progress"), L("actions")], alecScores.map((item) => [item.nome_completo, churchName(item.igreja), item.celula, alecPhaseAverage(item, 1), alecPhaseAverage(item, 2), alecFinalAverage(item), yesNo(item.terminou), badge(item.estado), alecProgress(item), backendActions("alecScore", item.id)]), true),
-      churchReports: () => modulePanel("churchReport", L("churchReports"), "churchReport", [L("week"), L("serviceDate"), L("worshipService"), L("church"), "FT", "NC", "RS", L("totalFirstTime"), L("status"), L("actions")], churchReports.map((item) => [item.semana, item.data_do_culto || item.data_inicio || item.data, item.culto, churchName(item.church_id || item.igreja), item.ft, item.nc, item.rs, item.total_ft_reached, badge(item.estado), actionButtons([["view", "churchReport", item.id, L("view")], ["edit", "churchReport", item.id, L("edit")], ["delete", "churchReport", item.id, L("delete")], ["export", "churchReport", item.id, L("export")]])]), true),
+      churchReports: () => renderChurchReportsAnalyticalView(),
       receivedReports: () => modulePanel("cellReport", L("receivedReports"), "cellReport", cellReportHeaders(), cellReportRows(cellReports), true, false, { rowAttrs: cellReportRowAttrs(cellReports) }),
       cellEvaluation: () => modulePanel("cellEvaluation", L("cellEvaluation"), "cellEvaluation", [L("reports"), L("evaluator"), L("evaluationDate"), L("classification"), L("needsFollowup"), L("recommendedAction"), L("status"), L("actions")], evaluations.map((item) => [item.report_id, item.avaliador, item.data_da_avaliacao, badge(item.classificacao), yesNo(item.precisa_followup), item.acao_recomendada, badge(item.estado), backendActions("cellEvaluation", item.id)]), true),
       cellLeaders: () => modulePanel("cellLeader", L("cellLeaders"), "cellLeader", [L("fullName"), L("contact"), L("church"), L("cell"), L("actualLeader"), L("cameFromAlec"), L("alecFinished"), L("supervisor"), L("status"), L("actions")], leaders.map((item) => [item.nome_completo, item.contacto, churchName(item.igreja), item.celula, yesNo(item.e_lider_actual), yesNo(item.veio_do_alec), yesNo(item.alec_concluido), item.supervisor, badge(item.estado), backendActions("cellLeader", item.id)]), true),
@@ -26313,3 +27003,182 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
+
+
+// ============================================================================
+// EVENT LISTENERS FOR CHURCH REPORTS & CELL ATTENDANCE
+// ============================================================================
+
+document.addEventListener("click", (event) => {
+  // Level switch in Church Reports
+  const levelBtn = event.target.closest("[data-church-report-level]");
+  if (levelBtn) {
+    churchReportPageState.level = levelBtn.dataset.churchReportLevel;
+    if (activeRoute === "cellChurchReports") renderCellMinistry("churchReports");
+    return;
+  }
+
+  // Filter group in Church Reports
+  const filterGroupBtn = event.target.closest("[data-church-report-filter-group]");
+  if (filterGroupBtn) {
+    churchReportPageState.level = "cell";
+    churchReportPageState.cellGroupId = filterGroupBtn.dataset.churchReportFilterGroup;
+    if (activeRoute === "cellChurchReports") renderCellMinistry("churchReports");
+    return;
+  }
+
+  // Reset filters
+  if (event.target.closest("[data-church-filter-reset]")) {
+    churchReportPageState.service = "";
+    churchReportPageState.period = "month";
+    churchReportPageState.dateFrom = "";
+    churchReportPageState.dateTo = "";
+    churchReportPageState.churchId = "";
+    churchReportPageState.cellGroupId = "";
+    churchReportPageState.cellId = "";
+    churchReportPageState.search = "";
+    if (activeRoute === "cellChurchReports") renderCellMinistry("churchReports");
+    return;
+  }
+
+  // Export Church Reports
+  if (event.target.closest("[data-export-church-reports]")) {
+    const list = churchReportPageState.level === "cell"
+      ? (state.cellLeadership?.cellReports || [])
+      : (state.cellLeadership?.churchReports || []);
+    exportTableAsCsv("church_reports.csv", list);
+    return;
+  }
+
+  // Check all / Uncheck all in Cell Attendance
+  const checkAllBtn = event.target.closest("[data-cell-attendance-check-all]");
+  if (checkAllBtn) {
+    const checkState = checkAllBtn.dataset.cellAttendanceCheckAll === "1";
+    document.querySelectorAll("[data-attendance-member-check]").forEach((cb) => {
+      cb.checked = checkState;
+    });
+    return;
+  }
+
+  // Step counter +/- buttons for FT / NC
+  const stepBtn = event.target.closest("[data-step-counter]");
+  if (stepBtn) {
+    const targetField = stepBtn.dataset.stepCounter;
+    const delta = Number(stepBtn.dataset.stepDelta || 0);
+    const input = document.querySelector(`[data-attendance-field="${targetField}"]`);
+    if (input) {
+      input.value = Math.max(0, Number(input.value || 0) + delta);
+    }
+    return;
+  }
+
+  // Save Cell Attendance & Consolidate to Church Report
+  if (event.target.closest("[data-save-cell-attendance]")) {
+    const form = document.querySelector("[data-cell-attendance-form]");
+    if (!form) return;
+
+    const serviceType = form.querySelector('[data-attendance-field="serviceType"]')?.value || "Domingo - 1º Culto";
+    const serviceDate = form.querySelector('[data-attendance-field="serviceDate"]')?.value || new Date().toISOString().slice(0, 10);
+    const reportWeek = form.querySelector('[data-attendance-field="reportWeek"]')?.value || "Semana 1";
+    const ftCount = Number(form.querySelector('[data-attendance-field="ftCount"]')?.value || 0);
+    const ncCount = Number(form.querySelector('[data-attendance-field="ncCount"]')?.value || 0);
+    const rsCount = Number(form.querySelector('[data-attendance-field="rsCount"]')?.value || 0);
+    const offeringAmount = Number(form.querySelector('[data-attendance-field="offeringAmount"]')?.value || 0);
+    const notes = form.querySelector('[data-attendance-field="attendanceNotes"]')?.value || "";
+
+    const checkedBoxes = Array.from(form.querySelectorAll("[data-attendance-member-check]:checked"));
+    const checkedMemberIds = checkedBoxes.map((cb) => cb.dataset.attendanceMemberCheck);
+    const membersPresentCount = checkedMemberIds.length;
+    const totalAtt = membersPresentCount + ftCount;
+
+    const cellId = cellPortalPageState.cellId || (getAuthorizedCellsForUser(activeUser?.id)[0]?.id) || "cell-1";
+    const cell = findCellSafe(cellId) || (getAuthorizedCellsForUser(activeUser?.id)[0]) || {};
+    const churchId = cell.church_id || activeUser?.church_id || "church-hq";
+
+    if (!state.cellLeadership) state.cellLeadership = { ...seedData.cellLeadership };
+    if (!Array.isArray(state.cellLeadership.cellReports)) state.cellLeadership.cellReports = [];
+
+    // Find or create cell report for this cell, date and service
+    let cellReport = state.cellLeadership.cellReports.find((r) => {
+      const rDate = r.data_do_culto || r.data_inicio;
+      return String(r.cell_id) === String(cellId) && rDate === serviceDate && r.culto === serviceType;
+    });
+
+    if (cellReport) {
+      cellReport.att = totalAtt;
+      cellReport.members_present_count = membersPresentCount;
+      cellReport.members_present_ids = checkedMemberIds;
+      cellReport.ft = ftCount;
+      cellReport.nc = ncCount;
+      cellReport.rs = rsCount;
+      cellReport.oferta = offeringAmount;
+      cellReport.observacoes = notes;
+      cellReport.semana = reportWeek;
+      cellReport.updated_at = new Date().toISOString().slice(0, 10);
+      cellReport.estado = "Submetido";
+    } else {
+      cellReport = {
+        id: typeof generateUuid === "function" ? generateUuid() : `cell-report-${Date.now()}`,
+        church_id: churchId,
+        cell_id: cellId,
+        celula: cell.cell_name || cell.name || "Célula",
+        cell_group_id: cell.group_id || cell.cell_group_id || "",
+        cell_group_name: cell.group_name || cell.cell_group_name || "",
+        leader_id: activeUser?.id,
+        nome_do_lider: activeUser?.name || "Líder de Célula",
+        titulo_do_lider: "Líder",
+        data_do_culto: serviceDate,
+        data_inicio: serviceDate,
+        data_fim: serviceDate,
+        culto: serviceType,
+        semana: reportWeek,
+        att: totalAtt,
+        members_present_count: membersPresentCount,
+        members_present_ids: checkedMemberIds,
+        ft: ftCount,
+        nc: ncCount,
+        rs: rsCount,
+        oferta: offeringAmount,
+        observacoes: notes,
+        submetido_por: activeUser?.name || "Líder de Célula",
+        submitted_by_user_id: activeUser?.id,
+        created_at: new Date().toISOString().slice(0, 10),
+        updated_at: new Date().toISOString().slice(0, 10),
+        estado: "Submetido"
+      };
+      state.cellLeadership.cellReports.unshift(cellReport);
+    }
+
+    // Automatically consolidate to Church Reports
+    consolidateCellReportToChurchReport(cellReport);
+
+    alert(lang === "pt"
+      ? `Presenças da célula salvas com sucesso! (${membersPresentCount} membros + ${ftCount} FT = ${totalAtt} presentes). Os dados foram consolidados no Relatório Geral da Igreja.`
+      : `Cell attendance saved successfully! Consolidated into Church Report.`);
+
+    if (activeRoute === "cellPortal") {
+      renderCellLeaderPortal();
+    }
+  }
+});
+
+// Dynamic change listener for Church Report Filters
+document.addEventListener("change", (event) => {
+  if (event.target.closest("[data-church-report-filters]")) {
+    const form = event.target.closest("[data-church-report-filters]");
+    churchReportPageState.service = form.querySelector('[name="service"]')?.value || "";
+    churchReportPageState.period = form.querySelector('[name="period"]')?.value || "month";
+    churchReportPageState.dateFrom = form.querySelector('[name="dateFrom"]')?.value || "";
+    churchReportPageState.dateTo = form.querySelector('[name="dateTo"]')?.value || "";
+    churchReportPageState.cellGroupId = form.querySelector('[name="cellGroupId"]')?.value || "";
+    churchReportPageState.cellId = form.querySelector('[name="cellId"]')?.value || "";
+    if (activeRoute === "cellChurchReports") renderCellMinistry("churchReports");
+  }
+});
+
+document.addEventListener("input", (event) => {
+  if (event.target.matches('[data-church-report-filters] [name="search"]')) {
+    churchReportPageState.search = event.target.value;
+    if (activeRoute === "cellChurchReports") renderCellMinistry("churchReports");
+  }
+});
