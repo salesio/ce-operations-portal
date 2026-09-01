@@ -2,10 +2,24 @@ const STORAGE_KEY = "ce-ops-dashboard-v3";
 const LANG_KEY = "ce-dashboard-lang";
 const SIDEBAR_GROUPS_KEY = "ce-dashboard-sidebar-groups";
 const MODULE_NAV_KEY = "ce-dashboard-module-nav";
+const SIDEBAR_COLLAPSED_KEY = "ce-dashboard-sidebar-collapsed";
 
 
 function isValidUuid(val) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(val || ""));
+}
+
+
+// Global UI Component Fallbacks
+function EmptyState({ icon = "bi-inbox", title, description = "", action = "", compact = false, variant = "light" } = {}) {
+  const t = title || (typeof L === "function" ? L("empty") : "Sem registos");
+  return `
+    <div class="empty-state ui-empty-state light-surface ${compact ? "ui-empty-state--compact" : ""}">
+      <div class="empty-state-icon"><i class="bi ${icon}"></i></div>
+      <h4 class="empty-state-title">${t}</h4>
+      ${description ? `<p class="empty-state-desc meta-text">${description}</p>` : ""}
+      ${action || ""}
+    </div>`;
 }
 
 function generateUuid() {
@@ -11504,7 +11518,7 @@ window.openTransferCellMemberModal = openTransferCellMemberModal;
 window.openRemoveCellMemberModal = openRemoveCellMemberModal;
 
 function renderDashboard() {
-  if (["Cell Leader", "Cell Assistant", "Assistant Cell Leader"].includes(activeUser?.role)) {
+  if (isCellLeaderOrAssistant(activeUser)) {
     renderCellLeaderPortal();
     return;
   }
@@ -11569,7 +11583,7 @@ function renderDashboard() {
     ${dashboardSection(L("dashboardRecentSection"), L("dashboardRecentHint"), "bi-journal-text", "audit", `
       <div class="row g-4">
         <div class="col-xl-7">${renderDashboardActivityList()}</div>
-        <div class="col-xl-5">${summaryTiles(L("sacramentsSummary"), [[L("baptismTab"), state.sacraments.baptisms.length], [L("marriageTab"), state.sacraments.marriages.length], [L("babyTab"), state.sacraments.babies.length]])}</div>
+        <div class="col-xl-5">${summaryTiles(L("sacramentsSummary"), [[L("baptismTab"), (state.sacraments?.baptisms || []).length], [L("marriageTab"), (state.sacraments?.marriages || []).length], [L("babyTab"), (state.sacraments?.babies || []).length]])}</div>
       </div>`)}
   `);
 }
