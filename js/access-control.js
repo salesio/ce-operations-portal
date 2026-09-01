@@ -627,6 +627,10 @@
 
   function isExplicitlyDenied(user, module) {
     if (!user || !module) return false;
+    const grants = user.department_permissions || [];
+    if (grants.includes(module) || grants.includes("*")) return false;
+    if (module === "foundation" && (grants.includes("foundation_teacher") || grants.includes("foundation_assistant") || grants.includes("foundation"))) return false;
+    if (module === "cell" && (grants.includes("cellReports") || grants.includes("cell"))) return false;
     const rawRole = user.role || user.role_name || "";
     const norm = normalizeRoleKey(rawRole);
     return Boolean(EXPLICIT_DENIED_MODULES[norm]?.has(module) || EXPLICIT_DENIED_MODULES[rawRole]?.has(module));
