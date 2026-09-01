@@ -106,9 +106,12 @@ const dashCode = fs.readFileSync("js/dashboard.js", "utf8");
 vm.runInContext(dashCode, context);
 
 async function main() {
-  console.log("Fetching live cells from Supabase...");
+  console.log("Fetching live cells and groups from Supabase...");
   const { data: dbCells } = await client.from("cells").select("*");
+  const { data: dbGroups } = await client.from("cell_groups").select("*");
+  
   vm.runInContext(`window.REAL_CELLS_REGISTRY = ${JSON.stringify(dbCells)};`, context);
+  vm.runInContext(`window.REAL_CELL_GROUPS = ${JSON.stringify(dbGroups)};`, context);
 
   const filipeUser = vm.runInContext(
     `state.users.find(u => u.email === "diamantes.main@embaixadadecristo.org")`,
@@ -116,14 +119,35 @@ async function main() {
   );
 
   const filipeCells = vm.runInContext(`getAuthorizedCellsForUser("${filipeUser.id}")`, context);
-  console.log(`Live authorized cells for Filipe: ${filipeCells.length} cells`);
-  filipeCells.forEach((c) => console.log(` - ${c.name} (${c.id})`));
+  console.log(`Live authorized cells for Filipe Chamango: ${filipeCells.length} cells`);
+  filipeCells.forEach((c) => console.log(` - ${c.name || c.cell_name} (${c.id})`));
 
-  if (filipeCells.length !== 7) {
-    throw new Error(`Expected 7 Diamantes cells, got ${filipeCells.length}`);
+  if (filipeCells.length !== 10) {
+    throw new Error(`Expected 10 Diamantes cells, got ${filipeCells.length}`);
   }
 
-  console.log("\n[PASS] All 7 Diamantes cells matched perfectly with live Supabase cells registry!");
+  const assistantUser = vm.runInContext(
+    `state.users.find(u => u.email === "assistant.diamantes.main@embaixadadecristo.org")`,
+    context
+  );
+  const assistantCells = vm.runInContext(`getAuthorizedCellsForUser("${assistantUser.id}")`, context);
+  console.log(`Live authorized cells for Michael Juma: ${assistantCells.length} cells`);
+
+  if (assistantCells.length !== 10) {
+    throw new Error(`Expected 10 Diamantes cells for assistant, got ${assistantCells.length}`);
+  }
+
+  // Test sidebar rendering for Filipe
+  vm.runInContext(`activeUser = state.users.find(u => u.email === "diamantes.main@embaixadadecristo.org"); activeRoute = "cellPortal";`, context);
+  vm.runInContext(`renderShell();`, context);
+  const sidebarHtml = sandbox.document.getElementById("sidebarNav").innerHTML;
+  console.log("Sidebar HTML for Filipe Chamango:\n", sidebarHtml);
+
+  if (!sidebarHtml.includes('data-route="followUp"') || !sidebarHtml.includes('data-route="foundation"') || !sidebarHtml.includes('data-route="reports"')) {
+    throw new Error("Sidebar missing followUp, foundation, or reports for Filipe Chamango");
+  }
+
+  console.log("\n[PASS] All 10 Diamantes Main cells & extra department navigation verified successfully!");
 }
 
 main().catch((e) => {
