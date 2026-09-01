@@ -2,6 +2,7 @@ import type { AccessRole } from "../types/entities";
 
 export const ROLES_SEED: AccessRole[] = [
   { id: "role-super-admin", name: "Super Admin", display_name: "Super Admin", description: "Acesso total ao sistema", level: "Executive", is_system_role: true, is_custom_role: false, default_scope: "all", status: "Active", created_at: "2024-01-01", updated_at: "2026-07-10" },
+  { id: "role-pastoral-rector", name: "pastoral_care_rector", display_name: "Reitor de Cuidados Pastorais", description: "Reitor de Cuidados Pastorais", level: "Manager", is_system_role: true, default_scope: "national", status: "Active", created_at: "2024-01-01", updated_at: "2026-09-01" },
   { id: "role-main-pastor", name: "Main Pastor", display_name: "Main Pastor", description: "Pastor principal — visão executiva e aprovações", level: "Executive", is_system_role: true, default_scope: "all", status: "Active", created_at: "2024-01-01", updated_at: "2026-07-10" },
   { id: "role-national-admin", name: "National Admin", display_name: "National Admin", description: "Administração nacional", level: "National", is_system_role: true, default_scope: "national", status: "Active", created_at: "2024-01-01", updated_at: "2026-07-10" },
   { id: "role-church-admin", name: "Church Admin", display_name: "Church Admin", description: "Administrador de igreja local", level: "Church", is_system_role: true, default_scope: "church", status: "Active", created_at: "2024-01-01", updated_at: "2026-08-18" },

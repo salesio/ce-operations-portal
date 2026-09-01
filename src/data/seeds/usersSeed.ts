@@ -1,14 +1,195 @@
 import type { User } from "../types/entities";
 
-const HQ = "church-hq";
+const HQ = "a1111111-1111-4111-8111-111111111101";
 
 /**
- * Demo users — match dashboard seed.
- * No real passwords stored.
- * auth_user_id is null until linked after Supabase Auth users are created.
+ * Seed users for authentication, authorization and dashboard mappings.
  */
 export const USERS_SEED: User[] = [
-  { id: "u-1", name: "Admin Principal", full_name: "Admin Principal", fullName: "Admin Principal", email: "admin@ce-mozambique.org", auth_user_id: null, role: "Super Admin", role_name: "Super Admin", role_id: "role-super-admin", church_id: HQ, churchId: HQ, department_permissions: ["*"], can_view_all_churches: true, status: "Active", isActive: true, has_dashboard_access: true, preferred_language: "pt", demo_password_hint: "demo", created_at: "2024-01-01", updated_at: "2026-07-10" },
+  // Super Admin
+  {
+    id: "u-1",
+    auth_user_id: "f8d9954c-a17b-4870-98f6-a7d6f2576391",
+    name: "Salésio Machava",
+    full_name: "Salésio Machava",
+    fullName: "Salésio Machava",
+    email: "admin@embaixadadecristo.org",
+    role: "Super Admin",
+    role_name: "Super Admin",
+    role_id: "role-super-admin",
+    church_id: HQ,
+    churchId: HQ,
+    department_permissions: ["*"],
+    can_view_all_churches: true,
+    status: "Active",
+    isActive: true,
+    has_dashboard_access: true,
+    preferred_language: "pt",
+    created_at: "2024-01-01",
+    updated_at: "2026-09-01"
+  },
+  // Pastoral Care Rector
+  {
+    id: "u-pastor-valdemiro",
+    auth_user_id: "ac47e5fa-f9f5-4d58-ab91-eebcb01f1b01",
+    name: "Pastor Valdemiro Machava",
+    full_name: "Pastor Valdemiro Machava",
+    fullName: "Pastor Valdemiro Machava",
+    email: "p.care@embaixadadecristo.org",
+    role: "pastoral_care_rector",
+    role_name: "Reitor de Cuidados Pastorais",
+    role_id: "role-pastoral-rector",
+    church_id: HQ,
+    churchId: HQ,
+    department_permissions: ["firstTimers", "followUp", "foundation", "sacraments", "counseling"],
+    can_view_all_churches: false,
+    status: "Active",
+    isActive: true,
+    has_dashboard_access: true,
+    preferred_language: "pt",
+    created_at: "2024-01-01",
+    updated_at: "2026-09-01"
+  },
+  // Diamantes Main - Leader
+  {
+    id: "u-diamantes-leader",
+    auth_user_id: "473e4df5-883c-499a-a42e-223495c266d1",
+    name: "Filipe Chamango",
+    full_name: "Filipe Chamango",
+    fullName: "Filipe Chamango",
+    email: "diamantes.main@embaixadadecristo.org",
+    role: "Cell Leader",
+    role_name: "Líder de Célula Diamantes Main",
+    role_id: "role-cell-leader",
+    church_id: HQ,
+    churchId: HQ,
+    cell_id: "3749602f-2f92-43a3-8db5-e96ee8a7a438",
+    cell_group_id: "334021eb-7658-4e26-8239-1a4f5c80409d",
+    assigned_cells: [
+      "3749602f-2f92-43a3-8db5-e96ee8a7a438",
+      "1e50bb20-ec9d-4358-873a-83b96b2a093e",
+      "752ead16-d25b-4c23-8f12-8e879089b29a",
+      "959cd9dc-e99e-4ad9-88f5-3a7f81340863",
+      "e8600e4b-b403-449f-88e6-da373589b511",
+      "c01413e9-010b-496d-87aa-565056af2e81",
+      "3787d0e9-1adf-4404-83fa-439882c1aaae"
+    ],
+    department_permissions: ["cellReports", "followUp", "foundation", "foundation_teacher", "reports"],
+    cannot_create_classes: true,
+    permissions: [
+      "cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated",
+      "cell_portal.view", "cell_portal.edit", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report",
+      "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary",
+      "follow_up.view", "follow_up.edit", "follow_up.enroll_foundation",
+      "foundation.view", "foundation.edit_students", "foundation.record_lessons", "foundation.record_tests", "foundation.record_exam", "foundation.reports"
+    ],
+    can_view_all_churches: false,
+    status: "Active",
+    isActive: true,
+    has_dashboard_access: true,
+    preferred_language: "pt",
+    created_at: "2026-09-01",
+    updated_at: "2026-09-01"
+  },
+  // Diamantes Main - Assistant
+  {
+    id: "u-diamantes-assistant",
+    auth_user_id: "1be83c02-cb16-4cf3-a246-58bd0ef1953f",
+    name: "Michael Juma",
+    full_name: "Michael Juma",
+    fullName: "Michael Juma",
+    email: "assistant.diamantes.main@embaixadadecristo.org",
+    role: "Cell Assistant",
+    role_name: "Assistente de Célula Diamantes Main",
+    role_id: "role-cell-assistant",
+    church_id: HQ,
+    churchId: HQ,
+    cell_id: "3749602f-2f92-43a3-8db5-e96ee8a7a438",
+    cell_group_id: "334021eb-7658-4e26-8239-1a4f5c80409d",
+    assigned_cells: [
+      "3749602f-2f92-43a3-8db5-e96ee8a7a438",
+      "1e50bb20-ec9d-4358-873a-83b96b2a093e",
+      "752ead16-d25b-4c23-8f12-8e879089b29a",
+      "959cd9dc-e99e-4ad9-88f5-3a7f81340863",
+      "e8600e4b-b403-449f-88e6-da373589b511",
+      "c01413e9-010b-496d-87aa-565056af2e81",
+      "3787d0e9-1adf-4404-83fa-439882c1aaae"
+    ],
+    department_permissions: ["cellReports"],
+    permissions: [
+      "cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated",
+      "cell_portal.view", "cell_portal.edit", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report",
+      "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary"
+    ],
+    can_view_all_churches: false,
+    status: "Active",
+    isActive: true,
+    has_dashboard_access: true,
+    preferred_language: "pt",
+    created_at: "2026-09-01",
+    updated_at: "2026-09-01"
+  },
+  // Diplomatas Victory - Leader
+  {
+    id: "u-dv-leader",
+    auth_user_id: "47df0cce-9701-492c-90aa-b3cb205bbd4b",
+    name: "Líder Diplomatas Victory",
+    full_name: "Líder Diplomatas Victory",
+    fullName: "Líder Diplomatas Victory",
+    email: "d.v.lider@embaixadadecristo.org",
+    role: "Cell Leader",
+    role_name: "Líder Diplomatas Victory",
+    role_id: "role-cell-leader",
+    church_id: HQ,
+    churchId: HQ,
+    cell_id: "2b3a5652-b8be-4c76-8b64-b84200c8bcd4",
+    cell_group_id: "a62f461e-e574-4052-8ef3-a4d0ee0c77c4",
+    assigned_cells: ["2b3a5652-b8be-4c76-8b64-b84200c8bcd4"],
+    department_permissions: ["cellReports"],
+    permissions: [
+      "cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated",
+      "cell_portal.view", "cell_portal.edit", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report",
+      "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary"
+    ],
+    can_view_all_churches: false,
+    status: "Active",
+    isActive: true,
+    has_dashboard_access: true,
+    preferred_language: "pt",
+    created_at: "2026-08-21",
+    updated_at: "2026-09-01"
+  },
+  // Diplomatas Victory - Assistant
+  {
+    id: "u-dv-assistant",
+    auth_user_id: "9820f162-430c-4573-86db-b001097fa6dc",
+    name: "Assistente Diplomatas Victory",
+    full_name: "Assistente Diplomatas Victory",
+    fullName: "Assistente Diplomatas Victory",
+    email: "d.v.assistente@embaixadadecristo.org",
+    role: "Cell Assistant",
+    role_name: "Assistente Diplomatas Victory",
+    role_id: "role-cell-assistant",
+    church_id: HQ,
+    churchId: HQ,
+    cell_id: "2b3a5652-b8be-4c76-8b64-b84200c8bcd4",
+    cell_group_id: "a62f461e-e574-4052-8ef3-a4d0ee0c77c4",
+    assigned_cells: ["2b3a5652-b8be-4c76-8b64-b84200c8bcd4"],
+    department_permissions: ["cellReports"],
+    permissions: [
+      "cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated",
+      "cell_portal.view", "cell_portal.edit", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report",
+      "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary"
+    ],
+    can_view_all_churches: false,
+    status: "Active",
+    isActive: true,
+    has_dashboard_access: true,
+    preferred_language: "pt",
+    created_at: "2026-08-21",
+    updated_at: "2026-09-01"
+  },
+  // Main Pastor
   { id: "u-17", name: "Pastor Kene Ume", full_name: "Pastor Kene Ume", email: "pastor.kene@ce-mozambique.org", role: "Main Pastor", role_name: "Main Pastor", role_id: "role-main-pastor", church_id: HQ, churchId: HQ, department_permissions: ["reports", "requisitions", "staffHr", "finance"], can_view_all_churches: true, status: "Active", isActive: true, has_dashboard_access: true, staff_id: "staff-pastor-kene", preferred_language: "pt", demo_password_hint: "demo", created_at: "2024-01-01", updated_at: "2026-07-10" },
   { id: "u-18", name: "Pastora Responsável Requisições", full_name: "Pastora Responsável Requisições", email: "requisitions@ce-mozambique.org", role: "Requisition Officer", role_name: "Requisition Officer", role_id: "role-req-officer", church_id: HQ, department_id: "dept-requisitions", department_permissions: ["requisitions"], can_view_all_churches: true, status: "Active", isActive: true, has_dashboard_access: true, staff_id: "staff-7", staff_name: "Pastora Responsável Requisições", preferred_language: "pt", demo_password_hint: "demo", created_at: "2024-06-01", updated_at: "2026-07-10" },
   { id: "u-15", name: "Finance Head Demo", full_name: "Finance Head Demo", email: "finance.head@ce-mozambique.org", role: "Finance Head", role_name: "Finance Head", role_id: "role-finance-head", church_id: HQ, department_id: "dept-finance", department_name: "Finanças", department_permissions: ["finance", "financeHead", "financeVerify", "reports", "partnership"], can_view_all_churches: true, status: "Active", isActive: true, has_dashboard_access: true, staff_id: "staff-9", staff_name: "Finance Head Demo", preferred_language: "pt", demo_password_hint: "demo", created_at: "2023-01-01", updated_at: "2026-07-10" },

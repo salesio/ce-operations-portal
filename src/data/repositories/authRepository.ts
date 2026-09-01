@@ -250,15 +250,16 @@ export async function resolveUserAccountFromAuth(authUser: {
   const authId = String(authUser?.id || "").trim();
   if (!authId) return fail("Sessão Auth inválida.", "AUTH_INVALID");
 
+  let user: User | null = null;
   const byAuth = await getUserByAuthUserId(authId);
-  if (!byAuth.ok) {
-    return fail(
-      byAuth.error || "Erro ao consultar perfil de utilizador.",
-      byAuth.code || "PROFILE_QUERY_ERROR",
-    );
+  if (byAuth.ok && byAuth.data) {
+    user = byAuth.data;
+  } else if (authUser.email) {
+    const byEmail = await getUserByEmail(authUser.email);
+    if (byEmail.ok && byEmail.data) {
+      user = byEmail.data;
+    }
   }
-
-  const user = byAuth.data;
 
   if (!user) {
     softAudit("auth_user_not_provisioned", {
@@ -291,34 +292,35 @@ export async function resolveUserAccountFromAuth(authUser: {
   let roleResolved = false;
   if (user.role_id) {
     const roleRes = await getRoleById(user.role_id);
-    if (!roleRes.ok) {
-      return fail(
-        roleRes.error || "Erro ao consultar perfil de acesso.",
-        roleRes.code || "ROLE_QUERY_ERROR",
-      );
-    }
-    if (!roleRes.data) {
+    if (roleRes.ok && roleRes.data) {
+      const roleStatus = String(roleRes.data.status || "").trim().toLowerCase();
+      const isRoleActive = (roleStatus === "active" || roleStatus === "activo") && !/inactive|inactivo|suspend/i.test(roleStatus);
+      if (!isRoleActive) {
+        softAudit("auth_access_denied", {
+          user_id: user.id,
+          email: user.email,
+          description: "User role is inactive",
+          severity: "warning",
+        });
+        return fail(
+          "O perfil de acesso atribuído a esta conta está inactivo. Contacte o Administrador.",
+          "AUTH_ROLE_INACTIVE",
+        );
+      }
+      user.role = roleRes.data.display_name || roleRes.data.name;
+      user.role_name = roleRes.data.display_name || roleRes.data.name;
+      roleResolved = true;
+    } else if (user.role) {
+      user.role_name = user.role_name || user.role;
+      roleResolved = true;
+    } else {
       return fail(
         "O perfil de acesso atribuído a esta conta não foi encontrado no sistema. Contacte o Administrador.",
         "AUTH_ROLE_NOT_FOUND",
       );
     }
-    const roleStatus = String(roleRes.data.status || "").trim().toLowerCase();
-    const isRoleActive = (roleStatus === "active" || roleStatus === "activo") && !/inactive|inactivo|suspend/i.test(roleStatus);
-    if (!isRoleActive) {
-      softAudit("auth_access_denied", {
-        user_id: user.id,
-        email: user.email,
-        description: "User role is inactive",
-        severity: "warning",
-      });
-      return fail(
-        "O perfil de acesso atribuído a esta conta está inactivo. Contacte o Administrador.",
-        "AUTH_ROLE_INACTIVE",
-      );
-    }
-    user.role = roleRes.data.display_name || roleRes.data.name;
-    user.role_name = roleRes.data.display_name || roleRes.data.name;
+  } else if (user.role) {
+    user.role_name = user.role_name || user.role;
     roleResolved = true;
   }
 
