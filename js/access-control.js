@@ -630,6 +630,9 @@
     const grants = user.department_permissions || [];
     if (grants.includes(module) || grants.includes("*")) return false;
     if (module === "foundation" && (grants.includes("foundation_teacher") || grants.includes("foundation_assistant") || grants.includes("foundation"))) return false;
+    if (module === "followUp" && (grants.includes("followUp") || grants.includes("follow_up"))) return false;
+    if (module === "reports" && (grants.includes("reports") || grants.includes("reports_viewer"))) return false;
+    if (module === "firstTimers" && (grants.includes("firstTimers") || grants.includes("first_timers"))) return false;
     if (module === "cell" && (grants.includes("cellReports") || grants.includes("cell"))) return false;
     const rawRole = user.role || user.role_name || "";
     const norm = normalizeRoleKey(rawRole);
@@ -700,8 +703,8 @@
     if (module === "requisitions" && requisitionApprovalTabs.has(tab)) return Boolean(access.can_approve || access.can_verify || access.can_review || access.can_forward);
     if (module === "requisitions" && requisitionFinanceTabs.has(tab)) return Boolean(access.can_release_resources || access.can_verify);
     if (module === "requisitions" && requisitionReportTabs.has(tab)) return Boolean(access.can_export || access.can_approve || access.can_verify);
-    if (module === "foundation" && user?.role === "Foundation Teacher") return foundationTeacherTabs.has(tab);
-    if (module === "foundation" && user?.role === "Foundation Assistant") return foundationAssistantTabs.has(tab);
+    if (module === "foundation" && (user?.role === "Foundation Teacher" || (user?.department_permissions || []).includes("foundation_teacher"))) return foundationTeacherTabs.has(tab);
+    if (module === "foundation" && (user?.role === "Foundation Assistant" || (user?.department_permissions || []).includes("foundation_assistant"))) return foundationAssistantTabs.has(tab);
     return true;
   }
 

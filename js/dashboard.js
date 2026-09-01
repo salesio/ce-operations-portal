@@ -9336,7 +9336,13 @@ function isCellLeaderOrAssistant(user = activeUser) {
 function roleWorkspaceRoutes(user = activeUser) {
   const role = String(user?.role || user?.role_name || "").toLowerCase().trim();
   if (isCellLeaderOrAssistant(user)) {
-    return ["cellPortal", "cellReceivedReports", "cellWeeklyReport"];
+    const routes = ["cellPortal", "cellReceivedReports", "cellWeeklyReport"];
+    const grants = user?.department_permissions || [];
+    if (grants.includes("followUp") || grants.includes("follow_up")) routes.push("followUp");
+    if (grants.includes("foundation") || grants.includes("foundation_teacher") || grants.includes("foundation_assistant")) routes.push("foundation");
+    if (grants.includes("reports") || grants.includes("reports_viewer")) routes.push("reports");
+    if (grants.includes("firstTimers") || grants.includes("first_timers")) routes.push("firstTimers");
+    return routes;
   }
   if (role === "alec_manager" || role === "alec coordinator" || role === "alec manager" || role === "alec_coordinator") {
     return ["cellAlecOverview", "cellAlecRegistration", "cellAlecScores", "cellChurchReports", "cellPortal"];
@@ -11216,7 +11222,10 @@ function renderCellLeaderPortal() {
         </div>
         <div class="cell-portal-hero-actions">
           ${canChooseCell ? `<label>Seleccionar célula<select class="form-select" data-cell-portal-cell>${safeHeroCells.map((item) => `<option value="${escapeAttr(item.id)}" ${String(item.id) === String(context?.cell_id) ? "selected" : ""}>${escapeAttr(portalCellName(item))}</option>`).join("")}</select></label>` : ""}
-          ${!isReadOnlyPortal ? `<button type="button" class="btn btn-ce-gold btn-touch" data-public-cell-report><i class="bi bi-clipboard-plus me-2"></i>Submeter Relatório Semanal</button>` : ""}
+          ${!isReadOnlyPortal ? `
+            <button type="button" class="btn btn-outline-gold btn-touch" data-open-member-candidate title="Registar membro pendente de aprovação"><i class="bi bi-person-plus-fill me-2"></i>+ Registar Membro</button>
+            <button type="button" class="btn btn-ce-gold btn-touch" data-public-cell-report><i class="bi bi-clipboard-plus me-2"></i>Submeter Relatório Semanal</button>
+          ` : ""}
           ${hasCellPortalPermission("cell_portal.export_summary") ? `<button type="button" class="btn btn-outline-cyan btn-touch" data-cell-portal-export><i class="bi bi-download me-2"></i>Exportar resumo</button>` : ""}
         </div>
       </section>
@@ -11381,12 +11390,17 @@ function renderCellLeaderPortal() {
           <article><i class="bi bi-arrow-left-right text-info"></i><span>Transferências</span><strong>${reconciliationCounts.transfers}</strong></article>
           <article><i class="bi bi-person-x text-muted"></i><span>Não Pertencem</span><strong>${reconciliationCounts.notInCell}</strong></article>
         </div>
-        <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
           <small class="text-secondary">Reveja os membros históricos da sua célula: confirme membros activos, corrija dados de contacto ou solicite transferências.</small>
           ${!isReadOnlyPortal ? `
-          <button type="button" class="btn btn-sm btn-outline-success" data-cell-member-bulk-confirm>
-            <i class="bi bi-check-all me-1"></i>Confirmar Todos (${unconfirmedMembersCount})
-          </button>` : ""}
+          <div class="d-flex flex-wrap gap-2">
+            <button type="button" class="btn btn-ce-gold btn-sm" data-open-member-candidate>
+              <i class="bi bi-person-plus-fill me-1"></i>+ Registar Novo Membro da Célula
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-success" data-cell-member-bulk-confirm>
+              <i class="bi bi-check-all me-1"></i>Confirmar Todos (${unconfirmedMembersCount})
+            </button>
+          </div>` : ""}
         </div>
         <div class="panel glass-panel cell-portal-table-wrap">
           <table class="table cell-portal-table">
