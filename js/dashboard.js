@@ -5153,6 +5153,8 @@ const CELL_REPORT_ROLE_PERMISSIONS = {
 
 const CELL_PORTAL_PERMISSION_CODES = [
   "cell_portal.view",
+  "cell_portal.edit",
+  "cell_portal.register_member",
   "cell_portal.view_members",
   "cell_portal.view_member_profile",
   "cell_portal.submit_report",
@@ -11210,7 +11212,8 @@ function renderCellLeaderPortal() {
     const tithePercent = allMembers.length ? Math.round((tithers / allMembers.length) * 100) : 0;
 
     const unconfirmedMembersCount = safeMembers.filter((m) => !m.reconciliation_status || m.reconciliation_status === "Pending").length;
-    const isReadOnlyPortal = ["alec_manager", "ALEC Coordinator", "ALEC Manager"].includes(activeUser?.role) || !hasCellPortalPermission("cell_portal.edit");
+    const isReadOnlyPortal = ["alec_manager", "ALEC Coordinator", "ALEC Manager"].includes(activeUser?.role) ||
+      (!isCellLeaderOrAssistant(activeUser) && !["Super Admin", "Main Pastor", "National Admin", "Administrator", "Admin", "Cell Ministry Head"].includes(activeUser?.role) && !hasCellPortalPermission("cell_portal.edit"));
 
     setPageContent(`<div class="cell-portal-shell">
       <section class="cell-portal-hero">
@@ -11223,8 +11226,8 @@ function renderCellLeaderPortal() {
         <div class="cell-portal-hero-actions">
           ${canChooseCell ? `<label>Seleccionar célula<select class="form-select" data-cell-portal-cell>${safeHeroCells.map((item) => `<option value="${escapeAttr(item.id)}" ${String(item.id) === String(context?.cell_id) ? "selected" : ""}>${escapeAttr(portalCellName(item))}</option>`).join("")}</select></label>` : ""}
           ${!isReadOnlyPortal ? `
-            <button type="button" class="btn btn-outline-gold btn-touch" data-open-member-candidate title="Registar membro pendente de aprovação"><i class="bi bi-person-plus-fill me-2"></i>+ Registar Membro</button>
-            <button type="button" class="btn btn-ce-gold btn-touch" data-public-cell-report><i class="bi bi-clipboard-plus me-2"></i>Submeter Relatório Semanal</button>
+            <button type="button" class="btn btn-ce-gold btn-touch shadow" data-open-member-candidate title="Registar membro pendente de aprovação"><i class="bi bi-person-plus-fill me-2"></i>+ Registar Membro</button>
+            <button type="button" class="btn btn-outline-gold btn-touch" data-public-cell-report><i class="bi bi-clipboard-plus me-2"></i>Submeter Relatório Semanal</button>
           ` : ""}
           ${hasCellPortalPermission("cell_portal.export_summary") ? `<button type="button" class="btn btn-outline-cyan btn-touch" data-cell-portal-export><i class="bi bi-download me-2"></i>Exportar resumo</button>` : ""}
         </div>
