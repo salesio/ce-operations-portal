@@ -3299,7 +3299,7 @@ if (__cellSeed.cellRegistry?.[0]) {
 
 const seedData = {
   users: [
-    { id: "u-1", name: "Admin Principal", email: "admin@ce-mozambique.org", role: "Super Admin", church_id: "church-hq", department_permissions: ["*"], can_view_all_churches: true },
+    { id: "u-1", auth_user_id: "f8d9954c-a17b-4870-98f6-a7d6f2576391", name: "Salésio Machava", email: "admin@embaixadadecristo.org", role: "Super Admin", church_id: "a1111111-1111-4111-8111-111111111101", department_permissions: ["*"], can_view_all_churches: true },
     { id: "u-2", name: "Líder de Aconselhamento", email: "aconselhamento@ce-mozambique.org", role: "Counselor", church_id: "church-hq", department_permissions: ["counseling", "firstTimers", "followUp"], can_view_all_churches: false },
     { id: "u-3", name: "Sister Janet Marquele", email: "janet.marquele@ce-mozambique.org", role: "Ministry Coordinator", church_id: "church-hq", department_permissions: ["cell", "prisonMinistry", "ministryMaterials"], can_view_all_churches: true },
     { id: "u-4", name: "Sister Angelica", email: "angelica@ce-mozambique.org", role: "ALEC Coordinator", church_id: "church-hq", department_permissions: ["cell", "alecRegistration", "alecScores", "churchReports"], can_view_all_churches: true },
@@ -3327,7 +3327,7 @@ const seedData = {
     { id: "u-21", name: "Media Supervisor Demo", email: "media.supervisor@ce-mozambique.org", role: "Media Supervisor", church_id: "church-hq", department_permissions: ["media"], assigned_department: "Mídia", can_view_all_churches: true },
     { id: "u-22", name: "Técnico A", email: "media.member@ce-mozambique.org", role: "Media Team Member", church_id: "church-hq", department_permissions: ["mediaTeam"], assigned_department: "Mídia", assigned_staff_name: "Técnico A", can_view_all_churches: false },
     { id: "u-23", name: "Head de Aconselhamento", email: "counseling.head@ce-mozambique.org", role: "Counseling Head", church_id: "church-hq", department_permissions: ["counseling", "followUp", "firstTimers", "reports"], can_view_all_churches: true },
-    { id: "u-pastor-valdemiro", name: "Pastor Valdemiro Machava", email: "valdomacha@gmail.com", role: "pastoral_care_rector", church_id: "a1111111-1111-4111-8111-111111111101", department_permissions: ["firstTimers", "followUp", "foundation", "sacraments", "counseling"], can_view_all_churches: false },
+    { id: "u-pastor-valdemiro", auth_user_id: "ac47e5fa-f9f5-4d58-ab91-eebcb01f1b01", name: "Pastor Valdemiro Machava", email: "p.care@embaixadadecristo.org", role: "pastoral_care_rector", church_id: "a1111111-1111-4111-8111-111111111101", department_permissions: ["firstTimers", "followUp", "foundation", "sacraments", "counseling"], can_view_all_churches: false },
     { id: "u-26", name: "Reitor Pastoral", email: "reitor@ce-mozambique.org", role: "Reitor", church_id: "church-hq", department_permissions: ["firstTimers", "followUp", "counseling", "reports", "notifications"], can_view_all_churches: true, demo_password_hint: "demo" },
     { id: "u-27", name: "Responsável de Acompanhamento", email: "acompanhamento@ce-mozambique.org", role: "Follow-Up Coordinator", church_id: "church-hq", department_permissions: ["firstTimers", "followUp"], can_view_all_churches: true, demo_password_hint: "demo" },
     { id: "u-24", name: "Professor Joao Mazive", email: "foundation.teacher@ce-mozambique.org", role: "Foundation Teacher", church_id: "church-hq", department_permissions: ["foundation_teacher"], assigned_foundation_teacher_id: "ftch-1", can_view_all_churches: false },

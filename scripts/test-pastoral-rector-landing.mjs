@@ -29,7 +29,7 @@ console.log("  [PASS] Static analysis of dashboard.js confirmed rector landing o
 const rectorUser = {
   id: "u-pastor-valdemiro",
   name: "Pastor Valdemiro Machava",
-  email: "valdomacha@gmail.com",
+  email: "p.care@embaixadadecristo.org",
   role: "pastoral_care_rector"
 };
 

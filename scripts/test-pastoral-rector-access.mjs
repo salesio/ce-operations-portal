@@ -63,9 +63,9 @@ test("Pastoral Care Rector permissions & clean workspace restriction matrix", ()
   for (const roleVar of testRoleVariations) {
     const testUser = {
       id: "u-pastor-valdemiro",
-      auth_user_id: "b80a3e2d-615e-4f8b-a1a8-4f0d5f458cef",
+      auth_user_id: "ac47e5fa-f9f5-4d58-ab91-eebcb01f1b01",
       name: "Pastor Valdemiro Machava",
-      email: "valdomacha@gmail.com",
+      email: "p.care@embaixadadecristo.org",
       role: roleVar,
       church_id: "a1111111-1111-4111-8111-111111111101",
       status: "Active"

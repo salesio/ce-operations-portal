@@ -35,7 +35,7 @@ await db.exec(`
   RETURNS uuid
   LANGUAGE sql
   STABLE
-  AS $$ SELECT 'b80a3e2d-615e-4f8b-a1a8-4f0d5f458cef'::uuid; $$;
+  AS $$ SELECT 'ac47e5fa-f9f5-4d58-ab91-eebcb01f1b01'::uuid; $$;
 
   CREATE TABLE IF NOT EXISTS public.roles (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -214,7 +214,7 @@ await db.query(`
   INSERT INTO public.foundation_school_teachers (
     id, teacher_number, full_name, phone, email, church_id, church_name, role, status
   ) VALUES (
-    $1, 'FST-001', 'Pastor Valdemiro Machava', '+258 84 123 4567', 'valdomacha@gmail.com', $2, 'E.C. Maputo Central – Sede', 'Reitor', 'Active'
+    $1, 'FST-001', 'Pastor Valdemiro Machava', '+258 84 123 4567', 'p.care@embaixadadecristo.org', $2, 'E.C. Maputo Central – Sede', 'Reitor', 'Active'
   )
 `, [teacherId, churchId]);
 console.log("  [PASS] Real teacher inserted successfully.");

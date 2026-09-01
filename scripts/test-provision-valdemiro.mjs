@@ -26,8 +26,8 @@ const provisionSql = fs.readFileSync(provisionPath, "utf8");
 const migrationSql = fs.readFileSync(migrationPath, "utf8");
 
 console.log("1. Performing Static Script Audit...");
-assert(provisionSql.includes("b80a3e2d-615e-4f8b-a1a8-4f0d5f458cef"), "Script must contain Valdemiro auth UID");
-assert(provisionSql.includes("valdomacha@gmail.com"), "Script must contain valdomacha@gmail.com");
+assert(provisionSql.includes("ac47e5fa-f9f5-4d58-ab91-eebcb01f1b01"), "Script must contain Valdemiro auth UID");
+assert(provisionSql.includes("p.care@embaixadadecristo.org"), "Script must contain p.care@embaixadadecristo.org");
 assert(provisionSql.includes("pastoral_care_rector"), "Script must contain pastoral_care_rector role");
 assert(provisionSql.includes("full_name"), "Script must use full_name for public.users");
 assert(!provisionSql.toLowerCase().includes("password"), "Script must NOT contain passwords");
@@ -57,7 +57,7 @@ await db.exec(`
   RETURNS uuid
   LANGUAGE sql
   STABLE
-  AS $$ SELECT 'b80a3e2d-615e-4f8b-a1a8-4f0d5f458cef'::uuid; $$;
+  AS $$ SELECT 'ac47e5fa-f9f5-4d58-ab91-eebcb01f1b01'::uuid; $$;
 
   -- public.roles
   CREATE TABLE public.roles (
@@ -123,7 +123,7 @@ console.log("  [PASS] Schema initialized matching production table definitions."
 
 // Seed baseline data
 const sedeChurchId = "a1111111-1111-4111-8111-111111111101";
-const valdemiroAuthUid = "b80a3e2d-615e-4f8b-a1a8-4f0d5f458cef";
+const valdemiroAuthUid = "ac47e5fa-f9f5-4d58-ab91-eebcb01f1b01";
 
 await db.exec(`
   INSERT INTO public.churches (id, name, status)
@@ -131,7 +131,7 @@ await db.exec(`
 
   -- Insert Auth User for Pastor Valdemiro
   INSERT INTO auth.users (id, email)
-  VALUES ('${valdemiroAuthUid}', 'valdomacha@gmail.com');
+  VALUES ('${valdemiroAuthUid}', 'p.care@embaixadadecristo.org');
 `);
 
 // Execute Migration 0026
@@ -150,7 +150,7 @@ const userRes = await db.query(`
   FROM public.users u
   JOIN public.roles r ON r.id = u.role_id
   JOIN public.churches c ON c.id = u.church_id
-  WHERE u.email = 'valdomacha@gmail.com';
+  WHERE u.email = 'p.care@embaixadadecristo.org';
 `);
 
 assert.equal(userRes.rows.length, 1, "Must find exactly 1 user row in public.users");
@@ -165,7 +165,7 @@ console.log("  [PASS] User record verified in database:", userRow);
 // 5. Test idempotency
 console.log("\n5. Testing Provisioning Script Idempotency (Run 2)...");
 await db.exec(provisionSql);
-const userRes2 = await db.query(`SELECT count(*) as cnt FROM public.users WHERE email = 'valdomacha@gmail.com';`);
+const userRes2 = await db.query(`SELECT count(*) as cnt FROM public.users WHERE email = 'p.care@embaixadadecristo.org';`);
 assert.equal(userRes2.rows[0].cnt, 1, "Must still have exactly 1 record (no duplicate inserted)");
 console.log("  [PASS] Second Run: Fully idempotent (0 duplicates, same user ID maintained).");
 

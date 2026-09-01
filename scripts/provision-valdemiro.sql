@@ -3,8 +3,8 @@
 -- ============================================================================
 -- Dados de Entrada:
 --   - Nome completo: Pastor Valdemiro Machava
---   - Email: valdomacha@gmail.com
---   - Auth User UID existente: b80a3e2d-615e-4f8b-a1a8-4f0d5f458cef
+--   - Email: p.care@embaixadadecristo.org
+--   - Auth User UID existente: ac47e5fa-f9f5-4d58-ab91-eebcb01f1b01
 --   - Papel canónico: pastoral_care_rector
 --   - Igreja: E.C. Maputo Central – Sede (a1111111-1111-4111-8111-111111111101)
 --   - Status: Active
@@ -15,8 +15,8 @@
 
 DO $$
 DECLARE
-  v_auth_user_id uuid := 'b80a3e2d-615e-4f8b-a1a8-4f0d5f458cef'::uuid;
-  v_target_email text := 'valdomacha@gmail.com';
+  v_auth_user_id uuid := 'ac47e5fa-f9f5-4d58-ab91-eebcb01f1b01'::uuid;
+  v_target_email text := 'p.care@embaixadadecristo.org';
   v_full_name text := 'Pastor Valdemiro Machava';
   v_church_id uuid := 'a1111111-1111-4111-8111-111111111101'::uuid; -- E.C. Maputo Central – Sede
   v_role_id uuid;
