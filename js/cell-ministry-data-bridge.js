@@ -29,6 +29,10 @@
   }
 
   function resolveApi() {
+    var adapter = (window.CESupabase && window.CESupabase.cellMinistrySupabaseAdapter) || window.cellMinistrySupabaseAdapter;
+    if (adapter && typeof adapter.listCellGroups === "function") {
+      return { api: adapter, via: "CESupabase.cellMinistrySupabaseAdapter" };
+    }
     var layer = window.CEDataLayer && window.CEDataLayer.cellMinistry;
     if (layer && typeof layer.createCellGroup === "function") {
       return { api: layer, via: "CEDataLayer.cellMinistry" };
@@ -59,10 +63,10 @@
   }
 
   function seedGroups() {
-    return (window.CESupabase && window.CESupabase.CELL_GROUPS_SEED) || [];
+    return (window.REAL_CELL_GROUPS) || (window.CESupabase && window.CESupabase.CELL_GROUPS_SEED) || [];
   }
   function seedCells() {
-    return (window.CESupabase && window.CESupabase.CELLS_SEED) || [];
+    return (window.REAL_CELLS_REGISTRY) || (window.CESupabase && window.CESupabase.CELLS_SEED) || [];
   }
   function seedLeaders() {
     return (window.CESupabase && window.CESupabase.CELL_LEADERS_SEED) || [];

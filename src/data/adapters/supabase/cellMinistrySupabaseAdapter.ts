@@ -6,6 +6,8 @@ import { createRow, dateRangeRows, deleteRow, getRowById, isValidUuid, listRows,
 export type CellMinistryRecord = Record<string, unknown> & { id?: EntityId };
 type Table = keyof typeof TABLES;
 const TABLES = {
+  cellGroups: "cell_groups",
+  cells: "cells",
   churchReports: "church_reports",
   alecRegistrations: "alec_registrations",
   alecScores: "alec_scores",
@@ -13,6 +15,8 @@ const TABLES = {
 } as const;
 
 const COLUMNS: Record<Table, string[]> = {
+  cellGroups: ["id", "church_id", "name", "group_name", "total_cells", "total_members", "status", "created_at", "updated_at"],
+  cells: ["id", "cell_group_id", "cell_group_name", "church_id", "name", "cell_name", "raw_name", "member_count", "meeting_day", "meeting_time", "meeting_location", "status", "created_at", "updated_at"],
   churchReports: ["id", "church_id", "church_name", "semana", "data_do_culto", "culto", "ft", "nc", "rs", "total_ft_reached", "comentarios", "submetido_por", "submetido_por_id", "estado", "metadata", "created_at", "updated_at"],
   alecRegistrations: ["id", "church_id", "church_name", "member_id", "nome_completo", "contacto", "celula", "nome_do_lider_de_celula", "fez_escola_de_fundacao", "e_lider", "motivo_de_fazer_alec", "estado", "observacoes", "metadata", "created_at", "updated_at"],
   alecScores: ["id", "church_id", "church_name", "registration_id", "member_id", "nome_completo", "contacto", "celula", "fase_1_aula_1", "fase_1_aula_2", "fase_1_aula_3", "fase_1_aula_4", "fase_2_aula_1", "fase_2_aula_2", "fase_2_aula_3", "terminou", "faixa_certificado_pago", "certificado_emitido", "estado", "metadata", "created_at", "updated_at"],
@@ -24,13 +28,27 @@ const fail = <T>(error: string, code = "CELL_MINISTRY_ERROR"): DataResult<T> => 
 
 function cast<T>(r: { ok: boolean; data?: unknown; error?: string; code?: string }): DataResult<T> {
   if (r.ok) return ok(r.data as T);
-  if (r.code === "SUPABASE_TABLE_MISSING") return fail("Tabelas de Relatórios de Igreja / ALEC ainda não foram criadas ou migration não aplicada.", r.code);
-  if (r.code === "SUPABASE_RLS_DENIED") return fail("Sem permissão para aceder aos relatórios da igreja.", r.code);
+  if (r.code === "SUPABASE_TABLE_MISSING") return fail("Tabelas de Células / Relatórios de Igreja / ALEC ainda não foram criadas ou migration não aplicada.", r.code);
+  if (r.code === "SUPABASE_RLS_DENIED") return fail("Sem permissão para aceder aos dados de células.", r.code);
   return fail(r.error || "Cell Ministry Supabase error", r.code);
 }
 
 function aliases(t: Table, x: CellMinistryRecord) {
   const r = { ...x };
+  if (t === "cellGroups") {
+    Object.assign(r, {
+      name: r.name || r.group_name,
+      group_name: r.group_name || r.name,
+    });
+  }
+  if (t === "cells") {
+    Object.assign(r, {
+      name: r.name || r.cell_name,
+      cell_name: r.cell_name || r.name,
+      group_id: r.cell_group_id || r.group_id,
+      cell_group_id: r.cell_group_id || r.group_id,
+    });
+  }
   if (t === "churchReports") {
     Object.assign(r, {
       igreja: r.church_id,
@@ -99,83 +117,83 @@ const CANONICAL_CHURCH_MAP: Record<string, string> = {
   "church-7": "a1111111-1111-4111-8111-111111111107",
   "church-tete": "a1111111-1111-4111-8111-111111111108",
   "church-8": "a1111111-1111-4111-8111-111111111108",
-  "church-xai-xai": "a1111111-1111-4111-8111-111111111109",
-  "church-9": "a1111111-1111-4111-8111-111111111109",
-  "church-pemba": "a1111111-1111-4111-8111-111111111110",
-  "church-10": "a1111111-1111-4111-8111-111111111110",
-  "church-lichinga": "a1111111-1111-4111-8111-111111111111",
-  "church-11": "a1111111-1111-4111-8111-111111111111",
-  "church-inhambane": "a1111111-1111-4111-8111-111111111112",
-  "church-12": "a1111111-1111-4111-8111-111111111112",
-  "church-vilankulo": "a1111111-1111-4111-8111-111111111113",
-  "church-13": "a1111111-1111-4111-8111-111111111113",
-  "church-mocuba": "a1111111-1111-4111-8111-111111111114",
-  "church-14": "a1111111-1111-4111-8111-111111111114",
-  "church-dondo": "a1111111-1111-4111-8111-111111111115",
-  "church-15": "a1111111-1111-4111-8111-111111111115"
 };
 
+function normalizeChurchId(raw: unknown): string | null {
+  const s = String(raw || "").trim();
+  if (!s) return null;
+  if (isValidUuid(s)) return s;
+  return CANONICAL_CHURCH_MAP[s] || null;
+}
+
 function payload(t: Table, x: CellMinistryRecord): SupabaseRow {
-  const r: { [k: string]: unknown } = { ...x };
-  if (r.church_id && CANONICAL_CHURCH_MAP[String(r.church_id)]) {
-    r.church_id = CANONICAL_CHURCH_MAP[String(r.church_id)];
-  } else if (r.igreja && CANONICAL_CHURCH_MAP[String(r.igreja)]) {
-    r.church_id = CANONICAL_CHURCH_MAP[String(r.igreja)];
-  } else if (r.church && CANONICAL_CHURCH_MAP[String(r.church)]) {
-    r.church_id = CANONICAL_CHURCH_MAP[String(r.church)];
-  }
-  if (!r.church_id || !isValidUuid(String(r.church_id))) {
-    r.church_id = "a1111111-1111-4111-8111-111111111101";
+  const row: SupabaseRow = {};
+  const cols = COLUMNS[t];
+  const churchId = normalizeChurchId(x.church_id || x.igreja);
+
+  for (const c of cols) {
+    if (c === "church_id" && churchId) {
+      row[c] = churchId;
+      continue;
+    }
+    if (c in x && x[c] !== undefined) {
+      row[c] = x[c] as SupabaseRow[string];
+    }
   }
 
-  if (t === "churchReports") {
-    r.data_do_culto ??= r.data_inicio || r.data || r.serviceDate;
-    r.estado ??= r.status || "Submetido";
-    r.submetido_por ??= r.submitted_by;
-    r.comentarios ??= r.comments;
-    r.ft = Number(r.ft ?? 0);
-    r.nc = Number(r.nc ?? 0);
-    r.rs = Number(r.rs ?? 0);
-    r.total_ft_reached = Number(r.total_ft_reached ?? 0);
+  // Auto-fill aliases into known columns
+  if (t === "cellGroups") {
+    if (x.name && !row.group_name) row.group_name = String(x.name);
+    if (x.group_name && !row.name) row.name = String(x.group_name);
+  } else if (t === "cells") {
+    if (x.name && !row.cell_name) row.cell_name = String(x.name);
+    if (x.cell_name && !row.name) row.name = String(x.cell_name);
+    if (x.group_id && !row.cell_group_id) row.cell_group_id = String(x.group_id);
+    if (x.cell_group_id && !row.cell_group_id) row.cell_group_id = String(x.cell_group_id);
+  } else if (t === "churchReports") {
+    if (x.igreja && !row.church_id) row.church_id = churchId;
+    if (x.data_inicio && !row.data_do_culto) row.data_do_culto = String(x.data_inicio);
+    if (x.status && !row.estado) row.estado = String(x.status);
+    if (x.submitted_by && !row.submetido_por) row.submetido_por = String(x.submitted_by);
+    if (x.comments && !row.comentarios) row.comentarios = String(x.comments);
+  } else if (t === "alecRegistrations") {
+    if (x.fullName && !row.nome_completo) row.nome_completo = String(x.fullName);
+    if (x.contact && !row.contacto) row.contacto = String(x.contact);
+    if (x.cell && !row.celula) row.celula = String(x.cell);
+    if (x.cellLeaderName && !row.nome_do_lider_de_celula) row.nome_do_lider_de_celula = String(x.cellLeaderName);
+    if (x.status && !row.estado) row.estado = String(x.status);
+    if (x.observations && !row.observacoes) row.observacoes = String(x.observations);
+  } else if (t === "alecScores") {
+    if (x.fullName && !row.nome_completo) row.nome_completo = String(x.fullName);
+    if (x.contact && !row.contacto) row.contacto = String(x.contact);
+    if (x.cell && !row.celula) row.celula = String(x.cell);
+    if (x.status && !row.estado) row.estado = String(x.status);
+  } else if (t === "cellReports") {
+    if (x.report_week && !row.semana) row.semana = String(x.report_week);
+    if (x.cell_name && !row.celula) row.celula = String(x.cell_name);
+    if (x.leader_name && !row.nome_do_lider) row.nome_do_lider = String(x.leader_name);
+    if (x.attendance_count !== undefined && !row.att) row.att = Number(x.attendance_count);
+    if (x.first_timers_count !== undefined && !row.ft) row.ft = Number(x.first_timers_count);
+    if (x.new_converts_count !== undefined && !row.nc) row.nc = Number(x.new_converts_count);
+    if (x.offering_amount !== undefined && !row.oferta) row.oferta = Number(x.offering_amount);
+    if (x.souls_won_count !== undefined && !row.rs) row.rs = Number(x.souls_won_count);
+    if (x.status && !row.estado) row.estado = String(x.status);
   }
-  if (t === "alecRegistrations") {
-    r.nome_completo ??= r.fullName || r.name;
-    r.contacto ??= r.contact || r.phone;
-    r.celula ??= r.cell;
-    r.nome_do_lider_de_celula ??= r.cellLeaderName || r.lider;
-    r.fez_escola_de_fundacao ??= r.didFoundation ?? false;
-    r.e_lider ??= r.isLeader ?? false;
-    r.motivo_de_fazer_alec ??= r.reason || r.alecReason;
-    r.estado ??= r.status || "Em Formação";
-    r.observacoes ??= r.observations;
-  }
-  if (t === "alecScores") {
-    r.nome_completo ??= r.fullName || r.name;
-    r.contacto ??= r.contact || r.phone;
-    r.celula ??= r.cell;
-    r.estado ??= r.status || "Em Curso";
-  }
-  if (t === "cellReports") {
-    r.semana ??= r.report_week;
-    r.celula ??= r.cell_name;
-    r.nome_do_lider ??= r.leader_name;
-    r.att = Number(r.attendance_count ?? r.att ?? 0);
-    r.ft = Number(r.first_timers_count ?? r.ft ?? 0);
-    r.nc = Number(r.new_converts_count ?? r.nc ?? 0);
-    r.oferta = Number(r.offering_amount ?? r.oferta ?? 0);
-    r.rs = Number(r.souls_won_count ?? r.rs ?? 0);
-    r.estado ??= r.status || "Submetido";
-  }
-  if (r.id && !isValidUuid(String(r.id))) delete r.id;
-  for (const k of Object.keys(r)) {
-    if (/(_id|_by)$/.test(k) && r[k] && !isValidUuid(String(r[k]))) delete r[k];
-  }
-  return Object.fromEntries(Object.entries(r).filter(([k, v]) => COLUMNS[t].includes(k) && v !== undefined)) as SupabaseRow;
+
+  if (row.id && !isValidUuid(String(row.id))) delete row.id;
+  return row;
 }
 
 async function list(t: Table, filters: Record<string, string | number | boolean | null> = {}, orderBy = "created_at") {
-  const r = await listRows(TABLES[t], { filters, orderBy, ascending: false });
-  return r.ok ? ok(r.data.map((x) => aliases(t, x))) : cast<CellMinistryRecord[]>(r);
+  const filterParams: Record<string, string | number | boolean | null> = {};
+  for (const [k, v] of Object.entries(filters)) {
+    if (v !== undefined && v !== null && v !== "") filterParams[k] = v;
+  }
+  const r = await listRows(TABLES[t], {
+    filters: Object.keys(filterParams).length ? filterParams : undefined,
+    orderBy: { column: orderBy, ascending: true },
+  });
+  return r.ok ? ok((r.data || []).map((x) => aliases(t, x))) : cast<CellMinistryRecord[]>(r);
 }
 
 async function get(t: Table, id: EntityId) {
@@ -197,6 +215,20 @@ async function update(t: Table, id: EntityId, x: CellMinistryRecord) {
 }
 
 const remove = async (t: Table, id: EntityId) => cast<boolean>(await deleteRow(TABLES[t], String(id)));
+
+// Cell Groups
+export const listCellGroups = (filters: Record<string, string | number | boolean | null> = {}) => list("cellGroups", filters, "name");
+export const getCellGroupById = (id: EntityId) => get("cellGroups", id);
+export const createCellGroup = (p: CellMinistryRecord) => create("cellGroups", p);
+export const updateCellGroup = (id: EntityId, p: CellMinistryRecord) => update("cellGroups", id, p);
+export const deleteCellGroup = (id: EntityId) => remove("cellGroups", id);
+
+// Cells
+export const listCells = (filters: Record<string, string | number | boolean | null> = {}) => list("cells", filters, "name");
+export const getCellById = (id: EntityId) => get("cells", id);
+export const createCell = (p: CellMinistryRecord) => create("cells", p);
+export const updateCell = (id: EntityId, p: CellMinistryRecord) => update("cells", id, p);
+export const deleteCell = (id: EntityId) => remove("cells", id);
 
 // Church Reports
 export const listChurchReports = (filters: Record<string, string | number | boolean | null> = {}) => list("churchReports", filters, "created_at");

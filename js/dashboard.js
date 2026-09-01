@@ -11141,10 +11141,10 @@ function renderCellLeaderPortal() {
 
     const isSpecificSingleCellLeader = (activeUser?.auth_user_id === "47df0cce-9701-492c-90aa-b3cb205bbd4b") ||
       (activeUser?.id === "47df0cce-9701-492c-90aa-b3cb205bbd4b") ||
-      ["Cell Leader", "Cell Assistant", "cell_leader", "assistant_cell_leader", "cell_assistant"].includes(activeUser?.role);
+      (["Cell Leader", "Cell Assistant", "cell_leader", "assistant_cell_leader", "cell_assistant"].includes(activeUser?.role) && authorizedCells.length <= 1);
 
     const showCellGroupSelectors = Boolean(isGroupLeaderOrAbove && !isSpecificSingleCellLeader);
-    const canChooseCell = showCellGroupSelectors && authorizedCells.length > 1;
+    const canChooseCell = authorizedCells.length > 1;
     const memberStatuses = [...new Set(allMembers.map((member) => member.status).filter(Boolean))];
     const foundationOptions = [...new Set(allMembers.map((member) => member.foundation_status).filter(Boolean))];
     const allGroups = [
@@ -25322,9 +25322,19 @@ function continueEnterDashboard() {
   const requestedRoute = location.hash.replace("#", "");
   const isCellPortalMember = isCellLeaderOrAssistant(activeUser);
   if (isCellPortalMember) {
+    cellPortalPageState.cellId = activeUser.cell_id || (activeUser.assigned_cells && activeUser.assigned_cells[0]) || "";
+    cellPortalPageState.cellGroupId = activeUser.cell_group_id || (activeUser.assigned_cell_groups && activeUser.assigned_cell_groups[0]) || "";
+    cellPortalPageState.search = "";
+    cellPortalPageState.reconciliationStatus = "";
     history.replaceState(null, "", "#cellPortal");
     setRoute("cellPortal");
-  } else if (isPastoralCareRector(activeUser)) {
+  } else {
+    if (["Super Admin", "Main Pastor", "National Admin", "Administrator", "Admin"].includes(activeUser.role)) {
+      cellPortalPageState.cellId = "";
+      cellPortalPageState.cellGroupId = "";
+    }
+  }
+  if (isPastoralCareRector(activeUser)) {
     setRoute("firstTimers");
   } else if (resumeCellReport && hasCellReportPermission("cell_reports.create_own")) {
     history.replaceState(null, "", "#cell-report-submit");

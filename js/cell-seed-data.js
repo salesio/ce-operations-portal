@@ -157,6 +157,14 @@
     "church_name": "E.C. Maputo Central - Sede",
     "total_cells": 22,
     "total_members": 143
+  },
+  {
+    "id": "d1a00000-0000-4000-8000-000000000001",
+    "name": "Diamantes Main",
+    "church_id": "a1111111-1111-4111-8111-111111111101",
+    "church_name": "E.C. Maputo Central - Sede",
+    "total_cells": 10,
+    "total_members": 0
   }
 ];
 
@@ -1920,6 +1928,106 @@
     "church_id": "a1111111-1111-4111-8111-111111111101",
     "church_name": "E.C. Maputo Central - Sede",
     "member_count": 1
+  },
+  {
+    "id": "d1a00000-d1a0-4000-8000-000000000001",
+    "name": "Diamantes main",
+    "raw_name": "Diamantes main",
+    "group_id": "d1a00000-0000-4000-8000-000000000001",
+    "group_name": "Diamantes Main",
+    "church_id": "a1111111-1111-4111-8111-111111111101",
+    "church_name": "E.C. Maputo Central - Sede",
+    "member_count": 0
+  },
+  {
+    "id": "d1a00000-d1a0-4000-8000-000000000002",
+    "name": "Diamantes A",
+    "raw_name": "Diamantes A",
+    "group_id": "d1a00000-0000-4000-8000-000000000001",
+    "group_name": "Diamantes Main",
+    "church_id": "a1111111-1111-4111-8111-111111111101",
+    "church_name": "E.C. Maputo Central - Sede",
+    "member_count": 0
+  },
+  {
+    "id": "d1a00000-d1a0-4000-8000-000000000003",
+    "name": "Diamantes A1",
+    "raw_name": "Diamantes A1",
+    "group_id": "d1a00000-0000-4000-8000-000000000001",
+    "group_name": "Diamantes Main",
+    "church_id": "a1111111-1111-4111-8111-111111111101",
+    "church_name": "E.C. Maputo Central - Sede",
+    "member_count": 0
+  },
+  {
+    "id": "d1a00000-d1a0-4000-8000-000000000004",
+    "name": "Diamantes A1 Teens",
+    "raw_name": "Diamantes A1 Teens",
+    "group_id": "d1a00000-0000-4000-8000-000000000001",
+    "group_name": "Diamantes Main",
+    "church_id": "a1111111-1111-4111-8111-111111111101",
+    "church_name": "E.C. Maputo Central - Sede",
+    "member_count": 0
+  },
+  {
+    "id": "d1a00000-d1a0-4000-8000-000000000005",
+    "name": "Diamantes B",
+    "raw_name": "Diamantes B",
+    "group_id": "d1a00000-0000-4000-8000-000000000001",
+    "group_name": "Diamantes Main",
+    "church_id": "a1111111-1111-4111-8111-111111111101",
+    "church_name": "E.C. Maputo Central - Sede",
+    "member_count": 0
+  },
+  {
+    "id": "d1a00000-d1a0-4000-8000-000000000006",
+    "name": "Diamantes Visionarios",
+    "raw_name": "Diamantes Visionarios",
+    "group_id": "d1a00000-0000-4000-8000-000000000001",
+    "group_name": "Diamantes Main",
+    "church_id": "a1111111-1111-4111-8111-111111111101",
+    "church_name": "E.C. Maputo Central - Sede",
+    "member_count": 0
+  },
+  {
+    "id": "d1a00000-d1a0-4000-8000-000000000007",
+    "name": "Diamantes Visionarios 1",
+    "raw_name": "Diamantes Visionarios 1",
+    "group_id": "d1a00000-0000-4000-8000-000000000001",
+    "group_name": "Diamantes Main",
+    "church_id": "a1111111-1111-4111-8111-111111111101",
+    "church_name": "E.C. Maputo Central - Sede",
+    "member_count": 0
+  },
+  {
+    "id": "d1a00000-d1a0-4000-8000-000000000008",
+    "name": "Diamantes Visionarios 2",
+    "raw_name": "Diamantes Visionarios 2",
+    "group_id": "d1a00000-0000-4000-8000-000000000001",
+    "group_name": "Diamantes Main",
+    "church_id": "a1111111-1111-4111-8111-111111111101",
+    "church_name": "E.C. Maputo Central - Sede",
+    "member_count": 0
+  },
+  {
+    "id": "d1a00000-d1a0-4000-8000-000000000009",
+    "name": "Diamantes Queens",
+    "raw_name": "Diamantes Queens",
+    "group_id": "d1a00000-0000-4000-8000-000000000001",
+    "group_name": "Diamantes Main",
+    "church_id": "a1111111-1111-4111-8111-111111111101",
+    "church_name": "E.C. Maputo Central - Sede",
+    "member_count": 0
+  },
+  {
+    "id": "d1a00000-d1a0-4000-8000-000000000010",
+    "name": "Diamantes E",
+    "raw_name": "Diamantes E",
+    "group_id": "d1a00000-0000-4000-8000-000000000001",
+    "group_name": "Diamantes Main",
+    "church_id": "a1111111-1111-4111-8111-111111111101",
+    "church_name": "E.C. Maputo Central - Sede",
+    "member_count": 0
   }
 ];
 

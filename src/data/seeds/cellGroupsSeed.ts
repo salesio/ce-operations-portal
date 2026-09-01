@@ -112,6 +112,12 @@ export const CELL_GROUP_DEFINITIONS: CellGroupDefinition[] = [
     "name": "Phronesis",
     "total_cells": 22,
     "total_members": 143
+  },
+  {
+    "id": "d1a00000-0000-4000-8000-000000000001",
+    "name": "Diamantes Main",
+    "total_cells": 10,
+    "total_members": 0
   }
 ];
 
