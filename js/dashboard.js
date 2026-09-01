@@ -3,6 +3,11 @@ const LANG_KEY = "ce-dashboard-lang";
 const SIDEBAR_GROUPS_KEY = "ce-dashboard-sidebar-groups";
 const MODULE_NAV_KEY = "ce-dashboard-module-nav";
 
+
+function isValidUuid(val) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(val || ""));
+}
+
 function generateUuid() {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
     return crypto.randomUUID();
@@ -25865,12 +25870,9 @@ function getSacramentsRepoSafe() {
 
 async function persistSacramentViaRepository(type, mode, record) {
   if (!record) return { ok: false, error: "No record" };
+  const recordId = typeof record === "string" ? record : String(record.id || "");
   const repo = getSacramentsRepoSafe();
   const sbClient = window.CESupabase?.getSupabaseFoundationClient?.() || window.CESupabase?.getSupabaseAuthClient?.();
-
-  if (!isValidUuid(record.id)) {
-    record.id = typeof generateUuid === "function" ? generateUuid() : ("00000000-0000-4000-8000-" + Date.now().toString(16).padStart(12, "0"));
-  }
 
   const tableMap = {
     baptism: "baptisms",
@@ -25880,17 +25882,36 @@ async function persistSacramentViaRepository(type, mode, record) {
 
   const tableName = tableMap[type];
 
+  // DELETE OPERATION
   if (mode === "delete") {
+    if (!recordId) return { ok: true };
+    const promises = [];
+    if (sbClient && tableName) {
+      promises.push(
+        sbClient.from(tableName).delete().eq("id", recordId).then((res) => {
+          if (res?.error) console.warn("[CE Sacraments] sbClient delete warning:", tableName, recordId, res.error);
+        })
+      );
+    }
     if (type === "marriage" && repo?.deleteMarriage) {
-      try { await repo.deleteMarriage(record.id); } catch (_) {}
+      promises.push(repo.deleteMarriage(recordId));
     } else if (type === "baptism" && repo?.deleteBaptism) {
-      try { await repo.deleteBaptism(record.id); } catch (_) {}
+      promises.push(repo.deleteBaptism(recordId));
     } else if (type === "baby" && repo?.deleteBabyDedication) {
-      try { await repo.deleteBabyDedication(record.id); } catch (_) {}
-    } else if (sbClient && tableName) {
-      try { await sbClient.from(tableName).delete().eq("id", record.id); } catch (_) {}
+      promises.push(repo.deleteBabyDedication(recordId));
+    }
+
+    try {
+      await Promise.allSettled(promises);
+    } catch (err) {
+      console.warn("[CE Sacraments] Delete failed:", err);
     }
     return { ok: true };
+  }
+
+  // Ensure record has valid UUID for create/update
+  if (!isValidUuid(record.id)) {
+    record.id = typeof generateUuid === "function" ? generateUuid() : ("00000000-0000-4000-8000-" + Date.now().toString(16).padStart(12, "0"));
   }
 
   let dbPayload = {};
