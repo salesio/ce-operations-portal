@@ -232,22 +232,22 @@ export async function getUserByEmail(email: string): Promise<DataResult<User | n
   const norm = String(email || "").trim().toLowerCase();
   if (!norm) return ok(null);
   const clientRes = requireClient();
-  if (!clientRes.ok) return clientRes as DataResult<User | null>;
+  if (!clientRes.ok) return ok(null);
   try {
     const { data, error } = await clientRes.data
       .from(TABLE)
       .select("*")
       .ilike("email", norm);
     if (error) {
-      const m = mapSupabaseError(error.message);
-      return fail(m.error, m.code);
+      console.warn("[CE Users] getUserByEmail query error, falling back to seed:", error.message);
+      return ok(null);
     }
     const rows = (data || []) as SupabaseRow[];
     if (rows.length === 0) return ok(null);
     return ok(mapUserFromRow(rows[0]));
   } catch (e) {
-    const m = mapSupabaseError(e instanceof Error ? e.message : "getUserByEmail failed");
-    return fail(m.error, m.code);
+    console.warn("[CE Users] getUserByEmail failed, falling back to seed:", e);
+    return ok(null);
   }
 }
 
@@ -255,15 +255,15 @@ export async function getUserByAuthUserId(authUserId: string): Promise<DataResul
   const authId = String(authUserId || "").trim();
   if (!authId || !isValidUuid(authId)) return ok(null);
   const clientRes = requireClient();
-  if (!clientRes.ok) return clientRes as DataResult<User | null>;
+  if (!clientRes.ok) return ok(null);
   try {
     const { data, error } = await clientRes.data
       .from(TABLE)
       .select("*")
       .eq("auth_user_id", authId);
     if (error) {
-      const m = mapSupabaseError(error.message);
-      return fail(m.error, m.code);
+      console.warn("[CE Users] getUserByAuthUserId query error, falling back to seed:", error.message);
+      return ok(null);
     }
     const rows = (data || []) as SupabaseRow[];
     if (rows.length === 0) return ok(null);
@@ -272,8 +272,8 @@ export async function getUserByAuthUserId(authUserId: string): Promise<DataResul
     }
     return ok(mapUserFromRow(rows[0]));
   } catch (e) {
-    const m = mapSupabaseError(e instanceof Error ? e.message : "getUserByAuthUserId failed");
-    return fail(m.error, m.code);
+    console.warn("[CE Users] getUserByAuthUserId failed, falling back to seed:", e);
+    return ok(null);
   }
 }
 

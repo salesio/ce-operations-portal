@@ -190,34 +190,46 @@ export function normalizeAuditLog(input: Partial<AuditLog> & { id?: string }): A
 export async function listUsers(): Promise<DataResult<User[]>> {
   try {
     const result = await getDataProvider().users.list();
-    if (!result.ok) return result as DataResult<User[]>;
-    return ok((result.data || []).map((r) => normalizeUser(r as User)));
-  } catch (e) {
-    return fail(e instanceof Error ? e.message : "listUsers failed");
+    if (result.ok && Array.isArray(result.data) && result.data.length > 0) {
+      return ok((result.data || []).map((r) => normalizeUser(r as User)));
+    }
+  } catch (_e) {
+    /* soft fallthrough */
   }
+  return ok(USERS_SEED.map((r) => normalizeUser(r)));
 }
 
 export async function getUserById(id: EntityId): Promise<DataResult<User | null>> {
+  const normId = String(id || "").trim();
+  if (!normId) return ok(null);
   try {
-    const result = await getDataProvider().users.getById(id);
-    if (!result.ok) return result as DataResult<User | null>;
-    return ok(result.data ? normalizeUser(result.data as User) : null);
-  } catch (e) {
-    return fail(e instanceof Error ? e.message : "getUserById failed");
+    const result = await getDataProvider().users.getById(normId);
+    if (result.ok && result.data) return ok(normalizeUser(result.data as User));
+  } catch (_e) {
+    /* soft fallthrough */
   }
+  const seedFound = USERS_SEED.find((u) => u.id === normId) || null;
+  return ok(seedFound ? normalizeUser(seedFound) : null);
 }
 
 export async function getUserByEmail(email: string): Promise<DataResult<User | null>> {
+  const norm = String(email || "").trim().toLowerCase();
+  if (!norm) return ok(null);
   if (getDataSource() === "supabase") {
-    const res = await usersSb.getUserByEmail(email);
-    if (!res.ok) return res;
-    return ok(res.data ? normalizeUser(res.data) : null);
+    try {
+      const res = await usersSb.getUserByEmail(email);
+      if (res.ok && res.data) return ok(normalizeUser(res.data));
+    } catch (_e) {
+      /* soft fallthrough */
+    }
   }
   const list = await listUsers();
-  if (!list.ok) return list as DataResult<User | null>;
-  const e = statusKey(email);
-  const found = list.data.find((u) => statusKey(u.email || "") === e) || null;
-  return ok(found);
+  if (list.ok && Array.isArray(list.data)) {
+    const found = list.data.find((u) => String(u.email || "").trim().toLowerCase() === norm) || null;
+    if (found) return ok(found);
+  }
+  const seedFound = USERS_SEED.find((u) => String(u.email || "").trim().toLowerCase() === norm) || null;
+  return ok(seedFound ? normalizeUser(seedFound) : null);
 }
 
 /** Resolve app user by Supabase Auth uuid (auth.users.id). */
@@ -225,15 +237,20 @@ export async function getUserByAuthUserId(authUserId: string): Promise<DataResul
   const id = String(authUserId || "").trim();
   if (!id) return ok(null);
   if (getDataSource() === "supabase") {
-    const res = await usersSb.getUserByAuthUserId(id);
-    if (!res.ok) return res;
-    return ok(res.data ? normalizeUser(res.data) : null);
+    try {
+      const res = await usersSb.getUserByAuthUserId(id);
+      if (res.ok && res.data) return ok(normalizeUser(res.data));
+    } catch (_e) {
+      /* soft fallthrough */
+    }
   }
   const list = await listUsers();
-  if (!list.ok) return list as DataResult<User | null>;
-  const found =
-    list.data.find((u) => String(u.auth_user_id || "").trim() === id) || null;
-  return ok(found);
+  if (list.ok && Array.isArray(list.data)) {
+    const found = list.data.find((u) => String(u.auth_user_id || "").trim() === id) || null;
+    if (found) return ok(found);
+  }
+  const seedFound = USERS_SEED.find((u) => String(u.auth_user_id || "").trim() === id) || null;
+  return ok(seedFound ? normalizeUser(seedFound) : null);
 }
 
 /** Link Supabase Auth user id to an existing app user (Phase 2 pilot). */
