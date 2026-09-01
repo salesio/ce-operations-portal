@@ -9792,6 +9792,15 @@ function setRoute(route) {
         .catch((err) => console.warn("[CE Members] route hydrate skipped", err));
     }
   }
+  if (activeRoute === "sacraments") {
+    Promise.resolve(hydrateSacramentsFromRepository())
+      .then((hydrated) => {
+        if (hydrated && activeRoute === "sacraments") {
+          try { renderSacraments(); } catch (_) {}
+        }
+      })
+      .catch((err) => console.warn("[CE Sacraments] route hydrate skipped", err));
+  }
   if (String(activeRoute || "").startsWith("cell")) {
     if (!state.cellLeadership || !state.cellLeadership.churchReports || !state.cellLeadership.churchReports.length) {
       Promise.resolve(hydrateCellMinistryFromRepository())
@@ -23254,6 +23263,16 @@ function quickAction(action, type, id) {
       });
       return;
     }
+    if (["baptism", "marriage", "baby"].includes(type)) {
+      const previous = collection[index];
+      collection.splice(index, 1);
+      saveState(`Deleted ${type} ${id}`);
+      setRoute(activeRoute);
+      void Promise.resolve(persistSacramentViaRepository(type, "delete", previous)).catch((err) => {
+        console.warn("[CE Sacraments] background delete sync error", err);
+      });
+      return;
+    }
     if (["churchReport", "alecRegistration", "alecScore", "cellReport"].includes(type)) {
       const previous = collection[index];
       const cellSb = window.CESupabase?.cellMinistrySupabaseAdapter || window.cellMinistrySupabaseAdapter;
@@ -25126,6 +25145,16 @@ function continueEnterDashboard() {
     .then(() => hydrateMembersFromRepository())
     .catch((error) => console.warn("[CE Members] background hydrate skipped", error));
 
+  // Hydrate sacraments asynchronously in background from Supabase
+  Promise.resolve()
+    .then(() => hydrateSacramentsFromRepository())
+    .then((hydrated) => {
+      if (hydrated && activeRoute === "sacraments" && typeof renderSacraments === "function") {
+        renderSacraments();
+      }
+    })
+    .catch((error) => console.warn("[CE Sacraments] background hydrate skipped", error));
+
   // Hydrate cell ministry & church reports asynchronously in background without full-screen re-renders
   Promise.resolve()
     .then(() => hydrateCellMinistryFromRepository())
@@ -25826,142 +25855,263 @@ async function hydrateFevoFromRepository() {
   }
 }
 
-function dualWriteSacramentsRecord(modalType, mode, record) {
-  const bridge = window.CESacraments || window.CEDataLayer?.sacraments;
-  if (!bridge || !record) return;
-  if (typeof bridge.dualWriteRecord === "function") {
-    void bridge.dualWriteRecord(modalType, mode, record);
-    return;
+// ============================================================================
+// SACRAMENTS SUPABASE PERSISTENCE & HYDRATION
+// ============================================================================
+
+function getSacramentsRepoSafe() {
+  return window.CESupabase?.createMarriage ? window.CESupabase : (window.CESacraments || window.CEDataLayer?.sacraments || null);
+}
+
+async function persistSacramentViaRepository(type, mode, record) {
+  if (!record) return { ok: false, error: "No record" };
+  const repo = getSacramentsRepoSafe();
+  const sbClient = window.CESupabase?.getSupabaseFoundationClient?.() || window.CESupabase?.getSupabaseAuthClient?.();
+
+  if (!isValidUuid(record.id)) {
+    record.id = typeof generateUuid === "function" ? generateUuid() : ("00000000-0000-4000-8000-" + Date.now().toString(16).padStart(12, "0"));
   }
-  const map = {
-    baptism: ["createBaptism", "updateBaptism"],
-    marriage: ["createMarriage", "updateMarriage"],
-    baby: ["createBabyDedication", "updateBabyDedication"],
+
+  const tableMap = {
+    baptism: "baptisms",
+    marriage: "marriages",
+    baby: "baby_dedications"
   };
-  const pair = map[modalType];
-  if (!pair) return;
-  if (mode === "create" && bridge[pair[0]]) void bridge[pair[0]](record);
-  else if (mode === "update" && bridge[pair[1]]) void bridge[pair[1]](record.id, record);
+
+  const tableName = tableMap[type];
+
+  if (mode === "delete") {
+    if (type === "marriage" && repo?.deleteMarriage) {
+      try { await repo.deleteMarriage(record.id); } catch (_) {}
+    } else if (type === "baptism" && repo?.deleteBaptism) {
+      try { await repo.deleteBaptism(record.id); } catch (_) {}
+    } else if (type === "baby" && repo?.deleteBabyDedication) {
+      try { await repo.deleteBabyDedication(record.id); } catch (_) {}
+    } else if (sbClient && tableName) {
+      try { await sbClient.from(tableName).delete().eq("id", record.id); } catch (_) {}
+    }
+    return { ok: true };
+  }
+
+  let dbPayload = {};
+  if (type === "marriage") {
+    dbPayload = {
+      id: record.id,
+      groom_name: record.nome_do_noivo || record.groom_name || "",
+      groom_phone: record.telefone_do_noivo || record.groom_phone || "",
+      bride_name: record.nome_da_noiva || record.bride_name || "",
+      bride_phone: record.telefone_da_noiva || record.bride_phone || "",
+      church_id: isValidUuid(record.church_id) ? record.church_id : (activeUser?.church_id && isValidUuid(activeUser.church_id) ? activeUser.church_id : null),
+      marriage_date: record.data_do_casamento || record.marriage_date || null,
+      officiating_minister_name: record.pastor_responsavel || record.officiating_minister_name || "",
+      pre_marital_counseling_completed: !!(record.aconselhamento_concluido ?? record.counseling_completed),
+      status: record.estado || record.status || "Pending",
+      notes: record.observacoes || record.notes || "",
+      updated_at: new Date().toISOString()
+    };
+    if (mode === "create" && repo?.createMarriage) {
+      try {
+        const res = await repo.createMarriage(dbPayload);
+        if (res?.ok) return res;
+      } catch (_) {}
+    } else if (mode === "update" && repo?.updateMarriage) {
+      try {
+        const res = await repo.updateMarriage(record.id, dbPayload);
+        if (res?.ok) return res;
+      } catch (_) {}
+    }
+  } else if (type === "baptism") {
+    const fullName = record.full_name || [record.nome, record.apelido].filter(Boolean).join(" ") || record.nome || "";
+    dbPayload = {
+      id: record.id,
+      full_name: fullName,
+      phone: record.telefone || record.phone || "",
+      church_id: isValidUuid(record.church_id) ? record.church_id : (activeUser?.church_id && isValidUuid(activeUser.church_id) ? activeUser.church_id : null),
+      baptism_date: record.data_do_baptismo || record.baptism_date || null,
+      baptism_location: record.local_do_baptismo || record.baptism_location || "",
+      minister_name: record.baptizado_por || record.minister_name || record.pastor_responsavel || "",
+      status: record.estado || record.status || "Pending",
+      notes: record.observacoes || record.notes || "",
+      updated_at: new Date().toISOString()
+    };
+    if (mode === "create" && repo?.createBaptism) {
+      try {
+        const res = await repo.createBaptism(dbPayload);
+        if (res?.ok) return res;
+      } catch (_) {}
+    } else if (mode === "update" && repo?.updateBaptism) {
+      try {
+        const res = await repo.updateBaptism(record.id, dbPayload);
+        if (res?.ok) return res;
+      } catch (_) {}
+    }
+  } else if (type === "baby") {
+    dbPayload = {
+      id: record.id,
+      child_name: record.nome_da_crianca || record.child_name || "",
+      child_date_of_birth: record.data_de_nascimento || record.child_date_of_birth || null,
+      parent_name: record.nome_do_pai || record.parent_name || record.nome_da_mae || "",
+      parent_phone: record.telefone_dos_pais || record.parent_phone || "",
+      second_parent_name: record.nome_da_mae || record.second_parent_name || "",
+      church_id: isValidUuid(record.church_id) ? record.church_id : (activeUser?.church_id && isValidUuid(activeUser.church_id) ? activeUser.church_id : null),
+      dedication_date: record.data_da_dedicacao || record.dedication_date || null,
+      minister_name: record.pastor_responsavel || record.minister_name || "",
+      status: record.estado || record.status || "Pending",
+      notes: record.observacoes || record.notes || "",
+      updated_at: new Date().toISOString()
+    };
+    if (mode === "create" && repo?.createBabyDedication) {
+      try {
+        const res = await repo.createBabyDedication(dbPayload);
+        if (res?.ok) return res;
+      } catch (_) {}
+    } else if (mode === "update" && repo?.updateBabyDedication) {
+      try {
+        const res = await repo.updateBabyDedication(record.id, dbPayload);
+        if (res?.ok) return res;
+      } catch (_) {}
+    }
+  }
+
+  // Direct Supabase upsert fallback
+  if (sbClient && tableName) {
+    try {
+      const { data, error } = await sbClient.from(tableName).upsert(dbPayload).select().single();
+      if (!error && data) return { ok: true, data };
+    } catch (err) {
+      console.warn("[CE Sacraments] Direct upsert error", err);
+    }
+  }
+
+  return { ok: true, data: record };
+}
+
+function dualWriteSacramentsRecord(modalType, mode, record) {
+  void persistSacramentViaRepository(modalType, mode, record);
 }
 
 async function hydrateSacramentsFromRepository() {
-  const repo = window.CESacraments || window.CEDataLayer?.sacraments;
-  if (!repo?.listBaptisms) return false;
+  const sbClient = window.CESupabase?.getSupabaseFoundationClient?.() || window.CESupabase?.getSupabaseAuthClient?.();
+  const repo = getSacramentsRepoSafe();
+  if (!sbClient && !repo) return false;
+
   try {
     let hydrated = false;
-    state.sacraments =
-      state.sacraments && !Array.isArray(state.sacraments)
-        ? state.sacraments
-        : structuredClone(seedData.sacraments || {});
+    state.sacraments = state.sacraments && !Array.isArray(state.sacraments)
+      ? state.sacraments
+      : structuredClone(seedData.sacraments || { baptisms: [], marriages: [], babies: [] });
 
-    async function merge(listFn, key, mapRow) {
-      if (typeof listFn !== "function") return;
-      const result = await listFn();
-      if (!result?.ok || !Array.isArray(result.data) || !result.data.length) return;
-      const prev = new Map((state.sacraments[key] || []).map((r) => [r.id, r]));
-      const byId = new Map();
-      result.data.forEach((row) => {
-        const previous = prev.get(row.id) || {};
-        const mapped = mapRow ? mapRow(row) : row;
-        byId.set(row.id, { ...mapped, ...previous, id: row.id });
-      });
-      prev.forEach((localRow, id) => {
-        if (!byId.has(id)) byId.set(id, localRow);
-      });
-      state.sacraments[key] = [...byId.values()];
+    // 1. Baptisms
+    let bapData = null;
+    if (sbClient) {
+      const res = await sbClient.from("baptisms").select("*").order("created_at", { ascending: false });
+      if (res?.data) bapData = res.data;
+    }
+    if (!bapData && typeof repo?.listBaptisms === "function") {
+      const res = await repo.listBaptisms();
+      if (res?.ok && Array.isArray(res.data)) bapData = res.data;
+    }
+    if (Array.isArray(bapData)) {
+      const cleanBap = bapData.filter((r) => !r.metadata?.synthetic && !String(r.baptism_number || "").includes("DEMO"));
+      state.sacraments.baptisms = cleanBap.map((row) => ({
+        id: row.id,
+        nome: row.full_name ? row.full_name.split(" ")[0] : (row.nome || ""),
+        apelido: row.full_name ? row.full_name.split(" ").slice(1).join(" ") : (row.apelido || ""),
+        full_name: row.full_name || row.nome || "",
+        telefone: row.phone || row.telefone || "",
+        phone: row.phone || row.telefone || "",
+        church_id: row.church_id || "",
+        data_do_baptismo: row.baptism_date || row.data_do_baptismo || "",
+        local_do_baptismo: row.baptism_location || row.local_do_baptismo || "",
+        baptizado_por: row.minister_name || row.baptizado_por || "",
+        pastor_responsavel: row.minister_name || row.pastor_responsavel || "",
+        estado: row.status || row.estado || "Pending",
+        status: row.status || row.estado || "Pending",
+        observacoes: row.notes || row.observacoes || ""
+      }));
       hydrated = true;
     }
 
-    await merge(repo.listBaptisms?.bind(repo), "baptisms", (row) => ({
-      ...row,
-      nome: row.nome || row.first_name || (row.full_name || "").split(" ")[0] || "",
-      apelido: row.apelido || row.last_name || "",
-      telefone: row.telefone || row.phone || "",
-      celula: row.celula || row.cell_name || "",
-      idade: row.idade ?? row.age,
-      data_do_baptismo: row.data_do_baptismo || row.scheduled_date || "",
-      local_do_baptismo: row.local_do_baptismo || row.location || "",
-      baptizado_por: row.baptizado_por || row.pastor_name || "",
-      quer_certificado: !!(row.quer_certificado ?? row.certificate_required),
-      certificado_pago: !!(row.certificado_pago ?? row.certificate_paid),
-      certificado_emitido: !!(
-        row.certificado_emitido ||
-        /issued/i.test(String(row.certificate_status || ""))
-      ),
-      estado: row.estado || row.status || "Pending",
-      observacoes: row.observacoes || row.notes || "",
-    }));
-    await merge(repo.listMarriages?.bind(repo), "marriages", (row) => ({
-      ...row,
-      nome_do_noivo: row.nome_do_noivo || row.groom_name || "",
-      telefone_do_noivo: row.telefone_do_noivo || row.groom_phone || "",
-      nome_da_noiva: row.nome_da_noiva || row.bride_name || "",
-      telefone_da_noiva: row.telefone_da_noiva || row.bride_phone || "",
-      aconselhamento_concluido: !!(
-        row.aconselhamento_concluido ?? row.counseling_completed
-      ),
-      data_do_casamento: row.data_do_casamento || row.scheduled_date || "",
-      pastor_responsavel: row.pastor_responsavel || row.pastor_name || "",
-      documentos_entregues: !!(
-        row.documentos_entregues ||
-        /verified|complete|partial/i.test(String(row.documents_status || ""))
-      ),
-      estado: row.estado || row.status || "Pending",
-      observacoes: row.observacoes || row.notes || "",
-    }));
-    await merge(repo.listBabyDedications?.bind(repo), "babies", (row) => ({
-      ...row,
-      nome_da_crianca: row.nome_da_crianca || row.child_full_name || "",
-      data_de_nascimento: row.data_de_nascimento || row.child_date_of_birth || "",
-      nome_do_pai: row.nome_do_pai || row.father_name || "",
-      nome_da_mae: row.nome_da_mae || row.mother_name || "",
-      telefone_dos_pais:
-        row.telefone_dos_pais || row.father_phone || row.mother_phone || "",
-      data_da_dedicacao: row.data_da_dedicacao || row.scheduled_date || "",
-      pastor_responsavel: row.pastor_responsavel || row.pastor_name || "",
-      certificado_emitido: !!(
-        row.certificado_emitido ||
-        /issued/i.test(String(row.certificate_status || ""))
-      ),
-      estado: row.estado || row.status || "Pending",
-      observacoes: row.observacoes || row.notes || "",
-    }));
-    // Optional collections for future UI tabs
-    if (typeof repo.listSacramentCertificates === "function") {
-      const certs = await repo.listSacramentCertificates();
-      if (certs?.ok && Array.isArray(certs.data)) {
-        state.sacraments.certificates = certs.data;
-        hydrated = true;
-      }
+    // 2. Marriages
+    let marData = null;
+    if (sbClient) {
+      const res = await sbClient.from("marriages").select("*").order("created_at", { ascending: false });
+      if (res?.data) marData = res.data;
     }
-    if (typeof repo.listSacramentDocuments === "function") {
-      const docs = await repo.listSacramentDocuments();
-      if (docs?.ok && Array.isArray(docs.data)) {
-        state.sacraments.documents = docs.data;
-        hydrated = true;
-      }
+    if (!marData && typeof repo?.listMarriages === "function") {
+      const res = await repo.listMarriages();
+      if (res?.ok && Array.isArray(res.data)) marData = res.data;
     }
-    if (typeof repo.listSacramentAppointments === "function") {
-      const apts = await repo.listSacramentAppointments();
-      if (apts?.ok && Array.isArray(apts.data)) {
-        state.sacraments.appointments = apts.data;
-        hydrated = true;
-      }
+    if (Array.isArray(marData)) {
+      const cleanMar = marData.filter((r) => !r.metadata?.synthetic && !String(r.marriage_number || "").includes("DEMO"));
+      state.sacraments.marriages = cleanMar.map((row) => ({
+        id: row.id,
+        nome_do_noivo: row.groom_name || row.nome_do_noivo || "",
+        groom_name: row.groom_name || row.nome_do_noivo || "",
+        telefone_do_noivo: row.groom_phone || row.telefone_do_noivo || "",
+        groom_phone: row.groom_phone || row.telefone_do_noivo || "",
+        nome_da_noiva: row.bride_name || row.nome_da_noiva || "",
+        bride_name: row.bride_name || row.nome_da_noiva || "",
+        telefone_da_noiva: row.bride_phone || row.telefone_da_noiva || "",
+        bride_phone: row.bride_phone || row.telefone_da_noiva || "",
+        church_id: row.church_id || "",
+        data_do_casamento: row.marriage_date || row.data_do_casamento || "",
+        marriage_date: row.marriage_date || row.data_do_casamento || "",
+        pastor_responsavel: row.officiating_minister_name || row.pastor_responsavel || "",
+        aconselhamento_concluido: !!(row.pre_marital_counseling_completed ?? row.aconselhamento_concluido),
+        estado: row.status || row.estado || "Pending",
+        status: row.status || row.estado || "Pending",
+        observacoes: row.notes || row.observacoes || ""
+      }));
+      hydrated = true;
+    }
+
+    // 3. Baby Dedications
+    let babyData = null;
+    if (sbClient) {
+      const res = await sbClient.from("baby_dedications").select("*").order("created_at", { ascending: false });
+      if (res?.data) babyData = res.data;
+    }
+    if (!babyData && typeof repo?.listBabyDedications === "function") {
+      const res = await repo.listBabyDedications();
+      if (res?.ok && Array.isArray(res.data)) babyData = res.data;
+    }
+    if (Array.isArray(babyData)) {
+      const cleanBaby = babyData.filter((r) => !r.metadata?.synthetic && !String(r.dedication_number || "").includes("DEMO"));
+      state.sacraments.babies = cleanBaby.map((row) => ({
+        id: row.id,
+        nome_da_crianca: row.child_name || row.nome_da_crianca || "",
+        child_name: row.child_name || row.nome_da_crianca || "",
+        data_de_nascimento: row.child_date_of_birth || row.data_de_nascimento || "",
+        nome_do_pai: row.parent_name || row.nome_do_pai || "",
+        nome_da_mae: row.second_parent_name || row.nome_da_mae || "",
+        telefone_dos_pais: row.parent_phone || row.telefone_dos_pais || "",
+        church_id: row.church_id || "",
+        data_da_dedicacao: row.dedication_date || row.data_da_dedicacao || "",
+        pastor_responsavel: row.minister_name || row.pastor_responsavel || "",
+        estado: row.status || row.estado || "Pending",
+        status: row.status || row.estado || "Pending",
+        observacoes: row.notes || row.observacoes || ""
+      }));
+      hydrated = true;
     }
 
     if (hydrated) {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       } catch (_) {}
-      console.info("[CE Sacraments] hydrated", {
+      console.info("[CE Sacraments] hydrated from Supabase", {
         baptisms: (state.sacraments.baptisms || []).length,
         marriages: (state.sacraments.marriages || []).length,
         babies: (state.sacraments.babies || []).length,
       });
+      if (activeRoute === "sacraments" && typeof renderSacraments === "function") {
+        renderSacraments();
+      }
     }
     return hydrated;
   } catch (error) {
-    console.warn("[CE Sacraments] hydrate failed", error);
+    console.warn("[CE Sacraments] hydrate from Supabase failed", error);
     return false;
   }
 }
