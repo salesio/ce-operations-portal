@@ -12219,6 +12219,12 @@ function renderFirstTimerCard(person) {
 }
 
 function renderFirstTimers() {
+  if (!state.firstTimersHydrated && typeof hydrateFirstTimersFromRepository === "function") {
+    state.firstTimersHydrated = true;
+    Promise.resolve().then(() => hydrateFirstTimersFromRepository()).then((hydrated) => {
+      if (hydrated && activeRoute === "firstTimers") renderFirstTimers();
+    });
+  }
   // Scope against the pastoral module, not the dashboard. Restricted-workspace
   // users do not have a dashboard tab, but they still have national pastoral scope.
   const list = scoped(state.firstTimers, "firstTimers");
@@ -12278,6 +12284,12 @@ function renderFollowUpKanban(list) {
 }
 
 function renderFollowUp() {
+  if (!state.firstTimersHydrated && typeof hydrateFirstTimersFromRepository === "function") {
+    state.firstTimersHydrated = true;
+    Promise.resolve().then(() => hydrateFirstTimersFromRepository()).then((hydrated) => {
+      if (hydrated && activeRoute === "followUp") renderFollowUp();
+    });
+  }
   const list = scoped(state.firstTimers, "followUp");
   const view = modulePageState.followUp.view;
   const filtered = applyFirstTimerCardFilters(list, followUpPageState.filter);
@@ -25165,7 +25177,7 @@ async function refreshDashboardData({ render = true } = {}) {
   const routeRefreshers = {
     churches: hydrateChurchesFromRepository,
     firstTimers: hydrateFirstTimersFromRepository,
-    followUp: hydrateFollowUpsFromRepository,
+    followUp: () => Promise.all([hydrateFirstTimersFromRepository(), hydrateFollowUpsFromRepository()]),
     foundation: hydrateFoundationSchoolFromRepository,
     finance: hydrateFinanceFromRepository,
     requisitions: hydrateRequisitionsFromRepository,
@@ -25396,8 +25408,25 @@ function continueEnterDashboard() {
     })
     .catch((error) => console.warn("[CE CellMinistry] background hydrate skipped", error));
 
-  // Kept only as an opt-in compatibility escape hatch. Normal login is lazy:
-  // the visible route loads its data on demand, avoiding a burst of module calls.
+  // Active background sync for first timers and follow ups from Supabase
+  Promise.resolve()
+    .then(() => hydrateFirstTimersFromRepository())
+    .then((hydrated) => {
+      state.firstTimersHydrated = true;
+      if (hydrated && (activeRoute === "firstTimers" || activeRoute === "followUp")) {
+        if (activeRoute === "firstTimers") renderFirstTimers();
+        else renderFollowUp();
+      }
+    })
+    .catch((error) => console.warn("[CE FirstTimers] background hydrate skipped", error));
+
+  Promise.resolve()
+    .then(() => hydrateFollowUpsFromRepository())
+    .then((hydrated) => {
+      if (hydrated && activeRoute === "followUp") renderFollowUp();
+    })
+    .catch((error) => console.warn("[CE FollowUps] background hydrate skipped", error));
+
   if (window.__CE_LEGACY_EAGER_HYDRATE__ === true) {
   // Data-layer pilots: sync churches + members + first timers without blocking UI paint
   Promise.resolve()
