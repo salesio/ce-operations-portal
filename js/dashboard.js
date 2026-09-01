@@ -12325,6 +12325,17 @@ function renderFollowUp() {
     </div>
     ${summaryFilterChips("followUp")}
     <article id="follow-up-results" class="panel glass-panel">
+      <div class="d-flex gap-2 flex-wrap mb-3 align-items-center justify-content-between">
+        <div class="d-flex gap-2 flex-wrap align-items-center">
+          <button class="btn btn-ce-gold btn-touch shadow-sm" type="button" data-followup-refresh title="Actualizar e sincronizar todos os contactos de acompanhamento com o Supabase">
+            <i class="bi bi-arrow-clockwise me-1"></i>Actualizar Acompanhamento
+          </button>
+          <button class="btn btn-outline-cyan btn-touch" type="button" data-first-timer-new-entry title="Registar novo visitante/primeira vez">
+            <i class="bi bi-person-plus me-1"></i>Novo Registo de Visitante
+          </button>
+        </div>
+        <span class="small text-secondary align-self-center"><i class="bi bi-shield-check text-success me-1"></i>Sincronizado ao vivo com o Supabase</span>
+      </div>
       ${filterBar({
         filterScope: "followUp",
         month: false,
@@ -23860,6 +23871,25 @@ document.addEventListener("click", async (event) => {
   }
   if (event.target.closest("[data-first-timer-csv-template]")) {
     downloadFirstTimerExcelTemplate();
+    return;
+  }
+  if (event.target.closest("[data-followup-refresh]")) {
+    const btn = event.target.closest("[data-followup-refresh]");
+    const originalHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>A sincronizar...';
+    Promise.all([
+      typeof hydrateFirstTimersFromRepository === "function" ? hydrateFirstTimersFromRepository() : Promise.resolve(),
+      typeof hydrateFollowUpsFromRepository === "function" ? hydrateFollowUpsFromRepository() : Promise.resolve()
+    ]).then(() => {
+      state.firstTimersHydrated = true;
+      if (typeof showToast === "function") showToast("Acompanhamento actualizado com sucesso!");
+      renderFollowUp();
+    }).catch((err) => {
+      console.error("Error refreshing follow-up:", err);
+      btn.disabled = false;
+      btn.innerHTML = originalHtml;
+    });
     return;
   }
   if (event.target.closest("[data-first-timer-new-entry]")) {
