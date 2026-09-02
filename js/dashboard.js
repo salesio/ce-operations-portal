@@ -5259,16 +5259,22 @@ async function loadCellPortalMembers(cellId, { force = false } = {}) {
       result = await repo.listMembersPage({ page: pageState.page, pageSize: pageState.pageSize, cellId });
     }
     if (requestId !== pageState.requestId) return false;
-    if (!result?.ok) { pageState.error = result?.error || "Falha ao carregar membros da célula."; return false; }
+    pageState.loaded = true;
+    if (!result?.ok) {
+      pageState.error = result?.error || "Falha ao carregar membros da célula.";
+      return false;
+    }
     pageState.items = (result.data?.items || []).map((member) => migrateMemberRecord(member));
     pageState.page = result.data?.page || pageState.page;
     pageState.pageSize = result.data?.pageSize || pageState.pageSize;
     pageState.totalCount = result.data?.totalCount || pageState.items.length;
     pageState.totalPages = result.data?.totalPages || 1;
-    pageState.loaded = true;
     return true;
   } catch (error) {
-    if (requestId === pageState.requestId) pageState.error = error?.message || "Falha ao carregar membros da célula.";
+    if (requestId === pageState.requestId) {
+      pageState.error = error?.message || "Falha ao carregar membros da célula.";
+      pageState.loaded = true;
+    }
     return false;
   } finally {
     if (requestId === pageState.requestId) {
@@ -5285,6 +5291,10 @@ async function ensureCellPortalContext() {
     await hydrateCellMinistryFromRepository();
     cellPortalContextState.ready = true;
     return true;
+  } catch (err) {
+    console.warn("[CE CellPortal] ensureCellPortalContext error", err);
+    cellPortalContextState.ready = true;
+    return false;
   } finally {
     cellPortalContextState.loading = false;
     if (activeRoute === "cellPortal") renderCellLeaderPortal();
