@@ -5,7 +5,7 @@
 (function () {
   "use strict";
 
-  const SHOW_LOCKED_MODULES = true;
+  const SHOW_LOCKED_MODULES = false;
 
   const SENSITIVE_MODULES = new Set([
     "finance", "staffHr", "requisitions", "accessControl", "usersRoles", "auditLogs"
@@ -833,25 +833,13 @@
       return { route, module, visible: true, locked: false, access, sensitive };
     }
 
-    if (explicitlyDenied) {
-      return { route, module, visible: false, locked: true, access, sensitive };
-    }
-
-    if (SHOW_LOCKED_MODULES && (!sensitive || user.role === "Super Admin" || user.role === "Main Pastor")) {
-      return { route, module, visible: true, locked: true, access, sensitive };
-    }
-
-    if (SHOW_LOCKED_MODULES && !sensitive) {
-      return { route, module, visible: true, locked: true, access, sensitive };
-    }
-
     return { route, module, visible: false, locked: true, access, sensitive };
   }
 
   function getVisibleSidebarItems(user, routes = []) {
     return routes
       .map((route) => getNavItemState(user, Array.isArray(route) ? route[0] : route))
-      .filter((item) => item.visible);
+      .filter((item) => item.visible && !item.locked);
   }
 
   function getVisibleTabs(user, module, tabs = []) {
@@ -862,7 +850,7 @@
       return {
         key,
         tab,
-        visible: allowed || SHOW_LOCKED_MODULES || !sensitive,
+        visible: Boolean(allowed),
         locked: !allowed
       };
     }).filter((tab) => tab.visible);

@@ -5330,9 +5330,32 @@ async function ensureCellPortalContext() {
   }
 }
 
-function hasCellPortalPermission(permission, user = activeUser) {
+function hasCellPortalPermission(permission = "cell_portal.view", user = activeUser) {
   if (!user) return false;
-  if (user.role === "Super Admin" || user.role === "Main Pastor" || user.role === "National Admin" || user.can_view_all_churches || (user.permissions || []).includes("*")) return true;
+  if (
+    user.role === "Super Admin" ||
+    user.role === "Main Pastor" ||
+    user.role === "National Admin" ||
+    user.can_view_all_churches ||
+    (user.permissions || []).includes("*")
+  ) {
+    return true;
+  }
+  if (isCellLeaderOrAssistant(user)) return true;
+  if (Boolean(user.cell_id) || (Array.isArray(user.assigned_cells) && user.assigned_cells.length > 0)) {
+    return true;
+  }
+  const deptPerms = user.department_permissions || [];
+  if (
+    deptPerms.includes("cell") ||
+    deptPerms.includes("cellReports") ||
+    deptPerms.includes("cell_reports") ||
+    deptPerms.includes("cellPortal") ||
+    deptPerms.includes("cell_portal") ||
+    deptPerms.includes("cellMinistry")
+  ) {
+    return true;
+  }
   const permissions = new Set([...(user.permissions || []), ...(CELL_PORTAL_ROLE_PERMISSIONS[user.role] || [])]);
   return permissions.has(permission) || permissions.has("*");
 }
@@ -9557,8 +9580,7 @@ function fallbackRouteAccess(route) {
   const canView = fallbackCanViewModule(activeUser, module);
   const sensitive = FALLBACK_SENSITIVE_MODULES.has(module);
   if (canView) return { route, module, visible: true, locked: false, access: { can_view: true }, sensitive };
-  if (sensitive) return { route, module, visible: false, locked: true, access: { can_view: false }, sensitive };
-  return { route, module, visible: true, locked: true, access: { can_view: false }, sensitive };
+  return { route, module, visible: false, locked: true, access: { can_view: false }, sensitive };
 }
 
 function resolveRouteAccess(route) {
@@ -9570,13 +9592,15 @@ function resolveRouteAccess(route) {
 
 function canAccessNavRoute(route) {
   const nav = resolveRouteAccess(route);
-  if (!nav.visible) return false;
+  if (!nav.visible || nav.locked) return false;
   if (route === "venueInventory") return canViewVenueModule();
   return true;
 }
 
 function canEnterRoute(route) {
-  if (isCellLeaderOrAssistant(activeUser) && ["cellPortal", "cellReceivedReports", "cellWeeklyReport"].includes(route)) return true;
+  if (["cellPortal", "cellReceivedReports", "cellWeeklyReport"].includes(route)) {
+    if (isCellLeaderOrAssistant(activeUser) || hasCellPortalPermission("cell_portal.view", activeUser)) return true;
+  }
   if (!isRouteInRoleWorkspace(route)) return false;
   const nav = resolveRouteAccess(route);
   return nav.access?.can_view && !nav.locked;
@@ -9630,13 +9654,43 @@ function renderCellSidebarNav() {
   if (isCellLeaderOrAssistant(activeUser) || ["Cell Leader", "Cell Assistant"].includes(activeUser?.role)) {
     return `<div class="nav-cell-branch is-expanded ${parentActive ? "has-active" : ""}">
       <div class="nav-cell-body"><div class="nav-cell-body-inner">
-        <button type="button" class="nav-cell-item ${activeRoute === "cellPortal" || activeRoute === "dashboard" ? "active" : ""}" data-route="cellPortal" onclick="window.setRoute && window.setRoute('cellPortal'); return false;"><span>${lang === "pt" ? "Minha Célula" : "My Cell"}</span></button>
-        <button type="button" class="nav-cell-item ${activeRoute === "cellReceivedReports" ? "active" : ""}" data-route="cellReceivedReports" onclick="window.setRoute && window.setRoute('cellReceivedReports'); return false;"><span>${L("receivedReports")}</span></button>
-        <button type="button" class="nav-cell-item" data-public-cell-report><span>${L("submitCellReport")}</span></button>
+        <button type="button" class="nav-cell-item ${activeRoute === "cellPortal" || activeRoute === "dashboard" ? "active" : ""}" data-route="cellPortal" onclick="window.setRoute && window.setRoute('cellPortal'); return false;"><i class="bi bi-grid-1x2 me-2"></i><span>${lang === "pt" ? "Minha Célula" : "My Cell"}</span></button>
+        <button type="button" class="nav-cell-item ${activeRoute === "cellReceivedReports" ? "active" : ""}" data-route="cellReceivedReports" onclick="window.setRoute && window.setRoute('cellReceivedReports'); return false;"><i class="bi bi-clock-history me-2"></i><span>${L("receivedReports")}</span></button>
+        <button type="button" class="nav-cell-item" data-public-cell-report><i class="bi bi-clipboard-plus me-2"></i><span>${L("submitCellReport")}</span></button>
       </div></div>
     </div>`;
   }
   const showCellPortal = hasCellPortalPermission("cell_portal.view") && (!workspaceRoutes || workspaceRoutes.includes("cellPortal"));
+  const areaItems = CELL_NAV.areas.map((area) => {
+    const visibleRoutes = area.routes.filter(([route]) => {
+      if (workspaceRoutes && !workspaceRoutes.includes(route)) return false;
+      const nav = resolveRouteAccess(route);
+      return nav.visible && !nav.locked;
+    });
+    if (!visibleRoutes.length) return "";
+    const areaExpanded = isSidebarGroupExpanded(area.key);
+    const areaActive = area.routes.some(([route]) => route === activeRoute);
+    return `
+      <div class="nav-cell-area ${areaExpanded ? "is-expanded" : ""} ${areaActive ? "has-active" : ""}" data-nav-group="${area.key}">
+        <button type="button" class="nav-cell-area-toggle" aria-expanded="${areaExpanded}" aria-label="${L("navGroupToggle")}: ${L(area.label)}">
+          <i class="bi ${CELL_AREA_ICONS[area.key] || CELL_AREA_ICONS.default} nav-cell-area-icon" aria-hidden="true"></i>
+          <span>${L(area.label)}</span>
+          <i class="bi bi-chevron-down nav-cell-area-chevron" aria-hidden="true"></i>
+        </button>
+        <div class="nav-cell-area-body">
+          <div class="nav-cell-area-body-inner">
+            ${visibleRoutes.map(([route, label]) => `
+              <button type="button" class="nav-cell-item ${activeRoute === route ? "active" : ""}" data-route="${route}" onclick="window.setRoute && window.setRoute('${route}'); return false;" title="${L(label)}">
+                <span>${L(label)}</span>
+              </button>
+            `).join("")}
+          </div>
+        </div>
+      </div>`;
+  }).filter(Boolean).join("");
+
+  if (!showCellPortal && !areaItems) return "";
+
   return `
     <div class="nav-cell-branch ${parentExpanded ? "is-expanded" : ""} ${parentActive ? "has-active" : ""}" data-nav-group="${CELL_NAV.parentKey}">
       <button type="button" class="nav-cell-parent" aria-expanded="${parentExpanded}" aria-label="${L("navGroupToggle")}: ${L("cellLeadership")}">
@@ -9646,36 +9700,8 @@ function renderCellSidebarNav() {
       </button>
       <div class="nav-cell-body">
         <div class="nav-cell-body-inner">
-          ${showCellPortal ? `<button type="button" class="nav-cell-item ${activeRoute === "cellPortal" ? "active" : ""}" data-route="cellPortal" onclick="window.setRoute && window.setRoute('cellPortal'); return false;"><span>${lang === "pt" ? "Portal por Célula" : "Cell Portal"}</span></button>` : ""}
-          ${CELL_NAV.areas.map((area) => {
-            const visibleRoutes = area.routes.filter(([route]) => {
-              if (workspaceRoutes && !workspaceRoutes.includes(route)) return false;
-              const nav = resolveRouteAccess(route);
-              return nav.visible;
-            });
-            if (!visibleRoutes.length) return "";
-            const areaExpanded = isSidebarGroupExpanded(area.key);
-            const areaActive = area.routes.some(([route]) => route === activeRoute);
-            return `
-              <div class="nav-cell-area ${areaExpanded ? "is-expanded" : ""} ${areaActive ? "has-active" : ""}" data-nav-group="${area.key}">
-                <button type="button" class="nav-cell-area-toggle" aria-expanded="${areaExpanded}" aria-label="${L("navGroupToggle")}: ${L(area.label)}">
-                  <i class="bi ${CELL_AREA_ICONS[area.key] || CELL_AREA_ICONS.default} nav-cell-area-icon" aria-hidden="true"></i>
-                  <span>${L(area.label)}</span>
-                  <i class="bi bi-chevron-down nav-cell-area-chevron" aria-hidden="true"></i>
-                </button>
-                <div class="nav-cell-area-body">
-                  <div class="nav-cell-area-body-inner">
-                    ${visibleRoutes.map(([route, label]) => {
-                      const nav = resolveRouteAccess(route);
-                      return `
-                      <button type="button" class="nav-cell-item ${activeRoute === route ? "active" : ""} ${nav.locked ? "is-locked" : ""}" ${nav.locked ? `data-locked-route="${route}" aria-disabled="true"` : `data-route="${route}" onclick="window.setRoute && window.setRoute('${route}'); return false;"`} title="${nav.locked ? L("navLockedTooltip") : L(label)}">
-                        <span>${L(label)}</span>${nav.locked ? `<i class="bi bi-lock-fill nav-lock-icon" aria-hidden="true"></i>` : ""}
-                      </button>
-                    `; }).join("")}
-                  </div>
-                </div>
-              </div>`;
-          }).join("")}
+          ${showCellPortal ? `<button type="button" class="nav-cell-item ${activeRoute === "cellPortal" ? "active" : ""}" data-route="cellPortal" onclick="window.setRoute && window.setRoute('cellPortal'); return false;"><i class="bi bi-grid-1x2 me-2"></i><span>${lang === "pt" ? "Portal do Líder de Célula" : "Cell Portal"}</span></button>` : ""}
+          ${areaItems}
         </div>
       </div>
     </div>`;
@@ -9688,7 +9714,7 @@ function renderOutreachSidebarNav() {
   const visibleRoutes = OUTREACH_NAV.routes.filter(([route]) => {
     if (workspaceRoutes && !workspaceRoutes.includes(route)) return false;
     const nav = resolveRouteAccess(route);
-    return nav.visible;
+    return nav.visible && !nav.locked;
   });
   if (!visibleRoutes.length) return "";
   return `
@@ -9700,14 +9726,12 @@ function renderOutreachSidebarNav() {
       </button>
       <div class="nav-cell-body">
         <div class="nav-cell-body-inner">
-          ${visibleRoutes.map(([route, icon, label]) => {
-            const nav = resolveRouteAccess(route);
-            return `
-            <button type="button" class="nav-cell-item nav-outreach-item ${activeRoute === route ? "active" : ""} ${nav.locked ? "is-locked" : ""}" ${nav.locked ? `data-locked-route="${route}" aria-disabled="true"` : `data-route="${route}" onclick="window.setRoute && window.setRoute('${route}'); return false;"`} title="${nav.locked ? L("navLockedTooltip") : L(label)}">
+          ${visibleRoutes.map(([route, icon, label]) => `
+            <button type="button" class="nav-cell-item nav-outreach-item ${activeRoute === route ? "active" : ""}" data-route="${route}" onclick="window.setRoute && window.setRoute('${route}'); return false;" title="${L(label)}">
               <i class="bi ${sidebarIcon(icon, route)} me-2" aria-hidden="true"></i>
-              <span>${L(label)}</span>${nav.locked ? `<i class="bi bi-lock-fill nav-lock-icon" aria-hidden="true"></i>` : ""}
+              <span>${L(label)}</span>
             </button>
-          `; }).join("")}
+          `).join("")}
         </div>
       </div>
     </div>`;
@@ -9744,9 +9768,9 @@ function renderShell() {
       <button type="button" class="nav-item-btn ${["dashboard", "cellPortal"].includes(activeRoute) ? "active" : ""}" data-route="cellPortal" onclick="window.setRoute && window.setRoute('cellPortal'); return false;"><i class="bi bi-grid-1x2"></i><span>${lang === "pt" ? "Minha Célula" : "My Cell"}</span></button>
       <button type="button" class="nav-item-btn ${activeRoute === "cellReceivedReports" ? "active" : ""}" data-route="cellReceivedReports" onclick="window.setRoute && window.setRoute('cellReceivedReports'); return false;"><i class="bi bi-clock-history"></i><span>${lang === "pt" ? "Relatórios Submetidos" : "Submitted Reports"}</span></button>
       <button type="button" class="nav-item-btn" data-public-cell-report><i class="bi bi-clipboard-plus"></i><span>${lang === "pt" ? "Submeter Relatório" : "Submit Report"}</span></button>
-      ${typeof resolveRouteAccess === "function" && resolveRouteAccess("followUp").visible ? `<button type="button" class="nav-item-btn ${activeRoute === "followUp" ? "active" : ""}" data-route="followUp" onclick="window.setRoute && window.setRoute('followUp'); return false;"><i class="bi bi-person-lines-fill"></i><span>${lang === "pt" ? "Acompanhamento" : "Follow-Up"}</span></button>` : ""}
-      ${typeof resolveRouteAccess === "function" && resolveRouteAccess("foundation").visible ? `<button type="button" class="nav-item-btn ${activeRoute === "foundation" ? "active" : ""}" data-route="foundation" onclick="window.setRoute && window.setRoute('foundation'); return false;"><i class="bi bi-book"></i><span>${lang === "pt" ? "Escola de Fundação" : "Foundation School"}</span></button>` : ""}
-      ${typeof resolveRouteAccess === "function" && resolveRouteAccess("reports").visible ? `<button type="button" class="nav-item-btn ${activeRoute === "reports" ? "active" : ""}" data-route="reports" onclick="window.setRoute && window.setRoute('reports'); return false;"><i class="bi bi-bar-chart"></i><span>${lang === "pt" ? "Relatórios" : "Reports"}</span></button>` : ""}
+      ${typeof resolveRouteAccess === "function" && resolveRouteAccess("followUp").visible && !resolveRouteAccess("followUp").locked ? `<button type="button" class="nav-item-btn ${activeRoute === "followUp" ? "active" : ""}" data-route="followUp" onclick="window.setRoute && window.setRoute('followUp'); return false;"><i class="bi bi-person-lines-fill"></i><span>${lang === "pt" ? "Acompanhamento" : "Follow-Up"}</span></button>` : ""}
+      ${typeof resolveRouteAccess === "function" && resolveRouteAccess("foundation").visible && !resolveRouteAccess("foundation").locked ? `<button type="button" class="nav-item-btn ${activeRoute === "foundation" ? "active" : ""}" data-route="foundation" onclick="window.setRoute && window.setRoute('foundation'); return false;"><i class="bi bi-book"></i><span>${lang === "pt" ? "Escola de Fundação" : "Foundation School"}</span></button>` : ""}
+      ${typeof resolveRouteAccess === "function" && resolveRouteAccess("reports").visible && !resolveRouteAccess("reports").locked ? `<button type="button" class="nav-item-btn ${activeRoute === "reports" ? "active" : ""}" data-route="reports" onclick="window.setRoute && window.setRoute('reports'); return false;"><i class="bi bi-bar-chart"></i><span>${lang === "pt" ? "Relatórios" : "Reports"}</span></button>` : ""}
     </div></div></div>`;
     byId("activeUserName").textContent = activeUser.name || activeUser.full_name || "";
     byId("activeUserRole").textContent = activeUser.role || activeUser.role_name || "";
@@ -9757,12 +9781,12 @@ function renderShell() {
   byId("sidebarNav").innerHTML = NAV_GROUPS.map((group) => {
     const workspaceRoutes = roleWorkspaceRoutes();
     const items = group.items.map(([route, icon, label]) => ({ route, icon: sidebarIcon(icon, route), label, nav: resolveRouteAccess(route) }))
-      .filter((item) => (!workspaceRoutes || workspaceRoutes.includes(item.route)) && item.nav.visible && (item.route !== "venueInventory" || canViewVenueModule()));
-    const cellNav = group.key === "departments" && (!workspaceRoutes || workspaceRoutes.some((r) => r.startsWith("cell"))) ? renderCellSidebarNav() : "";
+      .filter((item) => (!workspaceRoutes || workspaceRoutes.includes(item.route)) && item.nav.visible && !item.nav.locked && (item.route !== "venueInventory" || canViewVenueModule()));
+    const cellNav = group.key === "departments" && (!workspaceRoutes || workspaceRoutes.some((r) => r.startsWith("cell") || r === "cellPortal")) ? renderCellSidebarNav() : "";
     const outreachNav = group.key === "departments" && (!workspaceRoutes || workspaceRoutes.some((r) => OUTREACH_TAB_ROUTES.has(r))) ? renderOutreachSidebarNav() : "";
-    const navItems = items.map(({ route, icon, label, nav }) => `
-      <button type="button" class="nav-item-btn ${nav.locked ? "is-locked" : ""}" ${nav.locked ? `data-locked-route="${route}" aria-disabled="true"` : `data-route="${route}" onclick="window.setRoute && window.setRoute('${route}'); return false;"`} title="${nav.locked ? L("navLockedTooltip") : L(label)}">
-        <i class="bi ${sidebarIcon(icon, route)}"></i><span>${L(label)}</span>${nav.locked ? `<i class="bi bi-lock-fill nav-lock-icon" aria-hidden="true"></i>` : ""}
+    const navItems = items.map(({ route, icon, label }) => `
+      <button type="button" class="nav-item-btn" data-route="${route}" onclick="window.setRoute && window.setRoute('${route}'); return false;" title="${L(label)}">
+        <i class="bi ${sidebarIcon(icon, route)}"></i><span>${L(label)}</span>
       </button>
     `).join("");
     if (!navItems && !cellNav && !outreachNav) return "";
@@ -9782,8 +9806,8 @@ function renderShell() {
       </div>
     </div>`;
   }).join("");
-  byId("activeUserName").textContent = activeUser.name;
-  byId("activeUserRole").textContent = activeUser.role;
+  byId("activeUserName").textContent = activeUser.name || activeUser.full_name || "";
+  byId("activeUserRole").textContent = activeUser.role || activeUser.role_name || "";
   cleanRenderedText(byId("sidebarNav"));
   cleanRenderedText(document.querySelector(".ops-sidebar"));
   applySidebarCollapse();
