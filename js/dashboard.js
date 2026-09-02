@@ -3349,13 +3349,12 @@ const seedData = {
   users: [
     { id: "9691d45a-e613-4fa3-8cb5-43955f39aa66", auth_user_id: "f8d9954c-a17b-4870-98f6-a7d6f2576391", name: "Salésio Machava", full_name: "Salésio Machava", email: "admin@embaixadadecristo.org", role: "Super Admin", role_name: "Super Admin", church_id: "a1111111-1111-4111-8111-111111111101", department_permissions: ["*"], can_view_all_churches: true, status: "Active" },
     { id: "38ee3dab-c172-4d78-97a9-aa76c554ce63", auth_user_id: "ac47e5fa-f9f5-4d58-ab91-eebcb01f1b01", name: "Pastor Valdemiro Machava", full_name: "Pastor Valdemiro Machava", email: "p.care@embaixadadecristo.org", role: "pastoral_care_rector", role_name: "Reitor de Cuidados Pastorais", church_id: "a1111111-1111-4111-8111-111111111101", department_permissions: ["firstTimers", "followUp", "foundation", "sacraments", "counseling", "reports"], can_view_all_churches: true, status: "Active" },
+    { id: "e83250d7-9f03-47fb-a4f8-1c2f6636b1c4", auth_user_id: "e83250d7-9f03-47fb-a4f8-1c2f6636b1c4", name: "Marcelo Panguene", full_name: "Marcelo Panguene", email: "venue@embaixadadecristo.org", role: "Venue Manager", role_name: "Gestor de Património & Instalações", church_id: "a1111111-1111-4111-8111-111111111101", department_permissions: ["venueInventory", "inventory", "venues", "maintenance", "checklists", "reports"], can_view_all_churches: true, status: "Active" },
+    { id: "280ef567-05b5-4ef8-b7a0-ec6390655504", auth_user_id: "008969ce-f123-41e3-bce0-e58f477b4622", name: "Sister Angélica", full_name: "Sister Angélica", email: "angelicaamilcar27@gmail.com", role: "ALEC Coordinator", role_name: "Coordenadora ALEC", church_id: "a1111111-1111-4111-8111-111111111101", department_permissions: ["cell", "alecRegistration", "alecScores", "churchReports"], can_view_all_churches: true, status: "Active" },
     { id: "473e4df5-883c-499a-a42e-223495c266d1", auth_user_id: "473e4df5-883c-499a-a42e-223495c266d1", name: "Filipe Chamango", full_name: "Filipe Chamango", email: "diamantes.main@embaixadadecristo.org", role: "Cell Leader", role_name: "Líder de Célula Diamantes Main", church_id: "a1111111-1111-4111-8111-111111111101", cell_id: "d1a00000-d1a0-4000-8000-000000000001", cell_name: "Diamantes main", cell_group_id: "d1a00000-0000-4000-8000-000000000001", cell_group_name: "Diamantes Main", assigned_cells: ["d1a00000-d1a0-4000-8000-000000000001", "d1a00000-d1a0-4000-8000-000000000002", "d1a00000-d1a0-4000-8000-000000000003", "d1a00000-d1a0-4000-8000-000000000004", "d1a00000-d1a0-4000-8000-000000000005", "d1a00000-d1a0-4000-8000-000000000006", "d1a00000-d1a0-4000-8000-000000000007", "d1a00000-d1a0-4000-8000-000000000008", "d1a00000-d1a0-4000-8000-000000000009", "d1a00000-d1a0-4000-8000-000000000010"], assigned_cell_groups: ["d1a00000-0000-4000-8000-000000000001"], department_permissions: ["cellReports", "followUp", "foundation", "foundation_teacher", "reports"], cannot_create_classes: true, permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_portal.view", "cell_portal.edit", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary", "follow_up.view", "follow_up.edit", "follow_up.enroll_foundation", "foundation.view", "foundation.edit_students", "foundation.record_lessons", "foundation.record_tests", "foundation.record_exam", "foundation.reports"], can_view_all_churches: false, status: "Active" },
     { id: "1be83c02-cb16-4cf3-a246-58bd0ef1953f", auth_user_id: "1be83c02-cb16-4cf3-a246-58bd0ef1953f", name: "Michael Juma", full_name: "Michael Juma", email: "assistant.diamantes.main@embaixadadecristo.org", role: "Cell Assistant", role_name: "Assistente de Célula Diamantes Main", church_id: "a1111111-1111-4111-8111-111111111101", cell_id: "d1a00000-d1a0-4000-8000-000000000001", cell_name: "Diamantes main", cell_group_id: "d1a00000-0000-4000-8000-000000000001", cell_group_name: "Diamantes Main", assigned_cells: ["d1a00000-d1a0-4000-8000-000000000001", "d1a00000-d1a0-4000-8000-000000000002", "d1a00000-d1a0-4000-8000-000000000003", "d1a00000-d1a0-4000-8000-000000000004", "d1a00000-d1a0-4000-8000-000000000005", "d1a00000-d1a0-4000-8000-000000000006", "d1a00000-d1a0-4000-8000-000000000007", "d1a00000-d1a0-4000-8000-000000000008", "d1a00000-d1a0-4000-8000-000000000009", "d1a00000-d1a0-4000-8000-000000000010"], assigned_cell_groups: ["d1a00000-0000-4000-8000-000000000001"], department_permissions: ["cellReports"], permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_portal.view", "cell_portal.edit", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary"], can_view_all_churches: false, status: "Active" },
-    { id: "u-marcelo-venue", auth_user_id: null, name: "Marcelo Panguene", full_name: "Marcelo Panguene", email: "venue@embaixadadecristo.org", role: "Venue Manager", role_name: "Gestor de Património & Instalações", church_id: "a1111111-1111-4111-8111-111111111101", department_permissions: ["venueInventory", "inventory", "venues", "maintenance", "checklists", "reports"], can_view_all_churches: true, status: "Active" },
-    { id: "280ef567-05b5-4ef8-b7a0-ec6390655504", auth_user_id: "008969ce-f123-41e3-bce0-e58f477b4622", name: "Sister Angélica", full_name: "Sister Angélica", email: "angelicaamilcar27@gmail.com", role: "ALEC Coordinator", role_name: "Coordenadora ALEC", church_id: "a1111111-1111-4111-8111-111111111101", department_permissions: ["cell", "alecRegistration", "alecScores", "churchReports"], can_view_all_churches: true, status: "Active" },
     { id: "395d050f-3422-402c-b2e9-7597dab91b3f", auth_user_id: "47df0cce-9701-492c-90aa-b3cb205bbd4b", name: "Líder Diplomatas Victory", full_name: "Líder Diplomatas Victory", email: "d.v.lider@embaixadadecristo.org", role: "Cell Leader", role_name: "Líder de Célula Diplomatas Victory", church_id: "a1111111-1111-4111-8111-111111111101", cell_id: "2b3a5652-b8be-4c76-8b64-b84200c8bcd4", cell_name: "Diplomatas Victory", cell_group_id: "a62f461e-e574-4052-8ef3-a4d0ee0c77c4", cell_group_name: "Diplomatas", assigned_cells: ["2b3a5652-b8be-4c76-8b64-b84200c8bcd4"], department_permissions: ["cellReports"], permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_portal.view", "cell_portal.edit", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary"], can_view_all_churches: false, status: "Active" },
-    { id: "a51a15ad-9213-45b8-b572-aaf6cb53dcbb", auth_user_id: "9820f162-430c-4573-86db-b001097fa6dc", name: "Assistente Diplomatas Victory", full_name: "Assistente Diplomatas Victory", email: "d.v.assistente@embaixadadecristo.org", role: "Cell Assistant", role_name: "Assistente de Célula Diplomatas Victory", church_id: "a1111111-1111-4111-8111-111111111101", cell_id: "2b3a5652-b8be-4c76-8b64-b84200c8bcd4", cell_name: "Diplomatas Victory", cell_group_id: "a62f461e-e574-4052-8ef3-a4d0ee0c77c4", cell_group_name: "Diplomatas", assigned_cells: ["2b3a5652-b8be-4c76-8b64-b84200c8bcd4"], department_permissions: ["cellReports"], permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_portal.view", "cell_portal.edit", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary"], can_view_all_churches: false, status: "Active" },
-    { id: "u-pastor-kene", auth_user_id: null, name: "Pastor Kene Ume", full_name: "Pastor Kene Ume", email: "pastor.kene@ce-mozambique.org", role: "Main Pastor", role_name: "Pastor Principal", church_id: "a1111111-1111-4111-8111-111111111101", department_permissions: ["reports", "requisitions", "staffHr", "finance"], can_view_all_churches: true, status: "Active" }
+    { id: "a51a15ad-9213-45b8-b572-aaf6cb53dcbb", auth_user_id: "9820f162-430c-4573-86db-b001097fa6dc", name: "Assistente Diplomatas Victory", full_name: "Assistente Diplomatas Victory", email: "d.v.assistente@embaixadadecristo.org", role: "Cell Assistant", role_name: "Assistente de Célula Diplomatas Victory", church_id: "a1111111-1111-4111-8111-111111111101", cell_id: "2b3a5652-b8be-4c76-8b64-b84200c8bcd4", cell_name: "Diplomatas Victory", cell_group_id: "a62f461e-e574-4052-8ef3-a4d0ee0c77c4", cell_group_name: "Diplomatas", assigned_cells: ["2b3a5652-b8be-4c76-8b64-b84200c8bcd4"], department_permissions: ["cellReports"], permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_portal.view", "cell_portal.edit", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary"], can_view_all_churches: false, status: "Active" }
   ],
   departments: [
     { id: "dept-finance", church_id: "church-hq", name: "Finanças", lead_name: "Finance Head Demo" },
@@ -4788,6 +4787,7 @@ function normalizeState(saved) {
     const seedItem = seedStaff.find((seed) => seed.id === item.id) || {};
     return normalizeStaffProfileRecord(seedItem, item);
   });
+  merged.users = (merged.users || seedData.users || []).filter((u) => !isDemoUser(u));
   normalizeEcChurchLabelsInTree(merged);
   normalizeServiceLabelsInTree(merged);
   return merged;
@@ -27558,6 +27558,18 @@ function previousAssignments(row) {
   return Array.isArray(row?.assignments) ? row.assignments : [];
 }
 
+function isDemoUser(u) {
+  if (!u) return true;
+  const em = String(u.email || "").trim().toLowerCase();
+  const nm = String(u.name || u.full_name || "").toLowerCase();
+  if (em.endsWith("@ce-mozambique.org")) return true;
+  if (em.includes("demo") || nm.includes("demo")) return true;
+  if (String(u.id || "").startsWith("u-") && !u.auth_user_id && !["u-1", "u-pastor-valdemiro", "u-diamantes-leader", "u-diamantes-assistant", "u-dv-leader", "u-dv-assistant"].includes(String(u.id))) {
+    return true;
+  }
+  return false;
+}
+
 async function hydrateAccessControlFromRepository() {
   const repo =
     window.CEAccessControlData ||
@@ -27568,22 +27580,16 @@ async function hydrateAccessControlFromRepository() {
     let hydrated = false;
     const users = await repo.listUsers();
     if (users?.ok && Array.isArray(users.data) && users.data.length) {
-      const prev = new Map((state.users || []).map((r) => [r.id, r]));
+      const cleanUsers = users.data.filter((u) => !isDemoUser(u));
       const byId = new Map();
-      users.data.forEach((row) => {
-        const previous = prev.get(row.id) || {};
+      cleanUsers.forEach((row) => {
         byId.set(row.id, {
           ...row,
-          ...previous,
-          id: row.id,
-          name: row.name || row.full_name || previous.name,
+          name: row.name || row.full_name || row.email,
           department_permissions: Array.isArray(row.department_permissions)
             ? row.department_permissions
-            : previous.department_permissions || [],
+            : [],
         });
-      });
-      prev.forEach((localRow, id) => {
-        if (!byId.has(id)) byId.set(id, localRow);
       });
       state.users = [...byId.values()];
       hydrated = true;

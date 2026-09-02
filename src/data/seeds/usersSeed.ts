@@ -3,12 +3,13 @@ import type { User } from "../types/entities";
 const HQ = "a1111111-1111-4111-8111-111111111101";
 
 /**
- * Seed users for authentication, authorization and dashboard mappings.
+ * Valid production ministry user accounts.
+ * Demo/mock placeholder accounts have been removed.
  */
 export const USERS_SEED: User[] = [
   // Super Admin
   {
-    id: "u-1",
+    id: "9691d45a-e613-4fa3-8cb5-43955f39aa66",
     auth_user_id: "f8d9954c-a17b-4870-98f6-a7d6f2576391",
     name: "Salésio Machava",
     full_name: "Salésio Machava",
@@ -16,7 +17,7 @@ export const USERS_SEED: User[] = [
     email: "admin@embaixadadecristo.org",
     role: "Super Admin",
     role_name: "Super Admin",
-    role_id: "role-super-admin",
+    role_id: "11111111-1111-1111-1111-111111111101",
     church_id: HQ,
     churchId: HQ,
     department_permissions: ["*"],
@@ -26,11 +27,11 @@ export const USERS_SEED: User[] = [
     has_dashboard_access: true,
     preferred_language: "pt",
     created_at: "2024-01-01",
-    updated_at: "2026-09-01"
+    updated_at: "2026-09-02"
   },
   // Pastoral Care Rector
   {
-    id: "u-pastor-valdemiro",
+    id: "38ee3dab-c172-4d78-97a9-aa76c554ce63",
     auth_user_id: "ac47e5fa-f9f5-4d58-ab91-eebcb01f1b01",
     name: "Pastor Valdemiro Machava",
     full_name: "Pastor Valdemiro Machava",
@@ -38,21 +39,66 @@ export const USERS_SEED: User[] = [
     email: "p.care@embaixadadecristo.org",
     role: "pastoral_care_rector",
     role_name: "Reitor de Cuidados Pastorais",
-    role_id: "role-pastoral-rector",
+    role_id: "ecee2fb5-8950-412b-b867-dab7a1b14d36",
     church_id: HQ,
     churchId: HQ,
-    department_permissions: ["firstTimers", "followUp", "foundation", "sacraments", "counseling"],
-    can_view_all_churches: false,
+    department_permissions: ["firstTimers", "followUp", "foundation", "sacraments", "counseling", "reports"],
+    can_view_all_churches: true,
     status: "Active",
     isActive: true,
     has_dashboard_access: true,
     preferred_language: "pt",
     created_at: "2024-01-01",
-    updated_at: "2026-09-01"
+    updated_at: "2026-09-02"
+  },
+  // Venue & Facilities Manager
+  {
+    id: "e83250d7-9f03-47fb-a4f8-1c2f6636b1c4",
+    auth_user_id: "e83250d7-9f03-47fb-a4f8-1c2f6636b1c4",
+    name: "Marcelo Panguene",
+    full_name: "Marcelo Panguene",
+    fullName: "Marcelo Panguene",
+    email: "venue@embaixadadecristo.org",
+    phone: "+258841610468",
+    role: "Venue Manager",
+    role_name: "Venue Manager",
+    role_id: "11111111-1111-1111-1111-111111111113",
+    church_id: HQ,
+    churchId: HQ,
+    department_permissions: ["venueInventory", "cellReports"],
+    can_view_all_churches: true,
+    status: "Active",
+    isActive: true,
+    has_dashboard_access: true,
+    preferred_language: "pt",
+    created_at: "2026-09-02",
+    updated_at: "2026-09-02"
+  },
+  // ALEC Coordinator
+  {
+    id: "280ef567-05b5-4ef8-b7a0-ec6390655504",
+    auth_user_id: "008969ce-f123-41e3-bce0-e58f477b4622",
+    name: "Sister Angélica",
+    full_name: "Sister Angélica",
+    fullName: "Sister Angélica",
+    email: "angelicaamilcar27@gmail.com",
+    role: "ALEC Manager",
+    role_name: "ALEC Manager",
+    role_id: "2a88abc1-8972-44d4-9b80-a9c08eb35cc7",
+    church_id: HQ,
+    churchId: HQ,
+    department_permissions: ["cell", "alecRegistration", "alecScores", "churchReports"],
+    can_view_all_churches: true,
+    status: "Active",
+    isActive: true,
+    has_dashboard_access: true,
+    preferred_language: "pt",
+    created_at: "2026-08-27",
+    updated_at: "2026-09-02"
   },
   // Diamantes Main - Leader
   {
-    id: "u-diamantes-leader",
+    id: "473e4df5-883c-499a-a42e-223495c266d1",
     auth_user_id: "473e4df5-883c-499a-a42e-223495c266d1",
     name: "Filipe Chamango",
     full_name: "Filipe Chamango",
@@ -95,11 +141,11 @@ export const USERS_SEED: User[] = [
     has_dashboard_access: true,
     preferred_language: "pt",
     created_at: "2026-09-01",
-    updated_at: "2026-09-01"
+    updated_at: "2026-09-02"
   },
   // Diamantes Main - Assistant
   {
-    id: "u-diamantes-assistant",
+    id: "1be83c02-cb16-4cf3-a246-58bd0ef1953f",
     auth_user_id: "1be83c02-cb16-4cf3-a246-58bd0ef1953f",
     name: "Michael Juma",
     full_name: "Michael Juma",
@@ -139,23 +185,25 @@ export const USERS_SEED: User[] = [
     has_dashboard_access: true,
     preferred_language: "pt",
     created_at: "2026-09-01",
-    updated_at: "2026-09-01"
+    updated_at: "2026-09-02"
   },
   // Diplomatas Victory - Leader
   {
-    id: "u-dv-leader",
+    id: "395d050f-3422-402c-b2e9-7597dab91b3f",
     auth_user_id: "47df0cce-9701-492c-90aa-b3cb205bbd4b",
     name: "Líder Diplomatas Victory",
     full_name: "Líder Diplomatas Victory",
     fullName: "Líder Diplomatas Victory",
     email: "d.v.lider@embaixadadecristo.org",
     role: "Cell Leader",
-    role_name: "Líder Diplomatas Victory",
-    role_id: "role-cell-leader",
+    role_name: "Líder de Célula Diplomatas Victory",
+    role_id: "51567d05-f107-4d38-a43a-757f22d603af",
     church_id: HQ,
     churchId: HQ,
     cell_id: "2b3a5652-b8be-4c76-8b64-b84200c8bcd4",
+    cell_name: "Diplomatas Victory",
     cell_group_id: "a62f461e-e574-4052-8ef3-a4d0ee0c77c4",
+    cell_group_name: "Diplomatas",
     assigned_cells: ["2b3a5652-b8be-4c76-8b64-b84200c8bcd4"],
     department_permissions: ["cellReports"],
     permissions: [
@@ -169,23 +217,25 @@ export const USERS_SEED: User[] = [
     has_dashboard_access: true,
     preferred_language: "pt",
     created_at: "2026-08-21",
-    updated_at: "2026-09-01"
+    updated_at: "2026-09-02"
   },
   // Diplomatas Victory - Assistant
   {
-    id: "u-dv-assistant",
+    id: "a51a15ad-9213-45b8-b572-aaf6cb53dcbb",
     auth_user_id: "9820f162-430c-4573-86db-b001097fa6dc",
     name: "Assistente Diplomatas Victory",
     full_name: "Assistente Diplomatas Victory",
     fullName: "Assistente Diplomatas Victory",
     email: "d.v.assistente@embaixadadecristo.org",
     role: "Cell Assistant",
-    role_name: "Assistente Diplomatas Victory",
-    role_id: "role-cell-assistant",
+    role_name: "Assistente de Célula Diplomatas Victory",
+    role_id: "c1c8355d-33e4-4627-9396-5b8475abfb81",
     church_id: HQ,
     churchId: HQ,
     cell_id: "2b3a5652-b8be-4c76-8b64-b84200c8bcd4",
+    cell_name: "Diplomatas Victory",
     cell_group_id: "a62f461e-e574-4052-8ef3-a4d0ee0c77c4",
+    cell_group_name: "Diplomatas",
     assigned_cells: ["2b3a5652-b8be-4c76-8b64-b84200c8bcd4"],
     department_permissions: ["cellReports"],
     permissions: [
@@ -199,28 +249,6 @@ export const USERS_SEED: User[] = [
     has_dashboard_access: true,
     preferred_language: "pt",
     created_at: "2026-08-21",
-    updated_at: "2026-09-01"
-  },
-  // Main Pastor
-  { id: "u-17", name: "Pastor Kene Ume", full_name: "Pastor Kene Ume", email: "pastor.kene@ce-mozambique.org", role: "Main Pastor", role_name: "Main Pastor", role_id: "role-main-pastor", church_id: HQ, churchId: HQ, department_permissions: ["reports", "requisitions", "staffHr", "finance"], can_view_all_churches: true, status: "Active", isActive: true, has_dashboard_access: true, staff_id: "staff-pastor-kene", preferred_language: "pt", demo_password_hint: "demo", created_at: "2024-01-01", updated_at: "2026-07-10" },
-  { id: "u-18", name: "Pastora Responsável Requisições", full_name: "Pastora Responsável Requisições", email: "requisitions@ce-mozambique.org", role: "Requisition Officer", role_name: "Requisition Officer", role_id: "role-req-officer", church_id: HQ, department_id: "dept-requisitions", department_permissions: ["requisitions"], can_view_all_churches: true, status: "Active", isActive: true, has_dashboard_access: true, staff_id: "staff-7", staff_name: "Pastora Responsável Requisições", preferred_language: "pt", demo_password_hint: "demo", created_at: "2024-06-01", updated_at: "2026-07-10" },
-  { id: "u-15", name: "Finance Head Demo", full_name: "Finance Head Demo", email: "finance.head@ce-mozambique.org", role: "Finance Head", role_name: "Finance Head", role_id: "role-finance-head", church_id: HQ, department_id: "dept-finance", department_name: "Finanças", department_permissions: ["finance", "financeHead", "financeVerify", "reports", "partnership"], can_view_all_churches: true, status: "Active", isActive: true, has_dashboard_access: true, staff_id: "staff-9", staff_name: "Finance Head Demo", preferred_language: "pt", demo_password_hint: "demo", created_at: "2023-01-01", updated_at: "2026-07-10" },
-  { id: "u-19", name: "Gestora de RH", full_name: "Gestora de RH", email: "hr@ce-mozambique.org", role: "HR Manager", role_name: "HR Manager", role_id: "role-hr", church_id: HQ, department_id: "dept-hr", department_permissions: ["staffHr"], can_view_all_churches: true, status: "Active", isActive: true, has_dashboard_access: true, staff_id: "staff-10", staff_name: "Gestora de RH", preferred_language: "pt", demo_password_hint: "demo", created_at: "2023-04-01", updated_at: "2026-07-10" },
-  { id: "u-12", name: "Department Head Demo", full_name: "Department Head Demo", email: "department.head@ce-mozambique.org", role: "Department Head", role_name: "Department Head", role_id: "role-dept-head", church_id: HQ, department_permissions: ["venueInventoryRequests", "venueInventory"], assigned_department: "Cell Ministry", can_view_all_churches: false, status: "Active", isActive: true, has_dashboard_access: true, preferred_language: "pt", demo_password_hint: "demo", created_at: "2024-01-01", updated_at: "2026-07-10" },
-  { id: "u-13", name: "Staff Member Demo", full_name: "Staff Member Demo", email: "staff.member@ce-mozambique.org", role: "Staff Member", role_name: "Staff Member", role_id: "role-staff-member", church_id: HQ, department_permissions: ["assignedEquipment"], assigned_staff_name: "Laiza Teresa Chirindza", can_view_all_churches: false, status: "Active", isActive: true, has_dashboard_access: true, staff_id: "staff-4", preferred_language: "pt", demo_password_hint: "demo", created_at: "2024-01-01", updated_at: "2026-07-10" },
-  { id: "u-8", name: "Pastor da Igreja", full_name: "Pastor da Igreja", email: "pastor.branch@ce-mozambique.org", role: "Church Pastor", role_name: "Church Pastor", role_id: "role-church-pastor", church_id: HQ, department_permissions: ["cell", "churchReports", "cellReports", "fevo", "venueInventory"], can_view_all_churches: false, status: "Active", isActive: true, has_dashboard_access: true, preferred_language: "pt", demo_password_hint: "demo", created_at: "2024-01-01", updated_at: "2026-07-10" },
-  { id: "u-11", name: "Marcelo Panguene", full_name: "Marcelo Panguene", email: "marcelo.panguene@ce-mozambique.org", role: "Venue Manager", role_name: "Venue Manager", role_id: "role-venue", church_id: HQ, department_id: "dept-venue", department_permissions: ["venueInventory", "inventory", "venues", "maintenance", "checklists"], can_view_all_churches: true, status: "Active", isActive: true, has_dashboard_access: true, staff_id: "staff-3", staff_name: "Marcelo Moises Panguene", preferred_language: "pt", demo_password_hint: "demo", created_at: "2022-11-01", updated_at: "2026-07-10" },
-  { id: "u-21", name: "Media Supervisor Demo", full_name: "Media Supervisor Demo", email: "media.supervisor@ce-mozambique.org", role: "Media Supervisor", role_name: "Media Supervisor", role_id: "role-media-sup", church_id: HQ, department_permissions: ["media"], assigned_department: "Mídia", can_view_all_churches: true, status: "Active", isActive: true, has_dashboard_access: true, preferred_language: "pt", demo_password_hint: "demo", created_at: "2024-02-01", updated_at: "2026-07-10" },
-  { id: "u-foundation-rector", name: "Pastor Coordenador", full_name: "Pastor Coordenador", email: "foundation.rector@ce-mozambique.org", role: "Foundation Rector", role_name: "Foundation Rector", role_id: "role-fs-rector", church_id: HQ, department_permissions: ["foundation_rector", "foundation"], can_view_all_churches: true, status: "Active", isActive: true, has_dashboard_access: true, staff_id: "staff-12", preferred_language: "pt", demo_password_hint: "demo", created_at: "2022-01-01", updated_at: "2026-07-10" },
-  { id: "u-5", name: "Pastora Flavia", full_name: "Pastora Flavia", email: "flavia@ce-mozambique.org", role: "Cell Ministry Head", role_name: "Cell Ministry Head", role_id: "role-cell-head", church_id: HQ, department_id: "dept-cell", department_permissions: ["cell", "cellReports", "cellEvaluation"], can_view_all_churches: true, status: "Active", isActive: true, has_dashboard_access: true, staff_id: "staff-1", staff_name: "Flavia Moneedi Tivane", preferred_language: "pt", demo_password_hint: "demo", created_at: "2024-01-15", updated_at: "2026-07-10" },
-  { id: "u-7", name: "Cell Leader Demo", full_name: "Cell Leader Demo", email: "cell.leader@ce-mozambique.org", role: "Cell Leader", role_name: "Cell Leader", role_id: "role-cell-leader", church_id: HQ, department_id: "dept-cell", department_permissions: ["cellReports"], permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"], assigned_cells: ["cr-0001"], can_view_all_churches: false, status: "Active", isActive: true, has_dashboard_access: true, staff_id: "staff-8", preferred_language: "pt", demo_password_hint: "demo", created_at: "2025-01-01", updated_at: "2026-08-06" },
-  { id: "u-cell-assistant", name: "Cell Assistant Demo", full_name: "Cell Assistant Demo", email: "cell.assistant@ce-mozambique.org", role: "Cell Assistant", role_name: "Cell Assistant", role_id: "role-cell-assistant", church_id: HQ, department_id: "dept-cell", department_permissions: ["cellReports"], permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"], assigned_cells: ["cr-0001"], can_view_all_churches: false, status: "Active", isActive: true, has_dashboard_access: true, preferred_language: "pt", demo_password_hint: "demo", created_at: "2026-08-06", updated_at: "2026-08-06" },
-  { id: "u-cell-reviewer", name: "Cell Reviewer Demo", full_name: "Cell Reviewer Demo", email: "cell.reviewer@ce-mozambique.org", role: "Cell Ministry Reviewer", role_name: "Cell Ministry Reviewer", role_id: "role-cell-reviewer", church_id: HQ, department_id: "dept-cell", department_permissions: ["cellReports", "cellEvaluation"], permissions: ["cell_reports.view_church", "cell_reports.review", "cell_reports.validate", "cell_reports.reject", "cell_reports.export"], can_view_all_churches: false, status: "Active", isActive: true, has_dashboard_access: true, preferred_language: "pt", demo_password_hint: "demo", created_at: "2026-08-06", updated_at: "2026-08-06" },
-  { id: "u-partnership", name: "Coordenadora de Parcerias", full_name: "Coordenadora de Parcerias", email: "partnerships@ce-mozambique.org", role: "Partnership Coordinator", role_name: "Partnership Coordinator", role_id: "role-partnership", church_id: HQ, department_permissions: ["partnership", "finance", "reports"], can_view_all_churches: true, status: "Active", isActive: true, has_dashboard_access: true, preferred_language: "pt", demo_password_hint: "demo", created_at: "2024-01-01", updated_at: "2026-07-10" },
-  { id: "u-14", name: "Finance Officer Demo", full_name: "Finance Officer Demo", email: "finance.officer@ce-mozambique.org", role: "Finance Officer", role_name: "Finance Officer", role_id: "role-finance-officer", church_id: HQ, department_permissions: ["finance", "financeOfficer"], can_view_all_churches: false, status: "Active", isActive: true, has_dashboard_access: true, preferred_language: "pt", demo_password_hint: "demo", created_at: "2024-01-01", updated_at: "2026-07-10" },
-  { id: "u-16", name: "Finance Viewer Demo", full_name: "Finance Viewer Demo", email: "finance.viewer@ce-mozambique.org", role: "Viewer", role_name: "Viewer", role_id: "role-viewer", church_id: HQ, department_permissions: ["financeViewer", "reports"], can_view_all_churches: true, status: "Active", isActive: true, has_dashboard_access: true, preferred_language: "en", demo_password_hint: "demo", created_at: "2024-01-01", updated_at: "2026-07-10" },
-  { id: "u-4", name: "Sister Angelica", full_name: "Sister Angelica", email: "angelica@ce-mozambique.org", role: "ALEC Coordinator", role_name: "ALEC Coordinator", church_id: HQ, department_permissions: ["cell", "alecRegistration", "alecScores", "churchReports"], can_view_all_churches: true, status: "Active", isActive: true, has_dashboard_access: true, staff_id: "staff-2", preferred_language: "pt", demo_password_hint: "demo", created_at: "2023-06-01", updated_at: "2026-07-10" },
-  { id: "u-9", name: "Sister Cassandra", full_name: "Sister Cassandra", email: "cassandra@ce-mozambique.org", role: "F.E.V.O Coordinator", role_name: "F.E.V.O Coordinator", church_id: HQ, department_permissions: ["fevo", "fevoConfig", "fevoReports", "fevoAnalytics"], can_view_all_churches: true, status: "Active", isActive: true, has_dashboard_access: true, staff_id: "staff-13", preferred_language: "pt", demo_password_hint: "demo", created_at: "2024-08-01", updated_at: "2026-07-10" },
-  { id: "u-2", name: "Líder de Aconselhamento", full_name: "Líder de Aconselhamento", email: "aconselhamento@ce-mozambique.org", role: "Counselor", role_name: "Counselor", church_id: HQ, department_permissions: ["counseling", "firstTimers", "followUp"], can_view_all_churches: false, status: "Active", isActive: true, has_dashboard_access: true, preferred_language: "pt", demo_password_hint: "demo", created_at: "2024-01-01", updated_at: "2026-07-10" },
-  { id: "u-locked", name: "Utilizador Bloqueado Demo", full_name: "Utilizador Bloqueado Demo", email: "locked@ce-mozambique.org", role: "Staff Member", role_name: "Staff Member", church_id: HQ, department_permissions: [], can_view_all_churches: false, status: "Locked", isActive: false, has_dashboard_access: false, failed_login_attempts: 5, locked_until: "2026-08-01T00:00:00.000Z", preferred_language: "pt", notes: "Demo locked account", created_at: "2025-01-01", updated_at: "2026-07-10" },
+    updated_at: "2026-09-02"
+  }
 ];
