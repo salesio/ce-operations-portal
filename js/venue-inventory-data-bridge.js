@@ -349,6 +349,9 @@
     updateInventoryMovement: function (id, payload) {
       return call("updateInventoryMovement", [id, payload]);
     },
+    deleteInventoryMovement: function (id) {
+      return call("deleteInventoryMovement", [id]);
+    },
     listMaintenanceRecords: function () {
       return call("listMaintenanceRecords", []);
     },
@@ -357,6 +360,9 @@
     },
     updateMaintenanceRecord: function (id, payload) {
       return call("updateMaintenanceRecord", [id, payload]);
+    },
+    deleteMaintenanceRecord: function (id) {
+      return call("deleteMaintenanceRecord", [id]);
     },
     closeMaintenanceRecord: function (id, payload) {
       return call("closeMaintenanceRecord", [id, payload]);
@@ -370,6 +376,9 @@
     updateVenueSpace: function (id, payload) {
       return call("updateVenueSpace", [id, payload]);
     },
+    deleteVenueSpace: function (id) {
+      return call("deleteVenueSpace", [id]);
+    },
     listServiceChecklists: function () {
       return call("listServiceChecklists", []);
     },
@@ -378,6 +387,9 @@
     },
     updateServiceChecklist: function (id, payload) {
       return call("updateServiceChecklist", [id, payload]);
+    },
+    deleteServiceChecklist: function (id) {
+      return call("deleteServiceChecklist", [id]);
     },
     completeServiceChecklist: function (id, payload) {
       return call("completeServiceChecklist", [id, payload]);

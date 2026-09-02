@@ -562,9 +562,25 @@ export async function transferInventoryItem(itemId: EntityId, payload: Partial<I
   if (updated.ok) await createInventoryMovement({ ...payload, item_id: itemId, movement_type: "Transfer", item_name: updated.data.name || "" });
   return updated;
 }
-export async function sendInventoryItemToMaintenance(itemId: EntityId, payload: Partial<InventoryMaintenanceRecord> = {}) {
-  const item = await getInventoryItemById(itemId);
-  if (!item.ok || !item.data) return fail<InventoryMaintenanceRecord>("Inventory item not found", "NOT_FOUND");
-  return createMaintenanceRecord({ ...payload, item_id: itemId, item_code: item.data.item_code || "", item_name: item.data.name || item.data.nome_do_item || "", status: "Reported" });
+export async function deleteInventoryMovement(id: EntityId) {
+  const res = await deleteRow(MOVEMENTS, String(id));
+  if (!res.ok) return fail<boolean>(res.error, res.code);
+  return ok(true);
+}
+export async function deleteMaintenanceRecord(id: EntityId) {
+  const res = await deleteRow(MAINTENANCE, String(id));
+  if (!res.ok) return fail<boolean>(res.error, res.code);
+  return ok(true);
+}
+export async function deleteVenueSpace(id: EntityId) {
+  const res = await deleteRow(SPACES, String(id));
+  if (!res.ok) return fail<boolean>(res.error, res.code);
+  return ok(true);
+}
+export async function deleteServiceChecklist(id: EntityId) {
+  const res = await deleteRow(CHECKLISTS, String(id));
+  if (!res.ok) return fail<boolean>(res.error, res.code);
+  return ok(true);
 }
 export const closeInventoryMaintenance = closeMaintenanceRecord;
+

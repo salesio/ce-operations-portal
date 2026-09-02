@@ -19135,7 +19135,10 @@ function renderMinistryMaterials() {
   const stocks = scopedNested(state.ministryMaterials.weeklyStock);
   const funds = scopedNested(state.ministryMaterials.freeFunds);
   const reports = scopedNested(state.ministryMaterials.reports);
-  const monthSales = sales.filter((item) => item.data?.startsWith("2026-07"));
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const thisMonthIso = new Date().toISOString().slice(0, 7);
+  const monthSales = sales.filter((item) => String(item.data || item.sale_date || "").startsWith(thisMonthIso));
+  const recentSales = sales.length ? sales : [];
   setPageContent( `
     ${moduleNavShell("ministryMaterials", { title: L("ministryMaterials"), subtitle: L("materialsSubtitle"), modalType: "materialSale", icon: "bi-journal-richtext" },
       moduleScrollTabs([
@@ -24014,6 +24017,59 @@ function quickAction(action, type, id) {
         else if (type === "cellReport" && cellSb.deleteCellReport) void cellSb.deleteCellReport(previous.id);
       }
     }
+    if (["inventoryItem", "venueAcquisition", "venueStaffEquipment", "venueMaintenance", "venueMovement", "venueSpace", "venueChecklist"].includes(type)) {
+      const previous = collection[index];
+      const venueBridge = window.CEVenueInventory || window.CEDataLayer?.venueInventory;
+      if (venueBridge && previous?.id) {
+        if (["inventoryItem", "venueAcquisition", "venueStaffEquipment"].includes(type) && venueBridge.deleteInventoryItem) {
+          void venueBridge.deleteInventoryItem(previous.id);
+        } else if (type === "venueMaintenance" && venueBridge.deleteMaintenanceRecord) {
+          void venueBridge.deleteMaintenanceRecord(previous.id);
+        } else if (type === "venueMovement" && venueBridge.deleteInventoryMovement) {
+          void venueBridge.deleteInventoryMovement(previous.id);
+        } else if (type === "venueSpace" && venueBridge.deleteVenueSpace) {
+          void venueBridge.deleteVenueSpace(previous.id);
+        } else if (type === "venueChecklist" && venueBridge.deleteServiceChecklist) {
+          void venueBridge.deleteServiceChecklist(previous.id);
+        }
+      }
+    }
+    if (["prisonLocation", "prisonService", "prisonFoundation", "prisonAgenda", "prisonReport"].includes(type)) {
+      const previous = collection[index];
+      const prisonBridge = window.CEPrisonMinistry || window.CEDataLayer?.prisonMinistry;
+      if (prisonBridge && previous?.id) {
+        if (type === "prisonLocation" && prisonBridge.deletePrisonLocation) {
+          void prisonBridge.deletePrisonLocation(previous.id);
+        } else if (type === "prisonService" && prisonBridge.deletePrisonService) {
+          void prisonBridge.deletePrisonService(previous.id);
+        } else if (type === "prisonFoundation" && prisonBridge.deletePrisonFoundationStudent) {
+          void prisonBridge.deletePrisonFoundationStudent(previous.id);
+        } else if (type === "prisonAgenda" && (prisonBridge.deletePrisonAgendaItem || prisonBridge.deletePrisonWeeklyAgenda)) {
+          void (prisonBridge.deletePrisonAgendaItem || prisonBridge.deletePrisonWeeklyAgenda)(previous.id);
+        } else if (type === "prisonReport" && prisonBridge.deletePrisonReport) {
+          void prisonBridge.deletePrisonReport(previous.id);
+        }
+      }
+    }
+    if (["materialCatalogue", "materialSale", "materialDistribution", "materialStock", "materialFund", "materialReport"].includes(type)) {
+      const previous = collection[index];
+      const matBridge = window.CEMinistryMaterials || window.CEDataLayer?.ministryMaterials;
+      if (matBridge && previous?.id) {
+        if (type === "materialCatalogue" && (matBridge.deleteMaterialCatalogItem || matBridge.deleteMaterial)) {
+          void (matBridge.deleteMaterialCatalogItem || matBridge.deleteMaterial)(previous.id);
+        } else if (type === "materialStock" && matBridge.deleteMaterialStock) {
+          void matBridge.deleteMaterialStock(previous.id);
+        } else if (type === "materialSale" && matBridge.deleteMaterialSale) {
+          void matBridge.deleteMaterialSale(previous.id);
+        } else if (type === "materialDistribution" && matBridge.deleteMaterialDistribution) {
+          void matBridge.deleteMaterialDistribution(previous.id);
+        } else if (type === "materialFund" && matBridge.deleteMaterialFund) {
+          void matBridge.deleteMaterialFund(previous.id);
+        } else if (type === "materialReport" && matBridge.deleteMaterialReport) {
+          void matBridge.deleteMaterialReport(previous.id);
+        }
+      }
+    }
     collection.splice(index, 1);
     saveState(`Deleted ${type} ${id}`);
     return setRoute(activeRoute);
@@ -26266,43 +26322,33 @@ async function hydrateMinistryMaterialsFromRepository() {
     state.ministryMaterials =
       state.ministryMaterials && !Array.isArray(state.ministryMaterials)
         ? state.ministryMaterials
-        : structuredClone(seedData.ministryMaterials || {});
+        : { catalogue: [], sales: [], distributions: [], weeklyStock: [], freeFunds: [], reports: [], requests: [] };
 
     async function merge(listFn, key, mapRow) {
       if (typeof listFn !== "function") return;
       const result = await listFn();
-      if (!result?.ok || !Array.isArray(result.data) || !result.data.length) return;
-      const prev = new Map((state.ministryMaterials[key] || []).map((r) => [r.id, r]));
-      const byId = new Map();
-      result.data.forEach((row) => {
-        const previous = prev.get(row.id) || {};
-        const mapped = mapRow ? mapRow(row) : row;
-        byId.set(row.id, { ...mapped, ...previous, id: row.id });
-      });
-      prev.forEach((localRow, id) => {
-        if (!byId.has(id)) byId.set(id, localRow);
-      });
-      state.ministryMaterials[key] = [...byId.values()];
+      if (!result?.ok || !Array.isArray(result.data)) return;
+      state.ministryMaterials[key] = result.data.map((row) => (mapRow ? mapRow(row) : row));
       hydrated = true;
     }
 
     await merge(repo.listMaterialsCatalog?.bind(repo), "catalogue", (row) => ({
       ...row,
-      titulo_do_material: row.titulo_do_material || row.name || "",
-      name: row.name || row.titulo_do_material || "",
-      tipo: row.tipo || row.category || "",
-      preco: row.preco ?? row.unit_price ?? 0,
-      unit_price: row.unit_price ?? row.preco ?? 0,
-      stock_actual: row.stock_actual ?? 0,
+      titulo_do_material: row.titulo_do_material || row.name || row.title || "",
+      name: row.name || row.title || row.titulo_do_material || "",
+      tipo: row.tipo || row.category || row.material_type || "",
+      preco: row.preco ?? row.unit_price ?? row.default_price ?? 0,
+      unit_price: row.unit_price ?? row.default_price ?? row.preco ?? 0,
+      stock_actual: row.stock_actual ?? row.quantity_available ?? 0,
       stock_minimo: row.stock_minimo ?? row.reorder_level ?? 0,
       estado: row.estado || row.status || "Disponível",
       status: row.status || row.estado || "Active",
-      observacoes: row.observacoes || row.notes || "",
+      observacoes: row.observacoes || row.notes || row.description || "",
     }));
 
     await merge(repo.listMaterialSales?.bind(repo), "sales", (row) => ({
       ...row,
-      titulo_do_material: row.titulo_do_material || row.material_name || "",
+      titulo_do_material: row.titulo_do_material || row.material_name || row.catalog_item_title || "",
       quantidade: row.quantidade ?? row.quantity ?? 0,
       valor: row.valor ?? row.total_amount ?? 0,
       data: row.data || row.sale_date || "",
@@ -26315,23 +26361,23 @@ async function hydrateMinistryMaterialsFromRepository() {
 
     await merge(repo.listMaterialDistributions?.bind(repo), "distributions", (row) => ({
       ...row,
-      titulo_do_material: row.titulo_do_material || row.material_name || "",
+      titulo_do_material: row.titulo_do_material || row.material_name || row.catalog_item_title || "",
       quantidade: row.quantidade ?? row.quantity ?? 0,
       data: row.data || row.distribution_date || "",
-      igreja_destinataria: row.igreja_destinataria || row.target_id || "",
-      tipo_de_distribuicao: row.tipo_de_distribuicao || row.distribution_type || "",
+      igreja_destinataria: row.igreja_destinataria || row.target_id || row.target_name || "",
+      tipo_de_distribuicao: row.tipo_de_distribuicao || row.distribution_type || row.target_type || "",
       estado: row.estado || row.status || "Solicitado",
       status: row.status || row.estado || "Pending",
     }));
 
     await merge(repo.listMaterialStock?.bind(repo), "weeklyStock", (row) => ({
       ...row,
-      titulo_do_material: row.titulo_do_material || row.material_name || "",
+      titulo_do_material: row.titulo_do_material || row.material_name || row.catalog_item_title || row.location_name || "",
       semana_inicio: row.semana_inicio || "",
       semana_fim: row.semana_fim || "",
-      stock_inicial: row.stock_inicial ?? 0,
-      entradas: row.entradas ?? 0,
-      saidas: row.saidas ?? 0,
+      stock_inicial: row.stock_inicial ?? row.quantity_available ?? 0,
+      entradas: row.entradas ?? row.quantity_distributed ?? 0,
+      saidas: row.saidas ?? row.quantity_sold ?? 0,
       stock_final: row.stock_final ?? row.quantity_available ?? 0,
       diferenca: row.diferenca ?? 0,
       estado: row.estado || row.status || "Concluído",
@@ -26391,23 +26437,13 @@ async function hydratePrisonMinistryFromRepository() {
     state.prisonMinistry =
       state.prisonMinistry && !Array.isArray(state.prisonMinistry)
         ? state.prisonMinistry
-        : structuredClone(seedData.prisonMinistry || {});
+        : { prisons: [], services: [], foundationStudents: [], weeklyAgenda: [], followUps: [], reports: [], materialsRequests: [] };
 
     async function merge(listFn, key, mapRow) {
       if (typeof listFn !== "function") return;
       const result = await listFn();
-      if (!result?.ok || !Array.isArray(result.data) || !result.data.length) return;
-      const prev = new Map((state.prisonMinistry[key] || []).map((r) => [r.id, r]));
-      const byId = new Map();
-      result.data.forEach((row) => {
-        const previous = prev.get(row.id) || {};
-        const mapped = mapRow ? mapRow(row) : row;
-        byId.set(row.id, { ...mapped, ...previous, id: row.id });
-      });
-      prev.forEach((localRow, id) => {
-        if (!byId.has(id)) byId.set(id, localRow);
-      });
-      state.prisonMinistry[key] = [...byId.values()];
+      if (!result?.ok || !Array.isArray(result.data)) return;
+      state.prisonMinistry[key] = result.data.map((row) => (mapRow ? mapRow(row) : row));
       hydrated = true;
     }
 
@@ -27399,64 +27435,38 @@ async function hydrateVenueInventoryFromRepository() {
 
     if (typeof repo.listInventoryItems === "function") {
       const result = await repo.listInventoryItems();
-      if (result?.ok && Array.isArray(result.data) && result.data.length) {
-        const prev = new Map((state.venueInventory.inventory || []).map((r) => [r.id, r]));
-        const byId = new Map();
-        result.data.forEach((row) => {
-          const previous = prev.get(row.id) || {};
-          const merged = {
-            ...row,
-            ...previous,
-            id: row.id,
-            nome_do_item: row.nome_do_item || row.name || previous.nome_do_item,
-            name: row.name || row.nome_do_item || previous.name,
-            categoria: row.categoria || row.category || previous.categoria,
-            quantidade: row.quantidade ?? row.quantity ?? previous.quantidade,
-            estado: row.estado || previous.estado || "Bom",
-            localizacao: row.localizacao || row.space_name || previous.localizacao,
-            departamento_responsavel:
-              row.departamento_responsavel || row.department_name || previous.departamento_responsavel,
-            valor_unitario: row.valor_unitario ?? row.acquisition_cost ?? previous.valor_unitario,
-            valor_total: row.valor_total ?? previous.valor_total,
-            serial_number: row.serial_number || previous.serial_number,
-            observacoes: row.observacoes || row.description || previous.observacoes,
-            requisition_id: row.requisition_id || previous.requisition_id,
-            request_number: row.request_number || previous.request_number,
-            status: row.status || previous.status,
-            condition: row.condition || previous.condition,
-            assigned_to_user_id: row.assigned_to_user_id || previous.assigned_to_user_id,
-            assigned_to_name: row.assigned_to_name || previous.assigned_to_name,
-          };
-          byId.set(row.id, merged);
-        });
-        prev.forEach((localRow, id) => {
-          if (!byId.has(id)) byId.set(id, localRow);
-        });
-        state.venueInventory.inventory = [...byId.values()];
+      if (result?.ok && Array.isArray(result.data)) {
+        state.venueInventory.inventory = result.data.map((row) => ({
+          ...row,
+          id: row.id,
+          nome_do_item: row.nome_do_item || row.name || "",
+          name: row.name || row.nome_do_item || "",
+          categoria: row.categoria || row.category || "",
+          quantidade: row.quantidade ?? row.quantity ?? 1,
+          estado: row.estado || (row.status === "Available" ? "Bom" : row.status) || "Bom",
+          localizacao: row.localizacao || row.space_name || "",
+          departamento_responsavel:
+            row.departamento_responsavel || row.department_name || "",
+          valor_unitario: row.valor_unitario ?? row.acquisition_cost ?? 0,
+          valor_total: row.valor_total ?? (Number(row.acquisition_cost || 0) * Number(row.quantity || 1)),
+          serial_number: row.serial_number || "",
+          observacoes: row.observacoes || row.description || row.usage_notes || "",
+          requisition_id: row.requisition_id || null,
+          request_number: row.request_number || null,
+          status: row.status || "Available",
+          condition: row.condition || "Good",
+          assigned_to_user_id: row.assigned_to_user_id || null,
+          assigned_to_name: row.assigned_to_name || "",
+        }));
 
-        // Sync staff equipment + acquisitions views from inventory items (non-destructive merge)
-        const staffFromItems = state.venueInventory.inventory
+        state.venueInventory.staffEquipment = state.venueInventory.inventory
           .map(mapStaffEquipmentFromItem)
           .filter(Boolean);
-        if (staffFromItems.length) {
-          const prevStaff = new Map((state.venueInventory.staffEquipment || []).map((r) => [r.id, r]));
-          staffFromItems.forEach((s) => {
-            const previous = prevStaff.get(s.id) || prevStaff.get(`staff-eq-${s.inventory_item_id}`) || {};
-            prevStaff.set(s.id, { ...s, ...previous, id: s.id });
-          });
-          state.venueInventory.staffEquipment = [...prevStaff.values()];
-        }
-        const acqFromItems = state.venueInventory.inventory
+
+        state.venueInventory.acquisitions = state.venueInventory.inventory
           .map(mapAcquisitionFromItem)
           .filter(Boolean);
-        if (acqFromItems.length) {
-          const prevAcq = new Map((state.venueInventory.acquisitions || []).map((r) => [r.id, r]));
-          acqFromItems.forEach((a) => {
-            const previous = prevAcq.get(a.id) || {};
-            prevAcq.set(a.id, { ...a, ...previous, id: a.id });
-          });
-          state.venueInventory.acquisitions = [...prevAcq.values()];
-        }
+
         hydrated = true;
         console.info("[CE VenueInventory] hydrated items", state.venueInventory.inventory.length);
       }
@@ -27465,18 +27475,8 @@ async function hydrateVenueInventoryFromRepository() {
     async function mergeList(listFn, key, mapRow) {
       if (typeof listFn !== "function") return;
       const result = await listFn();
-      if (!result?.ok || !Array.isArray(result.data) || !result.data.length) return;
-      const prev = new Map((state.venueInventory[key] || []).map((r) => [r.id, r]));
-      const byId = new Map();
-      result.data.forEach((row) => {
-        const previous = prev.get(row.id) || {};
-        const mapped = mapRow ? mapRow(row) : row;
-        byId.set(row.id, { ...mapped, ...previous, id: row.id });
-      });
-      prev.forEach((localRow, id) => {
-        if (!byId.has(id)) byId.set(id, localRow);
-      });
-      state.venueInventory[key] = [...byId.values()];
+      if (!result?.ok || !Array.isArray(result.data)) return;
+      state.venueInventory[key] = result.data.map((row) => (mapRow ? mapRow(row) : row));
       hydrated = true;
     }
 
