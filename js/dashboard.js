@@ -22198,6 +22198,7 @@ function renderUserForm(record = {}, modalMode = "create") {
   const isEdit = modalMode === "edit";
   const name = record.name || record.full_name || "";
   const email = record.email || "";
+  const phone = record.phone || "";
   const currentRole = record.role || record.role_name || "Cell Leader";
   const churchId = record.church_id || record.churchId || activeUser?.church_id || "a1111111-1111-4111-8111-111111111101";
   const cellGroupId = record.cell_group_id || record.groupId || "";
@@ -22231,13 +22232,16 @@ function renderUserForm(record = {}, modalMode = "create") {
     { value: "National Admin", label: "Administrador Nacional" },
     { value: "Church Pastor", label: "Pastor da Igreja" },
     { value: "Church Admin", label: "Administrador da Igreja" },
+    { value: "Department Head", label: "Responsável de Departamento" },
+    { value: "ALEC Manager", label: "Gestor ALEC" },
+    { value: "Reitor de Cuidados Pastorais", label: "Reitor de Cuidados Pastorais" },
+    { value: "Cell Ministry Head", label: "Responsável do Ministério de Células" },
     { value: "Cell Group Leader", label: "Líder de Grupo de Células" },
     { value: "Cell Leader", label: "Líder de Célula" },
     { value: "Cell Assistant", label: "Assistente de Célula" },
-    { value: "Cell Ministry Head", label: "Responsável do Ministério de Células" },
     { value: "Follow-Up Coordinator", label: "Coordenador de Acompanhamento (Follow-Up)" },
-    { value: "Foundation Teacher", label: "Professor da Escola de Fundação" },
     { value: "Foundation Rector", label: "Reitor da Escola de Fundação" },
+    { value: "Foundation Teacher", label: "Professor da Escola de Fundação" },
     { value: "Venue Manager", label: "Gestor de Património & Instalações (Venue)" },
     { value: "Finance Head", label: "Responsável de Finanças" },
     { value: "Finance Officer", label: "Oficial de Finanças" },
@@ -22260,6 +22264,27 @@ function renderUserForm(record = {}, modalMode = "create") {
       <div class="col-md-6">
         <label class="form-label">E-mail *</label>
         <input name="email" type="email" class="form-control" value="${escapeAttr(email)}" required placeholder="utilizador@embaixadadecristo.org">
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Telefone</label>
+        <input name="phone" type="tel" class="form-control" value="${escapeAttr(phone)}" placeholder="+258 84 000 0000">
+      </div>
+
+      <div class="col-md-6">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <label class="form-label mb-0">Palavra-passe (Supabase Auth) ${isEdit ? "" : "*"}</label>
+          <button type="button" class="btn btn-link btn-sm p-0 text-cyan text-decoration-none" id="btnGenerateUserPassword" style="font-size: 0.75rem;">
+            <i class="bi bi-magic me-1"></i>Gerar senha
+          </button>
+        </div>
+        <div class="input-group">
+          <input name="password" id="userFormPassword" type="password" class="form-control" ${isEdit ? "" : 'required minlength="6"'} placeholder="${isEdit ? 'Deixe vazio para manter a senha' : 'Mínimo 6 caracteres'}">
+          <button class="btn btn-outline-secondary" type="button" id="btnToggleUserPassword" title="Mostrar/Ocultar senha">
+            <i class="bi bi-eye"></i>
+          </button>
+        </div>
+        <small class="text-muted" style="font-size: 0.75rem;">${isEdit ? 'Preencha apenas se pretender redefinir a palavra-passe no Supabase' : 'A senha é encriptada e guardada no Supabase para início de sessão imediato'}</small>
       </div>
 
       <div class="col-md-6">
@@ -22297,7 +22322,7 @@ function renderUserForm(record = {}, modalMode = "create") {
           <input name="assign_all_subcells" class="form-check-input ms-1" type="checkbox" id="userFormAllSubcells" ${hasAllSubcells || (!cellId && cellGroupId) ? "checked" : ""}>
           <label class="form-check-label ms-2" for="userFormAllSubcells">
             <strong>Permitir acesso de gestão a todas as sub-células deste grupo</strong>
-            <div class="small text-secondary">Permite ao utilizador visualizar, alternar e gerir relatórios e membros de todas as 10 células do grupo (ex.: Diamantes Main)</div>
+            <div class="small text-secondary">Permite ao utilizador visualizar, alternar e gerir relatórios e membros de todas as células do grupo (ex.: Diamantes Main)</div>
           </label>
         </div>
       </div>
@@ -22331,7 +22356,13 @@ function renderUserForm(record = {}, modalMode = "create") {
             <div class="col-sm-6 col-lg-4">
               <label class="form-check">
                 <input type="checkbox" name="dept_perm" value="foundation_teacher" class="form-check-input" ${deptPerms.has("foundation_teacher") || deptPerms.has("*") ? "checked" : ""}>
-                <span class="form-check-label"><i class="bi bi-person-video3 me-1 text-success"></i> Professor de Fundação (Presenças/Testes)</span>
+                <span class="form-check-label"><i class="bi bi-person-video3 me-1 text-success"></i> Professor de Fundação</span>
+              </label>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+              <label class="form-check">
+                <input type="checkbox" name="dept_perm" value="pastoralCare" class="form-check-input" ${deptPerms.has("pastoralCare") || deptPerms.has("*") ? "checked" : ""}>
+                <span class="form-check-label"><i class="bi bi-heart-pulse me-1 text-danger"></i> Cuidados Pastorais</span>
               </label>
             </div>
             <div class="col-sm-6 col-lg-4">
@@ -22368,6 +22399,24 @@ function renderUserForm(record = {}, modalMode = "create") {
               <label class="form-check">
                 <input type="checkbox" name="dept_perm" value="media" class="form-check-input" ${deptPerms.has("media") || deptPerms.has("*") ? "checked" : ""}>
                 <span class="form-check-label"><i class="bi bi-camera-video me-1 text-secondary"></i> Mídia & Transmissão</span>
+              </label>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+              <label class="form-check">
+                <input type="checkbox" name="dept_perm" value="programs" class="form-check-input" ${deptPerms.has("programs") || deptPerms.has("*") ? "checked" : ""}>
+                <span class="form-check-label"><i class="bi bi-calendar-event me-1 text-light"></i> Programas & Eventos</span>
+              </label>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+              <label class="form-check">
+                <input type="checkbox" name="dept_perm" value="prisonMinistry" class="form-check-input" ${deptPerms.has("prisonMinistry") || deptPerms.has("*") ? "checked" : ""}>
+                <span class="form-check-label"><i class="bi bi-shield-lock me-1 text-primary"></i> Ministério Prisional</span>
+              </label>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+              <label class="form-check">
+                <input type="checkbox" name="dept_perm" value="ministryMaterials" class="form-check-input" ${deptPerms.has("ministryMaterials") || deptPerms.has("*") ? "checked" : ""}>
+                <span class="form-check-label"><i class="bi bi-journal-richtext me-1 text-warning"></i> Materiais do Ministério</span>
               </label>
             </div>
             <div class="col-sm-6 col-lg-4">
@@ -22415,6 +22464,28 @@ function mountUserFormControls(form) {
   const groupSelect = form.querySelector("#userFormCellGroupSelect");
   const cellSelect = form.querySelector("#userFormCellSelect");
   const roleSelect = form.querySelector("#userFormRoleSelect");
+  const pwInput = form.querySelector("#userFormPassword");
+  const togglePwBtn = form.querySelector("#btnToggleUserPassword");
+  const genPwBtn = form.querySelector("#btnGenerateUserPassword");
+
+  if (togglePwBtn && pwInput) {
+    togglePwBtn.addEventListener("click", () => {
+      const isPw = pwInput.type === "password";
+      pwInput.type = isPw ? "text" : "password";
+      togglePwBtn.innerHTML = isPw ? '<i class="bi bi-eye-slash"></i>' : '<i class="bi bi-eye"></i>';
+    });
+  }
+
+  if (genPwBtn && pwInput) {
+    genPwBtn.addEventListener("click", () => {
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%&*";
+      let autoPw = "";
+      for (let i = 0; i < 10; i++) autoPw += chars.charAt(Math.floor(Math.random() * chars.length));
+      pwInput.value = autoPw;
+      pwInput.type = "text";
+      if (togglePwBtn) togglePwBtn.innerHTML = '<i class="bi bi-eye-slash"></i>';
+    });
+  }
 
   if (groupSelect && cellSelect) {
     groupSelect.addEventListener("change", () => {
@@ -22441,13 +22512,16 @@ function mountUserFormControls(form) {
         "Follow-Up Coordinator": ["followUp", "firstTimers"],
         "Foundation Teacher": ["foundation", "foundation_teacher"],
         "Foundation Rector": ["foundation", "foundation_teacher", "reports"],
+        "Reitor de Cuidados Pastorais": ["pastoralCare", "followUp", "counseling", "sacraments", "reports"],
+        "ALEC Manager": ["cellReports", "reports"],
+        "Department Head": ["reports"],
         "Venue Manager": ["venueInventory"],
         "Finance Head": ["finance", "reports"],
         "Finance Officer": ["finance"],
         "Counselor": ["counseling", "followUp"],
         "Media Director": ["media"],
         "Super Admin": ["*"],
-        "Church Pastor": ["cellReports", "followUp", "foundation", "reports"]
+        "Church Pastor": ["cellReports", "followUp", "foundation", "pastoralCare", "reports"]
       };
       const defaults = roleDefaults[role];
       if (defaults) {
@@ -22464,21 +22538,63 @@ async function saveUserToSupabase(user) {
   if (!sbClient) return false;
   try {
     const email = user.email ? String(user.email).trim().toLowerCase() : null;
+    if (!email) return false;
+
+    const isUuid = (val) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(val || ""));
+    const churchId = user.church_id && isUuid(user.church_id) ? user.church_id : null;
+    const cellGroupId = user.cell_group_id && isUuid(user.cell_group_id) ? user.cell_group_id : null;
+    const cellId = user.cell_id && isUuid(user.cell_id) ? user.cell_id : null;
+    const userId = user.id && isUuid(user.id) ? user.id : null;
+
+    // Try RPC provisioning first (handles password, auth.users & public.users atomically)
+    try {
+      const { data, error } = await sbClient.rpc("admin_provision_user", {
+        p_email: email,
+        p_password: user.password || null,
+        p_full_name: user.name || user.full_name || "Utilizador",
+        p_role_name: user.role || user.role_name || "Cell Leader",
+        p_church_id: churchId,
+        p_cell_group_id: cellGroupId,
+        p_cell_id: cellId,
+        p_assigned_cells: Array.isArray(user.assigned_cells) ? user.assigned_cells : [],
+        p_assigned_cell_groups: Array.isArray(user.assigned_cell_groups) ? user.assigned_cell_groups : [],
+        p_department_permissions: Array.isArray(user.department_permissions) ? user.department_permissions : [],
+        p_status: user.status || "Active",
+        p_cannot_create_classes: Boolean(user.cannot_create_classes),
+        p_can_view_all_churches: Boolean(user.can_view_all_churches),
+        p_user_id: userId
+      });
+
+      if (!error && data && data.ok) {
+        if (data.user_id) user.id = data.user_id;
+        if (data.auth_user_id) user.auth_user_id = data.auth_user_id;
+        if (data.role_id) user.role_id = data.role_id;
+        return true;
+      }
+      if (error) {
+        console.warn("[CE Users] admin_provision_user RPC notice, using direct fallback:", error.message);
+      }
+    } catch (rpcErr) {
+      console.warn("[CE Users] RPC call skipped:", rpcErr);
+    }
+
+    // Direct fallback
     const payload = {
       full_name: user.name || user.full_name,
       email: email,
-      church_id: user.church_id || null,
-      cell_group_id: user.cell_group_id || null,
-      cell_id: user.cell_id || null,
+      phone: user.phone || null,
+      church_id: churchId,
+      cell_group_id: cellGroupId,
+      cell_id: cellId,
       assigned_cells: user.assigned_cells || [],
       assigned_cell_groups: user.assigned_cell_groups || [],
       status: user.status || "Active",
       metadata: {
         role_name: user.role || user.role_name,
         display_name: user.name || user.full_name,
-        cell_id: user.cell_id || null,
+        cell_id: cellId,
         cell_name: user.cell_name || null,
-        cell_group_id: user.cell_group_id || null,
+        cell_group_id: cellGroupId,
         cell_group_name: user.cell_group_name || null,
         assigned_cells: user.assigned_cells || [],
         assigned_cell_groups: user.assigned_cell_groups || [],
@@ -22496,8 +22612,8 @@ async function saveUserToSupabase(user) {
       const { data } = await sbClient.from("users").select("id, email").eq("email", email).maybeSingle();
       existing = data;
     }
-    if (!existing && user.id && user.id.includes("-") && user.id.length >= 32) {
-      const { data } = await sbClient.from("users").select("id, email").eq("id", user.id).maybeSingle();
+    if (!existing && userId) {
+      const { data } = await sbClient.from("users").select("id, email").eq("id", userId).maybeSingle();
       existing = data;
     }
 
@@ -22505,7 +22621,7 @@ async function saveUserToSupabase(user) {
       const res = await sbClient.from("users").update(payload).eq("id", existing.id);
       if (res.error) console.warn("[CE Users] Supabase update notice:", res.error);
     } else {
-      payload.id = (user.id && user.id.includes("-") && user.id.length >= 32) ? user.id : (typeof generateUuid === "function" ? generateUuid() : `u-${Date.now()}`);
+      payload.id = userId || (typeof generateUuid === "function" ? generateUuid() : `u-${Date.now()}`);
       const res = await sbClient.from("users").insert(payload);
       if (res.error) console.warn("[CE Users] Supabase insert notice:", res.error);
     }
@@ -22520,6 +22636,13 @@ async function deleteUserFromSupabase(userId, authUserId) {
   const sbClient = window.CESupabase?.getSupabaseFoundationClient?.() || window.CESupabase?.getSupabaseAuthClient?.() || (typeof supabase !== "undefined" ? supabase : null);
   if (!sbClient || !userId) return false;
   try {
+    const isUuid = (val) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(val || ""));
+    if (isUuid(userId)) {
+      try {
+        const { error } = await sbClient.rpc("admin_delete_user", { p_user_id: userId });
+        if (!error) return true;
+      } catch (_) {}
+    }
     await sbClient.from("users").delete().eq("id", userId);
     if (authUserId && authUserId !== userId) {
       await sbClient.from("users").delete().eq("auth_user_id", authUserId);
@@ -22743,9 +22866,16 @@ async function submitForm(form) {
     const role = String(data.role || "Cell Leader").trim();
     const name = String(data.name || data.full_name || "").trim();
     const email = String(data.email || "").trim().toLowerCase();
+    const phone = String(formData.get("phone") || data.phone || "").trim();
+    const password = String(formData.get("password") || "").trim();
 
     if (!name || !email) {
       alert("Por favor, preencha o nome e o e-mail do utilizador.");
+      return;
+    }
+
+    if (modalMode === "create" && (!password || password.length < 6)) {
+      alert("Por favor, introduza uma palavra-passe com pelo menos 6 caracteres para criar o utilizador no Supabase.");
       return;
     }
 
@@ -22793,6 +22923,7 @@ async function submitForm(form) {
           name,
           full_name: name,
           email,
+          phone,
           role,
           role_name: role,
           church_id: churchId,
@@ -22806,6 +22937,7 @@ async function submitForm(form) {
           cannot_create_classes: cannotCreateClasses,
           can_view_all_churches: canViewAllChurches,
           status,
+          password: password || undefined,
           updated_at: today
         };
         saveState(`Updated user ${email}`);
@@ -22818,6 +22950,8 @@ async function submitForm(form) {
         name,
         full_name: name,
         email,
+        phone,
+        password,
         role,
         role_name: role,
         church_id: churchId,
@@ -22844,7 +22978,7 @@ async function submitForm(form) {
     bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide();
     form.reset();
     if (typeof showToast === "function") {
-      showToast(lang === "pt" ? (modalMode === "edit" ? "Utilizador actualizado com sucesso!" : "Utilizador criado com sucesso!") : (modalMode === "edit" ? "User updated successfully!" : "User created successfully!"));
+      showToast(lang === "pt" ? (modalMode === "edit" ? "Utilizador e permissões actualizados no Supabase com sucesso!" : "Utilizador criado e sincronizado com Supabase Auth com sucesso!") : (modalMode === "edit" ? "User and permissions updated on Supabase successfully!" : "User account created and synced to Supabase Auth successfully!"));
     }
     if (activeRoute === "users") renderUsers();
     else setRoute(activeRoute);

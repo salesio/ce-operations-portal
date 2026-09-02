@@ -277,6 +277,49 @@ export async function getUserByAuthUserId(authUserId: string): Promise<DataResul
   }
 }
 
+export async function provisionUserWithAuth(user: Partial<User> & { password?: string; cannot_create_classes?: boolean; can_view_all_churches?: boolean }): Promise<DataResult<User>> {
+  const clientRes = requireClient();
+  if (!clientRes.ok) return fail(clientRes.error, clientRes.code);
+  const client = clientRes.data;
+
+  const email = user.email ? String(user.email).trim().toLowerCase() : "";
+  if (!email) return fail("Email is required to provision user", "INVALID_EMAIL");
+
+  try {
+    const { data, error } = await client.rpc("admin_provision_user", {
+      p_email: email,
+      p_password: user.password || null,
+      p_full_name: user.full_name || user.name || user.fullName || "Utilizador",
+      p_role_name: user.role_name || user.role || "Cell Leader",
+      p_church_id: user.church_id && isValidUuid(user.church_id) ? user.church_id : null,
+      p_cell_group_id: user.cell_group_id && isValidUuid(user.cell_group_id) ? user.cell_group_id : null,
+      p_cell_id: user.cell_id && isValidUuid(user.cell_id) ? user.cell_id : null,
+      p_assigned_cells: Array.isArray(user.assigned_cells) ? user.assigned_cells : [],
+      p_assigned_cell_groups: Array.isArray(user.assigned_cell_groups) ? user.assigned_cell_groups : [],
+      p_department_permissions: Array.isArray(user.department_permissions) ? user.department_permissions : [],
+      p_status: user.status || "Active",
+      p_cannot_create_classes: Boolean(user.cannot_create_classes),
+      p_can_view_all_churches: Boolean(user.can_view_all_churches),
+      p_user_id: user.id && isValidUuid(user.id) ? user.id : null,
+    });
+
+    if (error) {
+      console.warn("[CE Users] admin_provision_user RPC error, falling back to standard createUser:", error.message);
+      return createUser(user);
+    }
+
+    const userId = data?.user_id || data?.auth_user_id;
+    if (userId) {
+      const fetched = await getUserById(userId);
+      if (fetched.ok && fetched.data) return fetched;
+    }
+    return createUser(user);
+  } catch (err: any) {
+    console.warn("[CE Users] provisionUserWithAuth failed:", err);
+    return createUser(user);
+  }
+}
+
 export async function createUser(user: Partial<User>): Promise<DataResult<User>> {
   const payload = mapUserToRow(user, false);
   const r = await createRow<SupabaseRow>(TABLE, payload);
@@ -296,6 +339,13 @@ export async function updateUser(id: EntityId, patch: Partial<User>): Promise<Da
 }
 
 export async function deleteUser(id: EntityId): Promise<DataResult<boolean>> {
+  const clientRes = requireClient();
+  if (clientRes.ok && isValidUuid(id)) {
+    try {
+      const { error } = await clientRes.data.rpc("admin_delete_user", { p_user_id: id });
+      if (!error) return ok(true);
+    } catch (_) {}
+  }
   return deleteRow(TABLE, id);
 }
 
