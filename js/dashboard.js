@@ -26014,7 +26014,13 @@ function showLoginError(message) {
     el.textContent = "";
     return;
   }
-  el.textContent = message;
+  let cleanMsg = typeof message === "string" ? message : (message?.message || message?.error || "");
+  if (typeof cleanMsg !== "string" || !cleanMsg.trim() || cleanMsg.trim() === "{}" || cleanMsg.trim() === "[object Object]") {
+    cleanMsg = lang === "pt"
+      ? "Não foi possível iniciar sessão. Verifique o seu e-mail e a sua palavra-passe."
+      : "Could not sign in. Please check your credentials.";
+  }
+  el.textContent = cleanMsg;
   el.classList.remove("d-none");
 }
 
