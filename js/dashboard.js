@@ -6810,11 +6810,24 @@ function getCellGroupsForChurch(churchId = "") {
 }
 
 function getCellsForGroup(cellGroupId = "", churchId = "") {
+  const norm = (s) => String(s || "").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   const allCells = [...(window.REAL_CELLS_REGISTRY || []), ...(state.cellRegistry || state.cells || [])]
     .filter((c, idx, arr) => c && c.id && arr.findIndex((x) => String(x.id) === String(c.id)) === idx);
+  
+  const allGroups = [...(window.REAL_CELL_GROUPS || []), ...(state.cellGroups || [])];
+  const targetGroup = allGroups.find((g) => g && (String(g.id) === String(cellGroupId) || norm(g.group_name || g.name) === norm(cellGroupId)));
+  const targetGroupId = targetGroup ? String(targetGroup.id) : String(cellGroupId || "");
+  const targetGroupName = norm(targetGroup?.group_name || targetGroup?.name || "");
+
   return cellNetworkRecordsForSelect(allCells)
-    .filter((cell) => matchesSelectedCellChurch(cell, churchId) && (!cellGroupId || String(cell.group_id) === String(cellGroupId) || String(cell.cell_group_id) === String(cellGroupId) || String(cell.group_cell_id) === String(cellGroupId)))
-    .sort((a, b) => String(a.cell_name || "").localeCompare(String(b.cell_name || "")));
+    .filter((cell) => {
+      if (!matchesSelectedCellChurch(cell, churchId)) return false;
+      if (!cellGroupId) return true;
+      const cGid = String(cell.group_id || cell.cell_group_id || cell.group_cell_id || "");
+      const cGname = norm(cell.group_name || cell.cell_group_name || "");
+      return cGid === targetGroupId || (targetGroupName && cGname === targetGroupName) || (cGname && cGname === norm(cellGroupId));
+    })
+    .sort((a, b) => String(a.cell_name || a.name || "").localeCompare(String(b.cell_name || b.name || "")));
 }
 
 function getFormChurchId(record = {}) {
@@ -11131,49 +11144,16 @@ function renderCellLeaderPortal() {
     const canChooseCell = authorizedCells.length > 1;
     const memberStatuses = [...new Set(allMembers.map((member) => member.status).filter(Boolean))];
     const foundationOptions = [...new Set(allMembers.map((member) => member.foundation_status).filter(Boolean))];
-    const allGroups = [
-      ...(window.REAL_CELL_GROUPS || []),
-      ...(state.cellGroups || []),
-      ...(state.cellMinistry?.groups || [])
-    ];
-    const allGroupMap = new Map();
-    allGroups.forEach((g) => {
-      const gid = g.id || g.group_id || g.cell_group_id;
-      const gname = g.group_name || g.name || g.nome_do_grupo || g.cell_group_name;
-      if (gid && gname && !allGroupMap.has(String(gid))) {
-        allGroupMap.set(String(gid), { id: gid, group_name: gname });
-      }
-    });
-    const allCells = [
-      ...(window.REAL_CELLS_REGISTRY || []),
-      ...(state.cellRegistry || []),
-      ...(state.cells || [])
-    ];
-    const allCellMap = new Map();
-    allCells.forEach((c) => {
-      const cid = c.id;
-      if (cid && !allCellMap.has(String(cid))) {
-        allCellMap.set(String(cid), c);
-      }
-      const gid = c.group_id || c.cell_group_id;
-      const gname = c.group_name || c.cell_group_name || c.nome_do_grupo;
-      if (gid && gname && !allGroupMap.has(String(gid))) {
-        allGroupMap.set(String(gid), { id: gid, group_name: gname });
-      }
-    });
-    const cellGroupsList = Array.from(allGroupMap.values());
-    const uniqueAllCells = Array.from(allCellMap.values());
-    const cellRegistryList = uniqueAllCells.filter((c) => {
-      if (!cellPortalPageState.cellGroupId) return true;
-      return String(c.group_id || c.cell_group_id || "") === String(cellPortalPageState.cellGroupId);
-    });
+    const safeCellGroups = getCellGroupsForChurch(activeUser?.church_id);
+    const safeCellRegistry = getCellsForGroup(cellPortalPageState.cellGroupId, activeUser?.church_id);
     const heroCellsList = cellPortalPageState.cellGroupId
-      ? authorizedCells.filter((c) => String(c.group_id || c.cell_group_id || "") === String(cellPortalPageState.cellGroupId))
+      ? authorizedCells.filter((c) => {
+          const groupCells = getCellsForGroup(cellPortalPageState.cellGroupId, activeUser?.church_id);
+          return groupCells.some((gc) => String(gc.id) === String(c.id));
+        })
       : authorizedCells;
     const displayHeroCells = heroCellsList.length ? heroCellsList : authorizedCells;
     const safeHeroCells = (displayHeroCells || []).filter((item) => Boolean(item && item.id));
-    const safeCellGroups = (cellGroupsList || []).filter((g) => Boolean(g && g.id));
-    const safeCellRegistry = (cellRegistryList || []).filter((c) => Boolean(c && c.id));
     const safeMemberStatuses = (memberStatuses || []).filter(Boolean);
     const safeFoundationOptions = (foundationOptions || []).filter(Boolean);
     const safeMembers = (members || []).filter(Boolean);
@@ -25433,25 +25413,16 @@ document.addEventListener("change", (event) => {
     const filterKey = event.target.dataset.cellPortalFilter;
     const val = event.target.value || "";
     cellPortalPageState[filterKey] = val;
-    const allCells = [
-      ...(window.REAL_CELLS_REGISTRY || []),
-      ...(state.cellRegistry || []),
-      ...(state.cells || [])
-    ];
-    const uniqueCellsMap = new Map();
-    allCells.forEach((c) => {
-      if (c && c.id && !uniqueCellsMap.has(String(c.id))) uniqueCellsMap.set(String(c.id), c);
-    });
-    const uniqueCells = Array.from(uniqueCellsMap.values());
     if (filterKey === "cellGroupId") {
       const authorizedCells = getAuthorizedCellsForUser(activeUser?.id);
       if (val) {
-        const groupAuthCells = authorizedCells.filter((c) => String(c.group_id || c.cell_group_id || "") === String(val));
-        const groupRegistryCells = uniqueCells.filter((c) => String(c.group_id || c.cell_group_id || "") === String(val));
+        const groupCells = getCellsForGroup(val, activeUser?.church_id);
+        const groupCellIds = new Set(groupCells.map((c) => String(c.id)));
+        const groupAuthCells = authorizedCells.filter((c) => groupCellIds.has(String(c.id)));
         if (groupAuthCells.length > 0) {
           cellPortalPageState.cellId = groupAuthCells[0].id;
-        } else if (groupRegistryCells.length > 0) {
-          cellPortalPageState.cellId = groupRegistryCells[0].id;
+        } else if (groupCells.length > 0) {
+          cellPortalPageState.cellId = groupCells[0].id;
         } else {
           cellPortalPageState.cellId = "";
         }
@@ -25466,7 +25437,7 @@ document.addEventListener("change", (event) => {
         if (canAccessCell(activeUser?.id, val)) {
           cellPortalPageState.cellId = val;
         }
-        const cellObj = uniqueCells.find((c) => String(c.id) === String(val));
+        const cellObj = getCellsForGroup("", activeUser?.church_id).find((c) => String(c.id) === String(val));
         if (cellObj && (cellObj.group_id || cellObj.cell_group_id)) {
           cellPortalPageState.cellGroupId = cellObj.group_id || cellObj.cell_group_id;
         }

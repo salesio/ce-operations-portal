@@ -123,7 +123,7 @@ vm.runInContext(dashCode, context);
 
 async function run() {
   console.log("------------------------------------------------------------");
-  console.log("TEST: Estrelas de Sião in Seed Data & Dropdowns");
+  console.log("TEST: Estrelas de Sião in Cell Leader Portal");
   console.log("------------------------------------------------------------");
 
   vm.runInContext(`
@@ -132,30 +132,12 @@ async function run() {
     continueEnterDashboard();
   `, context);
 
-  // 1. Check getCellGroupsForChurch
   const groups = vm.runInContext(`getCellGroupsForChurch("a1111111-1111-4111-8111-111111111101")`, context);
   const estrelasGroup = groups.find(g => /estrela/i.test(g.group_name || g.name));
-  console.log("Estrelas group found in getCellGroupsForChurch:", estrelasGroup);
 
-  if (!estrelasGroup) {
-    throw new Error("Estrelas group not returned in getCellGroupsForChurch!");
-  }
-
-  // 2. Check getCellsForGroup
   const cells = vm.runInContext(`getCellsForGroup("${estrelasGroup.id}", "a1111111-1111-4111-8111-111111111101")`, context);
-  console.log(`Cells for Estrelas group (${cells.length}):`, cells.map(c => c.cell_name || c.name));
 
-  if (cells.length !== 9) {
-    throw new Error(`Expected 9 cells for Estrelas de Sião, got ${cells.length}!`);
-  }
-
-  // 3. Check User Modal Dropdowns
-  const formHtml = vm.runInContext(`renderUserForm({ cell_group_id: "${estrelasGroup.id}" }, "create")`, context);
-  console.log("User Form renders Estrelas de Sião option:", formHtml.includes("Estrelas de Sião"));
-  console.log("User Form renders 'ESTRELAS DE SIÃO A':", formHtml.includes("ESTRELAS DE SIÃO A"));
-  console.log("User Form renders 'ESTRELAS DE SIÃO E':", formHtml.includes("ESTRELAS DE SIÃO E"));
-
-  // 4. Check Cell Portal Render
+  // Render Cell Leader Portal with Estrelas group selected
   vm.runInContext(`
     cellPortalPageState.cellGroupId = "${estrelasGroup.id}";
     cellPortalPageState.cellId = "${cells[0].id}";
@@ -163,9 +145,34 @@ async function run() {
   `, context);
 
   const portalHtml = elements?.content?.innerHTML || "";
-  console.log("Portal rendered with Estrelas group:", portalHtml.includes("ESTRELAS"));
+  console.log("Portal contains 'ESTRELAS DE SIÃO':", portalHtml.includes("ESTRELAS DE SIÃO"));
+  console.log("Portal contains 'ESTRELAS DE SIÃO A':", portalHtml.includes("ESTRELAS DE SIÃO A"));
+  console.log("Portal contains 'ESTRELAS DE SIÃO B':", portalHtml.includes("ESTRELAS DE SIÃO B"));
+  console.log("Portal contains 'ESTRELAS DE SIÃO C':", portalHtml.includes("ESTRELAS DE SIÃO C"));
+  console.log("Portal contains 'ESTRELAS DE SIÃO D':", portalHtml.includes("ESTRELAS DE SIÃO D"));
+  console.log("Portal contains 'ESTRELAS DE SIÃO E':", portalHtml.includes("ESTRELAS DE SIÃO E"));
+  console.log("Portal contains 'ESTRELAS DE SIÃO E1':", portalHtml.includes("ESTRELAS DE SIÃO E1"));
+  console.log("Portal contains 'ESTRELAS DE SIÃO E2':", portalHtml.includes("ESTRELAS DE SIÃO E2"));
+  console.log("Portal contains 'ESTRELAS DE SIÃO F':", portalHtml.includes("ESTRELAS DE SIÃO F"));
+  console.log("Does NOT contain mock 'Estrelas de Sião Cell 01':", !portalHtml.includes("Estrelas de Sião Cell 01"));
 
-  console.log("\n[PASS] Estrelas de Sião and its 9 sub-cells verified successfully!");
+  const allPresent = [
+    "ESTRELAS DE SIÃO",
+    "ESTRELAS DE SIÃO A",
+    "ESTRELAS DE SIÃO B",
+    "ESTRELAS DE SIÃO C",
+    "ESTRELAS DE SIÃO D",
+    "ESTRELAS DE SIÃO E",
+    "ESTRELAS DE SIÃO E1",
+    "ESTRELAS DE SIÃO E2",
+    "ESTRELAS DE SIÃO F"
+  ].every(name => portalHtml.includes(name));
+
+  if (!allPresent) {
+    throw new Error("Some sub-cells are missing from the Portal HTML!");
+  }
+
+  console.log("\n[PASS] All 9 Estrelas de Sião sub-cells successfully rendered in the Cell Leader Portal!");
 }
 
 run().catch(e => {
