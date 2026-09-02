@@ -108,6 +108,16 @@ const TEXT = {
     cellMinistry: "Ministério de Células",
     sacraments: "Sacramentos",
     programs: "Programas",
+    ministryOutreach: "Programas & Extensão do Ministério",
+    ministryOutreachSubtitle: "Gestão integrada de Programas & Eventos, Ministério Prisional e Materiais do Ministério (Supervisão: Ir. Janet Marquele).",
+    programsSubtitle: "Planeamento e acompanhamento de conferências, eventos e programas nacionais e globais.",
+    activePrograms: "Programas Activos",
+    inPlanning: "Em Planeamento",
+    nationalGlobalEvents: "Conferências & Eventos Globais",
+    completedPrograms: "Programas Concluídos",
+    programType: "Tipo de Programa",
+    ownerOrCoordinator: "Responsável / Coordenação",
+    startDate: "Data de Início",
     partnership: "Parcerias",
     media: "Mídia",
     usersRoles: "Utilizadores e Funções",
@@ -822,6 +832,16 @@ const TEXT = {
     cellMinistry: "Cell Ministry",
     sacraments: "Sacraments",
     programs: "Programs",
+    ministryOutreach: "Programs & Ministry Outreach",
+    ministryOutreachSubtitle: "Integrated management of Programs & Events, Prison Ministry, and Ministry Materials (Supervision: Sis. Janet Marquele).",
+    programsSubtitle: "Planning and tracking of conferences, national and global programs and events.",
+    activePrograms: "Active Programs",
+    inPlanning: "In Planning",
+    nationalGlobalEvents: "Global & National Conferences",
+    completedPrograms: "Completed Programs",
+    programType: "Program Type",
+    ownerOrCoordinator: "Coordinator / Owner",
+    startDate: "Start Date",
     partnership: "Partnerships",
     media: "Media",
     usersRoles: "Users & Roles",
@@ -3115,10 +3135,24 @@ const VENUE_TAB_ROUTES = new Set([
   "venueInventorySpaces", "venueInventoryChecklist", "venueInventoryReports"
 ]);
 
+const OUTREACH_NAV = {
+  parentKey: "ministryOutreach",
+  label: "ministryOutreach",
+  icon: "bi-collection-play",
+  routes: [
+    ["programs", "bi-calendar-event", "programs"],
+    ["cellPrison", "bi-shield-lock", "prisonMinistry"],
+    ["cellMaterials", "bi-journal-richtext", "ministryMaterials"]
+  ]
+};
+
+const OUTREACH_TAB_ROUTES = new Set(OUTREACH_NAV.routes.map(([route]) => route));
+
 const TAB_PARALLAX_ORDER = {
   cell: CELL_NAV.areas.flatMap((area) => area.routes.map(([route]) => route)),
   fevo: ["fevo", "fevoConfigRoute", "fevoFollowUpRoute", "fevoEvangelismRoute", "fevoVisitationRoute", "fevoPrayerRoute", "fevoNoReportsRoute", "fevoWeeklyReportsRoute", "fevoAnalysisRoute"],
-  venue: ["venueInventory", "venueInventoryGeneral", "venueInventoryAcquisitions", "venueInventoryStaff", "venueInventoryMaintenance", "venueInventoryMovements", "venueInventorySpaces", "venueInventoryChecklist", "venueInventoryReports"]
+  venue: ["venueInventory", "venueInventoryGeneral", "venueInventoryAcquisitions", "venueInventoryStaff", "venueInventoryMaintenance", "venueInventoryMovements", "venueInventorySpaces", "venueInventoryChecklist", "venueInventoryReports"],
+  outreach: ["programs", "cellPrison", "cellMaterials"]
 };
 
 let tabParallaxState = { family: null, index: -1 };
@@ -3127,6 +3161,7 @@ function tabParallaxFamily(route) {
   if (CELL_TAB_ROUTES.has(route)) return "cell";
   if (FEVO_TAB_ROUTES.has(route)) return "fevo";
   if (VENUE_TAB_ROUTES.has(route)) return "venue";
+  if (OUTREACH_TAB_ROUTES.has(route)) return "outreach";
   return null;
 }
 
@@ -3185,15 +3220,14 @@ function triggerScrollTabParallax(targetId) {
 }
 
 function isModuleTabRoute(route) {
-  return CELL_TAB_ROUTES.has(route) || FEVO_TAB_ROUTES.has(route) || VENUE_TAB_ROUTES.has(route);
+  return CELL_TAB_ROUTES.has(route) || FEVO_TAB_ROUTES.has(route) || VENUE_TAB_ROUTES.has(route) || OUTREACH_TAB_ROUTES.has(route);
 }
 
 const NAV_GROUPS = [
   { key: "main", items: [["dashboard", "bi-speedometer2", "dashboard"], ["churches", "bi-building", "churches"], ["members", "bi-people", "members"], ["reports", "bi-bar-chart-line", "reports"]] },
   { key: "pastoralCare", items: [["firstTimers", "bi-person-heart", "firstTimers"], ["followUp", "bi-telephone-outbound", "followUp"], ["foundation", "bi-mortarboard", "foundationSchool"], ["sacraments", "bi-droplet", "sacraments"], ["counseling", "bi-chat-heart", "counseling"]] },
-  // Order: Finanças → Parcerias → … (Loveworld SAT is a partnership arm, not a department)
-  // Order: Células (parent nav separate) → F.E.V.O → Finanças → Parcerias → Programas → Mídia → …
-  { key: "departments", items: [["fevo", "bi-compass", "fevo"], ["finance", "bi-cash-coin", "finance"], ["partnership", "bi-stars", "partnership"], ["programs", "bi-calendar-event", "programs"], ["media", "bi-camera-reels", "media"], ["requisitions", "bi-clipboard-check", "requisitions"], ["venueInventory", "bi-box-seam", "venueInventoryShort"], ["cellPrison", "bi-shield-lock", "prisonMinistry"], ["cellMaterials", "bi-journal-richtext", "ministryMaterials"]] },
+  // Order: Células (subnav) → F.E.V.O → Finanças → Parcerias → Mídia → Requisições → Inventário → Programas & Extensão (subnav)
+  { key: "departments", items: [["fevo", "bi-compass", "fevo"], ["finance", "bi-cash-coin", "finance"], ["partnership", "bi-stars", "partnership"], ["media", "bi-camera-reels", "media"], ["requisitions", "bi-clipboard-check", "requisitions"], ["venueInventory", "bi-box-seam", "venueInventoryShort"]] },
   { key: "admin", items: [["staffHr", "bi-people-fill", "staffHr"], ["users", "bi-person-lock", "usersRoles"], ["access", "bi-shield-lock", "accessControl"], ["settings", "bi-gear", "settings"], ["audit", "bi-journal-check", "auditLogs"]] }
 ];
 
@@ -7746,6 +7780,27 @@ function moduleScrollTabs(items, activeIndex = 0) {
   return moduleTabsNav(buttons);
 }
 
+function outreachModuleTabs(currentRoute) {
+  const tabs = [
+    ["programs", L("programs"), "bi-calendar-event"],
+    ["cellPrison", L("prisonMinistry"), "bi-shield-lock"],
+    ["cellMaterials", L("ministryMaterials"), "bi-journal-richtext"]
+  ];
+  const workspaceRoutes = roleWorkspaceRoutes();
+  const buttons = tabs.map(([route, label, icon]) => {
+    if (workspaceRoutes && !workspaceRoutes.includes(route)) return "";
+    const nav = resolveRouteAccess(route);
+    if (!nav.visible) return "";
+    return moduleTabButton(`<i class="bi ${icon} me-1" aria-hidden="true"></i>${label}`, {
+      active: currentRoute === route,
+      attrs: `data-route="${route}"`,
+      disabled: nav.locked,
+      tooltip: nav.locked ? L("navLockedTooltip") : label
+    });
+  }).filter(Boolean).join("");
+  return moduleTabsNav(buttons, "outreach-module-tabs mb-3");
+}
+
 function financeModuleTabs() {
   const tabs = [
     ["overview", L("financeTabOverview")],
@@ -9626,6 +9681,38 @@ function renderCellSidebarNav() {
     </div>`;
 }
 
+function renderOutreachSidebarNav() {
+  const workspaceRoutes = roleWorkspaceRoutes();
+  const parentExpanded = isSidebarGroupExpanded(OUTREACH_NAV.parentKey);
+  const parentActive = OUTREACH_TAB_ROUTES.has(activeRoute);
+  const visibleRoutes = OUTREACH_NAV.routes.filter(([route]) => {
+    if (workspaceRoutes && !workspaceRoutes.includes(route)) return false;
+    const nav = resolveRouteAccess(route);
+    return nav.visible;
+  });
+  if (!visibleRoutes.length) return "";
+  return `
+    <div class="nav-cell-branch nav-outreach-branch ${parentExpanded ? "is-expanded" : ""} ${parentActive ? "has-active" : ""}" data-nav-group="${OUTREACH_NAV.parentKey}">
+      <button type="button" class="nav-cell-parent nav-outreach-parent" aria-expanded="${parentExpanded}" aria-label="${L("navGroupToggle")}: ${L(OUTREACH_NAV.label)}">
+        <i class="bi ${OUTREACH_NAV.icon}" aria-hidden="true"></i>
+        <span>${L(OUTREACH_NAV.label)}</span>
+        <i class="bi bi-chevron-down nav-cell-chevron" aria-hidden="true"></i>
+      </button>
+      <div class="nav-cell-body">
+        <div class="nav-cell-body-inner">
+          ${visibleRoutes.map(([route, icon, label]) => {
+            const nav = resolveRouteAccess(route);
+            return `
+            <button type="button" class="nav-cell-item nav-outreach-item ${activeRoute === route ? "active" : ""} ${nav.locked ? "is-locked" : ""}" ${nav.locked ? `data-locked-route="${route}" aria-disabled="true"` : `data-route="${route}" onclick="window.setRoute && window.setRoute('${route}'); return false;"`} title="${nav.locked ? L("navLockedTooltip") : L(label)}">
+              <i class="bi ${sidebarIcon(icon, route)} me-2" aria-hidden="true"></i>
+              <span>${L(label)}</span>${nav.locked ? `<i class="bi bi-lock-fill nav-lock-icon" aria-hidden="true"></i>` : ""}
+            </button>
+          `; }).join("")}
+        </div>
+      </div>
+    </div>`;
+}
+
 function cellModuleHeader(route, { modalType = null } = {}) {
   return moduleNavShell("cellLeadership", {
     title: cellRouteLabel(route),
@@ -9672,12 +9759,13 @@ function renderShell() {
     const items = group.items.map(([route, icon, label]) => ({ route, icon: sidebarIcon(icon, route), label, nav: resolveRouteAccess(route) }))
       .filter((item) => (!workspaceRoutes || workspaceRoutes.includes(item.route)) && item.nav.visible && (item.route !== "venueInventory" || canViewVenueModule()));
     const cellNav = group.key === "departments" && (!workspaceRoutes || workspaceRoutes.some((r) => r.startsWith("cell"))) ? renderCellSidebarNav() : "";
+    const outreachNav = group.key === "departments" && (!workspaceRoutes || workspaceRoutes.some((r) => OUTREACH_TAB_ROUTES.has(r))) ? renderOutreachSidebarNav() : "";
     const navItems = items.map(({ route, icon, label, nav }) => `
       <button type="button" class="nav-item-btn ${nav.locked ? "is-locked" : ""}" ${nav.locked ? `data-locked-route="${route}" aria-disabled="true"` : `data-route="${route}" onclick="window.setRoute && window.setRoute('${route}'); return false;"`} title="${nav.locked ? L("navLockedTooltip") : L(label)}">
         <i class="bi ${sidebarIcon(icon, route)}"></i><span>${L(label)}</span>${nav.locked ? `<i class="bi bi-lock-fill nav-lock-icon" aria-hidden="true"></i>` : ""}
       </button>
     `).join("");
-    if (!navItems && !cellNav) return "";
+    if (!navItems && !cellNav && !outreachNav) return "";
     const expanded = isSidebarGroupExpanded(group.key);
     return `
     <div class="nav-group ${expanded ? "is-expanded" : ""}" data-nav-group="${group.key}">
@@ -9689,6 +9777,7 @@ function renderShell() {
         <div class="nav-group-body-inner">
           ${cellNav}
           ${navItems}
+          ${outreachNav}
         </div>
       </div>
     </div>`;
@@ -9834,6 +9923,7 @@ function setRoute(route) {
     cellLeadersRoute: ["departments", "cellLeaders"],
     cellFinalValidation: ["departments", "finalValidation"],
     cellConsolidation: ["departments", "consolidation"],
+    programs: ["departments", "programs"],
     cellPrison: ["departments", "prisonMinistry"],
     cellMaterials: ["departments", "ministryMaterials"],
     fevoConfigRoute: ["departments", "weeklyConfiguration"],
@@ -9872,6 +9962,19 @@ function setRoute(route) {
     const deptGroup = document.querySelector('[data-nav-group="departments"]');
     if (deptGroup && !deptGroup.classList.contains("is-expanded")) {
       deptGroup.classList.add("is-expanded");
+    }
+  }
+  if (OUTREACH_TAB_ROUTES.has(activeRoute)) {
+    sidebarGroupState[OUTREACH_NAV.parentKey] = true;
+    sidebarGroupState.departments = true;
+    localStorage.setItem(SIDEBAR_GROUPS_KEY, JSON.stringify(sidebarGroupState));
+    const deptGroup = document.querySelector('[data-nav-group="departments"]');
+    if (deptGroup && !deptGroup.classList.contains("is-expanded")) {
+      deptGroup.classList.add("is-expanded");
+    }
+    const outreachGroup = document.querySelector(`[data-nav-group="${OUTREACH_NAV.parentKey}"]`);
+    if (outreachGroup && !outreachGroup.classList.contains("is-expanded")) {
+      outreachGroup.classList.add("is-expanded");
     }
   }
   const renderers = {
@@ -9924,7 +10027,7 @@ function setRoute(route) {
     venueInventoryChecklist: () => renderVenueInventory("checklist"),
     venueInventoryReports: () => renderVenueInventory("reports"),
     sacraments: renderSacraments,
-    programs: () => renderSimple("programs", L("programs"), state.programs),
+    programs: renderPrograms,
     partnership: () => (typeof renderPartnerships === "function" ? renderPartnerships() : renderSimple("partnership", L("partnership"), state.partnership)),
     media: renderMedia,
     requisitions: renderRequisitions,
@@ -9943,7 +10046,7 @@ function setRoute(route) {
   const memberDependentRoutes = [
     "cellMembers", "cellGroups", "cellCellsList", "cellMinistryOverview",
     "counseling", "sacraments", "foundation", "fevo", "staffHr",
-    "cellPrison", "cellMaterials"
+    "cellPrison", "cellMaterials", "programs"
   ];
   if (memberDependentRoutes.some((r) => activeRoute === r || String(activeRoute || "").startsWith(r))) {
     if (!state.members || !state.members.length) {
@@ -18989,6 +19092,53 @@ function backendActions(type, id, extra = []) {
   ]);
 }
 
+function renderPrograms() {
+  const allPrograms = scoped(state.programs || []);
+  const scheduledCount = allPrograms.filter((p) => ["Scheduled", "Agendado", "Em Curso", "In Progress"].includes(p.status)).length;
+  const planningCount = allPrograms.filter((p) => ["Planning", "Planeamento", "Report Pending", "Pendente"].includes(p.status)).length;
+  const globalCount = allPrograms.filter((p) => ["National", "Global Event", "Global", "Nacional"].includes(p.category)).length;
+  const completedCount = allPrograms.filter((p) => ["Completed", "Concluído", "Approved", "Aprovado"].includes(p.status)).length;
+
+  setPageContent(`
+    ${outreachModuleTabs("programs")}
+    ${moduleNavShell("programs", {
+      title: L("programs"),
+      subtitle: L("programsSubtitle"),
+      modalType: "program",
+      icon: "bi-calendar-event"
+    })}
+    <div class="row g-3 mb-4">
+      ${metric("bi-calendar-check", L("activePrograms"), scheduledCount, L("scheduled") || "Agendados")}
+      ${metric("bi-clock-history", L("inPlanning"), planningCount, L("inReview") || "Planeamento")}
+      ${metric("bi-globe", L("nationalGlobalEvents"), globalCount, "Global / Nacional")}
+      ${metric("bi-check2-all", L("completedPrograms"), completedCount, L("completed") || "Concluídos")}
+    </div>
+    <div class="row g-4">
+      <div class="col-12">
+        <article class="panel glass-panel">
+          <div class="panel-head">
+            <h3 class="panel-title"><i class="bi bi-calendar-event me-2"></i>${L("programs")}</h3>
+            <span class="badge bg-ce-blue">${allPrograms.length} ${allPrograms.length === 1 ? "programa" : "programas"}</span>
+          </div>
+          ${dataTable(
+            [L("name"), L("church"), L("category"), L("ownerOrCoordinator"), L("programType"), L("startDate"), L("status"), L("actions")],
+            allPrograms.map((r) => [
+              r.name || "-",
+              churchName(r.church_id),
+              r.category || "-",
+              r.owner || r.coordenador || "Sister Janet Marquele",
+              r.program_type || r.tipo || "Conferência / Evento",
+              r.start_date || r.data || "-",
+              badge(r.status || "Scheduled"),
+              actionButtons([["view", "program", r.id, L("view")], ["edit", "program", r.id, L("edit")]])
+            ])
+          )}
+        </article>
+      </div>
+    </div>
+  `);
+}
+
 function renderPrisonMinistry() {
   const prisons = scopedNested(state.prisonMinistry.prisons);
   const services = scopedNested(state.prisonMinistry.services);
@@ -19015,6 +19165,7 @@ function renderPrisonMinistry() {
   const reports = scopedNested(state.prisonMinistry.reports);
   const thisWeekServices = services.filter((service) => service.data >= "2026-07-06" && service.data <= "2026-07-12");
   setPageContent( `
+    ${outreachModuleTabs("cellPrison")}
     ${moduleNavShell("prisonMinistry", { title: L("prisonMinistry"), subtitle: L("prisonMinistrySubtitle"), modalType: "prisonService", icon: "bi-shield-lock" },
       moduleScrollTabs([
         [L("cellOverview"), "content"],
@@ -19261,6 +19412,7 @@ function renderMinistryMaterials() {
   const monthSales = sales.filter((item) => String(item.data || item.sale_date || "").startsWith(thisMonthIso));
   const recentSales = sales.length ? sales : [];
   setPageContent( `
+    ${outreachModuleTabs("cellMaterials")}
     ${moduleNavShell("ministryMaterials", { title: L("ministryMaterials"), subtitle: L("materialsSubtitle"), modalType: "materialSale", icon: "bi-journal-richtext" },
       moduleScrollTabs([
         [L("cellOverview"), "content"],
@@ -24620,7 +24772,8 @@ document.addEventListener("click", async (event) => {
   }
   const cellParentToggle = event.target.closest(".nav-cell-parent");
   if (cellParentToggle) {
-    toggleSidebarGroup(CELL_NAV.parentKey);
+    const key = cellParentToggle.closest("[data-nav-group]")?.dataset.navGroup || CELL_NAV.parentKey;
+    toggleSidebarGroup(key);
     return;
   }
   const cellAreaToggle = event.target.closest(".nav-cell-area-toggle");
