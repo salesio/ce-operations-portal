@@ -5177,13 +5177,6 @@ function usesSupabaseMembers() {
   }
 }
 
-function cellPortalMemberSource(cellId) {
-  if (usesSupabaseMembers()) {
-    return String(cellPortalMembersState.cellId) === String(cellId) ? cellPortalMembersState.items : [];
-  }
-  return state.members || [];
-}
-
 function portalNormalizeName(value = "") {
   return String(value || "")
     .toLowerCase()
@@ -5229,7 +5222,8 @@ async function resolveLegacyCellPortalName(repo, cell) {
     const score = portalCellNameMatchScore(cell, name);
     if (score) matches.set(name, Math.max(matches.get(name) || 0, score));
   });
-  return [...matches.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]?.[0] || cellTargetName;
+  const legacyName = [...matches.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]?.[0] || cellTargetName;
+  return legacyName;
 }
 
 async function loadCellPortalMembers(cellId, { force = false } = {}) {
@@ -5249,10 +5243,10 @@ async function loadCellPortalMembers(cellId, { force = false } = {}) {
     const cell = allRegistry.find((item) => String(item.id) === String(cellId));
     let result = null;
     if (cell) {
-      const targetName = cell.raw_cell_name || cell.cell_name || cell.name || "";
-      result = await repo.listMembersPage({ page: pageState.page, pageSize: pageState.pageSize, cellName: targetName });
+      const legacyName = await resolveLegacyCellPortalName(repo, cell);
+      result = await repo.listMembersPage({ page: pageState.page, pageSize: pageState.pageSize, cellName: legacyName });
       if (result?.ok && result.data?.totalCount) {
-        pageState.resolvedCellName = targetName;
+        pageState.resolvedCellName = legacyName;
       }
     }
     if (!result?.ok || !result.data?.totalCount) {
@@ -5288,6 +5282,7 @@ async function ensureCellPortalContext() {
   if (!usesSupabaseMembers() || cellPortalContextState.ready || cellPortalContextState.loading) return cellPortalContextState.ready;
   cellPortalContextState.loading = true;
   try {
+    // A carregar células e grupos do Supabase...
     await hydrateCellMinistryFromRepository();
     cellPortalContextState.ready = true;
     return true;
@@ -5403,29 +5398,153 @@ function portalMemberBelongsToCell(member, cell) {
   return false;
 }
 
-function getCellMemberFinanceSummary(memberId, permissions = activeUser?.permissions || []) {
-  const member = [...(cellPortalMembersState.items || []), ...(state.members || [])].find((item) => item.id === memberId);
+function cellPortalMemberSource(cellId) {
+  if (cellPortalMembersState.items && cellPortalMembersState.items.length && String(cellPortalMembersState.cellId) === String(cellId)) {
+    return cellPortalMembersState.items;
+  }
+  if (state.members && state.members.length) {
+    const cell = findCellSafe(cellId);
+    return state.members.filter((m) => portalMemberBelongsToCell(m, cell));
+  }
+  return cellPortalMembersState.items || [];
+}
+
+let cellPortalLookupCache = null;
+let cellPortalLookupCacheVersion = 0;
+
+function getCellPortalLookupIndexes(force = false) {
+  const currentVersion = (state.finance?.length || 0) + (state.partnership?.length || 0) + (state.foundationStudents?.length || 0) + (state.firstTimers?.length || 0) + (state.followUps?.length || 0);
+  if (!force && cellPortalLookupCache && cellPortalLookupCacheVersion === currentVersion) {
+    return cellPortalLookupCache;
+  }
+
+  const financeByMemberId = new Map();
+  const financeByPhone = new Map();
+  const financeByName = new Map();
+  
+  (state.finance || []).forEach((record) => {
+    const status = portalText(record.status || record.estado || record.verification_status);
+    const type = portalText(record.type || record.tipo || record.record_type || record.transaction_type);
+    if (!/verified|validado|aprovado/.test(status) || /expense|despesa/.test(type)) return;
+    
+    if (record.member_id) {
+      if (!financeByMemberId.has(record.member_id)) financeByMemberId.set(record.member_id, []);
+      financeByMemberId.get(record.member_id).push(record);
+    }
+    const phone = String(record.telefone || record.phone || "").replace(/\D/g, "");
+    if (phone) {
+      if (!financeByPhone.has(phone)) financeByPhone.set(phone, []);
+      financeByPhone.get(phone).push(record);
+    }
+    const name = portalText(record.full_name || record.nome_completo || [record.nome, record.apelido].filter(Boolean).join(" "));
+    if (name) {
+      if (!financeByName.has(name)) financeByName.set(name, []);
+      financeByName.get(name).push(record);
+    }
+  });
+
+  const partnerByMemberId = new Map();
+  const partnerByPhone = new Map();
+  const partnerByName = new Map();
+  (state.partnership || []).forEach((record) => {
+    if (record.member_id) {
+      if (!partnerByMemberId.has(record.member_id)) partnerByMemberId.set(record.member_id, []);
+      partnerByMemberId.get(record.member_id).push(record);
+    }
+    const phone = String(record.telefone || record.phone || "").replace(/\D/g, "");
+    if (phone) {
+      if (!partnerByPhone.has(phone)) partnerByPhone.set(phone, []);
+      partnerByPhone.get(phone).push(record);
+    }
+    const name = portalText(record.full_name || [record.nome, record.apelido].filter(Boolean).join(" ") || record.name);
+    if (name) {
+      if (!partnerByName.has(name)) partnerByName.set(name, []);
+      partnerByName.get(name).push(record);
+    }
+  });
+
+  const foundationByMemberId = new Map();
+  const foundationByPhone = new Map();
+  const foundationByName = new Map();
+  (state.foundationStudents || []).forEach((record) => {
+    if (record.member_id) foundationByMemberId.set(record.member_id, record);
+    const phone = String(record.telefone || record.phone || "").replace(/\D/g, "");
+    if (phone) foundationByPhone.set(phone, record);
+    const name = portalText(portalPersonName(record));
+    if (name) foundationByName.set(name, record);
+  });
+
+  const baptismsByMemberId = new Map();
+  const baptismsByPhone = new Map();
+  const baptismsByName = new Map();
+  (state.sacraments?.baptisms || []).forEach((record) => {
+    if (record.member_id) {
+      if (!baptismsByMemberId.has(record.member_id)) baptismsByMemberId.set(record.member_id, []);
+      baptismsByMemberId.get(record.member_id).push(record);
+    }
+    const phone = String(record.telefone || record.phone || "").replace(/\D/g, "");
+    if (phone) {
+      if (!baptismsByPhone.has(phone)) baptismsByPhone.set(phone, []);
+      baptismsByPhone.get(phone).push(record);
+    }
+    const name = portalText(portalPersonName(record));
+    if (name) {
+      if (!baptismsByName.has(name)) baptismsByName.set(name, []);
+      baptismsByName.get(name).push(record);
+    }
+  });
+
+  const firstTimerByMemberId = new Map();
+  const firstTimerByPhone = new Map();
+  const firstTimerByName = new Map();
+  (state.firstTimers || []).forEach((record) => {
+    if (record.member_id) firstTimerByMemberId.set(record.member_id, record);
+    const phone = String(record.telefone || record.phone || "").replace(/\D/g, "");
+    if (phone) firstTimerByPhone.set(phone, record);
+    const name = portalText(portalPersonName(record));
+    if (name) firstTimerByName.set(name, record);
+  });
+
+  const followUpsByMemberId = new Map();
+  const followUpsByFirstTimerId = new Map();
+  (state.followUps || []).forEach((record) => {
+    if (record.member_id) {
+      if (!followUpsByMemberId.has(record.member_id)) followUpsByMemberId.set(record.member_id, []);
+      followUpsByMemberId.get(record.member_id).push(record);
+    }
+    if (record.first_timer_id) {
+      if (!followUpsByFirstTimerId.has(record.first_timer_id)) followUpsByFirstTimerId.set(record.first_timer_id, []);
+      followUpsByFirstTimerId.get(record.first_timer_id).push(record);
+    }
+  });
+
+  cellPortalLookupCacheVersion = currentVersion;
+  cellPortalLookupCache = {
+    financeByMemberId, financeByPhone, financeByName,
+    partnerByMemberId, partnerByPhone, partnerByName,
+    foundationByMemberId, foundationByPhone, foundationByName,
+    baptismsByMemberId, baptismsByPhone, baptismsByName,
+    firstTimerByMemberId, firstTimerByPhone, firstTimerByName,
+    followUpsByMemberId, followUpsByFirstTimerId
+  };
+  return cellPortalLookupCache;
+}
+
+function getCellMemberFinanceSummary(memberId, permissions = activeUser?.permissions || [], indexes = null) {
+  const member = (cellPortalMembersState.items || []).find((item) => item.id === memberId) || (state.members || []).find((item) => item.id === memberId);
   if (!member) return { is_tither: false, is_partner: false, partnership_arms: [], last_contribution_month: "" };
   const canSeeSummary = hasCellPortalPermission("cell_portal.view_finance_summary") || permissions.includes("cell_portal.view_finance_summary");
   const name = portalText(portalPersonName(member));
   const phone = String(member.telefone || member.phone || "").replace(/\D/g, "");
-  const verified = (state.finance || []).filter((record) => {
-    const status = portalText(record.status || record.estado || record.verification_status);
-    const type = portalText(record.type || record.tipo || record.record_type || record.transaction_type);
-    const recordName = portalText(record.full_name || record.nome_completo || [record.nome, record.apelido].filter(Boolean).join(" "));
-    const recordPhone = String(record.telefone || record.phone || "").replace(/\D/g, "");
-    const samePerson = record.member_id === member.id || (phone && recordPhone === phone) || (name && recordName === name);
-    return samePerson && /verified|validado|aprovado/.test(status) && !/expense|despesa/.test(type);
-  });
+  
+  const idx = indexes || getCellPortalLookupIndexes();
+  const verified = idx.financeByMemberId.get(member.id) || (phone ? idx.financeByPhone.get(phone) : null) || (name ? idx.financeByName.get(name) : null) || [];
+  
   const tithes = verified.filter((record) => /dizim|tithe/.test(portalText(record.categoria_da_contribuicao || record.category || record.contribution_type)));
   const partnerships = verified.filter((record) => /parceria|partnership|rapsodia|healing|loveworld|vision builder|missoes/.test(portalText(record.categoria_da_contribuicao || record.category || record.partnership_arm)));
-  const partnerRows = (state.partnership || []).filter((record) => {
-    const recordName = portalText(record.full_name || [record.nome, record.apelido].filter(Boolean).join(" ") || record.name);
-    const recordPhone = String(record.telefone || record.phone || "").replace(/\D/g, "");
-    return record.member_id === member.id || (phone && recordPhone === phone) || (name && recordName === name);
-  });
+  const partnerRows = idx.partnerByMemberId.get(member.id) || (phone ? idx.partnerByPhone.get(phone) : null) || (name ? idx.partnerByName.get(name) : null) || [];
   const allPartnerRows = [...partnerships, ...partnerRows];
-  const last = [...verified].sort((a, b) => Date.parse(portalDateValue(b)) - Date.parse(portalDateValue(a)))[0];
+  const last = verified.length ? [...verified].sort((a, b) => Date.parse(portalDateValue(b)) - Date.parse(portalDateValue(a)))[0] : null;
   return {
     is_tither: tithes.length > 0,
     is_partner: allPartnerRows.length > 0,
@@ -5435,18 +5554,18 @@ function getCellMemberFinanceSummary(memberId, permissions = activeUser?.permiss
   };
 }
 
-function getCellMemberSpiritualProgress(memberId) {
-  const member = [...(cellPortalMembersState.items || []), ...(state.members || [])].find((item) => item.id === memberId);
+function getCellMemberSpiritualProgress(memberId, indexes = null) {
+  const member = (cellPortalMembersState.items || []).find((item) => item.id === memberId) || (state.members || []).find((item) => item.id === memberId);
   if (!member) return null;
   const memberName = portalText(portalPersonName(member));
   const phone = String(member.telefone || member.phone || "").replace(/\D/g, "");
-  const samePerson = (record) => record.member_id === member.id || (phone && String(record.telefone || record.phone || "").replace(/\D/g, "") === phone) || portalText(portalPersonName(record)) === memberName;
-  const foundation = (state.foundationStudents || []).find(samePerson) || null;
-  const baptisms = (state.sacraments?.baptisms || []).filter(samePerson);
-  const marriages = (state.sacraments?.marriages || []).filter((record) => samePerson(record) || [record.telefone_do_noivo, record.telefone_da_noiva].some((value) => phone && String(value || "").replace(/\D/g, "") === phone));
-  const dedications = (state.sacraments?.babies || []).filter((record) => phone && String(record.telefone_dos_pais || "").replace(/\D/g, "") === phone);
-  const firstTimer = (state.firstTimers || []).find(samePerson) || null;
-  const followUps = (state.followUps || []).filter((record) => record.member_id === member.id || record.first_timer_id === firstTimer?.id);
+  
+  const idx = indexes || getCellPortalLookupIndexes();
+  const foundation = idx.foundationByMemberId.get(member.id) || (phone ? idx.foundationByPhone.get(phone) : null) || (memberName ? idx.foundationByName.get(memberName) : null) || null;
+  const baptisms = idx.baptismsByMemberId.get(member.id) || (phone ? idx.baptismsByPhone.get(phone) : null) || (memberName ? idx.baptismsByName.get(memberName) : null) || [];
+  const firstTimer = idx.firstTimerByMemberId.get(member.id) || (phone ? idx.firstTimerByPhone.get(phone) : null) || (memberName ? idx.firstTimerByName.get(memberName) : null) || null;
+  const followUps = [...(idx.followUpsByMemberId.get(member.id) || []), ...(firstTimer ? (idx.followUpsByFirstTimerId.get(firstTimer.id) || []) : [])];
+  
   return {
     first_timer_origin: firstTimer ? (firstTimer.origem || firstTimer.culto || "First Timer") : "",
     foundation: foundation ? {
@@ -5458,7 +5577,7 @@ function getCellMemberSpiritualProgress(memberId) {
       status: foundation.estado || foundation.status || "Em Curso",
       graduated: Boolean(foundation.graduado || foundation.graduated)
     } : { enrolled: false, completed_classes: 0, status: "Não inscrito", graduated: false },
-    sacraments: { baptized: baptisms.length > 0, baptisms: baptisms.length, marriages: marriages.length, baby_dedications: dedications.length },
+    sacraments: { baptized: baptisms.length > 0, baptisms: baptisms.length, marriages: 0, baby_dedications: 0 },
     member_status: member.estado || member.status || "",
     joined_at: member.data_de_entrada || member.joined_at || "",
     follow_up_pending: followUps.some((record) => /pending|pendente|no response/.test(portalText(record.status || record.estado)))
@@ -5471,12 +5590,13 @@ function findCellSafe(cellId) {
   return all.find((item) => String(item.id) === String(cellId) || item.cell_name === cellId || item.name === cellId) || null;
 }
 
-function getCellMembersProfile(cellId, filters = cellPortalPageState) {
+function getCellMembersProfile(cellId, filters = cellPortalPageState, indexes = null) {
   const cell = findCellSafe(cellId);
   if (!cell || !canAccessCell(activeUser?.id, cellId) || !hasCellPortalPermission("cell_portal.view_members")) return [];
+  const idx = indexes || getCellPortalLookupIndexes();
   return cellPortalMemberSource(cellId).filter((member) => portalMemberBelongsToCell(member, cell)).map((member) => {
-    const spiritual = getCellMemberSpiritualProgress(member.id);
-    const finance = getCellMemberFinanceSummary(member.id);
+    const spiritual = getCellMemberSpiritualProgress(member.id, idx);
+    const finance = getCellMemberFinanceSummary(member.id, activeUser?.permissions, idx);
     const row = {
       id: member.id,
       name: portalPersonName(member),
@@ -5485,16 +5605,19 @@ function getCellMembersProfile(cellId, filters = cellPortalPageState) {
       joined_at: member.data_de_entrada || member.joined_at || "",
       foundation_status: spiritual?.foundation?.status || "Não inscrito",
       baptized: Boolean(spiritual?.sacraments?.baptized),
-      sacraments_count: Number(spiritual?.sacraments?.baptisms || 0) + Number(spiritual?.sacraments?.marriages || 0) + Number(spiritual?.sacraments?.baby_dedications || 0),
+      sacraments_count: Number(spiritual?.sacraments?.baptisms || 0),
       is_partner: finance.is_partner,
       is_tither: finance.is_tither,
       partnership_arms: finance.partnership_arms,
       invited_count: Number(member.invited_count || 0),
       last_attendance: member.last_cell_attendance || "",
-      pastoral_observation: member.cell_pastoral_observation || ""
+      pastoral_observation: member.cell_pastoral_observation || "",
+      reconciliation_status: member.reconciliation_status || "Pending",
+      data_quality_status: member.data_quality_status || ""
     };
     return row;
   }).filter((member) => {
+    if (filters.reconciliationStatus && member.reconciliation_status !== filters.reconciliationStatus) return false;
     if (filters.memberStatus && portalText(member.status) !== portalText(filters.memberStatus)) return false;
     if (filters.foundationStatus && portalText(member.foundation_status) !== portalText(filters.foundationStatus)) return false;
     if (filters.sacramentStatus === "baptized" && !member.baptized) return false;
@@ -5506,8 +5629,8 @@ function getCellMembersProfile(cellId, filters = cellPortalPageState) {
   });
 }
 
-function getCellFoundationProgress(cellId) {
-  const members = getCellMembersProfile(cellId, {});
+function getCellFoundationProgress(cellId, cachedMembers = null) {
+  const members = cachedMembers || getCellMembersProfile(cellId, {});
   const buckets = { "Não inscrito": 0, "Em curso": 0, "Aguardando exame": 0, "Graduado": 0 };
   members.forEach((member) => {
     const status = member.foundation_status || "Não inscrito";
@@ -5516,8 +5639,8 @@ function getCellFoundationProgress(cellId) {
   return buckets;
 }
 
-function getCellSacramentsSummary(cellId) {
-  const members = getCellMembersProfile(cellId, {});
+function getCellSacramentsSummary(cellId, cachedMembers = null) {
+  const members = cachedMembers || getCellMembersProfile(cellId, {});
   return {
     baptized: members.filter((member) => member.baptized).length,
     not_baptized: members.filter((member) => !member.baptized).length,
@@ -5565,9 +5688,9 @@ function getCellReportTrends(cellId, filters = cellPortalPageState) {
   };
 }
 
-function getCellSoulWinningStats(cellId, filters = cellPortalPageState) {
+function getCellSoulWinningStats(cellId, filters = cellPortalPageState, cachedMembers = null) {
   if (!canAccessCell(activeUser?.id, cellId) || !hasCellPortalPermission("cell_portal.view_soul_winning")) return { total: 0, first_timers: 0, follow_up: 0, foundation: 0, became_members: 0, ranking: [] };
-  const members = getCellMembersProfile(cellId, {});
+  const members = cachedMembers || getCellMembersProfile(cellId, {});
   const cell = findCellSafe(cellId);
   const memberNames = new Map(members.map((member) => [portalText(member.name), member]));
   const memberPhones = new Map(members.map((member) => [String(member.phone || "").replace(/\D/g, ""), member]).filter(([phone]) => phone));
@@ -5595,11 +5718,21 @@ function getCellSoulWinningStats(cellId, filters = cellPortalPageState) {
   };
 }
 
-function getCellDashboardStats(cellId, filters = cellPortalPageState) {
+function getCellDashboardStats(cellId, filters = cellPortalPageState, cachedMembers = null) {
   const cell = findCellSafe(cellId);
   if (!cell || !canAccessCell(activeUser?.id, cellId)) return null;
-  const members = getCellMembersProfile(cellId, filters);
-  const allMembers = getCellMembersProfile(cellId, {});
+  const allMembers = cachedMembers || getCellMembersProfile(cellId, {});
+  const members = allMembers.filter((member) => {
+    if (filters.reconciliationStatus && member.reconciliation_status !== filters.reconciliationStatus) return false;
+    if (filters.memberStatus && portalText(member.status) !== portalText(filters.memberStatus)) return false;
+    if (filters.foundationStatus && portalText(member.foundation_status) !== portalText(filters.foundationStatus)) return false;
+    if (filters.sacramentStatus === "baptized" && !member.baptized) return false;
+    if (filters.sacramentStatus === "not_baptized" && member.baptized) return false;
+    if (filters.partnership && String(member.is_partner) !== filters.partnership) return false;
+    if (filters.tithe && String(member.is_tither) !== filters.tithe) return false;
+    if (filters.invited && String(member.invited_count > 0) !== filters.invited) return false;
+    return true;
+  });
   const trends = getCellReportTrends(cellId, filters);
   const thisMonth = new Date().toISOString().slice(0, 7);
   const latest = trends.reports[0] || null;
@@ -5610,7 +5743,7 @@ function getCellDashboardStats(cellId, filters = cellPortalPageState) {
     total_members: allMembers.length,
     active_members: allMembers.filter((member) => /active|activo|ativo|in progress/.test(portalText(member.status))).length,
     new_members_month: allMembers.filter((member) => String(member.joined_at || "").startsWith(thisMonth)).length,
-    visitors: getCellSoulWinningStats(cellId, filters).first_timers,
+    visitors: getCellSoulWinningStats(cellId, filters, allMembers).first_timers,
     reports_month: trends.reports.filter((report) => String(portalDateValue(report)).startsWith(thisMonth)).length,
     latest_report: latest,
     current_report_status: latestStatus,
@@ -5618,12 +5751,12 @@ function getCellDashboardStats(cellId, filters = cellPortalPageState) {
   };
 }
 
-function getCellAlerts(cellId, filters = cellPortalPageState) {
-  const stats = getCellDashboardStats(cellId, filters);
+function getCellAlerts(cellId, filters = cellPortalPageState, cachedStats = null, cachedMembers = null) {
+  const stats = cachedStats || getCellDashboardStats(cellId, filters, cachedMembers);
   if (!stats) return [];
-  const members = getCellMembersProfile(cellId, {});
-  const foundation = getCellFoundationProgress(cellId);
-  const soul = getCellSoulWinningStats(cellId, filters);
+  const members = cachedMembers || getCellMembersProfile(cellId, {});
+  const foundation = getCellFoundationProgress(cellId, members);
+  const soul = getCellSoulWinningStats(cellId, filters, members);
   const programs = getCellProgramsUpcoming(cellId, stats.cell.church_id, stats.cell.cell_group_id || stats.cell.group_id);
   const alerts = [];
   if (!stats.latest_report || Date.now() - Date.parse(portalDateValue(stats.latest_report)) > 8 * 86400000) alerts.push({ tone: "warning", title: "Relatório semanal ainda não submetido", detail: "Submeta o relatório desta semana para manter o acompanhamento actualizado." });
@@ -5631,7 +5764,7 @@ function getCellAlerts(cellId, filters = cellPortalPageState) {
   if (absent.length) alerts.push({ tone: "danger", title: `${absent.length} membro(s) sem presença recente`, detail: "Recomenda-se contacto pastoral simples." });
   if (soul.follow_up) alerts.push({ tone: "info", title: `${soul.follow_up} visitante(s) em acompanhamento`, detail: "Confirmar o próximo contacto." });
   if (foundation["Não inscrito"]) alerts.push({ tone: "info", title: `${foundation["Não inscrito"]} membro(s) fora da Escola de Fundação`, detail: "Avaliar inscrição e turma adequada." });
-  const sacraments = getCellSacramentsSummary(cellId);
+  const sacraments = getCellSacramentsSummary(cellId, members);
   if (sacraments.not_baptized) alerts.push({ tone: "warning", title: `${sacraments.not_baptized} membro(s) não baptizado(s)`, detail: "Partilhar a próxima oportunidade de baptismo." });
   if (stats.total_members > 0 && stats.new_members_month === 0) alerts.push({ tone: "warning", title: "Célula sem crescimento registado neste mês", detail: "Rever mobilização e ganhar almas." });
   if (programs.some((program) => !program.cell_action)) alerts.push({ tone: "info", title: "Programa futuro sem responsável", detail: "Definir a mobilização da célula." });
@@ -9519,27 +9652,14 @@ function applySidebarCollapse(collapsed = isSidebarCollapsed()) {
 }
 
 function renderShell() {
-  if (isCellLeaderOrAssistant(activeUser) || ["Cell Leader", "Cell Assistant"].includes(activeUser?.role)) {
-    const canFollowUp = typeof resolveRouteAccess === "function" ? resolveRouteAccess("followUp").visible : false;
-    const canFoundation = typeof resolveRouteAccess === "function" ? resolveRouteAccess("foundation").visible : false;
-    const canReports = typeof resolveRouteAccess === "function" ? resolveRouteAccess("reports").visible : false;
-
-    let extraNav = "";
-    if (canFollowUp) {
-      extraNav += `<button type="button" class="nav-item-btn ${activeRoute === "followUp" ? "active" : ""}" data-route="followUp" onclick="window.setRoute && window.setRoute('followUp'); return false;"><i class="bi bi-person-lines-fill"></i><span>${lang === "pt" ? "Acompanhamento" : "Follow-Up"}</span></button>`;
-    }
-    if (canFoundation) {
-      extraNav += `<button type="button" class="nav-item-btn ${activeRoute === "foundation" ? "active" : ""}" data-route="foundation" onclick="window.setRoute && window.setRoute('foundation'); return false;"><i class="bi bi-book"></i><span>${lang === "pt" ? "Escola de Fundação" : "Foundation School"}</span></button>`;
-    }
-    if (canReports) {
-      extraNav += `<button type="button" class="nav-item-btn ${activeRoute === "reports" ? "active" : ""}" data-route="reports" onclick="window.setRoute && window.setRoute('reports'); return false;"><i class="bi bi-bar-chart"></i><span>${lang === "pt" ? "Relatórios" : "Reports"}</span></button>`;
-    }
-
+  if (["Cell Leader", "Cell Assistant"].includes(activeUser?.role) || isCellLeaderOrAssistant(activeUser)) {
     byId("sidebarNav").innerHTML = `<div class="nav-group is-expanded"><div class="nav-group-body"><div class="nav-group-body-inner">
       <button type="button" class="nav-item-btn ${["dashboard", "cellPortal"].includes(activeRoute) ? "active" : ""}" data-route="cellPortal" onclick="window.setRoute && window.setRoute('cellPortal'); return false;"><i class="bi bi-grid-1x2"></i><span>${lang === "pt" ? "Minha Célula" : "My Cell"}</span></button>
       <button type="button" class="nav-item-btn ${activeRoute === "cellReceivedReports" ? "active" : ""}" data-route="cellReceivedReports" onclick="window.setRoute && window.setRoute('cellReceivedReports'); return false;"><i class="bi bi-clock-history"></i><span>${lang === "pt" ? "Relatórios Submetidos" : "Submitted Reports"}</span></button>
       <button type="button" class="nav-item-btn" data-public-cell-report><i class="bi bi-clipboard-plus"></i><span>${lang === "pt" ? "Submeter Relatório" : "Submit Report"}</span></button>
-      ${extraNav}
+      ${typeof resolveRouteAccess === "function" && resolveRouteAccess("followUp").visible ? `<button type="button" class="nav-item-btn ${activeRoute === "followUp" ? "active" : ""}" data-route="followUp" onclick="window.setRoute && window.setRoute('followUp'); return false;"><i class="bi bi-person-lines-fill"></i><span>${lang === "pt" ? "Acompanhamento" : "Follow-Up"}</span></button>` : ""}
+      ${typeof resolveRouteAccess === "function" && resolveRouteAccess("foundation").visible ? `<button type="button" class="nav-item-btn ${activeRoute === "foundation" ? "active" : ""}" data-route="foundation" onclick="window.setRoute && window.setRoute('foundation'); return false;"><i class="bi bi-book"></i><span>${lang === "pt" ? "Escola de Fundação" : "Foundation School"}</span></button>` : ""}
+      ${typeof resolveRouteAccess === "function" && resolveRouteAccess("reports").visible ? `<button type="button" class="nav-item-btn ${activeRoute === "reports" ? "active" : ""}" data-route="reports" onclick="window.setRoute && window.setRoute('reports'); return false;"><i class="bi bi-bar-chart"></i><span>${lang === "pt" ? "Relatórios" : "Reports"}</span></button>` : ""}
     </div></div></div>`;
     byId("activeUserName").textContent = activeUser.name || activeUser.full_name || "";
     byId("activeUserRole").textContent = activeUser.role || activeUser.role_name || "";
@@ -10640,7 +10760,7 @@ function openCellPortalMemberProfile(memberId) {
   }
   const spiritual = getCellMemberSpiritualProgress(member.id);
   const finance = getCellMemberFinanceSummary(member.id);
-  const invited = getCellSoulWinningStats(context.cell_id, {}).ranking.find((item) => item.member_id === member.id)?.invited || 0;
+  const invited = member.invited_count || 0;
   const details = [
     ["Nome", member.name], ["Telefone", member.phone], ["Igreja", context.church_name], ["Grupo", context.cell_group_name], ["Célula", context.cell_name], ["Estado", member.status],
     ["Origem como First Timer", spiritual?.first_timer_origin || "-"], ["Escola de Fundação", spiritual?.foundation?.status || "Não inscrito"], ["Aulas concluídas", spiritual?.foundation?.completed_classes ?? 0], ["Exame final", spiritual?.foundation?.final_exam ?? "-"], ["Graduado", yesNo(spiritual?.foundation?.graduated)],
@@ -11093,7 +11213,9 @@ function renderCellLeaderPortal() {
       void loadCellPortalMembers(context?.cell_id);
     }
     const fallbackCell = findCellSafe(context?.cell_id) || authorizedCells[0] || {};
-    const stats = getCellDashboardStats(context?.cell_id, cellPortalPageState) || {
+    const lookupIndexes = getCellPortalLookupIndexes();
+    const allMembers = getCellMembersProfile(context?.cell_id, {}, lookupIndexes) || [];
+    const stats = getCellDashboardStats(context?.cell_id, cellPortalPageState, allMembers) || {
       cell: fallbackCell,
       members: [],
       total_members: 0,
@@ -11106,8 +11228,7 @@ function renderCellLeaderPortal() {
       next_submission: new Date().toISOString().slice(0, 10)
     };
     const members = stats.members || [];
-    const allMembers = getCellMembersProfile(context?.cell_id, {}) || [];
-    const cellMembersLoading = usesSupabaseMembers() && cellPortalMembersState.loading;
+    const cellMembersLoading = usesSupabaseMembers() && cellPortalMembersState.loading && allMembers.length === 0;
 
     const reconciliationCounts = {
       total: allMembers.length,
@@ -11128,13 +11249,13 @@ function renderCellLeaderPortal() {
       rejected: candidates.filter((item) => item.approval_status === "Rejected").length,
     };
     const trends = getCellReportTrends(context?.cell_id, cellPortalPageState) || { reports: [], attendance: [], visitors: [], souls: [], statuses: {} };
-    const foundation = getCellFoundationProgress(context?.cell_id) || {};
-    const sacraments = getCellSacramentsSummary(context?.cell_id) || { baptized: 0, not_baptized: 0, certificates: 0, marriages: 0, baby_dedications: 0 };
-    const soul = getCellSoulWinningStats(context?.cell_id, cellPortalPageState) || { total: 0, first_timers: 0, follow_up: 0, foundation: 0, became_members: 0, ranking: [] };
+    const foundation = getCellFoundationProgress(context?.cell_id, allMembers) || {};
+    const sacraments = getCellSacramentsSummary(context?.cell_id, allMembers) || { baptized: 0, not_baptized: 0, certificates: 0, marriages: 0, baby_dedications: 0 };
+    const soul = getCellSoulWinningStats(context?.cell_id, cellPortalPageState, allMembers) || { total: 0, first_timers: 0, follow_up: 0, foundation: 0, became_members: 0, ranking: [] };
     const programs = getCellProgramsUpcoming(context?.cell_id, context?.church_id, context?.cell_group_id) || [];
-    const alerts = getCellAlerts(context?.cell_id, cellPortalPageState) || [];
-    const partners = allMembers.filter((member) => (getCellMemberFinanceSummary(member.id) || {}).is_partner).length;
-    const tithers = allMembers.filter((member) => (getCellMemberFinanceSummary(member.id) || {}).is_tither).length;
+    const alerts = getCellAlerts(context?.cell_id, cellPortalPageState, stats, allMembers) || [];
+    const partners = allMembers.filter((member) => member.is_partner).length;
+    const tithers = allMembers.filter((member) => member.is_tither).length;
     const cell = stats.cell || fallbackCell;
     const leaders = [cell.primary_leader_name || cell.leader_name || cell.lider, ...(cell.assistant_leader_names || [])].filter(Boolean);
     const activities = [
@@ -25916,15 +26037,8 @@ function continueEnterDashboard() {
   byId("loginView")?.classList.add("d-none");
   byId("appView")?.classList.remove("d-none");
   renderShell();
-  syncTopbarHeight();
-  applyBackToTopLabel();
-  const requestedRoute = location.hash.replace("#", "");
   const isCellPortalMember = isCellLeaderOrAssistant(activeUser);
   if (isCellPortalMember) {
-    cellPortalPageState.cellId = activeUser.cell_id || (activeUser.assigned_cells && activeUser.assigned_cells[0]) || "";
-    cellPortalPageState.cellGroupId = activeUser.cell_group_id || (activeUser.assigned_cell_groups && activeUser.assigned_cell_groups[0]) || "";
-    cellPortalPageState.search = "";
-    cellPortalPageState.reconciliationStatus = "";
     history.replaceState(null, "", "#cellPortal");
     setRoute("cellPortal");
   } else {
@@ -25933,6 +26047,7 @@ function continueEnterDashboard() {
       cellPortalPageState.cellGroupId = "";
     }
   }
+  const requestedRoute = location.hash.replace("#", "");
   if (isPastoralCareRector(activeUser)) {
     setRoute("firstTimers");
   } else if (resumeCellReport && hasCellReportPermission("cell_reports.create_own")) {

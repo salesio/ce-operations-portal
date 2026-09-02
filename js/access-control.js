@@ -13,7 +13,7 @@
 
   const ROUTE_MODULE_MAP = {
     dashboard: "dashboard",
-    cellPortal: "cell",
+    cellPortal: "dashboard",
     churches: "churches",
     members: "members",
     firstTimers: "firstTimers",
