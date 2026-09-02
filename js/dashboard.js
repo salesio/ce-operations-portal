@@ -3313,43 +3313,15 @@ if (__cellSeed.cellRegistry?.[0]) {
 
 const seedData = {
   users: [
-    { id: "u-1", auth_user_id: "f8d9954c-a17b-4870-98f6-a7d6f2576391", name: "Salésio Machava", email: "admin@embaixadadecristo.org", role: "Super Admin", church_id: "a1111111-1111-4111-8111-111111111101", department_permissions: ["*"], can_view_all_churches: true },
-    { id: "u-2", name: "Líder de Aconselhamento", email: "aconselhamento@ce-mozambique.org", role: "Counselor", church_id: "church-hq", department_permissions: ["counseling", "firstTimers", "followUp"], can_view_all_churches: false },
-    { id: "u-3", name: "Sister Janet Marquele", email: "janet.marquele@ce-mozambique.org", role: "Ministry Coordinator", church_id: "church-hq", department_permissions: ["cell", "prisonMinistry", "ministryMaterials"], can_view_all_churches: true },
-    { id: "u-4", name: "Sister Angelica", email: "angelica@ce-mozambique.org", role: "ALEC Coordinator", church_id: "church-hq", department_permissions: ["cell", "alecRegistration", "alecScores", "churchReports"], can_view_all_churches: true },
-    { id: "u-5", name: "Pastora Flavia", email: "flavia@ce-mozambique.org", role: "Cell Ministry Head", church_id: "church-hq", department_permissions: ["cell", "cellReports", "cellEvaluation"], can_view_all_churches: true },
-    { id: "u-6", name: "Sister Eduarda", email: "eduarda@ce-mozambique.org", role: "Final Coordinator", church_id: "church-hq", department_permissions: ["cell", "finalValidation", "reports"], can_view_all_churches: true },
-                { id: "u-diamantes-leader", auth_user_id: "473e4df5-883c-499a-a42e-223495c266d1", name: "Filipe Chamango", email: "diamantes.main@embaixadadecristo.org", role: "Cell Leader", role_name: "Líder de Célula Diamantes Main", church_id: "a1111111-1111-4111-8111-111111111101", cell_id: "d1a00000-d1a0-4000-8000-000000000001", cell_name: "Diamantes main", cell_group_id: "d1a00000-0000-4000-8000-000000000001", cell_group_name: "Diamantes Main", assigned_cells: ["d1a00000-d1a0-4000-8000-000000000001", "d1a00000-d1a0-4000-8000-000000000002", "d1a00000-d1a0-4000-8000-000000000003", "d1a00000-d1a0-4000-8000-000000000004", "d1a00000-d1a0-4000-8000-000000000005", "d1a00000-d1a0-4000-8000-000000000006", "d1a00000-d1a0-4000-8000-000000000007", "d1a00000-d1a0-4000-8000-000000000008", "d1a00000-d1a0-4000-8000-000000000009", "d1a00000-d1a0-4000-8000-000000000010"], assigned_cell_groups: ["d1a00000-0000-4000-8000-000000000001"], department_permissions: ["cellReports", "followUp", "foundation", "foundation_teacher", "reports"], cannot_create_classes: true, permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_portal.view", "cell_portal.edit", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary", "follow_up.view", "follow_up.edit", "follow_up.enroll_foundation", "foundation.view", "foundation.edit_students", "foundation.record_lessons", "foundation.record_tests", "foundation.record_exam", "foundation.reports"], can_view_all_churches: false },
-    { id: "u-diamantes-assistant", auth_user_id: "1be83c02-cb16-4cf3-a246-58bd0ef1953f", name: "Michael Juma", email: "assistant.diamantes.main@embaixadadecristo.org", role: "Cell Assistant", role_name: "Assistente de Célula Diamantes Main", church_id: "a1111111-1111-4111-8111-111111111101", cell_id: "d1a00000-d1a0-4000-8000-000000000001", cell_name: "Diamantes main", cell_group_id: "d1a00000-0000-4000-8000-000000000001", cell_group_name: "Diamantes Main", assigned_cells: ["d1a00000-d1a0-4000-8000-000000000001", "d1a00000-d1a0-4000-8000-000000000002", "d1a00000-d1a0-4000-8000-000000000003", "d1a00000-d1a0-4000-8000-000000000004", "d1a00000-d1a0-4000-8000-000000000005", "d1a00000-d1a0-4000-8000-000000000006", "d1a00000-d1a0-4000-8000-000000000007", "d1a00000-d1a0-4000-8000-000000000008", "d1a00000-d1a0-4000-8000-000000000009", "d1a00000-d1a0-4000-8000-000000000010"], assigned_cell_groups: ["d1a00000-0000-4000-8000-000000000001"], department_permissions: ["cellReports"], permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_portal.view", "cell_portal.edit", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary"], can_view_all_churches: false },
-        { id: "u-dv-leader", auth_user_id: "47df0cce-9701-492c-90aa-b3cb205bbd4b", name: "Líder Diplomatas Victory", email: "d.v.lider@embaixadadecristo.org", role: "Cell Leader", church_id: "a1111111-1111-4111-8111-111111111101", cell_id: "2b3a5652-b8be-4c76-8b64-b84200c8bcd4", cell_group_id: "a62f461e-e574-4052-8ef3-a4d0ee0c77c4", assigned_cells: ["2b3a5652-b8be-4c76-8b64-b84200c8bcd4"], department_permissions: ["cellReports"], permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_portal.view", "cell_portal.edit", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary"], can_view_all_churches: false },
-    { id: "u-dv-assistant", auth_user_id: "9820f162-430c-4573-86db-b001097fa6dc", name: "Assistente Diplomatas Victory", email: "d.v.assistente@embaixadadecristo.org", role: "Cell Assistant", church_id: "a1111111-1111-4111-8111-111111111101", cell_id: "2b3a5652-b8be-4c76-8b64-b84200c8bcd4", cell_group_id: "a62f461e-e574-4052-8ef3-a4d0ee0c77c4", assigned_cells: ["2b3a5652-b8be-4c76-8b64-b84200c8bcd4"], department_permissions: ["cellReports"], permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_portal.view", "cell_portal.edit", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary"], can_view_all_churches: false },
-    { id: "u-7", name: "Cell Leader Demo", email: "cell.leader@ce-mozambique.org", role: "Cell Leader", church_id: "church-hq", department_permissions: ["cellReports"], permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_portal.view", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts"], can_view_all_churches: false, assigned_cells: ["cr-0001"] },
-    { id: "u-cell-assistant", name: "Cell Assistant Demo", email: "cell.assistant@ce-mozambique.org", role: "Cell Assistant", church_id: "church-hq", department_permissions: ["cellReports"], permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_portal.view", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts"], can_view_all_churches: false, assigned_cells: ["cr-0001"] },
-    { id: "u-cell-reviewer", name: "Cell Reviewer Demo", email: "cell.reviewer@ce-mozambique.org", role: "Cell Ministry Reviewer", church_id: "church-hq", department_permissions: ["cellReports", "cellEvaluation"], permissions: ["cell_reports.view_church", "cell_reports.review", "cell_reports.validate", "cell_reports.reject", "cell_reports.export", "cell_portal.view", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary"], can_view_all_churches: false },
-    { id: "u-8", name: "Pastor da Igreja", email: "pastor.branch@ce-mozambique.org", role: "Church Pastor", church_id: "church-hq", department_permissions: ["cell", "churchReports", "cellReports", "fevo", "venueInventory"], can_view_all_churches: false },
-    { id: "u-9", name: "Sister Cassandra", email: "cassandra@ce-mozambique.org", role: "F.E.V.O Coordinator", church_id: "church-hq", department_permissions: ["fevo", "fevoConfig", "fevoReports", "fevoAnalytics"], can_view_all_churches: true },
-    { id: "u-10", name: "F.E.V.O Team Leader", email: "fevo.leader@ce-mozambique.org", role: "F.E.V.O Team Leader", church_id: "church-hq", department_permissions: ["fevoReports"], can_view_all_churches: false, assigned_teams: ["Team A"], assigned_groups: ["Group Central"] },
-    { id: "u-11", name: "Marcelo Panguene", email: "marcelo.panguene@ce-mozambique.org", role: "Venue Manager", church_id: "church-hq", department_permissions: ["venueInventory", "inventory", "venues", "maintenance", "checklists"], can_view_all_churches: true },
-    { id: "u-12", name: "Department Head Demo", email: "department.head@ce-mozambique.org", role: "Department Head", church_id: "church-hq", department_permissions: ["venueInventoryRequests", "venueInventory"], assigned_department: "Cell Ministry", can_view_all_churches: false },
-    { id: "u-13", name: "Staff Member Demo", email: "staff.member@ce-mozambique.org", role: "Staff Member", church_id: "church-hq", department_permissions: ["assignedEquipment"], assigned_staff_name: "Laiza Teresa Chirindza", can_view_all_churches: false },
-    { id: "u-14", name: "Finance Officer Demo", email: "finance.officer@ce-mozambique.org", role: "Finance Officer", church_id: "church-hq", department_permissions: ["finance", "financeOfficer"], can_view_all_churches: false },
-    { id: "u-15", name: "Finance Head Demo", email: "finance.head@ce-mozambique.org", role: "Finance Head", church_id: "church-hq", department_permissions: ["finance", "financeHead", "financeVerify", "reports", "partnership"], can_view_all_churches: true },
-    { id: "u-partnership", name: "Coordenadora de Parcerias", email: "partnerships@ce-mozambique.org", role: "Partnership Coordinator", church_id: "church-hq", department_permissions: ["partnership", "finance", "reports"], can_view_all_churches: true },
-    { id: "u-16", name: "Finance Viewer Demo", email: "finance.viewer@ce-mozambique.org", role: "Viewer", church_id: "church-hq", department_permissions: ["financeViewer", "reports"], can_view_all_churches: true },
-    { id: "u-17", name: "Pastor Kene Ume", email: "pastor.kene@ce-mozambique.org", role: "Main Pastor", church_id: "church-hq", department_permissions: ["reports", "requisitions", "staffHr", "finance"], can_view_all_churches: true },
-    { id: "u-18", name: "Pastora Responsável Requisições", email: "requisitions@ce-mozambique.org", role: "Requisition Officer", church_id: "church-hq", department_permissions: ["requisitions"], can_view_all_churches: true },
-    { id: "u-19", name: "Gestora de RH", email: "hr@ce-mozambique.org", role: "HR Manager", church_id: "church-hq", department_permissions: ["staffHr"], can_view_all_churches: true },
-    { id: "u-20", name: "Marcelo Panguene", email: "media.director@ce-mozambique.org", role: "Media Director", church_id: "church-hq", department_permissions: ["media"], assigned_department: "Mídia", assigned_staff_name: "Marcelo Panguene", can_view_all_churches: true },
-    { id: "u-21", name: "Media Supervisor Demo", email: "media.supervisor@ce-mozambique.org", role: "Media Supervisor", church_id: "church-hq", department_permissions: ["media"], assigned_department: "Mídia", can_view_all_churches: true },
-    { id: "u-22", name: "Técnico A", email: "media.member@ce-mozambique.org", role: "Media Team Member", church_id: "church-hq", department_permissions: ["mediaTeam"], assigned_department: "Mídia", assigned_staff_name: "Técnico A", can_view_all_churches: false },
-    { id: "u-23", name: "Head de Aconselhamento", email: "counseling.head@ce-mozambique.org", role: "Counseling Head", church_id: "church-hq", department_permissions: ["counseling", "followUp", "firstTimers", "reports"], can_view_all_churches: true },
-    { id: "u-pastor-valdemiro", auth_user_id: "ac47e5fa-f9f5-4d58-ab91-eebcb01f1b01", name: "Pastor Valdemiro Machava", email: "p.care@embaixadadecristo.org", role: "pastoral_care_rector", church_id: "a1111111-1111-4111-8111-111111111101", department_permissions: ["firstTimers", "followUp", "foundation", "sacraments", "counseling"], can_view_all_churches: false },
-    { id: "u-26", name: "Reitor Pastoral", email: "reitor@ce-mozambique.org", role: "Reitor", church_id: "church-hq", department_permissions: ["firstTimers", "followUp", "counseling", "reports", "notifications"], can_view_all_churches: true, demo_password_hint: "demo" },
-    { id: "u-27", name: "Responsável de Acompanhamento", email: "acompanhamento@ce-mozambique.org", role: "Follow-Up Coordinator", church_id: "church-hq", department_permissions: ["firstTimers", "followUp"], can_view_all_churches: true, demo_password_hint: "demo" },
-    { id: "u-24", name: "Professor Joao Mazive", email: "foundation.teacher@ce-mozambique.org", role: "Foundation Teacher", church_id: "church-hq", department_permissions: ["foundation_teacher"], assigned_foundation_teacher_id: "ftch-1", can_view_all_churches: false },
-    { id: "u-25", name: "Assistente da Escola de Fundacao", email: "foundation.assistant@ce-mozambique.org", role: "Foundation Assistant", church_id: "church-hq", department_permissions: ["foundation_assistant"], assigned_foundation_teacher_id: "ftch-3", can_view_all_churches: false },
-    { id: "u-foundation-rector", name: "Pastor Coordenador", email: "foundation.rector@ce-mozambique.org", role: "Foundation Rector", church_id: "church-hq", department_permissions: ["foundation_rector", "foundation"], assigned_foundation_teacher_id: "ftch-rector", can_view_all_churches: true },
-    { id: "u-foundation-coordinator", name: "Irma Coordenadora", email: "foundation.coord@ce-mozambique.org", role: "Foundation Coordinator", church_id: "church-hq", department_permissions: ["foundation_coordinator", "foundation"], assigned_foundation_teacher_id: "ftch-coordinator", can_view_all_churches: true }
+    { id: "9691d45a-e613-4fa3-8cb5-43955f39aa66", auth_user_id: "f8d9954c-a17b-4870-98f6-a7d6f2576391", name: "Salésio Machava", full_name: "Salésio Machava", email: "admin@embaixadadecristo.org", role: "Super Admin", role_name: "Super Admin", church_id: "a1111111-1111-4111-8111-111111111101", department_permissions: ["*"], can_view_all_churches: true, status: "Active" },
+    { id: "38ee3dab-c172-4d78-97a9-aa76c554ce63", auth_user_id: "ac47e5fa-f9f5-4d58-ab91-eebcb01f1b01", name: "Pastor Valdemiro Machava", full_name: "Pastor Valdemiro Machava", email: "p.care@embaixadadecristo.org", role: "pastoral_care_rector", role_name: "Reitor de Cuidados Pastorais", church_id: "a1111111-1111-4111-8111-111111111101", department_permissions: ["firstTimers", "followUp", "foundation", "sacraments", "counseling", "reports"], can_view_all_churches: true, status: "Active" },
+    { id: "473e4df5-883c-499a-a42e-223495c266d1", auth_user_id: "473e4df5-883c-499a-a42e-223495c266d1", name: "Filipe Chamango", full_name: "Filipe Chamango", email: "diamantes.main@embaixadadecristo.org", role: "Cell Leader", role_name: "Líder de Célula Diamantes Main", church_id: "a1111111-1111-4111-8111-111111111101", cell_id: "d1a00000-d1a0-4000-8000-000000000001", cell_name: "Diamantes main", cell_group_id: "d1a00000-0000-4000-8000-000000000001", cell_group_name: "Diamantes Main", assigned_cells: ["d1a00000-d1a0-4000-8000-000000000001", "d1a00000-d1a0-4000-8000-000000000002", "d1a00000-d1a0-4000-8000-000000000003", "d1a00000-d1a0-4000-8000-000000000004", "d1a00000-d1a0-4000-8000-000000000005", "d1a00000-d1a0-4000-8000-000000000006", "d1a00000-d1a0-4000-8000-000000000007", "d1a00000-d1a0-4000-8000-000000000008", "d1a00000-d1a0-4000-8000-000000000009", "d1a00000-d1a0-4000-8000-000000000010"], assigned_cell_groups: ["d1a00000-0000-4000-8000-000000000001"], department_permissions: ["cellReports", "followUp", "foundation", "foundation_teacher", "reports"], cannot_create_classes: true, permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_portal.view", "cell_portal.edit", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary", "follow_up.view", "follow_up.edit", "follow_up.enroll_foundation", "foundation.view", "foundation.edit_students", "foundation.record_lessons", "foundation.record_tests", "foundation.record_exam", "foundation.reports"], can_view_all_churches: false, status: "Active" },
+    { id: "1be83c02-cb16-4cf3-a246-58bd0ef1953f", auth_user_id: "1be83c02-cb16-4cf3-a246-58bd0ef1953f", name: "Michael Juma", full_name: "Michael Juma", email: "assistant.diamantes.main@embaixadadecristo.org", role: "Cell Assistant", role_name: "Assistente de Célula Diamantes Main", church_id: "a1111111-1111-4111-8111-111111111101", cell_id: "d1a00000-d1a0-4000-8000-000000000001", cell_name: "Diamantes main", cell_group_id: "d1a00000-0000-4000-8000-000000000001", cell_group_name: "Diamantes Main", assigned_cells: ["d1a00000-d1a0-4000-8000-000000000001", "d1a00000-d1a0-4000-8000-000000000002", "d1a00000-d1a0-4000-8000-000000000003", "d1a00000-d1a0-4000-8000-000000000004", "d1a00000-d1a0-4000-8000-000000000005", "d1a00000-d1a0-4000-8000-000000000006", "d1a00000-d1a0-4000-8000-000000000007", "d1a00000-d1a0-4000-8000-000000000008", "d1a00000-d1a0-4000-8000-000000000009", "d1a00000-d1a0-4000-8000-000000000010"], assigned_cell_groups: ["d1a00000-0000-4000-8000-000000000001"], department_permissions: ["cellReports"], permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_portal.view", "cell_portal.edit", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary"], can_view_all_churches: false, status: "Active" },
+    { id: "u-marcelo-venue", auth_user_id: null, name: "Marcelo Panguene", full_name: "Marcelo Panguene", email: "venue@embaixadadecristo.org", role: "Venue Manager", role_name: "Gestor de Património & Instalações", church_id: "a1111111-1111-4111-8111-111111111101", department_permissions: ["venueInventory", "inventory", "venues", "maintenance", "checklists", "reports"], can_view_all_churches: true, status: "Active" },
+    { id: "280ef567-05b5-4ef8-b7a0-ec6390655504", auth_user_id: "008969ce-f123-41e3-bce0-e58f477b4622", name: "Sister Angélica", full_name: "Sister Angélica", email: "angelicaamilcar27@gmail.com", role: "ALEC Coordinator", role_name: "Coordenadora ALEC", church_id: "a1111111-1111-4111-8111-111111111101", department_permissions: ["cell", "alecRegistration", "alecScores", "churchReports"], can_view_all_churches: true, status: "Active" },
+    { id: "395d050f-3422-402c-b2e9-7597dab91b3f", auth_user_id: "47df0cce-9701-492c-90aa-b3cb205bbd4b", name: "Líder Diplomatas Victory", full_name: "Líder Diplomatas Victory", email: "d.v.lider@embaixadadecristo.org", role: "Cell Leader", role_name: "Líder de Célula Diplomatas Victory", church_id: "a1111111-1111-4111-8111-111111111101", cell_id: "2b3a5652-b8be-4c76-8b64-b84200c8bcd4", cell_name: "Diplomatas Victory", cell_group_id: "a62f461e-e574-4052-8ef3-a4d0ee0c77c4", cell_group_name: "Diplomatas", assigned_cells: ["2b3a5652-b8be-4c76-8b64-b84200c8bcd4"], department_permissions: ["cellReports"], permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_portal.view", "cell_portal.edit", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary"], can_view_all_churches: false, status: "Active" },
+    { id: "a51a15ad-9213-45b8-b572-aaf6cb53dcbb", auth_user_id: "9820f162-430c-4573-86db-b001097fa6dc", name: "Assistente Diplomatas Victory", full_name: "Assistente Diplomatas Victory", email: "d.v.assistente@embaixadadecristo.org", role: "Cell Assistant", role_name: "Assistente de Célula Diplomatas Victory", church_id: "a1111111-1111-4111-8111-111111111101", cell_id: "2b3a5652-b8be-4c76-8b64-b84200c8bcd4", cell_name: "Diplomatas Victory", cell_group_id: "a62f461e-e574-4052-8ef3-a4d0ee0c77c4", cell_group_name: "Diplomatas", assigned_cells: ["2b3a5652-b8be-4c76-8b64-b84200c8bcd4"], department_permissions: ["cellReports"], permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_portal.view", "cell_portal.edit", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary"], can_view_all_churches: false, status: "Active" },
+    { id: "u-pastor-kene", auth_user_id: null, name: "Pastor Kene Ume", full_name: "Pastor Kene Ume", email: "pastor.kene@ce-mozambique.org", role: "Main Pastor", role_name: "Pastor Principal", church_id: "a1111111-1111-4111-8111-111111111101", department_permissions: ["reports", "requisitions", "staffHr", "finance"], can_view_all_churches: true, status: "Active" }
   ],
   departments: [
     { id: "dept-finance", church_id: "church-hq", name: "Finanças", lead_name: "Finance Head Demo" },
@@ -6830,14 +6802,18 @@ function matchesSelectedCellChurch(record, churchId = "") {
 }
 
 function getCellGroupsForChurch(churchId = "") {
-  return cellNetworkRecordsForSelect(state.cellGroups || [])
+  const allGroups = [...(window.REAL_CELL_GROUPS || []), ...(state.cellGroups || [])]
+    .filter((g, idx, arr) => g && g.id && arr.findIndex((x) => String(x.id) === String(g.id) || x.group_name === g.group_name) === idx);
+  return cellNetworkRecordsForSelect(allGroups)
     .filter((group) => matchesSelectedCellChurch(group, churchId))
     .sort((a, b) => String(a.group_name || "").localeCompare(String(b.group_name || "")));
 }
 
 function getCellsForGroup(cellGroupId = "", churchId = "") {
-  return cellNetworkRecordsForSelect(state.cellRegistry || [])
-    .filter((cell) => matchesSelectedCellChurch(cell, churchId) && (!cellGroupId || cell.group_id === cellGroupId || cell.cell_group_id === cellGroupId || cell.group_cell_id === cellGroupId))
+  const allCells = [...(window.REAL_CELLS_REGISTRY || []), ...(state.cellRegistry || state.cells || [])]
+    .filter((c, idx, arr) => c && c.id && arr.findIndex((x) => String(x.id) === String(c.id)) === idx);
+  return cellNetworkRecordsForSelect(allCells)
+    .filter((cell) => matchesSelectedCellChurch(cell, churchId) && (!cellGroupId || String(cell.group_id) === String(cellGroupId) || String(cell.cell_group_id) === String(cellGroupId) || String(cell.group_cell_id) === String(cellGroupId)))
     .sort((a, b) => String(a.cell_name || "").localeCompare(String(b.cell_name || "")));
 }
 
@@ -20292,7 +20268,7 @@ function renderUsers() {
           badge(u.status || "Active"),
           churchName(u.church_id),
           cellScope,
-          actionButtons([["view", "user", u.id, L("view")], ["edit", "user", u.id, L("edit")]]),
+          actionButtons([["view", "user", u.id, L("view")], ["edit", "user", u.id, L("edit")], ["delete", "user", u.id, L("delete")]]),
         ];
       }),
     )}</article>`);
@@ -21951,6 +21927,344 @@ function getCollection(type) {
   return state[type] || [];
 }
 
+
+function renderUserForm(record = {}, modalMode = "create") {
+  const isEdit = modalMode === "edit";
+  const name = record.name || record.full_name || "";
+  const email = record.email || "";
+  const currentRole = record.role || record.role_name || "Cell Leader";
+  const churchId = record.church_id || record.churchId || activeUser?.church_id || "a1111111-1111-4111-8111-111111111101";
+  const cellGroupId = record.cell_group_id || record.groupId || "";
+  const cellId = record.cell_id || record.cellId || "";
+  const status = record.status || "Active";
+  const cannotCreateClasses = Boolean(record.cannot_create_classes);
+  const canViewAllChurches = Boolean(record.can_view_all_churches);
+
+  const rawDept = record.department_permissions;
+  const deptPerms = new Set(Array.isArray(rawDept) ? rawDept : String(rawDept || "").split(",").map((s) => s.trim()).filter(Boolean));
+
+  // Real 18 groups from Supabase/Seed
+  const allGroups = [...(window.REAL_CELL_GROUPS || []), ...(state.cellGroups || [])];
+  const groups = allGroups
+    .filter((g, idx, arr) => g && g.id && arr.findIndex((x) => String(x.id) === String(g.id) || x.group_name === g.group_name) === idx)
+    .sort((a, b) => String(a.group_name || "").localeCompare(String(b.group_name || "")));
+
+  // Real Cells from Supabase/Seed
+  const allCells = [...(window.REAL_CELLS_REGISTRY || []), ...(state.cellRegistry || state.cells || [])]
+    .filter((c, idx, arr) => c && c.id && arr.findIndex((x) => String(x.id) === String(c.id)) === idx);
+  
+  const cells = allCells
+    .filter((c) => !cellGroupId || String(c.group_id) === String(cellGroupId) || String(c.cell_group_id) === String(cellGroupId))
+    .sort((a, b) => String(a.cell_name || "").localeCompare(String(b.cell_name || "")));
+
+  const hasAllSubcells = Array.isArray(record.assigned_cells) && record.assigned_cells.length > 1;
+
+  const roles = [
+    { value: "Super Admin", label: "Super Admin (Acesso Total ao Sistema)" },
+    { value: "Main Pastor", label: "Pastor Principal" },
+    { value: "National Admin", label: "Administrador Nacional" },
+    { value: "Church Pastor", label: "Pastor da Igreja" },
+    { value: "Church Admin", label: "Administrador da Igreja" },
+    { value: "Cell Group Leader", label: "Líder de Grupo de Células" },
+    { value: "Cell Leader", label: "Líder de Célula" },
+    { value: "Cell Assistant", label: "Assistente de Célula" },
+    { value: "Cell Ministry Head", label: "Responsável do Ministério de Células" },
+    { value: "Follow-Up Coordinator", label: "Coordenador de Acompanhamento (Follow-Up)" },
+    { value: "Foundation Teacher", label: "Professor da Escola de Fundação" },
+    { value: "Foundation Rector", label: "Reitor da Escola de Fundação" },
+    { value: "Venue Manager", label: "Gestor de Património & Instalações (Venue)" },
+    { value: "Finance Head", label: "Responsável de Finanças" },
+    { value: "Finance Officer", label: "Oficial de Finanças" },
+    { value: "Counselor", label: "Conselheiro Pastoral" },
+    { value: "HR Manager", label: "Gestor de Recursos Humanos (RH)" },
+    { value: "Media Director", label: "Director de Mídia & Transmissão" },
+    { value: "Requisition Officer", label: "Oficial de Requisições" },
+    { value: "Staff Member", label: "Membro de Staff" },
+    { value: "Viewer", label: "Visualizador (Apenas Leitura)" }
+  ];
+
+  const churches = typeof relationalChurches === "function" ? relationalChurches() : (state.churches || []);
+
+  return `
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">Nome Completo *</label>
+        <input name="name" type="text" class="form-control" value="${escapeAttr(name)}" required placeholder="Ex: Filipe Chamango">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">E-mail *</label>
+        <input name="email" type="email" class="form-control" value="${escapeAttr(email)}" required placeholder="utilizador@embaixadadecristo.org">
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Função Principal (Cargo Base) *</label>
+        <select name="role" class="form-select" id="userFormRoleSelect" required>
+          ${roles.map((r) => `<option value="${escapeAttr(r.value)}" ${String(currentRole).toLowerCase() === r.value.toLowerCase() ? "selected" : ""}>${escapeAttr(r.label)}</option>`).join("")}
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Igreja *</label>
+        <select name="church_id" class="form-select" id="userFormChurchSelect" required>
+          ${churches.map((c) => `<option value="${escapeAttr(c.id)}" ${String(c.id) === String(churchId) ? "selected" : ""}>${escapeAttr(c.public_name || c.church_name || "Igreja")}</option>`).join("")}
+        </select>
+      </div>
+
+      <!-- Cell Group & Cell dynamic selection -->
+      <div class="col-md-6">
+        <label class="form-label">Grupo de Célula</label>
+        <select name="cell_group_id" class="form-select" id="userFormCellGroupSelect">
+          <option value="">Nenhum / Não aplicável</option>
+          ${groups.map((g) => `<option value="${escapeAttr(g.id)}" ${String(g.id) === String(cellGroupId) || g.group_name === cellGroupId ? "selected" : ""}>${escapeAttr(g.group_name || g.name)}</option>`).join("")}
+        </select>
+        <small class="text-secondary">Selecione para carregar as células em tempo real</small>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Célula Principal</label>
+        <select name="cell_id" class="form-select" id="userFormCellSelect">
+          <option value="">Nenhuma / Todas as células do grupo</option>
+          ${cells.map((c) => `<option value="${escapeAttr(c.id)}" ${String(c.id) === String(cellId) || c.cell_name === cellId ? "selected" : ""}>${escapeAttr(c.cell_name)}</option>`).join("")}
+        </select>
+      </div>
+
+      <div class="col-12">
+        <div class="form-check p-2 rounded" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);">
+          <input name="assign_all_subcells" class="form-check-input ms-1" type="checkbox" id="userFormAllSubcells" ${hasAllSubcells || (!cellId && cellGroupId) ? "checked" : ""}>
+          <label class="form-check-label ms-2" for="userFormAllSubcells">
+            <strong>Permitir acesso de gestão a todas as sub-células deste grupo</strong>
+            <div class="small text-secondary">Permite ao utilizador visualizar, alternar e gerir relatórios e membros de todas as 10 células do grupo (ex.: Diamantes Main)</div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Multi-Department Permissions -->
+      <div class="col-12">
+        <label class="form-label d-flex justify-content-between align-items-center">
+          <span><strong>Múltiplas Funções & Permissões por Departamento</strong></span>
+          <span class="badge bg-secondary">Atribua múltiplos acessos</span>
+        </label>
+        <div class="p-3 rounded" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(148, 163, 184, 0.2);">
+          <div class="row g-2">
+            <div class="col-sm-6 col-lg-4">
+              <label class="form-check">
+                <input type="checkbox" name="dept_perm" value="cellReports" class="form-check-input" ${deptPerms.has("cellReports") || deptPerms.has("*") ? "checked" : ""}>
+                <span class="form-check-label"><i class="bi bi-diagram-3 me-1 text-info"></i> Portal & Relatórios de Células</span>
+              </label>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+              <label class="form-check">
+                <input type="checkbox" name="dept_perm" value="followUp" class="form-check-input" ${deptPerms.has("followUp") || deptPerms.has("*") ? "checked" : ""}>
+                <span class="form-check-label"><i class="bi bi-telephone-outbound me-1 text-primary"></i> Acompanhamento (Follow-Up)</span>
+              </label>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+              <label class="form-check">
+                <input type="checkbox" name="dept_perm" value="foundation" class="form-check-input" ${deptPerms.has("foundation") || deptPerms.has("*") ? "checked" : ""}>
+                <span class="form-check-label"><i class="bi bi-mortarboard me-1 text-success"></i> Escola de Fundação (Geral)</span>
+              </label>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+              <label class="form-check">
+                <input type="checkbox" name="dept_perm" value="foundation_teacher" class="form-check-input" ${deptPerms.has("foundation_teacher") || deptPerms.has("*") ? "checked" : ""}>
+                <span class="form-check-label"><i class="bi bi-person-video3 me-1 text-success"></i> Professor de Fundação (Presenças/Testes)</span>
+              </label>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+              <label class="form-check">
+                <input type="checkbox" name="dept_perm" value="reports" class="form-check-input" ${deptPerms.has("reports") || deptPerms.has("*") ? "checked" : ""}>
+                <span class="form-check-label"><i class="bi bi-graph-up-arrow me-1 text-warning"></i> Relatórios & Indicadores</span>
+              </label>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+              <label class="form-check">
+                <input type="checkbox" name="dept_perm" value="venueInventory" class="form-check-input" ${deptPerms.has("venueInventory") || deptPerms.has("*") ? "checked" : ""}>
+                <span class="form-check-label"><i class="bi bi-building me-1 text-cyan"></i> Património & Instalações (Venue)</span>
+              </label>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+              <label class="form-check">
+                <input type="checkbox" name="dept_perm" value="finance" class="form-check-input" ${deptPerms.has("finance") || deptPerms.has("*") ? "checked" : ""}>
+                <span class="form-check-label"><i class="bi bi-cash-stack me-1 text-warning"></i> Finanças & Tesouraria</span>
+              </label>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+              <label class="form-check">
+                <input type="checkbox" name="dept_perm" value="counseling" class="form-check-input" ${deptPerms.has("counseling") || deptPerms.has("*") ? "checked" : ""}>
+                <span class="form-check-label"><i class="bi bi-chat-heart me-1 text-danger"></i> Aconselhamento Pastoral</span>
+              </label>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+              <label class="form-check">
+                <input type="checkbox" name="dept_perm" value="sacraments" class="form-check-input" ${deptPerms.has("sacraments") || deptPerms.has("*") ? "checked" : ""}>
+                <span class="form-check-label"><i class="bi bi-droplet me-1 text-info"></i> Sacramentos</span>
+              </label>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+              <label class="form-check">
+                <input type="checkbox" name="dept_perm" value="media" class="form-check-input" ${deptPerms.has("media") || deptPerms.has("*") ? "checked" : ""}>
+                <span class="form-check-label"><i class="bi bi-camera-video me-1 text-secondary"></i> Mídia & Transmissão</span>
+              </label>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+              <label class="form-check">
+                <input type="checkbox" name="dept_perm" value="staffHr" class="form-check-input" ${deptPerms.has("staffHr") || deptPerms.has("*") ? "checked" : ""}>
+                <span class="form-check-label"><i class="bi bi-people me-1 text-light"></i> Recursos Humanos & Staff</span>
+              </label>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+              <label class="form-check">
+                <input type="checkbox" name="dept_perm" value="requisitions" class="form-check-input" ${deptPerms.has("requisitions") || deptPerms.has("*") ? "checked" : ""}>
+                <span class="form-check-label"><i class="bi bi-cart-check me-1 text-primary"></i> Requisições & Compras</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Advanced options -->
+      <div class="col-md-6">
+        <label class="form-label">Estado da Conta</label>
+        <select name="status" class="form-select">
+          <option value="Active" ${status === "Active" ? "selected" : ""}>Activo</option>
+          <option value="Pending Auth Setup" ${status === "Pending Auth Setup" ? "selected" : ""}>Pendente Configuração Auth</option>
+          <option value="Suspended" ${status === "Suspended" ? "selected" : ""}>Suspenso</option>
+          <option value="Inactive" ${status === "Inactive" ? "selected" : ""}>Inactivo</option>
+        </select>
+      </div>
+      <div class="col-md-6 d-flex flex-column justify-content-end">
+        <label class="form-check mb-2">
+          <input name="cannot_create_classes" type="checkbox" class="form-check-input" ${cannotCreateClasses ? "checked" : ""}>
+          <span class="form-check-label">Restringir criação de novas turmas na Fundação</span>
+        </label>
+        <label class="form-check">
+          <input name="can_view_all_churches" type="checkbox" class="form-check-input" ${canViewAllChurches ? "checked" : ""}>
+          <span class="form-check-label">Acesso de âmbito nacional (todas as igrejas)</span>
+        </label>
+      </div>
+    </div>
+  `;
+}
+
+function mountUserFormControls(form) {
+  if (!form) return;
+  const groupSelect = form.querySelector("#userFormCellGroupSelect");
+  const cellSelect = form.querySelector("#userFormCellSelect");
+  const roleSelect = form.querySelector("#userFormRoleSelect");
+
+  if (groupSelect && cellSelect) {
+    groupSelect.addEventListener("change", () => {
+      const selectedGroupId = groupSelect.value;
+      const allCells = [...(window.REAL_CELLS_REGISTRY || []), ...(state.cellRegistry || state.cells || [])]
+        .filter((c, idx, arr) => c && c.id && arr.findIndex((x) => String(x.id) === String(c.id)) === idx);
+      
+      const filteredCells = selectedGroupId
+        ? allCells.filter((c) => String(c.group_id) === String(selectedGroupId) || String(c.cell_group_id) === String(selectedGroupId))
+        : allCells;
+      
+      cellSelect.innerHTML = '<option value="">Nenhuma / Todas as células do grupo</option>' +
+        filteredCells.map((c) => `<option value="${escapeAttr(c.id)}">${escapeAttr(c.cell_name)}</option>`).join("");
+    });
+  }
+
+  if (roleSelect) {
+    roleSelect.addEventListener("change", () => {
+      const role = roleSelect.value;
+      const roleDefaults = {
+        "Cell Leader": ["cellReports"],
+        "Cell Assistant": ["cellReports"],
+        "Cell Group Leader": ["cellReports", "reports"],
+        "Follow-Up Coordinator": ["followUp", "firstTimers"],
+        "Foundation Teacher": ["foundation", "foundation_teacher"],
+        "Foundation Rector": ["foundation", "foundation_teacher", "reports"],
+        "Venue Manager": ["venueInventory"],
+        "Finance Head": ["finance", "reports"],
+        "Finance Officer": ["finance"],
+        "Counselor": ["counseling", "followUp"],
+        "Media Director": ["media"],
+        "Super Admin": ["*"],
+        "Church Pastor": ["cellReports", "followUp", "foundation", "reports"]
+      };
+      const defaults = roleDefaults[role];
+      if (defaults) {
+        form.querySelectorAll('input[name="dept_perm"]').forEach((cb) => {
+          if (defaults.includes("*") || defaults.includes(cb.value)) cb.checked = true;
+        });
+      }
+    });
+  }
+}
+
+async function saveUserToSupabase(user) {
+  const sbClient = window.CESupabase?.getSupabaseFoundationClient?.() || window.CESupabase?.getSupabaseAuthClient?.() || (typeof supabase !== "undefined" ? supabase : null);
+  if (!sbClient) return false;
+  try {
+    const email = user.email ? String(user.email).trim().toLowerCase() : null;
+    const payload = {
+      full_name: user.name || user.full_name,
+      email: email,
+      church_id: user.church_id || null,
+      cell_group_id: user.cell_group_id || null,
+      cell_id: user.cell_id || null,
+      assigned_cells: user.assigned_cells || [],
+      assigned_cell_groups: user.assigned_cell_groups || [],
+      status: user.status || "Active",
+      metadata: {
+        role_name: user.role || user.role_name,
+        display_name: user.name || user.full_name,
+        cell_id: user.cell_id || null,
+        cell_name: user.cell_name || null,
+        cell_group_id: user.cell_group_id || null,
+        cell_group_name: user.cell_group_name || null,
+        assigned_cells: user.assigned_cells || [],
+        assigned_cell_groups: user.assigned_cell_groups || [],
+        department_permissions: user.department_permissions || [],
+        cannot_create_classes: Boolean(user.cannot_create_classes),
+        can_view_all_churches: Boolean(user.can_view_all_churches),
+        has_dashboard_access: true
+      },
+      updated_at: new Date().toISOString()
+    };
+    if (user.auth_user_id) payload.auth_user_id = user.auth_user_id;
+
+    let existing = null;
+    if (email) {
+      const { data } = await sbClient.from("users").select("id, email").eq("email", email).maybeSingle();
+      existing = data;
+    }
+    if (!existing && user.id && user.id.includes("-") && user.id.length >= 32) {
+      const { data } = await sbClient.from("users").select("id, email").eq("id", user.id).maybeSingle();
+      existing = data;
+    }
+
+    if (existing) {
+      const res = await sbClient.from("users").update(payload).eq("id", existing.id);
+      if (res.error) console.warn("[CE Users] Supabase update notice:", res.error);
+    } else {
+      payload.id = (user.id && user.id.includes("-") && user.id.length >= 32) ? user.id : (typeof generateUuid === "function" ? generateUuid() : `u-${Date.now()}`);
+      const res = await sbClient.from("users").insert(payload);
+      if (res.error) console.warn("[CE Users] Supabase insert notice:", res.error);
+    }
+    return true;
+  } catch (err) {
+    console.warn("[CE Users] saveUserToSupabase skipped", err);
+    return false;
+  }
+}
+
+async function deleteUserFromSupabase(userId, authUserId) {
+  const sbClient = window.CESupabase?.getSupabaseFoundationClient?.() || window.CESupabase?.getSupabaseAuthClient?.() || (typeof supabase !== "undefined" ? supabase : null);
+  if (!sbClient || !userId) return false;
+  try {
+    await sbClient.from("users").delete().eq("id", userId);
+    if (authUserId && authUserId !== userId) {
+      await sbClient.from("users").delete().eq("auth_user_id", authUserId);
+    }
+    return true;
+  } catch (err) {
+    console.warn("[CE Users] deleteUserFromSupabase skipped", err);
+    return false;
+  }
+}
+
 function openForm(type, id = null) {
   const action = id ? "edit" : "add";
   if (!canRenderAction(action, type)) {
@@ -21991,6 +22305,8 @@ function openForm(type, id = null) {
       byId("modalFields").innerHTML = renderFirstTimerIntakeForm(record || {});
     } else if (type === "mediaSchedule") {
       byId("modalFields").innerHTML = renderMediaScheduleForm(record || {});
+    } else if (type === "user") {
+      byId("modalFields").innerHTML = renderUserForm(record || {}, modalMode);
     } else {
       const schema = type === "finance" ? getFinanceSchema("create") : formSchemas[type];
       byId("modalFields").innerHTML = schema.map((field) => fieldControl(field, record)).join("");
@@ -21999,6 +22315,7 @@ function openForm(type, id = null) {
     requestAnimationFrame(() => {
       mountRelationalControls(byId("entryForm"));
       mountMediaScheduleFormControls(byId("entryForm"));
+      if (type === "user") mountUserFormControls(byId("entryForm"));
       mountAlecMemberAutocompleteControls(byId("entryForm"));
       if (["alecRegistration", "alecScore", "churchReport"].includes(type)) {
         const churchSelectEl = byId("entryForm")?.querySelector('[name="church_id"]');
@@ -22150,6 +22467,121 @@ async function submitForm(form) {
   }
   if (!canRenderAction(modalMode === "edit" ? "edit" : "add", modalType)) {
     alert(L("noPermissionArea"));
+    return;
+  }
+  if (modalType === "user") {
+    const formData = new FormData(form);
+    const checkedPerms = formData.getAll("dept_perm").map((s) => String(s).trim()).filter(Boolean);
+    const nowIso = new Date().toISOString();
+    const today = nowIso.slice(0, 10);
+    const role = String(data.role || "Cell Leader").trim();
+    const name = String(data.name || data.full_name || "").trim();
+    const email = String(data.email || "").trim().toLowerCase();
+
+    if (!name || !email) {
+      alert("Por favor, preencha o nome e o e-mail do utilizador.");
+      return;
+    }
+
+    const churchId = data.church_id || activeUser?.church_id || "a1111111-1111-4111-8111-111111111101";
+    const cellGroupId = data.cell_group_id || "";
+    const cellId = data.cell_id || "";
+    const cannotCreateClasses = formData.has("cannot_create_classes");
+    const canViewAllChurches = formData.has("can_view_all_churches") || role === "Super Admin";
+    const status = data.status || "Active";
+
+    const departmentPermissions = checkedPerms.length ? checkedPerms : (role === "Super Admin" ? ["*"] : ["cellReports"]);
+
+    let cellGroupName = "";
+    if (cellGroupId) {
+      const grp = [...(window.REAL_CELL_GROUPS || []), ...(state.cellGroups || [])].find((g) => String(g.id) === String(cellGroupId) || g.group_name === cellGroupId);
+      cellGroupName = grp?.group_name || grp?.name || "";
+    }
+
+    let cellName = "";
+    if (cellId) {
+      const cl = [...(window.REAL_CELLS_REGISTRY || []), ...(state.cellRegistry || state.cells || [])].find((c) => String(c.id) === String(cellId) || c.cell_name === cellId);
+      cellName = cl?.cell_name || "";
+    }
+
+    let assignedCells = [];
+    let assignedCellGroups = [];
+    if (formData.has("assign_all_subcells") && cellGroupId) {
+      const allCells = [...(window.REAL_CELLS_REGISTRY || []), ...(state.cellRegistry || state.cells || [])]
+        .filter((c, idx, arr) => c && c.id && arr.findIndex((x) => String(x.id) === String(c.id)) === idx);
+      const subcells = allCells
+        .filter((c) => String(c.group_id) === String(cellGroupId) || String(c.cell_group_id) === String(cellGroupId))
+        .map((c) => c.id);
+      assignedCells = subcells.length ? subcells : (cellId ? [cellId] : []);
+      assignedCellGroups = [cellGroupId];
+    } else if (cellId) {
+      assignedCells = [cellId];
+      assignedCellGroups = cellGroupId ? [cellGroupId] : [];
+    }
+
+    if (modalMode === "edit") {
+      const index = state.users.findIndex((item) => String(item.id) === String(modalRecordId));
+      if (index >= 0) {
+        state.users[index] = {
+          ...state.users[index],
+          name,
+          full_name: name,
+          email,
+          role,
+          role_name: role,
+          church_id: churchId,
+          cell_group_id: cellGroupId,
+          cell_group_name: cellGroupName,
+          cell_id: cellId,
+          cell_name: cellName,
+          assigned_cells: assignedCells,
+          assigned_cell_groups: assignedCellGroups,
+          department_permissions: departmentPermissions,
+          cannot_create_classes: cannotCreateClasses,
+          can_view_all_churches: canViewAllChurches,
+          status,
+          updated_at: today
+        };
+        saveState(`Updated user ${email}`);
+        void saveUserToSupabase(state.users[index]);
+        void dualWriteUserRecord("update", state.users[index]);
+      }
+    } else {
+      const newUser = {
+        id: (typeof generateUuid === "function" ? generateUuid() : null) || `u-${Date.now()}`,
+        name,
+        full_name: name,
+        email,
+        role,
+        role_name: role,
+        church_id: churchId,
+        cell_group_id: cellGroupId,
+        cell_group_name: cellGroupName,
+        cell_id: cellId,
+        cell_name: cellName,
+        assigned_cells: assignedCells,
+        assigned_cell_groups: assignedCellGroups,
+        department_permissions: departmentPermissions,
+        cannot_create_classes: cannotCreateClasses,
+        can_view_all_churches: canViewAllChurches,
+        status,
+        has_dashboard_access: true,
+        created_at: nowIso,
+        updated_at: today
+      };
+      state.users.push(newUser);
+      saveState(`Created user ${email}`);
+      void saveUserToSupabase(newUser);
+      void dualWriteUserRecord("create", newUser);
+    }
+
+    bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide();
+    form.reset();
+    if (typeof showToast === "function") {
+      showToast(lang === "pt" ? (modalMode === "edit" ? "Utilizador actualizado com sucesso!" : "Utilizador criado com sucesso!") : (modalMode === "edit" ? "User updated successfully!" : "User created successfully!"));
+    }
+    if (activeRoute === "users") renderUsers();
+    else setRoute(activeRoute);
     return;
   }
   if (modalType === "mediaSchedule") {
@@ -22474,7 +22906,39 @@ async function submitForm(form) {
     saveState(`Updated ${modalType}`);
     void dualWriteCellMinistryRecord(modalType, "update", collection[index]);
     if (modalType === "finance") void dualWriteFinanceRecord("update", collection[index]);
-    if (modalType === "user") void dualWriteUserRecord("update", collection[index]);
+    if (modalType === "user") {
+      const formData = new FormData(form);
+      const checkedPerms = formData.getAll("dept_perm").map((s) => String(s).trim()).filter(Boolean);
+      const u = collection[index];
+      u.name = String(u.name || u.full_name || "").trim();
+      u.full_name = u.name;
+      u.email = String(u.email || "").trim().toLowerCase();
+      u.role = u.role || "Cell Leader";
+      u.role_name = u.role;
+      u.department_permissions = checkedPerms.length ? checkedPerms : (u.role === "Super Admin" ? ["*"] : ["cellReports"]);
+      u.cannot_create_classes = formData.has("cannot_create_classes");
+      u.can_view_all_churches = formData.has("can_view_all_churches") || u.role === "Super Admin";
+
+      if (u.cell_group_id) {
+        const grp = [...(window.REAL_CELL_GROUPS || []), ...(state.cellGroups || [])].find((g) => String(g.id) === String(u.cell_group_id));
+        u.cell_group_name = grp?.group_name || grp?.name || "";
+      }
+      if (u.cell_id) {
+        const cl = [...(window.REAL_CELLS_REGISTRY || []), ...(state.cellRegistry || state.cells || [])].find((c) => String(c.id) === String(u.cell_id));
+        u.cell_name = cl?.cell_name || "";
+      }
+
+      if (formData.has("assign_all_subcells") && u.cell_group_id) {
+        const subcells = [...(window.REAL_CELLS_REGISTRY || []), ...(state.cellRegistry || state.cells || [])]
+          .filter((c) => String(c.group_id) === String(u.cell_group_id) || String(c.cell_group_id) === String(u.cell_group_id))
+          .map((c) => c.id);
+        u.assigned_cells = subcells.length ? subcells : (u.cell_id ? [u.cell_id] : []);
+        u.assigned_cell_groups = [u.cell_group_id];
+      }
+
+      void saveUserToSupabase(u);
+      void dualWriteUserRecord("update", u);
+    }
     if (
       [
         "inventoryItem",
@@ -22676,17 +23140,43 @@ async function submitForm(form) {
       }
     }
     if (modalType === "user") {
-      record.name = record.name || record.full_name || "";
-      record.full_name = record.full_name || record.name;
-      record.department_permissions = Array.isArray(record.department_permissions)
-        ? record.department_permissions
-        : String(record.department_permissions || "")
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean);
+      const formData = new FormData(form);
+      const checkedPerms = formData.getAll("dept_perm").map((s) => String(s).trim()).filter(Boolean);
+      record.name = String(record.name || record.full_name || "").trim();
+      record.full_name = record.name;
+      record.email = String(record.email || "").trim().toLowerCase();
+      record.role = record.role || "Cell Leader";
+      record.role_name = record.role;
+      record.department_permissions = checkedPerms.length ? checkedPerms : (record.role === "Super Admin" ? ["*"] : ["cellReports"]);
+      record.cannot_create_classes = formData.has("cannot_create_classes");
+      record.can_view_all_churches = formData.has("can_view_all_churches") || record.role === "Super Admin";
       record.status = record.status || "Active";
       record.has_dashboard_access = true;
+
+      // Group & Cell names
+      if (record.cell_group_id) {
+        const grp = [...(window.REAL_CELL_GROUPS || []), ...(state.cellGroups || [])].find((g) => String(g.id) === String(record.cell_group_id));
+        record.cell_group_name = grp?.group_name || grp?.name || "";
+      }
+      if (record.cell_id) {
+        const cl = [...(window.REAL_CELLS_REGISTRY || []), ...(state.cellRegistry || state.cells || [])].find((c) => String(c.id) === String(record.cell_id));
+        record.cell_name = cl?.cell_name || "";
+      }
+
+      // Assign all subcells if requested
+      if (formData.has("assign_all_subcells") && record.cell_group_id) {
+        const subcells = [...(window.REAL_CELLS_REGISTRY || []), ...(state.cellRegistry || state.cells || [])]
+          .filter((c) => String(c.group_id) === String(record.cell_group_id) || String(c.cell_group_id) === String(record.cell_group_id))
+          .map((c) => c.id);
+        record.assigned_cells = subcells.length ? subcells : (record.cell_id ? [record.cell_id] : []);
+        record.assigned_cell_groups = [record.cell_group_id];
+      } else if (record.cell_id) {
+        record.assigned_cells = [record.cell_id];
+        record.assigned_cell_groups = record.cell_group_id ? [record.cell_group_id] : [];
+      }
+
       delete record.password;
+      void saveUserToSupabase(record);
     }
     collection.push(record);
     saveState(`Created ${modalType}`);
@@ -23479,6 +23969,19 @@ function quickAction(action, type, id) {
       ? `Tem certeza que deseja apagar este registo de ${title}?`
       : `Are you sure you want to delete this ${title} record?`;
     if (!window.confirm(message)) return;
+    if (type === "user") {
+      const previous = collection[index];
+      const idx = state.users.findIndex((item) => String(item.id) === String(id));
+      if (idx >= 0) state.users.splice(idx, 1);
+      saveState(`Deleted user ${previous.email || id}`);
+      if (typeof showToast === "function") showToast(lang === "pt" ? "Utilizador eliminado com sucesso!" : "User deleted successfully!");
+      if (activeRoute === "users") renderUsers();
+      else setRoute(activeRoute);
+      void Promise.resolve(deleteUserFromSupabase(previous.id, previous.auth_user_id || previous.id)).catch((error) => {
+        console.warn("[CE Users] background delete sync error", error);
+      });
+      return;
+    }
     if (type === "member") {
       const previous = collection[index];
       const idx = state.members.findIndex((item) => item.id === id);
