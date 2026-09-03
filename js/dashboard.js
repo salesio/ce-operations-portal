@@ -23400,6 +23400,7 @@ function openForm(type, id = null) {
   if (type === "finance" && id) return openFinanceDrawer("edit", id);
 
   const showEntryForm = () => {
+    restoreEntryModalFooter();
     if (type === "staffProfile") {
       modalMode = id ? "edit" : "create";
       modalType = type;
@@ -23565,13 +23566,22 @@ async function submitForm(form) {
   const schema = modalType === "finance" ? getFinanceSchema(modalMode === "edit" ? "edit" : "create") : formSchemas[modalType];
   const data = Object.fromEntries(new FormData(form).entries());
   if (modalType === "member") {
-    const memberName = [data.nome, data.apelido].map((value) => String(value || "").trim()).filter(Boolean).join(" ");
-    if (!memberName || !data.church_id) {
-      alert("Para criar um membro, informe pelo menos o nome e a igreja.");
+    const existingMember = modalRecordId ? findMemberRecord(modalRecordId) : null;
+    const memberName = [data.nome, data.apelido].map((value) => String(value || "").trim()).filter(Boolean).join(" ") || data.full_name || existingMember?.full_name || "";
+    const memberChurchId = data.church_id || existingMember?.church_id || activeUser?.church_id || "";
+    if (!memberName || !memberChurchId) {
+      alert("Por favor, informe pelo menos o nome e a igreja.");
       return;
     }
+    data.church_id = memberChurchId;
+    data.full_name = memberName;
+    if (!data.nome && memberName) {
+      const parts = memberName.split(/\s+/);
+      data.nome = parts[0];
+      data.apelido = parts.slice(1).join(" ");
+    }
     // Phone is intentionally optional. Persist no invented number when blank.
-    data.primary_phone = String(data.primary_phone || "").trim() || null;
+    data.primary_phone = String(data.primary_phone || data.telefone || "").trim() || null;
     data.secondary_phone = String(data.secondary_phone || "").trim() || null;
     data.telefone = data.primary_phone;
     data.phone = data.primary_phone;
@@ -23988,7 +23998,7 @@ async function submitForm(form) {
     }
     bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide();
     form.reset();
-    setRoute(activeRoute);
+    if (activeRoute === "members") renderMembers(); else setRoute(activeRoute);
     return;
   }
 
@@ -25661,7 +25671,6 @@ document.addEventListener("click", async (event) => {
   }
   const memberProfileEdit = event.target.closest("[data-member-profile-edit]");
   if (memberProfileEdit) {
-    bootstrap.Modal.getInstance(byId("entryModal"))?.hide();
     return openForm("member", memberProfileEdit.dataset.memberProfileEdit);
   }
   const portalSection = event.target.closest("[data-cell-portal-section]");
