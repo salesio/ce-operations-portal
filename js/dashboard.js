@@ -17117,14 +17117,38 @@ async function persistMemberViaRepository(mode, memberRecord) {
     return { ok: true, data: memberRecord, skipped: true, via: "local-state-fallback" };
   }
 
+  const cleanMemberRecord = (rec) => {
+    if (!rec || typeof rec !== "object") return rec;
+    const cleaned = { ...rec };
+    [
+      "data_de_entrada", "entry_date", "member_since",
+      "date_of_birth", "data_de_nascimento", "confirmed_at"
+    ].forEach((k) => {
+      if (cleaned[k] !== undefined) {
+        const s = String(cleaned[k] || "").trim();
+        cleaned[k] = (!s || s === "—" || s === "-" || s === "null" || s === "undefined") ? null : s;
+      }
+    });
+    [
+      "church_id", "cell_id", "cell_group_id", "department_id"
+    ].forEach((k) => {
+      if (cleaned[k] !== undefined) {
+        const s = String(cleaned[k] || "").trim();
+        cleaned[k] = (!s || s === "null" || s === "undefined") ? null : s;
+      }
+    });
+    return cleaned;
+  };
+  const payloadRecord = typeof memberRecord === "object" ? cleanMemberRecord(memberRecord) : memberRecord;
+
   try {
     let result = null;
     if (mode === "create" && typeof repo.createMember === "function") {
-      result = await repo.createMember(memberRecord);
+      result = await repo.createMember(payloadRecord);
     } else if (mode === "update" && typeof repo.updateMember === "function") {
-      result = await repo.updateMember(memberRecord.id, memberRecord);
+      result = await repo.updateMember(payloadRecord.id, payloadRecord);
     } else if (mode === "delete" && typeof repo.deleteMember === "function") {
-      result = await repo.deleteMember(memberRecord.id || memberRecord);
+      result = await repo.deleteMember(payloadRecord.id || payloadRecord);
     } else {
       console.warn("[CE Members] repo method missing for mode", mode, repo);
       return { ok: true, data: memberRecord, skipped: true, via: "local-state-fallback" };
@@ -17134,7 +17158,7 @@ async function persistMemberViaRepository(mode, memberRecord) {
       const soft =
         result.code === "UNAVAILABLE" ||
         result.code === "NOT_IMPLEMENTED" ||
-        /indispon[ií]vel|not implemented|invalid input syntax for type uuid|22P02/i.test(String(result.error || ""));
+        /indispon[ií]vel|not implemented|invalid input syntax for type (uuid|date)|22P02|22007/i.test(String(result.error || ""));
       if (soft) {
         console.warn("[CE Members] repo soft-fail — keeping local save", result);
         return { ok: true, data: memberRecord, skipped: true, via: "local-state-fallback", repoError: result };
@@ -23586,6 +23610,22 @@ async function submitForm(form) {
     data.telefone = data.primary_phone;
     data.phone = data.primary_phone;
     data.data_quality_status = data.primary_phone ? "Valid" : "NeedsReview";
+
+    // Clean empty date strings to null so PostgreSQL never receives invalid input syntax for type date: ""
+    const cleanDateVal = (v) => {
+      const s = String(v || "").trim();
+      return (!s || s === "—" || s === "-" || s === "null" || s === "undefined") ? null : s;
+    };
+    data.data_de_entrada = cleanDateVal(data.data_de_entrada);
+    data.member_since = data.data_de_entrada;
+    data.entry_date = data.data_de_entrada;
+    data.date_of_birth = cleanDateVal(data.date_of_birth || data.data_de_nascimento);
+    data.data_de_nascimento = data.date_of_birth;
+
+    // Clean empty relational IDs
+    if (!data.cell_group_id || data.cell_group_id === "") data.cell_group_id = null;
+    if (!data.cell_id || data.cell_id === "") data.cell_id = null;
+    if (!data.department_id || data.department_id === "") data.department_id = null;
   }
   if (modalType === "firstTimer") {
     ["nasceu_de_novo", "foundation_school_interest", "interesse_em_celula", "next_service_interest"].forEach((field) => {

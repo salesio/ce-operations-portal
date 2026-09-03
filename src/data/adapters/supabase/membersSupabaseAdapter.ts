@@ -152,69 +152,82 @@ export function mapMemberFromRow(row: SupabaseRow | null | undefined): Member | 
   };
 }
 
+function cleanString(val: unknown): string | null {
+  if (val == null) return null;
+  const s = String(val).trim();
+  return s === "" ? null : s;
+}
+
+function cleanDate(val: unknown): string | null {
+  if (val == null) return null;
+  const s = String(val).trim();
+  if (!s || s === "" || s === "—" || s === "-" || s === "null" || s === "undefined") return null;
+  return s;
+}
+
 export function mapMemberToRow(member: Partial<Member>, forUpdate = false): SupabaseRow {
-  const first = member.first_name ?? member.nome ?? "";
-  const last = member.last_name ?? member.apelido ?? "";
-  const title = member.title ?? member.tratamento ?? "";
+  const first = cleanString(member.first_name ?? member.nome) || "";
+  const last = cleanString(member.last_name ?? member.apelido) || "";
+  const title = cleanString(member.title ?? member.tratamento) || "";
   const fullFromParts = [title, first, last].filter(Boolean).join(" ").trim();
-  const fullName = member.full_name || member.fullName || fullFromParts || "Membro";
-  const phone = member.primary_phone ?? member.phone ?? member.telefone ?? null;
-  const churchId = member.church_id ?? member.churchId ?? null;
+  const fullName = cleanString(member.full_name || member.fullName) || fullFromParts || "Membro";
+  const phone = cleanString(member.primary_phone ?? member.phone ?? member.telefone);
+  const rawChurchId = cleanString(member.church_id ?? member.churchId);
 
   const row: SupabaseRow = {
-    member_code: (member as { member_code?: string }).member_code ?? null,
+    member_code: cleanString((member as { member_code?: string }).member_code),
     full_name: fullName,
-    first_name: first || null,
-    last_name: last || null,
-    title: title || null,
-    gender: member.gender ?? member.genero ?? null,
-    date_of_birth: member.date_of_birth ?? member.data_de_nascimento ?? null,
-    phone: phone || null,
-    whatsapp: member.whatsapp || phone || null,
-    email: member.email || null,
-    address: member.address ?? member.endereco ?? null,
-    church_id: churchId && isValidUuid(String(churchId)) ? String(churchId) : null,
-    church_name: member.church_name ?? member.igreja ?? null,
-    cell_group_id: member.cell_group_id != null ? String(member.cell_group_id) : null,
-    cell_group_name: member.cell_group_name ?? null,
-    cell_id: member.cell_id != null ? String(member.cell_id) : null,
-    cell_name: member.cell_name ?? member.celula ?? null,
-    department_id: member.department_id != null ? String(member.department_id) : null,
-    department_name: member.department_name ?? member.departamento ?? null,
-    status: member.status ?? member.estado ?? "Active",
-    entry_date: member.member_since ?? member.data_de_entrada ?? null,
-    source: member.source ?? member.origem ?? "Manual",
-    notes: member.notes ?? member.notas ?? null,
-    primary_phone: member.primary_phone ?? member.phone ?? member.telefone ?? null,
-    secondary_phone: member.secondary_phone ?? null,
-    neighborhood: member.neighborhood ?? null,
-    marital_status: member.marital_status ?? null,
-    occupation: member.occupation ?? null,
-    kingschat_username: member.kingschat_username ?? null,
-    membership_status: member.membership_status ?? member.status ?? member.estado ?? "Active",
-    cell_role: member.cell_role ?? "Member",
-    cell_participation_status: member.cell_participation_status ?? "Unknown",
-    service_participation_status: member.service_participation_status ?? "Unknown",
-    legacy_foundation_status: member.legacy_foundation_status ?? null,
-    legacy_foundation_raw_value: member.legacy_foundation_raw_value ?? null,
-    legacy_alec_status: member.legacy_alec_status ?? null,
-    legacy_alec_raw_value: member.legacy_alec_raw_value ?? null,
-    legacy_baptism_status: member.legacy_baptism_status ?? null,
-    legacy_baptism_raw_value: member.legacy_baptism_raw_value ?? null,
-    legacy_partner_status: member.legacy_partner_status ?? null,
+    first_name: cleanString(first),
+    last_name: cleanString(last),
+    title: cleanString(title),
+    gender: cleanString(member.gender ?? member.genero),
+    date_of_birth: cleanDate(member.date_of_birth ?? member.data_de_nascimento),
+    phone: phone,
+    whatsapp: cleanString(member.whatsapp) || phone,
+    email: cleanString(member.email),
+    address: cleanString(member.address ?? member.endereco),
+    church_id: rawChurchId && isValidUuid(rawChurchId) ? rawChurchId : null,
+    church_name: cleanString(member.church_name ?? member.igreja),
+    cell_group_id: cleanString(member.cell_group_id),
+    cell_group_name: cleanString(member.cell_group_name),
+    cell_id: cleanString(member.cell_id),
+    cell_name: cleanString(member.cell_name ?? member.celula),
+    department_id: cleanString(member.department_id),
+    department_name: cleanString(member.department_name ?? member.departamento),
+    status: cleanString(member.status ?? member.estado) || "Active",
+    entry_date: cleanDate(member.entry_date ?? member.member_since ?? member.data_de_entrada),
+    source: cleanString(member.source ?? member.origem) || "Manual",
+    notes: cleanString(member.notes ?? member.notas),
+    primary_phone: phone,
+    secondary_phone: cleanString(member.secondary_phone),
+    neighborhood: cleanString(member.neighborhood ?? member.bairro),
+    marital_status: cleanString(member.marital_status ?? member.estado_civil),
+    occupation: cleanString(member.occupation ?? member.profissao),
+    kingschat_username: cleanString(member.kingschat_username),
+    membership_status: cleanString(member.membership_status ?? member.status ?? member.estado) || "Active",
+    cell_role: cleanString(member.cell_role) || "Member",
+    cell_participation_status: cleanString(member.cell_participation_status) || "Unknown",
+    service_participation_status: cleanString(member.service_participation_status) || "Unknown",
+    legacy_foundation_status: cleanString(member.legacy_foundation_status),
+    legacy_foundation_raw_value: cleanString(member.legacy_foundation_raw_value),
+    legacy_alec_status: cleanString(member.legacy_alec_status),
+    legacy_alec_raw_value: cleanString(member.legacy_alec_raw_value),
+    legacy_baptism_status: cleanString(member.legacy_baptism_status),
+    legacy_baptism_raw_value: cleanString(member.legacy_baptism_raw_value),
+    legacy_partner_status: cleanString(member.legacy_partner_status),
     legacy_partnership_arms: member.legacy_partnership_arms ?? [],
-    legacy_source: member.legacy_source ?? null,
-    legacy_source_sheet: member.legacy_source_sheet ?? null,
+    legacy_source: cleanString(member.legacy_source),
+    legacy_source_sheet: cleanString(member.legacy_source_sheet),
     legacy_source_row: member.legacy_source_row ?? null,
-    legacy_import_batch_id: member.legacy_import_batch_id ?? null,
-    data_quality_status: member.data_quality_status ?? "Valid",
-    reconciliation_status: member.reconciliation_status ?? "Pending",
-    confirmed_by: member.confirmed_by ?? null,
-    confirmed_at: member.confirmed_at ?? null,
-    reconciliation_notes: member.reconciliation_notes ?? null,
+    legacy_import_batch_id: cleanString(member.legacy_import_batch_id),
+    data_quality_status: cleanString(member.data_quality_status) || "Valid",
+    reconciliation_status: cleanString(member.reconciliation_status) || "Pending",
+    confirmed_by: cleanString(member.confirmed_by),
+    confirmed_at: cleanDate(member.confirmed_at),
+    reconciliation_notes: cleanString(member.reconciliation_notes),
     member_since_year: member.member_since_year ?? null,
-    member_since_raw: member.member_since_raw ?? null,
-    member_since_precision: member.member_since_precision ?? "exact",
+    member_since_raw: cleanString(member.member_since_raw),
+    member_since_precision: cleanString(member.member_since_precision) || "exact",
     metadata: {},
   };
   if (!forUpdate) {
