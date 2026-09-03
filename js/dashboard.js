@@ -16966,62 +16966,125 @@ function getMembersRepoSafe() {
 
 function migrateMemberRecord(member) {
   if (!member) return member;
-  const churchId = member.church_id || member.churchId || "";
-  const churchLabel = member.church_name || member.igreja || (typeof churchName === "function" ? churchName(churchId) : "") || "";
-  const cellName = member.celula || member.cell_name || "";
 
-  let fName = member.nome || member.first_name || "";
-  let lName = member.apelido || member.last_name || "";
-  if (!fName && member.full_name) {
+  const id = member.id || member.member_id || "";
+
+  let fName = member.nome ?? member.first_name ?? "";
+  let lName = member.apelido ?? member.last_name ?? "";
+  if (!fName && !lName && member.full_name) {
     const parts = String(member.full_name).trim().split(/\s+/);
     fName = parts[0] || "";
     lName = parts.slice(1).join(" ") || "";
   }
+  const title = member.tratamento ?? member.title ?? "";
+  const fullFromParts = [title, fName, lName].filter(Boolean).join(" ").trim();
+  const fullNameStr = (member.nome != null || member.apelido != null)
+    ? (fullFromParts || "Membro")
+    : (member.full_name || member.fullName || fullFromParts || "Membro");
 
-  const phone = member.primary_phone || member.telefone || member.phone || member.contacto || "";
+  const phone = member.primary_phone || member.telefone || member.phone || member.contacto || null;
+  const secondaryPhone = member.secondary_phone || member.telefone_alternativo || null;
+
+  const churchId = member.church_id || member.churchId || "";
+  let churchLabel = member.church_name || member.igreja || "";
+  if (churchId && typeof churchName === "function") {
+    const resolvedName = churchName(churchId);
+    if (resolvedName && resolvedName !== churchId) churchLabel = resolvedName;
+  }
+
+  const cellGroupId = member.cell_group_id || "";
+  let cellGroupName = member.cell_group_name || "";
+  if (cellGroupId && Array.isArray(state?.cellGroups)) {
+    const cg = state.cellGroups.find((g) => String(g.id) === String(cellGroupId));
+    if (cg?.group_name) cellGroupName = cg.group_name;
+  }
+
+  const cellId = member.cell_id || "";
+  let cellName = member.cell_name || member.celula || "";
+  if (cellId) {
+    const registry = (typeof REAL_CELLS_REGISTRY !== "undefined" ? REAL_CELLS_REGISTRY : []).concat(state?.cellRegistry || []);
+    const cr = registry.find((c) => String(c.id) === String(cellId));
+    if (cr?.cell_name) cellName = cr.cell_name;
+  }
+
+  const departamento = member.departamento ?? member.department_name ?? "";
+  const estado = member.estado ?? member.status ?? member.membership_status ?? "Active";
+  const membershipStatus = member.membership_status ?? estado;
+
+  const cleanDateVal = (v) => {
+    if (!v) return null;
+    const s = String(v).trim();
+    return (!s || s === "—" || s === "-" || s === "null" || s === "undefined") ? null : s;
+  };
+
+  const entryDate = cleanDateVal(member.data_de_entrada ?? member.entry_date ?? member.member_since);
+  const birthDate = cleanDateVal(member.data_de_nascimento ?? member.date_of_birth);
+
+  const neighborhood = member.neighborhood ?? member.bairro ?? "";
+  const maritalStatus = member.marital_status ?? member.estado_civil ?? "";
+  const occupation = member.occupation ?? member.profissao ?? "";
+  const address = member.address ?? member.endereco ?? "";
+  const notes = member.notas ?? member.notes ?? "";
+  const origin = member.origem ?? member.source ?? "Manual";
 
   return {
     ...member,
-    id: member.id,
-    tratamento: member.tratamento || member.title || "",
+    id,
+    tratamento: title,
+    title,
     nome: fName,
     first_name: fName,
     apelido: lName,
     last_name: lName,
-    full_name: member.full_name || `${fName} ${lName}`.trim(),
-    telefone: phone,
+    full_name: fullNameStr,
+    fullName: fullNameStr,
+    telefone: phone || "",
+    phone: phone || "",
     primary_phone: phone,
-    secondary_phone: member.secondary_phone || "",
-    neighborhood: member.neighborhood || member.bairro || "",
-    bairro: member.neighborhood || member.bairro || "",
-    marital_status: member.marital_status || member.estado_civil || "",
-    estado_civil: member.marital_status || member.estado_civil || "",
-    occupation: member.occupation || member.profissao || "",
-    profissao: member.occupation || member.profissao || "",
+    secondary_phone: secondaryPhone,
+    telefone_alternativo: secondaryPhone,
+    neighborhood,
+    bairro: neighborhood,
+    marital_status: maritalStatus,
+    estado_civil: maritalStatus,
+    occupation,
+    profissao: occupation,
     kingschat_username: member.kingschat_username || "",
-    whatsapp: member.whatsapp || phone,
+    whatsapp: member.whatsapp || phone || "",
     email: member.email || "",
-    endereco: member.endereco || member.address || "",
+    endereco: address,
+    address,
     church_id: churchId,
+    churchId,
     church_name: churchLabel,
-    igreja: member.igreja || churchLabel,
+    igreja: churchLabel,
+    cell_group_id: cellGroupId,
+    cell_group_name: cellGroupName,
+    cell_id: cellId,
+    cell_name: cellName,
     celula: cellName,
-    cell_id: member.cell_id || "",
-    cell_name: member.cell_name || cellName,
-    cell_group_id: member.cell_group_id || "",
-    cell_group_name: member.cell_group_name || "",
-    departamento: member.departamento || member.department_name || "",
+    departamento,
+    department_name: departamento || null,
     department_id: member.department_id || "",
-    department_name: member.department_name || member.departamento || "",
-    estado: member.estado || member.status || "Active",
-    status: member.status || member.estado || "Active",
-    membership_status: member.membership_status || member.estado || member.status || "Active",
+    estado,
+    status: estado,
+    membership_status: membershipStatus,
     cell_role: member.cell_role || "Member",
     cell_participation_status: member.cell_participation_status || "Unknown",
     service_participation_status: member.service_participation_status || "Unknown",
-    data_de_entrada: member.data_de_entrada || member.member_since || "",
-    origem: member.origem || member.source || "Manual",
-    notas: member.notas || member.notes || ""
+    data_de_entrada: entryDate || "",
+    entry_date: entryDate,
+    member_since: entryDate,
+    data_de_nascimento: birthDate,
+    date_of_birth: birthDate,
+    origem: origin,
+    source: origin,
+    legacy_foundation_status: member.legacy_foundation_status || "",
+    legacy_alec_status: member.legacy_alec_status || "",
+    legacy_baptism_status: member.legacy_baptism_status || "",
+    legacy_partner_status: member.legacy_partner_status || "",
+    notas: notes,
+    notes
   };
 }
 
@@ -23994,9 +24057,52 @@ async function submitForm(form) {
         ...state.members[index],
         ...data,
         id: modalRecordId,
+        nome: data.nome,
+        first_name: data.nome,
+        apelido: data.apelido,
+        last_name: data.apelido,
+        tratamento: data.tratamento,
+        title: data.tratamento,
+        full_name: data.full_name || [data.tratamento, data.nome, data.apelido].filter(Boolean).join(" ").trim(),
+        fullName: data.full_name || [data.tratamento, data.nome, data.apelido].filter(Boolean).join(" ").trim(),
+        primary_phone: data.primary_phone,
+        phone: data.primary_phone,
+        telefone: data.primary_phone,
+        secondary_phone: data.secondary_phone,
+        telefone_alternativo: data.secondary_phone,
+        email: data.email,
+        neighborhood: data.neighborhood,
+        bairro: data.neighborhood,
+        marital_status: data.marital_status,
+        estado_civil: data.marital_status,
+        occupation: data.occupation,
+        profissao: data.occupation,
+        kingschat_username: data.kingschat_username,
+        church_id: data.church_id,
+        churchId: data.church_id,
+        cell_group_id: data.cell_group_id,
+        cell_id: data.cell_id,
+        cell_role: data.cell_role,
+        cell_participation_status: data.cell_participation_status,
+        service_participation_status: data.service_participation_status,
+        departamento: data.departamento,
+        department_name: data.departamento || null,
+        estado: data.estado || data.status || state.members[index].estado,
+        status: data.estado || data.status || state.members[index].estado,
+        membership_status: data.membership_status || data.estado || data.status || state.members[index].estado,
+        data_de_entrada: data.data_de_entrada,
+        entry_date: data.data_de_entrada,
+        member_since: data.data_de_entrada,
+        origem: data.origem,
+        source: data.origem,
+        legacy_foundation_status: data.legacy_foundation_status,
+        legacy_alec_status: data.legacy_alec_status,
+        legacy_baptism_status: data.legacy_baptism_status,
+        legacy_partner_status: data.legacy_partner_status,
+        notas: data.notas,
+        notes: data.notas,
         updated_by: activeUser?.name || "Admin",
-        updated_at: today,
-        status: data.estado || data.status || state.members[index].estado
+        updated_at: today
       });
       const repoResult = await persistMemberViaRepository("update", next);
       if (repoResult && repoResult.ok === false) {
@@ -24011,6 +24117,12 @@ async function submitForm(form) {
       if (modulePageState?.members?.items) {
         const pIdx = modulePageState.members.items.findIndex((item) => String(item.id) === String(modalRecordId));
         if (pIdx >= 0) modulePageState.members.items[pIdx] = updatedMember;
+      }
+
+      // Also update in cellPortalMembersState.items if present
+      if (typeof cellPortalMembersState !== "undefined" && Array.isArray(cellPortalMembersState?.items)) {
+        const cpIdx = cellPortalMembersState.items.findIndex((item) => String(item.id) === String(modalRecordId));
+        if (cpIdx >= 0) cellPortalMembersState.items[cpIdx] = updatedMember;
       }
 
       saveState(`Updated member ${fullName(state.members[index])}`);
@@ -24686,8 +24798,31 @@ function buildMemberProfileViewModel(member) {
   return {
     full, initials: full.split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase(),
     status: memberProfileStatus(memberProfileValue(member.membership_status, member.estado, member.status)), church, group, cell,
-    personal: [["Nome completo", full], ["Telefone", phone], ["Telefone alternativo", secondaryPhone && secondaryPhone !== phone ? secondaryPhone : ""], ["WhatsApp", whatsapp && whatsapp !== phone && whatsapp !== secondaryPhone ? whatsapp : ""], ["E-mail", memberProfileValue(member.email)], ["Data de nascimento", memberProfileValue(member.date_of_birth, member.data_de_nascimento)], ["Bairro", memberProfileValue(member.neighborhood, member.bairro)], ["Morada", memberProfileValue(member.address, member.endereco)], ["Estado civil", memberProfileValue(member.marital_status)], ["Profissão", memberProfileValue(member.occupation, member.profissao)], ["KingsChat", memberProfileValue(member.kingschat_username)]],
-    churchLife: [["Igreja", church], ["Membro desde", memberProfileValue(member.member_since, member.data_de_entrada)], ["Estado", memberProfileStatus(memberProfileValue(member.membership_status, member.estado, member.status))], ["Grupo de célula", group], ["Célula", cell], ["Função na célula", memberProfileValue(member.cell_role, "Membro")], ["Participação na célula", memberProfileStatus(member.cell_participation_status)], ["Participação nos cultos", memberProfileStatus(member.service_participation_status)], ["Origem", memberProfileValue(member.origem, member.source)]],
+    personal: [
+      ["Nome completo", full],
+      ["Telefone", phone],
+      ["Telefone alternativo", secondaryPhone && secondaryPhone !== phone ? secondaryPhone : ""],
+      ["WhatsApp", whatsapp && whatsapp !== phone && whatsapp !== secondaryPhone ? whatsapp : ""],
+      ["E-mail", memberProfileValue(member.email)],
+      ["Data de nascimento", memberProfileValue(member.date_of_birth, member.data_de_nascimento)],
+      ["Bairro", memberProfileValue(member.neighborhood, member.bairro)],
+      ["Morada", memberProfileValue(member.address, member.endereco)],
+      ["Estado civil", memberProfileValue(member.marital_status, member.estado_civil)],
+      ["Profissão", memberProfileValue(member.occupation, member.profissao)],
+      ["KingsChat", memberProfileValue(member.kingschat_username)]
+    ],
+    churchLife: [
+      ["Igreja", church],
+      ["Membro desde", memberProfileValue(member.member_since, member.data_de_entrada, member.entry_date)],
+      ["Estado", memberProfileStatus(memberProfileValue(member.membership_status, member.estado, member.status))],
+      ["Grupo de célula", group],
+      ["Célula", cell],
+      ["Função na célula", memberProfileValue(member.cell_role, "Membro")],
+      ["Participação na célula", memberProfileStatus(member.cell_participation_status)],
+      ["Participação nos cultos", memberProfileStatus(member.service_participation_status)],
+      ["Departamento", memberProfileValue(member.departamento, member.department_name)],
+      ["Origem", memberProfileValue(member.origem, member.source)]
+    ],
     spiritual: [["Escola de Fundação", memberProfileValue(foundation.status, member.legacy_foundation_status, "Não informado")], ["Baptismo", sacraments.baptized ? "Baptizado" : memberProfileValue(member.legacy_baptism_status, "Não informado")], ["Sacramentos", `${Number(sacraments.marriages || 0)} casamento(s) · ${Number(sacraments.baby_dedications || 0)} dedicação(ões)`], ["ALEC", memberProfileValue(alec?.status, alec?.estado, member.legacy_alec_status, "Não informado")], ["Graduação Foundation", foundation.graduated ? "Concluída" : ""], ["Acompanhamento", followups ? `${followups} registo(s)` : ""]],
     stewardship: finance ? [["Parceiro", yesNo(finance.is_partner)], ["Ramos de parceria", finance.partnership_arms.join(", ")], ["Dízimo", finance.is_tither ? "Actividade recente" : "Sem actividade"]] : [],
     souls: [["Pessoas convidadas", invited], ["First Timers associados", invited], ["Nasceram de novo", (state.firstTimers || []).filter((item) => item.invited_by_member_id === member.id && /sim|yes|true/i.test(String(item.nasceu_de_novo || item.born_again || ""))).length], ["Em acompanhamento", followups], ["Enviados à Escola de Fundação", (state.foundationStudents || []).filter((item) => item.member_id === member.id).length]],

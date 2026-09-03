@@ -78,13 +78,23 @@ export function mapMemberFromRow(row: SupabaseRow | null | undefined): Member | 
   if (!row) return null;
   const id = String(row.id || "");
   const fullName = String(row.full_name || "Membro");
-  const first = String(row.first_name || "");
-  const last = String(row.last_name || "");
+  let first = String(row.first_name || "");
+  let last = String(row.last_name || "");
+  if (!first && !last && fullName && fullName !== "Membro") {
+    const parts = fullName.trim().split(/\s+/);
+    first = parts[0] || "";
+    last = parts.slice(1).join(" ") || "";
+  }
   const title = String(row.title || "");
   const primaryPhone = (row.primary_phone as string) || (row.phone as string) || null;
   const phone = primaryPhone || "";
   const status = String(row.status || "Active");
   const churchId = row.church_id != null ? String(row.church_id) : null;
+  const neighborhood = (row.neighborhood as string) || null;
+  const maritalStatus = (row.marital_status as string) || null;
+  const occupation = (row.occupation as string) || null;
+  const secondaryPhone = (row.secondary_phone as string) || null;
+
   return {
     id,
     member_code: (row.member_code as string) || null,
@@ -122,16 +132,21 @@ export function mapMemberFromRow(row: SupabaseRow | null | undefined): Member | 
     estado: status,
     member_since: (row.entry_date as string) || null,
     data_de_entrada: (row.entry_date as string) || null,
+    entry_date: (row.entry_date as string) || null,
     source: (row.source as string) || "Manual",
     origem: (row.source as string) || "Manual",
     notes: (row.notes as string) || "",
     notas: (row.notes as string) || "",
     isActive: isActiveStatus(status),
     primary_phone: primaryPhone,
-    secondary_phone: (row.secondary_phone as string) || null,
-    neighborhood: (row.neighborhood as string) || null,
-    marital_status: (row.marital_status as string) || null,
-    occupation: (row.occupation as string) || null,
+    secondary_phone: secondaryPhone,
+    telefone_alternativo: secondaryPhone,
+    neighborhood,
+    bairro: neighborhood,
+    marital_status: maritalStatus,
+    estado_civil: maritalStatus,
+    occupation,
+    profissao: occupation,
     kingschat_username: (row.kingschat_username as string) || null,
     membership_status: (row.membership_status as string) || status,
     cell_role: (row.cell_role as string) || "Member",

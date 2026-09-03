@@ -56,41 +56,52 @@ export function normalizeMember(input: Partial<Member> & { id?: string }): Membe
   // neither manual entry nor legacy imports invent placeholder phone numbers.
   const primaryPhone = input.primary_phone ?? input.phone ?? input.telefone ?? null;
   const telefone = input.telefone ?? input.phone ?? input.primary_phone ?? null;
-  const estado = input.estado ?? input.status ?? "Active";
+  const estado = input.estado ?? input.status ?? input.membership_status ?? "Active";
   const churchId = input.church_id ?? input.churchId ?? null;
   const fullFromParts = [tratamento, nome, apelido].filter(Boolean).join(" ").trim();
   const fullName =
-    input.full_name ||
-    input.fullName ||
-    fullFromParts ||
-    "Membro";
+    (input.nome != null || input.apelido != null)
+      ? (fullFromParts || "Membro")
+      : (input.full_name || input.fullName || fullFromParts || "Membro");
+
+  const departamento = input.departamento ?? input.department_name ?? "";
+  const neighborhood = input.neighborhood ?? input.bairro ?? null;
+  const maritalStatus = input.marital_status ?? input.estado_civil ?? null;
+  const occupation = input.occupation ?? input.profissao ?? null;
+  const entryDate = input.data_de_entrada ?? input.entry_date ?? input.member_since ?? null;
+  const birthDate = input.data_de_nascimento ?? input.date_of_birth ?? null;
+  const origin = input.origem ?? input.source ?? "Manual";
+  const notes = input.notas ?? input.notes ?? "";
 
   return {
     ...input,
     id,
     tratamento,
-    title: input.title ?? tratamento,
+    title: tratamento,
     nome,
-    first_name: input.first_name ?? nome,
+    first_name: nome,
     apelido,
-    last_name: input.last_name ?? apelido,
+    last_name: apelido,
     full_name: fullName,
     fullName,
     genero: input.genero ?? input.gender ?? null,
     gender: input.gender ?? input.genero ?? null,
-    data_de_nascimento: input.data_de_nascimento ?? input.date_of_birth ?? null,
-    date_of_birth: input.date_of_birth ?? input.data_de_nascimento ?? null,
+    data_de_nascimento: birthDate,
+    date_of_birth: birthDate,
     telefone,
-    phone: input.phone ?? input.primary_phone ?? input.telefone ?? null,
+    phone: input.phone ?? primaryPhone ?? telefone ?? null,
     primary_phone: primaryPhone,
     secondary_phone: input.secondary_phone ?? null,
     whatsapp: input.whatsapp ?? telefone ?? null,
     email: input.email ?? "",
     endereco: input.endereco ?? input.address ?? "",
     address: input.address ?? input.endereco ?? "",
-    neighborhood: input.neighborhood ?? null,
-    marital_status: input.marital_status ?? null,
-    occupation: input.occupation ?? null,
+    neighborhood,
+    bairro: neighborhood,
+    marital_status: maritalStatus,
+    estado_civil: maritalStatus,
+    occupation,
+    profissao: occupation,
     kingschat_username: input.kingschat_username ?? null,
     church_id: churchId,
     churchId,
@@ -102,16 +113,17 @@ export function normalizeMember(input: Partial<Member> & { id?: string }): Membe
     cell_name: input.cell_name ?? input.celula ?? null,
     celula: input.celula ?? input.cell_name ?? "",
     department_id: input.department_id ?? null,
-    department_name: input.department_name ?? input.departamento ?? null,
-    departamento: input.departamento ?? input.department_name ?? "",
+    department_name: departamento || null,
+    departamento,
     estado,
-    status: input.status ?? estado,
-    data_de_entrada: input.data_de_entrada ?? input.member_since ?? null,
-    member_since: input.member_since ?? input.data_de_entrada ?? null,
-    origem: input.origem ?? input.source ?? "Manual",
-    source: input.source ?? input.origem ?? "Manual",
-    notas: input.notas ?? input.notes ?? "",
-    notes: input.notes ?? input.notas ?? "",
+    status: estado,
+    data_de_entrada: entryDate,
+    entry_date: entryDate,
+    member_since: entryDate,
+    origem: origin,
+    source: origin,
+    notas: notes,
+    notes,
     isActive: input.isActive ?? isActiveStatus(estado),
     membership_status: input.membership_status ?? estado,
     cell_role: input.cell_role ?? "Member",
@@ -368,7 +380,35 @@ export async function updateMember(
       const existing = await membersSb.getMemberById(id);
       if (!existing.ok) return fail(existing.error, existing.code);
       if (!existing.data) return fail("Membro não encontrado.", "NOT_FOUND");
-      let next = normalizeMember({ ...existing.data, ...payload, id });
+      let next = normalizeMember({
+        ...existing.data,
+        ...payload,
+        id,
+        first_name: payload.nome ?? payload.first_name ?? existing.data.first_name,
+        last_name: payload.apelido ?? payload.last_name ?? existing.data.last_name,
+        nome: payload.nome ?? payload.first_name ?? existing.data.nome,
+        apelido: payload.apelido ?? payload.last_name ?? existing.data.apelido,
+        title: payload.tratamento ?? payload.title ?? existing.data.title,
+        tratamento: payload.tratamento ?? payload.title ?? existing.data.tratamento,
+        department_name: payload.departamento ?? payload.department_name ?? existing.data.department_name,
+        departamento: payload.departamento ?? payload.department_name ?? existing.data.departamento,
+        status: payload.estado ?? payload.status ?? existing.data.status,
+        estado: payload.estado ?? payload.status ?? existing.data.estado,
+        membership_status: payload.membership_status ?? payload.estado ?? payload.status ?? existing.data.membership_status,
+        entry_date: payload.data_de_entrada ?? payload.entry_date ?? payload.member_since ?? existing.data.entry_date,
+        data_de_entrada: payload.data_de_entrada ?? payload.entry_date ?? payload.member_since ?? existing.data.data_de_entrada,
+        member_since: payload.data_de_entrada ?? payload.entry_date ?? payload.member_since ?? existing.data.member_since,
+        notes: payload.notas ?? payload.notes ?? existing.data.notes,
+        notas: payload.notas ?? payload.notes ?? existing.data.notas,
+        source: payload.origem ?? payload.source ?? existing.data.source,
+        origem: payload.origem ?? payload.source ?? existing.data.origem,
+        neighborhood: payload.neighborhood ?? payload.bairro ?? existing.data.neighborhood,
+        bairro: payload.neighborhood ?? payload.bairro ?? existing.data.bairro,
+        marital_status: payload.marital_status ?? payload.estado_civil ?? existing.data.marital_status,
+        estado_civil: payload.marital_status ?? payload.estado_civil ?? existing.data.estado_civil,
+        occupation: payload.occupation ?? payload.profissao ?? existing.data.occupation,
+        profissao: payload.occupation ?? payload.profissao ?? existing.data.profissao,
+      });
       next = await attachChurchName(next);
       const result = await membersSb.updateMember(id, next);
       if (!result.ok) return result;
