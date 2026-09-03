@@ -3349,7 +3349,7 @@ const seedData = {
   users: [
     { id: "9691d45a-e613-4fa3-8cb5-43955f39aa66", auth_user_id: "f8d9954c-a17b-4870-98f6-a7d6f2576391", name: "Salésio Machava", full_name: "Salésio Machava", email: "admin@embaixadadecristo.org", role: "Super Admin", role_name: "Super Admin", church_id: "a1111111-1111-4111-8111-111111111101", department_permissions: ["*"], can_view_all_churches: true, status: "Active" },
     { id: "38ee3dab-c172-4d78-97a9-aa76c554ce63", auth_user_id: "ac47e5fa-f9f5-4d58-ab91-eebcb01f1b01", name: "Pastor Valdemiro Machava", full_name: "Pastor Valdemiro Machava", email: "p.care@embaixadadecristo.org", role: "pastoral_care_rector", role_name: "Reitor de Cuidados Pastorais", church_id: "a1111111-1111-4111-8111-111111111101", department_permissions: ["firstTimers", "followUp", "foundation", "sacraments", "counseling", "reports"], can_view_all_churches: true, status: "Active" },
-    { id: "e83250d7-9f03-47fb-a4f8-1c2f6636b1c4", auth_user_id: "e83250d7-9f03-47fb-a4f8-1c2f6636b1c4", name: "Marcelo Panguene", full_name: "Marcelo Panguene", email: "venue@embaixadadecristo.org", role: "Venue Manager", role_name: "Gestor de Património & Instalações", church_id: "a1111111-1111-4111-8111-111111111101", department_permissions: ["venueInventory", "inventory", "venues", "maintenance", "checklists", "reports"], can_view_all_churches: true, status: "Active" },
+    { id: "e83250d7-9f03-47fb-a4f8-1c2f6636b1c4", auth_user_id: "e83250d7-9f03-47fb-a4f8-1c2f6636b1c4", name: "Marcelo Panguene", full_name: "Marcelo Panguene", email: "venue@embaixadadecristo.org", role: "Venue Manager", role_name: "Gestor de Património & Instalações", church_id: "a1111111-1111-4111-8111-111111111101", department_permissions: ["venueInventory", "inventory", "venues", "maintenance", "checklists", "cellReports"], can_view_all_churches: true, status: "Active" },
     { id: "280ef567-05b5-4ef8-b7a0-ec6390655504", auth_user_id: "008969ce-f123-41e3-bce0-e58f477b4622", name: "Sister Angélica", full_name: "Sister Angélica", email: "angelicaamilcar27@gmail.com", role: "ALEC Coordinator", role_name: "Coordenadora ALEC", church_id: "a1111111-1111-4111-8111-111111111101", department_permissions: ["cell", "alecRegistration", "alecScores", "churchReports"], can_view_all_churches: true, status: "Active" },
     { id: "473e4df5-883c-499a-a42e-223495c266d1", auth_user_id: "473e4df5-883c-499a-a42e-223495c266d1", name: "Filipe Chamango", full_name: "Filipe Chamango", email: "diamantes.main@embaixadadecristo.org", role: "Cell Leader", role_name: "Líder de Célula Diamantes Main", church_id: "a1111111-1111-4111-8111-111111111101", cell_id: "d1a00000-d1a0-4000-8000-000000000001", cell_name: "Diamantes main", cell_group_id: "d1a00000-0000-4000-8000-000000000001", cell_group_name: "Diamantes Main", assigned_cells: ["d1a00000-d1a0-4000-8000-000000000001", "d1a00000-d1a0-4000-8000-000000000002", "d1a00000-d1a0-4000-8000-000000000003", "d1a00000-d1a0-4000-8000-000000000004", "d1a00000-d1a0-4000-8000-000000000005", "d1a00000-d1a0-4000-8000-000000000006", "d1a00000-d1a0-4000-8000-000000000007", "d1a00000-d1a0-4000-8000-000000000008", "d1a00000-d1a0-4000-8000-000000000009", "d1a00000-d1a0-4000-8000-000000000010"], assigned_cell_groups: ["d1a00000-0000-4000-8000-000000000001"], department_permissions: ["cellReports", "followUp", "foundation", "foundation_teacher", "reports"], cannot_create_classes: true, permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_portal.view", "cell_portal.edit", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary", "follow_up.view", "follow_up.edit", "follow_up.enroll_foundation", "foundation.view", "foundation.edit_students", "foundation.record_lessons", "foundation.record_tests", "foundation.record_exam", "foundation.reports"], can_view_all_churches: false, status: "Active" },
     { id: "1be83c02-cb16-4cf3-a246-58bd0ef1953f", auth_user_id: "1be83c02-cb16-4cf3-a246-58bd0ef1953f", name: "Michael Juma", full_name: "Michael Juma", email: "assistant.diamantes.main@embaixadadecristo.org", role: "Cell Assistant", role_name: "Assistente de Célula Diamantes Main", church_id: "a1111111-1111-4111-8111-111111111101", cell_id: "d1a00000-d1a0-4000-8000-000000000001", cell_name: "Diamantes main", cell_group_id: "d1a00000-0000-4000-8000-000000000001", cell_group_name: "Diamantes Main", assigned_cells: ["d1a00000-d1a0-4000-8000-000000000001", "d1a00000-d1a0-4000-8000-000000000002", "d1a00000-d1a0-4000-8000-000000000003", "d1a00000-d1a0-4000-8000-000000000004", "d1a00000-d1a0-4000-8000-000000000005", "d1a00000-d1a0-4000-8000-000000000006", "d1a00000-d1a0-4000-8000-000000000007", "d1a00000-d1a0-4000-8000-000000000008", "d1a00000-d1a0-4000-8000-000000000009", "d1a00000-d1a0-4000-8000-000000000010"], assigned_cell_groups: ["d1a00000-0000-4000-8000-000000000001"], department_permissions: ["cellReports"], permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_portal.view", "cell_portal.edit", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary"], can_view_all_churches: false, status: "Active" },
@@ -4067,7 +4067,7 @@ const firstTimersPageState = { filter: {} };
 const followUpPageState = { filter: {} };
 const counselingPageState = { tab: "overview", filter: {} };
 const fevoPageState = { filter: {} };
-const venuePageState = { route: "venueInventory", filter: {} };
+const venuePageState = { route: "venueInventory", filter: {}, page: 1, pageSize: 10 };
 const sacramentsPageState = { panel: "", filter: {} };
 const mediaPageState = { tab: "overview", filter: {} };
 const reportsPageState = { domain: "", filters: { period: "month", dateFrom: "", dateTo: "", churchId: "", department: "", status: "", card_filter: "", search: "" } };
@@ -9556,6 +9556,26 @@ function roleWorkspaceRoutes(user = activeUser) {
     if (grants.includes("firstTimers") || grants.includes("first_timers")) routes.push("firstTimers");
     return routes;
   }
+  if (
+    role === "venue manager" ||
+    role === "venue_manager" ||
+    role === "gestor de património & instalações" ||
+    role === "gestor de patrimonio e instalacoes" ||
+    role === "gestor de patrimonio"
+  ) {
+    return [
+      "venueInventory",
+      "venueInventoryGeneral",
+      "venueInventoryAcquisitions",
+      "venueInventoryStaff",
+      "venueInventoryMaintenance",
+      "venueInventoryMovements",
+      "venueInventorySpaces",
+      "venueInventoryChecklist",
+      "venueInventoryReports",
+      "cellPortal"
+    ];
+  }
   if (role === "alec_manager" || role === "alec coordinator" || role === "alec manager" || role === "alec_coordinator") {
     return ["cellAlecOverview", "cellAlecRegistration", "cellAlecScores", "cellChurchReports", "cellPortal"];
   }
@@ -9649,7 +9669,7 @@ function cellRouteAreaLabel(route) {
 
 function renderCellSidebarNav() {
   const workspaceRoutes = roleWorkspaceRoutes();
-  const parentExpanded = isSidebarGroupExpanded(CELL_NAV.parentKey);
+  const parentExpanded = isSidebarGroupExpanded(CELL_NAV.parentKey) || String(activeUser?.role || "").toLowerCase().includes("venue");
   const parentActive = isCellRoute(activeRoute);
   if (isCellLeaderOrAssistant(activeUser) || ["Cell Leader", "Cell Assistant"].includes(activeUser?.role)) {
     return `<div class="nav-cell-branch is-expanded ${parentActive ? "has-active" : ""}">
@@ -9790,7 +9810,7 @@ function renderShell() {
       </button>
     `).join("");
     if (!navItems && !cellNav && !outreachNav) return "";
-    const expanded = isSidebarGroupExpanded(group.key);
+    const expanded = isSidebarGroupExpanded(group.key) || (group.key === "departments" && String(activeUser?.role || "").toLowerCase().includes("venue"));
     return `
     <div class="nav-group ${expanded ? "is-expanded" : ""}" data-nav-group="${group.key}">
       <button type="button" class="nav-group-toggle" aria-expanded="${expanded}" aria-label="${L("navGroupToggle")}: ${L(group.key)}">
@@ -10467,11 +10487,103 @@ function applySacramentCardFilters(records, filters = {}) {
   return rows;
 }
 
-function applyVenueInventoryCardFilters(list, filters = {}) {
-  let rows = [...list];
-  if (filters.estado) rows = rows.filter((item) => item.estado === filters.estado);
-  if (filters.assigned) rows = rows.filter((item) => item.estado === "Activo");
+function applyVenueFilters(type, list, filters = {}) {
+  let rows = [...(list || [])];
+  if (!filters || typeof filters !== "object") return rows;
+
+  const search = String(filters.search || "").trim().toLowerCase();
+  if (search) {
+    rows = rows.filter((item) => {
+      const vals = [
+        item.nome_do_item,
+        item.descricao,
+        item.codigo_do_item,
+        item.categoria,
+        item.localizacao,
+        item.departamento_responsavel,
+        item.departamento,
+        item.departamento_solicitante,
+        item.fornecedor,
+        item.nome_do_funcionario,
+        item.dispositivo,
+        item.modelo,
+        item.item,
+        item.problema_reportado,
+        item.tecnico_ou_responsavel,
+        item.origem,
+        item.destino,
+        item.pessoa_responsavel,
+        item.nome_do_espaco,
+        item.espaco,
+        item.serial_number,
+        item.observacoes
+      ].filter(Boolean).map(String).join(" ").toLowerCase();
+      return vals.includes(search);
+    });
+  }
+
+  const cat = String(filters.category || filters.categoria || "").trim();
+  if (cat && cat !== L("category") && cat !== "Categoria") {
+    rows = rows.filter((item) => {
+      const itemCat = String(item.categoria || item.category || item.tipo || item.dispositivo || "").toLowerCase();
+      return itemCat === cat.toLowerCase();
+    });
+  }
+
+  const status = String(filters.status || filters.estado || "").trim();
+  if (status && status !== L("filterStatus") && status !== "Filtrar por Estado" && status !== "Todos" && status !== "Todos os Estados") {
+    rows = rows.filter((item) => {
+      const itemStatus = String(item.estado || item.status || "").toLowerCase();
+      const itemCurrentCondition = String(item.estado_actual || item.condition || "").toLowerCase();
+      const target = status.toLowerCase();
+      return itemStatus === target || itemCurrentCondition === target;
+    });
+  }
+
+  const dept = String(filters.department || filters.departamento || "").trim();
+  if (dept && dept !== L("filterDepartment") && dept !== "Filtrar por Departamento" && dept !== "Todos") {
+    rows = rows.filter((item) => {
+      const itemDept = String(item.departamento_responsavel || item.departamento || item.departamento_solicitante || "").toLowerCase();
+      return itemDept === dept.toLowerCase();
+    });
+  }
+
+  const church = String(filters.church || filters.church_id || filters.igreja || "").trim();
+  if (church && church !== L("filterChurch") && church !== "Filtrar por Igreja" && church !== "Todas") {
+    rows = rows.filter((item) => {
+      const cName = churchName(item.church_id || item.igreja_responsavel).toLowerCase();
+      const cId = String(item.church_id || item.igreja_responsavel || "").toLowerCase();
+      const target = church.toLowerCase();
+      return cName === target || cId === target;
+    });
+  }
+
+  const date = String(filters.date || filters.data || "").trim();
+  if (date) {
+    rows = rows.filter((item) => {
+      const itemDate = String(
+        item.data_de_compra_ou_entrada ||
+        item.data_de_entrega ||
+        item.data_de_envio ||
+        item.data_de_saida ||
+        item.data_do_culto ||
+        item.data ||
+        item.created_at ||
+        ""
+      ).slice(0, 10);
+      return itemDate === date;
+    });
+  }
+
+  if (filters.assigned) {
+    rows = rows.filter((item) => item.estado === "Activo" || Boolean(item.assigned_to_user_id) || Boolean(item.nome_do_funcionario));
+  }
+
   return rows;
+}
+
+function applyVenueInventoryCardFilters(list, filters = {}) {
+  return applyVenueFilters("inventoryItem", list, filters);
 }
 
 function metric(icon, label, value, hint = "", options = {}) {
@@ -19252,21 +19364,120 @@ function venueDepartments() {
   return [...values];
 }
 
-function venueFilterBar() {
+function venueFilterStatuses() {
+  const statuses = new Set(["Bom", "Mau", "Em Reparação", "Activo", "Inactivo", "Pendente de Registo", "Perdido", "Descontinuado", "Solicitado", "Aprovado", "Em Uso", "Devolvido"]);
+  (state.venueInventory?.inventory || []).forEach((i) => { if (i.estado) statuses.add(i.estado); if (i.status) statuses.add(i.status); });
+  (state.venueInventory?.staffEquipment || []).forEach((i) => { if (i.estado) statuses.add(i.estado); if (i.estado_actual) statuses.add(i.estado_actual); });
+  (state.venueInventory?.maintenance || []).forEach((i) => { if (i.estado) statuses.add(i.estado); });
+  (state.venueInventory?.movements || []).forEach((i) => { if (i.estado) statuses.add(i.estado); });
+  return Array.from(statuses).filter(Boolean);
+}
+
+function venueFilterBar(activeTab = "inventory") {
+  const filter = venuePageState.filter || {};
+  const currentCategory = filter.category || filter.categoria || "";
+  const currentStatus = filter.status || filter.estado || "";
+  const currentDept = filter.department || filter.departamento || "";
+  const currentChurch = filter.church || filter.church_id || "";
+  const currentDate = filter.date || filter.data || "";
+  const currentSearch = filter.search || "";
+  const statuses = venueFilterStatuses();
+
   return `
-    <div class="filter-bar advanced-filter mb-3">
-      <input class="form-control" placeholder="${L("search")}">
-      <select class="form-select"><option>${L("category")}</option>${inventoryCategories.map((item) => `<option>${item}</option>`).join("")}</select>
-      <select class="form-select"><option>${L("filterStatus")}</option>${inventoryStatuses.map((item) => `<option>${item}</option>`).join("")}</select>
-      <select class="form-select"><option>${L("filterDepartment")}</option>${venueDepartments().map((item) => `<option>${item}</option>`).join("")}</select>
-      <select class="form-select"><option>${L("filterChurch")}</option>${state.churches.map((church) => `<option>${church.church_name}</option>`).join("")}</select>
-      <input class="form-control" type="date" aria-label="${L("filterDate")}">
+    <div class="filter-bar advanced-filter mb-3" data-venue-filter-bar data-venue-tab="${activeTab}">
+      <input class="form-control" placeholder="${L("search")}" data-venue-filter="search" value="${escapeAttr(currentSearch)}">
+      <select class="form-select" data-venue-filter="category">
+        <option value="">${L("category")}</option>
+        ${inventoryCategories.map((item) => `<option value="${escapeAttr(item)}" ${currentCategory.toLowerCase() === String(item).toLowerCase() ? "selected" : ""}>${item}</option>`).join("")}
+      </select>
+      <select class="form-select" data-venue-filter="status">
+        <option value="">${L("filterStatus")}</option>
+        ${statuses.map((item) => `<option value="${escapeAttr(item)}" ${currentStatus.toLowerCase() === String(item).toLowerCase() ? "selected" : ""}>${item}</option>`).join("")}
+      </select>
+      <select class="form-select" data-venue-filter="department">
+        <option value="">${L("filterDepartment")}</option>
+        ${venueDepartments().map((item) => `<option value="${escapeAttr(item)}" ${currentDept.toLowerCase() === String(item).toLowerCase() ? "selected" : ""}>${item}</option>`).join("")}
+      </select>
+      <select class="form-select" data-venue-filter="church">
+        <option value="">${L("filterChurch")}</option>
+        ${state.churches.map((church) => `<option value="${escapeAttr(church.church_name)}" ${currentChurch.toLowerCase() === String(church.church_name).toLowerCase() ? "selected" : ""}>${church.church_name}</option>`).join("")}
+      </select>
+      <input class="form-control" type="date" aria-label="${L("filterDate")}" data-venue-filter="date" value="${escapeAttr(currentDate)}">
+      ${(currentSearch || currentCategory || currentStatus || currentDept || currentChurch || currentDate) ? `
+        <button type="button" class="btn btn-sm btn-outline-secondary btn-touch" data-venue-clear-filters title="${lang === "pt" ? "Limpar Filtros" : "Clear Filters"}">
+          <i class="bi bi-x-circle me-1"></i>${lang === "pt" ? "Limpar" : "Clear"}
+        </button>
+      ` : ""}
     </div>
   `;
 }
 
-function venueModulePanel(type, title, modalType, headers, rows, { showFilters = true, allowAdd = true } = {}) {
+function renderVenuePaginationPages(currentPage, totalPages, activeTab) {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => `
+      <li class="page-item ${p === currentPage ? "active" : ""}">
+        <button class="page-link" type="button" data-venue-page="${p}" data-venue-tab="${activeTab}">${p}</button>
+      </li>
+    `).join("");
+  }
+  const pages = [];
+  pages.push(1);
+  if (currentPage > 3) pages.push("...");
+  const start = Math.max(2, currentPage - 1);
+  const end = Math.min(totalPages - 1, currentPage + 1);
+  for (let i = start; i <= end; i++) pages.push(i);
+  if (currentPage < totalPages - 2) pages.push("...");
+  pages.push(totalPages);
+  return pages.map((p) => {
+    if (p === "...") {
+      return `<li class="page-item disabled"><span class="page-link">…</span></li>`;
+    }
+    return `
+      <li class="page-item ${p === currentPage ? "active" : ""}">
+        <button class="page-link" type="button" data-venue-page="${p}" data-venue-tab="${activeTab}">${p}</button>
+      </li>
+    `;
+  }).join("");
+}
+
+function venueModulePanel(type, title, modalType, headers, rows, { showFilters = true, allowAdd = true, activeTab = "inventory" } = {}) {
   const canAdd = allowAdd && modalType && (canManageVenue() || (modalType === "venueMovement" && canRequestVenueEquipment()));
+  const totalRows = rows.length;
+  const pageSize = Number(venuePageState.pageSize) || 10;
+  const totalPages = Math.max(1, Math.ceil(totalRows / pageSize));
+  const currentPage = Math.min(Math.max(1, venuePageState.page || 1), totalPages);
+  venuePageState.page = currentPage;
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalRows);
+  const pagedRows = rows.slice(startIndex, endIndex);
+
+  const paginationHtml = `
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-3 pt-3 border-top border-secondary border-opacity-25 venue-pagination-bar" data-venue-tab="${activeTab}">
+      <div class="d-flex align-items-center gap-2">
+        <span class="text-secondary small">${lang === "pt" ? "Itens por página:" : "Items per page:"}</span>
+        <select class="form-select form-select-sm d-inline-block w-auto" data-venue-page-size data-venue-tab="${activeTab}">
+          <option value="10" ${pageSize === 10 ? "selected" : ""}>10</option>
+          <option value="15" ${pageSize === 15 ? "selected" : ""}>15</option>
+          <option value="25" ${pageSize === 25 ? "selected" : ""}>25</option>
+        </select>
+        <span class="text-secondary small ms-2">${totalRows === 0 ? (lang === "pt" ? "0 itens" : "0 items") : (lang === "pt" ? `A mostrar ${startIndex + 1}–${endIndex} de ${totalRows} itens` : `Showing ${startIndex + 1}–${endIndex} of ${totalRows} items`)}</span>
+      </div>
+      ${totalPages > 1 ? `
+      <nav aria-label="${lang === "pt" ? "Paginação do inventário" : "Inventory pagination"}">
+        <ul class="pagination pagination-sm mb-0">
+          <li class="page-item ${currentPage <= 1 ? "disabled" : ""}">
+            <button class="page-link" type="button" data-venue-page="${currentPage - 1}" data-venue-tab="${activeTab}" ${currentPage <= 1 ? "disabled" : ""}>&laquo; ${lang === "pt" ? "Anterior" : "Prev"}</button>
+          </li>
+          ${renderVenuePaginationPages(currentPage, totalPages, activeTab)}
+          <li class="page-item ${currentPage >= totalPages ? "disabled" : ""}">
+            <button class="page-link" type="button" data-venue-page="${currentPage + 1}" data-venue-tab="${activeTab}" ${currentPage >= totalPages ? "disabled" : ""}>${lang === "pt" ? "Próxima" : "Next"} &raquo;</button>
+          </li>
+        </ul>
+      </nav>
+      ` : ""}
+    </div>
+  `;
+
   return `
     <article id="panel-${type}" class="panel h-100">
       <div class="panel-head">
@@ -19277,8 +19488,9 @@ function venueModulePanel(type, title, modalType, headers, rows, { showFilters =
           <button type="button" class="btn btn-sm btn-outline-cyan action-secondary" data-action="export" data-type="${type}" data-id="${type}"><i class="bi bi-file-earmark-pdf me-1"></i>${L("exportPdf")}</button>
         </div>
       </div>
-      ${showFilters ? venueFilterBar() : ""}
-      ${dataTable(headers, rows)}
+      ${showFilters ? venueFilterBar(activeTab) : ""}
+      ${dataTable(headers, pagedRows)}
+      ${paginationHtml}
     </article>
   `;
 }
@@ -19289,6 +19501,10 @@ function renderVenueInventory(activeTab = "overview") {
     return;
   }
   if (isStaffEquipmentOnly()) activeTab = "staff";
+  if (venuePageState.activeTab !== activeTab) {
+    venuePageState.activeTab = activeTab;
+    venuePageState.page = 1;
+  }
 
   const venue = state.venueInventory || seedData.venueInventory;
   const inventory = scopedVenueDepartment(venue.inventory, "departamento_responsavel");
@@ -19393,8 +19609,8 @@ function renderVenueInventory(activeTab = "overview") {
       <div class="col-xl-4">${chartCard(L("acquisitionsByMonth"), acquisitions.map((item) => [item.data_de_compra_ou_entrada?.slice(0, 7) || "-", Number(item.valor_total || 0)]))}</div>
     </div>` : ""}
     <div class="row g-4">
-      ${show("inventory") ? `<div class="col-12">${summaryFilterChips("venue")}${venueModulePanel("inventoryItem", L("generalInventory"), canManageVenue() ? "inventoryItem" : null, [L("itemName"), L("category"), L("quantity"), L("location"), L("responsibleDepartment"), L("church"), L("unitValue"), L("totalValue"), L("status"), L("actions")], applyVenueInventoryCardFilters(inventory, venuePageState.filter).map((item) => [item.nome_do_item, item.categoria, item.quantidade, item.localizacao, item.departamento_responsavel, churchName(item.church_id), money(item.valor_unitario), money(item.valor_total), badge(item.estado), venueRecordActions("inventoryItem", item.id)]), { allowAdd: canManageVenue() })}</div>` : ""}
-      ${show("acquisitions") ? `<div class="col-12">${venueModulePanel("venueAcquisition", L("newAcquisitions"), canManageVenue() ? "venueAcquisition" : null, [L("itemCode"), L("description"), L("category"), L("quantity"), L("purchaseEntryDate"), L("supplier"), "Req #", L("totalValue"), L("status"), L("actions")], acquisitions.map((item) => {
+      ${show("inventory") ? `<div class="col-12">${summaryFilterChips("venue")}${venueModulePanel("inventoryItem", L("generalInventory"), canManageVenue() ? "inventoryItem" : null, [L("itemName"), L("category"), L("quantity"), L("location"), L("responsibleDepartment"), L("church"), L("unitValue"), L("totalValue"), L("status"), L("actions")], applyVenueFilters("inventoryItem", inventory, venuePageState.filter).map((item) => [item.nome_do_item, item.categoria, item.quantidade, item.localizacao, item.departamento_responsavel, churchName(item.church_id), money(item.valor_unitario), money(item.valor_total), badge(item.estado), venueRecordActions("inventoryItem", item.id)]), { allowAdd: canManageVenue(), activeTab: "inventory" })}</div>` : ""}
+      ${show("acquisitions") ? `<div class="col-12">${venueModulePanel("venueAcquisition", L("newAcquisitions"), canManageVenue() ? "venueAcquisition" : null, [L("itemCode"), L("description"), L("category"), L("quantity"), L("purchaseEntryDate"), L("supplier"), "Req #", L("totalValue"), L("status"), L("actions")], applyVenueFilters("venueAcquisition", acquisitions, venuePageState.filter).map((item) => {
         const isPending = /pendente|pending|awaiting/i.test(String(item.estado || item.status || "")) || item.draft_from_requisition;
         const actions = isPending && canManageVenue()
           ? actionButtons([
@@ -19403,18 +19619,18 @@ function renderVenueInventory(activeTab = "overview") {
             ])
           : venueRecordActions("venueAcquisition", item.id);
         return [item.codigo_do_item, item.descricao, item.categoria, item.quantidade, item.data_de_compra_ou_entrada, item.fornecedor, item.request_number || item.comprovativo_ou_factura || "—", money(item.valor_total), badge(item.estado), actions];
-      }), { allowAdd: canManageVenue() })}</div>` : ""}
-      ${show("staff") ? `<div class="col-12">${venueModulePanel("venueStaffEquipment", L("staffEquipment"), canManageVenue() ? "venueStaffEquipment" : null, [L("staffName"), L("department"), L("church"), L("device"), L("model"), L("deliveryDate"), L("currentCondition"), L("signatureConfirmed"), L("status"), L("actions")], staffEquipment.map((item) => [item.nome_do_funcionario, item.departamento, churchName(item.church_id), item.dispositivo, item.modelo, item.data_de_entrega, item.estado_actual, yesNo(item.assinatura_confirmada), badge(item.estado), venueRecordActions("venueStaffEquipment", item.id)]), { allowAdd: canManageVenue() })}</div>` : ""}
-      ${show("maintenance") ? `<div class="col-12">${venueModulePanel("venueMaintenance", L("maintenanceRepairs"), canManageVenue() ? "venueMaintenance" : null, [L("item"), L("category"), L("quantity"), L("reportedProblem"), L("repairCost"), L("technicianResponsible"), L("sentDate"), L("returnedDate"), L("status"), L("actions")], maintenance.map((item) => [item.item, item.categoria, item.quantidade, item.problema_reportado, money(item.custo_da_reparacao), item.tecnico_ou_responsavel, item.data_de_envio, item.data_de_retorno, badge(item.estado), venueRecordActions("venueMaintenance", item.id)]), { allowAdd: canManageVenue() })}</div>` : ""}
-      ${show("movements") ? `<div class="col-12">${venueModulePanel("venueMovement", L("loansMovements"), canManageVenue() || canRequestVenueEquipment() ? "venueMovement" : null, [L("item"), L("quantity"), L("originPlace"), L("destination"), L("requestingDepartment"), L("responsiblePerson"), L("exitDate"), L("expectedReturnDate"), L("status"), L("actions")], movements.map((item) => [item.item, item.quantidade, item.origem, item.destino, item.departamento_solicitante, item.pessoa_responsavel, item.data_de_saida, item.data_prevista_de_retorno, badge(item.estado), venueRecordActions("venueMovement", item.id)]), { allowAdd: canManageVenue() || canRequestVenueEquipment() })}</div>` : ""}
-      ${show("spaces") ? `<div class="col-12">${venueModulePanel("venueSpace", L("venuesRooms"), canManageVenue() ? "venueSpace" : null, [L("spaceName"), L("location"), L("church"), L("capacity"), L("fixedEquipment"), L("responsible"), L("status"), L("actions")], venues.map((item) => [item.nome_do_espaco, item.localizacao, churchName(item.church_id), item.capacidade, item.equipamentos_fixos, item.responsavel, badge(item.estado), venueRecordActions("venueSpace", item.id)]), { allowAdd: canManageVenue() })}</div>` : ""}
-      ${show("checklist") ? `<div class="col-12">${venueModulePanel("venueChecklist", L("serviceChecklist"), canManageVenue() ? "venueChecklist" : null, [L("serviceDate"), L("church"), L("space"), L("serviceEventType"), L("soundChecked"), L("lightsChecked"), L("acChecked"), L("projectorChecked"), L("cleaningDone"), L("status"), L("actions")], checklists.map((item) => [item.data_do_culto, churchName(item.church_id), item.espaco, item.tipo_de_culto_ou_evento, yesNo(item.som_verificado), yesNo(item.luzes_verificadas), yesNo(item.ac_verificado), yesNo(item.projector_verificado), yesNo(item.limpeza_feita), badge(item.estado), venueRecordActions("venueChecklist", item.id)]), { allowAdd: canManageVenue() })}</div>` : ""}
+      }), { allowAdd: canManageVenue(), activeTab: "acquisitions" })}</div>` : ""}
+      ${show("staff") ? `<div class="col-12">${venueModulePanel("venueStaffEquipment", L("staffEquipment"), canManageVenue() ? "venueStaffEquipment" : null, [L("staffName"), L("department"), L("church"), L("device"), L("model"), L("deliveryDate"), L("currentCondition"), L("signatureConfirmed"), L("status"), L("actions")], applyVenueFilters("venueStaffEquipment", staffEquipment, venuePageState.filter).map((item) => [item.nome_do_funcionario, item.departamento, churchName(item.church_id), item.dispositivo, item.modelo, item.data_de_entrega, item.estado_actual, yesNo(item.assinatura_confirmada), badge(item.estado), venueRecordActions("venueStaffEquipment", item.id)]), { allowAdd: canManageVenue(), activeTab: "staff" })}</div>` : ""}
+      ${show("maintenance") ? `<div class="col-12">${venueModulePanel("venueMaintenance", L("maintenanceRepairs"), canManageVenue() ? "venueMaintenance" : null, [L("item"), L("category"), L("quantity"), L("reportedProblem"), L("repairCost"), L("technicianResponsible"), L("sentDate"), L("returnedDate"), L("status"), L("actions")], applyVenueFilters("venueMaintenance", maintenance, venuePageState.filter).map((item) => [item.item, item.categoria, item.quantidade, item.problema_reportado, money(item.custo_da_reparacao), item.tecnico_ou_responsavel, item.data_de_envio, item.data_de_retorno, badge(item.estado), venueRecordActions("venueMaintenance", item.id)]), { allowAdd: canManageVenue(), activeTab: "maintenance" })}</div>` : ""}
+      ${show("movements") ? `<div class="col-12">${venueModulePanel("venueMovement", L("loansMovements"), canManageVenue() || canRequestVenueEquipment() ? "venueMovement" : null, [L("item"), L("quantity"), L("originPlace"), L("destination"), L("requestingDepartment"), L("responsiblePerson"), L("exitDate"), L("expectedReturnDate"), L("status"), L("actions")], applyVenueFilters("venueMovement", movements, venuePageState.filter).map((item) => [item.item, item.quantidade, item.origem, item.destino, item.departamento_solicitante, item.pessoa_responsavel, item.data_de_saida, item.data_prevista_de_retorno, badge(item.estado), venueRecordActions("venueMovement", item.id)]), { allowAdd: canManageVenue() || canRequestVenueEquipment(), activeTab: "movements" })}</div>` : ""}
+      ${show("spaces") ? `<div class="col-12">${venueModulePanel("venueSpace", L("venuesRooms"), canManageVenue() ? "venueSpace" : null, [L("spaceName"), L("location"), L("church"), L("capacity"), L("fixedEquipment"), L("responsible"), L("status"), L("actions")], applyVenueFilters("venueSpace", venues, venuePageState.filter).map((item) => [item.nome_do_espaco, item.localizacao, churchName(item.church_id), item.capacidade, item.equipamentos_fixos, item.responsavel, badge(item.estado), venueRecordActions("venueSpace", item.id)]), { allowAdd: canManageVenue(), activeTab: "spaces" })}</div>` : ""}
+      ${show("checklist") ? `<div class="col-12">${venueModulePanel("venueChecklist", L("serviceChecklist"), canManageVenue() ? "venueChecklist" : null, [L("serviceDate"), L("church"), L("space"), L("serviceEventType"), L("soundChecked"), L("lightsChecked"), L("acChecked"), L("projectorChecked"), L("cleaningDone"), L("status"), L("actions")], applyVenueFilters("venueChecklist", checklists, venuePageState.filter).map((item) => [item.data_do_culto, churchName(item.church_id), item.espaco, item.tipo_de_culto_ou_evento, yesNo(item.som_verificado), yesNo(item.luzes_verificadas), yesNo(item.ac_verificado), yesNo(item.projector_verificado), yesNo(item.limpeza_feita), badge(item.estado), venueRecordActions("venueChecklist", item.id)]), { allowAdd: canManageVenue(), activeTab: "checklist" })}</div>` : ""}
       ${show("reports") ? `<div class="col-xl-6">${chartCard(L("inventoryByCategory"), groupCount(inventory, "categoria"))}</div>
       <div class="col-xl-6">${chartCard(L("inventoryByStatus"), groupCount(inventory, "estado"))}</div>
       <div class="col-xl-6">${chartCard(L("movementsByPeriod"), groupCount(movements, "data_de_saida"))}</div>
       <div class="col-xl-6">${chartCard(L("checklistByWeek"), groupCount(checklists, "data_do_culto"))}</div>
       <div class="col-xl-6">${chartCard(L("newAcquisitionsByMonth"), acquisitions.map((item) => [item.data_de_compra_ou_entrada?.slice(0, 7) || "-", Number(item.valor_total || 0)]))}</div>
-      <div class="col-12">${venueModulePanel("venueReport", L("venueReports"), null, [L("name"), L("category"), L("status"), L("actions")], reports.map((item) => [venueReportName(item), item.category, badge(item.status), actionButtons([["view", "venueReport", item.id, L("view")], ["export", "venueReport", item.id, L("exportExcel")], ["export", "venueReport", item.id, L("exportPdf")]])]), { showFilters: false, allowAdd: false })}</div>
+      <div class="col-12">${venueModulePanel("venueReport", L("venueReports"), null, [L("name"), L("category"), L("status"), L("actions")], reports.map((item) => [venueReportName(item), item.category, badge(item.status), actionButtons([["view", "venueReport", item.id, L("view")], ["export", "venueReport", item.id, L("exportExcel")], ["export", "venueReport", item.id, L("exportPdf")]])]), { showFilters: false, allowAdd: false, activeTab: "reports" })}</div>
       <div class="col-xl-6">${modulePanel("damagedInventory", L("damagedItemsReport"), null, [L("itemName"), L("category"), L("location"), L("status")], damagedItems.map((item) => [item.nome_do_item, item.categoria, item.localizacao, badge(item.estado)]), false)}</div>
       <div class="col-xl-6">${modulePanel("repairHistoryPanel", L("repairHistory"), null, [L("item"), L("repairCost"), L("sentDate"), L("returnedDate"), L("status")], maintenance.map((item) => [item.item, money(item.custo_da_reparacao), item.data_de_envio, item.data_de_retorno, badge(item.estado)]), false)}</div>
       <div class="col-12">${modulePanel("staffEquipmentReportPanel", L("staffEquipmentReport"), null, [L("staffName"), L("department"), L("device"), L("model"), L("currentCondition"), L("status")], staffEquipment.map((item) => [item.nome_do_funcionario, item.departamento, item.dispositivo, item.modelo, item.estado_actual, badge(item.estado)]), false)}</div>
@@ -24845,6 +25061,25 @@ function enrollFirstTimer(id) {
 }
 
 document.addEventListener("click", async (event) => {
+  const venuePageBtn = event.target.closest("[data-venue-page]");
+  if (venuePageBtn) {
+    const page = Number(venuePageBtn.dataset.venuePage);
+    const activeTab = venuePageBtn.dataset.venueTab || "inventory";
+    if (page && page >= 1) {
+      venuePageState.page = page;
+      renderVenueInventory(activeTab);
+    }
+    return;
+  }
+  const venueClearBtn = event.target.closest("[data-venue-clear-filters]");
+  if (venueClearBtn) {
+    const bar = venueClearBtn.closest("[data-venue-filter-bar]");
+    const activeTab = bar?.dataset.venueTab || "inventory";
+    venuePageState.filter = {};
+    venuePageState.page = 1;
+    renderVenueInventory(activeTab);
+    return;
+  }
   if (event.target.closest("[data-hq-members-dry-run]")) {
     byId("hq-members-import-file")?.click();
     return;
@@ -25829,9 +26064,57 @@ document.addEventListener("input", (event) => {
     }
     return;
   }
+  if (event.target.matches('[data-venue-filter="search"]')) {
+    const bar = event.target.closest("[data-venue-filter-bar]");
+    if (bar) {
+      const activeTab = bar.dataset.venueTab || "inventory";
+      const search = event.target.value.trim();
+      const category = bar.querySelector('[data-venue-filter="category"]')?.value || "";
+      const status = bar.querySelector('[data-venue-filter="status"]')?.value || "";
+      const department = bar.querySelector('[data-venue-filter="department"]')?.value || "";
+      const church = bar.querySelector('[data-venue-filter="church"]')?.value || "";
+      const date = bar.querySelector('[data-venue-filter="date"]')?.value || "";
+      venuePageState.filter = { search, category, status, department, church, date };
+      venuePageState.page = 1;
+      clearTimeout(window.__venueSearchDebounce);
+      window.__venueSearchDebounce = setTimeout(() => {
+        renderVenueInventory(activeTab);
+        const inp = document.querySelector('[data-venue-filter="search"]');
+        if (inp) {
+          inp.focus();
+          inp.setSelectionRange(inp.value.length, inp.value.length);
+        }
+      }, 250);
+    }
+    return;
+  }
 });
 
 document.addEventListener("change", (event) => {
+  if (event.target.matches("[data-venue-filter]")) {
+    const bar = event.target.closest("[data-venue-filter-bar]");
+    if (bar) {
+      const activeTab = bar.dataset.venueTab || "inventory";
+      venuePageState.filter = {
+        search: bar.querySelector('[data-venue-filter="search"]')?.value.trim() || "",
+        category: bar.querySelector('[data-venue-filter="category"]')?.value || "",
+        status: bar.querySelector('[data-venue-filter="status"]')?.value || "",
+        department: bar.querySelector('[data-venue-filter="department"]')?.value || "",
+        church: bar.querySelector('[data-venue-filter="church"]')?.value || "",
+        date: bar.querySelector('[data-venue-filter="date"]')?.value || ""
+      };
+      venuePageState.page = 1;
+      renderVenueInventory(activeTab);
+    }
+    return;
+  }
+  if (event.target.matches("[data-venue-page-size]")) {
+    const activeTab = event.target.dataset.venueTab || "inventory";
+    venuePageState.pageSize = Number(event.target.value) || 10;
+    venuePageState.page = 1;
+    renderVenueInventory(activeTab);
+    return;
+  }
   if (event.target.matches('[data-filter-church="followUp"], [data-filter-status="followUp"]')) {
     const toolbar = event.target.closest(".filter-toolbar");
     if (toolbar) {

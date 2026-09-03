@@ -309,9 +309,9 @@
     },
     "Venue Manager": {
       modules: {
-        dashboard: { ...VIEW_ONLY, scope: "all" },
         venueInventory: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "all", can_register_inventory: true },
-        requisitions: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "all" }
+        requisitions: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "all" },
+        cell: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "cell" }
       }
     },
     "Foundation Teacher": {
@@ -603,11 +603,16 @@
     "Finance Officer": new Set(["staffHr", "usersRoles", "accessControl", "auditLogs"]),
     "HR Manager": new Set(["finance", "requisitions", "usersRoles", "accessControl", "auditLogs"]),
     "Requisition Officer": new Set(["finance", "staffHr", "usersRoles", "accessControl", "auditLogs"]),
-    "Staff Member": new Set(["finance", "reports", "usersRoles", "accessControl", "auditLogs"])
+    "Staff Member": new Set(["finance", "reports", "usersRoles", "accessControl", "auditLogs"]),
+    "Venue Manager": new Set(["dashboard", "reports", "churches", "members", "firstTimers", "followUp", "foundation", "sacraments", "counseling", "fevo", "finance", "publicGiving", "staffHr", "usersRoles", "accessControl", "auditLogs", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"]),
+    venue_manager: new Set(["dashboard", "reports", "churches", "members", "firstTimers", "followUp", "foundation", "sacraments", "counseling", "fevo", "finance", "publicGiving", "staffHr", "usersRoles", "accessControl", "auditLogs", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"])
   };
 
   function normalizeRoleKey(role) {
     const r = String(role || "").toLowerCase().trim();
+    if (r === "venue_manager" || r === "venue manager" || r === "gestor de património & instalações" || r === "gestor de patrimonio e instalacoes" || r === "gestor de patrimonio") {
+      return "Venue Manager";
+    }
     if (r === "pastoral_care_rector" || r === "pastoral care rector" || r === "reitor de cuidados pastorais" || r === "reitor" || r === "rector") {
       return "pastoral_care_rector";
     }
