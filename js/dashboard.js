@@ -10261,14 +10261,21 @@ function memberPageQuery() {
   };
 }
 
-async function loadMembersPage({ force = false } = {}) {
+async function loadMembersPage({ force = false, liveSearch = false } = {}) {
   const pageState = modulePageState.members;
   const repo = getMembersRepoSafe();
   if (!repo?.listMembersPage || (pageState.loading && !force)) return false;
   const requestId = ++pageState.requestId;
   pageState.loading = true;
   pageState.error = "";
-  if (activeRoute === "members") renderMembers();
+  if (activeRoute === "members") {
+    if (liveSearch && byId("members-results")) {
+      const resEl = byId("members-results");
+      if (resEl) resEl.style.opacity = "0.6";
+    } else {
+      renderMembers();
+    }
+  }
   try {
     const result = await repo.listMembersPage(memberPageQuery());
     if (requestId !== pageState.requestId) return false;
@@ -10277,12 +10284,22 @@ async function loadMembersPage({ force = false } = {}) {
       pageState.loaded = true;
       return false;
     }
-    pageState.items = (result.data?.items || []).map((member) => migrateMemberRecord(member));
+    const migrated = (result.data?.items || []).map((member) => migrateMemberRecord(member));
+    pageState.items = migrated;
     pageState.page = result.data?.page || pageState.page;
     pageState.pageSize = result.data?.pageSize || pageState.pageSize;
     pageState.totalCount = result.data?.totalCount || 0;
     pageState.totalPages = result.data?.totalPages || 1;
     pageState.loaded = true;
+
+    // Cache loaded members into state.members
+    if (!Array.isArray(state.members)) state.members = [];
+    migrated.forEach((item) => {
+      const idx = state.members.findIndex((m) => String(m.id) === String(item.id));
+      if (idx >= 0) state.members[idx] = item;
+      else state.members.push(item);
+    });
+
     return true;
   } catch (error) {
     if (requestId === pageState.requestId) {
@@ -10291,11 +10308,23 @@ async function loadMembersPage({ force = false } = {}) {
     }
     return false;
   } finally {
-    if (requestId === pageState.requestId) { pageState.loading = false; if (activeRoute === "members") renderMembers(); }
+    if (requestId === pageState.requestId) {
+      pageState.loading = false;
+      if (activeRoute === "members") {
+        const resEl = byId("members-results");
+        if (resEl) resEl.style.opacity = "1";
+        if (liveSearch && byId("members-results")) {
+          renderMembersResultsOnly();
+        } else {
+          renderMembers();
+        }
+      }
+    }
   }
 }
 window.loadMembersPage = loadMembersPage;
 window.renderMembers = renderMembers;
+window.renderMembersResultsOnly = renderMembersResultsOnly;
 window.scoped = scoped;
 window.renderMemberCard = renderMemberCard;
 
@@ -13599,6 +13628,38 @@ async function candidateAction(action, id) {
   saveState("Fluxo de adesão actualizado"); if (activeRoute === "cellPortal") renderCellLeaderPortal(); else renderMembers();
 }
 
+function renderMembersResultsOnly() {
+  const resultsEl = byId("members-results");
+  if (!resultsEl) return false;
+  const pageState = modulePageState.members;
+  const list = scoped(pageState.items || [], "members").slice(0, pageState.pageSize || 50);
+  const view = modulePageState.members.view;
+  const filtered = list;
+  const tableRows = filtered.map((m) => [
+    fullName(m), m.telefone || m.primary_phone || "—", churchName(m.church_id), memberCellGroupLabel(m) || "—", memberCellLabel(m) || "—", m.departamento, badge(m.estado), memberActions(m.id)
+  ]);
+  const rowAttrs = filtered.map((m) => ` data-filter-row data-filter-church-values="${churchFilterTokens(m)}" data-filter-status-values="${statusKey(m.estado)} ${m.estado || ""}"`);
+
+  resultsEl.innerHTML = pageState.loading
+    ? `<div class="p-5 text-center text-secondary"><div class="spinner-border text-warning mb-2" role="status"></div><div>${lang === "pt" ? "A carregar membros do Supabase…" : "Loading members from Supabase…"}</div></div>`
+    : pageState.error
+      ? `<div class="alert alert-warning m-3 d-flex justify-content-between align-items-center">
+          <div><i class="bi bi-exclamation-triangle me-2"></i>${escapeAttr(pageState.error)}</div>
+          <button type="button" class="btn btn-sm btn-outline-dark" data-member-filter-apply>${lang === "pt" ? "Tentar novamente" : "Retry"}</button>
+         </div>`
+      : filtered.length === 0
+        ? (typeof EmptyState === "function" ? EmptyState({ icon: "bi-people", title: lang === "pt" ? "Nenhum membro encontrado" : "No members found", subtitle: lang === "pt" ? "Verifique os filtros aplicados ou efectue uma nova pesquisa." : "Check applied filters or try another search." }) : `<div class="p-4 text-center text-secondary">${lang === "pt" ? "Nenhum membro encontrado." : "No members found."}</div>`)
+        : view === "cards"
+          ? DataCardsGrid(filtered.map((m) => renderMemberCard(m)).join(""))
+          : dataTable([L("name"), L("phone"), L("church"), "Grupo de Célula", L("cell"), L("department"), L("status"), L("actions")], tableRows, { rowAttrs });
+
+  const paginationEl = document.querySelector("[data-members-pagination]");
+  if (paginationEl) {
+    paginationEl.innerHTML = `<span class="text-secondary small">${pageState.loaded ? `${pageState.totalCount} ${lang === "pt" ? "membros" : "members"} · ${lang === "pt" ? "Página" : "Page"} ${pageState.page} / ${pageState.totalPages}` : ""}</span><div class="d-flex align-items-center gap-2"><select class="form-select form-select-sm" data-members-page-size aria-label="Members per page">${[25,50,100].map((size) => `<option value="${size}"${pageState.pageSize === size ? " selected" : ""}>${size}</option>`).join("")}</select><button class="action-btn" data-members-page="prev" ${pageState.page <= 1 || pageState.loading ? "disabled" : ""}>${lang === "pt" ? "Anterior" : "Previous"}</button><button class="action-btn" data-members-page="next" ${pageState.page >= pageState.totalPages || pageState.loading ? "disabled" : ""}>${lang === "pt" ? "Próximo" : "Next"}</button></div>`;
+  }
+  return true;
+}
+
 function renderMembers() {
   const pageState = modulePageState.members;
   // A stale provider response must never paint more than the requested page.
@@ -13625,6 +13686,12 @@ function renderMembers() {
   const totalDisplay = pageState.loaded ? pageState.totalCount : (pageState.loading ? "…" : (pageState.totalCount || 0));
   const activeDisplay = pageState.loaded ? pageState.totalCount : "—";
   const churchDisplay = pageState.loaded ? (churchesCount || state.churches?.length || "—") : "—";
+
+  const activeSearchEl = document.activeElement;
+  const isSearchFocused = activeSearchEl && activeSearchEl.matches && activeSearchEl.matches('[data-member-filter="search"]');
+  const cursorPos = isSearchFocused ? activeSearchEl.selectionStart : null;
+  const currentVal = isSearchFocused ? activeSearchEl.value : null;
+
   setPageContent(`
     ${sectionHeader(L("members"), L("membersSubtitle"), "member", "bi-people", { actions: `<button type="button" class="btn btn-outline-cyan btn-touch" data-hq-members-dry-run><i class="bi bi-eye me-2"></i>${lang === "pt" ? "Pré-visualizar histórico" : "Preview legacy import"}</button><input id="hq-members-import-file" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden><label class="btn btn-outline-success btn-touch mb-0"><i class="bi bi-file-earmark-excel me-2"></i>${lang === "pt" ? "Importar Excel (.xlsx / .csv)" : "Import Excel"}<input id="members-import-file-input" type="file" accept=".xlsx,.xls,.csv" data-members-import hidden></label>` })}
     <div class="row g-3 mb-4 summary-cards-row">
@@ -13657,6 +13724,20 @@ function renderMembers() {
     ${canReviewMemberCandidates() ? `<article id="member-candidate-queue" class="panel glass-panel mb-4"><div class="d-flex justify-content-between align-items-center mb-3"><div><h3 class="h5 mb-1">Pedidos de Adesão</h3><p class="mb-0 text-secondary">Rascunhos ficam separados: apenas pedidos submetidos entram na fila de aprovação.</p></div><span class="badge text-bg-warning">${reviewQueue.length} em fila</span></div><div class="d-flex flex-wrap gap-2 mb-3">${candidateTabs.map(([key,label,statuses]) => `<button type="button" class="action-btn ${candidateTab === key ? "active" : ""}" data-member-candidate-tab="${key}">${label} <span class="badge text-bg-secondary">${candidates.filter((item) => statuses.includes(item.approval_status)).length}</span></button>`).join("")}</div>${candidateRows.length ? dataTable(["Candidato", "Igreja / célula", "Registado por", "Telefone", "Duplicado", "Estado", "Acções"], candidateRows.map((c) => [candidateFullName(c), `${c.church_name || "—"}<br><small>${c.cell_name || "—"}</small>`, c.registered_by_name || "—", c.primary_phone || "Não informado", c.duplicate_confidence || "—", badge(candidateStatusLabel(c.approval_status)), candidateAdminActions(c)])) : `<div class="p-3 text-center text-secondary small">${lang === "pt" ? "Não há pedidos de adesão nesta categoria." : "No membership requests in this category."}</div>`}</article>` : ""}
     ${renderHqMembersDryRunPreview()}
   `);
+
+  if (isSearchFocused) {
+    const newSearchInp = document.querySelector('[data-member-filter="search"]');
+    if (newSearchInp) {
+      if (currentVal !== null && newSearchInp.value !== currentVal) {
+        newSearchInp.value = currentVal;
+      }
+      newSearchInp.focus();
+      if (cursorPos !== null) {
+        try { newSearchInp.setSelectionRange(cursorPos, cursorPos); } catch (_) {}
+      }
+    }
+  }
+
   if (!pageState.loaded && !pageState.loading && !pageState.error) void loadMembersPage();
 }
 
@@ -16886,22 +16967,39 @@ function getMembersRepoSafe() {
 function migrateMemberRecord(member) {
   if (!member) return member;
   const churchId = member.church_id || member.churchId || "";
-  const churchLabel = member.church_name || member.igreja || churchName(churchId) || "";
+  const churchLabel = member.church_name || member.igreja || (typeof churchName === "function" ? churchName(churchId) : "") || "";
   const cellName = member.celula || member.cell_name || "";
+
+  let fName = member.nome || member.first_name || "";
+  let lName = member.apelido || member.last_name || "";
+  if (!fName && member.full_name) {
+    const parts = String(member.full_name).trim().split(/\s+/);
+    fName = parts[0] || "";
+    lName = parts.slice(1).join(" ") || "";
+  }
+
+  const phone = member.primary_phone || member.telefone || member.phone || member.contacto || "";
+
   return {
     ...member,
     id: member.id,
     tratamento: member.tratamento || member.title || "",
-    nome: member.nome || member.first_name || "",
-    apelido: member.apelido || member.last_name || "",
-    telefone: member.telefone || member.phone || "",
-    primary_phone: member.primary_phone || member.telefone || member.phone || "",
+    nome: fName,
+    first_name: fName,
+    apelido: lName,
+    last_name: lName,
+    full_name: member.full_name || `${fName} ${lName}`.trim(),
+    telefone: phone,
+    primary_phone: phone,
     secondary_phone: member.secondary_phone || "",
     neighborhood: member.neighborhood || member.bairro || "",
-    marital_status: member.marital_status || "",
+    bairro: member.neighborhood || member.bairro || "",
+    marital_status: member.marital_status || member.estado_civil || "",
+    estado_civil: member.marital_status || member.estado_civil || "",
     occupation: member.occupation || member.profissao || "",
+    profissao: member.occupation || member.profissao || "",
     kingschat_username: member.kingschat_username || "",
-    whatsapp: member.whatsapp || member.telefone || member.phone || "",
+    whatsapp: member.whatsapp || phone,
     email: member.email || "",
     endereco: member.endereco || member.address || "",
     church_id: churchId,
@@ -16916,6 +17014,7 @@ function migrateMemberRecord(member) {
     department_id: member.department_id || "",
     department_name: member.department_name || member.departamento || "",
     estado: member.estado || member.status || "Active",
+    status: member.status || member.estado || "Active",
     membership_status: member.membership_status || member.estado || member.status || "Active",
     cell_role: member.cell_role || "Member",
     cell_participation_status: member.cell_participation_status || "Unknown",
@@ -16925,6 +17024,32 @@ function migrateMemberRecord(member) {
     notas: member.notas || member.notes || ""
   };
 }
+
+function findMemberRecord(id) {
+  if (!id) return null;
+  const idStr = String(id).trim();
+
+  // 1. Check in modulePageState.members.items
+  let found = (modulePageState?.members?.items || []).find((m) => String(m.id).trim() === idStr);
+  if (found) return migrateMemberRecord(found);
+
+  // 2. Check in state.members
+  found = (state.members || []).find((m) => String(m.id).trim() === idStr);
+  if (found) return migrateMemberRecord(found);
+
+  // 3. Check in cellPortalMembersState.items
+  if (typeof cellPortalMembersState !== "undefined") {
+    found = (cellPortalMembersState?.items || []).find((m) => String(m.id).trim() === idStr);
+    if (found) return migrateMemberRecord(found);
+  }
+
+  // 4. Check in memberRegistrationCandidates
+  found = (state.memberRegistrationCandidates || []).find((m) => String(m.id).trim() === idStr || String(m.approved_member_id).trim() === idStr);
+  if (found) return migrateMemberRecord(found);
+
+  return null;
+}
+window.findMemberRecord = findMemberRecord;
 
 function memberNetworkText(value = "") {
   return String(value || "").trim().toLocaleLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -23293,7 +23418,11 @@ function openForm(type, id = null) {
     modalMode = id ? "edit" : "create";
     modalType = type;
     modalRecordId = id;
-    const record = id ? getCollection(type).find((item) => item.id === id) : {};
+    const record = id
+      ? (type === "member"
+          ? (findMemberRecord(id) || {})
+          : (getCollection(type).find((item) => String(item.id) === String(id)) || {}))
+      : {};
     byId("modalEyebrow").textContent = modalMode === "edit" ? L("edit") : L("add");
     byId("modalTitle").textContent = type === "finance" && !id ? L("addFinance") : formTitle(type);
     if (type === "finance" && !id) {
@@ -23800,14 +23929,22 @@ async function submitForm(form) {
     const today = new Date().toISOString().slice(0, 10);
     const nowIso = new Date().toISOString();
     if (modalMode === "edit") {
-      const index = state.members.findIndex((item) => item.id === modalRecordId);
+      let index = (state.members || []).findIndex((item) => String(item.id) === String(modalRecordId));
+      if (index < 0) {
+        const fallback = findMemberRecord(modalRecordId);
+        if (fallback) {
+          if (!Array.isArray(state.members)) state.members = [];
+          state.members.push(fallback);
+          index = state.members.length - 1;
+        }
+      }
       if (index < 0) return;
       const previous = { ...state.members[index] };
       const next = migrateMemberRecord({
         ...state.members[index],
         ...data,
         id: modalRecordId,
-        updated_by: activeUser.name,
+        updated_by: activeUser?.name || "Admin",
         updated_at: today,
         status: data.estado || data.status || state.members[index].estado
       });
@@ -23817,8 +23954,19 @@ async function submitForm(form) {
         alert(repoResult.error || (lang === "pt" ? "Não foi possível guardar o membro. Tente novamente." : "Could not save the member. Please try again."));
         return;
       }
-      state.members[index] = migrateMemberRecord(repoResult?.data || next);
+      const updatedMember = migrateMemberRecord(repoResult?.data || next);
+      state.members[index] = updatedMember;
+
+      // Also update in modulePageState.members.items
+      if (modulePageState?.members?.items) {
+        const pIdx = modulePageState.members.items.findIndex((item) => String(item.id) === String(modalRecordId));
+        if (pIdx >= 0) modulePageState.members.items[pIdx] = updatedMember;
+      }
+
       saveState(`Updated member ${fullName(state.members[index])}`);
+      if (typeof showToast === "function") {
+        showToast(lang === "pt" ? "Perfil de membro actualizado com sucesso!" : "Member profile updated successfully!");
+      }
     } else {
       const created = migrateMemberRecord({
         id: generateUuid(),
@@ -24505,8 +24653,23 @@ function memberProfileHtml(member) {
 }
 
 function openMemberProfileView(id) {
-  const member = (state.members || []).find((item) => item.id === id);
-  if (!member) return;
+  let member = findMemberRecord(id);
+  if (!member) {
+    if (typeof getMembersRepoSafe === "function") {
+      const repo = getMembersRepoSafe();
+      if (repo?.getMemberById) {
+        repo.getMemberById(id).then((res) => {
+          if (res?.ok && res.data) {
+            const rec = migrateMemberRecord(res.data);
+            if (!state.members) state.members = [];
+            state.members.push(rec);
+            openMemberProfileView(id);
+          }
+        }).catch((err) => console.warn("[CE Members] getMemberById error", err));
+      }
+    }
+    return;
+  }
   restoreEntryModalFooter();
   byId("modalEyebrow").textContent = "Perfil pastoral";
   byId("modalTitle").textContent = fullName(member) || "Membro";
@@ -26930,12 +27093,13 @@ document.addEventListener("click", (event) => {
 document.addEventListener("input", (event) => {
   if (!event.target.matches('[data-member-filter="search"]')) return;
   if (memberSearchDebounceTimer) window.clearTimeout(memberSearchDebounceTimer);
+  const searchVal = event.target.value;
   memberSearchDebounceTimer = window.setTimeout(() => {
     const filterBar = event.target.closest("[data-member-filter-bar]");
     if (!filterBar || activeRoute !== "members") return;
     modulePageState.members.filter = {
       ...(modulePageState.members.filter || {}),
-      search: event.target.value.trim(),
+      search: searchVal.trim(),
       church_id: filterBar.querySelector('[data-member-filter="church_id"]')?.value || "",
       cell_group: filterBar.querySelector('[data-member-filter="cell_group"]')?.value || "",
       cell: filterBar.querySelector('[data-member-filter="cell"]')?.value || "",
@@ -26943,8 +27107,8 @@ document.addEventListener("input", (event) => {
     };
     modulePageState.members.page = 1;
     modulePageState.members.loaded = false;
-    void loadMembersPage({ force: true });
-  }, 350);
+    void loadMembersPage({ force: true, liveSearch: true });
+  }, 250);
 });
 
 document.addEventListener("change", (event) => {
