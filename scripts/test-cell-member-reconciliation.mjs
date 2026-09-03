@@ -42,7 +42,7 @@ check("membersSupabaseAdapter maps reconciliation fields both ways",
   /reconciliation_status: \(row\.reconciliation_status as string\) \|\| "Pending"/.test(adapter) &&
   /confirmed_by: \(row\.confirmed_by as string\) \|\| null/.test(adapter) &&
   /confirmed_at: \(row\.confirmed_at as string\) \|\| null/.test(adapter) &&
-  /reconciliation_status: member\.reconciliation_status \?\? "Pending"/.test(adapter)
+  /reconciliation_status:\s*cleanString\(member\.reconciliation_status\)\s*\|\|\s*"Pending"/.test(adapter)
 );
 
 check("members repository and adapter support reconciliationStatus filter",
