@@ -309,7 +309,7 @@
     },
     "Venue Manager": {
       modules: {
-        venueInventory: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "all", can_register_inventory: true },
+        venueInventory: { can_view: true, can_create: true, can_edit: true, can_delete: true, can_approve: false, can_verify: false, can_export: true, scope: "all", can_register_inventory: true },
         requisitions: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "all" },
         cell: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "cell" }
       }

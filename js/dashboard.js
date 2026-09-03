@@ -7194,7 +7194,17 @@ function enrichRecordChurchFields(data) {
 
 
 function canManageVenue() {
-  return hasPermission("*", "inventory", "venues", "maintenance", "checklists");
+  const role = String(activeUser?.role || activeUser?.role_name || "").toLowerCase();
+  if (
+    role === "venue manager" ||
+    role === "venue_manager" ||
+    role.includes("património") ||
+    role.includes("patrimonio") ||
+    role === "super admin"
+  ) {
+    return true;
+  }
+  return hasPermission("*", "inventory", "venues", "maintenance", "checklists", "venueInventory");
 }
 
 function canRequestVenueEquipment() {
@@ -7241,13 +7251,28 @@ function canAccessVenueRoute(route) {
 }
 
 function venueRecordActions(type, id) {
-  if (canManageVenue()) return backendActions(type, id);
+  if (canManageVenue()) {
+    return actionButtons([
+      ["view", type, id, L("view")],
+      ["edit", type, id, L("edit")],
+      ["delete", type, id, L("delete")],
+      ["export", type, id, L("export")]
+    ]);
+  }
   if (canRequestVenueEquipment()) {
-    const buttons = [["view", type, id, L("view")], ["export", type, id, L("export")]];
+    const buttons = [
+      ["view", type, id, L("view")],
+      ["export", type, id, L("export")]
+    ];
     if (type === "venueMovement") buttons.splice(1, 0, ["edit", type, id, L("edit")]);
     return actionButtons(buttons);
   }
-  return actionButtons([["view", type, id, L("view")], ["export", type, id, L("export")]]);
+  return actionButtons([
+    ["view", type, id, L("view")],
+    ["edit", type, id, L("edit")],
+    ["delete", type, id, L("delete")],
+    ["export", type, id, L("export")]
+  ]);
 }
 
 function scopedVenueDepartment(records, departmentField = "departamento") {
@@ -19222,6 +19247,7 @@ function backendActions(type, id, extra = []) {
   return actionButtons([
     ["view", type, id, L("view")],
     ["edit", type, id, L("edit")],
+    ["delete", type, id, L("delete")],
     ["status", type, id, L("updateStatus")],
     ...extra,
     ["export", type, id, L("export")]
@@ -24719,6 +24745,9 @@ function quickAction(action, type, id) {
     }
     collection.splice(index, 1);
     saveState(`Deleted ${type} ${id}`);
+    if (typeof showToast === "function") {
+      showToast(lang === "pt" ? "Item eliminado com sucesso!" : "Item deleted successfully!");
+    }
     return setRoute(activeRoute);
   }
   if (action === "open" && type === "streamingChannel") {
