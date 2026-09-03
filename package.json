@@ -76,6 +76,7 @@
     "test:auth-fail-closed-and-profile-resolution": "node scripts/test-auth-fail-closed-and-profile-resolution.mjs",
     "test:no-user-write-on-auth": "node scripts/test-no-user-write-on-auth.mjs",
     "test:departments-member-flow": "node scripts/test-departments-member-flow.mjs",
+    "test:member-form-persistence": "node scripts/test-member-form-persistence.mjs",
     "test:alec-manager-access": "node scripts/test-alec-manager-access.mjs",
     "test:migration-0024": "node scripts/test-migration-0024.mjs",
     "test:migration-0025": "node scripts/test-migration-0025.mjs",

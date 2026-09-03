@@ -7192,6 +7192,94 @@ function cellSelectField(name, label, record = {}, { colClass = "col-md-6" } = {
     </div>`;
 }
 
+// A member department is a relational value.  Keep the readable name for
+// legacy records, but always carry the portal department id when one exists.
+function memberDepartmentOptions(record = {}, churchId = "") {
+  const selectedChurchId = churchId || getFormChurchId(record);
+  const selectedId = String(record.department_id || "").trim();
+  const selectedName = String(record.departamento ?? record.department_name ?? "").trim();
+  const byKey = new Map();
+  const add = (department, source = "") => {
+    const name = String(department?.name || department?.department_name || department?.departamento || "").trim();
+    if (!name) return;
+    const id = String(department?.id || department?.department_id || "").trim();
+    const departmentChurchId = String(department?.church_id || "").trim();
+    if (selectedChurchId && departmentChurchId && !matchesSelectedCellChurch({ church_id: departmentChurchId }, selectedChurchId)) return;
+    const key = id ? `id:${id}` : `name:${name.toLocaleLowerCase()}`;
+    if (!byKey.has(key)) byKey.set(key, { id, name, source });
+  };
+
+  (state.departments || []).forEach((department) => add(department, "portal"));
+  // Staff and existing members are a safe legacy fallback for departments
+  // already used in the portal but not yet represented in the registry.
+  (state.staffProfiles || []).forEach((staff) => add(staff, "legacy"));
+  (state.members || []).forEach((member) => add(member, "legacy"));
+
+  if (selectedName && ![...byKey.values()].some((option) => option.id === selectedId || option.name.toLocaleLowerCase() === selectedName.toLocaleLowerCase())) {
+    byKey.set(`selected:${selectedId || selectedName.toLocaleLowerCase()}`, { id: selectedId, name: selectedName, source: "selected" });
+  }
+  return [...byKey.values()].sort((a, b) => a.name.localeCompare(b.name, "pt"));
+}
+
+function departmentOptionsHtml(options, selectedName = "", selectedId = "") {
+  const selectedNameKey = String(selectedName || "").trim().toLocaleLowerCase();
+  const selectedIdKey = String(selectedId || "").trim();
+  const prompt = lang === "pt" ? "Sem departamento" : "No department";
+  return [`<option value="" data-department-id="">${prompt}</option>`, ...options.map((option) => {
+    const selected = (selectedIdKey && option.id === selectedIdKey) || (!selectedIdKey && option.name.toLocaleLowerCase() === selectedNameKey);
+    return `<option value="${escapeAttr(option.name)}" data-department-id="${escapeAttr(option.id)}" ${selected ? "selected" : ""}>${escapeAttr(option.name)}</option>`;
+  })].join("");
+}
+
+function departmentSelectField(name, label, record = {}, { colClass = "col-md-6" } = {}) {
+  const departmentId = String(record.department_id || "").trim();
+  const departmentName = String(record[name] ?? record.department_name ?? "").trim();
+  const options = memberDepartmentOptions(record);
+  return `
+    <div class="${colClass}">
+      <label class="form-label">${label}</label>
+      <input type="hidden" name="department_id" value="${escapeAttr(departmentId)}" data-department-id>
+      <select name="${name}" class="form-select" data-department-select>
+        ${departmentOptionsHtml(options, departmentName, departmentId)}
+      </select>
+    </div>`;
+}
+
+function refreshDepartmentSelectForChurch(form, churchId = "") {
+  const select = form?.querySelector("[data-department-select]");
+  if (!select) return;
+  const current = select.value;
+  const hiddenId = form.querySelector("[data-department-id]");
+  const options = memberDepartmentOptions({ departamento: current, department_id: hiddenId?.value || "" }, churchId);
+  select.innerHTML = departmentOptionsHtml(options, current, hiddenId?.value || "");
+  const selected = select.selectedOptions?.[0];
+  if (hiddenId) hiddenId.value = selected?.dataset.departmentId || "";
+}
+
+function mountDepartmentSelectControls(form) {
+  const select = form?.querySelector("[data-department-select]");
+  if (!select || select.dataset.departmentMounted === "true") return;
+  select.dataset.departmentMounted = "true";
+  const hiddenId = form.querySelector("[data-department-id]");
+  select.addEventListener("change", () => {
+    if (hiddenId) hiddenId.value = select.selectedOptions?.[0]?.dataset.departmentId || "";
+  });
+  const churchSelect = form.querySelector('[name="church_id"]');
+  churchSelect?.addEventListener("change", () => refreshDepartmentSelectForChurch(form, churchSelect.value));
+}
+
+function enrichMemberDepartmentFields(data, existingMember = null) {
+  const departmentName = String(data.departamento ?? data.department_name ?? "").trim();
+  const departmentId = String(data.department_id || "").trim();
+  const options = memberDepartmentOptions({ ...(existingMember || {}), departamento: departmentName, department_id: departmentId }, data.church_id);
+  const selected = options.find((option) => option.id === departmentId)
+    || options.find((option) => option.name.toLocaleLowerCase() === departmentName.toLocaleLowerCase());
+  data.department_id = selected?.id || null;
+  data.departamento = selected?.name || departmentName || null;
+  data.department_name = data.departamento;
+  return data;
+}
+
 function enrichCellSelectionFields(data) {
   const groupValue = data.cell_group_id || data.group_id || data.grupo_de_celula || "";
   const cellValue = data.cell_id || data.celula || data.celula_preferida || "";
@@ -7293,6 +7381,7 @@ function relationalFormOptions(extra = {}) {
 function mountRelationalControls(form) {
   if (!form) return;
   initRelationalFormControls(form, relationalFormOptions());
+  mountDepartmentSelectControls(form);
 }
 
 function enrichRecordChurchFields(data) {
@@ -17290,6 +17379,7 @@ function syncMemberDerivedCellNetwork() {
 async function persistMemberViaRepository(mode, memberRecord) {
   const rawId = typeof memberRecord === "string" ? memberRecord : memberRecord?.id;
   const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(rawId || ""));
+  const liveSupabase = usesSupabaseMembers();
   if (mode === "delete" && !isUuid) {
     console.info("[CE Members] non-UUID record deleted locally", { id: rawId });
     return { ok: true, data: memberRecord, skipped: true, via: "local-state-fallback" };
@@ -17297,6 +17387,7 @@ async function persistMemberViaRepository(mode, memberRecord) {
   const repo = getMembersRepoSafe();
   if (!repo) {
     console.warn("[CE Members] no repo — using dashboard localStorage only");
+    if (liveSupabase) return { ok: false, error: "A ligação ao Supabase não está disponível. Nenhuma alteração foi guardada.", code: "UNAVAILABLE" };
     return { ok: true, data: memberRecord, skipped: true, via: "local-state-fallback" };
   }
 
@@ -17334,6 +17425,7 @@ async function persistMemberViaRepository(mode, memberRecord) {
       result = await repo.deleteMember(payloadRecord.id || payloadRecord);
     } else {
       console.warn("[CE Members] repo method missing for mode", mode, repo);
+      if (liveSupabase) return { ok: false, error: "A operação de membros não está disponível no Supabase.", code: "NOT_IMPLEMENTED" };
       return { ok: true, data: memberRecord, skipped: true, via: "local-state-fallback" };
     }
 
@@ -17342,7 +17434,9 @@ async function persistMemberViaRepository(mode, memberRecord) {
         result.code === "UNAVAILABLE" ||
         result.code === "NOT_IMPLEMENTED" ||
         /indispon[ií]vel|not implemented|invalid input syntax for type (uuid|date)|22P02|22007/i.test(String(result.error || ""));
-      if (soft) {
+      // A live database failure must never be presented as a successful local
+      // save. Doing so made edits appear correct until the next page refresh.
+      if (soft && !liveSupabase) {
         console.warn("[CE Members] repo soft-fail — keeping local save", result);
         return { ok: true, data: memberRecord, skipped: true, via: "local-state-fallback", repoError: result };
       }
@@ -17353,6 +17447,7 @@ async function persistMemberViaRepository(mode, memberRecord) {
     return result || { ok: true, data: memberRecord };
   } catch (error) {
     console.warn("[CE Members] repository write failed — local fallback", error);
+    if (liveSupabase) return { ok: false, error: error?.message || "Não foi possível guardar no Supabase.", code: "MEMBERS_WRITE_FAILED" };
     return { ok: true, data: memberRecord, skipped: true, via: "local-state-fallback", error: error?.message };
   }
 }
@@ -22635,7 +22730,7 @@ const formSchemas = {
     ["tratamento", "treatment", "select", treatmentOptions], ["nome", "name"], ["apelido", "surname"], ["primary_phone", "memberPrimaryPhoneOptional"], ["secondary_phone", "memberSecondaryPhoneOptional"], ["email", "email", "email"], ["neighborhood", "areaNeighborhood"], ["marital_status", "maritalStatus", "select", MEMBER_MARITAL_STATUS_OPTIONS], ["occupation", "memberOccupation"], ["kingschat_username", "KingsChat"],
     ["", "memberSectionChurch", "section"],
     ["church_id", "church", "church", { showInfoCard: true, autofillFields: ["church_id", "province", "city", "district_or_area"], igrejaField: "igreja" }],
-    ["cell_group_id", "cellGroup", "cellGroupSelect"], ["cell_id", "cell", "cellRegistrySelect"], ["cell_role", "memberCellRole", "select", ["Member", "Leader", "Assistant", "Visitor"]], ["cell_participation_status", "memberCellParticipation", "select", ["Regular", "Sometimes", "NotParticipating", "Unknown"]], ["service_participation_status", "memberServiceParticipation", "select", ["Regular", "Sometimes", "NotParticipating", "Unknown"]], ["departamento", "department"], ["", "memberSectionHistory", "section"], ["estado", "status", "select", memberStatuses], ["membership_status", "memberMembershipStatus", "select", ["Active", "Inactive", "Transferred", "Pending"]], ["data_de_entrada", "entryDate", "date"], ["origem", "origin", "select", ["Primeira Vez", "Escola de Fundação", "Transferência", "Manual"]], ["legacy_foundation_status", "memberFoundationLegacyStatus", "select", ["Unknown", "NotStarted", "InterestedOrRegistered", "InProgress", "Completed", "Graduated", "Incomplete"]], ["legacy_alec_status", "memberAlecLegacyStatus", "select", ["Unknown", "NotStarted", "Registered", "InProgress", "Completed"]], ["legacy_baptism_status", "memberBaptismLegacyStatus", "select", ["Unknown", "Yes", "No"]], ["legacy_partner_status", "memberPartnerLegacyStatus", "select", ["Unknown", "Yes", "No"]], ["notas", "notes", "textarea"]
+    ["cell_group_id", "cellGroup", "cellGroupSelect"], ["cell_id", "cell", "cellRegistrySelect"], ["cell_role", "memberCellRole", "select", ["Member", "Leader", "Assistant", "Visitor"]], ["cell_participation_status", "memberCellParticipation", "select", ["Regular", "Sometimes", "NotParticipating", "Unknown"]], ["service_participation_status", "memberServiceParticipation", "select", ["Regular", "Sometimes", "NotParticipating", "Unknown"]], ["departamento", "department", "departmentSelect"], ["", "memberSectionHistory", "section"], ["estado", "status", "select", memberStatuses], ["membership_status", "memberMembershipStatus", "select", ["Active", "Inactive", "Transferred", "Pending"]], ["data_de_entrada", "entryDate", "date"], ["origem", "origin", "select", ["Primeira Vez", "Escola de Fundação", "Transferência", "Manual"]], ["legacy_foundation_status", "memberFoundationLegacyStatus", "select", ["Unknown", "NotStarted", "InterestedOrRegistered", "InProgress", "Completed", "Graduated", "Incomplete"]], ["legacy_alec_status", "memberAlecLegacyStatus", "select", ["Unknown", "NotStarted", "Registered", "InProgress", "Completed"]], ["legacy_baptism_status", "memberBaptismLegacyStatus", "select", ["Unknown", "Yes", "No"]], ["legacy_partner_status", "memberPartnerLegacyStatus", "select", ["Unknown", "Yes", "No"]], ["notas", "notes", "textarea"]
   ],
   foundationStudent: [],
   finance: financeEntrySchema(),
@@ -23731,6 +23826,9 @@ function fieldControl([name, labelKey, inputType = "text", options = []], record
   if (inputType === "cellRegistrySelect") {
     return cellSelectField(name, label, enrichedRecord);
   }
+  if (inputType === "departmentSelect") {
+    return departmentSelectField(name, label, enrichedRecord);
+  }
   if (inputType === "staffSelect") {
     const staffLib = window.CEStaffHr;
     const access = staffLib?.resolveAccess(activeUser) || { scope: "church" };
@@ -23809,6 +23907,7 @@ async function submitForm(form) {
     data.entry_date = data.data_de_entrada;
     data.date_of_birth = cleanDateVal(data.date_of_birth || data.data_de_nascimento);
     data.data_de_nascimento = data.date_of_birth;
+    enrichMemberDepartmentFields(data, existingMember);
 
     // Clean empty relational IDs
     if (!data.cell_group_id || data.cell_group_id === "") data.cell_group_id = null;
@@ -24210,8 +24309,9 @@ async function submitForm(form) {
         cell_role: data.cell_role,
         cell_participation_status: data.cell_participation_status,
         service_participation_status: data.service_participation_status,
+        department_id: data.department_id,
         departamento: data.departamento,
-        department_name: data.departamento || null,
+        department_name: data.department_name,
         estado: data.estado || data.status || state.members[index].estado,
         status: data.estado || data.status || state.members[index].estado,
         membership_status: data.membership_status || data.estado || data.status || state.members[index].estado,

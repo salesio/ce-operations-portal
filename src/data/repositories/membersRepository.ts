@@ -380,6 +380,14 @@ export async function updateMember(
       const existing = await membersSb.getMemberById(id);
       if (!existing.ok) return fail(existing.error, existing.code);
       if (!existing.data) return fail("Membro não encontrado.", "NOT_FOUND");
+      // `null` is meaningful for a cleared relational field. Do not fall back
+      // to an old alias value after the user has explicitly changed it.
+      const hasPayloadDepartment = Object.prototype.hasOwnProperty.call(payload, "departamento")
+        || Object.prototype.hasOwnProperty.call(payload, "department_name");
+      const payloadDepartment = Object.prototype.hasOwnProperty.call(payload, "departamento")
+        ? payload.departamento
+        : payload.department_name;
+      const hasPayloadDepartmentId = Object.prototype.hasOwnProperty.call(payload, "department_id");
       let next = normalizeMember({
         ...existing.data,
         ...payload,
@@ -390,8 +398,9 @@ export async function updateMember(
         apelido: payload.apelido ?? payload.last_name ?? existing.data.apelido,
         title: payload.tratamento ?? payload.title ?? existing.data.title,
         tratamento: payload.tratamento ?? payload.title ?? existing.data.tratamento,
-        department_name: payload.departamento ?? payload.department_name ?? existing.data.department_name,
-        departamento: payload.departamento ?? payload.department_name ?? existing.data.departamento,
+        department_id: hasPayloadDepartmentId ? payload.department_id : existing.data.department_id,
+        department_name: hasPayloadDepartment ? payloadDepartment : existing.data.department_name,
+        departamento: hasPayloadDepartment ? payloadDepartment : existing.data.departamento,
         status: payload.estado ?? payload.status ?? existing.data.status,
         estado: payload.estado ?? payload.status ?? existing.data.estado,
         membership_status: payload.membership_status ?? payload.estado ?? payload.status ?? existing.data.membership_status,
