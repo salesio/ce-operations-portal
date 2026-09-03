@@ -25,14 +25,21 @@ import { CELL_GROUP_DEFINITIONS } from "../../seeds/cellGroupsSeed";
 const TABLE = "members";
 const MEMBER_PAGE_DEFAULT_SIZE = 50;
 const MEMBER_PAGE_MAX_SIZE = 100;
-// Deliberately narrow projection for the Members list. Profile screens still use
-// getMemberById(), which can load the full record only when the user asks for it.
+// Keep the paginated query compact, but include every field used by the Member
+// profile and edit form. Otherwise a page reload can turn saved values into
+// "Unknown" simply because the list projection omitted them.
 const MEMBER_LIST_COLUMNS = [
   "id", "member_code", "full_name", "first_name", "last_name", "title",
-  "primary_phone", "secondary_phone", "phone", "email", "church_id", "church_name",
+  "primary_phone", "secondary_phone", "phone", "email", "gender", "date_of_birth",
+  "whatsapp", "address", "neighborhood", "marital_status", "occupation", "kingschat_username",
+  "church_id", "church_name",
   "cell_group_id", "cell_group_name", "cell_id", "cell_name", "department_id",
   "department_name", "status", "membership_status", "entry_date", "source",
-  "cell_role", "created_at", "updated_at"
+  "cell_role", "cell_participation_status", "service_participation_status",
+  "legacy_foundation_status", "legacy_foundation_raw_value", "legacy_alec_status",
+  "legacy_baptism_status", "legacy_partner_status", "data_quality_status",
+  "reconciliation_status", "confirmed_by", "confirmed_at", "reconciliation_notes",
+  "notes", "created_at", "updated_at"
 ].join(",");
 
 export type MemberListQuery = {

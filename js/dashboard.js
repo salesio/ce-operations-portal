@@ -3474,7 +3474,8 @@ const seedData = {
     { id: "dept-cell", church_id: "church-hq", name: "Ministério de Células", lead_name: "Pastora Flavia" },
     { id: "dept-media", church_id: "church-hq", name: "Media", lead_name: "Media Team" },
     { id: "dept-venue", church_id: "church-hq", name: "Venue Management", lead_name: "Marcelo Panguene" },
-    { id: "dept-programs", church_id: "church-hq", name: "Programas", lead_name: "Programs Team" }
+    { id: "dept-programs", church_id: "church-hq", name: "Programas", lead_name: "Programs Team" },
+    { id: "dept-alec", church_id: "church-hq", name: "ALEC", lead_name: "Sister Angélica" }
   ],
   notifications: [
     { id: "not-1", title: "Nova requisi��o submetida", message: "Uma nova requisi��o foi submetida e aguarda revis�o.", type: "action_required", module: "requisitions", entity_type: "requisition", entity_id: "req-1", priority: "high", recipient_user_id: "", recipient_role: "Requisition Officer", recipient_department_id: "", recipient_church_id: "church-hq", scope: "role", action_url: "requisitions", action_label: "Rever Requisi��o", is_read: false, read_at: "", created_at: "2026-07-14T08:20:00.000Z", expires_at: "", metadata: { request_number: "REQ-2026-0001" } },
@@ -7198,27 +7199,30 @@ function memberDepartmentOptions(record = {}, churchId = "") {
   const selectedChurchId = churchId || getFormChurchId(record);
   const selectedId = String(record.department_id || "").trim();
   const selectedName = String(record.departamento ?? record.department_name ?? "").trim();
-  const byKey = new Map();
+  const byName = new Map();
+  const optionKey = (name) => String(name || "")
+    .trim()
+    .toLocaleLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
   const add = (department, source = "") => {
     const name = String(department?.name || department?.department_name || department?.departamento || "").trim();
     if (!name) return;
     const id = String(department?.id || department?.department_id || "").trim();
     const departmentChurchId = String(department?.church_id || "").trim();
     if (selectedChurchId && departmentChurchId && !matchesSelectedCellChurch({ church_id: departmentChurchId }, selectedChurchId)) return;
-    const key = id ? `id:${id}` : `name:${name.toLocaleLowerCase()}`;
-    if (!byKey.has(key)) byKey.set(key, { id, name, source });
+    const key = optionKey(name);
+    const existing = byName.get(key);
+    // The official department registry always wins over fallback names.
+    if (!existing || (source === "portal" && existing.source !== "portal")) byName.set(key, { id, name, source });
   };
 
   (state.departments || []).forEach((department) => add(department, "portal"));
-  // Staff and existing members are a safe legacy fallback for departments
-  // already used in the portal but not yet represented in the registry.
-  (state.staffProfiles || []).forEach((staff) => add(staff, "legacy"));
-  (state.members || []).forEach((member) => add(member, "legacy"));
 
-  if (selectedName && ![...byKey.values()].some((option) => option.id === selectedId || option.name.toLocaleLowerCase() === selectedName.toLocaleLowerCase())) {
-    byKey.set(`selected:${selectedId || selectedName.toLocaleLowerCase()}`, { id: selectedId, name: selectedName, source: "selected" });
+  if (selectedName && ![...byName.values()].some((option) => option.id === selectedId || optionKey(option.name) === optionKey(selectedName))) {
+    byName.set(optionKey(selectedName), { id: selectedId, name: selectedName, source: "selected" });
   }
-  return [...byKey.values()].sort((a, b) => a.name.localeCompare(b.name, "pt"));
+  return [...byName.values()].sort((a, b) => a.name.localeCompare(b.name, "pt"));
 }
 
 function departmentOptionsHtml(options, selectedName = "", selectedId = "") {
@@ -7266,6 +7270,34 @@ function mountDepartmentSelectControls(form) {
   });
   const churchSelect = form.querySelector('[name="church_id"]');
   churchSelect?.addEventListener("change", () => refreshDepartmentSelectForChurch(form, churchSelect.value));
+}
+
+async function refreshMemberDepartmentsFromRepository() {
+  const repo = window.CEDataLayer?.staffHR || window.CEStaffHr || window.CESupabase?.repositories?.staffHR || null;
+  if (typeof repo?.listStaffDepartments !== "function") return false;
+  try {
+    const result = await repo.listStaffDepartments();
+    const departments = (result?.ok ? result.data : []) || [];
+    if (!departments.length) return false;
+    const normalized = departments
+      .filter((department) => !department.status || /active|activo/i.test(String(department.status)))
+      .map((department) => ({
+        id: String(department.id || department.department_id || ""),
+        church_id: String(department.church_id || ""),
+        name: String(department.name || department.department_name || "").trim(),
+        lead_name: department.head_name || department.head_staff_name || ""
+      }))
+      .filter((department) => department.id && department.name);
+    if (!normalized.length) return false;
+    const previous = JSON.stringify((state.departments || []).map((department) => [department.id, department.name, department.church_id]));
+    const next = JSON.stringify(normalized.map((department) => [department.id, department.name, department.church_id]));
+    state.departments = normalized;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    return previous !== next;
+  } catch (error) {
+    console.warn("[CE Members] department registry refresh skipped", error);
+    return false;
+  }
 }
 
 function enrichMemberDepartmentFields(data, existingMember = null) {
@@ -17323,6 +17355,33 @@ function findMemberRecord(id) {
 }
 window.findMemberRecord = findMemberRecord;
 
+// A paginated Members page intentionally keeps only the visible records in
+// memory. When a profile or form asks for one record, replace that cached
+// slice with the complete persisted record so saved fields stay visible.
+function cacheMemberDetail(record) {
+  const detailed = migrateMemberRecord(record);
+  if (!detailed?.id) return detailed;
+  const replace = (items) => {
+    if (!Array.isArray(items)) return;
+    const index = items.findIndex((item) => String(item?.id) === String(detailed.id));
+    if (index >= 0) items[index] = detailed;
+    else items.push(detailed);
+  };
+  replace(state.members || (state.members = []));
+  replace(modulePageState?.members?.items);
+  replace(cellPortalMembersState?.items);
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (_) {}
+  return detailed;
+}
+
+async function fetchMemberDetailFromRepository(id) {
+  if (!id || !usesSupabaseMembers()) return null;
+  const repo = getMembersRepoSafe();
+  if (typeof repo?.getMemberById !== "function") return null;
+  const result = await repo.getMemberById(id);
+  return result?.ok && result.data ? cacheMemberDetail(result.data) : null;
+}
+
 function memberNetworkText(value = "") {
   return String(value || "").trim().toLocaleLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
@@ -23689,10 +23748,21 @@ async function deleteUserFromSupabase(userId, authUserId) {
   }
 }
 
-function openForm(type, id = null) {
+function openForm(type, id = null, options = {}) {
   const action = id ? "edit" : "add";
   if (!canRenderAction(action, type)) {
     alert(L("noPermissionArea"));
+    return;
+  }
+  // A visible page row can be deliberately partial. Retrieve its canonical
+  // member record before rendering the edit form.
+  if (type === "member" && id && !options.memberDetailLoaded && usesSupabaseMembers()) {
+    Promise.resolve(fetchMemberDetailFromRepository(id))
+      .catch((error) => {
+        console.warn("[CE Members] full edit record refresh skipped", error);
+        return null;
+      })
+      .then(() => openForm(type, id, { ...options, memberDetailLoaded: true }));
     return;
   }
   if (type === "foundationStudent") return openFoundationStudentForm(id);
@@ -23761,6 +23831,13 @@ function openForm(type, id = null) {
   if (["firstTimer", "member", "churchReport", "alecRegistration", "alecScore"].includes(type)) {
     Promise.resolve(refreshChurchesFromRepositoryForForms())
       .catch((error) => console.warn("[CE Forms] church refresh skipped", error));
+  }
+  if (type === "member") {
+    Promise.resolve(refreshMemberDepartmentsFromRepository())
+      .then((changed) => {
+        if (changed && modalType === "member" && String(modalRecordId || "") === String(id || "")) showEntryForm();
+      })
+      .catch((error) => console.warn("[CE Members] department registry refresh skipped", error));
   }
 }
 
@@ -25095,22 +25172,13 @@ function memberProfileHtml(member) {
 function openMemberProfileView(id) {
   let member = findMemberRecord(id);
   if (!member) {
-    if (typeof getMembersRepoSafe === "function") {
-      const repo = getMembersRepoSafe();
-      if (repo?.getMemberById) {
-        repo.getMemberById(id).then((res) => {
-          if (res?.ok && res.data) {
-            const rec = migrateMemberRecord(res.data);
-            if (!state.members) state.members = [];
-            state.members.push(rec);
-            openMemberProfileView(id);
-          }
-        }).catch((err) => console.warn("[CE Members] getMemberById error", err));
-      }
-    }
+    fetchMemberDetailFromRepository(id)
+      .then((record) => { if (record) openMemberProfileView(id); })
+      .catch((err) => console.warn("[CE Members] getMemberById error", err));
     return;
   }
   restoreEntryModalFooter();
+  modalRecordId = id;
   byId("modalEyebrow").textContent = "Perfil pastoral";
   byId("modalTitle").textContent = fullName(member) || "Membro";
   byId("modalFields").innerHTML = `<div class="col-12">${memberProfileHtml(member)}</div>`;
@@ -25118,6 +25186,18 @@ function openMemberProfileView(id) {
   if (footer) footer.innerHTML = `<button type="button" class="btn btn-outline-glass btn-touch" data-bs-dismiss="modal">Fechar</button>${canRenderAction("edit", "member") ? `<button type="button" class="btn btn-ce-gold btn-touch" data-member-profile-edit="${escapeAttr(id)}">Editar</button>` : ""}`;
   modalType = null;
   bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
+  // Refresh the visible profile from the authoritative record, including old
+  // sessions that still contain a narrow cached page item.
+  if (usesSupabaseMembers()) {
+    Promise.resolve(fetchMemberDetailFromRepository(id))
+      .then((fresh) => {
+        if (!fresh || modalType !== null || String(modalRecordId || "") !== String(id)) return;
+        byId("modalTitle").textContent = fullName(fresh) || "Membro";
+        byId("modalFields").innerHTML = `<div class="col-12">${memberProfileHtml(fresh)}</div>`;
+        cleanRenderedText(byId("entryModal"));
+      })
+      .catch((error) => console.warn("[CE Members] profile refresh skipped", error));
+  }
 }
 
 function openView(type, id) {

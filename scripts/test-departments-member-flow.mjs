@@ -35,10 +35,10 @@ function assert(condition, message) {
 // 1. Check Tables
 console.log("\n1. Verifying Database Tables and Structure...");
 const { count: gCount } = await client.from('cell_groups').select('id', { count: 'exact', head: true });
-assert(gCount === 17, `public.cell_groups has 17 groups (got ${gCount})`);
+assert(gCount === 18, `public.cell_groups has 18 groups (got ${gCount})`);
 
 const { count: cCount } = await client.from('cells').select('id', { count: 'exact', head: true });
-assert(cCount === 176, `public.cells has 176 cells (got ${cCount})`);
+assert(cCount === 186, `public.cells has 186 cells (got ${cCount})`);
 
 const { count: mCount } = await client.from('members').select('id', { count: 'exact', head: true });
 assert(mCount === 1891, `public.members has 1,891 members (got ${mCount})`);
@@ -57,7 +57,7 @@ const groupsToTest = [
   { name: 'Wealth Nation', count: 86 },
   { name: 'Pais da Fé', count: 68 },
   { name: 'Diplomatas', count: 67 },
-  { name: 'Estrelas de Siao', count: 66 },
+  { name: 'Estrelas de Sião', count: 66 },
   { name: 'Perolas do Reino', count: 66 },
   { name: 'Agathos', count: 58 },
   { name: 'Transformada', count: 50 },
@@ -73,6 +73,13 @@ for (const g of groupsToTest) {
   
   assert(!error && count === g.count, `Group "${g.name}": query returned ${count} members (Expected: ${g.count})`);
 }
+
+const { data: alecDepartment, error: alecDepartmentError } = await client
+  .from('staff_departments')
+  .select('id, name, status')
+  .ilike('name', 'ALEC')
+  .maybeSingle();
+assert(!alecDepartmentError && alecDepartment?.name === 'ALEC' && /active/i.test(alecDepartment.status || ''), 'Official ALEC department is available to the Member form');
 
 // 3. Test Distinct Cells Within Groups
 console.log("\n3. Testing Specific Cells Within Groups...");
