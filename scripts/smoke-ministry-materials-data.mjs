@@ -47,7 +47,7 @@ ok("reports seed exists", existsSync(join(root, "src/data/seeds/ministryMaterial
 ok("materials bridge exists", existsSync(join(root, "js/ministry-materials-data-bridge.js")));
 ok(
   "index includes materials bridge",
-  /ministry-materials-data-bridge\.js\?v=20260723-ministry-materials-data-v1/.test(
+  /ministry-materials-data-bridge\.js\?v=[^"']+/.test(
     read("index.html"),
   ),
 );
@@ -96,7 +96,7 @@ globalThis.localStorage = {
     return store.size;
   },
 };
-globalThis.__CE_ENV__ = { VITE_DATA_SOURCE: "mock" };
+globalThis.__CE_ENV__ = { VITE_DATA_SOURCE: "local" };
 
 const bundlePath = join(root, "js/supabase-bundle.js");
 ok("bundle present", existsSync(bundlePath), "run npm run build first");
@@ -130,8 +130,8 @@ if (api?.listMaterialsCatalog) {
   const listed = await api.listMaterialsCatalog();
   ok("listMaterialsCatalog ok", !!listed?.ok, listed?.error || "");
   ok(
-    "seed has catalog items",
-    Array.isArray(listed?.data) && listed.data.length > 0,
+    "initial Materials catalog is empty without demo seeds",
+    Array.isArray(listed?.data) && listed.data.length === 0,
     String(listed?.data?.length || 0),
   );
 

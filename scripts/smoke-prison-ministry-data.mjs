@@ -52,7 +52,7 @@ ok(
 ok("prison bridge exists", existsSync(join(root, "js/prison-ministry-data-bridge.js")));
 ok(
   "index includes prison bridge",
-  /prison-ministry-data-bridge\.js\?v=20260723-prison-ministry-data-v1/.test(read("index.html")),
+  /prison-ministry-data-bridge\.js\?v=[^"']+/.test(read("index.html")),
 );
 ok(
   "docs pilot Prison Ministry",
@@ -104,7 +104,7 @@ globalThis.localStorage = {
     return store.size;
   },
 };
-globalThis.__CE_ENV__ = { VITE_DATA_SOURCE: "mock" };
+globalThis.__CE_ENV__ = { VITE_DATA_SOURCE: "local" };
 
 const bundlePath = join(root, "js/supabase-bundle.js");
 ok("bundle present", existsSync(bundlePath), "run npm run build first");
@@ -128,8 +128,8 @@ if (api?.listPrisonLocations) {
   const listed = await api.listPrisonLocations();
   ok("listPrisonLocations ok", !!listed?.ok, listed?.error || "");
   ok(
-    "seed has locations",
-    Array.isArray(listed?.data) && listed.data.length > 0,
+    "initial Prison Ministry list is empty without demo seeds",
+    Array.isArray(listed?.data) && listed.data.length === 0,
     String(listed?.data?.length || 0),
   );
 

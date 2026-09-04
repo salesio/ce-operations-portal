@@ -111,7 +111,7 @@ globalThis.localStorage = {
     return store.size;
   },
 };
-globalThis.__CE_ENV__ = { VITE_DATA_SOURCE: "mock" };
+globalThis.__CE_ENV__ = { VITE_DATA_SOURCE: "local" };
 
 const bundlePath = join(root, "js/supabase-bundle.js");
 ok("bundle present", existsSync(bundlePath), "run npm run build first");
@@ -135,8 +135,8 @@ if (api?.listPrograms) {
   const listed = await api.listPrograms();
   ok("listPrograms ok", !!listed?.ok, listed?.error || "");
   ok(
-    "seed has programs",
-    Array.isArray(listed?.data) && listed.data.length > 0,
+    "initial Programs list is empty without demo seeds",
+    Array.isArray(listed?.data) && listed.data.length === 0,
     String(listed?.data?.length || 0),
   );
 

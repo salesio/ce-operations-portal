@@ -1,5 +1,5 @@
 /**
- * Ministry Materials data bridge — dual-write / pure-JS localStorage fallback.
+ * Ministry Materials data bridge — Supabase-first, with an explicitly selected local mode.
  * Keys: ce-data-layer:ministry-materials-catalog | stock | sales | distributions |
  *       requests | funds | reports | stock-movements
  *
@@ -34,10 +34,10 @@
           : window.CEDataLayer && typeof window.CEDataLayer.getDataSource === "function"
             ? window.CEDataLayer.getDataSource()
             : "";
-      var value = String(runtime || fromBundle || "mock").trim().toLowerCase();
+      var value = String(runtime || fromBundle || "supabase").trim().toLowerCase();
       if (value === "local" || value === "api" || value === "supabase" || value === "mock") return value;
     } catch (_) {}
-    return "mock";
+    return "supabase";
   }
 
   function resolveApi() {
@@ -73,35 +73,14 @@
     }
   }
 
-  function seedFor(kind) {
-    var S = window.CESupabase || {};
-    if (kind === "catalog") return S.MINISTRY_MATERIALS_CATALOG_SEED || [];
-    if (kind === "stock") return S.MINISTRY_MATERIALS_STOCK_SEED || [];
-    if (kind === "sales") return S.MINISTRY_MATERIALS_SALES_SEED || [];
-    if (kind === "distributions") return S.MINISTRY_MATERIALS_DISTRIBUTIONS_SEED || [];
-    if (kind === "requests") return S.MINISTRY_MATERIALS_REQUESTS_SEED || [];
-    if (kind === "funds") return S.MINISTRY_MATERIALS_FUNDS_SEED || [];
-    if (kind === "reports") return S.MINISTRY_MATERIALS_REPORTS_SEED || [];
-    return [];
-  }
-
   function store(kind) {
     var source = resolveDataSource();
     var key = KEYS[kind];
     if (source === "local") {
-      var rows = load(key);
-      if (!rows.length) {
-        rows = seedFor(kind).map(function (s) {
-          return Object.assign({}, s);
-        });
-        if (rows.length) save(key, rows);
-      }
-      return { rows: rows, persist: true };
+      return { rows: load(key), persist: true };
     }
     if (!memory[kind]) {
-      memory[kind] = seedFor(kind).map(function (s) {
-        return Object.assign({}, s);
-      });
+      memory[kind] = [];
     }
     return { rows: memory[kind], persist: false };
   }
@@ -473,9 +452,9 @@
       getMinistryMaterialsDataSourceInfo: function () {
         return {
           source: resolveDataSource(),
-          provider: resolveDataSource() === "local" ? "local-bridge" : "mock-bridge",
+          provider: resolveDataSource() === "local" ? "local-bridge" : "live-provider",
           ready: true,
-          description: "Ministry Materials pure-JS bridge fallback",
+          description: "Ministry Materials live data bridge",
           domain: "ministryMaterials",
         };
       },
@@ -494,11 +473,18 @@
     if (resolved.api && typeof resolved.api[method] === "function") {
       try {
         var result = resolved.api[method].apply(resolved.api, args || []);
-        if (result && typeof result.then === "function") return result;
+        if (result && typeof result.then === "function") {
+          return result.catch(function (error) {
+            return fail(error && error.message ? error.message : "Live data request failed", "LIVE_DATA_UNAVAILABLE");
+          });
+        }
         return wrapPromise(result);
       } catch (e) {
-        console.warn("[CE Materials] API call failed, using fallback", method, e);
+        return wrapPromise(fail(e && e.message ? e.message : "Live data request failed", "LIVE_DATA_UNAVAILABLE"));
       }
+    }
+    if (resolveDataSource() !== "local") {
+      return wrapPromise(fail("Live Ministry Materials provider is unavailable", "LIVE_DATA_UNAVAILABLE"));
     }
     var fallback = pure();
     if (typeof fallback[method] === "function") {

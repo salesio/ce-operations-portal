@@ -1,5 +1,5 @@
 /**
- * Prison Ministry data bridge — dual-write / pure-JS localStorage fallback.
+ * Prison Ministry data bridge — Supabase-first, with an explicitly selected local mode.
  * Keys: ce-data-layer:prison-locations | prison-representatives | prison-services |
  *       prison-participants | prison-foundation-students | prison-weekly-agendas |
  *       prison-follow-ups | prison-reports | prison-materials-requests
@@ -63,10 +63,10 @@
           : window.CEDataLayer && typeof window.CEDataLayer.getDataSource === "function"
             ? window.CEDataLayer.getDataSource()
             : "";
-      var value = String(runtime || fromBundle || "mock").trim().toLowerCase();
+      var value = String(runtime || fromBundle || "supabase").trim().toLowerCase();
       if (value === "local" || value === "api" || value === "supabase" || value === "mock") return value;
     } catch (_) {}
-    return "mock";
+    return "supabase";
   }
 
   function resolveApi() {
@@ -102,37 +102,14 @@
     }
   }
 
-  function seedFor(kind) {
-    var S = window.CESupabase || {};
-    if (kind === "locations") return S.PRISON_LOCATIONS_SEED || [];
-    if (kind === "representatives") return S.PRISON_REPRESENTATIVES_SEED || [];
-    if (kind === "services") return S.PRISON_SERVICES_SEED || [];
-    if (kind === "participants") return S.PRISON_PARTICIPANTS_SEED || [];
-    if (kind === "foundation") return S.PRISON_FOUNDATION_STUDENTS_SEED || [];
-    if (kind === "agendas") return S.PRISON_WEEKLY_AGENDAS_SEED || [];
-    if (kind === "followUps") return S.PRISON_FOLLOW_UPS_SEED || [];
-    if (kind === "reports") return S.PRISON_REPORTS_SEED || [];
-    if (kind === "materials") return S.PRISON_MATERIALS_REQUESTS_SEED || [];
-    return [];
-  }
-
   function store(kind) {
     var source = resolveDataSource();
     var key = KEYS[kind];
     if (source === "local") {
-      var rows = load(key);
-      if (!rows.length) {
-        rows = seedFor(kind).map(function (s) {
-          return stripCrime(Object.assign({}, s));
-        });
-        if (rows.length) save(key, rows);
-      }
-      return { rows: rows, persist: true };
+      return { rows: load(key), persist: true };
     }
     if (!memory[kind]) {
-      memory[kind] = seedFor(kind).map(function (s) {
-        return stripCrime(Object.assign({}, s));
-      });
+      memory[kind] = [];
     }
     return { rows: memory[kind], persist: false };
   }
@@ -527,9 +504,9 @@
       getPrisonMinistryDataSourceInfo: function () {
         return {
           source: resolveDataSource(),
-          provider: resolveDataSource() === "local" ? "local-bridge" : "mock-bridge",
+          provider: resolveDataSource() === "local" ? "local-bridge" : "live-provider",
           ready: true,
-          description: "Prison Ministry pure-JS bridge fallback",
+          description: "Prison Ministry live data bridge",
           domain: "prisonMinistry",
         };
       },
@@ -548,11 +525,18 @@
     if (resolved.api && typeof resolved.api[method] === "function") {
       try {
         var result = resolved.api[method].apply(resolved.api, args || []);
-        if (result && typeof result.then === "function") return result;
+        if (result && typeof result.then === "function") {
+          return result.catch(function (error) {
+            return fail(error && error.message ? error.message : "Live data request failed", "LIVE_DATA_UNAVAILABLE");
+          });
+        }
         return wrapPromise(result);
       } catch (e) {
-        console.warn("[CE Prison] API call failed, using fallback", method, e);
+        return wrapPromise(fail(e && e.message ? e.message : "Live data request failed", "LIVE_DATA_UNAVAILABLE"));
       }
+    }
+    if (resolveDataSource() !== "local") {
+      return wrapPromise(fail("Live Prison Ministry provider is unavailable", "LIVE_DATA_UNAVAILABLE"));
     }
     var fallback = pure();
     if (typeof fallback[method] === "function") {

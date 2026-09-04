@@ -1,5 +1,5 @@
 /**
- * Programs & Events data bridge — dual-write / pure-JS localStorage fallback.
+ * Programs & Events data bridge — Supabase-first, with an explicitly selected local mode.
  * Keys: ce-data-layer:programs | program-sessions | program-teams |
  *       program-participants | program-registrations | program-resources |
  *       program-budgets | program-checklists | program-reports
@@ -39,10 +39,10 @@
           : window.CEDataLayer && typeof window.CEDataLayer.getDataSource === "function"
             ? window.CEDataLayer.getDataSource()
             : "";
-      var value = String(runtime || fromBundle || "mock").trim().toLowerCase();
+      var value = String(runtime || fromBundle || "supabase").trim().toLowerCase();
       if (value === "local" || value === "api" || value === "supabase" || value === "mock") return value;
     } catch (_) {}
-    return "mock";
+    return "supabase";
   }
 
   function resolveApi() {
@@ -78,37 +78,14 @@
     }
   }
 
-  function seedFor(kind) {
-    var S = window.CESupabase || {};
-    if (kind === "programs") return S.PROGRAMS_SEED || [];
-    if (kind === "sessions") return S.PROGRAM_SESSIONS_SEED || [];
-    if (kind === "teams") return S.PROGRAM_TEAMS_SEED || [];
-    if (kind === "participants") return S.PROGRAM_PARTICIPANTS_SEED || [];
-    if (kind === "registrations") return S.PROGRAM_REGISTRATIONS_SEED || [];
-    if (kind === "resources") return S.PROGRAM_RESOURCES_SEED || [];
-    if (kind === "budgets") return S.PROGRAM_BUDGETS_SEED || [];
-    if (kind === "checklists") return S.PROGRAM_CHECKLISTS_SEED || [];
-    if (kind === "reports") return S.PROGRAM_REPORTS_SEED || [];
-    return [];
-  }
-
   function store(kind) {
     var source = resolveDataSource();
     var key = KEYS[kind];
     if (source === "local") {
-      var rows = load(key);
-      if (!rows.length) {
-        rows = seedFor(kind).map(function (s) {
-          return Object.assign({}, s);
-        });
-        if (rows.length) save(key, rows);
-      }
-      return { rows: rows, persist: true };
+      return { rows: load(key), persist: true };
     }
     if (!memory[kind]) {
-      memory[kind] = seedFor(kind).map(function (s) {
-        return Object.assign({}, s);
-      });
+      memory[kind] = [];
     }
     return { rows: memory[kind], persist: false };
   }
@@ -408,9 +385,9 @@
       getProgramsDataSourceInfo: function () {
         return {
           source: resolveDataSource(),
-          provider: resolveDataSource() === "local" ? "local-bridge" : "mock-bridge",
+          provider: resolveDataSource() === "local" ? "local-bridge" : "live-provider",
           ready: true,
-          description: "Programs pure-JS bridge fallback",
+          description: "Programs live data bridge",
           domain: "programs",
         };
       },
@@ -429,11 +406,18 @@
     if (resolved.api && typeof resolved.api[method] === "function") {
       try {
         var result = resolved.api[method].apply(resolved.api, args || []);
-        if (result && typeof result.then === "function") return result;
+        if (result && typeof result.then === "function") {
+          return result.catch(function (error) {
+            return fail(error && error.message ? error.message : "Live data request failed", "LIVE_DATA_UNAVAILABLE");
+          });
+        }
         return wrapPromise(result);
       } catch (e) {
-        console.warn("[CE Programs] API call failed, using fallback", method, e);
+        return wrapPromise(fail(e && e.message ? e.message : "Live data request failed", "LIVE_DATA_UNAVAILABLE"));
       }
+    }
+    if (resolveDataSource() !== "local") {
+      return wrapPromise(fail("Live Programs provider is unavailable", "LIVE_DATA_UNAVAILABLE"));
     }
     var fallback = pure();
     if (typeof fallback[method] === "function") {

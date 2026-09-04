@@ -4184,6 +4184,9 @@ const fevoPageState = { filter: {} };
 const venuePageState = { route: "venueInventory", filter: {}, page: 1, pageSize: 10 };
 const sacramentsPageState = { panel: "", filter: {} };
 const mediaPageState = { tab: "overview", filter: {} };
+const programsPageState = { filter: {} };
+const prisonMinistryPageState = { filter: {} };
+const ministryMaterialsPageState = { filter: {} };
 const reportsPageState = { domain: "", filters: { period: "month", dateFrom: "", dateTo: "", churchId: "", department: "", status: "", card_filter: "", search: "" } };
 const domainReportFilters = {
   staff: { period: "month", churchId: "", department: "", status: "", card_filter: "", search: "" },
@@ -4211,6 +4214,9 @@ window.fevoPageState = fevoPageState;
 window.venuePageState = venuePageState;
 window.sacramentsPageState = sacramentsPageState;
 window.mediaPageState = mediaPageState;
+window.programsPageState = programsPageState;
+window.prisonMinistryPageState = prisonMinistryPageState;
+window.ministryMaterialsPageState = ministryMaterialsPageState;
 window.reportsPageState = reportsPageState;
 window.domainReportFilters = domainReportFilters;
 window.dashboardPageState = dashboardPageState;
@@ -4775,14 +4781,19 @@ function normalizeState(saved) {
   merged.foundationLessonTestSubmissions = (merged.foundationLessonTestSubmissions || []).filter((flt) => !isDemoFoundationRecord(flt));
   merged.foundationSoulWinning = (merged.foundationSoulWinning || []).filter((fsw) => !isDemoFoundationRecord(fsw));
   merged.foundationFinalExams = (merged.foundationFinalExams || []).filter((ffe) => !isDemoFoundationRecord(ffe));
+  // D.O.P. is live-data only.  Do not revive legacy browser seeds while the
+  // Supabase collections are loading (or if a previous build stored them).
+  // These records are hydrated from their respective repositories after boot.
   merged.prisonMinistry = {
-    ...structuredClone(seedData.prisonMinistry),
-    ...(saved.prisonMinistry || {})
+    prisons: [], representatives: [], services: [], participants: [],
+    foundationStudents: [], weeklyAgenda: [], followUps: [], reports: [],
+    materialsRequests: []
   };
   merged.ministryMaterials = {
-    ...structuredClone(seedData.ministryMaterials),
-    ...(saved.ministryMaterials || {})
+    catalogue: [], sales: [], distributions: [], weeklyStock: [],
+    freeFunds: [], reports: [], requests: []
   };
+  merged.programs = [];
   merged.media = Array.isArray(saved.media)
     ? structuredClone(seedData.media)
     : {
@@ -19742,6 +19753,17 @@ function backendActions(type, id, extra = []) {
 
 function renderPrograms() {
   const allPrograms = scoped(state.programs || []);
+  const selectedStatusGroup = programsPageState.filter?.statusGroup || "";
+  const matchesProgramStatusGroup = (program) => {
+    const status = String(program.status || program.estado || "").toLowerCase();
+    const category = String(program.category || "").toLowerCase();
+    if (selectedStatusGroup === "active") return /scheduled|agendado|in progress|em curso/.test(status);
+    if (selectedStatusGroup === "planning") return /planning|planeamento|report pending|pendente/.test(status);
+    if (selectedStatusGroup === "global") return /national|nacional|global/.test(category);
+    if (selectedStatusGroup === "completed") return /completed|conclu[ií]do|approved|aprovado/.test(status);
+    return true;
+  };
+  const visiblePrograms = allPrograms.filter(matchesProgramStatusGroup);
   const scheduledCount = allPrograms.filter((p) => ["Scheduled", "Agendado", "Em Curso", "In Progress"].includes(p.status)).length;
   const planningCount = allPrograms.filter((p) => ["Planning", "Planeamento", "Report Pending", "Pendente"].includes(p.status)).length;
   const globalCount = allPrograms.filter((p) => ["National", "Global Event", "Global", "Nacional"].includes(p.category)).length;
@@ -19756,21 +19778,22 @@ function renderPrograms() {
       icon: "bi-calendar-event"
     })}
     <div class="row g-3 mb-4">
-      ${metric("bi-calendar-check", L("activePrograms"), scheduledCount, L("scheduled") || "Agendados")}
-      ${metric("bi-clock-history", L("inPlanning"), planningCount, L("inReview") || "Planeamento")}
-      ${metric("bi-globe", L("nationalGlobalEvents"), globalCount, "Global / Nacional")}
-      ${metric("bi-check2-all", L("completedPrograms"), completedCount, L("completed") || "Concluídos")}
+      ${metric("bi-calendar-check", L("activePrograms"), scheduledCount, L("scheduled") || "Agendados", { isClickable: true, module: "programs", route: "programs", scrollTo: "panel-programs", filterPayload: { statusGroup: "active" } })}
+      ${metric("bi-clock-history", L("inPlanning"), planningCount, L("inReview") || "Planeamento", { isClickable: true, module: "programs", route: "programs", scrollTo: "panel-programs", filterPayload: { statusGroup: "planning" } })}
+      ${metric("bi-globe", L("nationalGlobalEvents"), globalCount, "Global / Nacional", { isClickable: true, module: "programs", route: "programs", scrollTo: "panel-programs", filterPayload: { statusGroup: "global" } })}
+      ${metric("bi-check2-all", L("completedPrograms"), completedCount, L("completed") || "Concluídos", { isClickable: true, module: "programs", route: "programs", scrollTo: "panel-programs", filterPayload: { statusGroup: "completed" } })}
     </div>
+    ${summaryFilterChips("programs")}
     <div class="row g-4">
       <div class="col-12">
-        <article class="panel glass-panel">
+        <article id="panel-programs" class="panel glass-panel">
           <div class="panel-head">
             <h3 class="panel-title"><i class="bi bi-calendar-event me-2"></i>${L("programs")}</h3>
-            <span class="badge bg-ce-blue">${allPrograms.length} ${allPrograms.length === 1 ? "programa" : "programas"}</span>
+            <span class="badge bg-ce-blue">${visiblePrograms.length} ${visiblePrograms.length === 1 ? "programa" : "programas"}</span>
           </div>
           ${dataTable(
             [L("name"), L("church"), L("category"), L("ownerOrCoordinator"), L("programType"), L("startDate"), L("status"), L("actions")],
-            allPrograms.map((r) => [
+            visiblePrograms.map((r) => [
               r.name || "-",
               churchName(r.church_id),
               r.category || "-",
@@ -19825,15 +19848,15 @@ function renderPrisonMinistry() {
       ])
     )}
     <div class="row g-3 mb-4">
-      ${metric("bi-building-lock", L("activePrisons"), prisons.filter((item) => statusKey(item.estado) === "active").length, L("prisonsLocations"))}
-      ${metric("bi-calendar-week", L("servicesThisWeek"), thisWeekServices.length, "Quinta / Sexta")}
-      ${metric("bi-people", L("inmatesReached"), services.reduce((sum, item) => sum + Number(item.numero_de_internos_presentes || 0), 0), L("thisMonth"))}
-      ${metric("bi-stars", L("prisonNewConverts"), services.reduce((sum, item) => sum + Number(item.novos_convertidos || 0), 0), L("newConverts"))}
-      ${metric("bi-mortarboard", L("prisonFoundationStudents"), foundationPrisonStudents.length || students.length, L("foundationSchool"))}
-      ${metric("bi-person-video3", FS("responsibleTeacher"), foundationPrisonTeachers.size, FS("deliveryMode"))}
-      ${metric("bi-clipboard-check", L("readyForExam"), foundationPrisonReady.length, L("foundationSchool"))}
-      ${metric("bi-award", L("graduated"), foundationPrisonGraduated.length, L("graduation"))}
-      ${metric("bi-clipboard-check", L("pendingReports"), services.filter((item) => item.estado !== "Relatório Submetido").length, L("needsAction"))}
+      ${metric("bi-building-lock", L("activePrisons"), prisons.filter((item) => statusKey(item.estado) === "active").length, L("prisonsLocations"), { isClickable: true, module: "prisonMinistry", route: "prisonMinistry", scrollTo: "panel-prisonLocation" })}
+      ${metric("bi-calendar-week", L("servicesThisWeek"), thisWeekServices.length, "Quinta / Sexta", { isClickable: true, module: "prisonMinistry", route: "prisonMinistry", scrollTo: "panel-prisonService" })}
+      ${metric("bi-people", L("inmatesReached"), services.reduce((sum, item) => sum + Number(item.numero_de_internos_presentes || 0), 0), L("thisMonth"), { isClickable: true, module: "prisonMinistry", route: "prisonMinistry", scrollTo: "panel-prisonService" })}
+      ${metric("bi-stars", L("prisonNewConverts"), services.reduce((sum, item) => sum + Number(item.novos_convertidos || 0), 0), L("newConverts"), { isClickable: true, module: "prisonMinistry", route: "prisonMinistry", scrollTo: "panel-prisonService" })}
+      ${metric("bi-mortarboard", L("prisonFoundationStudents"), foundationPrisonStudents.length || students.length, L("foundationSchool"), { isClickable: true, module: "prisonMinistry", route: "prisonMinistry", scrollTo: "panel-prisonFoundation" })}
+      ${metric("bi-person-video3", FS("responsibleTeacher"), foundationPrisonTeachers.size, FS("deliveryMode"), { isClickable: true, module: "prisonMinistry", route: "prisonMinistry", scrollTo: "panel-prisonFoundation" })}
+      ${metric("bi-clipboard-check", L("readyForExam"), foundationPrisonReady.length, L("foundationSchool"), { isClickable: true, module: "prisonMinistry", route: "prisonMinistry", scrollTo: "panel-prisonFoundation" })}
+      ${metric("bi-award", L("graduated"), foundationPrisonGraduated.length, L("graduation"), { isClickable: true, module: "prisonMinistry", route: "prisonMinistry", scrollTo: "panel-prisonFoundation" })}
+      ${metric("bi-clipboard-check", L("pendingReports"), services.filter((item) => item.estado !== "Relatório Submetido").length, L("needsAction"), { isClickable: true, module: "prisonMinistry", route: "prisonMinistry", scrollTo: "panel-prisonReport" })}
     </div>
     <div class="row g-4">
       <div class="col-12">${modulePanel("prisonLocation", L("prisonsLocations"), "prisonLocation", [L("prisonName"), L("province"), L("city"), L("responsibleChurch"), L("prisonRepresentative"), L("status"), L("actions")], prisons.map((item) => [item.nome_da_prisao, item.provincia, item.cidade, churchName(item.igreja_responsavel), item.representante_da_prisao, badge(item.estado), backendActions("prisonLocation", item.id)]), true)}</div>
@@ -20177,12 +20200,12 @@ function renderMinistryMaterials() {
       ])
     )}
     <div class="row g-3 mb-4">
-      ${metric("bi-cash-stack", L("soldThisMonth"), money(monthSales.reduce((sum, item) => sum + Number(item.valor || 0), 0)), L("thisMonth"))}
-      ${metric("bi-bag-check", L("quantitySold"), sales.reduce((sum, item) => sum + Number(item.quantidade || 0), 0), "22 Jun - 05 Jul 2026")}
-      ${metric("bi-box-seam", L("materialsInStock"), catalogue.reduce((sum, item) => sum + Number(item.stock_actual || 0), 0), L("catalogue"))}
-      ${metric("bi-exclamation-triangle", L("lowStockMaterials"), catalogue.filter((item) => Number(item.stock_actual || 0) <= Number(item.stock_minimo || 0)).length, L("needsAction"))}
-      ${metric("bi-truck", L("pendingDistributions"), distributions.filter((item) => ["Solicitado", "Aprovado"].includes(item.estado)).length, L("churchDistribution"))}
-      ${metric("bi-heart", L("fundsRaised"), money(funds.reduce((sum, item) => sum + Number(item.valor_levantado || 0), 0)), L("freeDistributionFunds"))}
+      ${metric("bi-cash-stack", L("soldThisMonth"), money(monthSales.reduce((sum, item) => sum + Number(item.valor || 0), 0)), L("thisMonth"), { isClickable: true, module: "ministryMaterials", route: "ministryMaterials", scrollTo: "panel-materialSale" })}
+      ${metric("bi-bag-check", L("quantitySold"), sales.reduce((sum, item) => sum + Number(item.quantidade || 0), 0), L("sales"), { isClickable: true, module: "ministryMaterials", route: "ministryMaterials", scrollTo: "panel-materialSale" })}
+      ${metric("bi-box-seam", L("materialsInStock"), catalogue.reduce((sum, item) => sum + Number(item.stock_actual || 0), 0), L("catalogue"), { isClickable: true, module: "ministryMaterials", route: "ministryMaterials", scrollTo: "panel-materialCatalogue" })}
+      ${metric("bi-exclamation-triangle", L("lowStockMaterials"), catalogue.filter((item) => Number(item.stock_actual || 0) <= Number(item.stock_minimo || 0)).length, L("needsAction"), { isClickable: true, module: "ministryMaterials", route: "ministryMaterials", scrollTo: "panel-materialCatalogue" })}
+      ${metric("bi-truck", L("pendingDistributions"), distributions.filter((item) => ["Solicitado", "Aprovado"].includes(item.estado)).length, L("churchDistribution"), { isClickable: true, module: "ministryMaterials", route: "ministryMaterials", scrollTo: "panel-materialDistribution" })}
+      ${metric("bi-heart", L("fundsRaised"), money(funds.reduce((sum, item) => sum + Number(item.valor_levantado || 0), 0)), L("freeDistributionFunds"), { isClickable: true, module: "ministryMaterials", route: "ministryMaterials", scrollTo: "panel-materialFund" })}
     </div>
     <div class="row g-4">
       <div class="col-12">${modulePanel("materialCatalogue", L("catalogue"), "materialCatalogue", [L("materialTitle"), L("materialType"), L("format"), L("price"), L("currentStock"), L("minimumStock"), L("status"), L("actions")], catalogue.map((item) => [item.titulo_do_material, item.tipo, item.formato, money(item.preco), item.stock_actual, item.stock_minimo, badge(item.estado), backendActions("materialCatalogue", item.id)]), true, true)}</div>
@@ -28073,29 +28096,19 @@ async function hydrateProgramsFromRepository() {
   try {
     let hydrated = false;
     const result = await repo.listPrograms();
-    if (result?.ok && Array.isArray(result.data) && result.data.length) {
-      const prev = new Map((state.programs || []).map((r) => [r.id, r]));
-      const byId = new Map();
-      result.data.forEach((row) => {
-        const previous = prev.get(row.id) || {};
-        byId.set(row.id, {
-          ...row,
-          ...previous,
-          id: row.id,
-          name: row.name || previous.name || "",
-          owner: row.owner || row.responsible_name || previous.owner || "",
-          responsible_name: row.responsible_name || row.owner || previous.responsible_name || "",
-          category: row.category || previous.category || "",
-          status: row.status || row.estado || previous.status || "Draft",
-          church_id: row.church_id || previous.church_id || "",
-          program_type: row.program_type || previous.program_type || "",
-          start_date: row.start_date || previous.start_date || "",
-        });
-      });
-      prev.forEach((localRow, id) => {
-        if (!byId.has(id)) byId.set(id, localRow);
-      });
-      state.programs = [...byId.values()];
+    if (result?.ok && Array.isArray(result.data)) {
+      state.programs = result.data.map((row) => ({
+        ...row,
+        id: row.id,
+        name: row.name || "",
+        owner: row.owner || row.responsible_name || "",
+        responsible_name: row.responsible_name || row.owner || "",
+        category: row.category || "",
+        status: row.status || row.estado || "Draft",
+        church_id: row.church_id || "",
+        program_type: row.program_type || "",
+        start_date: row.start_date || "",
+      }));
       hydrated = true;
     }
 

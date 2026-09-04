@@ -59,6 +59,9 @@
       venue: () => window.venuePageState,
       sacraments: () => window.sacramentsPageState,
       media: () => window.mediaPageState,
+      programs: () => window.programsPageState,
+      prisonMinistry: () => window.prisonMinistryPageState,
+      ministryMaterials: () => window.ministryMaterialsPageState,
       reports: () => window.reportsPageState
     };
     return stores[module]?.() || null;
@@ -126,6 +129,10 @@
     }
     if (module === "media") {
       store.tab = "overview";
+      store.filter = {};
+      return;
+    }
+    if (module === "programs" || module === "prisonMinistry" || module === "ministryMaterials") {
       store.filter = {};
       return;
     }
@@ -202,7 +209,7 @@
       if (store.sourceFilter) chips.push(["source", store.sourceFilter]);
     } else if (module === "churches") {
       Object.entries(store.filters || {}).forEach(([k, v]) => { if (v) chips.push([k, v]); });
-    } else if (module === "foundation" || module === "members" || module === "firstTimers" || module === "followUp" || module === "counseling" || module === "fevo" || module === "venue" || module === "sacraments" || module === "media") {
+    } else if (module === "foundation" || module === "members" || module === "firstTimers" || module === "followUp" || module === "counseling" || module === "fevo" || module === "venue" || module === "sacraments" || module === "media" || module === "programs" || module === "prisonMinistry" || module === "ministryMaterials") {
       Object.entries(store.filter || {}).forEach(([k, v]) => { if (v !== "" && v != null) chips.push([k, v]); });
     } else if (module === "requisitions") {
       if (store.tab === "reports") {
@@ -264,6 +271,9 @@
       members: "members",
       sacraments: "sacraments",
       media: "media",
+      programs: "programs",
+      prisonMinistry: "prisonMinistry",
+      ministryMaterials: "ministryMaterials",
       reports: "reports"
     }[module];
     if (typeof setRoute === "function" && targetRoute) setRoute(targetRoute);
@@ -466,6 +476,23 @@
     return true;
   }
 
+  function applyDop(module, payload) {
+    const store = getFilterStore(module);
+    if (!store) return;
+    store.filter = { ...(payload.filterPayload || {}) };
+    const route = payload.route || {
+      programs: "programs",
+      prisonMinistry: "prisonMinistry",
+      ministryMaterials: "ministryMaterials"
+    }[module];
+    if (typeof setRoute === "function" && route) {
+      setRoute(route);
+      if (payload.scrollTo) scrollToPanel(payload.scrollTo);
+      return false;
+    }
+    return true;
+  }
+
   function applyAction(module, payload = {}) {
     const handlers = {
       staffHr: applyStaffHr,
@@ -480,6 +507,9 @@
       venue: applyVenue,
       sacraments: applySacraments,
       media: applyMedia,
+      programs: (payload) => applyDop("programs", payload),
+      prisonMinistry: (payload) => applyDop("prisonMinistry", payload),
+      ministryMaterials: (payload) => applyDop("ministryMaterials", payload),
       members: applyMembers,
       reports: applyReports
     };
