@@ -24558,6 +24558,7 @@ async function submitForm(form) {
   const collection = getCollection(modalType);
   if (modalMode === "edit") {
     const index = collection.findIndex((item) => item.id === modalRecordId);
+    const previousRecord = { ...collection[index] };
     collection[index] = { ...collection[index], ...data, updated_by: activeUser.name, updated_at: new Date().toISOString().slice(0, 10), status: data.estado || data.status || collection[index].status };
     if (modalType === "cellGroup") {
       collection[index].group_name = collection[index].group_name || collection[index].name;
@@ -24656,7 +24657,15 @@ async function submitForm(form) {
         modalType,
       )
     ) {
-      void dualWritePrisonMinistryRecord(modalType, "update", collection[index]);
+      const persisted = await persistDopRecord(modalType, "update", collection[index]);
+      if (!persisted?.ok) {
+        collection[index] = previousRecord;
+        saveState(`Reverted ${modalType} after Supabase save failure`);
+        alert(dopPersistenceError(persisted));
+        return;
+      }
+      if (persisted.data) collection[index] = { ...collection[index], ...persisted.data };
+      saveState(`Updated ${modalType} in Supabase`);
     }
     if (
       [
@@ -24668,10 +24677,26 @@ async function submitForm(form) {
         "materialReport",
       ].includes(modalType)
     ) {
-      void dualWriteMinistryMaterialsRecord(modalType, "update", collection[index]);
+      const persisted = await persistDopRecord(modalType, "update", collection[index]);
+      if (!persisted?.ok) {
+        collection[index] = previousRecord;
+        saveState(`Reverted ${modalType} after Supabase save failure`);
+        alert(dopPersistenceError(persisted));
+        return;
+      }
+      if (persisted.data) collection[index] = { ...collection[index], ...persisted.data };
+      saveState(`Updated ${modalType} in Supabase`);
     }
     if (modalType === "programs" || modalType === "program") {
-      void dualWriteProgramsRecord(modalType, "update", collection[index]);
+      const persisted = await persistDopRecord(modalType, "update", collection[index]);
+      if (!persisted?.ok) {
+        collection[index] = previousRecord;
+        saveState(`Reverted ${modalType} after Supabase save failure`);
+        alert(dopPersistenceError(persisted));
+        return;
+      }
+      if (persisted.data) collection[index] = { ...collection[index], ...persisted.data };
+      saveState(`Updated ${modalType} in Supabase`);
     }
   } else {
     const idPrefix = modalType.slice(0, 3);
@@ -25029,7 +25054,16 @@ async function submitForm(form) {
         record.status = record.status || record.estado || "Draft";
         record.estado = record.estado || record.status || "Rascunho";
       }
-      void dualWritePrisonMinistryRecord(modalType, "create", record);
+      const persisted = await persistDopRecord(modalType, "create", record);
+      if (!persisted?.ok) {
+        const localIndex = collection.findIndex((item) => item === record || item.id === record.id);
+        if (localIndex >= 0) collection.splice(localIndex, 1);
+        saveState(`Removed unsaved ${modalType}`);
+        alert(dopPersistenceError(persisted));
+        return;
+      }
+      if (persisted.data) Object.assign(record, persisted.data);
+      saveState(`Created ${modalType} in Supabase`);
     }
     if (
       [
@@ -25088,7 +25122,16 @@ async function submitForm(form) {
         record.status = record.status || record.estado || "Recorded Internally";
         record.estado = record.estado || record.status || "Activa";
       }
-      void dualWriteMinistryMaterialsRecord(modalType, "create", record);
+      const persisted = await persistDopRecord(modalType, "create", record);
+      if (!persisted?.ok) {
+        const localIndex = collection.findIndex((item) => item === record || item.id === record.id);
+        if (localIndex >= 0) collection.splice(localIndex, 1);
+        saveState(`Removed unsaved ${modalType}`);
+        alert(dopPersistenceError(persisted));
+        return;
+      }
+      if (persisted.data) Object.assign(record, persisted.data);
+      saveState(`Created ${modalType} in Supabase`);
     }
     if (modalType === "programs" || modalType === "program") {
       record.name = record.name || "";
@@ -25098,7 +25141,16 @@ async function submitForm(form) {
       record.estado = record.estado || record.status || "Rascunho";
       record.category = record.category || "Local Church";
       record.program_type = record.program_type || "Other";
-      void dualWriteProgramsRecord(modalType, "create", record);
+      const persisted = await persistDopRecord(modalType, "create", record);
+      if (!persisted?.ok) {
+        const localIndex = collection.findIndex((item) => item === record || item.id === record.id);
+        if (localIndex >= 0) collection.splice(localIndex, 1);
+        saveState(`Removed unsaved ${modalType}`);
+        alert(dopPersistenceError(persisted));
+        return;
+      }
+      if (persisted.data) Object.assign(record, persisted.data);
+      saveState(`Created ${modalType} in Supabase`);
     }
   }
   bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide();
@@ -26929,7 +26981,7 @@ document.addEventListener("click", async (event) => {
   if (enrollButton) return enrollFirstTimer(enrollButton.dataset.enroll);
 });
 
-byId("entryForm")?.addEventListener("submit", (event) => {
+byId("entryForm")?.addEventListener("submit", async (event) => {
   event.preventDefault();
   if (modalType === "cellMemberEdit") return submitCellMemberEditForm(event.target);
   if (modalType === "cellMemberTransfer") return submitCellMemberTransferForm(event.target);
@@ -26942,7 +26994,7 @@ byId("entryForm")?.addEventListener("submit", (event) => {
   if (modalType === "foundationScore") return submitFoundationScore(event.target);
   if (modalType === "memberCandidate") return submitMemberCandidateForm(event.target);
   if (modalType === "cellAttendance") return submitCellAttendanceModal(event.target);
-  if (modalType) submitForm(event.target);
+  if (modalType) await submitForm(event.target);
 });
 
 document.addEventListener("submit", (event) => {
@@ -28038,12 +28090,11 @@ function dualWriteFevoRecord(modalType, mode, record) {
   else if (mode === "update" && bridge[pair[1]]) void bridge[pair[1]](record.id, record);
 }
 
-function dualWritePrisonMinistryRecord(modalType, mode, record) {
+async function dualWritePrisonMinistryRecord(modalType, mode, record) {
   const bridge = window.CEPrisonMinistry || window.CEDataLayer?.prisonMinistry;
-  if (!bridge || !record) return;
+  if (!bridge || !record) return { ok: false, error: "Prison Ministry data service is unavailable." };
   if (typeof bridge.dualWriteRecord === "function") {
-    void bridge.dualWriteRecord(modalType, mode, record);
-    return;
+    return bridge.dualWriteRecord(modalType, mode, record);
   }
   const map = {
     prisonLocation: ["createPrisonLocation", "updatePrisonLocation"],
@@ -28053,17 +28104,17 @@ function dualWritePrisonMinistryRecord(modalType, mode, record) {
     prisonReport: ["createPrisonReport", "updatePrisonReport"],
   };
   const pair = map[modalType];
-  if (!pair) return;
-  if (mode === "create" && bridge[pair[0]]) void bridge[pair[0]](record);
-  else if (mode === "update" && bridge[pair[1]]) void bridge[pair[1]](record.id, record);
+  if (!pair) return { ok: false, error: "Unsupported Prison Ministry record." };
+  if (mode === "create" && bridge[pair[0]]) return bridge[pair[0]](record);
+  if (mode === "update" && bridge[pair[1]]) return bridge[pair[1]](record.id, record);
+  return { ok: false, error: "Prison Ministry action is unavailable." };
 }
 
-function dualWriteMinistryMaterialsRecord(modalType, mode, record) {
+async function dualWriteMinistryMaterialsRecord(modalType, mode, record) {
   const bridge = window.CEMinistryMaterials || window.CEDataLayer?.ministryMaterials;
-  if (!bridge || !record) return;
+  if (!bridge || !record) return { ok: false, error: "Ministry Materials data service is unavailable." };
   if (typeof bridge.dualWriteRecord === "function") {
-    void bridge.dualWriteRecord(modalType, mode, record);
-    return;
+    return bridge.dualWriteRecord(modalType, mode, record);
   }
   const map = {
     materialCatalogue: ["createMaterial", "updateMaterial"],
@@ -28074,20 +28125,42 @@ function dualWriteMinistryMaterialsRecord(modalType, mode, record) {
     materialReport: ["createMaterialReport", "createMaterialReport"],
   };
   const pair = map[modalType];
-  if (!pair) return;
-  if (mode === "create" && bridge[pair[0]]) void bridge[pair[0]](record);
-  else if (mode === "update" && bridge[pair[1]]) void bridge[pair[1]](record.id, record);
+  if (!pair) return { ok: false, error: "Unsupported Ministry Materials record." };
+  if (mode === "create" && bridge[pair[0]]) return bridge[pair[0]](record);
+  if (mode === "update" && bridge[pair[1]]) return bridge[pair[1]](record.id, record);
+  return { ok: false, error: "Ministry Materials action is unavailable." };
 }
 
-function dualWriteProgramsRecord(modalType, mode, record) {
+async function dualWriteProgramsRecord(modalType, mode, record) {
   const bridge = window.CEPrograms || window.CEDataLayer?.programs;
-  if (!bridge || !record) return;
+  if (!bridge || !record) return { ok: false, error: "Programs data service is unavailable." };
   if (typeof bridge.dualWriteRecord === "function") {
-    void bridge.dualWriteRecord(modalType || "programs", mode, record);
-    return;
+    return bridge.dualWriteRecord(modalType || "programs", mode, record);
   }
-  if (mode === "create" && bridge.createProgram) void bridge.createProgram(record);
-  else if (mode === "update" && bridge.updateProgram) void bridge.updateProgram(record.id, record);
+  if (mode === "create" && bridge.createProgram) return bridge.createProgram(record);
+  if (mode === "update" && bridge.updateProgram) return bridge.updateProgram(record.id, record);
+  return { ok: false, error: "Programs action is unavailable." };
+}
+
+async function persistDopRecord(modalType, mode, record) {
+  try {
+    if (modalType === "programs" || modalType === "program") return await dualWriteProgramsRecord(modalType, mode, record);
+    if (["prisonLocation", "prisonService", "prisonFoundation", "prisonAgenda", "prisonReport"].includes(modalType)) {
+      return await dualWritePrisonMinistryRecord(modalType, mode, record);
+    }
+    if (["materialCatalogue", "materialSale", "materialDistribution", "materialStock", "materialFund", "materialReport"].includes(modalType)) {
+      return await dualWriteMinistryMaterialsRecord(modalType, mode, record);
+    }
+  } catch (error) {
+    return { ok: false, error: error?.message || "Supabase request failed." };
+  }
+  return { ok: true, skipped: true };
+}
+
+function dopPersistenceError(result) {
+  return result?.error || (lang === "pt"
+    ? "Não foi possível guardar este registo no Supabase. Nenhuma alteração foi mantida localmente."
+    : "This record could not be saved to Supabase. No local-only change was kept.");
 }
 
 async function hydrateProgramsFromRepository() {
