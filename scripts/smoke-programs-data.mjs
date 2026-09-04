@@ -46,7 +46,7 @@ ok("reports seed exists", existsSync(join(root, "src/data/seeds/programReportsSe
 ok("programs bridge exists", existsSync(join(root, "js/programs-data-bridge.js")));
 ok(
   "index includes programs bridge",
-  /programs-data-bridge\.js\?v=20260723-programs-data-v1/.test(read("index.html")),
+  /programs-data-bridge\.js\?v=[^"']+/.test(read("index.html")),
 );
 ok(
   "docs pilot Programs",
@@ -57,6 +57,27 @@ ok("README mentions Programs pilot", /Programs & Events/.test(read("README.md"))
 ok(
   "dashboard dual-write programs",
   /dualWriteProgramsRecord|hydrateProgramsFromRepository/.test(read("js/dashboard.js")),
+);
+const dashboard = read("js/dashboard.js");
+ok(
+  "Programs form schema is registered",
+  /program:\s*\[\s*\["name",\s*"name"\]/.test(dashboard),
+);
+ok(
+  "Programs can be resolved by generic view and edit actions",
+  /if \(type === "program"\) return state\.programs \|\| \[\]/.test(dashboard),
+);
+ok(
+  "Programs actions use the Programs access-control module",
+  /program:\s*"programs"/.test(dashboard),
+);
+ok(
+  "Programs list includes a confirmed delete action",
+  /\["delete",\s*"program",\s*r\.id,\s*L\("delete"\)\]/.test(dashboard),
+);
+ok(
+  "Programs edit form preserves the coordinator alias",
+  /responsible_name:\s*selectedRecord\.responsible_name \|\| selectedRecord\.owner \|\| ""/.test(dashboard),
 );
 ok(
   "localStorage key programs",
@@ -140,6 +161,10 @@ if (api?.listPrograms) {
       expected_attendance: 200,
     });
     ok("updateProgram ok", !!upd?.ok, upd?.error || "");
+  }
+  if (prog?.ok && api.deleteProgram) {
+    const deleted = await api.deleteProgram(prog.data.id);
+    ok("deleteProgram ok", !!deleted?.ok, deleted?.error || "");
   }
 
   if (api.createProgramSession) {

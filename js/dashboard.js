@@ -19778,7 +19778,7 @@ function renderPrograms() {
               r.program_type || r.tipo || "Conferência / Evento",
               r.start_date || r.data || "-",
               badge(r.status || "Scheduled"),
-              actionButtons([["view", "program", r.id, L("view")], ["edit", "program", r.id, L("edit")]])
+              actionButtons([["view", "program", r.id, L("view")], ["edit", "program", r.id, L("edit")], ["delete", "program", r.id, L("delete")]])
             ])
           )}
         </article>
@@ -22381,7 +22381,8 @@ function actionModuleForType(type) {
     streamingChannel: "media",
     mediaEvaluation: "media",
     mediaAward: "media",
-    mediaReport: "media"
+    mediaReport: "media",
+    program: "programs"
   };
   return map[type] || window.CEAccessControl?.routeToModule?.(type) || type;
 }
@@ -22791,6 +22792,21 @@ const formSchemas = {
     ["church_id", "church", "church", { showInfoCard: true, autofillFields: ["church_id", "province", "city", "district_or_area"], igrejaField: "igreja" }],
     ["cell_group_id", "cellGroup", "cellGroupSelect"], ["cell_id", "cell", "cellRegistrySelect"], ["cell_role", "memberCellRole", "select", ["Member", "Leader", "Assistant", "Visitor"]], ["cell_participation_status", "memberCellParticipation", "select", ["Regular", "Sometimes", "NotParticipating", "Unknown"]], ["service_participation_status", "memberServiceParticipation", "select", ["Regular", "Sometimes", "NotParticipating", "Unknown"]], ["departamento", "department", "departmentSelect"], ["", "memberSectionHistory", "section"], ["estado", "status", "select", memberStatuses], ["membership_status", "memberMembershipStatus", "select", ["Active", "Inactive", "Transferred", "Pending"]], ["data_de_entrada", "entryDate", "date"], ["origem", "origin", "select", ["Primeira Vez", "Escola de Fundação", "Transferência", "Manual"]], ["legacy_foundation_status", "memberFoundationLegacyStatus", "select", ["Unknown", "NotStarted", "InterestedOrRegistered", "InProgress", "Completed", "Graduated", "Incomplete"]], ["legacy_alec_status", "memberAlecLegacyStatus", "select", ["Unknown", "NotStarted", "Registered", "InProgress", "Completed"]], ["legacy_baptism_status", "memberBaptismLegacyStatus", "select", ["Unknown", "Yes", "No"]], ["legacy_partner_status", "memberPartnerLegacyStatus", "select", ["Unknown", "Yes", "No"]], ["notas", "notes", "textarea"]
   ],
+  program: [
+    ["name", "name"],
+    ["program_type", "programType", "select", ["Service", "Conference", "Evangelism", "Prayer Program", "Training", "Outreach", "Other"]],
+    ["category", "category", "select", ["Local Church", "Departmental", "National", "Global Event"]],
+    ["church_id", "church", "church"],
+    ["responsible_name", "ownerOrCoordinator"],
+    ["start_date", "startDate", "date"],
+    ["end_date", "endDate", "date"],
+    ["start_time", "startTime", "time"],
+    ["end_time", "endTime", "time"],
+    ["location", "location"],
+    ["status", "status", "select", ["Draft", "Planning", "Scheduled", "In Progress", "Completed", "Cancelled"]],
+    ["description", "description", "textarea"],
+    ["notes", "notes", "textarea"]
+  ],
   foundationStudent: [],
   finance: financeEntrySchema(),
   church: [
@@ -22879,6 +22895,7 @@ const formSchemas = {
 function getCollection(type) {
   if (type === "firstTimer") return state.firstTimers;
   if (type === "member") return state.members;
+  if (type === "program") return state.programs || [];
   if (type === "foundationStudent") return state.foundationStudents;
   if (type === "foundationTeacher") return state.foundationTeachers || [];
   if (type === "finance") return state.finance;
@@ -23791,11 +23808,19 @@ function openForm(type, id = null, options = {}) {
     modalMode = id ? "edit" : "create";
     modalType = type;
     modalRecordId = id;
-    const record = id
+    const selectedRecord = id
       ? (type === "member"
           ? (findMemberRecord(id) || {})
           : (getCollection(type).find((item) => String(item.id) === String(id)) || {}))
       : {};
+    const record = type === "program"
+      ? {
+          ...selectedRecord,
+          responsible_name: selectedRecord.responsible_name || selectedRecord.owner || "",
+          owner: selectedRecord.owner || selectedRecord.responsible_name || "",
+          status: selectedRecord.status || selectedRecord.estado || "Draft",
+        }
+      : selectedRecord;
     byId("modalEyebrow").textContent = modalMode === "edit" ? L("edit") : L("add");
     byId("modalTitle").textContent = type === "finance" && !id ? L("addFinance") : formTitle(type);
     if (type === "finance" && !id) {
@@ -23842,7 +23867,7 @@ function openForm(type, id = null, options = {}) {
 }
 
 function formTitle(type) {
-  const map = { firstTimer: L("firstTimers"), member: L("members"), foundationStudent: L("foundationSchool"), finance: L("finance"), church: L("churches"), cell: L("cellLeadership"), cellGroup: L("cellGroups"), cellRegistry: L("cellCellsList"), user: L("usersRoles"), requisition: L("requisitions"), staffProfile: L("staffHr"), staffPerformance: L("staffTabPerformance"), baptism: L("baptismTab"), marriage: L("marriageTab"), baby: L("babyTab"), counselingRequest: L("newCounselingRequest"), counselor: L("counselingCounselors"), counselingAppointment: L("counselingAppointments"), counselingReferral: L("counselingReferrals"), counselingFeedback: L("counselingFeedbackReports"), fevoConfig: L("weeklyConfiguration"), fevoReport: L("weeklyReports"), fevoNoReport: L("groupsWithoutReport"), fevoWeeklyReport: L("weeklyReports"), prisonLocation: L("prisonsLocations"), prisonService: L("prisonServices"), prisonFoundation: L("foundationSchool"), prisonAgenda: L("weeklyAgenda"), prisonReport: L("ministryReports"), materialCatalogue: L("catalogue"), materialSale: L("sales"), materialDistribution: L("churchDistribution"), materialStock: L("weeklyStock"), materialFund: L("freeDistributionFunds"), materialReport: L("ministryReports"), alecRegistration: L("alecRegistration"), alecScore: L("alecScores"), churchReport: L("churchReports"), cellReport: L("cellReports"), cellLeader: L("cellLeaders"), cellEvaluation: L("cellEvaluation"), finalValidation: L("finalValidation"), inventoryItem: L("generalInventory"), venueAcquisition: L("newAcquisitions"), venueStaffEquipment: L("staffEquipment"), venueMaintenance: L("maintenanceRepairs"), venueMovement: L("loansMovements"), venueSpace: L("venuesRooms"), venueChecklist: L("serviceChecklist"), mediaTechnician: L("mediaTechnicalTeam"), mediaRole: L("mediaRolesFunctions"), mediaSchedule: L("mediaSchedules"), mediaService: L("mediaServicesPrograms"), streamingChannel: L("mediaStreamingChannels"), mediaEvaluation: L("mediaPerformanceEvaluation"), mediaAward: L("mediaAwards") };
+  const map = { firstTimer: L("firstTimers"), member: L("members"), program: L("programs"), foundationStudent: L("foundationSchool"), finance: L("finance"), church: L("churches"), cell: L("cellLeadership"), cellGroup: L("cellGroups"), cellRegistry: L("cellCellsList"), user: L("usersRoles"), requisition: L("requisitions"), staffProfile: L("staffHr"), staffPerformance: L("staffTabPerformance"), baptism: L("baptismTab"), marriage: L("marriageTab"), baby: L("babyTab"), counselingRequest: L("newCounselingRequest"), counselor: L("counselingCounselors"), counselingAppointment: L("counselingAppointments"), counselingReferral: L("counselingReferrals"), counselingFeedback: L("counselingFeedbackReports"), fevoConfig: L("weeklyConfiguration"), fevoReport: L("weeklyReports"), fevoNoReport: L("groupsWithoutReport"), fevoWeeklyReport: L("weeklyReports"), prisonLocation: L("prisonsLocations"), prisonService: L("prisonServices"), prisonFoundation: L("foundationSchool"), prisonAgenda: L("weeklyAgenda"), prisonReport: L("ministryReports"), materialCatalogue: L("catalogue"), materialSale: L("sales"), materialDistribution: L("churchDistribution"), materialStock: L("weeklyStock"), materialFund: L("freeDistributionFunds"), materialReport: L("ministryReports"), alecRegistration: L("alecRegistration"), alecScore: L("alecScores"), churchReport: L("churchReports"), cellReport: L("cellReports"), cellLeader: L("cellLeaders"), cellEvaluation: L("cellEvaluation"), finalValidation: L("finalValidation"), inventoryItem: L("generalInventory"), venueAcquisition: L("newAcquisitions"), venueStaffEquipment: L("staffEquipment"), venueMaintenance: L("maintenanceRepairs"), venueMovement: L("loansMovements"), venueSpace: L("venuesRooms"), venueChecklist: L("serviceChecklist"), mediaTechnician: L("mediaTechnicalTeam"), mediaRole: L("mediaRolesFunctions"), mediaSchedule: L("mediaSchedules"), mediaService: L("mediaServicesPrograms"), streamingChannel: L("mediaStreamingChannels"), mediaEvaluation: L("mediaPerformanceEvaluation"), mediaAward: L("mediaAwards") };
   return map[type] || type;
 }
 
@@ -25693,6 +25718,33 @@ function quickAction(action, type, id) {
       void Promise.resolve(persistFirstTimerViaRepository("delete", previous)).catch((error) => {
         console.warn("[CE FirstTimers] background delete sync error", error);
       });
+      return;
+    }
+    if (type === "program") {
+      const previous = collection[index];
+      const programsBridge = window.CEPrograms || window.CEDataLayer?.programs;
+      if (!programsBridge?.deleteProgram) {
+        alert(lang === "pt" ? "Não foi possível eliminar o programa porque a ligação de dados não está disponível." : "The program could not be deleted because the data connection is unavailable.");
+        return;
+      }
+      Promise.resolve(programsBridge.deleteProgram(previous.id))
+        .then((result) => {
+          if (!result?.ok) {
+            alert(result?.error || (lang === "pt" ? "Não foi possível eliminar o programa." : "The program could not be deleted."));
+            return;
+          }
+          const currentIndex = collection.findIndex((item) => String(item.id) === String(previous.id));
+          if (currentIndex >= 0) collection.splice(currentIndex, 1);
+          saveState(`Deleted program ${previous.id}`);
+          if (typeof showToast === "function") {
+            showToast(lang === "pt" ? "Programa eliminado com sucesso!" : "Program deleted successfully!");
+          }
+          setRoute(activeRoute);
+        })
+        .catch((error) => {
+          console.warn("[CE Programs] delete sync error", error);
+          alert(lang === "pt" ? "Não foi possível eliminar o programa." : "The program could not be deleted.");
+        });
       return;
     }
     if (["baptism", "marriage", "baby"].includes(type)) {

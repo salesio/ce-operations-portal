@@ -148,6 +148,16 @@
       if (s.persist) save(KEYS[kind], s.rows);
       return ok(s.rows[i]);
     }
+    function remove(kind, id) {
+      var s = store(kind);
+      var i = s.rows.findIndex(function (r) {
+        return String(r.id) === String(id);
+      });
+      if (i < 0) return fail("Não encontrado", "NOT_FOUND");
+      s.rows.splice(i, 1);
+      if (s.persist) save(KEYS[kind], s.rows);
+      return ok(true);
+    }
 
     return {
       listPrograms: function () {
@@ -161,6 +171,9 @@
       },
       updateProgram: function (id, p) {
         return update("programs", id, p);
+      },
+      deleteProgram: function (id) {
+        return remove("programs", id);
       },
       getActivePrograms: function () {
         return ok(
@@ -437,6 +450,7 @@
     "listPrograms",
     "createProgram",
     "updateProgram",
+    "deleteProgram",
     "getActivePrograms",
     "getUpcomingPrograms",
     "listProgramSessions",
