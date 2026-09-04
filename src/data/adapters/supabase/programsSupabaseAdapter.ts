@@ -29,6 +29,25 @@ const COLUMNS: Record<Table, string[]> = {
   reports: ["id","program_id","report_title","report_type","summary","attendance_total","first_timers_total","new_converts_total","testimonies_count","financial_summary","media_summary","follow_up_summary","document_id","status","submitted_by","submitted_by_name","submitted_at","approved_by","approved_by_name","approved_at","notes","metadata","created_at","updated_at"],
 };
 
+/**
+ * The dashboard can display human-readable audit names before a staff/auth
+ * profile has been selected. Those names must never be sent to UUID columns:
+ * Postgres rejects them and the former fire-and-forget UI hid that failure.
+ * Keep this explicit per table so textual fields such as department_id are
+ * not accidentally discarded.
+ */
+const UUID_COLUMNS: Record<Table, string[]> = {
+  programs: ["id", "church_id", "main_church_id", "venue_space_id", "responsible_staff_id", "created_by", "updated_by"],
+  sessions: ["id", "program_id", "speaker_staff_id", "venue_space_id", "created_by", "updated_by"],
+  teams: ["id", "program_id", "leader_staff_id", "created_by", "updated_by"],
+  participants: ["id", "program_id", "session_id", "member_id", "first_timer_id", "staff_id", "church_id", "checked_in_by"],
+  registrations: ["id", "program_id", "church_id", "member_id", "first_timer_id", "finance_record_id"],
+  resources: ["id", "program_id", "inventory_item_id", "venue_space_id", "requisition_id", "assigned_to_staff_id", "created_by", "updated_by"],
+  budgets: ["id", "program_id", "finance_record_id", "finance_disbursement_id", "requisition_id", "approved_by", "created_by", "updated_by"],
+  checklists: ["id", "program_id", "assigned_to_staff_id", "completed_by", "created_by", "updated_by"],
+  reports: ["id", "program_id", "document_id", "submitted_by", "approved_by"],
+};
+
 function ok<T>(data: T): DataResult<T> { return { ok: true, data }; }
 function fail<T>(error: string, code = "PROGRAMS_ERROR"): DataResult<T> { return { ok: false, error, code }; }
 function cast<T>(result: { ok: boolean; data?: unknown; error?: string; code?: string }): DataResult<T> {
@@ -98,7 +117,19 @@ function payload(table: Table, raw: ProgramsRecord): SupabaseRow {
   }
   if (table === "programs" && !String(row.program_code || "").trim()) delete row.program_code;
   if (table === "registrations" && !String(row.registration_number || "").trim()) delete row.registration_number;
-  if (row.id && !isValidUuid(String(row.id))) delete row.id;
+  for (const column of UUID_COLUMNS[table]) {
+    if (row[column] && !isValidUuid(String(row[column]))) {
+      // Preserve the display/audit name in JSON metadata when applicable,
+      // while omitting the invalid UUID reference from the SQL payload.
+      if ((column === "created_by" || column === "updated_by") && typeof row[column] === "string") {
+        row.metadata = {
+          ...((row.metadata as Record<string, unknown>) || {}),
+          [`${column}_name`]: row[column],
+        };
+      }
+      delete row[column];
+    }
+  }
   return Object.fromEntries(Object.entries(row).filter(([key, value]) => COLUMNS[table].includes(key) && value !== undefined)) as SupabaseRow;
 }
 

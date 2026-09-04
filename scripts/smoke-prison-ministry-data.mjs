@@ -70,6 +70,12 @@ ok(
   ),
 );
 ok(
+  "Prison Ministry form awaits Supabase confirmation and restores on failure",
+  /await persistDopRecord\(modalType, "create", record\)/.test(read("js/dashboard.js")) &&
+    /await persistDopRecord\(modalType, "update", collection\[index\]\)/.test(read("js/dashboard.js")) &&
+    /Reverted \$\{modalType\} after Supabase save failure/.test(read("js/dashboard.js")),
+);
+ok(
   "localStorage key prison-locations",
   /prison-locations/.test(read("src/data/adapters/localStorageProvider.ts")),
 );

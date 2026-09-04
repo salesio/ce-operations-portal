@@ -53,6 +53,8 @@
     "test:supabase-staging-connection": "node scripts/smoke-supabase-staging-connection.mjs",
     "test:supabase-live-schema": "node scripts/check-supabase-live-schema.mjs",
     "test:dop-live-schema": "node scripts/check-dop-live-schema.mjs",
+    "test:dop-live-crud": "node scripts/smoke-dop-live-crud.mjs",
+    "test:dop-anon-crud": "node scripts/smoke-dop-anon-crud.mjs",
     "test:supabase-runtime-provider": "node scripts/smoke-supabase-runtime-provider.mjs",
     "test:phase-14-staging-dry-run": "node scripts/smoke-phase-14-staging-dry-run.mjs",
     "test:members-master-data": "node scripts/smoke-members-master-data.mjs",

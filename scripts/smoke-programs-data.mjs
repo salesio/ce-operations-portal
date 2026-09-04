@@ -59,6 +59,22 @@ ok(
   /dualWriteProgramsRecord|hydrateProgramsFromRepository/.test(read("js/dashboard.js")),
 );
 const dashboard = read("js/dashboard.js");
+const programsAdapter = read("src/data/adapters/supabase/programsSupabaseAdapter.ts");
+ok(
+  "Programs Supabase payload omits invalid UUID audit values",
+  /const UUID_COLUMNS: Record<Table, string\[]>/.test(programsAdapter) &&
+    /created_by.*updated_by/.test(programsAdapter) &&
+    /!isValidUuid\(String\(row\[column\]\)\)/.test(programsAdapter),
+);
+ok(
+  "Programs form awaits Supabase confirmation",
+  /const persisted = await persistDopRecord\(modalType, "create", record\)/.test(dashboard) &&
+    /const persisted = await persistDopRecord\(modalType, "update", collection\[index\]\)/.test(dashboard),
+);
+ok(
+  "Programs form removes a local-only record after a failed save",
+  /Removed unsaved \$\{modalType\}/.test(dashboard) && /dopPersistenceError\(persisted\)/.test(dashboard),
+);
 ok(
   "Programs form schema is registered",
   /program:\s*\[\s*\["name",\s*"name"\]/.test(dashboard),
