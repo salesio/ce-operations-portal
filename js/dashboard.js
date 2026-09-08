@@ -19151,10 +19151,49 @@ function renderChurchReportsAnalyticalView() {
   const leadership = state.cellLeadership || seedData.cellLeadership;
   const churchReports = scopedNested(leadership.churchReports || []);
   const cellReports = sortCellReportsNewestFirst(scopedNested(leadership.cellReports || []));
-  const groups = scopedNested(state.cellGroups || []);
-  const cells = scopedNested(state.cellRegistry || state.cells || []);
+  const churchesList = scoped(state.churches || []);
+  const groups = scopedNested(typeof getAllRegisteredCellGroups === "function" ? getAllRegisteredCellGroups() : (state.cellGroups || []));
+  const cells = scopedNested(typeof getAllRegisteredCells === "function" ? getAllRegisteredCells() : (state.cellRegistry || state.cells || []));
 
   const st = churchReportPageState;
+
+  // Filter available groups based on selected church
+  const availableGroups = groups.filter((g) => {
+    if (!st.churchId) return true;
+    return String(g.church_id || g.churchId || "") === String(st.churchId);
+  });
+
+  // If selected group does not belong to available groups, reset it
+  if (st.cellGroupId && !availableGroups.some((g) => String(g.id) === String(st.cellGroupId))) {
+    st.cellGroupId = "";
+  }
+
+  // Filter available cells based on selected church and selected group
+  const availableCells = cells.filter((c) => {
+    if (st.churchId) {
+      const cChurchId = String(c.church_id || c.churchId || "");
+      const parentGroup = groups.find((g) => String(g.id) === String(c.group_id || c.cell_group_id || c.group_cell_id || ""));
+      const groupChurchId = parentGroup ? String(parentGroup.church_id || parentGroup.churchId || "") : "";
+      if (cChurchId && cChurchId !== String(st.churchId)) {
+        return false;
+      }
+      if (!cChurchId && groupChurchId && groupChurchId !== String(st.churchId)) {
+        return false;
+      }
+    }
+    if (st.cellGroupId) {
+      const cGroupId = String(c.cell_group_id || c.group_id || c.group_cell_id || "");
+      if (cGroupId !== String(st.cellGroupId)) {
+        return false;
+      }
+    }
+    return true;
+  });
+
+  // If selected cell does not belong to available cells, reset it
+  if (st.cellId && !availableCells.some((c) => String(c.id) === String(st.cellId))) {
+    st.cellId = "";
+  }
 
   // Filter church reports by level, service, period, church, group, cell and search
   let filteredChurch = filterReportsByPeriod(churchReports, st.period, st.dateFrom, st.dateTo);
@@ -19166,8 +19205,20 @@ function renderChurchReportsAnalyticalView() {
   }
 
   if (st.churchId) {
-    filteredChurch = filteredChurch.filter((r) => r.church_id === st.churchId);
-    filteredCells = filteredCells.filter((r) => r.church_id === st.churchId);
+    filteredChurch = filteredChurch.filter((r) => String(r.church_id || r.churchId || "") === String(st.churchId));
+    filteredCells = filteredCells.filter((r) => {
+      const rChurch = String(r.church_id || r.churchId || "");
+      if (rChurch) return rChurch === String(st.churchId);
+      const cell = cells.find((c) => String(c.id) === String(r.cell_id));
+      if (cell && (cell.church_id || cell.churchId)) {
+        return String(cell.church_id || cell.churchId) === String(st.churchId);
+      }
+      const group = groups.find((g) => String(g.id) === String(r.cell_group_id || r.group_id));
+      if (group && (group.church_id || group.churchId)) {
+        return String(group.church_id || group.churchId) === String(st.churchId);
+      }
+      return true;
+    });
   }
 
   if (st.cellGroupId) {
@@ -19180,12 +19231,12 @@ function renderChurchReportsAnalyticalView() {
 
   if (st.search) {
     const q = st.search.toLowerCase();
-    filteredChurch = filteredChurch.filter((r) => (r.semana || "").toLowerCase().includes(q) || (r.culto || "").toLowerCase().includes(q) || (r.comentarios || "").toLowerCase().includes(q));
-    filteredCells = filteredCells.filter((r) => (r.celula || "").toLowerCase().includes(q) || (r.nome_do_lider || "").toLowerCase().includes(q) || (r.semana || "").toLowerCase().includes(q));
+    filteredChurch = filteredChurch.filter((r) => (r.semana || "").toLowerCase().includes(q) || (r.culto || "").toLowerCase().includes(q) || (r.comentarios || "").toLowerCase().includes(q) || (churchName(r.church_id) || "").toLowerCase().includes(q));
+    filteredCells = filteredCells.filter((r) => (r.celula || "").toLowerCase().includes(q) || (r.nome_do_lider || "").toLowerCase().includes(q) || (r.semana || "").toLowerCase().includes(q) || (r.cell_group_name || "").toLowerCase().includes(q));
   }
 
   // Calculate summary metrics
-  const activeDataset = st.level === "cell" ? filteredCells : filteredChurch;
+  const activeDataset = st.level === "church" ? filteredChurch : filteredCells;
   const totalAtt = activeDataset.reduce((sum, r) => sum + Number(r.att || r.members_present_count || 0), 0);
   const totalFt = activeDataset.reduce((sum, r) => sum + Number(r.ft || r.first_timers_count || 0), 0);
   const totalNc = activeDataset.reduce((sum, r) => sum + Number(r.nc || r.new_converts || 0), 0);
@@ -19252,6 +19303,11 @@ function renderChurchReportsAnalyticalView() {
 
       <!-- Filters Toolbar -->
       <form class="filter-toolbar filter-bar mb-4" data-church-report-filters>
+        <select class="form-select" name="churchId" data-church-filter-field>
+          <option value="">Todas as Igrejas</option>
+          ${churchesList.map((ch) => `<option value="${ch.id}" ${String(st.churchId) === String(ch.id) ? "selected" : ""}>${ch.public_name || ch.church_name || ch.name || churchName(ch.id) || "Igreja"}</option>`).join("")}
+        </select>
+
         <select class="form-select" name="service" data-church-filter-field>
           <option value="">Todos os Cultos</option>
           ${servicesList.map((svc) => `<option value="${svc}" ${st.service === svc ? "selected" : ""}>${svc}</option>`).join("")}
@@ -19274,14 +19330,14 @@ function renderChurchReportsAnalyticalView() {
         ${st.level !== "church" ? `
           <select class="form-select" name="cellGroupId" data-church-filter-field>
             <option value="">Todos os Grupos</option>
-            ${groups.map((g) => `<option value="${g.id}" ${String(st.cellGroupId) === String(g.id) ? "selected" : ""}>${g.group_name || g.name || "Grupo"}</option>`).join("")}
+            ${availableGroups.map((g) => `<option value="${g.id}" ${String(st.cellGroupId) === String(g.id) ? "selected" : ""}>${g.group_name || g.name || "Grupo"}</option>`).join("")}
           </select>
         ` : ""}
 
         ${st.level === "cell" ? `
           <select class="form-select" name="cellId" data-church-filter-field>
             <option value="">Todas as Células</option>
-            ${cells.map((c) => `<option value="${c.id}" ${String(st.cellId) === String(c.id) ? "selected" : ""}>${c.cell_name || c.name || "Célula"}</option>`).join("")}
+            ${availableCells.map((c) => `<option value="${c.id}" ${String(st.cellId) === String(c.id) ? "selected" : ""}>${c.cell_name || c.name || "Célula"}</option>`).join("")}
           </select>
         ` : ""}
 
@@ -30729,12 +30785,50 @@ document.addEventListener("click", (event) => {
 document.addEventListener("change", (event) => {
   if (event.target.closest("[data-church-report-filters]")) {
     const form = event.target.closest("[data-church-report-filters]");
+    const changedName = event.target.name;
+    const oldChurchId = churchReportPageState.churchId;
+    const oldGroupId = churchReportPageState.cellGroupId;
+
+    churchReportPageState.churchId = form.querySelector('[name="churchId"]')?.value || "";
     churchReportPageState.service = form.querySelector('[name="service"]')?.value || "";
     churchReportPageState.period = form.querySelector('[name="period"]')?.value || "month";
     churchReportPageState.dateFrom = form.querySelector('[name="dateFrom"]')?.value || "";
     churchReportPageState.dateTo = form.querySelector('[name="dateTo"]')?.value || "";
     churchReportPageState.cellGroupId = form.querySelector('[name="cellGroupId"]')?.value || "";
     churchReportPageState.cellId = form.querySelector('[name="cellId"]')?.value || "";
+
+    if (changedName === "churchId" && churchReportPageState.churchId !== oldChurchId) {
+      if (churchReportPageState.churchId) {
+        const groups = scopedNested(typeof getAllRegisteredCellGroups === "function" ? getAllRegisteredCellGroups() : (state.cellGroups || []));
+        const cells = scopedNested(typeof getAllRegisteredCells === "function" ? getAllRegisteredCells() : (state.cellRegistry || state.cells || []));
+        if (churchReportPageState.cellGroupId) {
+          const grp = groups.find((g) => String(g.id) === String(churchReportPageState.cellGroupId));
+          if (grp && (grp.church_id || grp.churchId) && String(grp.church_id || grp.churchId) !== String(churchReportPageState.churchId)) {
+            churchReportPageState.cellGroupId = "";
+          }
+        }
+        if (churchReportPageState.cellId) {
+          const cl = cells.find((c) => String(c.id) === String(churchReportPageState.cellId));
+          if (cl && (cl.church_id || cl.churchId) && String(cl.church_id || cl.churchId) !== String(churchReportPageState.churchId)) {
+            churchReportPageState.cellId = "";
+          }
+        }
+      }
+    }
+
+    if (changedName === "cellGroupId" && churchReportPageState.cellGroupId !== oldGroupId) {
+      if (churchReportPageState.cellGroupId) {
+        const cells = scopedNested(typeof getAllRegisteredCells === "function" ? getAllRegisteredCells() : (state.cellRegistry || state.cells || []));
+        const cl = cells.find((c) => String(c.id) === String(churchReportPageState.cellId));
+        if (cl) {
+          const cGroupId = String(cl.cell_group_id || cl.group_id || cl.group_cell_id || "");
+          if (cGroupId && cGroupId !== String(churchReportPageState.cellGroupId)) {
+            churchReportPageState.cellId = "";
+          }
+        }
+      }
+    }
+
     if (activeRoute === "cellChurchReports") renderCellMinistry("churchReports");
   }
 });
