@@ -6858,6 +6858,11 @@ async function submitPublicCellReport(form) {
   state.cellLeadership.cellReports = state.cellLeadership.cellReports.filter((item) => item.id !== submission.id);
   state.cellReportSubmissions.unshift(submission);
   state.cellLeadership.cellReports.unshift(internalReport);
+  try {
+    consolidateCellReportToChurchReport(internalReport, false);
+  } catch (error) {
+    console.warn("[CE CellReport public] church consolidation fallback", error);
+  }
   // Internal notifications (mock/data layer) — never block submission
   try {
     notifyPublicCellReportSubmitted(submission);
@@ -19080,72 +19085,120 @@ function filterReportsByPeriod(records = [], period = "month", dateFrom = "", da
 
 /**
  * Automatically consolidates cell attendance into the general Church Report.
+ * Groups cell reports by Church + Service Date + Service Type ("Culto + Data").
  */
-function consolidateCellReportToChurchReport(cellReport) {
-  if (!cellReport || !state.cellLeadership) return;
+function consolidateCellReportToChurchReport(cellReport, shouldSave = true) {
+  if (!cellReport || !state.cellLeadership) return null;
   if (!Array.isArray(state.cellLeadership.churchReports)) state.cellLeadership.churchReports = [];
 
-  const churchId = cellReport.church_id || state.churches?.[0]?.id || "church-hq";
-  const serviceDate = cellReport.data_do_culto || cellReport.data_inicio || new Date().toISOString().slice(0, 10);
-  const serviceType = cellReport.culto || "Domingo";
+  const churchId = cellReport.church_id || cellReport.igreja || state.churches?.[0]?.id || "church-hq";
+  const rawDate = cellReport.data_do_culto || cellReport.data_inicio || cellReport.data || cellReport.meeting_date || new Date().toISOString().slice(0, 10);
+  const serviceDate = String(rawDate).slice(0, 10);
+  const serviceType = cellReport.culto || cellReport.meeting_type || "Domingo";
+  const reportTitle = `${serviceType} (${serviceDate})`;
   const reportWeek = cellReport.semana || `${new Date(serviceDate).toLocaleString(lang === "pt" ? "pt-PT" : "en-US", { month: "long" })} Semana ${Math.ceil(new Date(serviceDate).getDate() / 7)}`;
 
-  // Collect all cell reports for this church, date and service
+  // Collect all cell reports matching this church, service date, and service type
   const matchingCellReports = (state.cellLeadership.cellReports || []).filter((r) => {
-    const rDate = r.data_do_culto || r.data_inicio;
-    return (r.church_id === churchId || !r.church_id) && rDate === serviceDate && (r.culto === serviceType || !r.culto || !serviceType);
+    if (!r) return false;
+    const rDate = String(r.data_do_culto || r.data_inicio || r.data || "").slice(0, 10);
+    const rService = String(r.culto || "Domingo").toLowerCase();
+    const isServiceMatch = rService === serviceType.toLowerCase() || (!r.culto && serviceType === "Domingo");
+    return isRecordFromChurch(r, churchId) && rDate === serviceDate && isServiceMatch;
   });
 
   const totalAtt = matchingCellReports.reduce((sum, r) => sum + Number(r.att || r.members_present_count || 0), 0);
   const totalFt = matchingCellReports.reduce((sum, r) => sum + Number(r.ft || r.first_timers_count || 0), 0);
   const totalNc = matchingCellReports.reduce((sum, r) => sum + Number(r.nc || r.new_converts || 0), 0);
-  const totalRs = matchingCellReports.reduce((sum, r) => sum + Number(r.rs || 0), 0);
-  const totalOffering = matchingCellReports.reduce((sum, r) => sum + Number(r.oferta || 0), 0);
+  const totalRs = matchingCellReports.reduce((sum, r) => sum + Number(r.rs || r.souls_won_count || 0), 0);
+  const totalOffering = matchingCellReports.reduce((sum, r) => sum + Number(r.oferta || r.offering_amount || 0), 0);
+  const distinctCells = new Set(matchingCellReports.map((r) => r.cell_id || r.celula || r.id).filter(Boolean));
+  const totalCellsReported = distinctCells.size || matchingCellReports.length;
 
   let existing = state.cellLeadership.churchReports.find((r) => {
-    const rDate = r.data_do_culto || r.data_inicio;
-    return r.church_id === churchId && rDate === serviceDate && r.culto === serviceType;
+    if (!r) return false;
+    const rDate = String(r.data_do_culto || r.data_inicio || r.data || "").slice(0, 10);
+    const rService = String(r.culto || "Domingo").toLowerCase();
+    return isRecordFromChurch(r, churchId) && rDate === serviceDate && rService === serviceType.toLowerCase();
   });
 
   if (existing) {
+    existing.titulo_do_relatorio = reportTitle;
+    existing.nome = reportTitle;
+    existing.title = reportTitle;
+    existing.church_id = churchId;
+    existing.culto = serviceType;
+    existing.data_do_culto = serviceDate;
+    existing.data_inicio = serviceDate;
+    existing.data_fim = serviceDate;
+    existing.data = serviceDate;
+    existing.semana = reportWeek;
     existing.att = totalAtt;
     existing.ft = totalFt;
     existing.nc = totalNc;
     existing.rs = totalRs;
     existing.total_ft_reached = totalFt;
     existing.oferta = totalOffering;
+    existing.total_cells_reported = totalCellsReported;
+    existing.comentarios = `Consolidação de presenças: ${reportTitle} · ${totalCellsReported} célula(s) reportadas (${totalAtt} presentes, ${totalFt} FT, ${totalNc} NC, ${totalRs} RS).`;
+    existing.origem = "Portal do Líder de Célula";
+    existing.submetido_por = existing.submetido_por || "Portal de Células";
     existing.updated_at = new Date().toISOString().slice(0, 10);
   } else {
     existing = {
       id: typeof generateUuid === "function" ? generateUuid() : `church-report-${Date.now()}`,
+      titulo_do_relatorio: reportTitle,
+      nome: reportTitle,
+      title: reportTitle,
       church_id: churchId,
+      church_name: typeof churchName === "function" ? churchName(churchId) : "",
       created_by: activeUser?.name || "Consolidação Automática (Células)",
       updated_by: activeUser?.name || "Consolidação Automática (Células)",
       created_at: new Date().toISOString().slice(0, 10),
       updated_at: new Date().toISOString().slice(0, 10),
       status: "Submetido",
+      estado: "Submetido",
       semana: reportWeek,
       data_do_culto: serviceDate,
       data_inicio: serviceDate,
       data_fim: serviceDate,
+      data: serviceDate,
       culto: serviceType,
       att: totalAtt,
       ft: totalFt,
       nc: totalNc,
       rs: totalRs,
       total_ft_reached: totalFt,
-      comentarios: `Consolidação automática de presenças das células (${matchingCellReports.length} célula(s) reportadas).`,
+      oferta: totalOffering,
+      total_cells_reported: totalCellsReported,
+      comentarios: `Consolidação de presenças: ${reportTitle} · ${totalCellsReported} célula(s) reportadas (${totalAtt} presentes, ${totalFt} FT, ${totalNc} NC, ${totalRs} RS).`,
       submetido_por: "Portal de Células",
-      estado: "Submetido"
+      origem: "Portal do Líder de Célula"
     };
     state.cellLeadership.churchReports.unshift(existing);
   }
 
-  saveState("Consolidated cell attendance into church report");
+  if (shouldSave) {
+    saveState("Consolidated cell attendance into church report");
+  }
   return existing;
 }
 
 window.consolidateCellReportToChurchReport = consolidateCellReportToChurchReport;
+
+/**
+ * Ensures all existing cell reports are consolidated into Church Reports.
+ */
+function autoConsolidateAllChurchReports() {
+  if (!state.cellLeadership || !Array.isArray(state.cellLeadership.cellReports)) return;
+  const cellReports = state.cellLeadership.cellReports;
+  if (!cellReports.length) return;
+  cellReports.forEach((cr) => {
+    if (cr) consolidateCellReportToChurchReport(cr, false);
+  });
+}
+
+window.autoConsolidateAllChurchReports = autoConsolidateAllChurchReports;
 
 function isRecordFromChurch(record, targetChurchId) {
   if (!targetChurchId) return true;
@@ -19182,6 +19235,7 @@ function isRecordFromChurch(record, targetChurchId) {
 }
 
 function renderChurchReportsAnalyticalView() {
+  autoConsolidateAllChurchReports();
   const leadership = state.cellLeadership || seedData.cellLeadership;
   const churchReports = scopedNested(leadership.churchReports || []);
   const cellReports = sortCellReportsNewestFirst(scopedNested(leadership.cellReports || []));
@@ -19238,64 +19292,75 @@ function renderChurchReportsAnalyticalView() {
   if (st.churchId) {
     filteredChurch = filteredChurch.filter((r) => isRecordFromChurch(r, st.churchId));
     filteredCells = filteredCells.filter((r) => {
-      if (isRecordFromChurch(r, st.churchId)) return true;
-      const cell = cells.find((c) => String(c.id) === String(r.cell_id));
-      if (cell && isRecordFromChurch(cell, st.churchId)) return true;
-      const group = groups.find((g) => String(g.id) === String(r.cell_group_id || r.group_id));
-      if (group && isRecordFromChurch(group, st.churchId)) return true;
-      return false;
+      const parentGroup = groups.find((g) => String(g.id) === String(r.cell_group_id || r.group_id || ""));
+      const cellMatchesChurch = isRecordFromChurch(r, st.churchId);
+      const groupMatchesChurch = parentGroup ? isRecordFromChurch(parentGroup, st.churchId) : false;
+      return cellMatchesChurch || groupMatchesChurch;
     });
   }
 
   if (st.cellGroupId) {
-    filteredCells = filteredCells.filter((r) => String(r.cell_group_id || r.group_id) === String(st.cellGroupId));
+    filteredCells = filteredCells.filter((r) => String(r.cell_group_id || r.group_id || "") === String(st.cellGroupId));
   }
 
   if (st.cellId) {
-    filteredCells = filteredCells.filter((r) => String(r.cell_id) === String(st.cellId));
+    filteredCells = filteredCells.filter((r) => String(r.cell_id || "") === String(st.cellId));
   }
 
   if (st.search) {
     const q = st.search.toLowerCase();
-    filteredChurch = filteredChurch.filter((r) => (r.semana || "").toLowerCase().includes(q) || (r.culto || "").toLowerCase().includes(q) || (r.comentarios || "").toLowerCase().includes(q) || (churchName(r.church_id) || "").toLowerCase().includes(q));
-    filteredCells = filteredCells.filter((r) => (r.celula || "").toLowerCase().includes(q) || (r.nome_do_lider || "").toLowerCase().includes(q) || (r.semana || "").toLowerCase().includes(q) || (r.cell_group_name || "").toLowerCase().includes(q));
+    filteredChurch = filteredChurch.filter((r) => {
+      const churchN = churchName(r.church_id || r.igreja).toLowerCase();
+      const titleN = String(r.titulo_do_relatorio || r.nome || "").toLowerCase();
+      const cult = String(r.culto || "").toLowerCase();
+      const sem = String(r.semana || "").toLowerCase();
+      return churchN.includes(q) || cult.includes(q) || sem.includes(q) || titleN.includes(q);
+    });
+    filteredCells = filteredCells.filter((r) => {
+      const cName = String(r.celula || "").toLowerCase();
+      const lName = String(r.nome_do_lider || r.submetido_por || "").toLowerCase();
+      const cult = String(r.culto || "").toLowerCase();
+      const sem = String(r.semana || "").toLowerCase();
+      return cName.includes(q) || lName.includes(q) || cult.includes(q) || sem.includes(q);
+    });
   }
 
-  // Calculate summary metrics
+  // Sort reports newest first
+  filteredChurch.sort((a, b) => new Date(b.data_do_culto || b.data_inicio || b.data || 0) - new Date(a.data_do_culto || a.data_inicio || a.data || 0));
+  filteredCells.sort((a, b) => new Date(b.data_do_culto || b.data_inicio || b.data || 0) - new Date(a.data_do_culto || a.data_inicio || a.data || 0));
+
+  // Determine which list to use for KPIs and charts based on active level
   const activeDataset = st.level === "church" ? filteredChurch : filteredCells;
+
+  // Aggregate totals
   const totalAtt = activeDataset.reduce((sum, r) => sum + Number(r.att || r.members_present_count || 0), 0);
   const totalFt = activeDataset.reduce((sum, r) => sum + Number(r.ft || r.first_timers_count || 0), 0);
   const totalNc = activeDataset.reduce((sum, r) => sum + Number(r.nc || r.new_converts || 0), 0);
   const totalRs = activeDataset.reduce((sum, r) => sum + Number(r.rs || 0), 0);
 
-  // Peak & Low calculations
-  const attValues = activeDataset.map((r) => ({
-    val: Number(r.att || r.members_present_count || 0),
-    date: r.data_do_culto || r.data_inicio || r.data || "",
-    service: r.culto || "Domingo",
-    label: `${String(r.data_do_culto || r.data_inicio || "").slice(5)} (${r.culto || "Culto"})`
-  }));
+  // Calculate peaks and lows for attendance
+  let peakPoint = { val: 0, date: "" };
+  let lowPoint = { val: activeDataset.length ? Infinity : 0, date: "" };
 
-  let peakPoint = { val: 0, label: "—", date: "—" };
-  let lowPoint = { val: 0, label: "—", date: "—" };
-
-  if (attValues.length) {
-    attValues.sort((a, b) => b.val - a.val);
-    peakPoint = attValues[0];
-    lowPoint = attValues[attValues.length - 1];
-  }
-
-  // Prepare chart data points sorted chronologically
-  const chronological = [...activeDataset].sort((a, b) => {
-    const da = Date.parse(a.data_do_culto || a.data_inicio || a.created_at || 0);
-    const db = Date.parse(b.data_do_culto || b.data_inicio || b.created_at || 0);
-    return da - db;
+  activeDataset.forEach((r) => {
+    const val = Number(r.att || r.members_present_count || 0);
+    const dStr = r.data_do_culto || r.data_inicio || r.data || "";
+    if (val > peakPoint.val) {
+      peakPoint = { val, date: dStr ? `${dStr} (${r.culto || ""})` : "" };
+    }
+    if (val > 0 && val < lowPoint.val) {
+      lowPoint = { val, date: dStr ? `${dStr} (${r.culto || ""})` : "" };
+    }
   });
+  if (lowPoint.val === Infinity) lowPoint = { val: 0, date: "" };
 
+  // Prepare chronological data for charts
+  const chronological = [...activeDataset].sort((a, b) => new Date(a.data_do_culto || a.data_inicio || a.data || 0) - new Date(b.data_do_culto || b.data_inicio || a.data || 0));
   const chartDataPoints = chronological.map((r) => ({
-    label: `${String(r.data_do_culto || r.data_inicio || "").slice(5)} (${(r.culto || "Culto").split(" ")[0]})`,
+    label: `${String(r.data_do_culto || r.data_inicio || "").slice(5)} ${(r.culto || "").slice(0, 3)}`,
     value: Number(r.att || r.members_present_count || 0),
-    date: r.data_do_culto || r.data_inicio || ""
+    isPeak: peakPoint.val > 0 && Number(r.att || r.members_present_count || 0) === peakPoint.val,
+    isLow: lowPoint.val > 0 && Number(r.att || r.members_present_count || 0) === lowPoint.val
   }));
 
   const comparativeSeries = chronological.slice(-8).map((r) => ({
@@ -19438,16 +19503,17 @@ function renderChurchReportsAnalyticalView() {
       <!-- Data Table -->
       <div class="panel glass-panel">
         ${st.level === "church" ? `
-          ${filteredChurch.length ? dataTable([L("week"), L("serviceDate"), L("worshipService"), L("church"), "ATT", "FT", "NC", "RS", L("totalFirstTime"), L("status"), L("actions")], filteredChurch.map((item) => [
+          ${filteredChurch.length ? dataTable([L("week"), "Relatório de Culto", L("serviceDate"), L("worshipService"), L("church"), "Células Reportadas", "ATT Total", "FT", "NC", "RS", L("status"), L("actions")], filteredChurch.map((item) => [
             item.semana || "—",
+            `<strong>${item.titulo_do_relatorio || item.nome || `${item.culto || "Culto"} (${item.data_do_culto || item.data_inicio || item.data || "—"})`}</strong>`,
             item.data_do_culto || item.data_inicio || item.data || "—",
             badge(item.culto || "Domingo"),
             churchName(item.church_id || item.igreja),
+            `<span class="badge bg-secondary">${item.total_cells_reported || 1} célula(s)</span>`,
             `<strong>${item.att || 0}</strong>`,
             item.ft || 0,
             item.nc || 0,
             item.rs || 0,
-            item.total_ft_reached || item.ft || 0,
             badge(item.estado || item.status || "Submetido"),
             actionButtons([["view", "churchReport", item.id, L("view")], ["edit", "churchReport", item.id, L("edit")], ["delete", "churchReport", item.id, L("delete")], ["export", "churchReport", item.id, L("export")]])
           ])) : EmptyState({ compact: true, title: "Sem relatórios de igreja", description: "Os relatórios submetidos pelas células serão consolidados aqui automaticamente." })}
@@ -25295,6 +25361,13 @@ async function submitForm(form) {
       }
       if (persisted.data) Object.assign(record, persisted.data);
       saveState(`Created ${modalType} in Supabase`);
+    }
+    if (modalType === "cellReport") {
+      try {
+        consolidateCellReportToChurchReport(record);
+      } catch (err) {
+        console.warn("[CE CellReport admin] church consolidation fallback", err);
+      }
     }
   }
   bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide();
