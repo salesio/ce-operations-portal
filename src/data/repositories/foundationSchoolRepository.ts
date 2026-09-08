@@ -38,7 +38,7 @@ function todayIso(): string {
 export function normalizeFoundationStudent(
   input: Partial<FoundationStudent> & { id?: string },
 ): FoundationStudent {
-  const id = input.id || `fs-${Date.now()}`;
+  const id = input.id || (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : ("00000000-0000-4000-8000-" + Date.now().toString(16).padStart(12, "0")));
   const nome = input.nome || "";
   const apelido = input.apelido || "";
   const full =
@@ -316,7 +316,7 @@ export async function createFoundationStudent(
     }
     let row = normalizeFoundationStudent({
       ...payload,
-      id: payload.id || `fs-${Date.now()}`,
+      id: payload.id || (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : ("00000000-0000-4000-8000-" + Date.now().toString(16).padStart(12, "0"))),
       created_at: payload.created_at || todayIso(),
       updated_at: todayIso(),
     });

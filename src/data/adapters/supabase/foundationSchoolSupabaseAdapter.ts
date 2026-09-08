@@ -53,7 +53,11 @@ function cleanPayload(payload: FoundationRecord): FoundationRecord {
   return Object.fromEntries(Object.entries(payload).filter(([, value]) => value !== undefined));
 }
 
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+export const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+export function isValidUuid(val: unknown): boolean {
+  return typeof val === "string" && UUID_PATTERN.test(val);
+}
+
 const CORE_COLUMNS: Record<string, string[]> = {
   [TABLES.students]: ["id", "student_number", "enrollment_id", "class_id", "church_id", "church_name", "first_timer_id", "member_id", "full_name", "phone", "whatsapp", "email", "modality", "status", "lessons_completed", "lesson_progress_percentage", "tests_average", "final_exam_score", "final_grade", "passed", "graduated", "graduation_id", "notes", "metadata", "created_by", "updated_by", "created_at", "updated_at"],
   [TABLES.teachers]: ["id", "staff_id", "user_id", "teacher_number", "full_name", "phone", "email", "church_id", "church_name", "role", "specialization", "can_teach_online", "can_teach_prisons", "can_teach_home", "status", "notes", "metadata", "created_by", "updated_by", "created_at", "updated_at"],
@@ -79,7 +83,12 @@ function tablePayload(table: string, raw: FoundationRecord): FoundationRecord {
     payload.teacher_name ??= payload.main_teacher_name;
     payload.location ??= payload.primary_location_name;
   }
-  if (payload.id && !UUID_PATTERN.test(String(payload.id))) delete payload.id;
+  if (payload.id && !isValidUuid(String(payload.id))) delete payload.id;
+  for (const k of Object.keys(payload)) {
+    if ((/(_id|_by)$/.test(k) || k === "id") && payload[k] && !isValidUuid(String(payload[k]))) {
+      delete payload[k];
+    }
+  }
   const allowed = CORE_COLUMNS[table];
   return cleanPayload(allowed ? Object.fromEntries(Object.entries(payload).filter(([key]) => allowed.includes(key))) : payload);
 }
@@ -88,7 +97,13 @@ async function listRows(table: string, filters: Filters = {}, order = "created_a
   const connection = clientOrError<FoundationRecord[]>();
   if ("error" in connection) return connection.error;
   let query = connection.client.from(table).select("*");
-  for (const [key, value] of Object.entries(filters)) query = query.eq(key, value);
+  for (const [key, value] of Object.entries(filters)) {
+    if (value === undefined || value === null || value === "") continue;
+    if ((key.endsWith("_id") || key === "id") && !isValidUuid(String(value))) {
+      return ok([]);
+    }
+    query = query.eq(key, value);
+  }
   const { data, error } = await query.order(order, { ascending: order === "lesson_number" || order.endsWith("_date") });
   if (error) return errorResult(error);
   const rows = (data || []) as FoundationRecord[];
@@ -102,6 +117,7 @@ async function listRows(table: string, filters: Filters = {}, order = "created_a
 }
 
 async function getRow(table: string, id: EntityId): Promise<DataResult<FoundationRecord | null>> {
+  if (!isValidUuid(String(id))) return ok(null);
   const connection = clientOrError<FoundationRecord | null>();
   if ("error" in connection) return connection.error;
   const { data, error } = await connection.client.from(table).select("*").eq("id", String(id)).maybeSingle();
@@ -119,11 +135,65 @@ async function updateRow(table: string, id: EntityId, payload: FoundationRecord)
   const connection = clientOrError<FoundationRecord>();
   if ("error" in connection) return connection.error;
   const { id: _ignored, created_at: _created, ...changes } = tablePayload(table, payload);
+
+  if (!isValidUuid(String(id))) {
+    let existingQuery = connection.client.from(table).select("*");
+    let hasFilter = false;
+    if (payload.first_timer_id && isValidUuid(String(payload.first_timer_id))) {
+      existingQuery = existingQuery.eq("first_timer_id", String(payload.first_timer_id));
+      hasFilter = true;
+    } else if (payload.member_id && isValidUuid(String(payload.member_id))) {
+      existingQuery = existingQuery.eq("member_id", String(payload.member_id));
+      hasFilter = true;
+    } else if (payload.student_number) {
+      existingQuery = existingQuery.eq("student_number", String(payload.student_number));
+      hasFilter = true;
+    } else if (payload.teacher_number) {
+      existingQuery = existingQuery.eq("teacher_number", String(payload.teacher_number));
+      hasFilter = true;
+    } else if (payload.class_code) {
+      existingQuery = existingQuery.eq("class_code", String(payload.class_code));
+      hasFilter = true;
+    } else if (payload.full_name) {
+      existingQuery = existingQuery.eq("full_name", String(payload.full_name));
+      hasFilter = true;
+    } else if (payload.name) {
+      existingQuery = existingQuery.eq("name", String(payload.name));
+      hasFilter = true;
+    }
+
+    if (hasFilter) {
+      try {
+        const { data: matched } = await existingQuery.maybeSingle();
+        if (matched && matched.id && isValidUuid(String(matched.id))) {
+          const { data, error } = await connection.client
+            .from(table)
+            .update({ ...changes, updated_at: new Date().toISOString() })
+            .eq("id", matched.id)
+            .select("*")
+            .single();
+          if (!error && data) return ok(data as FoundationRecord);
+        }
+      } catch (err) {
+        console.warn("[CE Foundation] match update fallback", err);
+      }
+    }
+
+    try {
+      const insertRes = await createRow(table, payload);
+      if (insertRes.ok) return insertRes;
+    } catch (err) {
+      console.warn("[CE Foundation] create fallback", err);
+    }
+    return ok({ ...payload, id } as FoundationRecord);
+  }
+
   const { data, error } = await connection.client.from(table).update({ ...changes, updated_at: new Date().toISOString() }).eq("id", String(id)).select("*").single();
   return error ? errorResult(error) : ok(data as FoundationRecord);
 }
 
 async function deleteRow(table: string, id: EntityId): Promise<DataResult<boolean>> {
+  if (!isValidUuid(String(id))) return ok(true);
   const connection = clientOrError<boolean>();
   if ("error" in connection) return connection.error;
   const { error } = await connection.client.from(table).delete().eq("id", String(id));

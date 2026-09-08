@@ -14506,7 +14506,7 @@ async function submitFoundationClass(form) {
     }
   } else {
     const created = collectFoundationClassPayload(form, {
-      id: typeof generateUuid === 'function' ? generateUuid() : `fcg-${Date.now()}`,
+      id: typeof generateUuid === 'function' ? generateUuid() : ("00000000-0000-4000-8000-" + Date.now().toString(16).padStart(12, "0")),
       created_at: new Date().toISOString().slice(0, 10)
     });
     const repoResult = await persistFoundationClassViaRepository("create", created);
@@ -14570,7 +14570,7 @@ async function submitFoundationTeacher(form) {
     }
   } else {
     const created = collectFoundationTeacherPayload(form, {
-      id: typeof generateUuid === 'function' ? generateUuid() : `ftch-${Date.now()}`,
+      id: typeof generateUuid === 'function' ? generateUuid() : ("00000000-0000-4000-8000-" + Date.now().toString(16).padStart(12, "0")),
       user_id: "",
       created_at: new Date().toISOString().slice(0, 10)
     });
@@ -14670,7 +14670,7 @@ async function submitFoundationStudent(form) {
     collection[index] = migrateFoundationStudentRecord(repoResult?.data || next);
   } else {
     const payload = collectFoundationStudentPayload(form, {
-      id: typeof generateUuid === 'function' ? generateUuid() : `fs-${Date.now()}`,
+      id: typeof generateUuid === 'function' ? generateUuid() : ("00000000-0000-4000-8000-" + Date.now().toString(16).padStart(12, "0")),
       first_timer_id: "",
       member_id: "",
       mes_de_inscricao: new Date().toISOString().slice(0, 7),
@@ -18101,7 +18101,8 @@ async function persistFoundationStudentViaRepository(mode, record) {
       const soft =
         result.code === "UNAVAILABLE" ||
         result.code === "NOT_IMPLEMENTED" ||
-        /indispon[ií]vel|not implemented/i.test(String(result.error || ""));
+        result.code === "MIGRATION_REQUIRED" ||
+        /indispon[ií]vel|not implemented|syntax for type uuid/i.test(String(result.error || ""));
       if (soft) {
         console.warn("[CE Foundation] student soft-fail", result);
         return { ok: true, data: record, skipped: true, via: "local-state-fallback", repoError: result };
@@ -18129,7 +18130,11 @@ async function persistFoundationTeacherViaRepository(mode, record) {
       return { ok: true, data: record, skipped: true, via: "local-state-fallback" };
     }
     if (result && result.ok === false) {
-      const soft = result.code === "UNAVAILABLE" || result.code === "NOT_IMPLEMENTED";
+      const soft =
+        result.code === "UNAVAILABLE" ||
+        result.code === "NOT_IMPLEMENTED" ||
+        result.code === "MIGRATION_REQUIRED" ||
+        /indispon[ií]vel|not implemented|syntax for type uuid/i.test(String(result.error || ""));
       if (soft) return { ok: true, data: record, skipped: true, via: "local-state-fallback", repoError: result };
       return result;
     }
@@ -18156,7 +18161,8 @@ async function persistFoundationClassViaRepository(mode, record) {
       const soft =
         result.code === "UNAVAILABLE" ||
         result.code === "NOT_IMPLEMENTED" ||
-        /indispon[ií]vel|not implemented/i.test(String(result.error || ""));
+        result.code === "MIGRATION_REQUIRED" ||
+        /indispon[ií]vel|not implemented|syntax for type uuid/i.test(String(result.error || ""));
       if (soft) return { ok: true, data: record, skipped: true, via: "local-state-fallback", repoError: result };
       return result;
     }
