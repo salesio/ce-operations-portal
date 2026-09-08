@@ -37,12 +37,26 @@
     return { api: null, via: "none" };
   }
 
+  function isDemoRecord(item) {
+    if (!item) return false;
+    var str = String(item.id || "") + " " + String(item.name || "") + " " + String(item.full_name || "") + " " + String(item.student_number || "") + " " + String(item.class_code || "") + " " + String(item.teacher_number || "") + " " + String(item.enrollment_number || "") + " " + String(item.email || "");
+    if (/demo|^8[1-5]000000-/i.test(str)) return true;
+    if (/^ftch-[0-9]+$/i.test(String(item.id || ""))) return true;
+    if (/^ftch-(rector|coordinator|matola-1|beira-1|prison-lead)$/i.test(String(item.id || ""))) return true;
+    if (/foundation\.(teacher[0-9]*|rector|coord|matola|beira|prison)@ce-mozambique\.org/i.test(String(item.email || ""))) return true;
+    if (/^Professor (João|Carlos|Edson|Samuel|David|Mateus|Miguel|Nelson|Tito|Pedro|Daniel|Rui)|^Professora (Ana|Beatriz|Marta|Helena|Rosa|Celina|Sofia|Alda|Paula|Elisa|Lúcia|Fátima|Janet Marquele)|^Pastor Coordenador|^Irmã Coordenadora/i.test(String(item.full_name || item.name || ""))) return true;
+    if (/Aluno Demo|Professor Demo|Turma.*Demo|FSC-DEMO|FST-DEMO|FSS-DEMO|FSE-DEMO/i.test(str)) return true;
+    if (item.metadata && typeof item.metadata === "object" && item.metadata.demo === true) return true;
+    return false;
+  }
+
   function load(key) {
     try {
       var raw = localStorage.getItem(key);
       if (!raw) return [];
       var parsed = JSON.parse(raw);
-      return Array.isArray(parsed) ? parsed : [];
+      var list = Array.isArray(parsed) ? parsed : [];
+      return list.filter(function (r) { return !isDemoRecord(r); });
     } catch (_) {
       return [];
     }
@@ -57,13 +71,13 @@
   }
 
   function seedStudents() {
-    return (window.CESupabase && window.CESupabase.FOUNDATION_STUDENTS_SEED) || [];
+    return ((window.CESupabase && window.CESupabase.FOUNDATION_STUDENTS_SEED) || []).filter(function (r) { return !isDemoRecord(r); });
   }
   function seedTeachers() {
-    return (window.CESupabase && window.CESupabase.FOUNDATION_TEACHERS_SEED) || [];
+    return [];
   }
   function seedClasses() {
-    return (window.CESupabase && window.CESupabase.FOUNDATION_CLASSES_SEED) || [];
+    return ((window.CESupabase && window.CESupabase.FOUNDATION_CLASSES_SEED) || []).filter(function (r) { return !isDemoRecord(r); });
   }
 
   function store(kind) {
@@ -71,9 +85,9 @@
     var key = KEYS[kind];
     if (source === "local") {
       var rows = load(key);
-      if (!rows.length) {
+      if (!rows.length && kind !== "teachers") {
         var seeds =
-          kind === "students" ? seedStudents() : kind === "teachers" ? seedTeachers() : seedClasses();
+          kind === "students" ? seedStudents() : seedClasses();
         rows = seeds.map(function (s) {
           return Object.assign({}, s);
         });

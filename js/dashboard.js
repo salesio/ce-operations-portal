@@ -16122,8 +16122,12 @@ function ensureFoundationClassGroupContexts(hq, churchLabel) {
 
 function isDemoFoundationRecord(item) {
   if (!item) return false;
-  const str = String(item.id || "") + " " + String(item.name || "") + " " + String(item.full_name || "") + " " + String(item.student_number || "") + " " + String(item.class_code || "") + " " + String(item.teacher_number || "") + " " + String(item.enrollment_number || "");
+  const str = String(item.id || "") + " " + String(item.name || "") + " " + String(item.full_name || "") + " " + String(item.student_number || "") + " " + String(item.class_code || "") + " " + String(item.teacher_number || "") + " " + String(item.enrollment_number || "") + " " + String(item.email || "");
   if (/demo|^8[1-5]000000-/i.test(str)) return true;
+  if (/^ftch-[0-9]+$/i.test(String(item.id || ""))) return true;
+  if (/^ftch-(rector|coordinator|matola-1|beira-1|prison-lead)$/i.test(String(item.id || ""))) return true;
+  if (/foundation\.(teacher[0-9]*|rector|coord|matola|beira|prison)@ce-mozambique\.org/i.test(String(item.email || ""))) return true;
+  if (/^Professor (João|Carlos|Edson|Samuel|David|Mateus|Miguel|Nelson|Tito|Pedro|Daniel|Rui)|^Professora (Ana|Beatriz|Marta|Helena|Rosa|Celina|Sofia|Alda|Paula|Elisa|Lúcia|Fátima|Janet Marquele)|^Pastor Coordenador|^Irmã Coordenadora/i.test(String(item.full_name || item.name || ""))) return true;
   if (/Aluno Demo|Professor Demo|Turma.*Demo|FSC-DEMO|FST-DEMO|FSS-DEMO|FSE-DEMO/i.test(str)) return true;
   if (item.metadata && typeof item.metadata === "object" && item.metadata.demo === true) return true;
   return false;
@@ -16142,46 +16146,14 @@ function ensureFoundationData() {
   state.foundationClassGroups = state.foundationClassGroups.filter((c) => !isDemoFoundationRecord(c));
   state.foundationTeachers = state.foundationTeachers.filter((t) => !isDemoFoundationRecord(t));
 
-  if (state.foundationTeachers.length === 0) {
-    const seedTeachers = (window.CESupabase && window.CESupabase.FOUNDATION_TEACHERS_SEED) || [];
-    state.foundationTeachers = seedTeachers.map((t) => ({ ...t }));
-  }
+  // Foundation teachers are strictly live-data from Supabase or added dynamically
   if (state.foundationClassGroups.length === 0) {
     const seedClasses = (window.CESupabase && window.CESupabase.FOUNDATION_CLASSES_SEED) || [];
-    state.foundationClassGroups = seedClasses.map((c) => ({ ...c }));
+    state.foundationClassGroups = seedClasses.filter((c) => !isDemoFoundationRecord(c)).map((c) => ({ ...c }));
   }
   if (state.foundationStudents.length === 0) {
     const seedStudents = (window.CESupabase && window.CESupabase.FOUNDATION_STUDENTS_SEED) || [];
-    state.foundationStudents = seedStudents.map((s) => ({ ...s }));
-  }
-
-  const filipeTeacher = (state.foundationTeachers || []).find((t) => t.id === "ftch-filipe-chamango" || t.user_id === "473e4df5-883c-499a-a42e-223495c266d1" || String(t.email || "").toLowerCase() === "diamantes.main@embaixadadecristo.org");
-  if (!filipeTeacher) {
-    state.foundationTeachers.push({
-      id: "ftch-filipe-chamango",
-      user_id: "473e4df5-883c-499a-a42e-223495c266d1",
-      full_name: "Filipe Chamango",
-      title: "Professor",
-      role_type: "Teacher",
-      phone: "846000010",
-      whatsapp: "846000010",
-      email: "diamantes.main@embaixadadecristo.org",
-      church_id: hq,
-      church_name: churchLabel,
-      status: "Activo",
-      subjects_or_lessons_allowed: [1, 2, 3, 4, 5, 6, 7],
-      can_teach_lessons: [1, 2, 3, 4, 5, 6, 7],
-      can_teach_all_lessons: true,
-      delivery_modes_allowed: ["in_person", "online"],
-      assigned_locations: ["fsloc-hq-room-1", "fsloc-online-zoom"],
-      availability: "Domingo e Quarta",
-      max_classes_per_week: 3,
-      is_prison_ministry_teacher: false,
-      can_teach_online: true,
-      can_teach_home_visit: false,
-      can_teach_in_person: true,
-      notes: "Professor da Escola de Fundação e Líder de Célula Diamantes Main."
-    });
+    state.foundationStudents = seedStudents.filter((s) => !isDemoFoundationRecord(s)).map((s) => ({ ...s }));
   }
 
   if (!Array.isArray(state.foundationLessonSessions)) state.foundationLessonSessions = [];
@@ -19209,13 +19181,14 @@ async function hydrateFoundationSchoolFromRepository() {
       if (res?.ok && Array.isArray(res.data)) teachersData = res.data;
     }
     if (Array.isArray(teachersData)) {
-      const prev = new Map((state.foundationTeachers || []).map((t) => [t.id, t]));
+      const liveTeachers = teachersData.filter((t) => !isDemoFoundationRecord(t));
+      const prev = new Map((state.foundationTeachers || []).filter((t) => !isDemoFoundationRecord(t)).map((t) => [t.id, t]));
       const byId = new Map();
-      teachersData.forEach((row) => {
+      liveTeachers.forEach((row) => {
         byId.set(row.id, { ...(prev.get(row.id) || {}), ...row, id: row.id });
       });
       prev.forEach((localRow, id) => {
-        if (!byId.has(id)) byId.set(id, localRow);
+        if (!byId.has(id) && !isDemoFoundationRecord(localRow)) byId.set(id, localRow);
       });
       state.foundationTeachers = [...byId.values()];
       hydrated = true;
@@ -26801,14 +26774,17 @@ function quickAction(action, type, id) {
   if (type === "foundationStudent") {
     if (action === "view") return openFoundationStudentForm(id, "view");
     if (action === "edit") return openFoundationStudentForm(id, "edit");
+    if (action === "add" || action === "create") return openFoundationStudentForm(null, "edit");
   }
   if (type === "foundationTeacher") {
     if (action === "view") return openFoundationTeacherForm(id, "view");
     if (action === "edit") return openFoundationTeacherForm(id, "edit");
+    if (action === "add" || action === "create") return openFoundationTeacherForm(null, "edit");
   }
   if (type === "foundationClassGroup") {
     if (action === "view") return openFoundationClassForm(id, "view");
     if (action === "edit") return openFoundationClassForm(id, "edit");
+    if (action === "add" || action === "create") return openFoundationClassForm(null, "edit");
   }
   if (type === "financeApprovedReq") {
     const disb = window.CEFinanceDisbursements;
