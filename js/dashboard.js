@@ -5050,14 +5050,56 @@ function scoped(records, module = "dashboard") {
   });
 }
 
+let memoizedAllGroups = null;
+let memoizedAllGroupsVersion = 0;
+function getAllRegisteredCellGroups() {
+  const version = (state.cellGroups?.length || 0) + (state.cellMinistry?.groups?.length || 0) + (window.REAL_CELL_GROUPS?.length || 0);
+  if (memoizedAllGroups && memoizedAllGroupsVersion === version) {
+    return memoizedAllGroups;
+  }
+  const groupsById = new Map();
+  const rawGroups = [...(window.REAL_CELL_GROUPS || []), ...(state.cellGroups || []), ...(state.cellMinistry?.groups || [])];
+  for (let i = 0; i < rawGroups.length; i++) {
+    const g = rawGroups[i];
+    if (g && g.id) {
+      const key = String(g.id);
+      if (!groupsById.has(key)) groupsById.set(key, g);
+    }
+  }
+  memoizedAllGroups = Array.from(groupsById.values());
+  memoizedAllGroupsVersion = version;
+  return memoizedAllGroups;
+}
+
+let memoizedAllCells = null;
+let memoizedAllCellsVersion = 0;
+function getAllRegisteredCells() {
+  const version = (state.cellRegistry?.length || 0) + (state.cells?.length || 0) + (window.REAL_CELLS_REGISTRY?.length || 0);
+  if (memoizedAllCells && memoizedAllCellsVersion === version) {
+    return memoizedAllCells;
+  }
+  const cellsById = new Map();
+  const rawCells = [...(window.REAL_CELLS_REGISTRY || []), ...(state.cellRegistry || []), ...(state.cells || [])];
+  for (let i = 0; i < rawCells.length; i++) {
+    const c = rawCells[i];
+    if (c && c.id) {
+      const key = String(c.id);
+      if (!cellsById.has(key)) cellsById.set(key, c);
+    }
+  }
+  memoizedAllCells = Array.from(cellsById.values());
+  memoizedAllCellsVersion = version;
+  return memoizedAllCells;
+}
+
 function cellGroupName(idOrName) {
-  const all = [...(window.REAL_CELL_GROUPS || []), ...(state.cellGroups || []), ...(state.cellMinistry?.groups || [])];
+  const all = getAllRegisteredCellGroups();
   const item = all.find((group) => String(group.id) === String(idOrName) || group.group_name === idOrName || group.name === idOrName);
   return item?.group_name || item?.name || idOrName || "";
 }
 
 function cellName(idOrName) {
-  const all = [...(window.REAL_CELLS_REGISTRY || []), ...(state.cellRegistry || []), ...(state.cells || [])];
+  const all = getAllRegisteredCells();
   const item = all.find((cell) => String(cell.id) === String(idOrName) || cell.cell_name === idOrName || cell.name === idOrName);
   return item?.cell_name || item?.name || idOrName || "";
 }
@@ -5373,7 +5415,13 @@ function portalCellNameMatchScore(selectedCell, memberCellName) {
   return shared.length >= 1 ? shared.length : 0;
 }
 
+const legacyCellNameCache = new Map();
+
 async function resolveLegacyCellPortalName(repo, cell) {
+  const cellId = String(cell?.id || "");
+  if (cellId && legacyCellNameCache.has(cellId)) {
+    return legacyCellNameCache.get(cellId);
+  }
   const cellTargetName = cell.raw_cell_name || cell.cell_name || cell.name || "";
   const tokens = portalCellNameTokens(cellTargetName);
   const anchor = tokens.sort((a, b) => b.length - a.length)[0] || cellTargetName.slice(0, 5);
@@ -5387,6 +5435,7 @@ async function resolveLegacyCellPortalName(repo, cell) {
     if (score) matches.set(name, Math.max(matches.get(name) || 0, score));
   });
   const legacyName = [...matches.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]?.[0] || cellTargetName;
+  if (cellId) legacyCellNameCache.set(cellId, legacyName);
   return legacyName;
 }
 
@@ -5403,7 +5452,7 @@ async function loadCellPortalMembers(cellId, { force = false } = {}) {
   pageState.cellId = cellId;
   pageState.resolvedCellName = "";
   try {
-    const allRegistry = [...(state.cellRegistry || []), ...(window.REAL_CELLS_REGISTRY || [])];
+    const allRegistry = getAllRegisteredCells();
     const cell = allRegistry.find((item) => String(item.id) === String(cellId));
     let result = null;
     if (cell) {
@@ -5773,7 +5822,7 @@ function getCellMemberSpiritualProgress(memberId, indexes = null) {
 
 function findCellSafe(cellId) {
   if (!cellId) return null;
-  const all = [...(window.REAL_CELLS_REGISTRY || []), ...(state.cellRegistry || []), ...(state.cells || [])];
+  const all = getAllRegisteredCells();
   return all.find((item) => String(item.id) === String(cellId) || item.cell_name === cellId || item.name === cellId) || null;
 }
 
@@ -5994,16 +6043,7 @@ function hasCellReportPermission(permission, user = activeUser) {
 function getAuthorizedCellsForUser(userId) {
   const user = (state.users || []).find((item) => item.id === userId) || (activeUser?.id === userId ? activeUser : null);
   if (!user) return [];
-  const rawCells = [
-    ...(window.REAL_CELLS_REGISTRY || []),
-    ...(state.cellRegistry || []),
-    ...(state.cells || [])
-  ];
-  const byId = new Map();
-  rawCells.forEach((c) => {
-    if (c && c.id && !byId.has(String(c.id))) byId.set(String(c.id), c);
-  });
-  const cells = Array.from(byId.values());
+  const cells = getAllRegisteredCells();
   const isAdmin = ["Super Admin", "Main Pastor", "National Admin", "Administrator", "Admin"].includes(user.role) ||
     user.can_view_all_churches ||
     (user.permissions || []).includes("*");
@@ -7112,7 +7152,10 @@ function canSelectAllCellNetworkRecords() {
 function isHqChurchReference(churchId = "") {
   if (!churchId) return false;
   if (churchId === "church-hq") return true;
-  const church = findChurchById(relationalChurches(), churchId);
+  const churches = typeof relationalChurches === "function" ? relationalChurches() : (state.churches || []);
+  const church = typeof findChurchById === "function"
+    ? findChurchById(churches, churchId)
+    : churches.find((c) => String(c.id) === String(churchId) || c.church_name === churchId || c.public_name === churchId);
   const descriptor = [church?.type, church?.church_name, church?.public_name]
     .filter(Boolean)
     .join(" ")
@@ -7132,8 +7175,7 @@ function matchesSelectedCellChurch(record, churchId = "") {
 }
 
 function getCellGroupsForChurch(churchId = "") {
-  const allGroups = [...(window.REAL_CELL_GROUPS || []), ...(state.cellGroups || [])]
-    .filter((g, idx, arr) => g && g.id && arr.findIndex((x) => String(x.id) === String(g.id) || x.group_name === g.group_name) === idx);
+  const allGroups = getAllRegisteredCellGroups();
   return cellNetworkRecordsForSelect(allGroups)
     .filter((group) => matchesSelectedCellChurch(group, churchId))
     .sort((a, b) => String(a.group_name || "").localeCompare(String(b.group_name || "")));
@@ -7141,10 +7183,8 @@ function getCellGroupsForChurch(churchId = "") {
 
 function getCellsForGroup(cellGroupId = "", churchId = "") {
   const norm = (s) => String(s || "").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  const allCells = [...(window.REAL_CELLS_REGISTRY || []), ...(state.cellRegistry || state.cells || [])]
-    .filter((c, idx, arr) => c && c.id && arr.findIndex((x) => String(x.id) === String(c.id)) === idx);
-  
-  const allGroups = [...(window.REAL_CELL_GROUPS || []), ...(state.cellGroups || [])];
+  const allCells = getAllRegisteredCells();
+  const allGroups = getAllRegisteredCellGroups();
   const targetGroup = allGroups.find((g) => g && (String(g.id) === String(cellGroupId) || norm(g.group_name || g.name) === norm(cellGroupId)));
   const targetGroupId = targetGroup ? String(targetGroup.id) : String(cellGroupId || "");
   const targetGroupName = norm(targetGroup?.group_name || targetGroup?.name || "");
@@ -11785,7 +11825,8 @@ function renderCellLeaderPortal() {
     };
 
     // Show every registration in the authorized cell scope, not only the active creator's rows.
-    const candidates = (state.memberRegistrationCandidates || []).filter((item) => (context?.authorized_cell_ids || []).includes(item.cell_id));
+    const authorizedCellIdSet = new Set(context?.authorized_cell_ids || []);
+    const candidates = (state.memberRegistrationCandidates || []).filter((item) => authorizedCellIdSet.has(item.cell_id));
     const candidateCounts = {
       drafts: candidates.filter((item) => ["Draft", "ReadyForSubmission"].includes(item.approval_status)).length,
       submitted: candidates.filter((item) => item.approval_status === "Submitted").length,
@@ -11822,12 +11863,11 @@ function renderCellLeaderPortal() {
     const foundationOptions = [...new Set(allMembers.map((member) => member.foundation_status).filter(Boolean))];
     const safeCellGroups = getCellGroupsForChurch(activeUser?.church_id);
     const safeCellRegistry = getCellsForGroup(cellPortalPageState.cellGroupId, activeUser?.church_id);
-    const heroCellsList = cellPortalPageState.cellGroupId
-      ? authorizedCells.filter((c) => {
-          const groupCells = getCellsForGroup(cellPortalPageState.cellGroupId, activeUser?.church_id);
-          return groupCells.some((gc) => String(gc.id) === String(c.id));
-        })
-      : authorizedCells;
+    let heroCellsList = authorizedCells;
+    if (cellPortalPageState.cellGroupId) {
+      const groupCellIds = new Set(safeCellRegistry.map((gc) => String(gc.id)));
+      heroCellsList = authorizedCells.filter((c) => groupCellIds.has(String(c.id)));
+    }
     const displayHeroCells = heroCellsList.length ? heroCellsList : authorizedCells;
     const safeHeroCells = (displayHeroCells || []).filter((item) => Boolean(item && item.id));
     const safeMemberStatuses = (memberStatuses || []).filter(Boolean);
@@ -18355,163 +18395,123 @@ async function hydrateCellMinistryFromRepository() {
     const usingSupabase = String(runtimeInfo.dataSource || runtimeInfo.provider || window.__CE_ENV__?.VITE_DATA_SOURCE || "").toLowerCase().includes("supabase");
     let hydrated = false;
 
+    const [churchReportsRes, alecRegsRes, alecScoresRes, groupsRes, cellsRes, leadersRes, cellReportsRes] = await Promise.allSettled([
+      cellSb?.listChurchReports ? cellSb.listChurchReports() : Promise.resolve(null),
+      cellSb?.listAlecRegistrations ? cellSb.listAlecRegistrations() : Promise.resolve(null),
+      cellSb?.listAlecScores ? cellSb.listAlecScores() : Promise.resolve(null),
+      typeof repo?.listCellGroups === "function" ? repo.listCellGroups() : Promise.resolve(null),
+      typeof repo?.listCells === "function" ? repo.listCells() : Promise.resolve(null),
+      typeof repo?.listCellLeaders === "function" ? repo.listCellLeaders() : Promise.resolve(null),
+      cellSb?.listCellReports ? cellSb.listCellReports() : (typeof repo?.listCellReports === "function" ? repo.listCellReports() : Promise.resolve(null))
+    ]);
+
     // 1. Church Reports from Supabase
-    if (cellSb?.listChurchReports) {
-      try {
-        const result = await cellSb.listChurchReports();
-        if (result?.ok && Array.isArray(result.data)) {
-          state.cellLeadership = state.cellLeadership || {};
-          if (result.data.length > 0 || usingSupabase) {
-            state.cellLeadership.churchReports = result.data;
-          }
-          saveState("Hydrated church reports from Supabase");
-          hydrated = true;
-          console.info("[CE CellMinistry] hydrated church reports from Supabase", result.data.length);
-        }
-      } catch (err) {
-        console.warn("[CE CellMinistry] church reports hydrate error", err);
+    if (churchReportsRes.status === "fulfilled" && churchReportsRes.value?.ok && Array.isArray(churchReportsRes.value.data)) {
+      const data = churchReportsRes.value.data;
+      state.cellLeadership = state.cellLeadership || {};
+      if (data.length > 0 || usingSupabase) {
+        state.cellLeadership.churchReports = data;
       }
+      hydrated = true;
     }
 
     // 2. ALEC Registrations from Supabase
-    if (cellSb?.listAlecRegistrations) {
-      try {
-        const result = await cellSb.listAlecRegistrations();
-        if (result?.ok && Array.isArray(result.data)) {
-          state.cellLeadership = state.cellLeadership || {};
-          if (result.data.length > 0 || usingSupabase) {
-            state.cellLeadership.alecRegistrations = result.data;
-          }
-          saveState("Hydrated alec registrations from Supabase");
-          hydrated = true;
-          console.info("[CE CellMinistry] hydrated alec registrations from Supabase", result.data.length);
-        }
-      } catch (err) {
-        console.warn("[CE CellMinistry] alec registrations hydrate error", err);
+    if (alecRegsRes.status === "fulfilled" && alecRegsRes.value?.ok && Array.isArray(alecRegsRes.value.data)) {
+      const data = alecRegsRes.value.data;
+      state.cellLeadership = state.cellLeadership || {};
+      if (data.length > 0 || usingSupabase) {
+        state.cellLeadership.alecRegistrations = data;
       }
+      hydrated = true;
     }
 
     // 3. ALEC Scores from Supabase
-    if (cellSb?.listAlecScores) {
-      try {
-        const result = await cellSb.listAlecScores();
-        if (result?.ok && Array.isArray(result.data)) {
-          state.cellLeadership = state.cellLeadership || {};
-          if (result.data.length > 0 || usingSupabase) {
-            state.cellLeadership.alecScores = result.data;
-          }
-          saveState("Hydrated alec scores from Supabase");
-          hydrated = true;
-          console.info("[CE CellMinistry] hydrated alec scores from Supabase", result.data.length);
-        }
-      } catch (err) {
-        console.warn("[CE CellMinistry] alec scores hydrate error", err);
+    if (alecScoresRes.status === "fulfilled" && alecScoresRes.value?.ok && Array.isArray(alecScoresRes.value.data)) {
+      const data = alecScoresRes.value.data;
+      state.cellLeadership = state.cellLeadership || {};
+      if (data.length > 0 || usingSupabase) {
+        state.cellLeadership.alecScores = data;
       }
+      hydrated = true;
     }
 
     // 4. Groups
-    const listGroups = repo?.listCellGroups;
-    if (typeof listGroups === "function") {
-      const result = await listGroups();
-      if (result?.ok && Array.isArray(result.data) && (result.data.length || usingSupabase)) {
-        const prev = new Map((state.cellGroups || []).map((g) => [g.id, g]));
-        const byId = new Map();
-        result.data.forEach((row) => {
-          const previous = prev.get(row.id) || {};
-          byId.set(row.id, {
-            ...(usingSupabase ? previous : row),
-            ...(usingSupabase ? row : previous),
-            id: row.id,
-            group_name: row.group_name || row.name || previous.group_name,
-            name: row.name || row.group_name || previous.name
-          });
+    if (groupsRes.status === "fulfilled" && groupsRes.value?.ok && Array.isArray(groupsRes.value.data) && (groupsRes.value.data.length || usingSupabase)) {
+      const prev = new Map((state.cellGroups || []).map((g) => [g.id, g]));
+      const byId = new Map();
+      groupsRes.value.data.forEach((row) => {
+        const previous = prev.get(row.id) || {};
+        byId.set(row.id, {
+          ...(usingSupabase ? previous : row),
+          ...(usingSupabase ? row : previous),
+          id: row.id,
+          group_name: row.group_name || row.name || previous.group_name,
+          name: row.name || row.group_name || previous.name
         });
-        if (!usingSupabase) prev.forEach((localRow, id) => {
-          if (!byId.has(id)) byId.set(id, localRow);
-        });
-        state.cellGroups = [...byId.values()];
-        hydrated = true;
-        console.info("[CE CellMinistry] hydrated groups", state.cellGroups.length);
-      }
+      });
+      if (!usingSupabase) prev.forEach((localRow, id) => {
+        if (!byId.has(id)) byId.set(id, localRow);
+      });
+      state.cellGroups = [...byId.values()];
+      hydrated = true;
     }
 
     // 5. Cells
-    const listCellsFn = repo?.listCells;
-    if (typeof listCellsFn === "function") {
-      const result = await listCellsFn();
-      if (result?.ok && Array.isArray(result.data) && (result.data.length || usingSupabase)) {
-        const prev = new Map((state.cellRegistry || []).map((c) => [c.id, c]));
-        const byId = new Map();
-        result.data.forEach((row) => {
-          const previous = prev.get(row.id) || {};
-          byId.set(row.id, {
-            ...(usingSupabase ? previous : row),
-            ...(usingSupabase ? row : previous),
-            id: row.id,
-            cell_name: row.cell_name || row.name || previous.cell_name,
-            group_id: row.group_id || row.cell_group_id || previous.group_id,
-            cell_group_id: row.cell_group_id || row.group_id || previous.cell_group_id
-          });
+    if (cellsRes.status === "fulfilled" && cellsRes.value?.ok && Array.isArray(cellsRes.value.data) && (cellsRes.value.data.length || usingSupabase)) {
+      const prev = new Map((state.cellRegistry || []).map((c) => [c.id, c]));
+      const byId = new Map();
+      cellsRes.value.data.forEach((row) => {
+        const previous = prev.get(row.id) || {};
+        byId.set(row.id, {
+          ...(usingSupabase ? previous : row),
+          ...(usingSupabase ? row : previous),
+          id: row.id,
+          cell_name: row.cell_name || row.name || previous.cell_name,
+          group_id: row.group_id || row.cell_group_id || previous.group_id,
+          cell_group_id: row.cell_group_id || row.group_id || previous.cell_group_id
         });
-        if (!usingSupabase) prev.forEach((localRow, id) => {
-          if (!byId.has(id)) byId.set(id, localRow);
-        });
-        state.cellRegistry = [...byId.values()];
-        hydrated = true;
-        console.info("[CE CellMinistry] hydrated cells", state.cellRegistry.length);
-      }
+      });
+      if (!usingSupabase) prev.forEach((localRow, id) => {
+        if (!byId.has(id)) byId.set(id, localRow);
+      });
+      state.cellRegistry = [...byId.values()];
+      hydrated = true;
     }
 
     // 6. Leaders
-    const listLeaders = repo?.listCellLeaders;
-    if (typeof listLeaders === "function") {
-      const result = await listLeaders();
-      if (result?.ok && Array.isArray(result.data) && result.data.length) {
-        state.cellLeadership = state.cellLeadership || {};
-        const prev = new Map((state.cellLeadership.leaders || []).map((l) => [l.id, l]));
-        const byId = new Map();
-        result.data.forEach((row) => {
-          const previous = prev.get(row.id) || {};
-          byId.set(row.id, {
-            ...row,
-            ...previous,
-            id: row.id,
-            nome_completo: previous.nome_completo || row.nome_completo || row.full_name,
-            contacto: previous.contacto || row.contacto || row.phone,
-            celula: previous.celula || row.celula || row.cell_name,
-            estado: previous.estado || row.estado || row.status
-          });
+    if (leadersRes.status === "fulfilled" && leadersRes.value?.ok && Array.isArray(leadersRes.value.data) && leadersRes.value.data.length) {
+      state.cellLeadership = state.cellLeadership || {};
+      const prev = new Map((state.cellLeadership.leaders || []).map((l) => [l.id, l]));
+      const byId = new Map();
+      leadersRes.value.data.forEach((row) => {
+        const previous = prev.get(row.id) || {};
+        byId.set(row.id, {
+          ...row,
+          ...previous,
+          id: row.id,
+          nome_completo: previous.nome_completo || row.nome_completo || row.full_name,
+          contacto: previous.contacto || row.contacto || row.phone,
+          celula: previous.celula || row.celula || row.cell_name,
+          estado: previous.estado || row.estado || row.status
         });
-        prev.forEach((localRow, id) => {
-          if (!byId.has(id)) byId.set(id, localRow);
-        });
-        state.cellLeadership.leaders = [...byId.values()];
-        hydrated = true;
-        console.info("[CE CellMinistry] hydrated leaders", state.cellLeadership.leaders.length);
-      }
+      });
+      prev.forEach((localRow, id) => {
+        if (!byId.has(id)) byId.set(id, localRow);
+      });
+      state.cellLeadership.leaders = [...byId.values()];
+      hydrated = true;
     }
 
     // 7. Cell Reports
-    if (cellSb?.listCellReports) {
-      try {
-        const result = await cellSb.listCellReports();
-        if (result?.ok && Array.isArray(result.data) && result.data.length) {
-          state.cellLeadership = state.cellLeadership || {};
-          state.cellLeadership.cellReports = result.data;
-          state.cellReportSubmissions = result.data.map((r) => ({ ...r }));
-          hydrated = true;
-          console.info("[CE CellMinistry] hydrated cell reports from Supabase", result.data.length);
-        }
-      } catch (err) {
-        console.warn("[CE CellMinistry] cell reports hydrate error", err);
-      }
-    } else if (typeof repo?.listCellReports === "function") {
-      const result = await repo.listCellReports();
-      if (result?.ok && Array.isArray(result.data) && result.data.length) {
-        state.cellLeadership = state.cellLeadership || {};
+    if (cellReportsRes.status === "fulfilled" && cellReportsRes.value?.ok && Array.isArray(cellReportsRes.value.data) && cellReportsRes.value.data.length) {
+      state.cellLeadership = state.cellLeadership || {};
+      if (cellSb?.listCellReports) {
+        state.cellLeadership.cellReports = cellReportsRes.value.data;
+        state.cellReportSubmissions = cellReportsRes.value.data.map((r) => ({ ...r }));
+      } else {
         const prev = new Map((state.cellLeadership.cellReports || []).map((r) => [r.id, r]));
         const byId = new Map();
-        result.data.forEach((row) => {
+        cellReportsRes.value.data.forEach((row) => {
           const previous = prev.get(row.id) || {};
           const merged = {
             ...row,
@@ -18546,9 +18546,8 @@ async function hydrateCellMinistryFromRepository() {
         });
         state.cellLeadership.cellReports = [...byId.values()];
         state.cellReportSubmissions = state.cellLeadership.cellReports.map((r) => ({ ...r }));
-        hydrated = true;
-        console.info("[CE CellMinistry] hydrated reports", state.cellLeadership.cellReports.length);
       }
+      hydrated = true;
     }
     if (Array.isArray(state.members) && state.members.length) syncMemberDerivedCellNetwork();
     if (hydrated) localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
