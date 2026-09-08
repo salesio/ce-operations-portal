@@ -5635,14 +5635,58 @@ function portalMemberBelongsToCell(member, cell) {
 }
 
 function cellPortalMemberSource(cellId) {
+  let baseList = [];
   if (cellPortalMembersState.items && cellPortalMembersState.items.length && String(cellPortalMembersState.cellId) === String(cellId)) {
-    return cellPortalMembersState.items;
-  }
-  if (state.members && state.members.length) {
+    baseList = [...cellPortalMembersState.items];
+  } else if (state.members && state.members.length) {
     const cell = findCellSafe(cellId);
-    return state.members.filter((m) => portalMemberBelongsToCell(m, cell));
+    baseList = state.members.filter((m) => portalMemberBelongsToCell(m, cell));
+  } else {
+    baseList = [...(cellPortalMembersState.items || [])];
   }
-  return cellPortalMembersState.items || [];
+
+  // Candidates with 'Submitted' or 'UnderReview' are cell-approved and active in the cell while awaiting church confirmation
+  const existingMemberIds = new Set(baseList.map((m) => String(m.id || "")));
+  const cell = findCellSafe(cellId);
+  const candidates = (state.memberRegistrationCandidates || []).filter((c) => {
+    if (!["Submitted", "UnderReview"].includes(c.approval_status)) return false;
+    if (c.approved_member_id && existingMemberIds.has(String(c.approved_member_id))) return false;
+    if (c.cell_id && String(c.cell_id) === String(cellId)) return true;
+    if (cell && portalMemberBelongsToCell({ cell_id: c.cell_id, cell_name: c.cell_name, celula: c.cell_name }, cell)) return true;
+    return false;
+  });
+
+  const candidateMembers = candidates.map((c) => ({
+    id: c.id,
+    is_candidate_cell_member: true,
+    name: candidateFullName(c) || c.full_name || "—",
+    full_name: candidateFullName(c) || c.full_name || "—",
+    nome: c.first_name || (c.full_name ? c.full_name.split(/\s+/)[0] : "—"),
+    apelido: c.last_name || (c.full_name ? c.full_name.split(/\s+/).slice(1).join(" ") : ""),
+    phone: c.primary_phone || c.secondary_phone || "—",
+    primary_phone: c.primary_phone || null,
+    secondary_phone: c.secondary_phone || null,
+    email: c.email || null,
+    date_of_birth: c.date_of_birth || null,
+    church_id: c.church_id,
+    church_name: c.church_name,
+    cell_group_id: c.cell_group_id || null,
+    cell_group_name: c.cell_group_name || null,
+    cell_id: c.cell_id,
+    cell_name: c.cell_name || null,
+    celula: c.cell_name || null,
+    status: "Activo (Célula)",
+    estado: "Activo (Célula)",
+    membership_status: "Candidate",
+    reconciliation_status: "Confirmed",
+    pastoral_observation: "Membro da célula (Aguardando aprovação da Igreja)",
+    joined_at: (c.cell_approved_at || c.submitted_for_approval_at || c.created_at || "").slice(0, 10),
+    data_quality_status: c.data_quality_status || "Valid",
+    created_at: c.created_at,
+    updated_at: c.updated_at
+  }));
+
+  return [...baseList, ...candidateMembers];
 }
 
 let cellPortalLookupCache = null;
@@ -11833,7 +11877,8 @@ function renderCellLeaderPortal() {
     const authorizedCellIdSet = new Set(context?.authorized_cell_ids || []);
     const candidates = (state.memberRegistrationCandidates || []).filter((item) => authorizedCellIdSet.has(item.cell_id) || (context?.authorized_cell_ids && context.authorized_cell_ids.includes(item.cell_id)));
     const candidateCounts = {
-      drafts: candidates.filter((item) => ["Draft", "ReadyForSubmission"].includes(item.approval_status)).length,
+      drafts: candidates.filter((item) => item.approval_status === "Draft").length,
+      readyForLeader: candidates.filter((item) => item.approval_status === "ReadyForSubmission").length,
       submitted: candidates.filter((item) => item.approval_status === "Submitted").length,
       reviewing: candidates.filter((item) => item.approval_status === "UnderReview").length,
       correction: candidates.filter((item) => item.approval_status === "NeedsCorrection").length,
@@ -11903,7 +11948,7 @@ function renderCellLeaderPortal() {
         <div class="cell-portal-hero-actions">
           ${canChooseCell ? `<label>Seleccionar célula<select class="form-select" data-cell-portal-cell>${safeHeroCells.map((item) => `<option value="${escapeAttr(item.id)}" ${String(item.id) === String(context?.cell_id) ? "selected" : ""}>${escapeAttr(portalCellName(item))}</option>`).join("")}</select></label>` : ""}
           ${!isReadOnlyPortal ? `
-            <button type="button" class="btn btn-ce-gold btn-touch shadow" data-open-member-candidate title="Registar membro pendente de aprovação"><i class="bi bi-person-plus-fill me-2"></i>+ Registar Membro</button>
+            <button type="button" class="btn btn-ce-gold btn-touch shadow" data-open-member-candidate title="Registar novo membro na célula"><i class="bi bi-person-plus-fill me-2"></i>+ Registar Membro</button>
             <button type="button" class="btn btn-outline-gold btn-touch" data-public-cell-report><i class="bi bi-clipboard-plus me-2"></i>Submeter Relatório Semanal</button>
           ` : ""}
           ${hasCellPortalPermission("cell_portal.export_summary") ? `<button type="button" class="btn btn-outline-cyan btn-touch" data-cell-portal-export><i class="bi bi-download me-2"></i>Exportar resumo</button>` : ""}
@@ -11925,7 +11970,7 @@ function renderCellLeaderPortal() {
         <label>Dizimista<select class="form-select" data-cell-portal-filter="tithe"><option value="">Todos</option><option value="true" ${cellPortalPageState.tithe === "true" ? "selected" : ""}>Sim</option><option value="false" ${cellPortalPageState.tithe === "false" ? "selected" : ""}>Não</option></select></label>
         <label>Convidou<select class="form-select" data-cell-portal-filter="invited"><option value="">Todos</option><option value="true" ${cellPortalPageState.invited === "true" ? "selected" : ""}>Sim</option><option value="false" ${cellPortalPageState.invited === "false" ? "selected" : ""}>Não</option></select></label>
       </section>
-      <nav class="cell-portal-nav" aria-label="Secções do portal">${[["overview","Visão Geral"],["attendance","Presenças & Visitantes"],["members","Membros & Reconciliação"],["reports","Relatório"],["activities","Actividades"],["growth","Crescimento"],["finance","Parcerias & Dízimos"],["souls","Ganhar Almas"],["foundation","Fundação & Sacramentos"],["programs","Programas"],["history","Histórico"]].map(([id,label]) => `<button type="button" data-cell-portal-section="cell-portal-${id}">${label}</button>`).join("")}</nav>
+      <nav class="cell-portal-nav" aria-label="Secções do portal">${[["overview","Visão Geral"],["attendance","Presenças & Visitantes"],["members","Membros & Reconciliação"],["candidates","Adesões Pendentes"],["reports","Relatório"],["activities","Actividades"],["growth","Crescimento"],["finance","Parcerias & Dízimos"],["souls","Ganhar Almas"],["foundation","Fundação & Sacramentos"],["programs","Programas"],["history","Histórico"]].map(([id,label]) => `<button type="button" data-cell-portal-section="cell-portal-${id}">${label}</button>`).join("")}</nav>
       <section id="cell-portal-overview" class="cell-portal-section">
         ${cellPortalSectionTitle("bi-grid-1x2", "Visão Geral", "Indicadores seguros da célula autorizada")}
         <div class="cell-portal-kpis">${[["bi-people","Total de membros",stats.total_members],["bi-person-check","Membros activos",stats.active_members],["bi-person-plus","Novos este mês",stats.new_members_month],["bi-person-heart","Visitantes ligados",stats.visitors],["bi-clipboard-check","Relatórios este mês",stats.reports_month],["bi-activity","Estado actual",stats.current_report_status],["bi-clock-history","Último relatório",stats.latest_report ? String(portalDateValue(stats.latest_report) || "").slice(0,10) : "—"],["bi-calendar-week","Próxima submissão",stats.next_submission]].map(([icon,label,value]) => `<article><i class="bi ${icon}"></i><span>${label}</span><strong>${escapeAttr(value)}</strong></article>`).join("")}</div>
@@ -12131,8 +12176,8 @@ function renderCellLeaderPortal() {
         ${usesSupabaseMembers() && !cellMembersLoading ? `<div class="cell-portal-pagination-footer d-flex justify-content-between align-items-center gap-2 mt-3"><div class="d-flex align-items-center gap-2"><small class="text-secondary">${cellPortalMembersState.totalCount} membro(s) · Página ${cellPortalMembersState.page} / ${cellPortalMembersState.totalPages}</small><label class="d-flex align-items-center gap-1 text-secondary small ms-2">${lang === "pt" ? "Por página:" : "Per page:"}<select class="form-select form-select-sm" data-cell-portal-page-size style="width: auto; display: inline-block;">${[25, 50, 100].map((sz) => `<option value="${sz}" ${cellPortalMembersState.pageSize === sz ? "selected" : ""}>${sz}</option>`).join("")}</select></label></div><div class="d-flex gap-2"><button class="action-btn" data-cell-portal-member-page="prev" ${cellPortalMembersState.page <= 1 ? "disabled" : ""}>Anterior</button><button class="action-btn" data-cell-portal-member-page="next" ${cellPortalMembersState.page >= cellPortalMembersState.totalPages ? "disabled" : ""}>Próximo</button></div></div>` : ""}
       </section>
       <section id="cell-portal-candidates" class="cell-portal-section">
-        ${cellPortalSectionTitle("bi-person-plus", "Registos por Aprovar", "Pedidos de adesão da(s) célula(s) autorizada(s)")}
-        <div class="cell-portal-kpis cell-portal-kpis--compact">${[["bi-people","Membros oficiais",allMembers.length],["bi-pencil-square","Rascunhos",candidateCounts.drafts],["bi-hourglass-split","Aguardando aprovação",candidateCounts.submitted],["bi-search","Em revisão",candidateCounts.reviewing],["bi-arrow-repeat","Precisa correcção",candidateCounts.correction],["bi-x-circle","Rejeitados",candidateCounts.rejected]].map(([icon,label,value]) => `<article><i class="bi ${icon}"></i><span>${label}</span><strong>${value}</strong></article>`).join("")}</div>
+        ${cellPortalSectionTitle("bi-person-plus", "Registos por Aprovar", "Pedidos de adesão da(s) célula(s) autorizada(s) – Aprovação do Líder e Confirmação da Igreja")}
+        <div class="cell-portal-kpis cell-portal-kpis--compact">${[["bi-people","Membros oficiais",allMembers.length],["bi-hourglass","Aguardando Líder",candidateCounts.readyForLeader],["bi-hourglass-split","Aguardando Igreja",candidateCounts.submitted],["bi-search","Em revisão Igreja",candidateCounts.reviewing],["bi-arrow-repeat","Precisa correcção",candidateCounts.correction],["bi-x-circle","Rejeitados",candidateCounts.rejected]].map(([icon,label,value]) => `<article><i class="bi ${icon}"></i><span>${label}</span><strong>${value}</strong></article>`).join("")}</div>
         <div class="panel glass-panel cell-portal-table-wrap mt-3"><table class="table cell-portal-table"><thead><tr><th>Nome</th><th>Telefone</th><th>Estado</th><th>Motivo</th><th>Acções</th></tr></thead><tbody>${safeCandidates.map((item) => `<tr><td><strong>${escapeAttr(candidateFullName(item))}</strong></td><td>${escapeAttr(item.primary_phone || "—")}</td><td>${badge(candidateStatusLabel(item.approval_status))}</td><td>${escapeAttr(item.correction_reason || item.rejection_reason || "—")}</td><td>${candidatePortalActions(item)}</td></tr>`).join("") || `<tr><td colspan="5">Nenhum candidato pendente para esta célula.</td></tr>`}</tbody></table></div>
       </section>
       <section id="cell-portal-reports" class="cell-portal-section cell-portal-grid-2">
@@ -13312,7 +13357,16 @@ function canReviewMemberCandidates(user = activeUser) {
 }
 
 function candidateStatusLabel(status) {
-  return ({ Draft: "Rascunho", ReadyForSubmission: "Pronto para submeter", Submitted: "Submetido", UnderReview: "Em revisão", NeedsCorrection: "Precisa de correcção", Approved: "Aprovado", Rejected: "Rejeitado", Withdrawn: "Retirado" })[status] || status || "Rascunho";
+  return ({
+    Draft: "Rascunho",
+    ReadyForSubmission: "Aguardando Aprovação do Líder",
+    Submitted: "Aprovado na Célula (Aguardando Igreja)",
+    UnderReview: "Em Revisão na Igreja",
+    NeedsCorrection: "Precisa de Correcção",
+    Approved: "Aprovado (Membro Oficial)",
+    Rejected: "Rejeitado",
+    Withdrawn: "Retirado"
+  })[status] || status || "Rascunho";
 }
 
 function candidateFullName(candidate) { return String(candidate?.full_name || "").trim(); }
@@ -13352,10 +13406,31 @@ function candidateCanAccess(candidate, user = activeUser) {
 function candidatePortalActions(candidate) {
   const id = escapeAttr(candidate.id);
   const status = candidate.approval_status;
+  const isAssistant = activeUser?.role === "Cell Assistant";
+  const isLeaderOrAdmin = !isAssistant;
   const canEdit = candidate.registered_by_user_id === activeUser?.id && ["Draft", "ReadyForSubmission", "NeedsCorrection"].includes(status);
-  if (status === "Draft" || status === "ReadyForSubmission") return `<button class="action-btn" data-candidate-action="view" data-candidate-id="${id}">Ver</button> ${canEdit ? `<button class="action-btn" data-candidate-action="edit" data-candidate-id="${id}">Editar</button><button class="action-btn" data-candidate-action="submit" data-candidate-id="${id}">Submeter para Aprovação</button><button class="action-btn" data-candidate-action="withdraw" data-candidate-id="${id}">Retirar</button>` : ""}`;
-  if (status === "NeedsCorrection") return `<button class="action-btn" data-candidate-action="view" data-candidate-id="${id}">Ver motivo</button> ${canEdit ? `<button class="action-btn" data-candidate-action="edit" data-candidate-id="${id}">Editar</button><button class="action-btn" data-candidate-action="submit" data-candidate-id="${id}">Re-submeter</button>` : ""}`;
-  if (status === "Approved") return `<button class="action-btn" data-cell-portal-member="${escapeAttr(candidate.approved_member_id || "")}">Abrir membro oficial</button>`;
+
+  if (status === "Draft") {
+    return `<button class="action-btn" data-candidate-action="view" data-candidate-id="${id}">Ver</button> ${canEdit ? `<button class="action-btn" data-candidate-action="edit" data-candidate-id="${id}">Editar</button><button class="action-btn" data-candidate-action="submit" data-candidate-id="${id}">Submeter</button><button class="action-btn" data-candidate-action="withdraw" data-candidate-id="${id}">Retirar</button>` : ""}`;
+  }
+  if (status === "ReadyForSubmission") {
+    if (isLeaderOrAdmin) {
+      return `<button class="action-btn" data-candidate-action="view" data-candidate-id="${id}">Ver</button> <button class="action-btn btn-sm btn-success text-success fw-bold" data-candidate-action="leaderApprove" data-candidate-id="${id}" title="Aprovar e adicionar à lista da célula"><i class="bi bi-check-circle me-1"></i>Aprovar p/ Célula</button> <button class="action-btn" data-candidate-action="edit" data-candidate-id="${id}">Editar</button><button class="action-btn" data-candidate-action="reject" data-candidate-id="${id}">Rejeitar</button>`;
+    }
+    return `<button class="action-btn" data-candidate-action="view" data-candidate-id="${id}">Ver</button> <span class="badge bg-warning text-dark me-1">Aguardando Líder</span> ${canEdit ? `<button class="action-btn" data-candidate-action="edit" data-candidate-id="${id}">Editar</button><button class="action-btn" data-candidate-action="withdraw" data-candidate-id="${id}">Retirar</button>` : ""}`;
+  }
+  if (status === "Submitted") {
+    return `<button class="action-btn" data-candidate-action="view" data-candidate-id="${id}">Ver</button> <span class="badge bg-info text-dark">Membro da Célula · Aguardando Igreja</span>`;
+  }
+  if (status === "UnderReview") {
+    return `<button class="action-btn" data-candidate-action="view" data-candidate-id="${id}">Ver</button> <span class="badge bg-primary">Em Revisão na Igreja</span>`;
+  }
+  if (status === "NeedsCorrection") {
+    return `<button class="action-btn" data-candidate-action="view" data-candidate-id="${id}">Ver motivo</button> ${canEdit ? `<button class="action-btn" data-candidate-action="edit" data-candidate-id="${id}">Editar</button><button class="action-btn" data-candidate-action="submit" data-candidate-id="${id}">Re-submeter</button>` : ""}`;
+  }
+  if (status === "Approved") {
+    return `<button class="action-btn" data-cell-portal-member="${escapeAttr(candidate.approved_member_id || "")}">Abrir membro oficial</button>`;
+  }
   return `<button class="action-btn" data-candidate-action="view" data-candidate-id="${id}">Ver</button>`;
 }
 
@@ -13838,10 +13913,14 @@ function openMemberCandidateForm(id = null) {
   if (candidate && (!candidateCanAccess(candidate) || (!canReviewMemberCandidates() && candidate.registered_by_user_id !== activeUser?.id))) return alert("Não tem permissão para editar este pedido.");
   if (candidate && !canReviewMemberCandidates() && !["Draft", "ReadyForSubmission", "NeedsCorrection"].includes(candidate.approval_status)) return openMemberCandidateDetails(candidate);
   const data = candidate || { church_id: context.church_id, church_name: context.church_name, cell_group_id: context.cell_group_id, cell_group_name: context.cell_group_name, cell_id: context.cell_id, cell_name: context.cell_name };
+  const isAssistant = activeUser?.role === "Cell Assistant" || context?.cell_role === "Cell Assistant";
   modalMode = candidate ? "edit" : "create"; modalType = "memberCandidate"; modalRecordId = candidate?.id || null;
   byId("modalEyebrow").textContent = "Pedido de adesão";
-  byId("modalTitle").textContent = candidate ? "Editar candidato" : "Registar pessoa na célula";
-  byId("modalFields").innerHTML = `<div class="col-12"><div class="alert alert-info mb-2">Este registo é um <strong>candidato</strong>, não um membro oficial. A adesão depende de revisão humana.</div></div><div class="col-md-6"><label class="form-label">Nome completo *</label><input required name="full_name" class="form-control" value="${escapeAttr(data.full_name || "")}"></div><div class="col-md-6"><label class="form-label">Telefone (opcional)</label><input name="primary_phone" class="form-control" value="${escapeAttr(data.primary_phone || "")}"></div><div class="col-md-6"><label class="form-label">E-mail</label><input type="email" name="email" class="form-control" value="${escapeAttr(data.email || "")}"></div><div class="col-md-6"><label class="form-label">Data de nascimento</label><input type="date" name="date_of_birth" class="form-control" value="${escapeAttr(data.date_of_birth || "")}"></div><div class="col-md-6"><label class="form-label">Bairro</label><input name="neighborhood" class="form-control" value="${escapeAttr(data.neighborhood || "")}"></div><div class="col-md-6"><label class="form-label">Profissão</label><input name="occupation" class="form-control" value="${escapeAttr(data.occupation || "")}"></div><div class="col-12"><label class="form-label">Contexto bloqueado</label><div class="form-control bg-light">${escapeAttr(data.church_name || "")} · ${escapeAttr(data.cell_group_name || "")} · ${escapeAttr(data.cell_name || "")}</div></div><div class="col-12"><label class="form-label">Notas</label><textarea name="notes" class="form-control">${escapeAttr(data.notes || "")}</textarea></div><div class="col-12 d-flex justify-content-end"><button type="button" class="btn btn-ce-gold" data-candidate-submit-form>Submeter para Aprovação</button></div>`;
+  byId("modalTitle").textContent = candidate ? "Editar candidato" : "Registar novo membro na célula";
+  const roleHelpNotice = isAssistant
+    ? `<div class="col-12"><div class="alert alert-warning mb-2"><i class="bi bi-info-circle me-2"></i>Como <strong>Assistente de Célula</strong>, este registo ficará numa <strong>fila de espera para aprovação pelo Líder da Célula</strong> antes de entrar na lista de membros.</div></div>`
+    : `<div class="col-12"><div class="alert alert-success mb-2"><i class="bi bi-check-circle me-2"></i>Como <strong>Líder de Célula</strong>, este membro <strong>entra imediatamente na lista da célula</strong> e segue simultaneamente para a fila de aprovação da Igreja.</div></div>`;
+  byId("modalFields").innerHTML = `${roleHelpNotice}<div class="col-md-6"><label class="form-label">Nome completo *</label><input required name="full_name" class="form-control" value="${escapeAttr(data.full_name || "")}"></div><div class="col-md-6"><label class="form-label">Telefone (opcional)</label><input name="primary_phone" class="form-control" value="${escapeAttr(data.primary_phone || "")}"></div><div class="col-md-6"><label class="form-label">E-mail</label><input type="email" name="email" class="form-control" value="${escapeAttr(data.email || "")}"></div><div class="col-md-6"><label class="form-label">Data de nascimento</label><input type="date" name="date_of_birth" class="form-control" value="${escapeAttr(data.date_of_birth || "")}"></div><div class="col-md-6"><label class="form-label">Bairro</label><input name="neighborhood" class="form-control" value="${escapeAttr(data.neighborhood || "")}"></div><div class="col-md-6"><label class="form-label">Profissão</label><input name="occupation" class="form-control" value="${escapeAttr(data.occupation || "")}"></div><div class="col-12"><label class="form-label">Contexto bloqueado</label><div class="form-control bg-light">${escapeAttr(data.church_name || "")} · ${escapeAttr(data.cell_group_name || "")} · ${escapeAttr(data.cell_name || "")}</div></div><div class="col-12"><label class="form-label">Notas</label><textarea name="notes" class="form-control">${escapeAttr(data.notes || "")}</textarea></div><div class="col-12 d-flex justify-content-end"><button type="button" class="btn btn-ce-gold" data-candidate-submit-form>${isAssistant ? "Submeter para Aprovação do Líder" : "Registar & Submeter para Aprovação"}</button></div>`;
   const submitButton = byId("entryForm")?.querySelector('button[type="submit"]'); if (submitButton) submitButton.textContent = "Guardar Rascunho";
   bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
 }
@@ -13860,7 +13939,14 @@ async function submitMemberCandidateForm(form, { submit = false } = {}) {
   const now = new Date().toISOString();
   const context = getCellLeaderContext(activeUser?.id, cellPortalPageState.cellId);
   const existing = modalRecordId ? (state.memberRegistrationCandidates || []).find((item) => item.id === modalRecordId) : null;
-  const nextStatus = submit ? "Submitted" : (existing?.approval_status || "Draft");
+  const isAssistant = activeUser?.role === "Cell Assistant" || context?.cell_role === "Cell Assistant";
+
+  // Tier 1: Assistant -> ReadyForSubmission (waits for Cell Leader)
+  // Tier 2: Leader -> Submitted (approved for cell, waits for Church admin)
+  let nextStatus = existing?.approval_status || "Draft";
+  if (submit) {
+    nextStatus = isAssistant ? "ReadyForSubmission" : "Submitted";
+  }
 
   const cleanDateVal = (v) => {
     const s = String(v || "").trim();
@@ -13897,12 +13983,15 @@ async function submitMemberCandidateForm(form, { submit = false } = {}) {
     cell_group_name: existing?.cell_group_name || context?.cell_group_name || null,
     cell_id: existing?.cell_id || context?.cell_id || "",
     cell_name: existing?.cell_name || context?.cell_name || null,
-    registration_source: existing?.registration_source || (activeUser?.role === "Cell Assistant" ? "CellAssistant" : "CellLeader"),
+    registration_source: existing?.registration_source || (isAssistant ? "CellAssistant" : "CellLeader"),
     registered_by_user_id: cleanUuidVal(existing?.registered_by_user_id || activeUser?.id),
     registered_by_name: existing?.registered_by_name || activeUser?.name || "Líder de Célula",
-    registered_by_cell_role: existing?.registered_by_cell_role || context?.cell_role || "Cell Leader",
+    registered_by_cell_role: existing?.registered_by_cell_role || context?.cell_role || (isAssistant ? "Cell Assistant" : "Cell Leader"),
     registered_at: existing?.registered_at || now,
     approval_status: nextStatus,
+    cell_approved_at: (submit && !isAssistant) ? (existing?.cell_approved_at || now) : (existing?.cell_approved_at || null),
+    cell_approved_by_id: (submit && !isAssistant) ? cleanUuidVal(existing?.cell_approved_by_id || activeUser?.id) : cleanUuidVal(existing?.cell_approved_by_id),
+    cell_approved_by_name: (submit && !isAssistant) ? (existing?.cell_approved_by_name || activeUser?.name || "Líder de Célula") : (existing?.cell_approved_by_name || null),
     submitted_for_approval_by: submit ? cleanUuidVal(activeUser?.id) : cleanUuidVal(existing?.submitted_for_approval_by),
     submitted_for_approval_at: submit ? now : existing?.submitted_for_approval_at,
     membership_status: "Candidate",
@@ -13922,8 +14011,19 @@ async function submitMemberCandidateForm(form, { submit = false } = {}) {
   const repoResult = await persistMemberCandidateViaRepository(existing ? "update" : "create", record);
   if (repoResult?.ok === false) return alert(repoResult.error || "Não foi possível guardar o pedido de adesão.");
   recordCandidateAudit(existing ? "member_candidate.updated" : "member_candidate.created", record);
-  if (submit) { recordCandidateAudit(existing ? "member_candidate.resubmitted" : "member_candidate.submitted", record); notifyCandidateReviewers(record); }
-  saveState(submit ? "Pedido submetido para aprovação" : "Rascunho guardado");
+  if (submit) {
+    if (isAssistant) {
+      recordCandidateAudit(existing ? "member_candidate.resubmitted_to_leader" : "member_candidate.submitted_to_leader", record);
+      alert("Membro registado com sucesso! O registo foi enviado para a fila de aprovação do Líder da Célula.");
+    } else {
+      recordCandidateAudit(existing ? "member_candidate.resubmitted" : "member_candidate.submitted", record);
+      notifyCandidateReviewers(record);
+      alert("Membro registado e adicionado à lista da célula com sucesso! O registo foi enviado para aprovação da Igreja.");
+    }
+  } else {
+    alert("Rascunho guardado com sucesso.");
+  }
+  saveState(submit ? (isAssistant ? "Pedido submetido para o Líder" : "Membro registado e enviado para a Igreja") : "Rascunho guardado");
   bootstrap.Modal.getInstance(byId("entryModal"))?.hide();
   renderCellLeaderPortal();
 }
@@ -13942,10 +14042,47 @@ async function candidateAction(action, id) {
     return (!s || s === "—" || s === "-" || s === "null" || s === "undefined") ? null : s;
   };
 
+  if (action === "leaderApprove") {
+    if (!["Draft", "ReadyForSubmission", "NeedsCorrection"].includes(candidate.approval_status)) return;
+    const isLeaderOrAdmin = ["Super Admin", "Church Admin", "Cell Ministry Head", "Cell Leader", "Cell Group Leader", "cell_group_leader", "Cell Coordinator", "cell_coordinator"].includes(activeUser?.role) || canAccessCell(activeUser?.id, candidate.cell_id);
+    if (!isLeaderOrAdmin) {
+      return alert("Apenas o Líder da Célula ou Administrador pode aprovar para a lista da célula.");
+    }
+    Object.assign(candidate, {
+      approval_status: "Submitted",
+      cell_approved_at: now,
+      cell_approved_by_id: cleanUuidVal(activeUser?.id),
+      cell_approved_by_name: activeUser?.name || "Líder de Célula",
+      submitted_for_approval_by: cleanUuidVal(activeUser?.id),
+      submitted_for_approval_at: now,
+      updated_at: now
+    });
+    recordCandidateAudit("member_candidate.cell_leader_approved", candidate);
+    notifyCandidateReviewers(candidate);
+    const repoResult = await persistMemberCandidateViaRepository("update", candidate);
+    if (repoResult?.ok === false) return alert(repoResult.error || "Não foi possível aprovar o pedido.");
+    saveState("Candidato aprovado para a Célula");
+    alert("Candidato aprovado com sucesso! O membro foi adicionado à lista da célula e o registo foi enviado para aprovação da Igreja.");
+    if (activeRoute === "cellPortal") renderCellLeaderPortal(); else renderMembers();
+    return;
+  }
+
   if (action === "submit") {
     if (!leaderOwnRecord || !["Draft", "ReadyForSubmission", "NeedsCorrection"].includes(candidate.approval_status)) return;
-    Object.assign(candidate, { approval_status: "Submitted", submitted_for_approval_by: cleanUuidVal(activeUser?.id), submitted_for_approval_at: now, updated_at: now });
-    recordCandidateAudit(candidate.correction_reason ? "member_candidate.resubmitted" : "member_candidate.submitted", candidate); notifyCandidateReviewers(candidate);
+    const isAssistant = activeUser?.role === "Cell Assistant";
+    const nextStatus = isAssistant ? "ReadyForSubmission" : "Submitted";
+    Object.assign(candidate, {
+      approval_status: nextStatus,
+      cell_approved_at: !isAssistant ? now : candidate.cell_approved_at,
+      cell_approved_by_id: !isAssistant ? cleanUuidVal(activeUser?.id) : candidate.cell_approved_by_id,
+      cell_approved_by_name: !isAssistant ? (activeUser?.name || "Líder de Célula") : candidate.cell_approved_by_name,
+      submitted_for_approval_by: cleanUuidVal(activeUser?.id),
+      submitted_for_approval_at: now,
+      updated_at: now
+    });
+    recordCandidateAudit(candidate.correction_reason ? "member_candidate.resubmitted" : "member_candidate.submitted", candidate);
+    if (!isAssistant) notifyCandidateReviewers(candidate);
+    alert(isAssistant ? "Pedido submetido para aprovação do Líder da Célula." : "Membro aprovado para a célula e enviado para aprovação da Igreja.");
   } else if (action === "withdraw") {
     if (!leaderOwnRecord || !["Draft", "ReadyForSubmission"].includes(candidate.approval_status)) return;
     Object.assign(candidate, { approval_status: "Withdrawn", updated_at: now }); recordCandidateAudit("member_candidate.withdrawn", candidate);
