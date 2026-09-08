@@ -11551,15 +11551,28 @@ async function bulkConfirmCellMembers() {
 function openEditCellMemberModal(memberId) {
   const context = getCellLeaderContext(activeUser?.id, cellPortalPageState.cellId);
   const source = cellPortalMemberSource(context?.cell_id);
-  const member = source.find((m) => String(m.id) === String(memberId));
+  const member = source.find((m) => String(m.id) === String(memberId)) ||
+    (state.memberRegistrationCandidates || []).find((c) => String(c.id) === String(memberId)) ||
+    (state.members || []).find((m) => String(m.id) === String(memberId));
   if (!member) return;
   const t = (pt, en) => lang === "en" ? en : pt;
   const maritalStatus = normalizeMemberMaritalStatus(member.marital_status || member.estado_civil || "");
+
+  const churchVal = member.church_name || context?.church_name || churchName(member.church_id) || "Christ Embassy";
+  const cellGroupVal = member.cell_group_name || member.group_name || context?.cell_group_name || "—";
+  const cellVal = member.cell_name || member.celula || context?.cell_name || "—";
 
   byId("modalEyebrow").textContent = t("Reconciliação de membro", "Member reconciliation");
   byId("modalTitle").textContent = `${t("Corrigir dados", "Correct details")}: ${member.full_name || member.name}`;
   byId("modalFields").innerHTML = `
     <input type="hidden" name="cell_member_edit_id" value="${escapeAttr(member.id)}">
+    <div class="col-12 mb-3">
+      <div class="p-3 rounded d-flex flex-wrap align-items-center justify-content-between gap-3 shadow-sm" style="background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(234, 179, 8, 0.4); border-radius: 8px;">
+        <div><span class="text-secondary small d-block">${t("Igreja", "Church")}</span><strong class="text-light"><i class="bi bi-building me-1 text-warning"></i>${escapeAttr(churchVal)}</strong></div>
+        <div><span class="text-secondary small d-block">${t("Grupo de Célula", "Cell Group")}</span><strong class="text-light"><i class="bi bi-diagram-3 me-1 text-info"></i>${escapeAttr(cellGroupVal)}</strong></div>
+        <div><span class="text-secondary small d-block">${t("Célula", "Cell")}</span><strong class="text-light"><i class="bi bi-house-door me-1 text-success"></i>${escapeAttr(cellVal)}</strong></div>
+      </div>
+    </div>
     <div class="col-md-6 mb-3">
       <label class="form-label">${t("Nome completo", "Full name")} *</label>
       <input type="text" class="form-control" name="full_name" value="${escapeAttr(member.full_name || member.name || "")}" required>
@@ -11620,6 +11633,18 @@ async function submitCellMemberEditForm(form) {
   if (!memberId) return;
   const now = new Date().toISOString();
   const repo = getMembersRepoSafe();
+  const context = getCellLeaderContext(activeUser?.id, cellPortalPageState.cellId);
+  const existingMember = (cellPortalMembersState.items || []).find((m) => String(m.id) === String(memberId)) ||
+    (state.members || []).find((m) => String(m.id) === String(memberId));
+  const candidate = (state.memberRegistrationCandidates || []).find((c) => String(c.id) === String(memberId));
+
+  const churchId = candidate?.church_id || existingMember?.church_id || context?.church_id || activeUser?.church_id || "a1111111-1111-4111-8111-111111111101";
+  const churchNameVal = candidate?.church_name || existingMember?.church_name || context?.church_name || churchName(churchId);
+  const cellGroupId = candidate?.cell_group_id || existingMember?.cell_group_id || context?.cell_group_id || null;
+  const cellGroupName = candidate?.cell_group_name || existingMember?.cell_group_name || context?.cell_group_name || null;
+  const cellId = candidate?.cell_id || existingMember?.cell_id || context?.cell_id || "";
+  const cellNameVal = candidate?.cell_name || existingMember?.cell_name || existingMember?.celula || context?.cell_name || null;
+
   const fullName = String(data.full_name || "").trim();
   const parts = fullName.split(/\s+/);
   const firstName = parts[0] || "";
@@ -11629,6 +11654,13 @@ async function submitCellMemberEditForm(form) {
     full_name: fullName,
     nome: firstName,
     apelido: lastName,
+    church_id: churchId,
+    church_name: churchNameVal,
+    cell_group_id: cellGroupId,
+    cell_group_name: cellGroupName,
+    cell_id: cellId,
+    cell_name: cellNameVal,
+    celula: cellNameVal,
     primary_phone: String(data.primary_phone || "").trim() || null,
     secondary_phone: String(data.secondary_phone || "").trim() || null,
     email: String(data.email || "").trim() || null,
@@ -11644,12 +11676,17 @@ async function submitCellMemberEditForm(form) {
 
   try {
     // 1. Check if this record is a Member Registration Candidate
-    const candidate = (state.memberRegistrationCandidates || []).find((c) => String(c.id) === String(memberId));
     if (candidate) {
       Object.assign(candidate, {
         full_name: payload.full_name,
         first_name: firstName,
         last_name: lastName,
+        church_id: churchId,
+        church_name: churchNameVal,
+        cell_group_id: cellGroupId,
+        cell_group_name: cellGroupName,
+        cell_id: cellId,
+        cell_name: cellNameVal,
         primary_phone: payload.primary_phone,
         secondary_phone: payload.secondary_phone,
         email: payload.email,
@@ -14032,19 +14069,55 @@ function openMemberCandidateForm(id = null) {
   modalMode = candidate ? "edit" : "create"; modalType = "memberCandidate"; modalRecordId = candidate?.id || null;
   byId("modalEyebrow").textContent = "Pedido de adesão";
   byId("modalTitle").textContent = candidate ? "Editar candidato" : "Registar novo membro na célula";
+
+  const churchVal = data.church_name || context?.church_name || churchName(data.church_id) || "Christ Embassy";
+  const cellGroupVal = data.cell_group_name || data.group_name || context?.cell_group_name || "—";
+  const cellVal = data.cell_name || data.celula || context?.cell_name || "—";
+
   const roleHelpNotice = isAssistant
     ? `<div class="col-12"><div class="alert alert-warning mb-2"><i class="bi bi-info-circle me-2"></i>Como <strong>Assistente de Célula</strong>, este registo ficará numa <strong>fila de espera para aprovação pelo Líder da Célula</strong> antes de entrar na lista de membros.</div></div>`
     : `<div class="col-12"><div class="alert alert-success mb-2"><i class="bi bi-check-circle me-2"></i>Como <strong>Líder de Célula</strong>, este membro <strong>entra imediatamente na lista da célula</strong> e segue simultaneamente para a fila de aprovação da Igreja.</div></div>`;
-  byId("modalFields").innerHTML = `${roleHelpNotice}<div class="col-md-6"><label class="form-label">Nome completo *</label><input required name="full_name" class="form-control" value="${escapeAttr(data.full_name || "")}"></div><div class="col-md-6"><label class="form-label">Telefone (opcional)</label><input name="primary_phone" class="form-control" value="${escapeAttr(data.primary_phone || "")}"></div><div class="col-md-6"><label class="form-label">E-mail</label><input type="email" name="email" class="form-control" value="${escapeAttr(data.email || "")}"></div><div class="col-md-6"><label class="form-label">Data de nascimento</label><input type="date" name="date_of_birth" class="form-control" value="${escapeAttr(data.date_of_birth || "")}"></div><div class="col-md-6"><label class="form-label">Bairro</label><input name="neighborhood" class="form-control" value="${escapeAttr(data.neighborhood || "")}"></div><div class="col-md-6"><label class="form-label">Profissão</label><input name="occupation" class="form-control" value="${escapeAttr(data.occupation || "")}"></div><div class="col-12"><label class="form-label">Contexto bloqueado</label><div class="form-control bg-light">${escapeAttr(data.church_name || "")} · ${escapeAttr(data.cell_group_name || "")} · ${escapeAttr(data.cell_name || "")}</div></div><div class="col-12"><label class="form-label">Notas</label><textarea name="notes" class="form-control">${escapeAttr(data.notes || "")}</textarea></div><div class="col-12 d-flex justify-content-end"><button type="button" class="btn btn-ce-gold" data-candidate-submit-form>${isAssistant ? "Submeter para Aprovação do Líder" : "Registar & Submeter para Aprovação"}</button></div>`;
+  byId("modalFields").innerHTML = `
+    ${roleHelpNotice}
+    <div class="col-12 mb-3">
+      <div class="p-3 rounded d-flex flex-wrap align-items-center justify-content-between gap-3 shadow-sm" style="background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(234, 179, 8, 0.4); border-radius: 8px;">
+        <div><span class="text-secondary small d-block">Igreja</span><strong class="text-light"><i class="bi bi-building me-1 text-warning"></i>${escapeAttr(churchVal)}</strong></div>
+        <div><span class="text-secondary small d-block">Grupo de Célula</span><strong class="text-light"><i class="bi bi-diagram-3 me-1 text-info"></i>${escapeAttr(cellGroupVal)}</strong></div>
+        <div><span class="text-secondary small d-block">Célula</span><strong class="text-light"><i class="bi bi-house-door me-1 text-success"></i>${escapeAttr(cellVal)}</strong></div>
+      </div>
+    </div>
+    <div class="col-md-6"><label class="form-label">Nome completo *</label><input required name="full_name" class="form-control" value="${escapeAttr(data.full_name || "")}"></div>
+    <div class="col-md-6"><label class="form-label">Telefone (opcional)</label><input name="primary_phone" class="form-control" value="${escapeAttr(data.primary_phone || "")}"></div>
+    <div class="col-md-6"><label class="form-label">E-mail</label><input type="email" name="email" class="form-control" value="${escapeAttr(data.email || "")}"></div>
+    <div class="col-md-6"><label class="form-label">Data de nascimento</label><input type="date" name="date_of_birth" class="form-control" value="${escapeAttr(data.date_of_birth || "")}"></div>
+    <div class="col-md-6"><label class="form-label">Bairro</label><input name="neighborhood" class="form-control" value="${escapeAttr(data.neighborhood || "")}"></div>
+    <div class="col-md-6"><label class="form-label">Profissão</label><input name="occupation" class="form-control" value="${escapeAttr(data.occupation || "")}"></div>
+    <div class="col-12"><label class="form-label">Notas</label><textarea name="notes" class="form-control">${escapeAttr(data.notes || "")}</textarea></div>
+    <div class="col-12 d-flex justify-content-end"><button type="button" class="btn btn-ce-gold" data-candidate-submit-form>${isAssistant ? "Submeter para Aprovação do Líder" : "Registar & Submeter para Aprovação"}</button></div>`;
   const submitButton = byId("entryForm")?.querySelector('button[type="submit"]'); if (submitButton) submitButton.textContent = "Guardar Rascunho";
   bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
 }
 
 function openMemberCandidateDetails(candidate) {
   modalType = ""; modalRecordId = null;
+  const churchVal = candidate.church_name || churchName(candidate.church_id) || "Christ Embassy";
+  const cellGroupVal = candidate.cell_group_name || candidate.group_name || "—";
+  const cellVal = candidate.cell_name || candidate.celula || "—";
+
   byId("modalEyebrow").textContent = "Pedido de adesão";
   byId("modalTitle").textContent = candidateFullName(candidate);
-  byId("modalFields").innerHTML = `<div class="col-12"><div class="alert alert-info">Estado: <strong>${escapeAttr(candidateStatusLabel(candidate.approval_status))}</strong></div></div><div class="col-md-6"><strong>Telefone:</strong> ${escapeAttr(candidate.primary_phone || "Não informado")}</div><div class="col-md-6"><strong>Igreja / célula:</strong> ${escapeAttr(candidate.church_name || "—")} · ${escapeAttr(candidate.cell_name || "—")}</div><div class="col-12"><strong>Motivo:</strong> ${escapeAttr(candidate.correction_reason || candidate.rejection_reason || "Sem observações")}</div>`;
+  byId("modalFields").innerHTML = `
+    <div class="col-12 mb-3">
+      <div class="p-3 rounded d-flex flex-wrap align-items-center justify-content-between gap-3 shadow-sm" style="background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(234, 179, 8, 0.4); border-radius: 8px;">
+        <div><span class="text-secondary small d-block">Igreja</span><strong class="text-light"><i class="bi bi-building me-1 text-warning"></i>${escapeAttr(churchVal)}</strong></div>
+        <div><span class="text-secondary small d-block">Grupo de Célula</span><strong class="text-light"><i class="bi bi-diagram-3 me-1 text-info"></i>${escapeAttr(cellGroupVal)}</strong></div>
+        <div><span class="text-secondary small d-block">Célula</span><strong class="text-light"><i class="bi bi-house-door me-1 text-success"></i>${escapeAttr(cellVal)}</strong></div>
+      </div>
+    </div>
+    <div class="col-12"><div class="alert alert-info">Estado: <strong>${escapeAttr(candidateStatusLabel(candidate.approval_status))}</strong></div></div>
+    <div class="col-md-6"><strong>Telefone:</strong> ${escapeAttr(candidate.primary_phone || "Não informado")}</div>
+    <div class="col-md-6"><strong>E-mail:</strong> ${escapeAttr(candidate.email || "Não informado")}</div>
+    <div class="col-12"><strong>Motivo / Observações:</strong> ${escapeAttr(candidate.correction_reason || candidate.rejection_reason || candidate.notes || "Sem observações")}</div>`;
   const submitButton = byId("entryForm")?.querySelector('button[type="submit"]'); if (submitButton) submitButton.textContent = "Fechar";
   bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
 }
