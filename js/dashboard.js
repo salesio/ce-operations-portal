@@ -3464,7 +3464,7 @@ const seedData = {
     { id: "38ee3dab-c172-4d78-97a9-aa76c554ce63", auth_user_id: "ac47e5fa-f9f5-4d58-ab91-eebcb01f1b01", name: "Pastor Valdemiro Machava", full_name: "Pastor Valdemiro Machava", email: "p.care@embaixadadecristo.org", role: "pastoral_care_rector", role_name: "Reitor de Cuidados Pastorais", church_id: "a1111111-1111-4111-8111-111111111101", department_permissions: ["firstTimers", "followUp", "foundation", "sacraments", "counseling", "reports"], can_view_all_churches: true, status: "Active" },
     { id: "e83250d7-9f03-47fb-a4f8-1c2f6636b1c4", auth_user_id: "e83250d7-9f03-47fb-a4f8-1c2f6636b1c4", name: "Marcelo Panguene", full_name: "Marcelo Panguene", email: "venue@embaixadadecristo.org", role: "Venue Manager", role_name: "Gestor de Património & Instalações", church_id: "a1111111-1111-4111-8111-111111111101", department_permissions: ["venueInventory", "inventory", "venues", "maintenance", "checklists", "cellReports"], can_view_all_churches: true, status: "Active" },
     { id: "280ef567-05b5-4ef8-b7a0-ec6390655504", auth_user_id: "008969ce-f123-41e3-bce0-e58f477b4622", name: "Sister Angélica", full_name: "Sister Angélica", email: "angelicaamilcar27@gmail.com", role: "ALEC Coordinator", role_name: "Coordenadora ALEC", church_id: "a1111111-1111-4111-8111-111111111101", department_permissions: ["cell", "alecRegistration", "alecScores", "churchReports"], can_view_all_churches: true, status: "Active" },
-    { id: "473e4df5-883c-499a-a42e-223495c266d1", auth_user_id: "473e4df5-883c-499a-a42e-223495c266d1", name: "Filipe Chamango", full_name: "Filipe Chamango", email: "diamantes.main@embaixadadecristo.org", role: "Cell Leader", role_name: "Líder de Célula Diamantes Main", church_id: "a1111111-1111-4111-8111-111111111101", cell_id: "d1a00000-d1a0-4000-8000-000000000001", cell_name: "Diamantes main", cell_group_id: "d1a00000-0000-4000-8000-000000000001", cell_group_name: "Diamantes Main", assigned_cells: ["d1a00000-d1a0-4000-8000-000000000001", "d1a00000-d1a0-4000-8000-000000000002", "d1a00000-d1a0-4000-8000-000000000003", "d1a00000-d1a0-4000-8000-000000000004", "d1a00000-d1a0-4000-8000-000000000005", "d1a00000-d1a0-4000-8000-000000000006", "d1a00000-d1a0-4000-8000-000000000007", "d1a00000-d1a0-4000-8000-000000000008", "d1a00000-d1a0-4000-8000-000000000009", "d1a00000-d1a0-4000-8000-000000000010"], assigned_cell_groups: ["d1a00000-0000-4000-8000-000000000001"], department_permissions: ["cellReports", "followUp", "foundation", "foundation_teacher", "reports"], cannot_create_classes: true, permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_portal.view", "cell_portal.edit", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary", "follow_up.view", "follow_up.edit", "follow_up.enroll_foundation", "foundation.view", "foundation.edit_students", "foundation.record_lessons", "foundation.record_tests", "foundation.record_exam", "foundation.reports"], can_view_all_churches: false, status: "Active" },
+    { id: "473e4df5-883c-499a-a42e-223495c266d1", auth_user_id: "473e4df5-883c-499a-a42e-223495c266d1", name: "Filipe Chamango", full_name: "Filipe Chamango", email: "diamantes.main@embaixadadecristo.org", role: "Cell Leader", role_name: "Líder de Célula Diamantes Main", church_id: "a1111111-1111-4111-8111-111111111101", cell_id: "d1a00000-d1a0-4000-8000-000000000001", cell_name: "Diamantes main", cell_group_id: "d1a00000-0000-4000-8000-000000000001", cell_group_name: "Diamantes Main", assigned_cells: ["d1a00000-d1a0-4000-8000-000000000001", "d1a00000-d1a0-4000-8000-000000000002", "d1a00000-d1a0-4000-8000-000000000003", "d1a00000-d1a0-4000-8000-000000000004", "d1a00000-d1a0-4000-8000-000000000005", "d1a00000-d1a0-4000-8000-000000000006", "d1a00000-d1a0-4000-8000-000000000007", "d1a00000-d1a0-4000-8000-000000000008", "d1a00000-d1a0-4000-8000-000000000009", "d1a00000-d1a0-4000-8000-000000000010"], assigned_cell_groups: ["d1a00000-0000-4000-8000-000000000001"], assigned_foundation_teacher_id: "ftch-filipe-chamango", department_permissions: ["cellReports", "followUp", "foundation", "foundation_teacher", "reports"], cannot_create_classes: false, permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_portal.view", "cell_portal.edit", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary", "follow_up.view", "follow_up.edit", "follow_up.enroll_foundation", "foundation.view", "foundation.edit_students", "foundation.record_lessons", "foundation.record_tests", "foundation.record_exam", "foundation.reports"], can_view_all_churches: false, status: "Active" },
     { id: "1be83c02-cb16-4cf3-a246-58bd0ef1953f", auth_user_id: "1be83c02-cb16-4cf3-a246-58bd0ef1953f", name: "Michael Juma", full_name: "Michael Juma", email: "assistant.diamantes.main@embaixadadecristo.org", role: "Cell Assistant", role_name: "Assistente de Célula Diamantes Main", church_id: "a1111111-1111-4111-8111-111111111101", cell_id: "d1a00000-d1a0-4000-8000-000000000001", cell_name: "Diamantes main", cell_group_id: "d1a00000-0000-4000-8000-000000000001", cell_group_name: "Diamantes Main", assigned_cells: ["d1a00000-d1a0-4000-8000-000000000001", "d1a00000-d1a0-4000-8000-000000000002", "d1a00000-d1a0-4000-8000-000000000003", "d1a00000-d1a0-4000-8000-000000000004", "d1a00000-d1a0-4000-8000-000000000005", "d1a00000-d1a0-4000-8000-000000000006", "d1a00000-d1a0-4000-8000-000000000007", "d1a00000-d1a0-4000-8000-000000000008", "d1a00000-d1a0-4000-8000-000000000009", "d1a00000-d1a0-4000-8000-000000000010"], assigned_cell_groups: ["d1a00000-0000-4000-8000-000000000001"], department_permissions: ["cellReports"], permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_portal.view", "cell_portal.edit", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary"], can_view_all_churches: false, status: "Active" },
     { id: "395d050f-3422-402c-b2e9-7597dab91b3f", auth_user_id: "47df0cce-9701-492c-90aa-b3cb205bbd4b", name: "Líder Diplomatas Victory", full_name: "Líder Diplomatas Victory", email: "d.v.lider@embaixadadecristo.org", role: "Cell Leader", role_name: "Líder de Célula Diplomatas Victory", church_id: "a1111111-1111-4111-8111-111111111101", cell_id: "2b3a5652-b8be-4c76-8b64-b84200c8bcd4", cell_name: "Diplomatas Victory", cell_group_id: "a62f461e-e574-4052-8ef3-a4d0ee0c77c4", cell_group_name: "Diplomatas", assigned_cells: ["2b3a5652-b8be-4c76-8b64-b84200c8bcd4"], department_permissions: ["cellReports"], permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_portal.view", "cell_portal.edit", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary"], can_view_all_churches: false, status: "Active" },
     { id: "a51a15ad-9213-45b8-b572-aaf6cb53dcbb", auth_user_id: "9820f162-430c-4573-86db-b001097fa6dc", name: "Assistente Diplomatas Victory", full_name: "Assistente Diplomatas Victory", email: "d.v.assistente@embaixadadecristo.org", role: "Cell Assistant", role_name: "Assistente de Célula Diplomatas Victory", church_id: "a1111111-1111-4111-8111-111111111101", cell_id: "2b3a5652-b8be-4c76-8b64-b84200c8bcd4", cell_name: "Diplomatas Victory", cell_group_id: "a62f461e-e574-4052-8ef3-a4d0ee0c77c4", cell_group_name: "Diplomatas", assigned_cells: ["2b3a5652-b8be-4c76-8b64-b84200c8bcd4"], department_permissions: ["cellReports"], permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_portal.view", "cell_portal.edit", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary"], can_view_all_churches: false, status: "Active" }
@@ -15729,7 +15729,7 @@ function ensureFoundationClassGroupContexts(hq, churchLabel) {
 function isDemoFoundationRecord(item) {
   if (!item) return false;
   const str = String(item.id || "") + " " + String(item.name || "") + " " + String(item.full_name || "") + " " + String(item.student_number || "") + " " + String(item.class_code || "") + " " + String(item.teacher_number || "") + " " + String(item.enrollment_number || "");
-  if (/demo|^8[1-5]000000-|^fs-[1-9]$|^fst-[1-9]$|^fsc-[1-9]$|^fse-[1-9]$|^fss-[1-9]$/i.test(str)) return true;
+  if (/demo|^8[1-5]000000-/i.test(str)) return true;
   if (/Aluno Demo|Professor Demo|Turma.*Demo|FSC-DEMO|FST-DEMO|FSS-DEMO|FSE-DEMO/i.test(str)) return true;
   if (item.metadata && typeof item.metadata === "object" && item.metadata.demo === true) return true;
   return false;
@@ -15747,6 +15747,49 @@ function ensureFoundationData() {
   state.foundationStudents = state.foundationStudents.filter((s) => !isDemoFoundationRecord(s));
   state.foundationClassGroups = state.foundationClassGroups.filter((c) => !isDemoFoundationRecord(c));
   state.foundationTeachers = state.foundationTeachers.filter((t) => !isDemoFoundationRecord(t));
+
+  if (state.foundationTeachers.length === 0) {
+    const seedTeachers = (window.CESupabase && window.CESupabase.FOUNDATION_TEACHERS_SEED) || [];
+    state.foundationTeachers = seedTeachers.map((t) => ({ ...t }));
+  }
+  if (state.foundationClassGroups.length === 0) {
+    const seedClasses = (window.CESupabase && window.CESupabase.FOUNDATION_CLASSES_SEED) || [];
+    state.foundationClassGroups = seedClasses.map((c) => ({ ...c }));
+  }
+  if (state.foundationStudents.length === 0) {
+    const seedStudents = (window.CESupabase && window.CESupabase.FOUNDATION_STUDENTS_SEED) || [];
+    state.foundationStudents = seedStudents.map((s) => ({ ...s }));
+  }
+
+  const filipeTeacher = (state.foundationTeachers || []).find((t) => t.id === "ftch-filipe-chamango" || t.user_id === "473e4df5-883c-499a-a42e-223495c266d1" || String(t.email || "").toLowerCase() === "diamantes.main@embaixadadecristo.org");
+  if (!filipeTeacher) {
+    state.foundationTeachers.push({
+      id: "ftch-filipe-chamango",
+      user_id: "473e4df5-883c-499a-a42e-223495c266d1",
+      full_name: "Filipe Chamango",
+      title: "Professor",
+      role_type: "Teacher",
+      phone: "846000010",
+      whatsapp: "846000010",
+      email: "diamantes.main@embaixadadecristo.org",
+      church_id: hq,
+      church_name: churchLabel,
+      status: "Activo",
+      subjects_or_lessons_allowed: [1, 2, 3, 4, 5, 6, 7],
+      can_teach_lessons: [1, 2, 3, 4, 5, 6, 7],
+      can_teach_all_lessons: true,
+      delivery_modes_allowed: ["in_person", "online"],
+      assigned_locations: ["fsloc-hq-room-1", "fsloc-online-zoom"],
+      availability: "Domingo e Quarta",
+      max_classes_per_week: 3,
+      is_prison_ministry_teacher: false,
+      can_teach_online: true,
+      can_teach_home_visit: false,
+      can_teach_in_person: true,
+      notes: "Professor da Escola de Fundação e Líder de Célula Diamantes Main."
+    });
+  }
+
   if (!Array.isArray(state.foundationLessonSessions)) state.foundationLessonSessions = [];
   if (!Array.isArray(state.foundationLessonProgress)) state.foundationLessonProgress = [];
   if (!Array.isArray(state.foundationLessonAttendance)) state.foundationLessonAttendance = [];
@@ -16082,15 +16125,18 @@ function foundationPermissions() {
 function activeFoundationTeacherProfile() {
   const assignedId = activeUser?.assigned_foundation_teacher_id || "";
   return (state.foundationTeachers || []).find((teacher) =>
-    teacher.id === assignedId ||
-    teacher.user_id === activeUser?.id ||
-    String(teacher.email || "").toLowerCase() === String(activeUser?.email || "").toLowerCase()
+    (assignedId && teacher.id === assignedId) ||
+    (activeUser?.id && (teacher.user_id === activeUser.id || teacher.id === activeUser.id)) ||
+    (activeUser?.email && String(teacher.email || "").toLowerCase() === String(activeUser.email).toLowerCase()) ||
+    ((activeUser?.name || activeUser?.full_name) && String(teacher.full_name || "").toLowerCase() === String(activeUser.name || activeUser.full_name).toLowerCase())
   ) || {};
 }
 
 function foundationCanViewAllClasses() {
   const role = String(activeUser?.role || activeUser?.role_name || "").toLowerCase().trim();
   const perms = foundationPermissions();
+  const isTeacher = perms.includes("foundation_teacher") || role.includes("foundation teacher") || Boolean(activeFoundationTeacherProfile()?.id);
+  if (isTeacher) return true;
   return role.includes("admin") ||
     role.includes("church pastor") ||
     role.includes("rector") ||
@@ -16120,28 +16166,54 @@ function foundationSoulWinningForStudent(studentId) {
 function foundationCanManage(area = "overview") {
   const role = String(activeUser?.role || activeUser?.role_name || "").toLowerCase().trim();
   const perms = foundationPermissions();
-  if (foundationCanViewAllClasses()) return true;
-  const teacherTabs = new Set(["overview", "classes", "students", "lessons", "onlineTests", "soulWinning", "reports"]);
-  const assistantTabs = new Set(["overview", "classes", "students", "lessons", "onlineTests"]);
+  const teacherTabs = new Set(["overview", "enrolments", "classes", "students", "lessons", "onlineTests", "soulWinning", "finalExam", "teachers", "graduation", "reports"]);
+  const assistantTabs = new Set(["overview", "enrolments", "classes", "students", "lessons", "onlineTests", "soulWinning", "finalExam", "teachers", "graduation", "reports"]);
+  if (foundationCanViewAllClasses()) {
+    const isTeacher = perms.includes("foundation_teacher") || role.includes("foundation teacher") || Boolean(activeFoundationTeacherProfile()?.id);
+    if (isTeacher && !role.includes("admin") && !role.includes("pastor") && !role.includes("rector") && !role.includes("reitor") && !perms.includes("*")) {
+      return teacherTabs.has(area);
+    }
+    return true;
+  }
   if (perms.includes("foundation_teacher") || role.includes("foundation teacher")) return teacherTabs.has(area);
   if (perms.includes("foundation_assistant") || role.includes("foundation assistant")) return assistantTabs.has(area);
   return false;
 }
 
 function foundationScopedClassGroups() {
-  if (foundationCanViewAllClasses()) return state.foundationClassGroups || [];
+  const userChurch = activeUser?.church_id || activeUser?.churchId;
+  const canonChurch = CANONICAL_CHURCH_MAP[userChurch] || userChurch;
+  if (foundationCanViewAllClasses() || activeUser?.can_view_all_churches || (activeUser?.department_permissions || []).includes("*")) {
+    if (activeUser?.can_view_all_churches || (activeUser?.department_permissions || []).includes("*") || String(activeUser?.role || "").toLowerCase().includes("admin") || String(activeUser?.role || "").toLowerCase().includes("rector") || String(activeUser?.role || "").toLowerCase().includes("reitor")) {
+      return state.foundationClassGroups || [];
+    }
+    return (state.foundationClassGroups || []).filter((group) => {
+      const groupChurch = CANONICAL_CHURCH_MAP[group.church_id] || group.church_id;
+      return !groupChurch || !canonChurch || groupChurch === canonChurch;
+    });
+  }
   const profile = activeFoundationTeacherProfile();
-  if (!profile.id) return [];
+  if (!profile.id) {
+    return (state.foundationClassGroups || []).filter((group) => {
+      const groupChurch = CANONICAL_CHURCH_MAP[group.church_id] || group.church_id;
+      return !groupChurch || !canonChurch || groupChurch === canonChurch;
+    });
+  }
   return (state.foundationClassGroups || []).filter((group) => {
-    return group.main_teacher_id === profile.id || group.assistant_teacher_id === profile.id;
+    const groupChurch = CANONICAL_CHURCH_MAP[group.church_id] || group.church_id;
+    const isAssigned = group.main_teacher_id === profile.id ||
+      (Array.isArray(group.assistant_teacher_ids) && group.assistant_teacher_ids.includes(profile.id)) ||
+      group.assistant_teacher_id === profile.id;
+    return isAssigned || (!groupChurch || !canonChurch || groupChurch === canonChurch);
   });
 }
 
 function foundationStudentsForGroup(groupId = "") {
-  const allowedGroups = new Set(foundationScopedClassGroups().map((group) => group.id));
+  const scopedGroups = foundationScopedClassGroups();
+  const allowedGroups = new Set(scopedGroups.map((group) => group.id));
   return scoped(state.foundationStudents || [], "foundation").map((student, index) => foundationNormalizeStudent(student, index)).filter((student) => {
     if (groupId && student.class_group_id !== groupId) return false;
-    return !student.class_group_id || allowedGroups.has(student.class_group_id);
+    return !student.class_group_id || allowedGroups.has(student.class_group_id) || allowedGroups.size === 0;
   });
 }
 

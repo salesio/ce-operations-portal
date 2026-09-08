@@ -316,9 +316,9 @@
     },
     "Foundation Teacher": {
       modules: {
-        dashboard: { ...VIEW_ONLY, scope: "own" },
-        foundation: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "own" },
-        notifications: { ...VIEW_ONLY, scope: "own" }
+        dashboard: { ...VIEW_ONLY, scope: "church" },
+        foundation: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "church" },
+        notifications: { ...VIEW_ONLY, scope: "church" }
       }
     },
     "Foundation Rector": {
@@ -339,9 +339,9 @@
     },
     "Foundation Assistant": {
       modules: {
-        dashboard: { ...VIEW_ONLY, scope: "own" },
-        foundation: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "own" },
-        notifications: { ...VIEW_ONLY, scope: "own" }
+        dashboard: { ...VIEW_ONLY, scope: "church" },
+        foundation: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "church" },
+        notifications: { ...VIEW_ONLY, scope: "church" }
       }
     },
     "Cell Ministry Head": {
@@ -700,15 +700,15 @@
     const requisitionApprovalTabs = new Set(["review", "pastoral", "approved"]);
     const requisitionFinanceTabs = new Set(["released"]);
     const requisitionReportTabs = new Set(["reports", "history"]);
-    const foundationTeacherTabs = new Set(["overview", "classes", "students", "lessons", "onlineTests", "soulWinning", "reports"]);
-    const foundationAssistantTabs = new Set(["overview", "classes", "students", "lessons", "onlineTests"]);
+    const foundationTeacherTabs = new Set(["overview", "enrolments", "classes", "students", "lessons", "onlineTests", "soulWinning", "finalExam", "teachers", "graduation", "reports"]);
+    const foundationAssistantTabs = new Set(["overview", "enrolments", "classes", "students", "lessons", "onlineTests", "soulWinning", "finalExam", "teachers", "graduation", "reports"]);
     if (module === "finance" && financeSensitiveTabs.has(tab)) return Boolean(access.can_export || access.can_verify || access.can_approve);
     if (module === "finance" && financeVerificationTabs.has(tab)) return Boolean(access.can_verify || access.can_approve || access.can_release_resources);
     if (module === "staffHr" && staffSensitiveTabs.has(tab)) return Boolean(access.can_view_salary || access.can_edit || access.can_approve);
     if (module === "requisitions" && requisitionApprovalTabs.has(tab)) return Boolean(access.can_approve || access.can_verify || access.can_review || access.can_forward);
     if (module === "requisitions" && requisitionFinanceTabs.has(tab)) return Boolean(access.can_release_resources || access.can_verify);
     if (module === "requisitions" && requisitionReportTabs.has(tab)) return Boolean(access.can_export || access.can_approve || access.can_verify);
-    if (module === "foundation" && (user?.role === "Foundation Teacher" || (user?.department_permissions || []).includes("foundation_teacher"))) return foundationTeacherTabs.has(tab);
+    if (module === "foundation" && (user?.role === "Foundation Teacher" || (user?.department_permissions || []).includes("foundation_teacher") || (user?.department_permissions || []).includes("foundation"))) return foundationTeacherTabs.has(tab);
     if (module === "foundation" && (user?.role === "Foundation Assistant" || (user?.department_permissions || []).includes("foundation_assistant"))) return foundationAssistantTabs.has(tab);
     return true;
   }
@@ -773,6 +773,14 @@
     const scope = getUserScope(user, module);
     if (!record || !user) return false;
     if (["all", "national"].includes(scope) || user.can_view_all_churches || user.role === "Super Admin" || (user.department_permissions || []).includes("*")) return true;
+    if (module === "foundation") {
+      const userChurch = user.church_id || user.churchId;
+      const canonUserChurch = CANONICAL_CHURCH_MAP[userChurch] || userChurch;
+      const recordChurch = record.church_id || record.igreja_id || record.recipient_church_id || record.igreja || record.church;
+      if (!recordChurch) return true;
+      const canonRecordChurch = CANONICAL_CHURCH_MAP[recordChurch] || recordChurch;
+      return recordChurch === userChurch || canonRecordChurch === canonUserChurch;
+    }
     if (scope === "cell" || (["Cell Leader", "Cell Assistant", "Assistant Cell Leader"].includes(user.role) && (module === "members" || module === "cell"))) {
       const authorizedCells = new Set([
         ...(user.assigned_cells || []),
