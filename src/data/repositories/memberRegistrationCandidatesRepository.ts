@@ -30,30 +30,85 @@ function canReview(actor?: CandidateActor): boolean {
   return ["Super Admin", "Church Admin", "Membership Officer", "Cell Ministry Head"].includes(String(actor?.role || ""));
 }
 
+function cleanString(val: unknown): string | null {
+  if (val == null) return null;
+  const s = String(val).trim();
+  return s === "" ? null : s;
+}
+
+function cleanDate(val: unknown): string | null {
+  if (val == null) return null;
+  const s = String(val).trim();
+  if (!s || s === "" || s === "—" || s === "-" || s === "null" || s === "undefined") return null;
+  return s;
+}
+
+function cleanUuid(val: unknown): string | null {
+  if (val == null) return null;
+  const s = String(val).trim();
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(s) ? s : null;
+}
+
 export function normalizeMemberRegistrationCandidate(
   input: Partial<MemberRegistrationCandidate>,
   actor?: CandidateActor,
 ): MemberRegistrationCandidate {
   const now = new Date().toISOString();
-  const fullName = String(input.full_name || "").trim();
+  const fullName = cleanString(input.full_name) || "Candidato";
   const source = input.registration_source || (actor?.role === "Cell Assistant" ? "CellAssistant" : actor?.role === "Cell Leader" ? "CellLeader" : "AdminManual");
-  const phone = String(input.primary_phone || "").trim() || null;
+  const phone = cleanString(input.primary_phone || (input as any).phone || (input as any).telefone) || null;
+  const rawChurch = cleanString(input.church_id || actor?.church_id);
+  const churchId = rawChurch || "a1111111-1111-4111-8111-111111111101";
+  const parts = fullName.split(/\s+/);
+  const first = cleanString(input.first_name) || parts[0] || null;
+  const last = cleanString(input.last_name) || parts.slice(1).join(" ") || null;
+  const rawId = cleanString(input.id);
+  const idVal = (rawId && cleanUuid(rawId)) ? rawId : (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function" ? crypto.randomUUID() : (rawId || `mc-${Date.now()}`));
+
   return {
     ...input,
-    id: input.id || `member-candidate-${Date.now()}`,
-    candidate_number: input.candidate_number || `MC-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`,
+    id: idVal,
+    candidate_number: cleanString(input.candidate_number) || `MC-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`,
     full_name: fullName,
+    first_name: first,
+    last_name: last,
+    date_of_birth: cleanDate(input.date_of_birth ?? (input as any).data_de_nascimento),
     primary_phone: phone,
-    church_id: input.church_id || actor?.church_id || "",
-    cell_id: input.cell_id || "",
+    secondary_phone: cleanString(input.secondary_phone ?? (input as any).telefone_alternativo),
+    email: cleanString(input.email),
+    neighborhood: cleanString(input.neighborhood ?? (input as any).bairro),
+    address: cleanString(input.address ?? (input as any).endereco ?? (input as any).morada),
+    marital_status: cleanString(input.marital_status ?? (input as any).estado_civil),
+    occupation: cleanString(input.occupation ?? (input as any).profissao),
+    kingschat_username: cleanString(input.kingschat_username),
+    church_id: churchId,
+    church_name: cleanString(input.church_name ?? (input as any).igreja),
+    cell_group_id: cleanString(input.cell_group_id),
+    cell_group_name: cleanString(input.cell_group_name),
+    cell_id: String(input.cell_id || ""),
+    cell_name: cleanString(input.cell_name ?? (input as any).celula),
     registration_source: source,
-    registered_by_user_id: input.registered_by_user_id || actor?.id || "",
-    registered_by_name: input.registered_by_name || actor?.name || "",
-    registered_at: input.registered_at || now,
-    membership_status: input.membership_status || "Candidate",
-    approval_status: input.approval_status || "Draft",
-    data_quality_status: input.data_quality_status || (phone ? "Valid" : "NeedsReview"),
-    created_at: input.created_at || now,
+    registered_by_user_id: cleanUuid(input.registered_by_user_id || actor?.id) || null,
+    registered_by_name: cleanString(input.registered_by_name || actor?.name) || "",
+    registered_by_cell_role: cleanString(input.registered_by_cell_role),
+    registered_at: cleanDate(input.registered_at) || now,
+    membership_status: cleanString(input.membership_status) || "Candidate",
+    approval_status: cleanString(input.approval_status) || "Draft",
+    submitted_for_approval_by: cleanUuid(input.submitted_for_approval_by) || null,
+    submitted_for_approval_at: cleanDate(input.submitted_for_approval_at) || null,
+    reviewed_by_user_id: cleanUuid(input.reviewed_by_user_id) || null,
+    reviewed_by_name: cleanString(input.reviewed_by_name) || null,
+    reviewed_at: cleanDate(input.reviewed_at) || null,
+    approval_decision: cleanString(input.approval_decision) || null,
+    correction_reason: cleanString(input.correction_reason) || null,
+    rejection_reason: cleanString(input.rejection_reason) || null,
+    approved_member_id: cleanUuid(input.approved_member_id) || null,
+    approved_at: cleanDate(input.approved_at) || null,
+    possible_existing_member_id: cleanUuid(input.possible_existing_member_id) || null,
+    duplicate_confidence: cleanString(input.duplicate_confidence) || null,
+    data_quality_status: cleanString(input.data_quality_status) || (phone ? "Valid" : "NeedsReview"),
+    notes: cleanString(input.notes ?? (input as any).notas) || null,
+    created_at: cleanDate(input.created_at) || now,
     updated_at: now,
   } as MemberRegistrationCandidate;
 }

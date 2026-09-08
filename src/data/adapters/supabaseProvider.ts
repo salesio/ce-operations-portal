@@ -832,10 +832,86 @@ export function createSupabaseProvider(): DataProvider & SupabaseProviderExtras 
   }) as EntityRepository<unknown>;
   map.churches = createChurchesRepository() as EntityRepository<unknown>;
   map.members = createMembersRepository() as EntityRepository<unknown>;
+function sanitizeCandidateRow(record: any): Record<string, unknown> {
+  if (!record || typeof record !== "object") return {};
+  const cleanStr = (v: unknown): string | null => {
+    if (v == null) return null;
+    const s = String(v).trim();
+    return s === "" ? null : s;
+  };
+  const cleanDate = (v: unknown): string | null => {
+    if (v == null) return null;
+    const s = String(v).trim();
+    if (!s || s === "" || s === "—" || s === "-" || s === "null" || s === "undefined") return null;
+    return s;
+  };
+  const cleanUuid = (v: unknown): string | null => {
+    if (v == null) return null;
+    const s = String(v).trim();
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(s) ? s : null;
+  };
+
+  const idVal = cleanUuid(record.id) || (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function" ? crypto.randomUUID() : undefined);
+  const fullName = cleanStr(record.full_name) || "Candidato";
+  const parts = fullName.split(/\s+/);
+  const first = cleanStr(record.first_name) || parts[0] || null;
+  const last = cleanStr(record.last_name) || parts.slice(1).join(" ") || null;
+  const rawChurchId = cleanStr(record.church_id);
+  const canonicalChurch = rawChurchId || "a1111111-1111-4111-8111-111111111101";
+  const churchId = cleanUuid(canonicalChurch) || "a1111111-1111-4111-8111-111111111101";
+
+  const row: Record<string, unknown> = {
+    ...(idVal ? { id: idVal } : {}),
+    candidate_number: cleanStr(record.candidate_number) || `MC-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`,
+    full_name: fullName,
+    first_name: first,
+    last_name: last,
+    date_of_birth: cleanDate(record.date_of_birth ?? record.data_de_nascimento),
+    primary_phone: cleanStr(record.primary_phone ?? record.phone ?? record.telefone),
+    secondary_phone: cleanStr(record.secondary_phone ?? record.telefone_alternativo),
+    email: cleanStr(record.email),
+    neighborhood: cleanStr(record.neighborhood ?? record.bairro),
+    address: cleanStr(record.address ?? record.morada ?? record.endereco),
+    marital_status: cleanStr(record.marital_status ?? record.estado_civil),
+    occupation: cleanStr(record.occupation ?? record.profissao),
+    kingschat_username: cleanStr(record.kingschat_username),
+    church_id: churchId,
+    church_name: cleanStr(record.church_name ?? record.igreja),
+    cell_group_id: cleanStr(record.cell_group_id),
+    cell_group_name: cleanStr(record.cell_group_name),
+    cell_id: String(record.cell_id || ""),
+    cell_name: cleanStr(record.cell_name ?? record.celula),
+    registration_source: cleanStr(record.registration_source) || "CellLeader",
+    registered_by_user_id: cleanUuid(record.registered_by_user_id),
+    registered_by_name: cleanStr(record.registered_by_name),
+    registered_by_cell_role: cleanStr(record.registered_by_cell_role),
+    registered_at: cleanDate(record.registered_at) || new Date().toISOString(),
+    membership_status: cleanStr(record.membership_status) || "Candidate",
+    approval_status: cleanStr(record.approval_status) || "Draft",
+    submitted_for_approval_by: cleanUuid(record.submitted_for_approval_by),
+    submitted_for_approval_at: cleanDate(record.submitted_for_approval_at),
+    reviewed_by_user_id: cleanUuid(record.reviewed_by_user_id),
+    reviewed_by_name: cleanStr(record.reviewed_by_name),
+    reviewed_at: cleanDate(record.reviewed_at),
+    approval_decision: cleanStr(record.approval_decision),
+    correction_reason: cleanStr(record.correction_reason),
+    rejection_reason: cleanStr(record.rejection_reason),
+    approved_member_id: cleanUuid(record.approved_member_id),
+    approved_at: cleanDate(record.approved_at),
+    possible_existing_member_id: cleanUuid(record.possible_existing_member_id),
+    duplicate_confidence: cleanStr(record.duplicate_confidence),
+    data_quality_status: cleanStr(record.data_quality_status) || "Valid",
+    notes: cleanStr(record.notes ?? record.notas),
+    created_at: cleanDate(record.created_at) || new Date().toISOString(),
+    updated_at: cleanDate(record.updated_at) || new Date().toISOString(),
+  };
+  return row;
+}
+
   map.member_registration_candidates = createPilotRepository<MemberRegistrationCandidate>({
     list: () => supabaseList<MemberRegistrationCandidate>("member_registration_candidates"),
-    create: (record) => supabaseCreate<MemberRegistrationCandidate>("member_registration_candidates", record),
-    update: (id, record) => supabaseUpdate<MemberRegistrationCandidate>("member_registration_candidates", id, record),
+    create: (record) => supabaseCreate<MemberRegistrationCandidate>("member_registration_candidates", sanitizeCandidateRow(record)),
+    update: (id, record) => supabaseUpdate<MemberRegistrationCandidate>("member_registration_candidates", id, sanitizeCandidateRow(record)),
     remove: (id) => supabaseDelete("member_registration_candidates", id),
   }) as EntityRepository<unknown>;
   map.first_timers = createFirstTimersRepository() as EntityRepository<unknown>;
