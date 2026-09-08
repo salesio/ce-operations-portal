@@ -38,13 +38,13 @@
 
   function resolveApi() {
     var layer = window.CEDataLayer && (window.CEDataLayer.accessControl || window.CEDataLayer.users);
-    if (layer && typeof layer.createUser === "function") {
+    if (layer && typeof layer.createUser === "function" && layer !== dataApi) {
       return { api: layer, via: "CEDataLayer.accessControl" };
     }
-    if (window.CEAccessControlData && typeof window.CEAccessControlData.createUser === "function") {
+    if (window.CEAccessControlData && typeof window.CEAccessControlData.createUser === "function" && window.CEAccessControlData !== dataApi) {
       return { api: window.CEAccessControlData, via: "CEAccessControlData" };
     }
-    if (window.CESupabase && typeof window.CESupabase.createUser === "function") {
+    if (window.CESupabase && typeof window.CESupabase.createUser === "function" && window.CESupabase !== dataApi) {
       return { api: window.CESupabase, via: "CESupabase" };
     }
     return { api: null, via: "none" };
@@ -139,8 +139,16 @@
     }
     function remove(kind, id) {
       var s = store(kind);
+      var target = typeof id === "object" ? id : { id: id };
+      var targetId = String(target.id || id || "");
+      var targetAuthId = target.auth_user_id ? String(target.auth_user_id) : "";
+      var targetEmail = target.email ? String(target.email).trim().toLowerCase() : "";
       s.rows = s.rows.filter(function (r) {
-        return r.id !== id;
+        if (!r) return false;
+        if (targetId && String(r.id) === targetId) return false;
+        if (targetAuthId && String(r.auth_user_id) === targetAuthId) return false;
+        if (targetEmail && r.email && String(r.email).trim().toLowerCase() === targetEmail) return false;
+        return true;
       });
       if (s.persist) save(KEYS[kind], s.rows);
       return ok(true);
@@ -318,6 +326,7 @@
       if (!record) return Promise.resolve({ ok: true, skipped: true });
       if (mode === "create") return call("createUser", [record]);
       if (mode === "update") return call("updateUser", [record.id, record]);
+      if (mode === "delete") return call("deleteUser", [record.id || record]);
       return Promise.resolve({ ok: true, skipped: true });
     },
     dualWriteAudit: function (record) {

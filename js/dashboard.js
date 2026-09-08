@@ -4668,6 +4668,55 @@ function L(key) {
   return cleanDisplayText(TEXT[lang]?.[key] || TEXT.en[key] || key);
 }
 
+function registerDeletedUser(user) {
+  if (!user) return;
+  if (!state) return;
+  state.deletedUserIds = Array.isArray(state.deletedUserIds) ? state.deletedUserIds : [];
+  state.deletedUserEmails = Array.isArray(state.deletedUserEmails) ? state.deletedUserEmails : [];
+
+  const addId = (id) => {
+    if (id && typeof id === "string" && !state.deletedUserIds.includes(id)) {
+      state.deletedUserIds.push(id);
+    }
+  };
+  const addEmail = (email) => {
+    if (email && typeof email === "string") {
+      const norm = email.trim().toLowerCase();
+      if (norm && !state.deletedUserEmails.includes(norm)) {
+        state.deletedUserEmails.push(norm);
+      }
+    }
+  };
+
+  if (typeof user === "string") {
+    addId(user);
+  } else {
+    addId(user.id);
+    addId(user.auth_user_id);
+    addEmail(user.email);
+  }
+}
+
+function isUserDeleted(user, checkState = (typeof state !== "undefined" ? state : null)) {
+  if (!user) return false;
+  const deletedIds = new Set((checkState?.deletedUserIds || []).map(String));
+  const deletedEmails = new Set((checkState?.deletedUserEmails || []).map((e) => String(e).toLowerCase()));
+
+  const id = typeof user === "string" ? user : user.id;
+  const authId = typeof user === "object" ? user.auth_user_id : null;
+  const email = typeof user === "object" && user.email ? String(user.email).trim().toLowerCase() : "";
+
+  if (id && deletedIds.has(String(id))) return true;
+  if (authId && deletedIds.has(String(authId))) return true;
+  if (email && deletedEmails.has(email)) return true;
+  return false;
+}
+
+if (typeof window !== "undefined") {
+  window.registerDeletedUser = registerDeletedUser;
+  window.isUserDeleted = isUserDeleted;
+}
+
 function byId(id) {
   return document.getElementById(id);
 }
@@ -4760,13 +4809,49 @@ function normalizeUserProfile(user = {}, churches = [], departments = []) {
 
 function normalizeState(saved) {
   const merged = { ...structuredClone(seedData), ...saved };
-  const savedUserIds = new Set((merged.users || []).map((user) => user.id));
-  seedData.users.forEach((user) => {
-    if (!savedUserIds.has(user.id)) merged.users.push(structuredClone(user));
+  merged.deletedUserIds = Array.isArray(saved?.deletedUserIds) ? saved.deletedUserIds : (Array.isArray(merged.deletedUserIds) ? merged.deletedUserIds : []);
+  merged.deletedUserEmails = Array.isArray(saved?.deletedUserEmails) ? saved.deletedUserEmails : (Array.isArray(merged.deletedUserEmails) ? merged.deletedUserEmails : []);
+
+  const deletedIds = new Set((merged.deletedUserIds || []).map(String));
+  const deletedEmails = new Set((merged.deletedUserEmails || []).map((e) => String(e).toLowerCase()));
+
+  const isTombstone = (u) => {
+    if (!u) return true;
+    if (u.id && deletedIds.has(String(u.id))) return true;
+    if (u.auth_user_id && deletedIds.has(String(u.auth_user_id))) return true;
+    if (u.email && deletedEmails.has(String(u.email).trim().toLowerCase())) return true;
+    return false;
+  };
+
+  const cleanSavedUsers = (saved?.users || merged.users || []).filter((u) => !isTombstone(u));
+  const seenUserEmails = new Set();
+  const seenUserIds = new Set();
+  const deduplicatedUsers = [];
+
+  cleanSavedUsers.forEach((u) => {
+    const emailNorm = u.email ? String(u.email).trim().toLowerCase() : "";
+    const id = String(u.id);
+    if (!seenUserIds.has(id) && (!emailNorm || !seenUserEmails.has(emailNorm))) {
+      seenUserIds.add(id);
+      if (emailNorm) seenUserEmails.add(emailNorm);
+      deduplicatedUsers.push(u);
+    }
   });
+
+  // Only add seed users if they were NOT deleted and NOT already present by id or email
+  seedData.users.forEach((seedUser) => {
+    const emailNorm = seedUser.email ? String(seedUser.email).trim().toLowerCase() : "";
+    const id = String(seedUser.id);
+    if (!isTombstone(seedUser) && !seenUserIds.has(id) && (!emailNorm || !seenUserEmails.has(emailNorm))) {
+      seenUserIds.add(id);
+      if (emailNorm) seenUserEmails.add(emailNorm);
+      deduplicatedUsers.push(structuredClone(seedUser));
+    }
+  });
+
   const venueDemoUserIds = new Set(["u-8", "u-11", "u-12", "u-13"]);
   const authenticatedCellDemoUserIds = new Set(["u-7", "u-cell-assistant", "u-cell-reviewer"]);
-  merged.users = (merged.users || []).map((user) => {
+  merged.users = deduplicatedUsers.map((user) => {
     if (authenticatedCellDemoUserIds.has(user.id)) {
       const securitySeed = seedData.users.find((item) => item.id === user.id) || {};
       return normalizeUserProfile({ ...user, ...structuredClone(securitySeed) }, merged.churches || [], merged.departments || []);
@@ -4967,6 +5052,7 @@ function dualWriteUserRecord(mode, record) {
   }
   if (mode === "create" && ac.createUser) void ac.createUser(record);
   else if (mode === "update" && ac.updateUser) void ac.updateUser(record.id, record);
+  else if (mode === "delete" && ac.deleteUser) void ac.deleteUser(record.id || record);
 }
 
 function logAccessDenied(route, module) {
@@ -22341,7 +22427,21 @@ function renderStaffHr() {
 
 function renderUsers() {
   if (!canEnterRoute("users")) return renderAccessDenied();
-  const users = state.users || [];
+  const rawUsers = (state.users || []).filter((u) => !isUserDeleted(u));
+  const seenEmails = new Set();
+  const seenIds = new Set();
+  const users = [];
+  rawUsers.forEach((u) => {
+    if (!u || !u.id) return;
+    const emailNorm = u.email ? String(u.email).trim().toLowerCase() : "";
+    const id = String(u.id);
+    if (!seenIds.has(id) && (!emailNorm || !seenEmails.has(emailNorm))) {
+      seenIds.add(id);
+      if (emailNorm) seenEmails.add(emailNorm);
+      users.push(u);
+    }
+  });
+
   const activeCount = users.filter((u) => !/lock|bloque|suspend|inactiv|inativ/i.test(String(u.status || "Active")) && u.isActive !== false).length;
   const lockedCount = users.filter((u) => /lock|bloque|suspend|inactiv|inativ/i.test(String(u.status || ""))).length;
   const linkedCount = users.filter((u) => Boolean(u.auth_user_id)).length;
@@ -24825,20 +24925,48 @@ async function saveUserToSupabase(user) {
   }
 }
 
-async function deleteUserFromSupabase(userId, authUserId) {
+async function deleteUserFromSupabase(userId, authUserId, userEmail) {
   const sbClient = window.CESupabase?.getSupabaseFoundationClient?.() || window.CESupabase?.getSupabaseAuthClient?.() || (typeof supabase !== "undefined" ? supabase : null);
-  if (!sbClient || !userId) return false;
+  if (!sbClient) return false;
   try {
     const isUuid = (val) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(val || ""));
     if (isUuid(userId)) {
       try {
         const { error } = await sbClient.rpc("admin_delete_user", { p_user_id: userId });
-        if (!error) return true;
+        if (!error) console.info("[CE Users] deleted via admin_delete_user RPC", userId);
+      } catch (_) {}
+      try {
+        await sbClient.from("cell_user_assignments").delete().eq("user_id", userId);
       } catch (_) {}
     }
-    await sbClient.from("users").delete().eq("id", userId);
+    if (authUserId && isUuid(authUserId) && authUserId !== userId) {
+      try {
+        const { error } = await sbClient.rpc("admin_delete_user", { p_user_id: authUserId });
+        if (!error) console.info("[CE Users] deleted auth user via admin_delete_user RPC", authUserId);
+      } catch (_) {}
+      try {
+        await sbClient.from("cell_user_assignments").delete().eq("user_id", authUserId);
+      } catch (_) {}
+    }
+    if (userId) {
+      try {
+        await sbClient.from("users").delete().eq("id", userId);
+      } catch (_) {}
+    }
     if (authUserId && authUserId !== userId) {
-      await sbClient.from("users").delete().eq("auth_user_id", authUserId);
+      try {
+        await sbClient.from("users").delete().eq("auth_user_id", authUserId);
+      } catch (_) {}
+    }
+    if (userEmail && typeof userEmail === "string") {
+      try {
+        await sbClient.from("users").delete().ilike("email", userEmail.trim().toLowerCase());
+      } catch (_) {}
+    }
+    if (window.CEDataLayer?.accessControl?.deleteUser) {
+      try {
+        await window.CEDataLayer.accessControl.deleteUser(userId);
+      } catch (_) {}
     }
     return true;
   } catch (err) {
@@ -26872,13 +27000,25 @@ function quickAction(action, type, id) {
     if (!window.confirm(message)) return;
     if (type === "user") {
       const previous = collection[index];
-      const idx = state.users.findIndex((item) => String(item.id) === String(id));
-      if (idx >= 0) state.users.splice(idx, 1);
-      saveState(`Deleted user ${previous.email || id}`);
+      registerDeletedUser(previous);
+      const prevEmail = previous?.email ? String(previous.email).trim().toLowerCase() : "";
+
+      state.users = (state.users || []).filter((item) => {
+        if (String(item.id) === String(id)) return false;
+        if (previous?.auth_user_id && String(item.auth_user_id) === String(previous.auth_user_id)) return false;
+        if (prevEmail && item.email && String(item.email).trim().toLowerCase() === prevEmail) return false;
+        return true;
+      });
+
+      saveState(`Deleted user ${previous?.email || id}`);
       if (typeof showToast === "function") showToast(lang === "pt" ? "Utilizador eliminado com sucesso!" : "User deleted successfully!");
       if (activeRoute === "users") renderUsers();
       else setRoute(activeRoute);
-      void Promise.resolve(deleteUserFromSupabase(previous.id, previous.auth_user_id || previous.id)).catch((error) => {
+
+      void Promise.resolve(dualWriteUserRecord("delete", previous)).catch((error) => {
+        console.warn("[CE Users] dualWrite delete sync error", error);
+      });
+      void Promise.resolve(deleteUserFromSupabase(previous?.id, previous?.auth_user_id || previous?.id, previous?.email)).catch((error) => {
         console.warn("[CE Users] background delete sync error", error);
       });
       return;
@@ -30234,18 +30374,37 @@ async function hydrateAccessControlFromRepository() {
     let hydrated = false;
     const users = await repo.listUsers();
     if (users?.ok && Array.isArray(users.data) && users.data.length) {
-      const cleanUsers = users.data.filter((u) => !isDemoUser(u));
+      const cleanUsers = users.data
+        .filter((u) => !isDemoUser(u))
+        .filter((u) => !isUserDeleted(u));
       const byId = new Map();
+      const byEmail = new Map();
       cleanUsers.forEach((row) => {
-        byId.set(row.id, {
-          ...row,
-          name: row.name || row.full_name || row.email,
-          department_permissions: Array.isArray(row.department_permissions)
-            ? row.department_permissions
-            : [],
-        });
+        const emailNorm = row.email ? String(row.email).trim().toLowerCase() : "";
+        if (emailNorm && byEmail.has(emailNorm)) {
+          const existing = byEmail.get(emailNorm);
+          Object.assign(existing, {
+            ...row,
+            name: row.name || row.full_name || existing.name,
+            auth_user_id: row.auth_user_id || existing.auth_user_id,
+            role: row.role || row.role_name || existing.role
+          });
+        } else {
+          const userObj = {
+            ...row,
+            name: row.name || row.full_name || row.email,
+            department_permissions: Array.isArray(row.department_permissions)
+              ? row.department_permissions
+              : [],
+          };
+          byId.set(row.id, userObj);
+          if (emailNorm) byEmail.set(emailNorm, userObj);
+        }
       });
       state.users = [...byId.values()];
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (_) {}
       hydrated = true;
       console.info("[CE AccessControl] hydrated users", state.users.length);
     }
