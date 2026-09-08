@@ -18336,23 +18336,33 @@ function migrateMemberRecord(member) {
 function findMemberRecord(id) {
   if (!id) return null;
   const idStr = String(id).trim();
+  const idLower = idStr.toLowerCase();
+
+  const matchItem = (m) => {
+    if (!m) return false;
+    const mId = String(m.id || "").trim();
+    if (mId === idStr || mId.toLowerCase() === idLower) return true;
+    if (m.member_code && String(m.member_code).trim().toLowerCase() === idLower) return true;
+    if (m.first_timer_id && String(m.first_timer_id).trim().toLowerCase() === idLower) return true;
+    return false;
+  };
 
   // 1. Check in modulePageState.members.items
-  let found = (modulePageState?.members?.items || []).find((m) => String(m.id).trim() === idStr);
+  let found = (modulePageState?.members?.items || []).find(matchItem);
   if (found) return migrateMemberRecord(found);
 
   // 2. Check in state.members
-  found = (state.members || []).find((m) => String(m.id).trim() === idStr);
+  found = (state.members || []).find(matchItem);
   if (found) return migrateMemberRecord(found);
 
   // 3. Check in cellPortalMembersState.items
   if (typeof cellPortalMembersState !== "undefined") {
-    found = (cellPortalMembersState?.items || []).find((m) => String(m.id).trim() === idStr);
+    found = (cellPortalMembersState?.items || []).find(matchItem);
     if (found) return migrateMemberRecord(found);
   }
 
   // 4. Check in memberRegistrationCandidates
-  found = (state.memberRegistrationCandidates || []).find((m) => String(m.id).trim() === idStr || String(m.approved_member_id).trim() === idStr);
+  found = (state.memberRegistrationCandidates || []).find((m) => matchItem(m) || String(m.approved_member_id || "").trim().toLowerCase() === idLower);
   if (found) return migrateMemberRecord(found);
 
   return null;
@@ -24954,17 +24964,6 @@ function openForm(type, id = null, options = {}) {
     alert(L("noPermissionArea"));
     return;
   }
-  // A visible page row can be deliberately partial. Retrieve its canonical
-  // member record before rendering the edit form.
-  if (type === "member" && id && !options.memberDetailLoaded && usesSupabaseMembers()) {
-    Promise.resolve(fetchMemberDetailFromRepository(id))
-      .catch((error) => {
-        console.warn("[CE Members] full edit record refresh skipped", error);
-        return null;
-      })
-      .then(() => openForm(type, id, { ...options, memberDetailLoaded: true }));
-    return;
-  }
   if (type === "foundationStudent") return openFoundationStudentForm(id);
   if (type === "foundationTeacher") return openFoundationTeacherForm(id);
   if (type === "foundationClassGroup") return openFoundationClassForm(id);
@@ -25048,6 +25047,24 @@ function openForm(type, id = null, options = {}) {
       .catch((error) => console.warn("[CE Forms] church refresh skipped", error));
   }
   if (type === "member") {
+    if (id && usesSupabaseMembers()) {
+      Promise.resolve(fetchMemberDetailFromRepository(id))
+        .then((fresh) => {
+          if (!fresh || modalType !== "member" || String(modalRecordId || "") !== String(id || "")) return;
+          const form = byId("entryForm");
+          if (!form) return;
+          const schema = formSchemas["member"] || [];
+          schema.forEach(([name, , inputType]) => {
+            if (!name || inputType === "section") return;
+            const input = form.querySelector(`[name="${name}"]`);
+            if (input && (input.value === "" || input.value === undefined) && fresh[name] !== undefined && fresh[name] !== "") {
+              if (inputType === "checkbox") input.checked = Boolean(fresh[name]);
+              else input.value = fresh[name];
+            }
+          });
+        })
+        .catch((error) => console.warn("[CE Members] full edit record background refresh skipped", error));
+    }
     Promise.resolve(refreshMemberDepartmentsFromRepository())
       .then((changed) => {
         if (changed && modalType === "member" && String(modalRecordId || "") === String(id || "")) showEntryForm();
