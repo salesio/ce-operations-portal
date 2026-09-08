@@ -19147,20 +19147,54 @@ function consolidateCellReportToChurchReport(cellReport) {
 
 window.consolidateCellReportToChurchReport = consolidateCellReportToChurchReport;
 
+function isRecordFromChurch(record, targetChurchId) {
+  if (!targetChurchId) return true;
+  if (!record) return false;
+
+  const recChurchId = record.church_id || record.churchId || record.igreja || record.igreja_responsavel || "";
+  const canTarget = CANONICAL_CHURCH_MAP[targetChurchId] || targetChurchId;
+
+  if (recChurchId) {
+    if (String(recChurchId).toLowerCase() === String(targetChurchId).toLowerCase()) return true;
+    const canRec = CANONICAL_CHURCH_MAP[recChurchId] || recChurchId;
+    if (String(canRec).toLowerCase() === String(canTarget).toLowerCase()) return true;
+    if (String(canRec).toLowerCase() === String(targetChurchId).toLowerCase()) return true;
+    if (String(recChurchId).toLowerCase() === String(canTarget).toLowerCase()) return true;
+  }
+
+  // Also check by church display name
+  const recChurchName = record.church_name || record.igreja_nome || "";
+  const targetChurch = (state.churches || []).find((c) => c.id === targetChurchId || CANONICAL_CHURCH_MAP[c.id] === canTarget);
+  const targetName = targetChurch?.public_name || targetChurch?.church_name || targetChurch?.name || EC_CHURCH_DISPLAY_NAMES[targetChurchId] || EC_CHURCH_DISPLAY_NAMES[canTarget] || "";
+  if (recChurchName && targetName) {
+    const n1 = String(recChurchName).toLowerCase().replace(/[^a-z0-9]/g, "");
+    const n2 = String(targetName).toLowerCase().replace(/[^a-z0-9]/g, "");
+    if (n1 && n2 && (n1.includes(n2) || n2.includes(n1))) return true;
+  }
+
+  // If record has no church identifier at all, treat it as belonging to HQ / Sede (the default primary church)
+  if (!recChurchId && !recChurchName) {
+    const isTargetHq = targetChurchId === "church-hq" || targetChurchId === "a1111111-1111-4111-8111-111111111101" || canTarget === "a1111111-1111-4111-8111-111111111101";
+    if (isTargetHq) return true;
+  }
+
+  return false;
+}
+
 function renderChurchReportsAnalyticalView() {
   const leadership = state.cellLeadership || seedData.cellLeadership;
   const churchReports = scopedNested(leadership.churchReports || []);
   const cellReports = sortCellReportsNewestFirst(scopedNested(leadership.cellReports || []));
   const churchesList = scoped(state.churches || []);
-  const groups = scopedNested(typeof getAllRegisteredCellGroups === "function" ? getAllRegisteredCellGroups() : (state.cellGroups || []));
-  const cells = scopedNested(typeof getAllRegisteredCells === "function" ? getAllRegisteredCells() : (state.cellRegistry || state.cells || []));
+  const groups = typeof getAllRegisteredCellGroups === "function" ? getAllRegisteredCellGroups() : (state.cellGroups || []);
+  const cells = typeof getAllRegisteredCells === "function" ? getAllRegisteredCells() : (state.cellRegistry || state.cells || []);
 
   const st = churchReportPageState;
 
   // Filter available groups based on selected church
   const availableGroups = groups.filter((g) => {
     if (!st.churchId) return true;
-    return String(g.church_id || g.churchId || "") === String(st.churchId);
+    return isRecordFromChurch(g, st.churchId);
   });
 
   // If selected group does not belong to available groups, reset it
@@ -19171,13 +19205,10 @@ function renderChurchReportsAnalyticalView() {
   // Filter available cells based on selected church and selected group
   const availableCells = cells.filter((c) => {
     if (st.churchId) {
-      const cChurchId = String(c.church_id || c.churchId || "");
       const parentGroup = groups.find((g) => String(g.id) === String(c.group_id || c.cell_group_id || c.group_cell_id || ""));
-      const groupChurchId = parentGroup ? String(parentGroup.church_id || parentGroup.churchId || "") : "";
-      if (cChurchId && cChurchId !== String(st.churchId)) {
-        return false;
-      }
-      if (!cChurchId && groupChurchId && groupChurchId !== String(st.churchId)) {
+      const cellMatchesChurch = isRecordFromChurch(c, st.churchId);
+      const groupMatchesChurch = parentGroup ? isRecordFromChurch(parentGroup, st.churchId) : false;
+      if (!cellMatchesChurch && !groupMatchesChurch) {
         return false;
       }
     }
@@ -19205,19 +19236,14 @@ function renderChurchReportsAnalyticalView() {
   }
 
   if (st.churchId) {
-    filteredChurch = filteredChurch.filter((r) => String(r.church_id || r.churchId || "") === String(st.churchId));
+    filteredChurch = filteredChurch.filter((r) => isRecordFromChurch(r, st.churchId));
     filteredCells = filteredCells.filter((r) => {
-      const rChurch = String(r.church_id || r.churchId || "");
-      if (rChurch) return rChurch === String(st.churchId);
+      if (isRecordFromChurch(r, st.churchId)) return true;
       const cell = cells.find((c) => String(c.id) === String(r.cell_id));
-      if (cell && (cell.church_id || cell.churchId)) {
-        return String(cell.church_id || cell.churchId) === String(st.churchId);
-      }
+      if (cell && isRecordFromChurch(cell, st.churchId)) return true;
       const group = groups.find((g) => String(g.id) === String(r.cell_group_id || r.group_id));
-      if (group && (group.church_id || group.churchId)) {
-        return String(group.church_id || group.churchId) === String(st.churchId);
-      }
-      return true;
+      if (group && isRecordFromChurch(group, st.churchId)) return true;
+      return false;
     });
   }
 
@@ -30799,17 +30825,20 @@ document.addEventListener("change", (event) => {
 
     if (changedName === "churchId" && churchReportPageState.churchId !== oldChurchId) {
       if (churchReportPageState.churchId) {
-        const groups = scopedNested(typeof getAllRegisteredCellGroups === "function" ? getAllRegisteredCellGroups() : (state.cellGroups || []));
-        const cells = scopedNested(typeof getAllRegisteredCells === "function" ? getAllRegisteredCells() : (state.cellRegistry || state.cells || []));
+        const groups = typeof getAllRegisteredCellGroups === "function" ? getAllRegisteredCellGroups() : (state.cellGroups || []);
+        const cells = typeof getAllRegisteredCells === "function" ? getAllRegisteredCells() : (state.cellRegistry || state.cells || []);
         if (churchReportPageState.cellGroupId) {
           const grp = groups.find((g) => String(g.id) === String(churchReportPageState.cellGroupId));
-          if (grp && (grp.church_id || grp.churchId) && String(grp.church_id || grp.churchId) !== String(churchReportPageState.churchId)) {
+          if (grp && !isRecordFromChurch(grp, churchReportPageState.churchId)) {
             churchReportPageState.cellGroupId = "";
           }
         }
         if (churchReportPageState.cellId) {
           const cl = cells.find((c) => String(c.id) === String(churchReportPageState.cellId));
-          if (cl && (cl.church_id || cl.churchId) && String(cl.church_id || cl.churchId) !== String(churchReportPageState.churchId)) {
+          const parentGroup = cl ? groups.find((g) => String(g.id) === String(cl.group_id || cl.cell_group_id || cl.group_cell_id || "")) : null;
+          const cellMatches = cl ? isRecordFromChurch(cl, churchReportPageState.churchId) : false;
+          const groupMatches = parentGroup ? isRecordFromChurch(parentGroup, churchReportPageState.churchId) : false;
+          if (!cellMatches && !groupMatches) {
             churchReportPageState.cellId = "";
           }
         }
@@ -30818,7 +30847,7 @@ document.addEventListener("change", (event) => {
 
     if (changedName === "cellGroupId" && churchReportPageState.cellGroupId !== oldGroupId) {
       if (churchReportPageState.cellGroupId) {
-        const cells = scopedNested(typeof getAllRegisteredCells === "function" ? getAllRegisteredCells() : (state.cellRegistry || state.cells || []));
+        const cells = typeof getAllRegisteredCells === "function" ? getAllRegisteredCells() : (state.cellRegistry || state.cells || []);
         const cl = cells.find((c) => String(c.id) === String(churchReportPageState.cellId));
         if (cl) {
           const cGroupId = String(cl.cell_group_id || cl.group_id || cl.group_cell_id || "");
