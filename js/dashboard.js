@@ -5061,9 +5061,17 @@ function getAllRegisteredCellGroups() {
   const rawGroups = [...(window.REAL_CELL_GROUPS || []), ...(state.cellGroups || []), ...(state.cellMinistry?.groups || [])];
   for (let i = 0; i < rawGroups.length; i++) {
     const g = rawGroups[i];
-    if (g && g.id) {
-      const key = String(g.id);
-      if (!groupsById.has(key)) groupsById.set(key, g);
+    if (g && (g.id || g.name || g.group_name)) {
+      const id = String(g.id || g.name || g.group_name);
+      const name = String(g.group_name || g.name || id).trim();
+      if (!groupsById.has(id)) {
+        groupsById.set(id, {
+          ...g,
+          id: g.id || id,
+          group_name: name,
+          name: name
+        });
+      }
     }
   }
   memoizedAllGroups = Array.from(groupsById.values());
@@ -5082,9 +5090,23 @@ function getAllRegisteredCells() {
   const rawCells = [...(window.REAL_CELLS_REGISTRY || []), ...(state.cellRegistry || []), ...(state.cells || [])];
   for (let i = 0; i < rawCells.length; i++) {
     const c = rawCells[i];
-    if (c && c.id) {
-      const key = String(c.id);
-      if (!cellsById.has(key)) cellsById.set(key, c);
+    if (c && (c.id || c.name || c.cell_name)) {
+      const id = String(c.id || c.name || c.cell_name);
+      const name = String(c.cell_name || c.name || id).trim();
+      const gid = c.group_id || c.cell_group_id || "";
+      const gname = c.group_name || c.cell_group_name || "";
+      if (!cellsById.has(id)) {
+        cellsById.set(id, {
+          ...c,
+          id: c.id || id,
+          cell_name: name,
+          name: name,
+          group_id: gid,
+          cell_group_id: gid,
+          group_name: gname,
+          cell_group_name: gname
+        });
+      }
     }
   }
   memoizedAllCells = Array.from(cellsById.values());
@@ -7227,7 +7249,7 @@ function getCellGroupsForChurch(churchId = "") {
   const allGroups = getAllRegisteredCellGroups();
   return cellNetworkRecordsForSelect(allGroups)
     .filter((group) => matchesSelectedCellChurch(group, churchId))
-    .sort((a, b) => String(a.group_name || "").localeCompare(String(b.group_name || "")));
+    .sort((a, b) => String(a.group_name || a.name || "").localeCompare(String(b.group_name || b.name || "")));
 }
 
 function getCellsForGroup(cellGroupId = "", churchId = "") {
@@ -7263,14 +7285,18 @@ function getFormChurchId(record = {}) {
 
 function cellGroupSelectField(name, label, record = {}, { colClass = "col-md-6" } = {}) {
   const churchId = getFormChurchId(record);
-  const current = record[name] || record.cell_group_id || "";
+  const current = record[name] || record.cell_group_id || record.group_id || record.grupo_de_celula || "";
   const groups = getCellGroupsForChurch(churchId);
   return `
     <div class="${colClass}">
       <label class="form-label">${label}</label>
       <select name="${name}" class="form-select" data-cell-group-select data-cell-name-target="${name === "grupo_de_celula" ? "celula" : "cell_id"}">
         <option value="">${L("selectCellGroup")}</option>
-        ${groups.map((group) => `<option value="${group.id}" ${current === group.id || current === group.group_name ? "selected" : ""}>${group.group_name}</option>`).join("")}
+        ${groups.map((group) => {
+          const gName = group.group_name || group.name || group.id;
+          const isSelected = String(current) === String(group.id) || current === group.group_name || current === group.name;
+          return `<option value="${escapeAttr(group.id)}" ${isSelected ? "selected" : ""}>${escapeHtml(gName)}</option>`;
+        }).join("")}
       </select>
     </div>`;
 }
@@ -7278,18 +7304,23 @@ function cellGroupSelectField(name, label, record = {}, { colClass = "col-md-6" 
 function cellSelectField(name, label, record = {}, { colClass = "col-md-6" } = {}) {
   const churchId = getFormChurchId(record);
   const groupId = record.cell_group_id || record.group_id || record.group_cell_id || record.grupo_de_celula || "";
-  const selectedGroup = (state.cellGroups || []).find((group) => group.id === groupId || group.group_name === groupId);
-  const cells = selectedGroup ? getCellsForGroup(selectedGroup.id, churchId) : [];
-  const current = record[name] || record.cell_id || "";
-  const disabled = !selectedGroup;
+  const allGroups = getAllRegisteredCellGroups();
+  const selectedGroup = allGroups.find((group) => String(group.id) === String(groupId) || (group.group_name && group.group_name === groupId) || (group.name && group.name === groupId));
+  const cells = selectedGroup ? getCellsForGroup(selectedGroup.id, churchId) : (groupId ? getCellsForGroup(groupId, churchId) : []);
+  const current = record[name] || record.cell_id || record.celula || "";
+  const disabled = !selectedGroup && !groupId;
   return `
     <div class="${colClass}">
       <label class="form-label">${label}</label>
       <select name="${name}" class="form-select" data-cell-select ${disabled ? "disabled" : ""}>
         <option value="">${L("selectCell")}</option>
-        ${cells.map((cell) => `<option value="${cell.id}" ${current === cell.id || current === cell.cell_name ? "selected" : ""}>${cell.cell_name}</option>`).join("")}
+        ${cells.map((cell) => {
+          const cName = cell.cell_name || cell.name || cell.id;
+          const isSelected = String(current) === String(cell.id) || current === cell.cell_name || current === cell.name;
+          return `<option value="${escapeAttr(cell.id)}" ${isSelected ? "selected" : ""}>${escapeHtml(cName)}</option>`;
+        }).join("")}
       </select>
-      <small class="cell-select-empty ${selectedGroup && !cells.length ? "" : "d-none"}">${L("noCellsInGroup")}</small>
+      <small class="cell-select-empty ${(selectedGroup || groupId) && !cells.length ? "" : "d-none"}">${L("noCellsInGroup")}</small>
     </div>`;
 }
 
@@ -7415,19 +7446,21 @@ function enrichMemberDepartmentFields(data, existingMember = null) {
 function enrichCellSelectionFields(data) {
   const groupValue = data.cell_group_id || data.group_id || data.grupo_de_celula || "";
   const cellValue = data.cell_id || data.celula || data.celula_preferida || "";
-  const group = (state.cellGroups || []).find((item) => item.id === groupValue || item.group_name === groupValue);
-  const cell = (state.cellRegistry || []).find((item) => item.id === cellValue || item.cell_name === cellValue);
+  const allGroups = getAllRegisteredCellGroups();
+  const allCells = getAllRegisteredCells();
+  const group = allGroups.find((item) => String(item.id) === String(groupValue) || item.group_name === groupValue || item.name === groupValue);
+  const cell = allCells.find((item) => String(item.id) === String(cellValue) || item.cell_name === cellValue || item.name === cellValue);
   if (group) {
     if ("group_id" in data) data.group_id = group.id;
     data.cell_group_id = group.id;
-    data.cell_group_name = group.group_name;
-    data.grupo_de_celula = group.group_name;
+    data.cell_group_name = group.group_name || group.name;
+    data.grupo_de_celula = group.group_name || group.name;
   }
   if (cell) {
     data.cell_id = cell.id;
-    data.cell_name = cell.cell_name;
-    data.celula = cell.cell_name;
-    if ("celula_preferida" in data) data.celula_preferida = cell.cell_name;
+    data.cell_name = cell.cell_name || cell.name;
+    data.celula = cell.cell_name || cell.name;
+    if ("celula_preferida" in data) data.celula_preferida = cell.cell_name || cell.name;
   }
 }
 
@@ -7442,7 +7475,12 @@ function updateDependentCellSelect(groupSelect) {
     || form.querySelector("[name='igreja']");
   const churchId = churchField?.value || "";
   const cells = getCellsForGroup(groupSelect.value, churchId);
-  cellSelect.innerHTML = `<option value="">${L("selectCell")}</option>${cells.map((cell) => `<option value="${cell.id}">${cell.cell_name}</option>`).join("")}`;
+  const currentVal = cellSelect.value;
+  cellSelect.innerHTML = `<option value="">${L("selectCell")}</option>${cells.map((cell) => {
+    const cName = cell.cell_name || cell.name || cell.id;
+    const isSelected = String(cell.id) === String(currentVal) || currentVal === cell.cell_name || currentVal === cell.name;
+    return `<option value="${escapeAttr(cell.id)}" ${isSelected ? "selected" : ""}>${escapeHtml(cName)}</option>`;
+  }).join("")}`;
   cellSelect.disabled = !groupSelect.value;
   cellSelect.closest(".col-md-6, .col-12")?.querySelector(".cell-select-empty")?.classList.toggle("d-none", !groupSelect.value || cells.length > 0);
 }
@@ -7451,69 +7489,60 @@ function refreshCellGroupSelectForChurch(form, churchId = "") {
   const groupSelect = form.querySelector("[data-cell-group-select]");
   if (!groupSelect) return;
   const groups = getCellGroupsForChurch(churchId);
-  groupSelect.innerHTML = `<option value="">${L("selectCellGroup")}</option>${groups.map((group) => `<option value="${group.id}">${group.group_name}</option>`).join("")}`;
+  groupSelect.innerHTML = `<option value="">${L("selectCellGroup")}</option>${groups.map((group) => {
+    const gName = group.group_name || group.name || group.id;
+    return `<option value="${escapeAttr(group.id)}">${escapeHtml(gName)}</option>`;
+  }).join("")}`;
   groupSelect.value = "";
   updateDependentCellSelect(groupSelect);
 }
 
-function hasPermission(...permissions) {
-  const grants = activeUser.department_permissions || [];
-  if (grants.includes("*")) return true;
-  return permissions.some((permission) => grants.includes(permission));
-}
+function mountCellNetworkControls(form) {
+  if (!form) return;
+  const groupSelect = form.querySelector("[data-cell-group-select]");
+  const cellSelect = form.querySelector("[data-cell-select]");
+  if (!groupSelect && !cellSelect) return;
 
-function canAddChurch() {
-  return hasPermission("*") || ["Super Admin", "Church Pastor"].includes(activeUser.role);
-}
-
-function relationalChurches() {
-  // Prefer hydrated churches (from churchesRepository on login). Keeps local-created churches visible in selects.
-  return (state.churches || []).map((church) => migrateChurchRecord(church));
-}
-
-/** Refresh churches from data layer before opening forms that need church selects (First Timers, Members). */
-async function refreshChurchesFromRepositoryForForms() {
-  const repo = getChurchesRepoSafe();
-  if (!repo?.listChurches) return false;
-  try {
-    const result = await repo.listChurches();
-    if (!result?.ok || !Array.isArray(result.data) || !result.data.length) return false;
-    const previousById = new Map((state.churches || []).map((item) => [item.id, item]));
-    const merged = result.data.map((repoChurch) => {
-      const previous = previousById.get(repoChurch.id) || {};
-      return migrateChurchRecord({ ...previous, ...repoChurch });
-    });
-    // In Supabase mode, repository is source of truth; never re-add mock church-* IDs
-    const hasUuids = merged.some((c) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(c.id || "")));
-    if (!hasUuids) {
-      previousById.forEach((church, id) => {
-        if (!merged.some((item) => item.id === id)) merged.push(migrateChurchRecord(church));
-      });
+  const updateCells = () => {
+    if (!groupSelect) return;
+    const churchField = form.querySelector("[name='church_id']")
+      || form.querySelector("[name='igreja_id']")
+      || form.querySelector("[name='igreja']");
+    const churchId = churchField?.value || "";
+    const groupId = groupSelect.value;
+    if (cellSelect) {
+      const currentVal = cellSelect.value;
+      if (!groupId) {
+        cellSelect.innerHTML = `<option value="">${L("selectCell")}</option>`;
+        cellSelect.disabled = true;
+      } else {
+        const cells = getCellsForGroup(groupId, churchId);
+        cellSelect.innerHTML = `<option value="">${L("selectCell")}</option>${cells.map((c) => {
+          const cName = c.cell_name || c.name || c.id;
+          const isSelected = String(c.id) === String(currentVal) || c.cell_name === currentVal || c.name === currentVal;
+          return `<option value="${escapeAttr(c.id)}" ${isSelected ? "selected" : ""}>${escapeHtml(cName)}</option>`;
+        }).join("")}`;
+        cellSelect.disabled = false;
+      }
+      cellSelect.closest(".col-md-6, .col-12")?.querySelector(".cell-select-empty")?.classList.toggle("d-none", !groupId || (groupId && getCellsForGroup(groupId, churchId).length > 0));
     }
-    state.churches = merged;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    console.info("[CE Churches] form refresh", state.churches.length, "churches");
-    return true;
-  } catch (error) {
-    console.warn("[CE Churches] form refresh failed — using state.churches", error);
-    return false;
-  }
-}
-
-function relationalFormOptions(extra = {}) {
-  return {
-    churches: relationalChurches(),
-    translate: L,
-    canAddChurch: canAddChurch(),
-    renderServiceTimes: (times) => getActiveServiceTimes(times).map((record) => `<li>${formatServiceTimeDetail(record)}</li>`).join(""),
-    ...extra
   };
+
+  groupSelect?.addEventListener("change", updateCells);
+  
+  const churchSelect = form.querySelector("[data-church-select], [name='church_id']");
+  if (churchSelect) {
+    churchSelect.addEventListener("change", () => {
+      refreshCellGroupSelectForChurch(form, churchSelect.value);
+    });
+  }
 }
 
 function mountRelationalControls(form) {
   if (!form) return;
   initRelationalFormControls(form, relationalFormOptions());
   mountDepartmentSelectControls(form);
+  mountCellNetworkControls(form);
 }
 
 function enrichRecordChurchFields(data) {
@@ -11743,28 +11772,49 @@ async function submitCellMemberEditForm(form) {
 function openTransferCellMemberModal(memberId) {
   const context = getCellLeaderContext(activeUser?.id, cellPortalPageState.cellId);
   const source = cellPortalMemberSource(context?.cell_id);
-  const member = source.find((m) => String(m.id) === String(memberId));
+  const member = source.find((m) => String(m.id) === String(memberId)) ||
+    (state.memberRegistrationCandidates || []).find((c) => String(c.id) === String(memberId)) ||
+    (state.members || []).find((m) => String(m.id) === String(memberId));
   if (!member) return;
 
-  const allCells = state.cellRegistry?.length ? state.cellRegistry : (state.cells || []);
-  const otherCells = allCells.filter((c) => String(c.id) !== String(context?.cell_id));
+  const currentChurchId = member.church_id || context?.church_id || activeUser?.church_id || "";
+  const currentChurchName = member.church_name || context?.church_name || churchName(currentChurchId) || "E.C. Maputo Central - Sede";
+  const currentGroupName = member.cell_group_name || member.grupo_de_celula || context?.cell_group_name || "—";
+  const currentCellName = member.cell_name || member.celula || context?.cell_name || "—";
+
+  const churches = relationalChurches();
+  const initialGroups = getCellGroupsForChurch(currentChurchId);
 
   byId("modalEyebrow").textContent = "Transferência de Célula";
-  byId("modalTitle").textContent = `Pedir Transferência: ${member.full_name || member.name}`;
+  byId("modalTitle").textContent = `Transferir Membro: ${member.full_name || member.name}`;
   byId("modalFields").innerHTML = `
     <input type="hidden" name="transfer_member_id" value="${escapeAttr(member.id)}">
-    <input type="hidden" name="from_cell_id" value="${escapeAttr(context?.cell_id || "")}">
+    <input type="hidden" name="from_cell_id" value="${escapeAttr(context?.cell_id || member.cell_id || "")}">
+    <input type="hidden" name="from_church_id" value="${escapeAttr(currentChurchId)}">
     <div class="col-12 mb-3">
-      <div class="alert alert-info small">
-        <strong>Membro:</strong> ${escapeAttr(member.full_name || member.name)}<br>
-        <strong>Célula Actual:</strong> ${escapeAttr(context?.cell_name)} (${escapeAttr(context?.cell_group_name)})
+      <div class="p-3 rounded d-flex flex-wrap align-items-center justify-content-between gap-3 shadow-sm" style="background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(234, 179, 8, 0.4); border-radius: 8px;">
+        <div><span class="text-secondary small d-block">Membro</span><strong class="text-light">${escapeAttr(member.full_name || member.name)}</strong></div>
+        <div><span class="text-secondary small d-block">Igreja Actual</span><strong class="text-light"><i class="bi bi-building me-1 text-warning"></i>${escapeAttr(currentChurchName)}</strong></div>
+        <div><span class="text-secondary small d-block">Célula Actual</span><strong class="text-light"><i class="bi bi-diagram-3 me-1 text-info"></i>${escapeAttr(currentGroupName)} <span>•</span> ${escapeAttr(currentCellName)}</strong></div>
       </div>
     </div>
-    <div class="col-md-12 mb-3">
-      <label class="form-label">Célula de Destino (se conhecida)</label>
-      <select class="form-select" name="to_cell_id">
-        <option value="">Desconhecida / A definir pela coordenação</option>
-        ${otherCells.map((c) => `<option value="${escapeAttr(c.id)}">${escapeAttr(c.cell_name || c.nome_da_celula || c.name)} (${escapeAttr(c.group_name || c.nome_do_grupo || "Grupo")})</option>`).join("")}
+    <div class="col-md-4 mb-3">
+      <label class="form-label">Igreja de Destino</label>
+      <select class="form-select" name="to_church_id" data-transfer-church-select>
+        ${churches.map((c) => `<option value="${escapeAttr(c.id)}" ${String(c.id) === String(currentChurchId) ? "selected" : ""}>${escapeHtml(c.public_name || c.church_name || c.name || "Igreja")}</option>`).join("")}
+      </select>
+    </div>
+    <div class="col-md-4 mb-3">
+      <label class="form-label">Grupo de Célula de Destino *</label>
+      <select class="form-select" name="to_cell_group_id" data-transfer-group-select required>
+        <option value="">Seleccionar Grupo de Célula...</option>
+        ${initialGroups.map((g) => `<option value="${escapeAttr(g.id)}">${escapeHtml(g.group_name || g.name || g.id)}</option>`).join("")}
+      </select>
+    </div>
+    <div class="col-md-4 mb-3">
+      <label class="form-label">Célula de Destino *</label>
+      <select class="form-select" name="to_cell_id" data-transfer-cell-select disabled required>
+        <option value="">Seleccione o grupo primeiro...</option>
       </select>
     </div>
     <div class="col-12 mb-3">
@@ -11775,19 +11825,20 @@ function openTransferCellMemberModal(memberId) {
         <option value="Horário ou disponibilidade">Horário ou disponibilidade</option>
         <option value="Já frequenta outra célula">Já frequenta outra célula</option>
         <option value="Reorganização de células">Reorganização de células</option>
+        <option value="Multiplicação de célula">Multiplicação de célula</option>
         <option value="Outro">Outro</option>
       </select>
     </div>
     <div class="col-12 mb-3">
       <label class="form-label">Notas Adicionais</label>
-      <textarea class="form-control" name="transfer_notes" rows="2" placeholder="Informações úteis para a nova liderança"></textarea>
+      <textarea class="form-control" name="transfer_notes" rows="2" placeholder="Informações úteis para a nova liderança de célula..."></textarea>
     </div>
   `;
   modalType = "cellMemberTransfer";
   const submitBtn = byId("entryForm")?.querySelector('button[type="submit"]');
   if (submitBtn) {
     submitBtn.classList.remove("d-none");
-    submitBtn.textContent = lang === "pt" ? "Submeter Pedido de Transferência" : "Submit Transfer Request";
+    submitBtn.textContent = lang === "pt" ? "Confirmar e Transferir Membro" : "Confirm and Transfer Member";
   }
   bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
 }
@@ -11797,52 +11848,96 @@ async function submitCellMemberTransferForm(form) {
   const memberId = data.transfer_member_id;
   const context = getCellLeaderContext(activeUser?.id, cellPortalPageState.cellId);
   if (!memberId || !data.transfer_reason) return;
-  const targetCell = (state.cellRegistry || state.cells || []).find((c) => String(c.id) === String(data.to_cell_id));
+
+  const allGroups = getAllRegisteredCellGroups();
+  const allCells = getAllRegisteredCells();
+  const targetCell = allCells.find((c) => String(c.id) === String(data.to_cell_id) || c.cell_name === data.to_cell_id || c.name === data.to_cell_id);
+  const targetGroupId = data.to_cell_group_id || targetCell?.group_id || targetCell?.cell_group_id || null;
+  const targetGroup = allGroups.find((g) => String(g.id) === String(targetGroupId) || g.group_name === targetGroupId || g.name === targetGroupId);
+  const targetChurchId = data.to_church_id || targetGroup?.church_id || targetCell?.church_id || context?.church_id || activeUser?.church_id;
+  const targetChurch = relationalChurches().find((c) => String(c.id) === String(targetChurchId));
+
+  const targetCellName = targetCell?.cell_name || targetCell?.name || data.to_cell_id || "";
+  const targetGroupName = targetGroup?.group_name || targetGroup?.name || "";
+  const targetChurchName = targetChurch?.public_name || targetChurch?.church_name || context?.church_name || "";
+
   const payload = {
     member_id: memberId,
     from_cell_id: context?.cell_id || data.from_cell_id,
     from_cell_name: context?.cell_name || "",
     from_cell_group_id: context?.cell_group_id || "",
     from_cell_group_name: context?.cell_group_name || "",
-    to_cell_id: data.to_cell_id || null,
-    to_cell_name: targetCell?.cell_name || targetCell?.name || null,
-    to_cell_group_id: targetCell?.group_id || targetCell?.cell_group_id || null,
-    to_cell_group_name: targetCell?.group_name || targetCell?.cell_group_name || null,
-    church_id: context?.church_id || activeUser?.church_id,
+    to_cell_id: targetCell?.id || data.to_cell_id || null,
+    to_cell_name: targetCellName,
+    to_cell_group_id: targetGroup?.id || targetGroupId,
+    to_cell_group_name: targetGroupName,
+    church_id: targetChurchId,
+    church_name: targetChurchName,
     requested_by: activeUser?.id,
     requested_by_name: activeUser?.name,
     reason: data.transfer_reason,
     notes: data.transfer_notes || null,
-    status: "Submitted"
+    status: "Transferred",
+    created_at: new Date().toISOString()
   };
+
+  const transferUpdate = {
+    church_id: targetChurchId,
+    church_name: targetChurchName,
+    igreja: targetChurchName,
+    cell_group_id: targetGroup?.id || targetGroupId,
+    cell_group_name: targetGroupName,
+    grupo_de_celula: targetGroupName,
+    cell_id: targetCell?.id || data.to_cell_id,
+    cell_name: targetCellName,
+    celula: targetCellName,
+    reconciliation_status: "Transferred",
+    reconciliation_notes: `Transferido de ${context?.cell_name || "célula anterior"} para ${targetCellName} (${targetGroupName}). Motivo: ${data.transfer_reason}`
+  };
+
   try {
     const bridge = window.CECellMinistry || window.CESupabase;
     if (bridge?.createCellTransferRequest) {
-      await bridge.createCellTransferRequest(payload);
+      try {
+        await bridge.createCellTransferRequest(payload);
+      } catch (reqErr) {
+        console.warn("[CE Transfer] request record skipped", reqErr);
+      }
     }
+
     const candidate = (state.memberRegistrationCandidates || []).find((c) => String(c.id) === String(memberId));
     if (candidate) {
-      candidate.reconciliation_status = "TransferRequested";
-      candidate.reconciliation_notes = "Pedido de transferência: " + data.transfer_reason;
+      Object.assign(candidate, transferUpdate);
       await persistMemberCandidateViaRepository("update", candidate);
     } else {
       const repo = getMembersRepoSafe();
       if (usesSupabaseMembers() && repo?.updateMember) {
-        await repo.updateMember(memberId, { reconciliation_status: "TransferRequested", reconciliation_notes: "Pedido de transferência: " + data.transfer_reason });
+        await repo.updateMember(memberId, transferUpdate);
       }
+      await persistMemberViaRepository("update", { id: memberId, ...transferUpdate });
     }
-    const item = (state.members || []).find((m) => String(m.id) === String(memberId)) || (cellPortalMembersState.items || []).find((m) => String(m.id) === String(memberId));
-    if (item) {
-      item.reconciliation_status = "TransferRequested";
-      item.reconciliation_notes = "Pedido de transferência: " + data.transfer_reason;
+
+    const allMatching = [
+      ...(state.members || []).filter((m) => String(m.id) === String(memberId)),
+      ...(cellPortalMembersState.items || []).filter((m) => String(m.id) === String(memberId)),
+      ...(modulePageState?.members?.items || []).filter((m) => String(m.id) === String(memberId))
+    ];
+    for (const item of allMatching) {
+      Object.assign(item, transferUpdate);
     }
+
     bootstrap.Modal.getInstance(byId("entryModal"))?.hide();
-    recordCellReportSecurityEvent("cell_member_transfer_requested", `Transfer requested for member ${memberId} by ${activeUser?.name}`, memberId);
-    alert(lang === "pt" ? "Pedido de transferência submetido com sucesso." : "Transfer request submitted successfully.");
+    recordCellReportSecurityEvent("cell_member_transferred", `Member ${memberId} transferred to ${targetCellName} by ${activeUser?.name}`, memberId);
+    if (typeof showToast === "function") {
+      showToast(lang === "pt" ? `Membro transferido para ${targetCellName} com sucesso!` : `Member transferred to ${targetCellName} successfully!`);
+    } else {
+      alert(lang === "pt" ? `Membro transferido para ${targetCellName} com sucesso!` : `Member transferred to ${targetCellName} successfully!`);
+    }
     renderCellLeaderPortal();
+    if (activeRoute === "members") renderMembers();
   } catch (err) {
     console.error("[CE Reconciliation] transfer failed", err);
-    alert(lang === "pt" ? "Erro ao pedir transferência: " + (err.message || err) : "Error requesting transfer: " + (err.message || err));
+    alert(lang === "pt" ? "Erro ao transferir membro: " + (err.message || err) : "Error transferring member: " + (err.message || err));
   }
 }
 
@@ -18969,8 +19064,8 @@ async function hydrateCellMinistryFromRepository() {
       cellSb?.listChurchReports ? cellSb.listChurchReports() : Promise.resolve(null),
       cellSb?.listAlecRegistrations ? cellSb.listAlecRegistrations() : Promise.resolve(null),
       cellSb?.listAlecScores ? cellSb.listAlecScores() : Promise.resolve(null),
-      typeof repo?.listCellGroups === "function" ? repo.listCellGroups() : Promise.resolve(null),
-      typeof repo?.listCells === "function" ? repo.listCells() : Promise.resolve(null),
+      cellSb?.listCellGroups ? cellSb.listCellGroups() : (typeof repo?.listCellGroups === "function" ? repo.listCellGroups() : Promise.resolve(null)),
+      cellSb?.listCells ? cellSb.listCells() : (typeof repo?.listCells === "function" ? repo.listCells() : Promise.resolve(null)),
       typeof repo?.listCellLeaders === "function" ? repo.listCellLeaders() : Promise.resolve(null),
       cellSb?.listCellReports ? cellSb.listCellReports() : (typeof repo?.listCellReports === "function" ? repo.listCellReports() : Promise.resolve(null))
     ]);
@@ -19023,6 +19118,7 @@ async function hydrateCellMinistryFromRepository() {
         if (!byId.has(id)) byId.set(id, localRow);
       });
       state.cellGroups = [...byId.values()];
+      memoizedAllGroups = null;
       hydrated = true;
     }
 
@@ -19037,6 +19133,7 @@ async function hydrateCellMinistryFromRepository() {
           ...(usingSupabase ? row : previous),
           id: row.id,
           cell_name: row.cell_name || row.name || previous.cell_name,
+          name: row.name || row.cell_name || previous.name,
           group_id: row.group_id || row.cell_group_id || previous.group_id,
           cell_group_id: row.cell_group_id || row.group_id || previous.cell_group_id
         });
@@ -19045,6 +19142,7 @@ async function hydrateCellMinistryFromRepository() {
         if (!byId.has(id)) byId.set(id, localRow);
       });
       state.cellRegistry = [...byId.values()];
+      memoizedAllCells = null;
       hydrated = true;
     }
 
@@ -24746,9 +24844,40 @@ async function submitForm(form) {
     data.data_de_nascimento = data.date_of_birth;
     enrichMemberDepartmentFields(data, existingMember);
 
+    // Resolve Cell Group & Cell names and link them
+    const allGroups = getAllRegisteredCellGroups();
+    const allCells = getAllRegisteredCells();
+    if (data.cell_group_id) {
+      const grp = allGroups.find((g) => String(g.id) === String(data.cell_group_id) || g.name === data.cell_group_id || g.group_name === data.cell_group_id);
+      if (grp) {
+        data.cell_group_id = grp.id;
+        data.cell_group_name = grp.group_name || grp.name;
+        data.grupo_de_celula = data.cell_group_name;
+      }
+    } else {
+      data.cell_group_id = null;
+      data.cell_group_name = null;
+      data.grupo_de_celula = null;
+    }
+    if (data.cell_id) {
+      const cl = allCells.find((c) => String(c.id) === String(data.cell_id) || c.name === data.cell_id || c.cell_name === data.cell_id);
+      if (cl) {
+        data.cell_id = cl.id;
+        data.cell_name = cl.cell_name || cl.name;
+        data.celula = data.cell_name;
+        if (!data.cell_group_id && (cl.group_id || cl.cell_group_id)) {
+          data.cell_group_id = cl.group_id || cl.cell_group_id;
+          data.cell_group_name = cellGroupName(data.cell_group_id);
+          data.grupo_de_celula = data.cell_group_name;
+        }
+      }
+    } else {
+      data.cell_id = null;
+      data.cell_name = null;
+      data.celula = null;
+    }
+
     // Clean empty relational IDs
-    if (!data.cell_group_id || data.cell_group_id === "") data.cell_group_id = null;
-    if (!data.cell_id || data.cell_id === "") data.cell_id = null;
     if (!data.department_id || data.department_id === "") data.department_id = null;
   }
   if (modalType === "firstTimer") {
@@ -25142,7 +25271,11 @@ async function submitForm(form) {
         church_id: data.church_id,
         churchId: data.church_id,
         cell_group_id: data.cell_group_id,
+        cell_group_name: data.cell_group_name,
+        grupo_de_celula: data.cell_group_name,
         cell_id: data.cell_id,
+        cell_name: data.cell_name,
+        celula: data.cell_name,
         cell_role: data.cell_role,
         cell_participation_status: data.cell_participation_status,
         service_participation_status: data.service_participation_status,
@@ -28158,6 +28291,39 @@ document.addEventListener("change", (event) => {
       const data = Object.fromEntries(new FormData(form).entries());
       foundationPageState.lesson = { ...foundationPageState.lesson, ...data };
       if (activeRoute === "foundation") renderFoundation();
+    }
+    return;
+  }
+  if (event.target.matches("[data-transfer-church-select]")) {
+    const form = event.target.closest("form");
+    const churchId = event.target.value;
+    const groupSelect = form?.querySelector("[data-transfer-group-select]");
+    const cellSelect = form?.querySelector("[data-transfer-cell-select]");
+    if (groupSelect) {
+      const groups = getCellGroupsForChurch(churchId);
+      groupSelect.innerHTML = `<option value="">Seleccionar Grupo de Célula...</option>${groups.map((g) => `<option value="${escapeAttr(g.id)}">${escapeHtml(g.group_name || g.name || g.id)}</option>`).join("")}`;
+      groupSelect.value = "";
+    }
+    if (cellSelect) {
+      cellSelect.innerHTML = `<option value="">Seleccione o grupo primeiro...</option>`;
+      cellSelect.disabled = true;
+    }
+    return;
+  }
+  if (event.target.matches("[data-transfer-group-select]")) {
+    const form = event.target.closest("form");
+    const groupId = event.target.value;
+    const churchId = form?.querySelector("[data-transfer-church-select]")?.value || "";
+    const cellSelect = form?.querySelector("[data-transfer-cell-select]");
+    if (cellSelect) {
+      if (!groupId) {
+        cellSelect.innerHTML = `<option value="">Seleccione o grupo primeiro...</option>`;
+        cellSelect.disabled = true;
+      } else {
+        const cells = getCellsForGroup(groupId, churchId);
+        cellSelect.innerHTML = `<option value="">Seleccionar Célula de Destino...</option>${cells.map((c) => `<option value="${escapeAttr(c.id)}">${escapeHtml(c.cell_name || c.name || c.id)}</option>`).join("")}`;
+        cellSelect.disabled = false;
+      }
     }
     return;
   }
