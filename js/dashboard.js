@@ -5474,8 +5474,11 @@ async function loadCellPortalMembers(cellId, { force = false } = {}) {
   pageState.cellId = cellId;
   pageState.resolvedCellName = "";
   try {
+    // Concurrently sync candidate registrations
+    void syncMemberRegistrationCandidatesFromRepository();
+
     const allRegistry = getAllRegisteredCells();
-    const cell = allRegistry.find((item) => String(item.id) === String(cellId));
+    const cell = allRegistry.find((item) => String(item.id) === String(cellId) || portalNormalizeName(item.cell_name || item.name) === portalNormalizeName(cellId));
     let result = null;
     if (cell) {
       const legacyName = await resolveLegacyCellPortalName(repo, cell);
@@ -5486,6 +5489,12 @@ async function loadCellPortalMembers(cellId, { force = false } = {}) {
     }
     if (!result?.ok || !result.data?.totalCount) {
       result = await repo.listMembersPage({ page: pageState.page, pageSize: pageState.pageSize, cellId });
+    }
+    if (!result?.ok || !result.data?.totalCount) {
+      const cName = cell?.cell_name || cell?.name || (typeof cellId === "string" ? cellId : "");
+      if (cName) {
+        result = await repo.listMembersPage({ page: pageState.page, pageSize: pageState.pageSize, cellName: cName });
+      }
     }
     if (requestId !== pageState.requestId) return false;
     pageState.loaded = true;
@@ -5517,8 +5526,11 @@ async function ensureCellPortalContext() {
   if (!usesSupabaseMembers() || cellPortalContextState.ready || cellPortalContextState.loading) return cellPortalContextState.ready;
   cellPortalContextState.loading = true;
   try {
-    // A carregar células e grupos do Supabase...
-    await hydrateCellMinistryFromRepository();
+    // A carregar células e grupos do Supabase (com sincronização de candidatos)...
+    await Promise.allSettled([
+      hydrateCellMinistryFromRepository(),
+      syncMemberRegistrationCandidatesFromRepository()
+    ]);
     cellPortalContextState.ready = true;
     return true;
   } catch (err) {
@@ -5647,32 +5659,51 @@ function portalInPeriod(record, filters = cellPortalPageState) {
 
 function portalMemberBelongsToCell(member, cell) {
   if (!member || !cell) return false;
-  if (member.cell_id && String(member.cell_id) === String(cell.id)) return true;
+  if (member.cell_id && cell.id && String(member.cell_id) === String(cell.id)) return true;
   const mName = portalNormalizeName(member.cell_name || member.celula || "");
-  const cName = portalNormalizeName(cell.raw_cell_name || cell.cell_name || cell.name || "");
+  const cName = portalNormalizeName(cell.raw_cell_name || cell.cell_name || cell.name || cell.id || "");
   if (!mName || !cName) return false;
   if (mName === cName) return true;
   if (mName.includes(cName) || cName.includes(mName)) return true;
+  if (portalCellNameMatchScore(cell, mName) > 0) return true;
   return false;
 }
 
 function cellPortalMemberSource(cellId) {
   let baseList = [];
+  const cell = findCellSafe(cellId);
   if (cellPortalMembersState.items && cellPortalMembersState.items.length && String(cellPortalMembersState.cellId) === String(cellId)) {
     baseList = [...cellPortalMembersState.items];
   } else if (state.members && state.members.length) {
-    const cell = findCellSafe(cellId);
     baseList = state.members.filter((m) => portalMemberBelongsToCell(m, cell));
   } else {
     baseList = [...(cellPortalMembersState.items || [])];
   }
 
-  // Candidates with 'Submitted' or 'UnderReview' are cell-approved and active in the cell while awaiting church confirmation
+  // Combine with any local state.members matching this cell that might not have been in paginated items
+  if (state.members && state.members.length) {
+    const existingIds = new Set(baseList.map((m) => String(m.id || "")));
+    state.members.forEach((m) => {
+      if (m && m.id && !existingIds.has(String(m.id)) && portalMemberBelongsToCell(m, cell)) {
+        baseList.push(m);
+        existingIds.add(String(m.id));
+      }
+    });
+  }
+
+  // Candidates with any active status are cell-approved or pending in the cell while awaiting church confirmation
   const existingMemberIds = new Set(baseList.map((m) => String(m.id || "")));
-  const cell = findCellSafe(cellId);
+  const existingPhones = new Set(baseList.map((m) => String(m.telefone || m.phone || m.primary_phone || "").replace(/\D/g, "")).filter(Boolean));
+  const existingNames = new Set(baseList.map((m) => portalNormalizeName(portalPersonName(m))).filter(Boolean));
+
   const candidates = (state.memberRegistrationCandidates || []).filter((c) => {
-    if (!["Submitted", "UnderReview"].includes(c.approval_status)) return false;
-    if (c.approved_member_id && existingMemberIds.has(String(c.approved_member_id))) return false;
+    if (!c) return false;
+    if (c.approval_status === "Withdrawn" || c.approval_status === "Rejected") return false;
+    if (c.approval_status === "Approved" && c.approved_member_id && existingMemberIds.has(String(c.approved_member_id))) return false;
+    const cPhone = String(c.primary_phone || c.secondary_phone || "").replace(/\D/g, "");
+    if (cPhone && existingPhones.has(cPhone)) return false;
+    const cName = portalNormalizeName(candidateFullName(c) || c.full_name || "");
+    if (cName && existingNames.has(cName)) return false;
     if (c.cell_id && String(c.cell_id) === String(cellId)) return true;
     if (cell && portalMemberBelongsToCell({ cell_id: c.cell_id, cell_name: c.cell_name, celula: c.cell_name }, cell)) return true;
     return false;
@@ -5697,11 +5728,12 @@ function cellPortalMemberSource(cellId) {
     cell_id: c.cell_id,
     cell_name: c.cell_name || null,
     celula: c.cell_name || null,
-    status: "Activo (Célula)",
-    estado: "Activo (Célula)",
+    status: c.approval_status === "Approved" ? "Activo" : (c.approval_status === "Draft" ? "Rascunho (Célula)" : (c.approval_status === "ReadyForSubmission" ? "Aguardando Líder" : "Activo (Célula)")),
+    estado: c.approval_status === "Approved" ? "Activo" : (c.approval_status === "Draft" ? "Rascunho (Célula)" : (c.approval_status === "ReadyForSubmission" ? "Aguardando Líder" : "Activo (Célula)")),
+    approval_status: c.approval_status || "Submitted",
     membership_status: "Candidate",
     reconciliation_status: "Confirmed",
-    pastoral_observation: "Membro da célula (Aguardando aprovação da Igreja)",
+    pastoral_observation: c.approval_status === "Approved" ? "Membro aprovado" : (c.approval_status === "ReadyForSubmission" ? "Registo submetido pelo Assistente (Aguardando Líder)" : "Membro da célula (Aguardando aprovação da Igreja)"),
     joined_at: (c.cell_approved_at || c.submitted_for_approval_at || c.created_at || "").slice(0, 10),
     data_quality_status: c.data_quality_status || "Valid",
     created_at: c.created_at,
@@ -5889,7 +5921,16 @@ function getCellMemberSpiritualProgress(memberId, indexes = null) {
 function findCellSafe(cellId) {
   if (!cellId) return null;
   const all = getAllRegisteredCells();
-  return all.find((item) => String(item.id) === String(cellId) || item.cell_name === cellId || item.name === cellId) || null;
+  const idStr = String(cellId).trim();
+  const lower = portalNormalizeName(idStr);
+  return all.find((item) => 
+    String(item.id) === idStr ||
+    String(item.cell_name || item.name || "").trim().toLowerCase() === idStr.toLowerCase() ||
+    (item.cell_name && portalNormalizeName(item.cell_name) === lower) ||
+    (item.name && portalNormalizeName(item.name) === lower) ||
+    (item.raw_cell_name && portalNormalizeName(item.raw_cell_name) === lower) ||
+    (item.cell_name && lower && (portalNormalizeName(item.cell_name).includes(lower) || lower.includes(portalNormalizeName(item.cell_name))))
+  ) || null;
 }
 
 function getCellMembersProfile(cellId, filters = cellPortalPageState, indexes = null) {
@@ -12113,8 +12154,16 @@ function renderCellLeaderPortal() {
     };
 
     // Show every registration in the authorized cell scope, not only the active creator's rows.
-    const authorizedCellIdSet = new Set(context?.authorized_cell_ids || []);
-    const candidates = (state.memberRegistrationCandidates || []).filter((item) => authorizedCellIdSet.has(item.cell_id) || (context?.authorized_cell_ids && context.authorized_cell_ids.includes(item.cell_id)));
+    const cellObj = findCellSafe(context?.cell_id);
+    const authorizedCellIdSet = new Set((context?.authorized_cell_ids || []).map(String));
+    if (context?.cell_id) authorizedCellIdSet.add(String(context.cell_id));
+
+    const candidates = (state.memberRegistrationCandidates || []).filter((item) => {
+      if (!item) return false;
+      if (item.cell_id && (authorizedCellIdSet.has(String(item.cell_id)) || (context?.authorized_cell_ids && context.authorized_cell_ids.includes(item.cell_id)))) return true;
+      if (cellObj && portalMemberBelongsToCell({ cell_id: item.cell_id, cell_name: item.cell_name, celula: item.cell_name }, cellObj)) return true;
+      return false;
+    });
     const candidateCounts = {
       drafts: candidates.filter((item) => item.approval_status === "Draft").length,
       readyForLeader: candidates.filter((item) => item.approval_status === "ReadyForSubmission").length,
@@ -14192,7 +14241,8 @@ async function submitCellAttendanceModal(form) {
 function openMemberCandidateForm(id = null) {
   const context = getCellLeaderContext(activeUser?.id, cellPortalPageState.cellId);
   const candidate = id ? (state.memberRegistrationCandidates || []).find((item) => item.id === id) : null;
-  if (!candidate && (!context?.cell_id || !["Cell Leader", "Cell Assistant"].includes(activeUser?.role))) return alert("Apenas líderes e assistentes autorizados podem registar candidatos pela célula.");
+  const canRegister = isCellLeaderOrAssistant(activeUser) || canReviewMemberCandidates(activeUser) || hasCellPortalPermission("cell_portal.edit", activeUser) || (context?.cell_id && canAccessCell(activeUser?.id, context.cell_id));
+  if (!candidate && !canRegister) return alert("Apenas líderes, assistentes e administradores autorizados podem registar membros pela célula.");
   if (candidate && !canReviewMemberCandidates() && !candidateCanAccess(candidate) && candidate.registered_by_user_id !== activeUser?.id) return alert("Não tem permissão para editar este pedido.");
   if (candidate && !canReviewMemberCandidates() && !["Draft", "ReadyForSubmission", "NeedsCorrection"].includes(candidate.approval_status)) return openMemberCandidateDetails(candidate);
   const data = candidate || { church_id: context.church_id, church_name: context.church_name, cell_group_id: context.cell_group_id, cell_group_name: context.cell_group_name, cell_id: context.cell_id, cell_name: context.cell_name };
@@ -14344,7 +14394,10 @@ async function submitMemberCandidateForm(form, { submit = false } = {}) {
   }
   saveState(submit ? (isAssistant ? "Pedido submetido para o Líder" : "Membro registado e enviado para a Igreja") : "Rascunho guardado");
   bootstrap.Modal.getInstance(byId("entryModal"))?.hide();
-  renderCellLeaderPortal();
+  if (context?.cell_id || record.cell_id) {
+    void loadCellPortalMembers(context?.cell_id || record.cell_id, { force: true });
+  }
+  if (activeRoute === "cellPortal") renderCellLeaderPortal(); else renderMembers();
 }
 
 async function candidateAction(action, id) {
