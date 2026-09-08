@@ -9,3 +9,6 @@ Thumbs.db
 node_modules/
 .temp/
 supabase/.temp/
+.gh-pages-artifact-repo/
+.gh-pages-publish-worktree/
+.github-pages-build/

@@ -106,3 +106,11 @@ function findProvinceForCity(city = "") {
   const match = mozambiqueLocations.find((entry) => entry.cities.includes(alias));
   return match ? match.province : "";
 }
+
+if (typeof window !== "undefined") {
+  window.mozambiqueLocations = mozambiqueLocations;
+  window.getProvinceList = getProvinceList;
+  window.getCitiesForProvince = getCitiesForProvince;
+  window.normalizeLocationValues = normalizeLocationValues;
+  window.findProvinceForCity = findProvinceForCity;
+}

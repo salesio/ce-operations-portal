@@ -206,3 +206,19 @@ const ProvinceSelect = provinceSelect;
 const CitySelect = citySelect;
 const ChurchSelect = churchSelect;
 const ChurchInfoCard = churchInfoCard;
+
+if (typeof window !== "undefined") {
+  window.getChurchOptions = getChurchOptions;
+  window.churchOptionLabel = churchOptionLabel;
+  window.provinceSelect = provinceSelect;
+  window.citySelect = citySelect;
+  window.churchSelect = churchSelect;
+  window.populateCitySelect = populateCitySelect;
+  window.churchInfoCard = churchInfoCard;
+  window.applyChurchSelection = applyChurchSelection;
+  window.initRelationalFormControls = initRelationalFormControls;
+  window.ProvinceSelect = ProvinceSelect;
+  window.CitySelect = CitySelect;
+  window.ChurchSelect = ChurchSelect;
+  window.ChurchInfoCard = ChurchInfoCard;
+}

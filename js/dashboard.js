@@ -4632,6 +4632,15 @@ function escapeAttr(value) {
     .replace(/>/g, "&gt;");
 }
 
+function escapeHtml(value) {
+  return escapeAttr(value);
+}
+
+if (typeof window !== "undefined") {
+  window.escapeAttr = escapeAttr;
+  window.escapeHtml = escapeHtml;
+}
+
 function cleanRenderedText(root = document) {
   if (!root) return;
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
@@ -7253,6 +7262,27 @@ function openCellReportDetails(reportId) {
   bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
 }
 
+function relationalChurches() {
+  if (Array.isArray(state.churches) && state.churches.length) {
+    return state.churches;
+  }
+  if (typeof window !== "undefined" && Array.isArray(window.REAL_CHURCHES) && window.REAL_CHURCHES.length) {
+    return window.REAL_CHURCHES;
+  }
+  return state.churches || [];
+}
+window.relationalChurches = relationalChurches;
+
+function relationalFormOptions() {
+  return {
+    churches: relationalChurches(),
+    translate: typeof L === "function" ? L : ((k) => k),
+    canAddChurch: typeof canRenderAction === "function" ? canRenderAction("add", "church") : (activeUser?.role === "Super Admin"),
+    autofillFields: ["province", "city", "district_or_area"]
+  };
+}
+window.relationalFormOptions = relationalFormOptions;
+
 function canSelectAllCellNetworkRecords() {
   return !!(
     activeUser?.can_view_all_churches ||
@@ -7586,6 +7616,20 @@ function mountRelationalControls(form) {
   mountCellNetworkControls(form);
   mountPersonAutocomplete(form);
 }
+
+function findChurchById(churches, churchId) {
+  if (!churchId) return null;
+  const list = Array.isArray(churches) ? churches : (typeof relationalChurches === "function" ? relationalChurches() : (state.churches || []));
+  const idStr = String(churchId).trim();
+  return list.find((c) => 
+    String(c.id) === idStr || 
+    c.church_name === idStr || 
+    c.public_name === idStr || 
+    c.name === idStr ||
+    (c.church_name && c.church_name.toLowerCase() === idStr.toLowerCase())
+  ) || null;
+}
+window.findChurchById = findChurchById;
 
 function enrichRecordChurchFields(data) {
   const churchId = data.church_id || data.igreja || data.igreja_responsavel || data.igreja_destinataria;
@@ -17981,6 +18025,42 @@ function getChurchesRepoSafe() {
   return repo;
 }
 
+async function refreshChurchesFromRepositoryForForms() {
+  const repo = getChurchesRepoSafe();
+  if (!repo) return false;
+  try {
+    let list = null;
+    if (typeof repo.getChurches === "function") {
+      const res = await repo.getChurches();
+      list = res?.ok ? res.data : (Array.isArray(res) ? res : null);
+    } else if (typeof repo.listChurches === "function") {
+      const res = await repo.listChurches();
+      list = res?.ok ? res.data : (Array.isArray(res) ? res : null);
+    }
+    if (!Array.isArray(list) || !list.length) return false;
+    if (state && Array.isArray(state.churches)) {
+      const existingIds = new Set(state.churches.map((c) => String(c.id)));
+      let changed = false;
+      list.forEach((c) => {
+        if (c && c.id && !existingIds.has(String(c.id))) {
+          state.churches.push(c);
+          changed = true;
+        }
+      });
+      if (changed && typeof localStorage !== "undefined" && typeof STORAGE_KEY !== "undefined") {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        } catch (_) {}
+      }
+      return changed;
+    }
+    return false;
+  } catch (error) {
+    console.warn("[CE Churches] refresh skipped", error);
+    return false;
+  }
+}
+
 /**
  * Persist via data-layer first; if missing/unavailable, keep classic localStorage path.
  * Rule: repository → local state fallback → error only if both cannot apply.
@@ -24823,7 +24903,7 @@ function openForm(type, id = null, options = {}) {
           status: selectedRecord.status || selectedRecord.estado || "Draft",
         }
       : selectedRecord;
-    byId("modalEyebrow").textContent = modalMode === "edit" ? L("edit") : L("add");
+    byId("modalEyebrow").textContent = options.actionTitle || (modalMode === "edit" ? L("edit") : L("add"));
     byId("modalTitle").textContent = type === "finance" && !id ? L("addFinance") : formTitle(type);
     if (type === "finance" && !id) {
       byId("modalFields").innerHTML = renderFinanceAddForm(record);
@@ -24847,6 +24927,13 @@ function openForm(type, id = null, options = {}) {
         const churchSelectEl = byId("entryForm")?.querySelector('[name="church_id"]');
         if (churchSelectEl && !record.church_id && activeUser?.church_id) {
           churchSelectEl.value = activeUser.church_id;
+        }
+      }
+      if (options.focusField) {
+        const targetEl = byId("entryForm")?.querySelector(`[name="${options.focusField}"]`);
+        if (targetEl) {
+          targetEl.focus();
+          if (targetEl.scrollIntoView) targetEl.scrollIntoView({ behavior: "smooth", block: "center" });
         }
       }
       cleanRenderedText(byId("entryModal"));
@@ -26986,7 +27073,9 @@ function quickAction(action, type, id) {
     if (action === "update" || action === "evaluate") return openForm(type, id === "new" ? null : id);
   }
   if (action === "merge" && type === "member") return openMergeMemberModal(id);
-  if (action === "edit" || action === "moveChurch" || action === "status") return openForm(type, id);
+  if (action === "moveChurch") return openForm(type, id, { focusField: "church_id", actionTitle: L("moveChurch") });
+  if (action === "status") return openForm(type, id, { focusField: "estado", actionTitle: L("updateStatus") });
+  if (action === "edit") return openForm(type, id);
   if (action === "followup") return openFollowup(id);
   if (action === "submit" || action === "approve") {
     const record = getCollection(type).find((item) => item.id === id);
