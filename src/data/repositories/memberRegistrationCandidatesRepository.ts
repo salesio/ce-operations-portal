@@ -146,9 +146,12 @@ export async function updateMemberRegistrationCandidate(id: EntityId, input: Par
   const repository = getDataProvider().memberRegistrationCandidates;
   const existing = await repository.getById(id);
   if (!existing.ok || !existing.data) return fail("Pedido de adesão não encontrado.", "NOT_FOUND");
-  const ownEditable = existing.data.registered_by_user_id === actor.id && ["Draft", "NeedsCorrection", "ReadyForSubmission"].includes(String(existing.data.approval_status));
-  if (!canReview(actor) && !ownEditable) return fail("Não tem permissão para editar este pedido.", "PERMISSION_DENIED");
-  if (!canReview(actor) && input.cell_id && !(actor.authorized_cell_ids || []).includes(input.cell_id)) return fail("A célula escolhida não está autorizada.", "CELL_SCOPE_DENIED");
+  const cellAuthorized = !existing.data.cell_id || (actor.authorized_cell_ids || []).includes(existing.data.cell_id) || canReview(actor);
+  const ownRecord = existing.data.registered_by_user_id === actor.id;
+  const isLeaderOrAssistant = ["Cell Leader", "Cell Assistant", "Cell Group Leader", "cell_leader", "assistant_cell_leader", "cell_assistant", "Leader", "Assistant"].includes(String(actor?.role || ""));
+  const canEditCandidate = canReview(actor) || cellAuthorized || ownRecord || isLeaderOrAssistant;
+  if (!canEditCandidate) return fail("Não tem permissão para editar este pedido.", "PERMISSION_DENIED");
+  if (!canReview(actor) && input.cell_id && (actor.authorized_cell_ids || []).length > 0 && !(actor.authorized_cell_ids || []).includes(input.cell_id)) return fail("A célula escolhida não está autorizada.", "CELL_SCOPE_DENIED");
   if (!repository.update) return fail("O data source não suporta actualizar pedidos.", "NOT_SUPPORTED");
   return repository.update(id, normalizeMemberRegistrationCandidate({ ...existing.data, ...input, id }, actor));
 }

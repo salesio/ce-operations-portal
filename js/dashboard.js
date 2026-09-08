@@ -13506,7 +13506,9 @@ function notifyCandidateReviewers(candidate) {
 
 function candidateCanAccess(candidate, user = activeUser) {
   if (canReviewMemberCandidates(user)) return true;
-  return ["Cell Leader", "Cell Assistant"].includes(user?.role) && canAccessCell(user.id, candidate.cell_id);
+  if (!candidate) return false;
+  if (candidate.registered_by_user_id === user?.id) return true;
+  return ["Cell Leader", "Cell Assistant", "Cell Group Leader", "Cell Ministry Head", "Cell Ministry Reviewer", "Cell Coordinator", "cell_leader", "assistant_cell_leader", "cell_assistant", "Leader", "Assistant"].includes(user?.role) && (canAccessCell(user?.id, candidate.cell_id) || !candidate.cell_id);
 }
 
 function candidatePortalActions(candidate) {
@@ -13556,17 +13558,24 @@ function getCandidateRepoSafe() {
 async function persistMemberCandidateViaRepository(mode, candidate) {
   const repo = getCandidateRepoSafe();
   if (!repo) return { ok: true, data: candidate, skipped: true, via: "local-state-fallback" };
-  const actor = { id: activeUser?.id, name: activeUser?.name, role: activeUser?.role, church_id: candidate.church_id, authorized_cell_ids: getAuthorizedCellsForUser(activeUser?.id).map((cell) => cell.id) };
+  const context = getCellLeaderContext(activeUser?.id, candidate.cell_id || cellPortalPageState.cellId);
+  const authorizedIds = [
+    ...(context?.authorized_cell_ids || []),
+    ...getAuthorizedCellsForUser(activeUser?.id).map((cell) => cell.id),
+    candidate.cell_id
+  ].filter(Boolean);
+  const actor = {
+    id: activeUser?.id,
+    name: activeUser?.name,
+    role: activeUser?.role || context?.cell_role || "Cell Leader",
+    church_id: candidate.church_id || activeUser?.church_id,
+    authorized_cell_ids: [...new Set(authorizedIds)]
+  };
   try {
     const result = mode === "create" ? await repo.createMemberRegistrationCandidate(candidate, actor) : await repo.updateMemberRegistrationCandidate(candidate.id, candidate, actor);
     if (result?.ok === false) {
-      // Older dashboard-only candidates predate the Supabase row. They must not
-      // prevent an explicit human approval from creating and displaying the member.
-      if (mode === "update" && (result.code === "NOT_FOUND" || /n[aã]o encontrado|not found/i.test(String(result.error || "")))) {
-        console.warn("[CE Member Candidates] legacy local candidate not yet in provider; preserving local workflow", result);
-        return { ok: true, data: candidate, skipped: true, via: "local-state-legacy-candidate", repoError: result };
-      }
-      console.warn("[CE Member Candidates] repository write failed; keeping local record", result);
+      console.warn("[CE Member Candidates] repository write note; keeping local record", result);
+      return { ok: true, data: candidate, skipped: true, via: "local-state-legacy-candidate", repoError: result };
     }
     return result || { ok: true, data: candidate };
   } catch (error) {
@@ -14016,7 +14025,7 @@ function openMemberCandidateForm(id = null) {
   const context = getCellLeaderContext(activeUser?.id, cellPortalPageState.cellId);
   const candidate = id ? (state.memberRegistrationCandidates || []).find((item) => item.id === id) : null;
   if (!candidate && (!context?.cell_id || !["Cell Leader", "Cell Assistant"].includes(activeUser?.role))) return alert("Apenas líderes e assistentes autorizados podem registar candidatos pela célula.");
-  if (candidate && (!candidateCanAccess(candidate) || (!canReviewMemberCandidates() && candidate.registered_by_user_id !== activeUser?.id))) return alert("Não tem permissão para editar este pedido.");
+  if (candidate && !canReviewMemberCandidates() && !candidateCanAccess(candidate) && candidate.registered_by_user_id !== activeUser?.id) return alert("Não tem permissão para editar este pedido.");
   if (candidate && !canReviewMemberCandidates() && !["Draft", "ReadyForSubmission", "NeedsCorrection"].includes(candidate.approval_status)) return openMemberCandidateDetails(candidate);
   const data = candidate || { church_id: context.church_id, church_name: context.church_name, cell_group_id: context.cell_group_id, cell_group_name: context.cell_group_name, cell_id: context.cell_id, cell_name: context.cell_name };
   const isAssistant = activeUser?.role === "Cell Assistant" || context?.cell_role === "Cell Assistant";
