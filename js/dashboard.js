@@ -11448,20 +11448,41 @@ async function confirmCellMember(memberId) {
   const now = new Date().toISOString();
   const repo = getMembersRepoSafe();
   try {
-    if (usesSupabaseMembers() && repo?.updateMember) {
-      const res = await repo.updateMember(memberId, {
-        reconciliation_status: "Confirmed",
-        confirmed_by: activeUser?.id,
-        confirmed_at: now
-      });
-      if (!res?.ok) throw new Error(res?.error || "Falha ao confirmar membro");
+    const candidate = (state.memberRegistrationCandidates || []).find((c) => String(c.id) === String(memberId));
+    if (candidate) {
+      candidate.reconciliation_status = "Confirmed";
+      candidate.confirmed_by = activeUser?.id;
+      candidate.confirmed_at = now;
+      await persistMemberCandidateViaRepository("update", candidate);
+    } else {
+      let success = false;
+      if (usesSupabaseMembers() && repo?.updateMember) {
+        const res = await repo.updateMember(memberId, {
+          reconciliation_status: "Confirmed",
+          confirmed_by: activeUser?.id,
+          confirmed_at: now
+        });
+        if (res?.ok) success = true;
+      }
+      if (!success) {
+        await persistMemberViaRepository("update", {
+          id: memberId,
+          reconciliation_status: "Confirmed",
+          confirmed_by: activeUser?.id,
+          confirmed_at: now
+        });
+      }
     }
-    const item = (state.members || []).find((m) => String(m.id) === String(memberId)) || (cellPortalMembersState.items || []).find((m) => String(m.id) === String(memberId));
-    if (item) {
+    const matching = [
+      ...(state.members || []).filter((m) => String(m.id) === String(memberId)),
+      ...(cellPortalMembersState.items || []).filter((m) => String(m.id) === String(memberId))
+    ];
+    for (const item of matching) {
       item.reconciliation_status = "Confirmed";
       item.confirmed_by = activeUser?.id;
       item.confirmed_at = now;
     }
+    saveState("Membro confirmado");
     recordCellReportSecurityEvent("cell_member_reconciled", `Member ${memberId} confirmed by cell leader ${activeUser?.name}`, memberId);
     renderCellLeaderPortal();
   } catch (err) {
@@ -11490,12 +11511,30 @@ async function bulkConfirmCellMembers() {
   let count = 0;
   for (const m of pendingMembers) {
     try {
-      if (usesSupabaseMembers() && repo?.updateMember) {
-        await repo.updateMember(m.id, {
-          reconciliation_status: "Confirmed",
-          confirmed_by: activeUser?.id,
-          confirmed_at: now
-        });
+      const candidate = (state.memberRegistrationCandidates || []).find((c) => String(c.id) === String(m.id));
+      if (candidate) {
+        candidate.reconciliation_status = "Confirmed";
+        candidate.confirmed_by = activeUser?.id;
+        candidate.confirmed_at = now;
+        await persistMemberCandidateViaRepository("update", candidate);
+      } else {
+        let success = false;
+        if (usesSupabaseMembers() && repo?.updateMember) {
+          const res = await repo.updateMember(m.id, {
+            reconciliation_status: "Confirmed",
+            confirmed_by: activeUser?.id,
+            confirmed_at: now
+          });
+          if (res?.ok) success = true;
+        }
+        if (!success) {
+          await persistMemberViaRepository("update", {
+            id: m.id,
+            reconciliation_status: "Confirmed",
+            confirmed_by: activeUser?.id,
+            confirmed_at: now
+          });
+        }
       }
       m.reconciliation_status = "Confirmed";
       m.confirmed_by = activeUser?.id;
@@ -11581,13 +11620,20 @@ async function submitCellMemberEditForm(form) {
   if (!memberId) return;
   const now = new Date().toISOString();
   const repo = getMembersRepoSafe();
+  const fullName = String(data.full_name || "").trim();
+  const parts = fullName.split(/\s+/);
+  const firstName = parts[0] || "";
+  const lastName = parts.slice(1).join(" ") || "";
+
   const payload = {
-    full_name: data.full_name,
-    primary_phone: data.primary_phone,
-    secondary_phone: data.secondary_phone || null,
-    email: data.email || null,
-    neighborhood: data.neighborhood || null,
-    occupation: data.occupation || null,
+    full_name: fullName,
+    nome: firstName,
+    apelido: lastName,
+    primary_phone: String(data.primary_phone || "").trim() || null,
+    secondary_phone: String(data.secondary_phone || "").trim() || null,
+    email: String(data.email || "").trim() || null,
+    neighborhood: String(data.neighborhood || "").trim() || null,
+    occupation: String(data.occupation || "").trim() || null,
     marital_status: data.marital_status || null,
     kingschat_username: data.kingschat_username || null,
     reconciliation_notes: data.reconciliation_notes || null,
@@ -11595,15 +11641,59 @@ async function submitCellMemberEditForm(form) {
     confirmed_by: activeUser?.id,
     confirmed_at: now
   };
+
   try {
+    // 1. Check if this record is a Member Registration Candidate
+    const candidate = (state.memberRegistrationCandidates || []).find((c) => String(c.id) === String(memberId));
+    if (candidate) {
+      Object.assign(candidate, {
+        full_name: payload.full_name,
+        first_name: firstName,
+        last_name: lastName,
+        primary_phone: payload.primary_phone,
+        secondary_phone: payload.secondary_phone,
+        email: payload.email,
+        neighborhood: payload.neighborhood,
+        occupation: payload.occupation,
+        notes: payload.reconciliation_notes || candidate.notes || null,
+        updated_at: now
+      });
+      const candResult = await persistMemberCandidateViaRepository("update", candidate);
+      if (candResult?.ok === false) {
+        throw new Error(candResult.error || "Falha ao actualizar candidato");
+      }
+      saveState("Dados do membro actualizados");
+      bootstrap.Modal.getInstance(byId("entryModal"))?.hide();
+      recordCellReportSecurityEvent("cell_member_updated", `Candidate ${memberId} data corrected by ${activeUser?.name}`, memberId);
+      renderCellLeaderPortal();
+      return;
+    }
+
+    // 2. Official member: Update via repository
+    let updateSuccess = false;
     if (usesSupabaseMembers() && repo?.updateMember) {
       const res = await repo.updateMember(memberId, payload);
-      if (!res?.ok) throw new Error(res?.error || "Falha ao actualizar membro");
+      if (res?.ok) {
+        updateSuccess = true;
+      }
     }
-    const item = (state.members || []).find((m) => String(m.id) === String(memberId)) || (cellPortalMembersState.items || []).find((m) => String(m.id) === String(memberId));
-    if (item) {
-      Object.assign(item, payload);
+    if (!updateSuccess) {
+      const fallbackRes = await persistMemberViaRepository("update", { id: memberId, ...payload });
+      if (fallbackRes?.ok !== false) {
+        updateSuccess = true;
+      }
     }
+
+    // 3. Update in-memory state objects
+    const allMatching = [
+      ...(state.members || []).filter((m) => String(m.id) === String(memberId)),
+      ...(cellPortalMembersState.items || []).filter((m) => String(m.id) === String(memberId))
+    ];
+    for (const item of allMatching) {
+      Object.assign(item, payload, { name: payload.full_name, telefone: payload.primary_phone });
+    }
+
+    saveState("Dados do membro actualizados");
     bootstrap.Modal.getInstance(byId("entryModal"))?.hide();
     recordCellReportSecurityEvent("cell_member_updated", `Member ${memberId} data corrected by ${activeUser?.name}`, memberId);
     renderCellLeaderPortal();
@@ -11693,9 +11783,16 @@ async function submitCellMemberTransferForm(form) {
     if (bridge?.createCellTransferRequest) {
       await bridge.createCellTransferRequest(payload);
     }
-    const repo = getMembersRepoSafe();
-    if (usesSupabaseMembers() && repo?.updateMember) {
-      await repo.updateMember(memberId, { reconciliation_status: "TransferRequested", reconciliation_notes: "Pedido de transferência: " + data.transfer_reason });
+    const candidate = (state.memberRegistrationCandidates || []).find((c) => String(c.id) === String(memberId));
+    if (candidate) {
+      candidate.reconciliation_status = "TransferRequested";
+      candidate.reconciliation_notes = "Pedido de transferência: " + data.transfer_reason;
+      await persistMemberCandidateViaRepository("update", candidate);
+    } else {
+      const repo = getMembersRepoSafe();
+      if (usesSupabaseMembers() && repo?.updateMember) {
+        await repo.updateMember(memberId, { reconciliation_status: "TransferRequested", reconciliation_notes: "Pedido de transferência: " + data.transfer_reason });
+      }
     }
     const item = (state.members || []).find((m) => String(m.id) === String(memberId)) || (cellPortalMembersState.items || []).find((m) => String(m.id) === String(memberId));
     if (item) {
@@ -11775,14 +11872,23 @@ async function submitCellMemberRemovalForm(form) {
     if (bridge?.logCellMemberRemoval) {
       await bridge.logCellMemberRemoval(payload);
     }
-    const repo = getMembersRepoSafe();
-    if (usesSupabaseMembers() && repo?.updateMember) {
-      await repo.updateMember(memberId, {
-        cell_id: null,
-        cell_name: null,
-        reconciliation_status: "NotInCell",
-        reconciliation_notes: data.removal_reason + (data.removal_notes ? ": " + data.removal_notes : "")
-      });
+    const candidate = (state.memberRegistrationCandidates || []).find((c) => String(c.id) === String(memberId));
+    if (candidate) {
+      candidate.cell_id = null;
+      candidate.cell_name = null;
+      candidate.reconciliation_status = "NotInCell";
+      candidate.reconciliation_notes = data.removal_reason + (data.removal_notes ? ": " + data.removal_notes : "");
+      await persistMemberCandidateViaRepository("update", candidate);
+    } else {
+      const repo = getMembersRepoSafe();
+      if (usesSupabaseMembers() && repo?.updateMember) {
+        await repo.updateMember(memberId, {
+          cell_id: null,
+          cell_name: null,
+          reconciliation_status: "NotInCell",
+          reconciliation_notes: data.removal_reason + (data.removal_notes ? ": " + data.removal_notes : "")
+        });
+      }
     }
     const item = (state.members || []).find((m) => String(m.id) === String(memberId)) || (cellPortalMembersState.items || []).find((m) => String(m.id) === String(memberId));
     if (item) {
