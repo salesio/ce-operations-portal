@@ -14111,7 +14111,22 @@ function foundationCourseGrade(student) {
 }
 
 function migrateFoundationStudent(student) {
+  if (!student) return {};
   const record = { ...student };
+  let nome = record.nome || "";
+  let apelido = record.apelido || "";
+  let full = record.full_name || [nome, apelido].filter(Boolean).join(" ").trim();
+  if ((!nome || !apelido) && full) {
+    const parts = full.split(/\s+/).filter(Boolean);
+    if (!nome && parts.length > 0) nome = parts[0];
+    if (!apelido && parts.length > 1) apelido = parts.slice(1).join(" ");
+  }
+  if (!full && (nome || apelido)) {
+    full = [nome, apelido].filter(Boolean).join(" ").trim();
+  }
+  record.nome = nome;
+  record.apelido = apelido;
+  record.full_name = full;
   if (!record.class_attendance) {
     const legacy = Array.isArray(record.presencas) ? record.presencas : [];
     record.class_attendance = defaultFoundationAttendance();
@@ -14376,15 +14391,24 @@ function renderFoundationTeacherForm(record = {}, mode = "edit") {
 
 function openFoundationTeacherForm(id = null, mode = "edit") {
   ensureFoundationData();
-  modalMode = id ? "edit" : "create";
+  modalMode = id ? (mode === "view" ? "view" : "edit") : "create";
   modalType = mode === "view" ? null : "foundationTeacher";
   modalRecordId = id;
-  const record = id ? (state.foundationTeachers || []).find((item) => item.id === id) : {};
+  const footer = byId("entryForm")?.querySelector(".ops-modal-footer");
+  if (mode === "view") {
+    if (footer) footer.innerHTML = `<button type="button" class="btn btn-outline-glass btn-touch" data-bs-dismiss="modal">${L("close") || "Fechar"}</button>`;
+  } else {
+    restoreEntryModalFooter();
+  }
+  const record = id ? (state.foundationTeachers || []).find((item) => String(item.id) === String(id)) || {} : {};
   byId("modalEyebrow").textContent = mode === "view" ? L("view") : (id ? L("edit") : L("add"));
-  byId("modalTitle").textContent = FS("foundationTabTeachers");
+  byId("modalTitle").textContent = `${FS("foundationTabTeachers")}${record.full_name ? ` — ${record.full_name}` : ""}`;
   byId("modalFields").innerHTML = renderFoundationTeacherForm(record, mode);
   bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
-  requestAnimationFrame(() => mountRelationalControls(byId("entryForm")));
+  requestAnimationFrame(() => {
+    mountRelationalControls(byId("entryForm"));
+    cleanRenderedText(byId("entryModal"));
+  });
 }
 
 const FOUNDATION_CLASS_STATUSES = ["Aberta", "Em Curso", "Pronta para Exame", "Em Graduação", "Concluída", "Cancelada"];
@@ -14422,10 +14446,16 @@ function renderFoundationClassForm(record = {}, mode = "edit") {
 
 function openFoundationClassForm(id = null, mode = "edit", defaults = {}) {
   ensureFoundationData();
-  modalMode = id ? "edit" : "create";
+  modalMode = id ? (mode === "view" ? "view" : "edit") : "create";
   modalType = mode === "view" ? null : "foundationClassGroup";
   modalRecordId = id;
-  const existing = id ? (state.foundationClassGroups || []).find((item) => item.id === id) : null;
+  const footer = byId("entryForm")?.querySelector(".ops-modal-footer");
+  if (mode === "view") {
+    if (footer) footer.innerHTML = `<button type="button" class="btn btn-outline-glass btn-touch" data-bs-dismiss="modal">${L("close") || "Fechar"}</button>`;
+  } else {
+    restoreEntryModalFooter();
+  }
+  const existing = id ? (state.foundationClassGroups || []).find((item) => String(item.id) === String(id)) : null;
   const record = existing || {
     delivery_mode: defaults.delivery_mode || "in_person",
     status: "Aberta",
@@ -14437,10 +14467,13 @@ function openFoundationClassForm(id = null, mode = "edit", defaults = {}) {
     online_link: defaults.delivery_mode === "online" ? "https://zoom.us/j/foundation-school" : ""
   };
   byId("modalEyebrow").textContent = mode === "view" ? L("view") : (id ? L("edit") : L("add"));
-  byId("modalTitle").textContent = FS("foundationTabClasses");
+  byId("modalTitle").textContent = `${FS("foundationTabClasses")}${record.name ? ` — ${record.name}` : ""}`;
   byId("modalFields").innerHTML = renderFoundationClassForm(record, mode);
   bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
-  requestAnimationFrame(() => mountRelationalControls(byId("entryForm")));
+  requestAnimationFrame(() => {
+    mountRelationalControls(byId("entryForm"));
+    cleanRenderedText(byId("entryModal"));
+  });
 }
 
 /** Visible action strip used across Foundation tabs (not buried inside filter grids). */
@@ -14588,17 +14621,28 @@ async function submitFoundationTeacher(form) {
   setRoute(activeRoute);
 }
 
-function openFoundationStudentForm(id = null) {
-  modalMode = id ? "edit" : "create";
-  modalType = "foundationStudent";
+function openFoundationStudentForm(id = null, mode = "edit") {
+  ensureFoundationData();
+  modalMode = id ? (mode === "view" ? "view" : "edit") : "create";
+  modalType = mode === "view" ? null : "foundationStudent";
   modalRecordId = id;
   const show = () => {
-    const record = id ? getCollection("foundationStudent").find((item) => item.id === id) : {};
-    byId("modalEyebrow").textContent = modalMode === "edit" ? L("edit") : L("add");
-    byId("modalTitle").textContent = L("foundationSchool");
-    byId("modalFields").innerHTML = renderFoundationStudentForm(record, modalMode);
+    const footer = byId("entryForm")?.querySelector(".ops-modal-footer");
+    if (mode === "view") {
+      if (footer) footer.innerHTML = `<button type="button" class="btn btn-outline-glass btn-touch" data-bs-dismiss="modal">${L("close") || "Fechar"}</button>`;
+    } else {
+      restoreEntryModalFooter();
+    }
+    const collection = getCollection("foundationStudent") || [];
+    const record = id ? collection.find((item) => String(item.id) === String(id)) || {} : {};
+    byId("modalEyebrow").textContent = mode === "view" ? L("view") : (modalMode === "edit" ? L("edit") : L("add"));
+    byId("modalTitle").textContent = `${L("foundationSchool")}${record.full_name || fullName(record) ? ` — ${record.full_name || fullName(record)}` : ""}`;
+    byId("modalFields").innerHTML = renderFoundationStudentForm(record, mode === "view" ? "view" : modalMode);
     bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
-    requestAnimationFrame(() => mountRelationalControls(byId("entryForm")));
+    requestAnimationFrame(() => {
+      mountRelationalControls(byId("entryForm"));
+      cleanRenderedText(byId("entryModal"));
+    });
   };
   // Refresh churches (and ensure class groups present) so local-created churches appear in selects
   Promise.resolve(refreshChurchesFromRepositoryForForms())
@@ -14655,7 +14699,7 @@ async function submitFoundationStudent(form) {
   const collection = getCollection("foundationStudent");
   const today = new Date().toISOString().slice(0, 10);
   if (modalMode === "edit") {
-    const index = collection.findIndex((item) => item.id === modalRecordId);
+    const index = collection.findIndex((item) => String(item.id) === String(modalRecordId));
     if (index < 0) return;
     const previous = { ...collection[index] };
     const merged = collectFoundationStudentPayload(form, collection[index]);
@@ -14694,7 +14738,7 @@ async function submitFoundationStudent(form) {
 
 async function submitFoundationMarkClass(form) {
   const collection = getCollection("foundationStudent");
-  const index = collection.findIndex((item) => item.id === modalRecordId);
+  const index = collection.findIndex((item) => String(item.id) === String(modalRecordId));
   if (index < 0) return;
   const previous = { ...collection[index] };
   const merged = applyFoundationCalculations({
@@ -14718,7 +14762,7 @@ async function submitFoundationMarkClass(form) {
 
 async function submitFoundationScore(form) {
   const collection = getCollection("foundationStudent");
-  const index = collection.findIndex((item) => item.id === modalRecordId);
+  const index = collection.findIndex((item) => String(item.id) === String(modalRecordId));
   if (index < 0) return;
   const previous = { ...collection[index] };
   const data = Object.fromEntries(new FormData(form).entries());
@@ -18044,18 +18088,28 @@ function getFoundationSchoolRepoSafe() {
 
 function migrateFoundationStudentRecord(student) {
   if (!student) return student;
-  const full = student.full_name || [student.nome, student.apelido].filter(Boolean).join(" ").trim();
+  let nome = student.nome || "";
+  let apelido = student.apelido || "";
+  let full = student.full_name || [nome, apelido].filter(Boolean).join(" ").trim();
+  if ((!nome || !apelido) && full) {
+    const parts = String(full).trim().split(/\s+/).filter(Boolean);
+    if (!nome && parts.length > 0) nome = parts[0];
+    if (!apelido && parts.length > 1) apelido = parts.slice(1).join(" ");
+  }
+  if (!full && (nome || apelido)) {
+    full = [nome, apelido].filter(Boolean).join(" ").trim();
+  }
   const classGroupId = student.class_group_id || "";
   const classGroup =
-    (state.foundationClassGroups || []).find((g) => g.id === classGroupId) || null;
+    (state.foundationClassGroups || []).find((g) => String(g.id) === String(classGroupId)) || null;
   return {
     ...student,
     id: student.id,
     // Preserve links to already-migrated domains (no auto conversion in this phase)
     first_timer_id: student.first_timer_id || "",
     member_id: student.member_id || "",
-    nome: student.nome || "",
-    apelido: student.apelido || "",
+    nome: nome,
+    apelido: apelido,
     full_name: full,
     telefone: student.telefone || student.phone || "",
     phone: student.phone || student.telefone || "",
@@ -25324,15 +25378,9 @@ function openView(type, id) {
     requestAnimationFrame(() => cleanRenderedText(byId("entryModal")));
     return;
   }
-  if (type === "foundationStudent") {
-    const record = getCollection(type).find((item) => item.id === id);
-    byId("modalEyebrow").textContent = L("view");
-    byId("modalTitle").textContent = L("foundationSchool");
-    byId("modalFields").innerHTML = renderFoundationStudentForm(record, "view");
-    modalType = null;
-    return bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
-  }
+  if (type === "foundationStudent") return openFoundationStudentForm(id, "view");
   if (type === "foundationTeacher") return openFoundationTeacherForm(id, "view");
+  if (type === "foundationClassGroup") return openFoundationClassForm(id, "view");
   const record = getCollection(type).find((item) => item.id === id);
   byId("modalEyebrow").textContent = L("view");
   byId("modalTitle").textContent = formTitle(type);
@@ -25576,9 +25624,17 @@ function quickAction(action, type, id) {
     alert(`${fullName(record)} foi registado(a) como Membro oficial com sucesso!`);
     return setRoute(activeRoute);
   }
+  if (type === "foundationStudent") {
+    if (action === "view") return openFoundationStudentForm(id, "view");
+    if (action === "edit") return openFoundationStudentForm(id, "edit");
+  }
   if (type === "foundationTeacher") {
     if (action === "view") return openFoundationTeacherForm(id, "view");
     if (action === "edit") return openFoundationTeacherForm(id, "edit");
+  }
+  if (type === "foundationClassGroup") {
+    if (action === "view") return openFoundationClassForm(id, "view");
+    if (action === "edit") return openFoundationClassForm(id, "edit");
   }
   if (type === "financeApprovedReq") {
     const disb = window.CEFinanceDisbursements;

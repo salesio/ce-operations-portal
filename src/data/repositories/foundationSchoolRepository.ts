@@ -39,13 +39,18 @@ export function normalizeFoundationStudent(
   input: Partial<FoundationStudent> & { id?: string },
 ): FoundationStudent {
   const id = input.id || (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : ("00000000-0000-4000-8000-" + Date.now().toString(16).padStart(12, "0")));
-  const nome = input.nome || "";
-  const apelido = input.apelido || "";
-  const full =
+  let nome = input.nome || "";
+  let apelido = input.apelido || "";
+  let full =
     input.full_name ||
     input.fullName ||
     [nome, apelido].filter(Boolean).join(" ").trim() ||
     "Aluno ESF";
+  if ((!nome || !apelido) && full && full !== "Aluno ESF") {
+    const parts = full.split(/\s+/).filter(Boolean);
+    if (!nome && parts.length > 0) nome = parts[0];
+    if (!apelido && parts.length > 1) apelido = parts.slice(1).join(" ");
+  }
   const attendance = (input.class_attendance || {}) as Record<string, boolean>;
   let completed = Number(input.completed_classes ?? input.completed_lessons_count ?? 0);
   if (!completed && attendance) {
