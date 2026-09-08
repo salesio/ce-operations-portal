@@ -340,11 +340,11 @@ export async function updateFoundationStudent(
     }
     const existing = await provider.foundationStudents.getById(id);
     if (!existing.ok) return fail(existing.error, existing.code);
-    if (!existing.data) return fail("Aluno ESF não encontrado.", "NOT_FOUND");
+    const baseStudent = existing.data || (payload as FoundationStudent);
     let next = normalizeFoundationStudent({
-      ...existing.data,
+      ...baseStudent,
       ...payload,
-      id,
+      id: baseStudent.id || id,
       updated_at: todayIso(),
     });
     next = await attachChurchNameStudent(next);
@@ -511,11 +511,11 @@ export async function updateFoundationClass(
     }
     const existing = await provider.foundationClassGroups.getById(id);
     if (!existing.ok) return fail(existing.error, existing.code);
-    if (!existing.data) return fail("Turma ESF não encontrada.", "NOT_FOUND");
+    const baseClass = existing.data || (payload as FoundationClassGroup);
     const next = normalizeFoundationClass({
-      ...existing.data,
+      ...baseClass,
       ...payload,
-      id,
+      id: baseClass.id || id,
       updated_at: todayIso(),
     });
     const result = await provider.foundationClassGroups.update(id, next);
@@ -611,11 +611,11 @@ export async function updateFoundationTeacher(
     }
     const existing = await provider.foundationTeachers.getById(id);
     if (!existing.ok) return fail(existing.error, existing.code);
-    if (!existing.data) return fail("Professor ESF não encontrado.", "NOT_FOUND");
+    const baseTeacher = existing.data || (payload as FoundationTeacher);
     const next = normalizeFoundationTeacher({
-      ...existing.data,
+      ...baseTeacher,
       ...payload,
-      id,
+      id: baseTeacher.id || id,
       updated_at: todayIso(),
     });
     const result = await provider.foundationTeachers.update(id, next);

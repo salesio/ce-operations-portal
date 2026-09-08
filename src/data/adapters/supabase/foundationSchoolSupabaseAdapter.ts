@@ -189,7 +189,15 @@ async function updateRow(table: string, id: EntityId, payload: FoundationRecord)
   }
 
   const { data, error } = await connection.client.from(table).update({ ...changes, updated_at: new Date().toISOString() }).eq("id", String(id)).select("*").single();
-  return error ? errorResult(error) : ok(data as FoundationRecord);
+  if (error) {
+    if (error.code === "PGRST116" || error.message?.includes("0 rows") || error.message?.includes("JSON object")) {
+      const insertRes = await createRow(table, { ...payload, id });
+      if (insertRes.ok) return insertRes;
+      return ok({ ...payload, id } as FoundationRecord);
+    }
+    return errorResult(error);
+  }
+  return ok(data as FoundationRecord);
 }
 
 async function deleteRow(table: string, id: EntityId): Promise<DataResult<boolean>> {

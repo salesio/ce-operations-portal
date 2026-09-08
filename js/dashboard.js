@@ -18102,7 +18102,8 @@ async function persistFoundationStudentViaRepository(mode, record) {
         result.code === "UNAVAILABLE" ||
         result.code === "NOT_IMPLEMENTED" ||
         result.code === "MIGRATION_REQUIRED" ||
-        /indispon[ií]vel|not implemented|syntax for type uuid/i.test(String(result.error || ""));
+        result.code === "NOT_FOUND" ||
+        /indispon[ií]vel|not implemented|syntax for type uuid|n[aã]o encontrad|not found/i.test(String(result.error || ""));
       if (soft) {
         console.warn("[CE Foundation] student soft-fail", result);
         return { ok: true, data: record, skipped: true, via: "local-state-fallback", repoError: result };
@@ -18134,7 +18135,8 @@ async function persistFoundationTeacherViaRepository(mode, record) {
         result.code === "UNAVAILABLE" ||
         result.code === "NOT_IMPLEMENTED" ||
         result.code === "MIGRATION_REQUIRED" ||
-        /indispon[ií]vel|not implemented|syntax for type uuid/i.test(String(result.error || ""));
+        result.code === "NOT_FOUND" ||
+        /indispon[ií]vel|not implemented|syntax for type uuid|n[aã]o encontrad|not found/i.test(String(result.error || ""));
       if (soft) return { ok: true, data: record, skipped: true, via: "local-state-fallback", repoError: result };
       return result;
     }
@@ -18162,7 +18164,8 @@ async function persistFoundationClassViaRepository(mode, record) {
         result.code === "UNAVAILABLE" ||
         result.code === "NOT_IMPLEMENTED" ||
         result.code === "MIGRATION_REQUIRED" ||
-        /indispon[ií]vel|not implemented|syntax for type uuid/i.test(String(result.error || ""));
+        result.code === "NOT_FOUND" ||
+        /indispon[ií]vel|not implemented|syntax for type uuid|n[aã]o encontrad|not found/i.test(String(result.error || ""));
       if (soft) return { ok: true, data: record, skipped: true, via: "local-state-fallback", repoError: result };
       return result;
     }

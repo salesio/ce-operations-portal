@@ -116,17 +116,28 @@
       updateStudent: async function (id, payload) {
         var s = store("students");
         var i = s.rows.findIndex(function (r) {
-          return r.id === id;
+          return (
+            r.id === id ||
+            (id && String(r.id) === String(id)) ||
+            (payload && payload.student_number && r.student_number === payload.student_number) ||
+            (payload && payload.full_name && r.full_name === payload.full_name) ||
+            (payload && payload.nome && r.nome === payload.nome)
+          );
         });
-        if (i < 0) return fail("Aluno não encontrado.", "NOT_FOUND");
-        s.rows[i] = Object.assign({}, s.rows[i], payload, { id: id });
+        if (i < 0) {
+          var newRow = Object.assign({}, payload, { id: id || (payload && payload.id) || "fs-" + Date.now() });
+          s.rows.push(newRow);
+          if (s.persist) save(KEYS.students, s.rows);
+          return ok(newRow);
+        }
+        s.rows[i] = Object.assign({}, s.rows[i], payload, { id: s.rows[i].id || id });
         if (s.persist) save(KEYS.students, s.rows);
         return ok(s.rows[i]);
       },
       deleteStudent: async function (id) {
         var s = store("students");
         s.rows = s.rows.filter(function (r) {
-          return r.id !== id;
+          return r.id !== id && String(r.id) !== String(id);
         });
         if (s.persist) save(KEYS.students, s.rows);
         return ok(true);
@@ -144,10 +155,21 @@
       updateTeacher: async function (id, payload) {
         var s = store("teachers");
         var i = s.rows.findIndex(function (r) {
-          return r.id === id;
+          return (
+            r.id === id ||
+            (id && String(r.id) === String(id)) ||
+            (payload && payload.teacher_number && r.teacher_number === payload.teacher_number) ||
+            (payload && payload.full_name && r.full_name === payload.full_name) ||
+            (payload && payload.nome && r.nome === payload.nome)
+          );
         });
-        if (i < 0) return fail("Professor não encontrado.", "NOT_FOUND");
-        s.rows[i] = Object.assign({}, s.rows[i], payload, { id: id });
+        if (i < 0) {
+          var newRow = Object.assign({}, payload, { id: id || (payload && payload.id) || "ftch-" + Date.now() });
+          s.rows.push(newRow);
+          if (s.persist) save(KEYS.teachers, s.rows);
+          return ok(newRow);
+        }
+        s.rows[i] = Object.assign({}, s.rows[i], payload, { id: s.rows[i].id || id });
         if (s.persist) save(KEYS.teachers, s.rows);
         return ok(s.rows[i]);
       },
@@ -164,10 +186,21 @@
       updateClass: async function (id, payload) {
         var s = store("classes");
         var i = s.rows.findIndex(function (r) {
-          return r.id === id;
+          return (
+            r.id === id ||
+            (id && String(r.id) === String(id)) ||
+            (payload && payload.class_code && r.class_code === payload.class_code) ||
+            (payload && payload.name && r.name === payload.name) ||
+            (payload && payload.nome && r.nome === payload.nome)
+          );
         });
-        if (i < 0) return fail("Turma não encontrada.", "NOT_FOUND");
-        s.rows[i] = Object.assign({}, s.rows[i], payload, { id: id });
+        if (i < 0) {
+          var newRow = Object.assign({}, payload, { id: id || (payload && payload.id) || "fcg-" + Date.now() });
+          s.rows.push(newRow);
+          if (s.persist) save(KEYS.classes, s.rows);
+          return ok(newRow);
+        }
+        s.rows[i] = Object.assign({}, s.rows[i], payload, { id: s.rows[i].id || id });
         if (s.persist) save(KEYS.classes, s.rows);
         return ok(s.rows[i]);
       },
