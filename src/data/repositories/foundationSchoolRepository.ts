@@ -51,14 +51,20 @@ export function normalizeFoundationStudent(
     if (!nome && parts.length > 0) nome = parts[0];
     if (!apelido && parts.length > 1) apelido = parts.slice(1).join(" ");
   }
-  const attendance = (input.class_attendance || {}) as Record<string, boolean>;
-  let completed = Number(input.completed_classes ?? input.completed_lessons_count ?? 0);
-  if (!completed && attendance) {
-    completed = Object.values(attendance).filter(Boolean).length;
+  const attendance = { ...((input.class_attendance || {}) as Record<string, boolean>) };
+  const lessonScores = (input.lesson_scores || {}) as Record<string, unknown>;
+  for (let i = 1; i <= 7; i += 1) {
+    const manualScore = lessonScores[`class_${i}`] ?? input[`lesson_score_${i}`];
+    if (manualScore !== undefined && manualScore !== null && manualScore !== "" && Number(manualScore) >= 0) {
+      attendance[`class_${i}`] = true;
+    }
   }
-  const percent =
-    Number(input.class_progress_percent ?? input.lesson_progress_percent ?? 0) ||
-    Math.round((completed / 7) * 100);
+  let completed = Number(input.completed_classes ?? input.completed_lessons_count ?? input.lessons_completed ?? 0);
+  const computedCompleted = Object.values(attendance).filter(Boolean).length;
+  if (computedCompleted > completed || !completed) {
+    completed = computedCompleted;
+  }
+  const percent = Math.round((completed / 7) * 100);
   const exam = Number(input.nota_exame ?? input.final_exam_score ?? 0);
   const estado = input.estado || input.status || "Em Curso";
   const graduated = asBool(input.graduado ?? input.graduated);

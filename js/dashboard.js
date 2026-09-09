@@ -14958,8 +14958,14 @@ function defaultFoundationAttendance() {
 }
 
 function getFoundationCompletedClasses(student) {
-  const attendance = student.class_attendance || defaultFoundationAttendance();
-  return Array.from({ length: 7 }, (_, i) => attendance[`class_${i + 1}`]).filter(Boolean).length;
+  const attendance = student?.class_attendance || defaultFoundationAttendance();
+  return Array.from({ length: 7 }, (_, i) => {
+    const n = i + 1;
+    const manualScore = student?.lesson_scores?.[`class_${n}`] ?? student?.[`lesson_score_${n}`];
+    const hasScore = manualScore !== undefined && manualScore !== null && String(manualScore).trim() !== "";
+    const hasSub = (typeof foundationBestLessonSubmission === "function" && student?.id) ? foundationBestLessonSubmission(student.id, n) != null : false;
+    return Boolean(attendance[`class_${n}`] || hasScore || hasSub);
+  }).filter(Boolean).length;
 }
 
 function getFoundationClassProgressPercent(student) {
@@ -14992,7 +14998,7 @@ function foundationBestLessonSubmission(studentId, lessonNumber) {
       test_passed: num >= passingScore,
       passed: num >= passingScore,
       review_status: "Auto Matched",
-      submitted_at: student.updated_at || new Date().toISOString()
+      submitted_at: student?.updated_at || new Date().toISOString()
     };
   }
   return null;
@@ -15063,6 +15069,10 @@ function migrateFoundationStudent(student) {
   }
   for (let i = 1; i <= 7; i += 1) {
     if (record.class_attendance[`class_${i}`] === undefined) record.class_attendance[`class_${i}`] = false;
+    const manualScore = record.lesson_scores?.[`class_${i}`] ?? record[`lesson_score_${i}`];
+    if (manualScore !== undefined && manualScore !== null && String(manualScore).trim() !== "") {
+      record.class_attendance[`class_${i}`] = true;
+    }
   }
   record.completed_classes = getFoundationCompletedClasses(record);
   record.class_progress_percent = getFoundationClassProgressPercent(record);
@@ -15116,7 +15126,9 @@ function foundationClassDots(student, compact = false) {
   const record = migrateFoundationStudent(student);
   return `<div class="step-row foundation-class-steps ${compact ? "is-compact" : ""}">${Array.from({ length: 7 }, (_, i) => {
     const n = i + 1;
-    const done = record.class_attendance[`class_${n}`];
+    const manualScore = record.lesson_scores?.[`class_${n}`] ?? record[`lesson_score_${n}`];
+    const hasScore = manualScore !== undefined && manualScore !== null && String(manualScore).trim() !== "";
+    const done = Boolean(record.class_attendance[`class_${n}`] || hasScore || (typeof foundationBestLessonSubmission === "function" && record.id && foundationBestLessonSubmission(record.id, n) != null));
     return `<span class="${done ? "done" : "pending"}" title="${foundationClassLabel(n)}">${n}</span>`;
   }).join("")}</div>`;
 }
@@ -15138,9 +15150,10 @@ function foundationClassCheckboxes(student, prefix = "class_") {
     const n = i + 1;
     const maxScore = getLessonMaxScore(n);
     const key = `${prefix}${n}`;
-    const checked = record.class_attendance[`class_${n}`] ? "checked" : "";
     const submission = foundationBestLessonSubmission(record.id, n);
     const scoreVal = submission ? (submission.test_score_obtained ?? submission.score ?? "") : (record.lesson_scores?.[`class_${n}`] ?? record[`lesson_score_${n}`] ?? "");
+    const hasScore = scoreVal !== undefined && scoreVal !== null && String(scoreVal).trim() !== "";
+    const checked = (record.class_attendance[`class_${n}`] || hasScore) ? "checked" : "";
     return `
       <div class="foundation-class-item">
         <label class="foundation-class-toggle m-0 border-0 bg-transparent p-0 d-flex align-items-center gap-2" style="cursor: pointer; user-select: none;">
@@ -15149,7 +15162,7 @@ function foundationClassCheckboxes(student, prefix = "class_") {
         </label>
         <div class="foundation-score-badge">
           <span class="score-label">${lang === "pt" ? "Nota:" : "Score:"}</span>
-          <input type="number" min="0" max="${maxScore}" name="lesson_score_${n}" data-foundation-score-class="${n}" class="form-control form-control-sm text-center" value="${scoreVal !== undefined && scoreVal !== null ? scoreVal : ""}" placeholder="0-${maxScore}">
+          <input type="number" min="0" max="${maxScore}" name="lesson_score_${n}" data-foundation-score-class="${n}" class="form-control form-control-sm text-center" value="${hasScore ? scoreVal : ""}" placeholder="0-${maxScore}">
           <span class="score-max">/${maxScore}</span>
         </div>
       </div>
@@ -15174,7 +15187,13 @@ function foundationSectionTitle(title) {
 
 function readFoundationAttendanceFromForm(form, prefix = "class_") {
   const attendance = defaultFoundationAttendance();
-  for (let i = 1; i <= 7; i += 1) attendance[`class_${i}`] = new FormData(form).has(`${prefix}${i}`);
+  const formData = new FormData(form);
+  for (let i = 1; i <= 7; i += 1) {
+    const isChecked = formData.has(`${prefix}${i}`) || !!form.querySelector(`input[name="${prefix}${i}"]:checked`);
+    const scoreVal = form.querySelector(`input[name="lesson_score_${i}"]`)?.value;
+    const hasScore = scoreVal !== undefined && scoreVal !== null && String(scoreVal).trim() !== "";
+    attendance[`class_${i}`] = Boolean(isChecked || hasScore);
+  }
   return attendance;
 }
 
@@ -16810,8 +16829,14 @@ function foundationLessonRecords(studentId) {
 }
 
 function foundationPassedLessonTests(studentId) {
-  const pass = Number(state.foundationSchoolSettings?.passing_score_per_lesson || 50);
-  return foundationSubmissionsForStudent(studentId).filter((item) => Number(item.test_score || item.percentage || 0) >= pass);
+  const list = [];
+  for (let n = 1; n <= 7; n += 1) {
+    const sub = foundationBestLessonSubmission(studentId, n);
+    if (sub && (sub.test_passed || sub.passed)) {
+      list.push(sub);
+    }
+  }
+  return list;
 }
 
 function foundationSoulWinningForStudent(studentId) {
@@ -16924,7 +16949,9 @@ function foundationStudentCompactProgress(student) {
       <div class="foundation-mini-steps" aria-label="${L("progress")}">
         ${Array.from({ length: 7 }, (_, i) => {
           const n = i + 1;
-          const done = !!record.class_attendance?.[`class_${n}`];
+          const manualScore = record.lesson_scores?.[`class_${n}`] ?? record[`lesson_score_${n}`];
+          const hasScore = manualScore !== undefined && manualScore !== null && String(manualScore).trim() !== "";
+          const done = Boolean(record.class_attendance?.[`class_${n}`] || hasScore || (typeof foundationBestLessonSubmission === "function" && record.id && foundationBestLessonSubmission(record.id, n) != null));
           return `<span class="${done ? "done" : ""}" title="${FS("lesson")} ${n}${n === 4 ? ` - ${FS("soulWinning")}` : ""}">${n}</span>`;
         }).join("")}
       </div>
@@ -28810,10 +28837,10 @@ document.addEventListener("input", (event) => {
     const n = event.target.dataset.foundationScoreClass;
     const form = event.target.closest("form");
     if (form) {
-      const val = Number(event.target.value);
-      if (val > 0) {
-        const chk = form.querySelector(`[data-foundation-class="${n}"]`);
-        if (chk && !chk.checked) chk.checked = true;
+      const val = String(event.target.value ?? "").trim();
+      const chk = form.querySelector(`[data-foundation-class="${n}"]`);
+      if (chk) {
+        chk.checked = val !== "";
       }
       updateFoundationProgressPreview(form);
     }
@@ -29221,10 +29248,10 @@ document.addEventListener("change", (event) => {
     const n = event.target.dataset.foundationScoreClass;
     const form = event.target.closest("form");
     if (form) {
-      const val = Number(event.target.value);
-      if (val > 0) {
-        const chk = form.querySelector(`[data-foundation-class="${n}"]`);
-        if (chk && !chk.checked) chk.checked = true;
+      const val = String(event.target.value ?? "").trim();
+      const chk = form.querySelector(`[data-foundation-class="${n}"]`);
+      if (chk) {
+        chk.checked = val !== "";
       }
       updateFoundationProgressPreview(form);
     }
