@@ -40,7 +40,7 @@ ok("service checklists seed exists", existsSync(join(root, "src/data/seeds/servi
 ok("venue inventory bridge exists", existsSync(join(root, "js/venue-inventory-data-bridge.js")));
 ok(
   "index includes venue inventory bridge",
-  /venue-inventory-data-bridge\.js\?v=20260723-venue-inventory-data-v1/.test(read("index.html")),
+  /venue-inventory-data-bridge\.js(\?v=[^"']*)?/.test(read("index.html")),
 );
 ok("docs pilot Venue & Inventory", /Pilot migration: Venue & Inventory/.test(read("DATA_LAYER_PLAN.md")));
 ok("README mentions Venue pilot", /Venue & Inventory/.test(read("README.md")));

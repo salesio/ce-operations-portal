@@ -7714,14 +7714,33 @@ function enrichRecordChurchFields(data) {
 
 
 
+function hasPermission(...permissions) {
+  if (!activeUser) return false;
+  const role = String(activeUser.role || activeUser.role_name || "").toLowerCase().trim();
+  if (role === "super admin" || role === "super_admin") return true;
+  const userPerms = Array.isArray(activeUser.department_permissions) ? activeUser.department_permissions : [];
+  const directPerms = Array.isArray(activeUser.permissions) ? activeUser.permissions : [];
+  if (userPerms.includes("*") || directPerms.includes("*")) return true;
+  return permissions.some((perm) => {
+    if (!perm) return false;
+    if (userPerms.includes(perm) || directPerms.includes(perm)) return true;
+    if (window.CEAccessControl?.canPerformAction) {
+      if (window.CEAccessControl.canPerformAction(activeUser, "venueInventory", perm)) return true;
+    }
+    if (window.CEAccessControl?.canViewModule && window.CEAccessControl.canViewModule(activeUser, perm)) return true;
+    return false;
+  });
+}
+
 function canManageVenue() {
-  const role = String(activeUser?.role || activeUser?.role_name || "").toLowerCase();
+  const role = String(activeUser?.role || activeUser?.role_name || "").toLowerCase().trim();
   if (
     role === "venue manager" ||
     role === "venue_manager" ||
     role.includes("património") ||
     role.includes("patrimonio") ||
-    role === "super admin"
+    role === "super admin" ||
+    role === "super_admin"
   ) {
     return true;
   }
@@ -7729,11 +7748,13 @@ function canManageVenue() {
 }
 
 function canRequestVenueEquipment() {
-  return hasPermission("venueInventoryRequests");
+  return hasPermission("venueInventoryRequests", "requisitions");
 }
 
 function canViewVenueModule() {
-  return canManageVenue() || canRequestVenueEquipment() || hasPermission("assignedEquipment", "venueInventory");
+  if (canManageVenue() || canRequestVenueEquipment() || hasPermission("assignedEquipment", "venueInventory", "inventory", "venues")) return true;
+  if (window.CEAccessControl?.canViewModule && window.CEAccessControl.canViewModule(activeUser, "venueInventory")) return true;
+  return false;
 }
 
 function isStaffEquipmentOnly() {
