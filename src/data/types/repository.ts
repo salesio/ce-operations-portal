@@ -123,6 +123,7 @@ export interface EntityRepository<T> {
   create?(input: Partial<T>): Promise<DataResult<T>>;
   update?(id: EntityId, input: Partial<T>): Promise<DataResult<T>>;
   remove?(id: EntityId): Promise<DataResult<boolean>>;
+  delete?(id: EntityId): Promise<DataResult<boolean>>;
 }
 
 /**

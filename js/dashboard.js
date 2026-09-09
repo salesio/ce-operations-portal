@@ -13888,17 +13888,17 @@ async function syncMemberRegistrationCandidatesFromRepository() {
     if (repo && typeof repo.listMemberRegistrationCandidates === "function") {
       const res = await repo.listMemberRegistrationCandidates();
       if (res?.ok && Array.isArray(res.data)) {
-        const map = new Map((state.memberRegistrationCandidates || []).map((c) => [String(c.id), c]));
-        res.data.forEach((c) => map.set(String(c.id), { ...map.get(String(c.id)), ...c }));
-        state.memberRegistrationCandidates = Array.from(map.values());
+        state.memberRegistrationCandidates = res.data;
+        saveState("Synced member registration candidates from repository");
+        return;
       }
-    } else if (typeof window !== "undefined" && (window.CESupabase?.getRawClient?.() || window.supabase)) {
+    }
+    if (typeof window !== "undefined" && (window.CESupabase?.getRawClient?.() || window.supabase)) {
       const client = window.CESupabase?.getRawClient?.() || window.supabase;
       const { data, error } = await client.from("member_registration_candidates").select("*");
       if (!error && Array.isArray(data)) {
-        const map = new Map((state.memberRegistrationCandidates || []).map((c) => [String(c.id), c]));
-        data.forEach((c) => map.set(String(c.id), { ...map.get(String(c.id)), ...c }));
-        state.memberRegistrationCandidates = Array.from(map.values());
+        state.memberRegistrationCandidates = data;
+        saveState("Synced member registration candidates from Supabase");
       }
     }
   } catch (err) {
@@ -13936,13 +13936,13 @@ async function persistMemberCandidateViaRepository(mode, candidate) {
       result = await repo.updateMemberRegistrationCandidate(candidateObj.id, candidateObj, actor);
     }
     if (result?.ok === false) {
-      console.warn("[CE Member Candidates] repository write note; keeping local record", result);
-      return { ok: true, data: candidateObj, skipped: true, via: "local-state-legacy-candidate", repoError: result };
+      console.warn("[CE Member Candidates] repository write note", result);
+      return { ...result, via: "local-state-legacy-candidate" };
     }
     return result || { ok: true, data: candidateObj };
   } catch (error) {
-    console.warn("[CE Member Candidates] repository unavailable; keeping local record", error);
-    return { ok: true, data: candidateObj, skipped: true, via: "local-state-fallback" };
+    console.warn("[CE Member Candidates] repository error", error);
+    return { ok: false, error: error?.message || error, via: "local-state-fallback" };
   }
 }
 
@@ -14577,14 +14577,33 @@ async function candidateAction(action, id) {
     if (typeof window !== "undefined" && (window.CESupabase?.getRawClient?.() || window.supabase)) {
       try {
         const client = window.CESupabase?.getRawClient?.() || window.supabase;
-        await client.from("member_registration_candidates").delete().eq("id", candidate.id);
+        const { error: delErr } = await client.from("member_registration_candidates").delete().eq("id", candidate.id);
+        if (delErr) {
+          console.warn("[CE Member Candidates] Supabase direct delete warning:", delErr);
+        }
       } catch (clientErr) {
         console.warn("[CE Member Candidates] Supabase direct delete note:", clientErr);
       }
     }
 
     // 3. Remove from local state
-    state.memberRegistrationCandidates = (state.memberRegistrationCandidates || []).filter((item) => item.id !== id);
+    state.memberRegistrationCandidates = (state.memberRegistrationCandidates || []).filter((item) => String(item.id) !== String(id));
+
+    // 4. Remove from localStorage ce-data-layer
+    if (typeof localStorage !== "undefined") {
+      try {
+        const rawLocal = localStorage.getItem("ce-data-layer:member_registration_candidates");
+        if (rawLocal) {
+          const parsed = JSON.parse(rawLocal);
+          if (Array.isArray(parsed)) {
+            const filtered = parsed.filter((item) => String(item.id) !== String(id));
+            localStorage.setItem("ce-data-layer:member_registration_candidates", JSON.stringify(filtered));
+          }
+        }
+      } catch (e) {
+        console.warn("[CE Member Candidates] localStorage clean error", e);
+      }
+    }
 
     recordCandidateAudit("member_candidate.deleted", candidate);
     saveState("Registo de candidato eliminado");

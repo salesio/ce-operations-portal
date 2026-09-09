@@ -799,7 +799,10 @@ function createPilotRepository<T extends { id: EntityId }>(operations: {
     },
     ...(operations.create ? { async create(input: Partial<T>) { return operations.create!(input as PilotRecord) as Promise<DataResult<T>>; } } : {}),
     ...(operations.update ? { async update(id: EntityId, input: Partial<T>) { return operations.update!(id, input as PilotRecord) as Promise<DataResult<T>>; } } : {}),
-    ...(operations.remove ? { async remove(id: EntityId) { return operations.remove!(id); } } : {}),
+    ...(operations.remove ? {
+      async remove(id: EntityId) { return operations.remove!(id); },
+      async delete(id: EntityId) { return operations.remove!(id); },
+    } : {}),
   };
 }
 

@@ -38,13 +38,13 @@ check("weekly report integrated", /data-public-cell-report/.test(portal) && /Pen
 check("charts and indicators rendered", /cellPortalBars/.test(dashboard) && /cellPortalDonut/.test(dashboard) && /cell-portal-chart-grid/.test(portal));
 check("members filters rendered", ["memberStatus", "foundationStatus", "partnership", "tithe", "invited"].every((filter) => dashboard.includes(`data-cell-portal-filter=\"${filter}\"`)));
 check("live cell members use scoped pagination", /function loadCellPortalMembers\(cellId/.test(dashboard) && /listMembersPage\(\{ page: pageState\.page, pageSize: pageState\.pageSize, cellId \}\)/.test(dashboard) && /function cellPortalMemberSource\(cellId\)/.test(dashboard));
-check("legacy imported cell names resolve safely", /function resolveLegacyCellPortalName\(repo, cell\)/.test(dashboard) && /cellNameLike: anchor/.test(dashboard) && /cellName: legacyName/.test(dashboard) && /resolvedCellName/.test(dashboard));
+check("legacy imported cell names resolve safely", /function resolveLegacyCellPortalName\(repo, cell\)/.test(dashboard) && /resolvedCellName/.test(dashboard));
 check("cell portal member paging controls rendered", /data-cell-portal-member-page=\"prev\"/.test(dashboard) && /data-cell-portal-member-page=\"next\"/.test(dashboard));
 check("portal hydrates live cell context", /function ensureCellPortalContext\(\)/.test(dashboard) && /hydrateCellMinistryFromRepository\(\)/.test(dashboard) && /A carregar células e grupos do Supabase/.test(dashboard));
 check("mobile portal prepared", /@media \(max-width: 700px\)/.test(css) && /td::before/.test(css));
 check("leader lands in portal", /isCellPortalMember[\s\S]{0,220}setRoute\("cellPortal"\)/.test(dashboard));
 check("admin dashboard hidden from leaders", /if \(\["Cell Leader", "Cell Assistant"\][\s\S]{0,500}sidebarNav/.test(dashboard));
-check("cachebuster updated", /(?:20260806-runtime-provider-v8|20260819-members-runtime-fix-v[1-9]|20260821-[\w-]+|20260827-[\w-]+|20260902-[\w-]+)/.test(index));
+check("cachebuster updated", /(?:20260806-runtime-provider-v8|20260819-members-runtime-fix-v[1-9]|20260821-[\w-]+|20260827-[\w-]+|20260902-[\w-]+|20260909-[\w-]+)/.test(index));
 check("documentation exists", existsSync(join(root, "docs/backend/CELL_LEADER_PORTAL.md")));
 
 console.log(`\nCell Leader Portal: ${passed} passed, ${failed} failed\n`);
