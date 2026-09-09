@@ -5524,12 +5524,8 @@ function portalCellNameMatchScore(selectedCell, memberCellName) {
   const memberNorm = portalNormalizeName(memberCellName);
   if (selectedNorm && memberNorm) {
     if (selectedNorm === memberNorm) return 10;
-    if (selectedNorm.includes(memberNorm) || memberNorm.includes(selectedNorm)) return 8;
   }
-  const selectedTokens = portalCellNameTokens(portalCellName(selectedCell));
-  const memberTokens = portalCellNameTokens(memberCellName);
-  const shared = selectedTokens.filter((selected) => memberTokens.some((member) => member === selected || member.startsWith(selected) || selected.startsWith(member)));
-  return shared.length >= 1 ? shared.length : 0;
+  return 0;
 }
 
 const legacyCellNameCache = new Map();
@@ -5540,20 +5536,7 @@ async function resolveLegacyCellPortalName(repo, cell) {
     return legacyCellNameCache.get(cellId);
   }
   const cellTargetName = cell.raw_cell_name || cell.cell_name || cell.name || "";
-  const tokens = portalCellNameTokens(cellTargetName);
-  const anchor = tokens.sort((a, b) => b.length - a.length)[0] || cellTargetName.slice(0, 5);
-  if (!anchor) return cellTargetName;
-  const result = await repo.listMembersPage({ page: 1, pageSize: 100, cellNameLike: anchor });
-  if (!result?.ok) return cellTargetName;
-  const matches = new Map();
-  (result.data?.items || []).forEach((member) => {
-    const name = String(member.cell_name || member.celula || "").trim();
-    const score = portalCellNameMatchScore(cell, name);
-    if (score) matches.set(name, Math.max(matches.get(name) || 0, score));
-  });
-  const legacyName = [...matches.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]?.[0] || cellTargetName;
-  if (cellId) legacyCellNameCache.set(cellId, legacyName);
-  return legacyName;
+  return cellTargetName;
 }
 
 async function loadCellPortalMembers(cellId, { force = false } = {}) {
@@ -5575,20 +5558,18 @@ async function loadCellPortalMembers(cellId, { force = false } = {}) {
     const allRegistry = getAllRegisteredCells();
     const cell = allRegistry.find((item) => String(item.id) === String(cellId) || portalNormalizeName(item.cell_name || item.name) === portalNormalizeName(cellId));
     let result = null;
-    if (cell) {
-      const legacyName = await resolveLegacyCellPortalName(repo, cell);
-      result = await repo.listMembersPage({ page: pageState.page, pageSize: pageState.pageSize, cellName: legacyName });
-      if (result?.ok && result.data?.totalCount) {
-        pageState.resolvedCellName = legacyName;
-      }
-    }
+
+    // 1. Primary: Match strictly by cell_id in Supabase
+    result = await repo.listMembersPage({ page: pageState.page, pageSize: pageState.pageSize, cellId });
+
+    // 2. Secondary: Exact match by cell name
     if (!result?.ok || !result.data?.totalCount) {
-      result = await repo.listMembersPage({ page: pageState.page, pageSize: pageState.pageSize, cellId });
-    }
-    if (!result?.ok || !result.data?.totalCount) {
-      const cName = cell?.cell_name || cell?.name || (typeof cellId === "string" ? cellId : "");
-      if (cName) {
-        result = await repo.listMembersPage({ page: pageState.page, pageSize: pageState.pageSize, cellName: cName });
+      const exactName = cell?.cell_name || cell?.name || (typeof cellId === "string" ? cellId : "");
+      if (exactName) {
+        result = await repo.listMembersPage({ page: pageState.page, pageSize: pageState.pageSize, cellName: exactName });
+        if (result?.ok && result.data?.totalCount) {
+          pageState.resolvedCellName = exactName;
+        }
       }
     }
     if (requestId !== pageState.requestId) return false;
@@ -7847,8 +7828,21 @@ function venueReportName(report) {
 }
 
 function fullName(record) {
-  const parts = `${record.tratamento ? `${record.tratamento} ` : ""}${record.nome || ""} ${record.apelido || ""}`.trim();
-  return cleanDisplayText(parts || record.full_name || record.fullName || record.name || "");
+  if (!record) return "";
+  const nome = String(record.nome || record.first_name || "").trim();
+  const apelido = String(record.apelido || record.last_name || "").trim();
+  let combined = "";
+  if (nome && apelido) {
+    if (nome.toLowerCase().endsWith(apelido.toLowerCase())) {
+      combined = nome;
+    } else {
+      combined = `${nome} ${apelido}`;
+    }
+  } else {
+    combined = nome || apelido || record.full_name || record.fullName || record.name || "";
+  }
+  const prefix = record.tratamento ? `${record.tratamento} ` : "";
+  return cleanDisplayText(`${prefix}${combined}`.trim());
 }
 
 function migrateChurchRecord(church) {
@@ -18299,6 +18293,9 @@ function migrateMemberRecord(member) {
 
   let fName = member.nome ?? member.first_name ?? "";
   let lName = member.apelido ?? member.last_name ?? "";
+  if (fName && lName && fName.toLowerCase().endsWith(lName.toLowerCase())) {
+    fName = fName.slice(0, fName.length - lName.length).trim();
+  }
   if (!fName && !lName && member.full_name) {
     const parts = String(member.full_name).trim().split(/\s+/);
     fName = parts[0] || "";
@@ -18306,9 +18303,7 @@ function migrateMemberRecord(member) {
   }
   const title = member.tratamento ?? member.title ?? "";
   const fullFromParts = [title, fName, lName].filter(Boolean).join(" ").trim();
-  const fullNameStr = (member.nome != null || member.apelido != null)
-    ? (fullFromParts || "Membro")
-    : (member.full_name || member.fullName || fullFromParts || "Membro");
+  const fullNameStr = member.full_name || fullFromParts || "Membro";
 
   const phone = member.primary_phone || member.telefone || member.phone || member.contacto || null;
   const secondaryPhone = member.secondary_phone || member.telefone_alternativo || null;
