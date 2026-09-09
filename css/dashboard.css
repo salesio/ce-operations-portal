@@ -7697,3 +7697,63 @@ nav.module-tabs {
 }
 
 
+
+.foundation-class-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 0.95rem;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 0.85rem;
+  background: rgba(15, 23, 42, 0.7);
+  transition: all 0.2s ease;
+}
+
+.foundation-class-item:has(input[type="checkbox"]:checked) {
+  border-color: rgba(56, 189, 248, 0.7);
+  background: rgba(14, 165, 233, 0.15);
+}
+
+.foundation-score-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: #0f172a;
+  padding: 0.25rem 0.6rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(56, 189, 248, 0.5);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.foundation-score-badge .score-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  white-space: nowrap;
+}
+
+.foundation-score-badge input[type="number"] {
+  width: 58px;
+  height: 28px;
+  font-weight: 800;
+  font-size: 0.95rem;
+  background: #1e293b !important;
+  color: #38bdf8 !important;
+  border: 1px solid #38bdf8 !important;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.foundation-score-badge input[type="number"]::placeholder {
+  color: #94a3b8;
+  font-size: 0.8rem;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+.foundation-score-badge .score-max {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #38bdf8;
+}

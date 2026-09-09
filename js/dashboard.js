@@ -14980,14 +14980,16 @@ function foundationBestLessonSubmission(studentId, lessonNumber) {
   const manualScore = student?.lesson_scores?.[ `class_${lessonNumber}` ] ?? student?.[ `lesson_score_${lessonNumber}` ];
   if (manualScore !== undefined && manualScore !== null && manualScore !== "") {
     const num = Number(manualScore);
+    const maxScore = getLessonMaxScore(lessonNumber);
+    const passingScore = Math.ceil(maxScore * 0.5);
     return {
       student_id: studentId,
       lesson_number: lessonNumber,
       score: num,
-      max_score: 100,
+      max_score: maxScore,
       test_score_obtained: num,
-      test_passed: num >= (Number(state.foundationSchoolSettings?.passing_score_per_lesson) || 50),
-      passed: num >= (Number(state.foundationSchoolSettings?.passing_score_per_lesson) || 50),
+      test_passed: num >= passingScore,
+      passed: num >= passingScore,
       review_status: "Auto Matched",
       submitted_at: student.updated_at || new Date().toISOString()
     };
@@ -15133,19 +15135,21 @@ function foundationClassCheckboxes(student, prefix = "class_") {
   const record = migrateFoundationStudent(student);
   return `<div class="foundation-class-grid">${Array.from({ length: 7 }, (_, i) => {
     const n = i + 1;
+    const maxScore = getLessonMaxScore(n);
     const key = `${prefix}${n}`;
     const checked = record.class_attendance[`class_${n}`] ? "checked" : "";
     const submission = foundationBestLessonSubmission(record.id, n);
     const scoreVal = submission ? (submission.test_score_obtained ?? submission.score ?? "") : (record.lesson_scores?.[`class_${n}`] ?? record[`lesson_score_${n}`] ?? "");
     return `
-      <div class="foundation-class-item p-2 rounded d-flex align-items-center justify-content-between gap-2" style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(32, 215, 255, 0.18); border-radius: 0.85rem;">
+      <div class="foundation-class-item">
         <label class="foundation-class-toggle m-0 border-0 bg-transparent p-0 d-flex align-items-center gap-2" style="cursor: pointer; user-select: none;">
-          <input type="checkbox" name="${key}" data-foundation-class="${n}" ${checked} style="width: 1.15rem; height: 1.15rem; accent-color: var(--cyan); cursor: pointer;">
-          <span style="font-weight: 800; color: #fff; font-size: 0.95rem;">${foundationClassLabel(n)}</span>
+          <input type="checkbox" name="${key}" data-foundation-class="${n}" ${checked} style="width: 1.25rem; height: 1.25rem; accent-color: #38bdf8; cursor: pointer;">
+          <span style="font-weight: 700; color: #f8fafc; font-size: 0.95rem;">${foundationClassLabel(n)}</span>
         </label>
-        <div class="d-flex align-items-center gap-1" style="max-width: 140px;">
-          <label class="small text-secondary mb-0 me-1" style="font-size: 0.75rem; white-space: nowrap;">${lang === "pt" ? "Nota:" : "Score:"}</label>
-          <input type="number" min="0" max="100" name="lesson_score_${n}" data-foundation-score-class="${n}" class="form-control form-control-sm text-end" value="${scoreVal !== undefined && scoreVal !== null ? scoreVal : ""}" placeholder="0-100" style="width: 68px; font-weight: 700; background: rgba(15, 23, 42, 0.8); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3);">
+        <div class="foundation-score-badge">
+          <span class="score-label">${lang === "pt" ? "Nota:" : "Score:"}</span>
+          <input type="number" min="0" max="${maxScore}" name="lesson_score_${n}" data-foundation-score-class="${n}" class="form-control form-control-sm text-center" value="${scoreVal !== undefined && scoreVal !== null ? scoreVal : ""}" placeholder="0-${maxScore}">
+          <span class="score-max">/${maxScore}</span>
         </div>
       </div>
     `;
@@ -15661,14 +15665,14 @@ function collectFoundationStudentPayload(form, base = {}) {
   for (let n = 1; n <= 7; n += 1) {
     const scoreRaw = form.querySelector(`input[name="lesson_score_${n}"]`)?.value;
     if (scoreRaw !== undefined && scoreRaw !== "" && scoreRaw !== null) {
-      const numScore = Math.max(0, Math.min(100, Number(scoreRaw)));
+      const maxScore = getLessonMaxScore(n);
+      const numScore = Math.max(0, Math.min(maxScore, Number(scoreRaw)));
       data.lesson_scores[`class_${n}`] = numScore;
       data[`lesson_score_${n}`] = numScore;
       if (studentId) {
         if (!Array.isArray(state.foundationLessonTestSubmissions)) state.foundationLessonTestSubmissions = [];
         const existingSub = state.foundationLessonTestSubmissions.find((item) => item.student_id === studentId && Number(item.lesson_number) === n);
-        const maxScore = 100;
-        const passed = numScore >= 50;
+        const passed = numScore >= Math.ceil(maxScore * 0.5);
         const subPayload = normalizeFoundationSubmission({
           id: existingSub?.id || `flts-${studentId}-${n}-${Date.now()}`,
           student_id: studentId,
@@ -15751,13 +15755,13 @@ async function submitFoundationMarkClass(form) {
   for (let n = 1; n <= 7; n += 1) {
     const scoreRaw = form.querySelector(`input[name="lesson_score_${n}"]`)?.value;
     if (scoreRaw !== undefined && scoreRaw !== "" && scoreRaw !== null) {
-      const numScore = Math.max(0, Math.min(100, Number(scoreRaw)));
+      const maxScore = getLessonMaxScore(n);
+      const numScore = Math.max(0, Math.min(maxScore, Number(scoreRaw)));
       lessonScores[`class_${n}`] = numScore;
       collection[index][`lesson_score_${n}`] = numScore;
       if (!Array.isArray(state.foundationLessonTestSubmissions)) state.foundationLessonTestSubmissions = [];
       const existingSub = state.foundationLessonTestSubmissions.find((item) => item.student_id === studentId && Number(item.lesson_number) === n);
-      const maxScore = 100;
-      const passed = numScore >= 50;
+      const passed = numScore >= Math.ceil(maxScore * 0.5);
       const subPayload = normalizeFoundationSubmission({
         id: existingSub?.id || `flts-${studentId}-${n}-${Date.now()}`,
         student_id: studentId,
@@ -15818,13 +15822,13 @@ async function submitFoundationScore(form) {
   for (let n = 1; n <= 7; n += 1) {
     const scoreRaw = form.querySelector(`input[name="lesson_score_${n}"]`)?.value;
     if (scoreRaw !== undefined && scoreRaw !== "" && scoreRaw !== null) {
-      const numScore = Math.max(0, Math.min(100, Number(scoreRaw)));
+      const maxScore = getLessonMaxScore(n);
+      const numScore = Math.max(0, Math.min(maxScore, Number(scoreRaw)));
       lessonScores[`class_${n}`] = numScore;
       collection[index][`lesson_score_${n}`] = numScore;
       if (!Array.isArray(state.foundationLessonTestSubmissions)) state.foundationLessonTestSubmissions = [];
       const existingSub = state.foundationLessonTestSubmissions.find((item) => item.student_id === studentId && Number(item.lesson_number) === n);
-      const maxScore = 100;
-      const passed = numScore >= 50;
+      const passed = numScore >= Math.ceil(maxScore * 0.5);
       const subPayload = normalizeFoundationSubmission({
         id: existingSub?.id || `flts-${studentId}-${n}-${Date.now()}`,
         student_id: studentId,
@@ -17420,8 +17424,8 @@ function renderFoundationLessons(students) {
         : (groupStudents.length ? dataTable([FS("foundationTabStudents"), FS("attendance"), FS("deliveryMode"), FS("onlineTestResult"), FS("soulWinning"), L("status"), L("notes"), L("actions")], groupStudents.map((student) => {
           const lesson = foundationNormalizeLessonRecord(foundationLessonRecords(student.id).find((item) => Number(item.lesson_number) === lessonNumber) || {});
           const session = foundationSessionByContext(student.class_group_id, lessonNumber) || {};
-          const submission = foundationBestLessonSubmission(student.id, lessonNumber);
-          const passed = submission ? Number(submission.test_score || submission.percentage || 0) >= Number(state.foundationSchoolSettings?.passing_score_per_lesson || 50) : false;
+          const maxScore = getLessonMaxScore(lessonNumber);
+          const passed = submission ? Number(submission.test_score || submission.percentage || 0) >= Math.ceil(maxScore * 0.5) : false;
           const soul = foundationSoulWinningForStudent(student.id);
           const scoreVal = submission ? (submission.test_score_obtained ?? submission.score ?? "") : (student.lesson_scores?.[ `class_${lessonNumber}` ] ?? student[ `lesson_score_${lessonNumber}` ] ?? "");
           return [
@@ -17429,9 +17433,9 @@ function renderFoundationLessons(students) {
             `<label class="form-check mb-0"><input type="checkbox" class="form-check-input" data-foundation-row-field="attended" data-student-id="${student.id}" ${lesson.attended ? "checked" : ""}> ${FS("present")}</label>`,
             `${foundationDeliveryLabel(lesson.delivery_mode || session.delivery_mode || student.assigned_delivery_mode)}<small class="d-block text-secondary">${lesson.location_name || session.location_name || student.assigned_location_name || ""}</small>`,
             `<div class="d-flex flex-column gap-1">
-              <div class="d-flex align-items-center gap-1">
-                <input type="number" min="0" max="100" class="form-control form-control-sm text-end" style="width: 65px; font-weight: 700; background: rgba(15, 23, 42, 0.8); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3);" data-foundation-row-field="score" data-student-id="${student.id}" value="${scoreVal !== undefined && scoreVal !== null ? scoreVal : ""}" placeholder="0-100">
-                <small class="text-secondary">/100</small>
+              <div class="foundation-score-badge">
+                <input type="number" min="0" max="${maxScore}" class="form-control form-control-sm text-center" data-foundation-row-field="score" data-student-id="${student.id}" value="${scoreVal !== undefined && scoreVal !== null ? scoreVal : ""}" placeholder="0-${maxScore}">
+                <span class="score-max">/${maxScore}</span>
               </div>
               ${submission ? `<small class="text-secondary" style="font-size:0.75rem;">${statusText(submission.review_status)} · ${submission.submitted_at ? new Date(submission.submitted_at).toLocaleDateString() : ""}</small>` : `<small class="text-muted" style="font-size:0.75rem;">${FS("testNotSubmitted")}</small>`}
             </div>`,
@@ -17691,8 +17695,9 @@ async function saveFoundationLessonRow(studentId) {
   if (hasManualScore) {
     if (!Array.isArray(state.foundationLessonTestSubmissions)) state.foundationLessonTestSubmissions = [];
     const existingSub = state.foundationLessonTestSubmissions.find((item) => item.student_id === studentId && Number(item.lesson_number) === lessonNumber);
-    const maxScore = 100;
-    const passed = numScore >= 50;
+    const maxScore = getLessonMaxScore(lessonNumber);
+    numScore = Math.max(0, Math.min(maxScore, numScore));
+    const passed = numScore >= Math.ceil(maxScore * 0.5);
     const studentObj = (state.foundationStudents || []).find((s) => s.id === studentId) || {};
     const subPayload = normalizeFoundationSubmission({
       id: existingSub?.id || `flts-${studentId}-${lessonNumber}-${Date.now()}`,
