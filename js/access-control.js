@@ -35,27 +35,30 @@
     users: "usersRoles",
     access: "accessControl",
     settings: "settings",
-    audit: "auditLogs"
+    audit: "auditLogs",
+    cellMinistry: "cellMinistry",
+    cellReports: "cellReports",
+    alec: "alec"
   };
 
   const CELL_ROUTE_MODULES = {
-    cellAlecOverview: "cell",
-    cellAlecRegistration: "cell",
-    cellAlecScores: "cell",
-    cellChurchReports: "cell",
-    cellMinistryOverview: "cell",
-    cellReceivedReports: "cell",
-    cellEvaluationRoute: "cell",
-    cellPerformance: "cell",
-    cellLeadersAttention: "cell",
-    cellActionPlan: "cell",
-    cellWeeklyReport: "cell",
-    cellGroups: "cell",
-    cellCellsList: "cell",
-    cellMembers: "cell",
-    cellLeadersRoute: "cell",
-    cellFinalValidation: "cell",
-    cellConsolidation: "cell"
+    cellAlecOverview: "alec",
+    cellAlecRegistration: "alec",
+    cellAlecScores: "alec",
+    cellChurchReports: "alec",
+    cellMinistryOverview: "cellMinistry",
+    cellReceivedReports: "cellMinistry",
+    cellEvaluationRoute: "cellMinistry",
+    cellPerformance: "cellMinistry",
+    cellLeadersAttention: "cellMinistry",
+    cellActionPlan: "cellMinistry",
+    cellWeeklyReport: "cellReports",
+    cellGroups: "cellReports",
+    cellCellsList: "cellReports",
+    cellMembers: "cellReports",
+    cellLeadersRoute: "cellReports",
+    cellFinalValidation: "cellReports",
+    cellConsolidation: "cellReports"
   };
 
   const FEVO_ROUTE_MODULES = {
@@ -83,7 +86,7 @@
   const ALL_MODULES = [
     "dashboard", "churches", "members", "firstTimers", "followUp", "reports", "counseling",
     "foundation", "finance", "notifications", "fevo", "venueInventory", "sacraments", "prisonMinistry",
-    "ministryMaterials", "programs", "partnership", "media", "cell", "requisitions",
+    "ministryMaterials", "programs", "partnership", "media", "cell", "cellMinistry", "cellReports", "alec", "requisitions",
     "staffHr", "usersRoles", "accessControl", "settings", "auditLogs"
   ];
 
@@ -347,7 +350,10 @@
     "Cell Ministry Head": {
       modules: {
         dashboard: { ...VIEW_ONLY, scope: "all", cell_portal_permissions: ["cell_portal.view", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary"] },
-        cell: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: true, can_verify: false, can_export: true, scope: "all" },
+        cell: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: true, can_verify: true, can_export: true, scope: "all" },
+        cellMinistry: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: true, can_verify: true, can_export: true, scope: "all" },
+        cellReports: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: true, can_verify: true, can_export: true, scope: "all" },
+        alec: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: true, can_verify: false, can_export: true, scope: "all" },
         requisitions: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "department" },
         staffHr: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "department" }
       }
@@ -356,6 +362,7 @@
       modules: {
         dashboard: { ...VIEW_ONLY, scope: "cell_group", cell_portal_permissions: ["cell_portal.view", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary"] },
         cell: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "cell_group", cell_report_permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"] },
+        cellReports: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "cell_group", cell_report_permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"] },
         members: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "cell_group" },
         notifications: { ...VIEW_ONLY, scope: "cell_group" }
       }
@@ -364,6 +371,7 @@
       modules: {
         dashboard: { ...VIEW_ONLY, scope: "own", cell_portal_permissions: ["cell_portal.view", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts"] },
         cell: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "own", cell_report_permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"] },
+        cellReports: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "own", cell_report_permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"] },
         members: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "own" },
         notifications: { ...VIEW_ONLY, scope: "own" }
       }
@@ -372,6 +380,7 @@
       modules: {
         dashboard: { ...VIEW_ONLY, scope: "own", cell_portal_permissions: ["cell_portal.view", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts"] },
         cell: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "own", cell_report_permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"] },
+        cellReports: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "own", cell_report_permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"] },
         members: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "own" },
         notifications: { ...VIEW_ONLY, scope: "own" }
       }
@@ -380,6 +389,7 @@
       modules: {
         dashboard: { ...VIEW_ONLY, scope: "own", cell_portal_permissions: ["cell_portal.view", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts"] },
         cell: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "own", cell_report_permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"] },
+        cellReports: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "own", cell_report_permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"] },
         members: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "own" },
         notifications: { ...VIEW_ONLY, scope: "own" }
       }
@@ -388,6 +398,8 @@
       modules: {
         dashboard: { ...VIEW_ONLY, scope: "church", cell_portal_permissions: ["cell_portal.view", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary"] },
         cell: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: true, can_verify: true, can_export: true, scope: "church", cell_report_permissions: ["cell_reports.view_church", "cell_reports.review", "cell_reports.validate", "cell_reports.reject", "cell_reports.export"] },
+        cellReports: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: true, can_verify: true, can_export: true, scope: "church", cell_report_permissions: ["cell_reports.view_church", "cell_reports.review", "cell_reports.validate", "cell_reports.reject", "cell_reports.export"] },
+        cellMinistry: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: true, can_verify: true, can_export: true, scope: "church" },
         notifications: { ...VIEW_ONLY, scope: "church" }
       }
     },
@@ -418,6 +430,7 @@
             "alec.churchReports.delete"
           ]
         },
+        alec: { can_view: true, can_create: true, can_edit: true, can_delete: true, can_approve: false, can_verify: false, can_export: true, scope: "church" },
         notifications: { ...VIEW_ONLY, scope: "church" }
       }
     },
@@ -530,12 +543,17 @@
     checklists: "venueInventory",
     assignedEquipment: "venueInventory",
     cell: "cell",
-    cellReports: "cell",
-    cellEvaluation: "cell",
-    churchReports: "cell",
-    alecRegistration: "cell",
-    alecScores: "cell",
-    finalValidation: "cell",
+    cell_ministry: "cellMinistry",
+    cellMinistry: "cellMinistry",
+    cell_reports: "cellReports",
+    cellReports: "cellReports",
+    cellEvaluation: "cellMinistry",
+    churchReports: "alec",
+    alecRegistration: "alec",
+    alecScores: "alec",
+    alec: "alec",
+    alec_manager: "alec",
+    finalValidation: "cellReports",
     reports: "reports",
     prisonMinistry: "prisonMinistry",
     ministryMaterials: "ministryMaterials",
@@ -571,17 +589,41 @@
   function legacyGrant(user, module) {
     const grants = user?.department_permissions || [];
     if (grants.includes("*")) return { ...FULL_ACCESS };
+    if (grants.includes(module)) {
+      return {
+        can_view: true,
+        can_create: true,
+        can_edit: true,
+        can_delete: grants.includes("*"),
+        can_approve: grants.includes("*") || module === "fevo" || module === "cellMinistry" || module === "cellReports" || module === "alec",
+        can_verify: grants.includes("financeVerify") || grants.includes("financeHead") || module === "cellReports",
+        can_export: true,
+        scope: user.can_view_all_churches ? "all" : user.assigned_department ? "department" : "church"
+      };
+    }
+    if ((module === "cellMinistry" || module === "cellReports" || module === "alec" || module === "cell") && grants.includes("cell")) {
+      return {
+        can_view: true,
+        can_create: true,
+        can_edit: true,
+        can_delete: false,
+        can_approve: true,
+        can_verify: true,
+        can_export: true,
+        scope: user.can_view_all_churches ? "all" : "church"
+      };
+    }
     const keys = Object.entries(LEGACY_PERMISSION_MAP)
       .filter(([, mod]) => mod === module)
       .map(([key]) => key);
     if (keys.some((key) => grants.includes(key))) {
       return {
         can_view: true,
-        can_create: grants.includes("*") || module === "finance" && grants.includes("financeHead"),
+        can_create: grants.includes("*") || (module === "finance" && grants.includes("financeHead")),
         can_edit: grants.includes("*") || grants.some((g) => keys.includes(g)),
         can_delete: grants.includes("*"),
-        can_approve: grants.includes("*") || grants.includes("financeHead") || grants.includes("financeVerify"),
-        can_verify: grants.includes("financeVerify") || grants.includes("financeHead"),
+        can_approve: grants.includes("*") || grants.includes("financeHead") || grants.includes("financeVerify") || module === "fevo" || module === "cellMinistry" || module === "cellReports" || module === "alec",
+        can_verify: grants.includes("financeVerify") || grants.includes("financeHead") || module === "cellReports",
         can_export: true,
         scope: user.can_view_all_churches ? "all" : user.assigned_department ? "department" : "church"
       };
@@ -592,9 +634,9 @@
   const EXPLICIT_DENIED_MODULES = {
     alec_manager: new Set(["dashboard", "finance", "staffHr", "requisitions", "usersRoles", "accessControl", "auditLogs", "churches", "counseling", "foundation", "fevo", "venueInventory", "sacraments", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media", "reports", "members", "firstTimers", "followUp"]),
     "ALEC Coordinator": new Set(["dashboard", "finance", "staffHr", "requisitions", "usersRoles", "accessControl", "auditLogs", "churches", "counseling", "foundation", "fevo", "venueInventory", "sacraments", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media", "reports", "members", "firstTimers", "followUp"]),
-    pastoral_care_rector: new Set(["dashboard", "churches", "members", "reports", "fevo", "cell", "finance", "publicGiving", "requisitions", "venueInventory", "staffHr", "usersRoles", "accessControl", "auditLogs", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"]),
-    "Pastoral Care Rector": new Set(["dashboard", "churches", "members", "reports", "fevo", "cell", "finance", "publicGiving", "requisitions", "venueInventory", "staffHr", "usersRoles", "accessControl", "auditLogs", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"]),
-    "Reitor de Cuidados Pastorais": new Set(["dashboard", "churches", "members", "reports", "fevo", "cell", "finance", "publicGiving", "requisitions", "venueInventory", "staffHr", "usersRoles", "accessControl", "auditLogs", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"]),
+    pastoral_care_rector: new Set(["dashboard", "churches", "members", "reports", "fevo", "cell", "cellMinistry", "cellReports", "alec", "finance", "publicGiving", "requisitions", "venueInventory", "staffHr", "usersRoles", "accessControl", "auditLogs", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"]),
+    "Pastoral Care Rector": new Set(["dashboard", "churches", "members", "reports", "fevo", "cell", "cellMinistry", "cellReports", "alec", "finance", "publicGiving", "requisitions", "venueInventory", "staffHr", "usersRoles", "accessControl", "auditLogs", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"]),
+    "Reitor de Cuidados Pastorais": new Set(["dashboard", "churches", "members", "reports", "fevo", "cell", "cellMinistry", "cellReports", "alec", "finance", "publicGiving", "requisitions", "venueInventory", "staffHr", "usersRoles", "accessControl", "auditLogs", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"]),
     "Cell Leader": new Set(["finance", "staffHr", "requisitions", "usersRoles", "accessControl", "auditLogs", "churches", "counseling", "foundation", "fevo", "venueInventory", "sacraments", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"]),
     "Cell Assistant": new Set(["finance", "staffHr", "requisitions", "usersRoles", "accessControl", "auditLogs", "churches", "counseling", "foundation", "fevo", "venueInventory", "sacraments", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"]),
     "Assistant Cell Leader": new Set(["finance", "staffHr", "requisitions", "usersRoles", "accessControl", "auditLogs", "churches", "counseling", "foundation", "fevo", "venueInventory", "sacraments", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"]),
@@ -634,11 +676,15 @@
     if (!user || !module) return false;
     const grants = user.department_permissions || [];
     if (grants.includes(module) || grants.includes("*")) return false;
+    if ((module === "cellMinistry" || module === "cellReports" || module === "alec" || module === "cell") && grants.includes("cell")) return false;
+    if (module === "cellMinistry" && (grants.includes("cellMinistry") || grants.includes("cell_ministry"))) return false;
+    if (module === "cellReports" && (grants.includes("cellReports") || grants.includes("cell_reports"))) return false;
+    if (module === "alec" && (grants.includes("alec") || grants.includes("alecRegistration") || grants.includes("alecScores") || grants.includes("alec_manager"))) return false;
+    if (module === "fevo" && (grants.includes("fevo") || grants.includes("fevoConfig") || grants.includes("fevoReports") || grants.includes("fevoAnalytics"))) return false;
     if (module === "foundation" && (grants.includes("foundation_teacher") || grants.includes("foundation_assistant") || grants.includes("foundation"))) return false;
     if (module === "followUp" && (grants.includes("followUp") || grants.includes("follow_up"))) return false;
     if (module === "reports" && (grants.includes("reports") || grants.includes("reports_viewer"))) return false;
     if (module === "firstTimers" && (grants.includes("firstTimers") || grants.includes("first_timers"))) return false;
-    if (module === "cell" && (grants.includes("cellReports") || grants.includes("cell"))) return false;
     const rawRole = user.role || user.role_name || "";
     const norm = normalizeRoleKey(rawRole);
     return Boolean(EXPLICIT_DENIED_MODULES[norm]?.has(module) || EXPLICIT_DENIED_MODULES[rawRole]?.has(module));
