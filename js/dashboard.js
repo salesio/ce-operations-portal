@@ -14953,9 +14953,27 @@ function foundationSubmissionsForStudent(studentId) {
 }
 
 function foundationBestLessonSubmission(studentId, lessonNumber) {
-  return foundationSubmissionsForStudent(studentId)
+  const sub = foundationSubmissionsForStudent(studentId)
     .filter((item) => Number(item.lesson_number) === Number(lessonNumber))
-    .sort((a, b) => Number(b.test_score_obtained || b.score || 0) - Number(a.test_score_obtained || a.score || 0))[0] || null;
+    .sort((a, b) => Number(b.test_score_obtained || b.score || 0) - Number(a.test_score_obtained || a.score || 0))[0];
+  if (sub) return sub;
+  const student = (state.foundationStudents || []).find((s) => s.id === studentId);
+  const manualScore = student?.lesson_scores?.[ `class_${lessonNumber}` ] ?? student?.[ `lesson_score_${lessonNumber}` ];
+  if (manualScore !== undefined && manualScore !== null && manualScore !== "") {
+    const num = Number(manualScore);
+    return {
+      student_id: studentId,
+      lesson_number: lessonNumber,
+      score: num,
+      max_score: 100,
+      test_score_obtained: num,
+      test_passed: num >= (Number(state.foundationSchoolSettings?.passing_score_per_lesson) || 50),
+      passed: num >= (Number(state.foundationSchoolSettings?.passing_score_per_lesson) || 50),
+      review_status: "Auto Matched",
+      submitted_at: student.updated_at || new Date().toISOString()
+    };
+  }
+  return null;
 }
 
 function foundationLessonTestsSummary(studentId) {
@@ -15098,7 +15116,20 @@ function foundationClassCheckboxes(student, prefix = "class_") {
     const n = i + 1;
     const key = `${prefix}${n}`;
     const checked = record.class_attendance[`class_${n}`] ? "checked" : "";
-    return `<label class="foundation-class-toggle"><input type="checkbox" name="${key}" data-foundation-class="${n}" ${checked}><span>${foundationClassLabel(n)}</span></label>`;
+    const submission = foundationBestLessonSubmission(record.id, n);
+    const scoreVal = submission ? (submission.test_score_obtained ?? submission.score ?? "") : (record.lesson_scores?.[`class_${n}`] ?? record[`lesson_score_${n}`] ?? "");
+    return `
+      <div class="foundation-class-item p-2 rounded d-flex align-items-center justify-content-between gap-2" style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(32, 215, 255, 0.18); border-radius: 0.85rem;">
+        <label class="foundation-class-toggle m-0 border-0 bg-transparent p-0 d-flex align-items-center gap-2" style="cursor: pointer; user-select: none;">
+          <input type="checkbox" name="${key}" data-foundation-class="${n}" ${checked} style="width: 1.15rem; height: 1.15rem; accent-color: var(--cyan); cursor: pointer;">
+          <span style="font-weight: 800; color: #fff; font-size: 0.95rem;">${foundationClassLabel(n)}</span>
+        </label>
+        <div class="d-flex align-items-center gap-1" style="max-width: 140px;">
+          <label class="small text-secondary mb-0 me-1" style="font-size: 0.75rem; white-space: nowrap;">${lang === "pt" ? "Nota:" : "Score:"}</label>
+          <input type="number" min="0" max="100" name="lesson_score_${n}" data-foundation-score-class="${n}" class="form-control form-control-sm text-end" value="${scoreVal !== undefined && scoreVal !== null ? scoreVal : ""}" placeholder="0-100" style="width: 68px; font-weight: 700; background: rgba(15, 23, 42, 0.8); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3);">
+        </div>
+      </div>
+    `;
   }).join("")}</div>`;
 }
 
@@ -15206,6 +15237,9 @@ function renderFoundationScoreForm(record) {
   const student = migrateFoundationStudent(record);
   return `
     <div class="col-12"><p class="mb-1"><strong>${fullName(student)}</strong></p><p class="form-hint small mb-3">${foundationProgressSummary(student)} · ${student.class_progress_percent}%</p></div>
+    ${foundationSectionTitle(FS("lessonScoresByClass"))}
+    <div class="col-12 mb-3">${foundationClassCheckboxes(student)}</div>
+    ${foundationSectionTitle(L("finalExam"))}
     <div class="col-md-6"><label class="form-label">${L("examScore")}</label><input name="nota_exame" type="number" min="0" max="100" class="form-control" value="${student.nota_exame || ""}" required></div>
     <div class="col-md-6 d-flex align-items-end"><label class="form-check"><input name="pratica_evangelismo" type="checkbox" class="form-check-input" ${student.pratica_evangelismo ? "checked" : ""}> <span class="form-check-label">${L("practicalCompleted")}</span></label></div>
     <div class="col-md-6"><label class="form-label">${L("soulsWon")}</label><input name="numero_de_almas_ganhas" type="number" min="0" class="form-control" value="${student.numero_de_almas_ganhas || 0}"></div>
@@ -15601,6 +15635,49 @@ function collectFoundationStudentPayload(form, base = {}) {
   const group = (state.foundationClassGroups || []).find((g) => g.id === data.class_group_id);
   if (group) data.class_group_name = group.name || data.class_group_name || "";
   if (data.church_id) data.church_name = churchName(data.church_id) || data.church_name || "";
+
+  // Extract lesson scores from form
+  const studentId = base.id || modalRecordId || "";
+  data.lesson_scores = { ...(base.lesson_scores || {}) };
+  for (let n = 1; n <= 7; n += 1) {
+    const scoreRaw = form.querySelector(`input[name="lesson_score_${n}"]`)?.value;
+    if (scoreRaw !== undefined && scoreRaw !== "" && scoreRaw !== null) {
+      const numScore = Math.max(0, Math.min(100, Number(scoreRaw)));
+      data.lesson_scores[`class_${n}`] = numScore;
+      data[`lesson_score_${n}`] = numScore;
+      if (studentId) {
+        if (!Array.isArray(state.foundationLessonTestSubmissions)) state.foundationLessonTestSubmissions = [];
+        const existingSub = state.foundationLessonTestSubmissions.find((item) => item.student_id === studentId && Number(item.lesson_number) === n);
+        const maxScore = 100;
+        const passed = numScore >= 50;
+        const subPayload = normalizeFoundationSubmission({
+          id: existingSub?.id || `flts-${studentId}-${n}-${Date.now()}`,
+          student_id: studentId,
+          student_name: fullName(base) || data.nome || "Aluno",
+          class_group_id: data.class_group_id || base.class_group_id || "",
+          class_group_name: data.class_group_name || base.class_group_name || "",
+          lesson_number: n,
+          lesson_title: FOUNDATION_LESSON_TITLES[n - 1] || `Aula ${n}`,
+          delivery_mode: data.assigned_delivery_mode || base.assigned_delivery_mode || "in_person",
+          score: numScore,
+          max_score: maxScore,
+          test_score_obtained: numScore,
+          test_passed: passed,
+          passed,
+          review_status: "Auto Matched",
+          submitted_at: existingSub?.submitted_at || new Date().toISOString(),
+          created_at: existingSub?.created_at || new Date().toISOString().slice(0, 10),
+          updated_at: new Date().toISOString().slice(0, 10)
+        });
+        if (existingSub) {
+          Object.assign(existingSub, subPayload);
+        } else {
+          state.foundationLessonTestSubmissions.push(subPayload);
+        }
+      }
+    }
+  }
+
   return applyFoundationCalculations({ ...base, ...data }, false);
 }
 
@@ -15650,8 +15727,47 @@ async function submitFoundationMarkClass(form) {
   const index = collection.findIndex((item) => String(item.id) === String(modalRecordId));
   if (index < 0) return;
   const previous = { ...collection[index] };
+  const studentId = collection[index].id;
+  const lessonScores = { ...(collection[index].lesson_scores || {}) };
+  for (let n = 1; n <= 7; n += 1) {
+    const scoreRaw = form.querySelector(`input[name="lesson_score_${n}"]`)?.value;
+    if (scoreRaw !== undefined && scoreRaw !== "" && scoreRaw !== null) {
+      const numScore = Math.max(0, Math.min(100, Number(scoreRaw)));
+      lessonScores[`class_${n}`] = numScore;
+      collection[index][`lesson_score_${n}`] = numScore;
+      if (!Array.isArray(state.foundationLessonTestSubmissions)) state.foundationLessonTestSubmissions = [];
+      const existingSub = state.foundationLessonTestSubmissions.find((item) => item.student_id === studentId && Number(item.lesson_number) === n);
+      const maxScore = 100;
+      const passed = numScore >= 50;
+      const subPayload = normalizeFoundationSubmission({
+        id: existingSub?.id || `flts-${studentId}-${n}-${Date.now()}`,
+        student_id: studentId,
+        student_name: fullName(collection[index]),
+        class_group_id: collection[index].class_group_id || "",
+        class_group_name: collection[index].class_group_name || "",
+        lesson_number: n,
+        lesson_title: FOUNDATION_LESSON_TITLES[n - 1] || `Aula ${n}`,
+        delivery_mode: collection[index].assigned_delivery_mode || "in_person",
+        score: numScore,
+        max_score: maxScore,
+        test_score_obtained: numScore,
+        test_passed: passed,
+        passed,
+        review_status: "Auto Matched",
+        submitted_at: existingSub?.submitted_at || new Date().toISOString(),
+        created_at: existingSub?.created_at || new Date().toISOString().slice(0, 10),
+        updated_at: new Date().toISOString().slice(0, 10)
+      });
+      if (existingSub) {
+        Object.assign(existingSub, subPayload);
+      } else {
+        state.foundationLessonTestSubmissions.push(subPayload);
+      }
+    }
+  }
   const merged = applyFoundationCalculations({
     ...collection[index],
+    lesson_scores: lessonScores,
     class_attendance: readFoundationAttendanceFromForm(form),
     updated_at: new Date().toISOString().slice(0, 10)
   }, true);
@@ -15663,7 +15779,7 @@ async function submitFoundationMarkClass(form) {
     return;
   }
   collection[index] = migrateFoundationStudentRecord(repoResult?.data || next);
-  saveState("Updated foundation class attendance");
+  saveState("Updated foundation class attendance and scores");
   bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide();
   form.reset();
   setRoute(activeRoute);
@@ -15674,12 +15790,53 @@ async function submitFoundationScore(form) {
   const index = collection.findIndex((item) => String(item.id) === String(modalRecordId));
   if (index < 0) return;
   const previous = { ...collection[index] };
+  const studentId = collection[index].id;
   const data = Object.fromEntries(new FormData(form).entries());
   ["pratica_evangelismo", "aprovado"].forEach((key) => {
     data[key] = new FormData(form).has(key);
   });
+  const lessonScores = { ...(collection[index].lesson_scores || {}) };
+  for (let n = 1; n <= 7; n += 1) {
+    const scoreRaw = form.querySelector(`input[name="lesson_score_${n}"]`)?.value;
+    if (scoreRaw !== undefined && scoreRaw !== "" && scoreRaw !== null) {
+      const numScore = Math.max(0, Math.min(100, Number(scoreRaw)));
+      lessonScores[`class_${n}`] = numScore;
+      collection[index][`lesson_score_${n}`] = numScore;
+      if (!Array.isArray(state.foundationLessonTestSubmissions)) state.foundationLessonTestSubmissions = [];
+      const existingSub = state.foundationLessonTestSubmissions.find((item) => item.student_id === studentId && Number(item.lesson_number) === n);
+      const maxScore = 100;
+      const passed = numScore >= 50;
+      const subPayload = normalizeFoundationSubmission({
+        id: existingSub?.id || `flts-${studentId}-${n}-${Date.now()}`,
+        student_id: studentId,
+        student_name: fullName(collection[index]),
+        class_group_id: collection[index].class_group_id || "",
+        class_group_name: collection[index].class_group_name || "",
+        lesson_number: n,
+        lesson_title: FOUNDATION_LESSON_TITLES[n - 1] || `Aula ${n}`,
+        delivery_mode: collection[index].assigned_delivery_mode || "in_person",
+        score: numScore,
+        max_score: maxScore,
+        test_score_obtained: numScore,
+        test_passed: passed,
+        passed,
+        review_status: "Auto Matched",
+        submitted_at: existingSub?.submitted_at || new Date().toISOString(),
+        created_at: existingSub?.created_at || new Date().toISOString().slice(0, 10),
+        updated_at: new Date().toISOString().slice(0, 10)
+      });
+      if (existingSub) {
+        Object.assign(existingSub, subPayload);
+      } else {
+        state.foundationLessonTestSubmissions.push(subPayload);
+      }
+    }
+  }
+  const attendance = form.querySelector('[data-foundation-class]') ? readFoundationAttendanceFromForm(form) : collection[index].class_attendance;
   const merged = applyFoundationCalculations({
     ...collection[index],
+    lesson_scores: lessonScores,
+    class_attendance: attendance,
     nota_exame: Number(data.nota_exame || 0),
     pratica_evangelismo: data.pratica_evangelismo,
     numero_de_almas_ganhas: Number(data.numero_de_almas_ganhas || 0),
@@ -15694,7 +15851,7 @@ async function submitFoundationScore(form) {
     return;
   }
   collection[index] = migrateFoundationStudentRecord(repoResult?.data || next);
-  saveState("Updated foundation exam score");
+  saveState("Updated foundation exam and lesson scores");
   bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide();
   form.reset();
   setRoute(activeRoute);
@@ -17247,11 +17404,18 @@ function renderFoundationLessons(students) {
           const submission = foundationBestLessonSubmission(student.id, lessonNumber);
           const passed = submission ? Number(submission.test_score || submission.percentage || 0) >= Number(state.foundationSchoolSettings?.passing_score_per_lesson || 50) : false;
           const soul = foundationSoulWinningForStudent(student.id);
+          const scoreVal = submission ? (submission.test_score_obtained ?? submission.score ?? "") : (student.lesson_scores?.[ `class_${lessonNumber}` ] ?? student[ `lesson_score_${lessonNumber}` ] ?? "");
           return [
             `<strong>${fullName(student)}</strong><small class="d-block text-secondary">${student.class_group_name || ""}</small>`,
             `<label class="form-check mb-0"><input type="checkbox" class="form-check-input" data-foundation-row-field="attended" data-student-id="${student.id}" ${lesson.attended ? "checked" : ""}> ${FS("present")}</label>`,
             `${foundationDeliveryLabel(lesson.delivery_mode || session.delivery_mode || student.assigned_delivery_mode)}<small class="d-block text-secondary">${lesson.location_name || session.location_name || student.assigned_location_name || ""}</small>`,
-            submission ? `${foundationLessonScoreLabel(submission)}<small class="d-block text-secondary">${statusText(submission.review_status)} · ${submission.submitted_at ? new Date(submission.submitted_at).toLocaleDateString() : ""}</small>` : `<span class="text-secondary">${FS("testNotSubmitted")}</span>`,
+            `<div class="d-flex flex-column gap-1">
+              <div class="d-flex align-items-center gap-1">
+                <input type="number" min="0" max="100" class="form-control form-control-sm text-end" style="width: 65px; font-weight: 700; background: rgba(15, 23, 42, 0.8); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3);" data-foundation-row-field="score" data-student-id="${student.id}" value="${scoreVal !== undefined && scoreVal !== null ? scoreVal : ""}" placeholder="0-100">
+                <small class="text-secondary">/100</small>
+              </div>
+              ${submission ? `<small class="text-secondary" style="font-size:0.75rem;">${statusText(submission.review_status)} · ${submission.submitted_at ? new Date(submission.submitted_at).toLocaleDateString() : ""}</small>` : `<small class="text-muted" style="font-size:0.75rem;">${FS("testNotSubmitted")}</small>`}
+            </div>`,
             lessonNumber === 4 ? `${Number(soul.souls_won_count || student.numero_de_almas_ganhas || 0)}<small class="d-block text-secondary">${statusText(soul.status || "Pendente")}</small>` : "-",
             badge(lesson.attended ? (submission ? (passed ? FS("passed") : FS("failed")) : FS("lessonCompleted")) : FS("notStarted")),
             `<input class="form-control form-control-sm" data-foundation-row-field="notes" data-student-id="${student.id}" value="${lesson.notes || ""}" placeholder="${L("notes")}">`,
@@ -17448,6 +17612,13 @@ async function saveFoundationLessonRow(studentId) {
     state.foundationLessonProgress.push(record);
   }
   const attended = document.querySelector(`[data-foundation-row-field="attended"][data-student-id="${studentId}"]`)?.checked || false;
+  const scoreInput = document.querySelector(`[data-foundation-row-field="score"][data-student-id="${studentId}"]`);
+  let hasManualScore = false;
+  let numScore = 0;
+  if (scoreInput && scoreInput.value !== "" && scoreInput.value !== null) {
+    hasManualScore = true;
+    numScore = Math.max(0, Math.min(100, Number(scoreInput.value)));
+  }
   const notes = document.querySelector(`[data-foundation-row-field="notes"][data-student-id="${studentId}"]`)?.value || "";
   const teacher = foundationTeacherById(ctx.teacherId) || {};
   const group = foundationClassGroupById(ctx.classGroupId);
@@ -17497,11 +17668,54 @@ async function saveFoundationLessonRow(studentId) {
   record.test_score_max = getLessonMaxScore(lessonNumber);
   record.notes = notes;
   record.updated_at = now.slice(0, 10);
+
+  if (hasManualScore) {
+    if (!Array.isArray(state.foundationLessonTestSubmissions)) state.foundationLessonTestSubmissions = [];
+    const existingSub = state.foundationLessonTestSubmissions.find((item) => item.student_id === studentId && Number(item.lesson_number) === lessonNumber);
+    const maxScore = 100;
+    const passed = numScore >= 50;
+    const studentObj = (state.foundationStudents || []).find((s) => s.id === studentId) || {};
+    const subPayload = normalizeFoundationSubmission({
+      id: existingSub?.id || `flts-${studentId}-${lessonNumber}-${Date.now()}`,
+      student_id: studentId,
+      student_name: fullName(studentObj) || "Aluno",
+      class_group_id: ctx.classGroupId || studentObj.class_group_id || "",
+      class_group_name: group.name || studentObj.class_group_name || "",
+      lesson_number: lessonNumber,
+      lesson_title: FOUNDATION_LESSON_TITLES[lessonNumber - 1] || `Aula ${lessonNumber}`,
+      delivery_mode: ctx.deliveryMode || studentObj.assigned_delivery_mode || "in_person",
+      score: numScore,
+      max_score: maxScore,
+      test_score_obtained: numScore,
+      test_passed: passed,
+      passed,
+      review_status: "Auto Matched",
+      submitted_at: existingSub?.submitted_at || now,
+      created_at: existingSub?.created_at || now.slice(0, 10),
+      updated_at: now.slice(0, 10)
+    });
+    if (existingSub) {
+      Object.assign(existingSub, subPayload);
+    } else {
+      state.foundationLessonTestSubmissions.push(subPayload);
+    }
+  }
+
   const studentIndex = (state.foundationStudents || []).findIndex((student) => student.id === studentId);
   if (studentIndex >= 0) {
     const attendanceMap = { ...(state.foundationStudents[studentIndex].class_attendance || defaultFoundationAttendance()) };
     attendanceMap[`class_${lessonNumber}`] = attended;
-    state.foundationStudents[studentIndex] = applyFoundationCalculations({ ...state.foundationStudents[studentIndex], class_attendance: attendanceMap, updated_at: now.slice(0, 10) }, true);
+    const lessonScoresMap = { ...(state.foundationStudents[studentIndex].lesson_scores || {}) };
+    if (hasManualScore) {
+      lessonScoresMap[`class_${lessonNumber}`] = numScore;
+      state.foundationStudents[studentIndex][`lesson_score_${lessonNumber}`] = numScore;
+    }
+    state.foundationStudents[studentIndex] = applyFoundationCalculations({
+      ...state.foundationStudents[studentIndex],
+      class_attendance: attendanceMap,
+      lesson_scores: lessonScoresMap,
+      updated_at: now.slice(0, 10)
+    }, true);
     // Dual-write progress so VITE_DATA_SOURCE=local survives refresh/hydrate
     void persistFoundationStudentViaRepository("update", state.foundationStudents[studentIndex]);
   }
@@ -28567,6 +28781,19 @@ document.addEventListener("input", (event) => {
     if (form) updateFoundationProgressPreview(form);
     return;
   }
+  if (event.target.matches("[data-foundation-score-class]")) {
+    const n = event.target.dataset.foundationScoreClass;
+    const form = event.target.closest("form");
+    if (form) {
+      const val = Number(event.target.value);
+      if (val > 0) {
+        const chk = form.querySelector(`[data-foundation-class="${n}"]`);
+        if (chk && !chk.checked) chk.checked = true;
+      }
+      updateFoundationProgressPreview(form);
+    }
+    return;
+  }
   if (event.target.matches("[data-foundation-status]")) {
     event.target.dataset.manualStatus = "1";
     return;
@@ -28963,6 +29190,19 @@ document.addEventListener("change", (event) => {
   if (event.target.matches("[data-foundation-class]")) {
     const form = event.target.closest("form");
     if (form) updateFoundationProgressPreview(form);
+    return;
+  }
+  if (event.target.matches("[data-foundation-score-class]")) {
+    const n = event.target.dataset.foundationScoreClass;
+    const form = event.target.closest("form");
+    if (form) {
+      const val = Number(event.target.value);
+      if (val > 0) {
+        const chk = form.querySelector(`[data-foundation-class="${n}"]`);
+        if (chk && !chk.checked) chk.checked = true;
+      }
+      updateFoundationProgressPreview(form);
+    }
     return;
   }
   if (event.target.matches("[data-foundation-status]")) {
