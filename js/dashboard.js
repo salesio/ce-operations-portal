@@ -13862,7 +13862,7 @@ function candidatePortalActions(candidate) {
     return `<button class="action-btn" data-candidate-action="view" data-candidate-id="${id}">Ver motivo</button> ${canEdit ? `<button class="action-btn" data-candidate-action="edit" data-candidate-id="${id}">Editar</button><button class="action-btn" data-candidate-action="submit" data-candidate-id="${id}">Re-submeter</button>` : ""} ${deleteBtn}`;
   }
   if (status === "Approved") {
-    return `<button class="action-btn" data-cell-portal-member="${escapeAttr(candidate.approved_member_id || "")}">Abrir membro oficial</button> ${deleteBtn}`;
+    return `<button class="action-btn" data-candidate-action="view" data-candidate-id="${id}">Ver</button> ${deleteBtn}`;
   }
   return `<button class="action-btn" data-candidate-action="view" data-candidate-id="${id}">Ver</button> ${deleteBtn}`;
 }
@@ -13874,7 +13874,7 @@ function candidateAdminActions(candidate) {
   const deleteBtn = `<button class="action-btn text-danger" data-candidate-action="delete" data-candidate-id="${id}" title="Eliminar registo de candidato"><i class="bi bi-trash me-1"></i>Eliminar</button>`;
   if (candidate.approval_status === "Submitted") return `${view} <button class="action-btn text-success fw-bold" data-candidate-action="approve" data-candidate-id="${id}"><i class="bi bi-check-lg me-1"></i>Aprovar como membro</button> ${mergeBtn} <button class="action-btn" data-candidate-action="startReview" data-candidate-id="${id}">Iniciar revisão</button><button class="action-btn" data-candidate-action="correction" data-candidate-id="${id}">Devolver para correcção</button><button class="action-btn text-danger" data-candidate-action="reject" data-candidate-id="${id}">Rejeitar</button> ${deleteBtn}`;
   if (candidate.approval_status === "UnderReview") return `${view} <button class="action-btn text-success fw-bold" data-candidate-action="approve" data-candidate-id="${id}"><i class="bi bi-check-lg me-1"></i>Aprovar como membro</button> ${mergeBtn} <button class="action-btn" data-candidate-action="createNew" data-candidate-id="${id}">Criar novo membro</button><button class="action-btn" data-candidate-action="link" data-candidate-id="${id}">Ligar existente</button><button class="action-btn" data-candidate-action="correction" data-candidate-id="${id}">Devolver para correcção</button><button class="action-btn text-danger" data-candidate-action="reject" data-candidate-id="${id}">Rejeitar</button> ${deleteBtn}`;
-  if (candidate.approval_status === "Approved") return `${view} <button class="action-btn" data-member-profile="${escapeAttr(candidate.approved_member_id || "")}">Abrir membro oficial</button> ${deleteBtn}`;
+  if (candidate.approval_status === "Approved") return `${view} ${deleteBtn}`;
   return `${view} ${mergeBtn} <button class="action-btn" data-candidate-action="edit" data-candidate-id="${id}">Editar</button> ${deleteBtn}`;
 }
 
@@ -14791,6 +14791,7 @@ function renderMembers() {
   const filtered = list;
   const churchesCount = new Set(list.map((m) => m.church_id).filter(Boolean)).size;
   const candidates = (state.memberRegistrationCandidates || []).filter((item) => canReviewMemberCandidates() || scoped([item], "members").length);
+  const pendingCandidates = candidates.filter((item) => !["Approved", "Withdrawn"].includes(item.approval_status));
   const reviewQueue = candidates.filter((item) => ["Submitted", "UnderReview"].includes(item.approval_status));
   const candidateTab = modulePageState.members.candidateTab || "pending";
   const activeMainTab = modulePageState.members.activeTab || "all";
@@ -14806,7 +14807,7 @@ function renderMembers() {
 
   // Match candidates against active filter
   const filterObj = modulePageState.members.filter || {};
-  let matchingCandidates = candidates;
+  let matchingCandidates = pendingCandidates;
   if (filterObj.search) {
     const s = normalizedMemberFilterText(filterObj.search);
     matchingCandidates = matchingCandidates.filter((c) => [
@@ -14865,7 +14866,7 @@ function renderMembers() {
     rowAttrs = [...candidateRowAttrs, ...officialRowAttrs];
   }
 
-  const totalDisplay = pageState.loaded ? (pageState.totalCount + candidates.length) : (pageState.loading ? "…" : (pageState.totalCount || 0));
+  const totalDisplay = pageState.loaded ? (pageState.totalCount + pendingCandidates.length) : (pageState.loading ? "…" : (pageState.totalCount || 0));
   const activeDisplay = pageState.loaded ? pageState.totalCount : "—";
   const churchDisplay = pageState.loaded ? (churchesCount || state.churches?.length || "—") : "—";
 
@@ -14888,13 +14889,13 @@ function renderMembers() {
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
       <div class="btn-group" role="group" aria-label="Member view tabs">
         <button type="button" class="btn btn-sm ${activeMainTab === 'all' ? 'btn-ce-gold' : 'btn-outline-cyan'}" data-members-main-tab="all">
-          <i class="bi bi-people me-1"></i>${lang === "pt" ? "Todos os Membros" : "All Members"} <span class="badge text-bg-secondary ms-1">${(pageState.totalCount || list.length) + candidates.length}</span>
+          <i class="bi bi-people me-1"></i>${lang === "pt" ? "Todos os Membros" : "All Members"} <span class="badge text-bg-secondary ms-1">${(pageState.totalCount || list.length) + pendingCandidates.length}</span>
         </button>
         <button type="button" class="btn btn-sm ${activeMainTab === 'official' ? 'btn-ce-gold' : 'btn-outline-cyan'}" data-members-main-tab="official">
           <i class="bi bi-person-check me-1"></i>${lang === "pt" ? "Membros Oficiais" : "Official Members"} <span class="badge text-bg-secondary ms-1">${pageState.totalCount || list.length}</span>
         </button>
         <button type="button" class="btn btn-sm ${activeMainTab === 'candidates' ? 'btn-ce-gold' : 'btn-outline-cyan'}" data-members-main-tab="candidates">
-          <i class="bi bi-person-exclamation me-1"></i>${lang === "pt" ? "Candidatos / Pedidos de Adesão" : "Candidate Requests"} ${reviewQueue.length ? `<span class="badge text-bg-warning text-dark ms-1">${reviewQueue.length}</span>` : `<span class="badge text-bg-secondary ms-1">${candidates.length}</span>`}
+          <i class="bi bi-person-exclamation me-1"></i>${lang === "pt" ? "Candidatos / Pedidos de Adesão" : "Candidate Requests"} ${pendingCandidates.length ? `<span class="badge text-bg-warning text-dark ms-1">${pendingCandidates.length}</span>` : `<span class="badge text-bg-secondary ms-1">0</span>`}
         </button>
       </div>
       <div>
@@ -14917,7 +14918,7 @@ function renderMembers() {
                 ? DataCardsGrid(filtered.map((m) => renderMemberCard(m)).join(""))
                 : dataTable([L("name"), L("phone"), L("church"), "Grupo de Célula", L("cell"), L("department"), L("status"), L("actions")], tableRows, { rowAttrs })}
       </div>
-      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-3 pt-3 border-top" data-members-pagination><span class="text-secondary small">${pageState.loaded ? `${pageState.totalCount} ${lang === "pt" ? "membros oficiais" : "official members"} · ${candidates.length} ${lang === "pt" ? "candidatos" : "candidates"} · ${lang === "pt" ? "Página" : "Page"} ${pageState.page} / ${pageState.totalPages}` : ""}</span><div class="d-flex align-items-center gap-2"><select class="form-select form-select-sm" data-members-page-size aria-label="Members per page">${[25,50,100].map((size) => `<option value="${size}"${pageState.pageSize === size ? " selected" : ""}>${size}</option>`).join("")}</select><button class="action-btn" data-members-page="prev" ${pageState.page <= 1 || pageState.loading ? "disabled" : ""}>${lang === "pt" ? "Anterior" : "Previous"}</button><button class="action-btn" data-members-page="next" ${pageState.page >= pageState.totalPages || pageState.loading ? "disabled" : ""}>${lang === "pt" ? "Próximo" : "Next"}</button></div></div>
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-3 pt-3 border-top" data-members-pagination><span class="text-secondary small">${pageState.loaded ? `${pageState.totalCount} ${lang === "pt" ? "membros oficiais" : "official members"} · ${pendingCandidates.length} ${lang === "pt" ? "candidatos pendentes" : "pending candidates"} · ${lang === "pt" ? "Página" : "Page"} ${pageState.page} / ${pageState.totalPages}` : ""}</span><div class="d-flex align-items-center gap-2"><select class="form-select form-select-sm" data-members-page-size aria-label="Members per page">${[25,50,100].map((size) => `<option value="${size}"${pageState.pageSize === size ? " selected" : ""}>${size}</option>`).join("")}</select><button class="action-btn" data-members-page="prev" ${pageState.page <= 1 || pageState.loading ? "disabled" : ""}>${lang === "pt" ? "Anterior" : "Previous"}</button><button class="action-btn" data-members-page="next" ${pageState.page >= pageState.totalPages || pageState.loading ? "disabled" : ""}>${lang === "pt" ? "Próximo" : "Next"}</button></div></div>
     </article>
     ${canReviewMemberCandidates() ? `<article id="member-candidate-queue" class="panel glass-panel mb-4"><div class="d-flex justify-content-between align-items-center mb-3"><div><h3 class="h5 mb-1">Pedidos de Adesão / Registos por Aprovar</h3><p class="mb-0 text-secondary">Rascunhos ficam separados: apenas pedidos submetidos entram na fila de aprovação.</p></div><span class="badge text-bg-warning">${reviewQueue.length} em fila</span></div><div class="d-flex flex-wrap gap-2 mb-3">${candidateTabs.map(([key,label,statuses]) => `<button type="button" class="action-btn ${candidateTab === key ? "active" : ""}" data-member-candidate-tab="${key}">${label} <span class="badge text-bg-secondary">${candidates.filter((item) => statuses.includes(item.approval_status)).length}</span></button>`).join("")}</div>${candidateRows.length ? dataTable(["Candidato", "Igreja / célula", "Registado por", "Telefone", "Duplicado", "Estado", "Acções"], candidateRows.map((c) => [candidateFullName(c), `${c.church_name || "—"}<br><small>${c.cell_name || "—"}</small>`, c.registered_by_name || "—", c.primary_phone || "Não informado", c.duplicate_confidence || "—", badge(candidateStatusLabel(c.approval_status)), candidateAdminActions(c)])) : `<div class="p-3 text-center text-secondary small">${lang === "pt" ? "Não há pedidos de adesão nesta categoria." : "No membership requests in this category."}</div>`}</article>` : ""}
     ${renderHqMembersDryRunPreview()}
