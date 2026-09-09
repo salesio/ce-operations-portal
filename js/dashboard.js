@@ -24695,18 +24695,19 @@ function renderUserForm(record = {}, modalMode = "create") {
   const deptPerms = new Set(Array.isArray(rawDept) ? rawDept : String(rawDept || "").split(",").map((s) => s.trim()).filter(Boolean));
 
   // Real 18 groups from Supabase/Seed
-  const allGroups = [...(window.REAL_CELL_GROUPS || []), ...(state.cellGroups || [])];
-  const groups = allGroups
-    .filter((g, idx, arr) => g && g.id && arr.findIndex((x) => String(x.id) === String(g.id) || x.group_name === g.group_name) === idx)
-    .sort((a, b) => String(a.group_name || "").localeCompare(String(b.group_name || "")));
+  const groups = typeof getAllRegisteredCellGroups === "function" 
+    ? getAllRegisteredCellGroups() 
+    : [...(window.REAL_CELL_GROUPS || []), ...(state.cellGroups || [])]
+        .filter((g, idx, arr) => g && (g.id || g.group_name || g.name) && arr.findIndex((x) => String(x.id) === String(g.id) || (x.group_name || x.name) === (g.group_name || g.name)) === idx)
+        .sort((a, b) => String(a.group_name || a.name || "").localeCompare(String(b.group_name || b.name || "")));
 
   // Real Cells from Supabase/Seed
-  const allCells = [...(window.REAL_CELLS_REGISTRY || []), ...(state.cellRegistry || state.cells || [])]
-    .filter((c, idx, arr) => c && c.id && arr.findIndex((x) => String(x.id) === String(c.id)) === idx);
-  
-  const cells = allCells
-    .filter((c) => !cellGroupId || String(c.group_id) === String(cellGroupId) || String(c.cell_group_id) === String(cellGroupId))
-    .sort((a, b) => String(a.cell_name || "").localeCompare(String(b.cell_name || "")));
+  const churchIdVal = churchId || (typeof activeUser !== "undefined" ? activeUser?.church_id : "");
+  const cells = typeof getCellsForGroup === "function"
+    ? getCellsForGroup(cellGroupId, churchIdVal)
+    : [...(window.REAL_CELLS_REGISTRY || []), ...(state.cellRegistry || state.cells || [])]
+        .filter((c) => !cellGroupId || String(c.group_id) === String(cellGroupId) || String(c.cell_group_id) === String(cellGroupId))
+        .sort((a, b) => String(a.cell_name || a.name || "").localeCompare(String(b.cell_name || b.name || "")));
 
   const hasAllSubcells = Array.isArray(record.assigned_cells) && record.assigned_cells.length > 1;
 
@@ -24800,7 +24801,7 @@ function renderUserForm(record = {}, modalMode = "create") {
         <label class="form-label">Grupo de Célula</label>
         <select name="cell_group_id" class="form-select" id="userFormCellGroupSelect">
           <option value="">Nenhum / Não aplicável</option>
-          ${groups.map((g) => `<option value="${escapeAttr(g.id)}" ${String(g.id) === String(cellGroupId) || g.group_name === cellGroupId ? "selected" : ""}>${escapeAttr(g.group_name || g.name)}</option>`).join("")}
+          ${groups.map((g) => `<option value="${escapeAttr(g.id)}" ${String(g.id) === String(cellGroupId) || (g.group_name || g.name) === cellGroupId ? "selected" : ""}>${escapeAttr(g.group_name || g.name)}</option>`).join("")}
         </select>
         <small class="text-secondary">Selecione para carregar as células em tempo real</small>
       </div>
@@ -24808,7 +24809,7 @@ function renderUserForm(record = {}, modalMode = "create") {
         <label class="form-label">Célula Principal</label>
         <select name="cell_id" class="form-select" id="userFormCellSelect">
           <option value="">Nenhuma / Todas as células do grupo</option>
-          ${cells.map((c) => `<option value="${escapeAttr(c.id)}" ${String(c.id) === String(cellId) || c.cell_name === cellId ? "selected" : ""}>${escapeAttr(c.cell_name)}</option>`).join("")}
+          ${cells.map((c) => `<option value="${escapeAttr(c.id)}" ${String(c.id) === String(cellId) || (c.cell_name && c.cell_name === cellId) || (c.name && c.name === cellId) ? "selected" : ""}>${escapeHtml(c.cell_name || c.name || "Célula")}</option>`).join("")}
         </select>
       </div>
 
@@ -24961,6 +24962,7 @@ function mountUserFormControls(form) {
   const pwInput = form.querySelector("#userFormPassword");
   const togglePwBtn = form.querySelector("#btnToggleUserPassword");
   const genPwBtn = form.querySelector("#btnGenerateUserPassword");
+  const churchSelect = form.querySelector("#userFormChurchSelect") || form.querySelector('[name="church_id"]');
   const groupSelect = form.querySelector("#userFormCellGroupSelect");
   const cellSelect = form.querySelector("#userFormCellSelect");
   const roleSelect = form.querySelector("#userFormRoleSelect");
@@ -25007,15 +25009,23 @@ function mountUserFormControls(form) {
   if (groupSelect && cellSelect) {
     groupSelect.addEventListener("change", () => {
       const selectedGroupId = groupSelect.value;
-      const allCells = [...(window.REAL_CELLS_REGISTRY || []), ...(state.cellRegistry || state.cells || [])]
-        .filter((c, idx, arr) => c && c.id && arr.findIndex((x) => String(x.id) === String(c.id)) === idx);
+      const churchIdVal = churchSelect?.value || "";
+      const filteredCells = typeof getCellsForGroup === "function"
+        ? getCellsForGroup(selectedGroupId, churchIdVal)
+        : [];
       
-      const filteredCells = selectedGroupId
-        ? allCells.filter((c) => String(c.group_id) === String(selectedGroupId) || String(c.cell_group_id) === String(selectedGroupId))
-        : allCells;
-      
+      const currentCellVal = cellSelect.value;
       cellSelect.innerHTML = '<option value="">Nenhuma / Todas as células do grupo</option>' +
-        filteredCells.map((c) => `<option value="${escapeAttr(c.id)}">${escapeAttr(c.cell_name)}</option>`).join("");
+        filteredCells.map((c) => {
+          const isSel = String(c.id) === String(currentCellVal) || (c.cell_name && c.cell_name === currentCellVal) || (c.name && c.name === currentCellVal);
+          return `<option value="${escapeAttr(c.id)}" ${isSel ? "selected" : ""}>${escapeHtml(c.cell_name || c.name || "Célula")}</option>`;
+        }).join("");
+    });
+  }
+
+  if (churchSelect && groupSelect) {
+    churchSelect.addEventListener("change", () => {
+      groupSelect.dispatchEvent(new Event("change", { bubbles: true }));
     });
   }
 
@@ -32304,24 +32314,29 @@ function applyPersonToForm(formEl, nameInput, chosen, feedbackBadge) {
   }
 
   // Cell Group and Cell matching
-  const allGroupsList = [...(window.REAL_CELL_GROUPS || []), ...(state.cellGroups || [])];
-  const allCellsList = [...(window.REAL_CELLS_REGISTRY || []), ...(state.cellRegistry || state.cells || [])];
+  const allGroupsList = typeof getAllRegisteredCellGroups === "function" ? getAllRegisteredCellGroups() : [...(window.REAL_CELL_GROUPS || []), ...(state.cellGroups || [])];
+  const allCellsList = typeof getAllRegisteredCells === "function" ? getAllRegisteredCells() : [...(window.REAL_CELLS_REGISTRY || []), ...(state.cellRegistry || state.cells || [])];
+  const normStr = (s) => String(s || "").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
   let matchedCell = null;
   if (chosen.cell_id) {
     matchedCell = allCellsList.find((c) => String(c.id) === String(chosen.cell_id));
   }
-  if (!matchedCell && (chosen.cell_name || chosen.celula)) {
-    const cName = String(chosen.cell_name || chosen.celula).trim().toLowerCase();
-    matchedCell = allCellsList.find((c) => String(c.cell_name || "").trim().toLowerCase() === cName);
+  if (!matchedCell && (chosen.cell_name || chosen.celula || chosen.name)) {
+    const targetCellNorm = normStr(chosen.cell_name || chosen.celula || chosen.name);
+    matchedCell = allCellsList.find((c) => {
+      const cNameNorm = normStr(c.cell_name || c.name);
+      return cNameNorm === targetCellNorm || cNameNorm.includes(targetCellNorm) || targetCellNorm.includes(cNameNorm);
+    });
   }
 
   let matchedGroup = null;
   if (matchedCell) {
     const gId = matchedCell.group_id || matchedCell.cell_group_id;
     if (gId) matchedGroup = allGroupsList.find((g) => String(g.id) === String(gId));
-    if (!matchedGroup && matchedCell.group_name) {
-      matchedGroup = allGroupsList.find((g) => String(g.group_name || "").trim().toLowerCase() === String(matchedCell.group_name).trim().toLowerCase());
+    if (!matchedGroup && (matchedCell.group_name || matchedCell.cell_group_name)) {
+      const gNameNorm = normStr(matchedCell.group_name || matchedCell.cell_group_name);
+      matchedGroup = allGroupsList.find((g) => normStr(g.group_name || g.name) === gNameNorm);
     }
   }
   if (!matchedGroup && (chosen.cell_group_id || chosen.group_id)) {
@@ -32329,8 +32344,21 @@ function applyPersonToForm(formEl, nameInput, chosen, feedbackBadge) {
     matchedGroup = allGroupsList.find((g) => String(g.id) === String(gId));
   }
   if (!matchedGroup && (chosen.cell_group_name || chosen.group_name || chosen.grupo_de_celula)) {
-    const gName = String(chosen.cell_group_name || chosen.group_name || chosen.grupo_de_celula).trim().toLowerCase();
-    matchedGroup = allGroupsList.find((g) => String(g.group_name || "").trim().toLowerCase() === gName);
+    const targetGroupNorm = normStr(chosen.cell_group_name || chosen.group_name || chosen.grupo_de_celula);
+    matchedGroup = allGroupsList.find((g) => normStr(g.group_name || g.name) === targetGroupNorm);
+  }
+
+  // If group is resolved but cell isn't, resolve to the group's main cell or single cell (e.g. Visionários Main)
+  if (matchedGroup && !matchedCell) {
+    const groupCells = typeof getCellsForGroup === "function" 
+      ? getCellsForGroup(matchedGroup.id) 
+      : allCellsList.filter((c) => String(c.group_id) === String(matchedGroup.id) || String(c.cell_group_id) === String(matchedGroup.id));
+    if (groupCells.length === 1) {
+      matchedCell = groupCells[0];
+    } else if (groupCells.length > 1) {
+      const mainCell = groupCells.find((c) => normStr(c.cell_name || c.name).includes("main"));
+      if (mainCell) matchedCell = mainCell;
+    }
   }
 
   if (matchedGroup?.id) {
@@ -32340,9 +32368,10 @@ function applyPersonToForm(formEl, nameInput, chosen, feedbackBadge) {
     setVal('[name="cell_group_id"]', chosen.cell_group_id || chosen.group_id);
     setVal('[name="group_id"]', chosen.cell_group_id || chosen.group_id);
   }
-  if (chosen.cell_group_name || matchedGroup?.group_name) {
-    setVal('[name="cell_group_name"]', matchedGroup?.group_name || chosen.cell_group_name);
-    setVal('[name="grupo_de_celula"]', matchedGroup?.group_name || chosen.cell_group_name);
+  if (chosen.cell_group_name || matchedGroup?.group_name || matchedGroup?.name) {
+    const grpName = matchedGroup?.group_name || matchedGroup?.name || chosen.cell_group_name;
+    setVal('[name="cell_group_name"]', grpName);
+    setVal('[name="grupo_de_celula"]', grpName);
   }
 
   if (matchedCell?.id) {
@@ -32350,7 +32379,7 @@ function applyPersonToForm(formEl, nameInput, chosen, feedbackBadge) {
   } else if (chosen.cell_id) {
     setVal('[name="cell_id"]', chosen.cell_id);
   }
-  const cellNameVal = matchedCell?.cell_name || chosen.cell_name || chosen.celula;
+  const cellNameVal = matchedCell?.cell_name || matchedCell?.name || chosen.cell_name || chosen.celula;
   if (cellNameVal) {
     setVal('[name="cell_name"]', cellNameVal);
     setVal('[name="celula"]', cellNameVal);

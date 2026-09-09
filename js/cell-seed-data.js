@@ -45,8 +45,8 @@
   },
   {
     "id": "f9f013c8-346f-4567-8911-762379b97d40",
-    "name": "Visionarios",
-    "group_name": "Visionarios",
+    "name": "Visionários",
+    "group_name": "Visionários",
     "church_id": "a1111111-1111-4111-8111-111111111101",
     "church_name": "E.C. Maputo Central - Sede",
     "total_cells": 1,
@@ -759,10 +759,13 @@
   },
   {
     "id": "83336c21-1928-4d0c-8284-fcb88b770048",
-    "name": "Visionarios Main",
-    "raw_name": "Visionarios Main",
+    "name": "Visionários Main",
+    "cell_name": "Visionários Main",
+    "raw_name": "Visionários Main",
     "group_id": "f9f013c8-346f-4567-8911-762379b97d40",
-    "group_name": "Visionarios",
+    "cell_group_id": "f9f013c8-346f-4567-8911-762379b97d40",
+    "group_name": "Visionários",
+    "cell_group_name": "Visionários",
     "church_id": "a1111111-1111-4111-8111-111111111101",
     "church_name": "E.C. Maputo Central - Sede",
     "member_count": 14
@@ -2103,8 +2106,26 @@
     return { cellGroups, cellRegistry };
   }
 
+  const normalizedGroups = REAL_CELL_GROUPS.map((g) => ({
+    ...g,
+    name: g.name || g.group_name,
+    group_name: g.group_name || g.name
+  }));
+
+  const normalizedCellsRegistry = REAL_CELLS_REGISTRY.map((c) => ({
+    ...c,
+    name: c.name || c.cell_name,
+    cell_name: c.cell_name || c.name,
+    raw_name: c.raw_name || c.raw_cell_name || c.cell_name || c.name,
+    raw_cell_name: c.raw_cell_name || c.raw_name || c.cell_name || c.name,
+    group_id: c.group_id || c.cell_group_id,
+    cell_group_id: c.cell_group_id || c.group_id,
+    group_name: c.group_name || c.cell_group_name,
+    cell_group_name: c.cell_group_name || c.group_name
+  }));
+
   const root = typeof window !== "undefined" ? window : globalThis;
   root.buildCellGroupsSeed = buildCellGroupsSeed;
-  root.REAL_CELL_GROUPS = REAL_CELL_GROUPS;
-  root.REAL_CELLS_REGISTRY = REAL_CELLS_REGISTRY;
+  root.REAL_CELL_GROUPS = normalizedGroups;
+  root.REAL_CELLS_REGISTRY = normalizedCellsRegistry;
 })();
