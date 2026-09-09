@@ -2341,12 +2341,12 @@ Object.assign(TEXT.pt, {
   sendToFinance: "Enviar para Finanças",
   requestCorrection: "Pedir Correção",
   fevo: "F.E.V.O",
-  fevoFull: "Acompanhamento, Evangeliza��o, Visita��o e Ora��o",
-  fevoSubtitle: "Equipas semanais rotativas para acompanhamento, evangeliza��o, visita��o e ora��o, coordenadas por Sister Cassandra.",
-  weeklyConfiguration: "Configura��o Semanal",
-  evangelism: "Evangeliza��o",
-  visitation: "Visita��o",
-  prayer: "Ora��o",
+  fevoFull: "Acompanhamento, Evangelizao, Visitao e Orao",
+  fevoSubtitle: "Equipas semanais rotativas para acompanhamento, evangelização, visitação e oração.",
+  weeklyConfiguration: "Configurao Semanal",
+  evangelism: "Evangelizao",
+  visitation: "Visitao",
+  prayer: "Orao",
   groupsWithoutReport: "Grupos sem Relatório",
   weeklyReports: "Relatórios Semanais",
   analysis: "Análise",
@@ -2411,9 +2411,9 @@ Object.assign(TEXT.pt, {
   navGroupToggle: "Alternar sec��o",
   moduleNavToggle: "Alternar menu do módulo",
   backToTop: "Voltar ao topo",
-  cellAlecArea: "ALEC / Sister Angelica",
-  cellMinistryArea: "Cell Ministry / Pastora Flavia",
-  cellReportsArea: "Relatórios de Células / Sister Eduarda",
+  cellAlecArea: "ALEC",
+  cellMinistryArea: "Ministério de Células",
+  cellReportsArea: "Relatórios de Células",
   cellAlecOverview: "Vis�o Geral ALEC",
   cellMinistryOverview: "Vis�o Geral",
   receivedReports: "Submissões Semanais",
@@ -2739,7 +2739,7 @@ Object.assign(TEXT.en, {
 Object.assign(TEXT.en, {
   fevo: "F.E.V.O",
   fevoFull: "Follow-Up, Evangelism, Visitation and Prayer",
-  fevoSubtitle: "Weekly rotating teams for follow-up, evangelism, visitation and prayer, coordinated by Sister Cassandra.",
+  fevoSubtitle: "Weekly rotating teams for follow-up, evangelism, visitation and prayer.",
   weeklyConfiguration: "Weekly Configuration",
   evangelism: "Evangelism",
   visitation: "Visitation",
@@ -2808,9 +2808,9 @@ Object.assign(TEXT.en, {
   navGroupToggle: "Toggle section",
   moduleNavToggle: "Toggle module menu",
   backToTop: "Back to top",
-  cellAlecArea: "ALEC / Sister Angelica",
-  cellMinistryArea: "Cell Ministry / Pastora Flavia",
-  cellReportsArea: "Cell Reports / Sister Eduarda",
+  cellAlecArea: "ALEC",
+  cellMinistryArea: "Cell Ministry",
+  cellReportsArea: "Cell Reports",
   cellAlecOverview: "ALEC Overview",
   cellMinistryOverview: "Overview",
   receivedReports: "Weekly Submissions",
@@ -4447,12 +4447,12 @@ Object.assign(TEXT.pt, {
   cellCells: "Células",
   cellLeaders: "Líderes",
   fevoFull: "Acompanhamento, Evangelização, Visitação e Oração",
-  fevoSubtitle: "Equipas semanais rotativas para acompanhamento, evangelização, visitação e oração, coordenadas por Sister Cassandra.",
+  fevoSubtitle: "Equipas semanais rotativas para acompanhamento, evangelização, visitação e oração.",
   venueInventory: "Gestão de Espaços & Inventário",
   venueInventoryShort: "Espaços & Inventário",
   cellAlecOverview: "Visão Geral ALEC",
   cellMinistryOverview: "Visão Geral",
-  cellReportsArea: "Relatórios de Células / Sister Eduarda",
+  cellReportsArea: "Relatórios de Células",
   receivedReports: "Submissões Semanais",
   weeklyCellReport: "Submissões Semanais",
   cellOffering: "Oferta da Célula",
@@ -7225,12 +7225,12 @@ function updateCellReportReviewAction(action, reportId) {
   report.review_history = Array.isArray(report.review_history) ? report.review_history : [];
   report.review_history.push({ action, reason: decisionReason, user_id: activeUser?.id || "", user_name: activeUser?.name || "", user_role: activeUser?.role || "", created_at: now });
   if (action === "approve") {
-    report.avaliado_por = activeUser?.name || "Pastora Flavia";
+    report.avaliado_por = activeUser?.name || "Avaliador de Células";
     report.reviewed_by = report.avaliado_por;
     report.reviewed_at = now;
   }
   if (action === "validate") {
-    report.validado_por = activeUser?.name || "Sister Eduarda";
+    report.validado_por = activeUser?.name || "Validador de Células";
     report.validated_by = report.validado_por;
     report.validated_at = now;
     report.validated_by_user_id = activeUser?.id || "";
@@ -24888,13 +24888,13 @@ function renderUserForm(record = {}, modalMode = "create") {
             <div class="col-sm-6 col-lg-4">
               <label class="form-check">
                 <input type="checkbox" name="dept_perm" value="cellMinistry" class="form-check-input" ${deptPerms.has("cellMinistry") || deptPerms.has("cell_ministry") || deptPerms.has("cell") || deptPerms.has("*") ? "checked" : ""}>
-                <span class="form-check-label"><i class="bi bi-diagram-3 me-1 text-info"></i> Ministério de Células (Pastor Dino)</span>
+                <span class="form-check-label"><i class="bi bi-diagram-3 me-1 text-info"></i> Ministério de Células</span>
               </label>
             </div>
             <div class="col-sm-6 col-lg-4">
               <label class="form-check">
                 <input type="checkbox" name="dept_perm" value="cellReports" class="form-check-input" ${deptPerms.has("cellReports") || deptPerms.has("cell_reports") || deptPerms.has("cell") || deptPerms.has("*") ? "checked" : ""}>
-                <span class="form-check-label"><i class="bi bi-clipboard-data me-1 text-cyan"></i> Relatórios de Células (Sister Eduarda)</span>
+                <span class="form-check-label"><i class="bi bi-clipboard-data me-1 text-cyan"></i> Relatórios de Células</span>
               </label>
             </div>
             <div class="col-sm-6 col-lg-4">
@@ -24906,7 +24906,7 @@ function renderUserForm(record = {}, modalMode = "create") {
             <div class="col-sm-6 col-lg-4">
               <label class="form-check">
                 <input type="checkbox" name="dept_perm" value="alec" class="form-check-input" ${deptPerms.has("alec") || deptPerms.has("alec_manager") || deptPerms.has("cell") || deptPerms.has("*") ? "checked" : ""}>
-                <span class="form-check-label"><i class="bi bi-mortarboard me-1 text-primary"></i> ALEC (Sister Angélica)</span>
+                <span class="form-check-label"><i class="bi bi-mortarboard me-1 text-primary"></i> ALEC (Academia de Líderes)</span>
               </label>
             </div>
             <div class="col-sm-6 col-lg-4">
