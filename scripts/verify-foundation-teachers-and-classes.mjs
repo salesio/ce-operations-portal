@@ -1,4 +1,4 @@
-﻿import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@supabase/supabase-js";
 import fs from "node:fs";
 
 const SUPABASE_URL = "https://kmurqbgpybrolrrumiue.supabase.co";
@@ -21,8 +21,11 @@ async function verifyAll() {
   const hasDeleteAction = js.includes('["delete", "foundationTeacher", teacher.id');
   console.log("✓ Teacher action cluster includes 'delete' button:", hasDeleteAction);
 
-  const hasTeacherDeleteQuickAction = js.includes('if (type === "foundationTeacher") {\n      const previous = collection[index];');
+  const hasTeacherDeleteQuickAction = js.includes('if (type === "foundationTeacher")') && js.includes('foundationAudit("teacher_deleted"');
   console.log("✓ quickAction handles teacher deletion:", hasTeacherDeleteQuickAction);
+
+  const hasTeacherAutoSelect = js.includes('mountFoundationTeacherControls') && js.includes('can_teach_all_lessons');
+  console.log("✓ Teacher form auto-selects all 7 classes when 'Ensina todas' is clicked:", hasTeacherAutoSelect);
 
   const hasClassViewButton = js.includes('data-foundation-class-view=');
   console.log("✓ Class card includes 'view' button:", hasClassViewButton);

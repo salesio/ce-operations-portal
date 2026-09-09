@@ -149,10 +149,16 @@ export function normalizeFoundationTeacher(
 ): FoundationTeacher {
   const id = input.id || `ftch-${Date.now()}`;
   const name = input.full_name || input.fullName || "Professor";
-  const lessons = Array.isArray(input.can_teach_lessons)
+  const canTeachAll = asBool(input.can_teach_all_lessons);
+  const rawLessons = Array.isArray(input.can_teach_lessons)
     ? input.can_teach_lessons
     : Array.isArray(input.subjects_or_lessons_allowed)
       ? input.subjects_or_lessons_allowed
+      : [];
+  const lessons = canTeachAll
+    ? [1, 2, 3, 4, 5, 6, 7]
+    : rawLessons.length
+      ? rawLessons
       : [];
   const modes = Array.isArray(input.delivery_modes_allowed)
     ? input.delivery_modes_allowed
@@ -183,7 +189,7 @@ export function normalizeFoundationTeacher(
     status: input.status || "Activo",
     can_teach_lessons: lessons,
     subjects_or_lessons_allowed: lessons,
-    can_teach_all_lessons: asBool(input.can_teach_all_lessons),
+    can_teach_all_lessons: canTeachAll || (lessons.length === 7),
     delivery_modes_allowed: modes,
     assigned_locations: Array.isArray(input.assigned_locations)
       ? input.assigned_locations

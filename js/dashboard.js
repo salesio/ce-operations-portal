@@ -15218,6 +15218,27 @@ function renderFoundationTeacherForm(record = {}, mode = "edit") {
   `;
 }
 
+function mountFoundationTeacherControls(form) {
+  if (!form) return;
+  const canAll = form.querySelector('input[name="can_teach_all_lessons"]');
+  const lessonCheckboxes = Array.from(form.querySelectorAll('input[name^="lesson_"]'));
+  if (!canAll || !lessonCheckboxes.length) return;
+
+  canAll.addEventListener("change", () => {
+    const isChecked = canAll.checked;
+    lessonCheckboxes.forEach((cb) => {
+      cb.checked = isChecked;
+    });
+  });
+
+  lessonCheckboxes.forEach((cb) => {
+    cb.addEventListener("change", () => {
+      const allChecked = lessonCheckboxes.length > 0 && lessonCheckboxes.every((item) => item.checked);
+      canAll.checked = allChecked;
+    });
+  });
+}
+
 function openFoundationTeacherForm(id = null, mode = "edit") {
   ensureFoundationData();
   modalMode = id ? (mode === "view" ? "view" : "edit") : "create";
@@ -15236,6 +15257,7 @@ function openFoundationTeacherForm(id = null, mode = "edit") {
   bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
   requestAnimationFrame(() => {
     mountRelationalControls(byId("entryForm"));
+    mountFoundationTeacherControls(byId("entryForm"));
     cleanRenderedText(byId("entryModal"));
   });
 }
