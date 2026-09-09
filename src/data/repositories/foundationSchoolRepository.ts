@@ -674,9 +674,11 @@ export const deleteStudent = deleteFoundationStudent;
 export const listClasses = listFoundationClasses;
 export const createClass = createFoundationClass;
 export const updateClass = updateFoundationClass;
+export const deleteClass = deleteFoundationClass;
 export const listTeachers = listFoundationTeachers;
 export const createTeacher = createFoundationTeacher;
 export const updateTeacher = updateFoundationTeacher;
+export const deleteTeacher = deleteFoundationTeacher;
 
 export function getFoundationSchoolDataSourceInfo() {
   const provider = getDataProvider();

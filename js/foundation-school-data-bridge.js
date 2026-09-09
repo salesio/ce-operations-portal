@@ -187,8 +187,17 @@
           return ok(newRow);
         }
         s.rows[i] = Object.assign({}, s.rows[i], payload, { id: s.rows[i].id || id });
+        s.rows[i] = Object.assign({}, s.rows[i], payload, { id: s.rows[i].id || id });
         if (s.persist) save(KEYS.teachers, s.rows);
         return ok(s.rows[i]);
+      },
+      deleteTeacher: async function (id) {
+        var s = store("teachers");
+        s.rows = s.rows.filter(function (r) {
+          return r.id !== id && String(r.id) !== String(id);
+        });
+        if (s.persist) save(KEYS.teachers, s.rows);
+        return ok(true);
       },
       listClasses: async function () {
         return ok(store("classes").rows.slice());
@@ -220,6 +229,14 @@
         s.rows[i] = Object.assign({}, s.rows[i], payload, { id: s.rows[i].id || id });
         if (s.persist) save(KEYS.classes, s.rows);
         return ok(s.rows[i]);
+      },
+      deleteClass: async function (id) {
+        var s = store("classes");
+        s.rows = s.rows.filter(function (r) {
+          return r.id !== id && String(r.id) !== String(id);
+        });
+        if (s.persist) save(KEYS.classes, s.rows);
+        return ok(true);
       },
       getInfo: function () {
         return {
@@ -296,6 +313,9 @@
     updateClass: function (id, payload) {
       return call("updateClass", [id, payload], ["updateFoundationClass"]);
     },
+    deleteClass: function (id) {
+      return call("deleteClass", [id], ["deleteFoundationClass"]);
+    },
     listTeachers: function () {
       return call("listTeachers", [], ["listFoundationTeachers"]);
     },
@@ -304,6 +324,9 @@
     },
     updateTeacher: function (id, payload) {
       return call("updateTeacher", [id, payload], ["updateFoundationTeacher"]);
+    },
+    deleteTeacher: function (id) {
+      return call("deleteTeacher", [id], ["deleteFoundationTeacher"]);
     },
     getInfo: function () {
       var resolved = getApi();

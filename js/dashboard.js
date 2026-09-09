@@ -10679,6 +10679,15 @@ function setRoute(route) {
       })
       .catch((err) => console.warn("[CE Sacraments] route hydrate skipped", err));
   }
+  if (activeRoute === "foundation") {
+    Promise.resolve(hydrateFoundationSchoolFromRepository())
+      .then((hydrated) => {
+        if (hydrated && activeRoute === "foundation") {
+          try { renderFoundation(); } catch (_) {}
+        }
+      })
+      .catch((err) => console.warn("[CE Foundation] route hydrate skipped", err));
+  }
   if (String(activeRoute || "").startsWith("cell")) {
     if (!state.cellLeadership || !state.cellLeadership.churchReports || !state.cellLeadership.churchReports.length) {
       Promise.resolve(hydrateCellMinistryFromRepository())
@@ -16082,31 +16091,56 @@ function ensureFoundationLessonLocations(hq, churchLabel) {
 }
 
 function foundationNormalizeTeacherCapabilities(teacher) {
-  const lessonList = teacher.can_teach_all_lessons ? [1, 2, 3, 4, 5, 6, 7] : (teacher.subjects_or_lessons_allowed || teacher.can_teach_lessons || []);
+  if (!teacher) return {};
+  const statusRaw = String(teacher.status || "Activo").trim();
+  const status = /active|activo/i.test(statusRaw)
+    ? "Activo"
+    : /inactive|inactivo/i.test(statusRaw)
+      ? "Inactivo"
+      : /treinamento|training/i.test(statusRaw)
+        ? "Em Treinamento"
+        : /indispon/i.test(statusRaw)
+          ? "Indisponível"
+          : (teacher.status || "Activo");
+
+  const canAll = teacher.can_teach_all_lessons === true || teacher.can_teach_all === true;
+  const rawLessons = teacher.subjects_or_lessons_allowed || teacher.can_teach_lessons;
+  const lessonList = canAll || !rawLessons || (Array.isArray(rawLessons) && rawLessons.length === 0)
+    ? [1, 2, 3, 4, 5, 6, 7]
+    : rawLessons;
+
   const modes = teacher.delivery_modes_allowed || [
     teacher.can_teach_in_person !== false ? "in_person" : "",
     teacher.can_teach_online ? "online" : "",
-    teacher.can_teach_home_visit ? "home_visit" : "",
-    teacher.is_prison_ministry_teacher ? "prison_ministry" : ""
+    teacher.can_teach_home_visit || teacher.can_teach_home ? "home_visit" : "",
+    teacher.is_prison_ministry_teacher || teacher.can_teach_prisons ? "prison_ministry" : ""
   ].filter(Boolean);
-  const roleFromTitle = /reitor|rector/i.test(String(teacher.title || ""))
+
+  const roleFromTitle = /reitor|rector/i.test(String(teacher.title || teacher.role || ""))
     ? "Rector"
-    : /coord/i.test(String(teacher.title || ""))
+    : /coord/i.test(String(teacher.title || teacher.role || ""))
       ? "Coordinator"
-      : /assist/i.test(String(teacher.title || ""))
+      : /assist/i.test(String(teacher.title || teacher.role || ""))
         ? "Assistant Teacher"
         : "Teacher";
+
+  const roleType = teacher.role_type || teacher.role || roleFromTitle;
+
   return {
     ...teacher,
-    role_type: teacher.role_type || roleFromTitle,
-    can_teach_lessons: lessonList.map(Number),
-    subjects_or_lessons_allowed: lessonList.map(Number),
+    status: status,
+    role: teacher.role || roleType,
+    role_type: roleType,
+    title: teacher.title || (roleType === "Rector" ? "Reitor" : roleType === "Coordinator" ? "Coordenador" : roleType === "Assistant Teacher" ? "Professor Assistente" : "Professor"),
+    can_teach_all_lessons: canAll || (Array.isArray(lessonList) && lessonList.length === 7),
+    can_teach_lessons: Array.isArray(lessonList) ? lessonList.map(Number) : [1, 2, 3, 4, 5, 6, 7],
+    subjects_or_lessons_allowed: Array.isArray(lessonList) ? lessonList.map(Number) : [1, 2, 3, 4, 5, 6, 7],
     delivery_modes_allowed: modes.length ? modes : ["in_person"],
     assigned_locations: teacher.assigned_locations || ["fsloc-hq-main"],
     max_classes_per_week: Number(teacher.max_classes_per_week || 3),
-    is_prison_ministry_teacher: !!teacher.is_prison_ministry_teacher || modes.includes("prison_ministry"),
+    is_prison_ministry_teacher: !!teacher.is_prison_ministry_teacher || !!teacher.can_teach_prisons || modes.includes("prison_ministry"),
     can_teach_online: !!teacher.can_teach_online || modes.includes("online"),
-    can_teach_home_visit: !!teacher.can_teach_home_visit || modes.includes("home_visit"),
+    can_teach_home_visit: !!teacher.can_teach_home_visit || !!teacher.can_teach_home || modes.includes("home_visit"),
     can_teach_in_person: teacher.can_teach_in_person !== false && (modes.includes("in_person") || !modes.length)
   };
 }
@@ -17492,8 +17526,22 @@ async function saveFoundationExam(studentId) {
   foundationAudit("final_exam_updated", "foundationFinalExam", exam.id, "", JSON.stringify({ score, maxScore, percentage, passed, attachment: exam.physical_exam_file_name || "" }), fullName((state.foundationStudents || []).find((s) => s.id === studentId) || {}));
 }
 
+let foundationSupabaseSyncToken = 0;
+
 function renderFoundation() {
   ensureFoundationData();
+  const syncToken = ++foundationSupabaseSyncToken;
+  Promise.resolve(hydrateFoundationSchoolFromRepository()).then((changed) => {
+    if (changed && syncToken === foundationSupabaseSyncToken && activeRoute === "foundation") {
+      const pending = foundationPending();
+      const students = foundationStudentsForGroup();
+      const activePanel = byId("foundation-active-panel");
+      if (activePanel) {
+        activePanel.innerHTML = renderFoundationActiveTab(students, pending);
+      }
+    }
+  });
+
   const pending = foundationPending();
   const students = foundationStudentsForGroup();
   setPageContent(`
@@ -19135,6 +19183,8 @@ async function persistFoundationTeacherViaRepository(mode, record) {
       result = await (repo.createTeacher || repo.createFoundationTeacher)(record);
     } else if (mode === "update" && (repo.updateTeacher || repo.updateFoundationTeacher)) {
       result = await (repo.updateTeacher || repo.updateFoundationTeacher)(record.id, record);
+    } else if (mode === "delete" && (repo.deleteTeacher || repo.deleteFoundationTeacher)) {
+      result = await (repo.deleteTeacher || repo.deleteFoundationTeacher)(record.id || record);
     } else {
       return { ok: true, data: record, skipped: true, via: "local-state-fallback" };
     }
@@ -19164,6 +19214,8 @@ async function persistFoundationClassViaRepository(mode, record) {
       result = await (repo.createClass || repo.createFoundationClass)(record);
     } else if (mode === "update" && (repo.updateClass || repo.updateFoundationClass)) {
       result = await (repo.updateClass || repo.updateFoundationClass)(record.id, record);
+    } else if (mode === "delete" && (repo.deleteClass || repo.deleteFoundationClass)) {
+      result = await (repo.deleteClass || repo.deleteFoundationClass)(record.id || record);
     } else {
       return { ok: true, data: record, skipped: true, via: "local-state-fallback" };
     }
@@ -19202,14 +19254,17 @@ async function hydrateFoundationSchoolFromRepository() {
       if (res?.ok && Array.isArray(res.data)) studentsData = res.data;
     }
     if (Array.isArray(studentsData)) {
-      const prev = new Map((state.foundationStudents || []).map((s) => [s.id, s]));
+      const liveStudents = studentsData.filter((s) => !isDemoFoundationRecord(s));
+      const prev = new Map((state.foundationStudents || []).filter((s) => !isDemoFoundationRecord(s)).map((s) => [s.id, s]));
       const byId = new Map();
-      studentsData.forEach((row) => {
+      liveStudents.forEach((row) => {
         const previous = prev.get(row.id) || {};
-        byId.set(row.id, migrateFoundationStudentRecord({ ...row, ...previous, id: row.id }));
+        byId.set(row.id, migrateFoundationStudentRecord({ ...previous, ...row, id: row.id }));
       });
       prev.forEach((localRow, id) => {
-        if (!byId.has(id)) byId.set(id, migrateFoundationStudentRecord(localRow));
+        if (!byId.has(id) && isValidUuid(String(id))) {
+          byId.set(id, migrateFoundationStudentRecord(localRow));
+        }
       });
       state.foundationStudents = [...byId.values()];
       hydrated = true;
@@ -19230,11 +19285,11 @@ async function hydrateFoundationSchoolFromRepository() {
       const prev = new Map((state.foundationTeachers || []).filter((t) => !isDemoFoundationRecord(t)).map((t) => [t.id, t]));
       const byId = new Map();
       liveTeachers.forEach((row) => {
-        byId.set(row.id, { ...(prev.get(row.id) || {}), ...row, id: row.id });
+        byId.set(row.id, foundationNormalizeTeacherCapabilities({ ...(prev.get(row.id) || {}), ...row, id: row.id }));
       });
       prev.forEach((localRow, id) => {
         if (!byId.has(id) && !isDemoFoundationRecord(localRow) && isValidUuid(String(id))) {
-          byId.set(id, localRow);
+          byId.set(id, foundationNormalizeTeacherCapabilities(localRow));
         }
       });
       state.foundationTeachers = [...byId.values()];
@@ -19267,7 +19322,46 @@ async function hydrateFoundationSchoolFromRepository() {
       hydrated = true;
     }
 
-    if (hydrated) localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    // 4. Attendance
+    if (sbClient) {
+      const attRes = await sbClient.from("foundation_school_attendance").select("*").order("created_at", { ascending: false });
+      if (attRes?.data && Array.isArray(attRes.data) && attRes.data.length > 0) {
+        state.foundationLessonAttendance = attRes.data;
+        hydrated = true;
+      }
+    }
+
+    // 5. Soul Winning
+    if (sbClient) {
+      const soulRes = await sbClient.from("foundation_school_soul_winning").select("*").order("created_at", { ascending: false });
+      if (soulRes?.data && Array.isArray(soulRes.data) && soulRes.data.length > 0) {
+        state.foundationSoulWinning = soulRes.data;
+        hydrated = true;
+      }
+    }
+
+    // 6. Final Exams
+    if (sbClient) {
+      const examRes = await sbClient.from("foundation_school_final_exams").select("*").order("created_at", { ascending: false });
+      if (examRes?.data && Array.isArray(examRes.data) && examRes.data.length > 0) {
+        state.foundationFinalExams = examRes.data;
+        hydrated = true;
+      }
+    }
+
+    // 7. Graduations
+    if (sbClient) {
+      const gradRes = await sbClient.from("foundation_school_graduations").select("*").order("created_at", { ascending: false });
+      if (gradRes?.data && Array.isArray(gradRes.data) && gradRes.data.length > 0) {
+        state.foundationGraduations = gradRes.data;
+        hydrated = true;
+      }
+    }
+
+    if (hydrated) {
+      ensureFoundationData();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
     return hydrated;
   } catch (error) {
     console.warn("[CE Foundation] hydrate error", error);
@@ -29260,6 +29354,16 @@ function continueEnterDashboard() {
       if (hydrated && activeRoute === "followUp") renderFollowUp();
     })
     .catch((error) => console.warn("[CE FollowUps] background hydrate skipped", error));
+
+  // Active background sync for foundation school from Supabase
+  Promise.resolve()
+    .then(() => hydrateFoundationSchoolFromRepository())
+    .then((hydrated) => {
+      if (hydrated && activeRoute === "foundation") {
+        try { renderFoundation(); } catch (_) {}
+      }
+    })
+    .catch((error) => console.warn("[CE Foundation] background hydrate skipped", error));
 
   if (window.__CE_LEGACY_EAGER_HYDRATE__ === true) {
   // Data-layer pilots: sync churches + members + first timers without blocking UI paint
