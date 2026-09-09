@@ -13841,39 +13841,41 @@ function candidatePortalActions(candidate) {
   const isAssistant = activeUser?.role === "Cell Assistant";
   const isLeaderOrAdmin = !isAssistant;
   const canEdit = candidate.registered_by_user_id === activeUser?.id && ["Draft", "ReadyForSubmission", "NeedsCorrection"].includes(status);
+  const deleteBtn = `<button class="action-btn text-danger" data-candidate-action="delete" data-candidate-id="${id}" title="Eliminar este registo de membro"><i class="bi bi-trash me-1"></i>Eliminar</button>`;
 
   if (status === "Draft") {
-    return `<button class="action-btn" data-candidate-action="view" data-candidate-id="${id}">Ver</button> ${canEdit ? `<button class="action-btn" data-candidate-action="edit" data-candidate-id="${id}">Editar</button><button class="action-btn" data-candidate-action="submit" data-candidate-id="${id}">Submeter</button><button class="action-btn" data-candidate-action="withdraw" data-candidate-id="${id}">Retirar</button>` : ""}`;
+    return `<button class="action-btn" data-candidate-action="view" data-candidate-id="${id}">Ver</button> ${canEdit ? `<button class="action-btn" data-candidate-action="edit" data-candidate-id="${id}">Editar</button><button class="action-btn" data-candidate-action="submit" data-candidate-id="${id}">Submeter</button><button class="action-btn" data-candidate-action="withdraw" data-candidate-id="${id}">Retirar</button>` : ""} ${deleteBtn}`;
   }
   if (status === "ReadyForSubmission") {
     if (isLeaderOrAdmin) {
-      return `<button class="action-btn" data-candidate-action="view" data-candidate-id="${id}">Ver</button> <button class="action-btn btn-sm btn-success text-success fw-bold" data-candidate-action="leaderApprove" data-candidate-id="${id}" title="Aprovar e adicionar à lista da célula"><i class="bi bi-check-circle me-1"></i>Aprovar p/ Célula</button> <button class="action-btn" data-candidate-action="edit" data-candidate-id="${id}">Editar</button><button class="action-btn" data-candidate-action="reject" data-candidate-id="${id}">Rejeitar</button>`;
+      return `<button class="action-btn" data-candidate-action="view" data-candidate-id="${id}">Ver</button> <button class="action-btn btn-sm btn-success text-success fw-bold" data-candidate-action="leaderApprove" data-candidate-id="${id}" title="Aprovar e adicionar à lista da célula"><i class="bi bi-check-circle me-1"></i>Aprovar p/ Célula</button> <button class="action-btn" data-candidate-action="edit" data-candidate-id="${id}">Editar</button><button class="action-btn" data-candidate-action="reject" data-candidate-id="${id}">Rejeitar</button> ${deleteBtn}`;
     }
-    return `<button class="action-btn" data-candidate-action="view" data-candidate-id="${id}">Ver</button> <span class="badge bg-warning text-dark me-1">Aguardando Líder</span> ${canEdit ? `<button class="action-btn" data-candidate-action="edit" data-candidate-id="${id}">Editar</button><button class="action-btn" data-candidate-action="withdraw" data-candidate-id="${id}">Retirar</button>` : ""}`;
+    return `<button class="action-btn" data-candidate-action="view" data-candidate-id="${id}">Ver</button> <span class="badge bg-warning text-dark me-1">Aguardando Líder</span> ${canEdit ? `<button class="action-btn" data-candidate-action="edit" data-candidate-id="${id}">Editar</button><button class="action-btn" data-candidate-action="withdraw" data-candidate-id="${id}">Retirar</button>` : ""} ${deleteBtn}`;
   }
   if (status === "Submitted") {
-    return `<button class="action-btn" data-candidate-action="view" data-candidate-id="${id}">Ver</button> <span class="badge bg-info text-dark">Membro da Célula · Aguardando Igreja</span>`;
+    return `<button class="action-btn" data-candidate-action="view" data-candidate-id="${id}">Ver</button> <span class="badge bg-info text-dark">Membro da Célula · Aguardando Igreja</span> ${deleteBtn}`;
   }
   if (status === "UnderReview") {
-    return `<button class="action-btn" data-candidate-action="view" data-candidate-id="${id}">Ver</button> <span class="badge bg-primary">Em Revisão na Igreja</span>`;
+    return `<button class="action-btn" data-candidate-action="view" data-candidate-id="${id}">Ver</button> <span class="badge bg-primary">Em Revisão na Igreja</span> ${deleteBtn}`;
   }
   if (status === "NeedsCorrection") {
-    return `<button class="action-btn" data-candidate-action="view" data-candidate-id="${id}">Ver motivo</button> ${canEdit ? `<button class="action-btn" data-candidate-action="edit" data-candidate-id="${id}">Editar</button><button class="action-btn" data-candidate-action="submit" data-candidate-id="${id}">Re-submeter</button>` : ""}`;
+    return `<button class="action-btn" data-candidate-action="view" data-candidate-id="${id}">Ver motivo</button> ${canEdit ? `<button class="action-btn" data-candidate-action="edit" data-candidate-id="${id}">Editar</button><button class="action-btn" data-candidate-action="submit" data-candidate-id="${id}">Re-submeter</button>` : ""} ${deleteBtn}`;
   }
   if (status === "Approved") {
-    return `<button class="action-btn" data-cell-portal-member="${escapeAttr(candidate.approved_member_id || "")}">Abrir membro oficial</button>`;
+    return `<button class="action-btn" data-cell-portal-member="${escapeAttr(candidate.approved_member_id || "")}">Abrir membro oficial</button> ${deleteBtn}`;
   }
-  return `<button class="action-btn" data-candidate-action="view" data-candidate-id="${id}">Ver</button>`;
+  return `<button class="action-btn" data-candidate-action="view" data-candidate-id="${id}">Ver</button> ${deleteBtn}`;
 }
 
 function candidateAdminActions(candidate) {
   const id = escapeAttr(candidate.id);
   const view = `<button class="action-btn" data-candidate-action="view" data-candidate-id="${id}">Ver</button>`;
   const mergeBtn = `<button class="action-btn text-warning" data-candidate-action="merge" data-candidate-id="${id}" title="Fundir com membro existente na base de dados"><i class="bi bi-arrows-collapse me-1"></i>Fundir</button>`;
-  if (candidate.approval_status === "Submitted") return `${view} <button class="action-btn text-success fw-bold" data-candidate-action="approve" data-candidate-id="${id}"><i class="bi bi-check-lg me-1"></i>Aprovar como membro</button> ${mergeBtn} <button class="action-btn" data-candidate-action="startReview" data-candidate-id="${id}">Iniciar revisão</button><button class="action-btn" data-candidate-action="correction" data-candidate-id="${id}">Devolver para correcção</button><button class="action-btn text-danger" data-candidate-action="reject" data-candidate-id="${id}">Rejeitar</button>`;
-  if (candidate.approval_status === "UnderReview") return `${view} <button class="action-btn text-success fw-bold" data-candidate-action="approve" data-candidate-id="${id}"><i class="bi bi-check-lg me-1"></i>Aprovar como membro</button> ${mergeBtn} <button class="action-btn" data-candidate-action="createNew" data-candidate-id="${id}">Criar novo membro</button><button class="action-btn" data-candidate-action="link" data-candidate-id="${id}">Ligar existente</button><button class="action-btn" data-candidate-action="correction" data-candidate-id="${id}">Devolver para correcção</button><button class="action-btn text-danger" data-candidate-action="reject" data-candidate-id="${id}">Rejeitar</button>`;
-  if (candidate.approval_status === "Approved") return `${view} <button class="action-btn" data-member-profile="${escapeAttr(candidate.approved_member_id || "")}">Abrir membro oficial</button>`;
-  return `${view} ${mergeBtn} <button class="action-btn" data-candidate-action="edit" data-candidate-id="${id}">Editar</button>`;
+  const deleteBtn = `<button class="action-btn text-danger" data-candidate-action="delete" data-candidate-id="${id}" title="Eliminar registo de candidato"><i class="bi bi-trash me-1"></i>Eliminar</button>`;
+  if (candidate.approval_status === "Submitted") return `${view} <button class="action-btn text-success fw-bold" data-candidate-action="approve" data-candidate-id="${id}"><i class="bi bi-check-lg me-1"></i>Aprovar como membro</button> ${mergeBtn} <button class="action-btn" data-candidate-action="startReview" data-candidate-id="${id}">Iniciar revisão</button><button class="action-btn" data-candidate-action="correction" data-candidate-id="${id}">Devolver para correcção</button><button class="action-btn text-danger" data-candidate-action="reject" data-candidate-id="${id}">Rejeitar</button> ${deleteBtn}`;
+  if (candidate.approval_status === "UnderReview") return `${view} <button class="action-btn text-success fw-bold" data-candidate-action="approve" data-candidate-id="${id}"><i class="bi bi-check-lg me-1"></i>Aprovar como membro</button> ${mergeBtn} <button class="action-btn" data-candidate-action="createNew" data-candidate-id="${id}">Criar novo membro</button><button class="action-btn" data-candidate-action="link" data-candidate-id="${id}">Ligar existente</button><button class="action-btn" data-candidate-action="correction" data-candidate-id="${id}">Devolver para correcção</button><button class="action-btn text-danger" data-candidate-action="reject" data-candidate-id="${id}">Rejeitar</button> ${deleteBtn}`;
+  if (candidate.approval_status === "Approved") return `${view} <button class="action-btn" data-member-profile="${escapeAttr(candidate.approved_member_id || "")}">Abrir membro oficial</button> ${deleteBtn}`;
+  return `${view} ${mergeBtn} <button class="action-btn" data-candidate-action="edit" data-candidate-id="${id}">Editar</button> ${deleteBtn}`;
 }
 
 function getCandidateRepoSafe() {
@@ -13908,29 +13910,39 @@ if (typeof window !== "undefined") window.syncMemberRegistrationCandidatesFromRe
 async function persistMemberCandidateViaRepository(mode, candidate) {
   const repo = getCandidateRepoSafe();
   if (!repo) return { ok: true, data: candidate, skipped: true, via: "local-state-fallback" };
-  const context = getCellLeaderContext(activeUser?.id, candidate.cell_id || cellPortalPageState.cellId);
+  const candidateObj = typeof candidate === "object" && candidate !== null ? candidate : { id: candidate };
+  const context = getCellLeaderContext(activeUser?.id, candidateObj.cell_id || cellPortalPageState.cellId);
   const authorizedIds = [
     ...(context?.authorized_cell_ids || []),
     ...getAuthorizedCellsForUser(activeUser?.id).map((cell) => cell.id),
-    candidate.cell_id
+    candidateObj.cell_id
   ].filter(Boolean);
   const actor = {
     id: activeUser?.id,
     name: activeUser?.name,
     role: activeUser?.role || context?.cell_role || "Cell Leader",
-    church_id: candidate.church_id || activeUser?.church_id,
+    church_id: candidateObj.church_id || activeUser?.church_id,
     authorized_cell_ids: [...new Set(authorizedIds)]
   };
   try {
-    const result = mode === "create" ? await repo.createMemberRegistrationCandidate(candidate, actor) : await repo.updateMemberRegistrationCandidate(candidate.id, candidate, actor);
+    let result;
+    if (mode === "create") {
+      result = await repo.createMemberRegistrationCandidate(candidateObj, actor);
+    } else if (mode === "delete") {
+      result = typeof repo.deleteMemberRegistrationCandidate === "function"
+        ? await repo.deleteMemberRegistrationCandidate(candidateObj.id || candidate, actor)
+        : { ok: true, data: true };
+    } else {
+      result = await repo.updateMemberRegistrationCandidate(candidateObj.id, candidateObj, actor);
+    }
     if (result?.ok === false) {
       console.warn("[CE Member Candidates] repository write note; keeping local record", result);
-      return { ok: true, data: candidate, skipped: true, via: "local-state-legacy-candidate", repoError: result };
+      return { ok: true, data: candidateObj, skipped: true, via: "local-state-legacy-candidate", repoError: result };
     }
-    return result || { ok: true, data: candidate };
+    return result || { ok: true, data: candidateObj };
   } catch (error) {
     console.warn("[CE Member Candidates] repository unavailable; keeping local record", error);
-    return { ok: true, data: candidate, skipped: true, via: "local-state-fallback" };
+    return { ok: true, data: candidateObj, skipped: true, via: "local-state-fallback" };
   }
 }
 
@@ -14417,6 +14429,7 @@ function openMemberCandidateDetails(candidate) {
   const churchVal = candidate.church_name || churchName(candidate.church_id) || "Christ Embassy";
   const cellGroupVal = candidate.cell_group_name || candidate.group_name || "—";
   const cellVal = candidate.cell_name || candidate.celula || "—";
+  const id = escapeAttr(candidate.id);
 
   byId("modalEyebrow").textContent = "Pedido de adesão";
   byId("modalTitle").textContent = candidateFullName(candidate);
@@ -14431,7 +14444,10 @@ function openMemberCandidateDetails(candidate) {
     <div class="col-12"><div class="alert alert-info">Estado: <strong>${escapeAttr(candidateStatusLabel(candidate.approval_status))}</strong></div></div>
     <div class="col-md-6"><strong>Telefone:</strong> ${escapeAttr(candidate.primary_phone || "Não informado")}</div>
     <div class="col-md-6"><strong>E-mail:</strong> ${escapeAttr(candidate.email || "Não informado")}</div>
-    <div class="col-12"><strong>Motivo / Observações:</strong> ${escapeAttr(candidate.correction_reason || candidate.rejection_reason || candidate.notes || "Sem observações")}</div>`;
+    <div class="col-12"><strong>Motivo / Observações:</strong> ${escapeAttr(candidate.correction_reason || candidate.rejection_reason || candidate.notes || "Sem observações")}</div>
+    <div class="col-12 mt-3 pt-2 border-top d-flex justify-content-between align-items-center">
+      <button type="button" class="btn btn-outline-danger btn-sm" data-candidate-action="delete" data-candidate-id="${id}" onclick="bootstrap.Modal.getInstance(byId('entryModal'))?.hide();"><i class="bi bi-trash me-1"></i>Eliminar este registo</button>
+    </div>`;
   const submitButton = byId("entryForm")?.querySelector('button[type="submit"]'); if (submitButton) submitButton.textContent = "Fechar";
   bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
 }
@@ -14540,6 +14556,45 @@ async function candidateAction(action, id) {
     const duplicates = candidateDuplicates(candidate || {});
     const targetId = candidate?.possible_existing_member_id || duplicates[0]?.member?.id || null;
     return openMergeMemberModal(id, targetId);
+  }
+  if (action === "delete") {
+    const isOwner = candidate.registered_by_user_id === activeUser?.id;
+    const isLeaderOrAdmin = ["Super Admin", "super_admin", "Church Admin", "church_admin", "Cell Ministry Head", "cell_ministry_head", "Cell Leader", "cell_leader", "Cell Group Leader", "cell_group_leader", "Cell Coordinator", "cell_coordinator", "Leader", "Admin", "leadership"].includes(activeUser?.role) || canAccessCell(activeUser?.id, candidate.cell_id) || isOwner;
+    if (!isLeaderOrAdmin) {
+      return alert("Não tem permissão para eliminar este registo.");
+    }
+    const confirmed = confirm(
+      lang === "pt"
+        ? `Tem a certeza que deseja eliminar o registo de "${candidateFullName(candidate)}"? Esta acção não pode ser desfeita.`
+        : `Are you sure you want to delete the registration for "${candidateFullName(candidate)}"? This action cannot be undone.`
+    );
+    if (!confirmed) return;
+
+    // 1. Delete from repository
+    await persistMemberCandidateViaRepository("delete", candidate);
+
+    // 2. Delete from direct Supabase if available
+    if (typeof window !== "undefined" && (window.CESupabase?.getRawClient?.() || window.supabase)) {
+      try {
+        const client = window.CESupabase?.getRawClient?.() || window.supabase;
+        await client.from("member_registration_candidates").delete().eq("id", candidate.id);
+      } catch (clientErr) {
+        console.warn("[CE Member Candidates] Supabase direct delete note:", clientErr);
+      }
+    }
+
+    // 3. Remove from local state
+    state.memberRegistrationCandidates = (state.memberRegistrationCandidates || []).filter((item) => item.id !== id);
+
+    recordCandidateAudit("member_candidate.deleted", candidate);
+    saveState("Registo de candidato eliminado");
+    if (typeof showToast === "function") {
+      showToast(lang === "pt" ? "Registo eliminado com sucesso." : "Registration deleted successfully.");
+    } else {
+      alert(lang === "pt" ? "Registo eliminado com sucesso." : "Registration deleted successfully.");
+    }
+    if (activeRoute === "cellPortal") renderCellLeaderPortal(); else renderMembers();
+    return;
   }
   const now = new Date().toISOString();
   const leaderOwnRecord = candidate.registered_by_user_id === activeUser?.id && ["Cell Leader", "Cell Assistant"].includes(activeUser?.role);

@@ -115,6 +115,7 @@ export {
   listMemberRegistrationCandidates,
   createMemberRegistrationCandidate,
   updateMemberRegistrationCandidate,
+  deleteMemberRegistrationCandidate,
   normalizeMemberRegistrationCandidate,
   findMemberCandidateDuplicates,
 } from "./repositories/memberRegistrationCandidatesRepository";

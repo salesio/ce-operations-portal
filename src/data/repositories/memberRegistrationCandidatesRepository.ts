@@ -156,3 +156,16 @@ export async function updateMemberRegistrationCandidate(id: EntityId, input: Par
   return repository.update(id, normalizeMemberRegistrationCandidate({ ...existing.data, ...input, id }, actor));
 }
 
+export async function deleteMemberRegistrationCandidate(id: EntityId, actor: CandidateActor): Promise<DataResult<boolean>> {
+  const repository = getDataProvider().memberRegistrationCandidates;
+  const existing = await repository.getById(id);
+  if (!existing.ok || !existing.data) return fail("Pedido de adesão não encontrado.", "NOT_FOUND");
+  const cellAuthorized = !existing.data.cell_id || (actor.authorized_cell_ids || []).includes(existing.data.cell_id) || canReview(actor);
+  const ownRecord = existing.data.registered_by_user_id === actor.id;
+  const isLeaderOrAssistant = ["Cell Leader", "Cell Assistant", "Cell Group Leader", "cell_leader", "assistant_cell_leader", "cell_assistant", "Leader", "Assistant"].includes(String(actor?.role || ""));
+  const canDeleteCandidate = canReview(actor) || cellAuthorized || ownRecord || isLeaderOrAssistant;
+  if (!canDeleteCandidate) return fail("Não tem permissão para eliminar este registo.", "PERMISSION_DENIED");
+  if (!repository.delete) return fail("O data source não suporta eliminar pedidos.", "NOT_SUPPORTED");
+  return repository.delete(id);
+}
+
