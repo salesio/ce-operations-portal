@@ -25170,6 +25170,16 @@ async function saveUserToSupabase(user) {
         if (data.user_id) user.id = data.user_id;
         if (data.auth_user_id) user.auth_user_id = data.auth_user_id;
         if (data.role_id) user.role_id = data.role_id;
+        if (typeof state !== "undefined" && Array.isArray(state.users)) {
+          const idx = state.users.findIndex((u) => (user.id && String(u.id) === String(user.id)) || (email && String(u.email || "").toLowerCase() === email));
+          if (idx >= 0) {
+            state.users[idx] = { ...state.users[idx], ...user };
+          }
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+          } catch (_) {}
+        }
+        dualWriteUserRecord("update", user);
         return true;
       }
       if (error) {
@@ -25223,9 +25233,21 @@ async function saveUserToSupabase(user) {
       if (res.error) console.warn("[CE Users] Supabase update notice:", res.error);
     } else {
       payload.id = userId || (typeof generateUuid === "function" ? generateUuid() : `u-${Date.now()}`);
+      user.id = payload.id;
       const res = await sbClient.from("users").insert(payload);
       if (res.error) console.warn("[CE Users] Supabase insert notice:", res.error);
     }
+
+    if (typeof state !== "undefined" && Array.isArray(state.users)) {
+      const idx = state.users.findIndex((u) => (user.id && String(u.id) === String(user.id)) || (email && String(u.email || "").toLowerCase() === email));
+      if (idx >= 0) {
+        state.users[idx] = { ...state.users[idx], ...user };
+      }
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (_) {}
+    }
+    dualWriteUserRecord(existing ? "update" : "create", user);
     return true;
   } catch (err) {
     console.warn("[CE Users] saveUserToSupabase skipped", err);
@@ -25694,8 +25716,11 @@ async function submitForm(form) {
           updated_at: today
         };
         saveState(`Updated user ${email}`);
-        void saveUserToSupabase(state.users[index]);
-        void dualWriteUserRecord("update", state.users[index]);
+        dualWriteUserRecord("update", state.users[index]);
+        void saveUserToSupabase(state.users[index]).then(() => {
+          saveState(`Synced updated user ${email} with Supabase`);
+          if (activeRoute === "users") renderUsers();
+        });
       }
     } else {
       const newUser = {
@@ -25724,8 +25749,11 @@ async function submitForm(form) {
       };
       state.users.push(newUser);
       saveState(`Created user ${email}`);
-      void saveUserToSupabase(newUser);
-      void dualWriteUserRecord("create", newUser);
+      dualWriteUserRecord("create", newUser);
+      void saveUserToSupabase(newUser).then(() => {
+        saveState(`Synced created user ${email} with Supabase`);
+        if (activeRoute === "users") renderUsers();
+      });
     }
 
     bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide();
@@ -30958,13 +30986,20 @@ function previousAssignments(row) {
 
 function isDemoUser(u) {
   if (!u) return true;
+  const id = String(u.id || "");
   const em = String(u.email || "").trim().toLowerCase();
   const nm = String(u.name || u.full_name || "").toLowerCase();
-  if (em.endsWith("@ce-mozambique.org")) return true;
-  if (em.includes("demo") || nm.includes("demo")) return true;
-  if (String(u.id || "").startsWith("u-") && !u.auth_user_id && !["u-1", "u-pastor-valdemiro", "u-diamantes-leader", "u-diamantes-assistant", "u-dv-leader", "u-dv-assistant"].includes(String(u.id))) {
-    return true;
-  }
+  const explicitDemoEmails = new Set([
+    "cellleader@ce-mozambique.org",
+    "cellassistant@ce-mozambique.org",
+    "cellreviewer@ce-mozambique.org",
+    "demo@ce-mozambique.org",
+    "demouser@ce-mozambique.org"
+  ]);
+  if (explicitDemoEmails.has(em)) return true;
+  if (nm.includes("demo user") || nm.includes("utilizador demo") || nm === "cell leader demo" || nm === "cell assistant demo") return true;
+  const legacyMockIds = new Set(["u-2", "u-3", "u-8", "u-9", "u-10", "u-11", "u-12", "u-13", "u-14", "u-15", "u-16"]);
+  if (legacyMockIds.has(id) && !u.auth_user_id && !u.phone) return true;
   return false;
 }
 
@@ -30983,34 +31018,63 @@ async function hydrateAccessControlFromRepository() {
         .filter((u) => !isUserDeleted(u));
       const byId = new Map();
       const byEmail = new Map();
+
+      // 1. Preserve existing valid local state users (so created accounts are not wiped)
+      (state.users || []).forEach((localUser) => {
+        if (!localUser || !localUser.id || isUserDeleted(localUser) || isDemoUser(localUser)) return;
+        const emailNorm = localUser.email ? String(localUser.email).trim().toLowerCase() : "";
+        const id = String(localUser.id);
+        const obj = { ...localUser };
+        byId.set(id, obj);
+        if (emailNorm) byEmail.set(emailNorm, obj);
+      });
+
+      // 2. Merge repository users into map
       cleanUsers.forEach((row) => {
         const emailNorm = row.email ? String(row.email).trim().toLowerCase() : "";
-        if (emailNorm && byEmail.has(emailNorm)) {
-          const existing = byEmail.get(emailNorm);
-          Object.assign(existing, {
+        const id = String(row.id);
+        const existing = (emailNorm && byEmail.get(emailNorm)) || byId.get(id);
+        if (existing) {
+          const merged = {
+            ...existing,
             ...row,
-            name: row.name || row.full_name || existing.name,
+            id: row.id || existing.id,
             auth_user_id: row.auth_user_id || existing.auth_user_id,
-            role: row.role || row.role_name || existing.role
-          });
+            name: row.name || row.full_name || existing.name || existing.full_name,
+            full_name: row.full_name || row.name || existing.full_name || existing.name,
+            role: row.role || row.role_name || existing.role || existing.role_name || "Cell Leader",
+            role_name: row.role_name || row.role || existing.role_name || existing.role || "Cell Leader",
+            church_id: row.church_id || existing.church_id,
+            status: row.status || existing.status || "Active",
+            department_permissions: Array.isArray(existing.department_permissions) && existing.department_permissions.length
+              ? existing.department_permissions
+              : (Array.isArray(row.department_permissions) ? row.department_permissions : [])
+          };
+          byId.set(String(merged.id), merged);
+          if (existing.id && String(existing.id) !== String(merged.id)) byId.delete(String(existing.id));
+          if (emailNorm) byEmail.set(emailNorm, merged);
         } else {
           const userObj = {
             ...row,
             name: row.name || row.full_name || row.email,
+            full_name: row.full_name || row.name || row.email,
+            role: row.role || row.role_name || "Cell Leader",
+            role_name: row.role_name || row.role || "Cell Leader",
             department_permissions: Array.isArray(row.department_permissions)
               ? row.department_permissions
               : [],
           };
-          byId.set(row.id, userObj);
+          byId.set(id, userObj);
           if (emailNorm) byEmail.set(emailNorm, userObj);
         }
       });
-      state.users = [...byId.values()];
+      state.users = [...new Set(byId.values())].filter((u) => !isUserDeleted(u));
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       } catch (_) {}
       hydrated = true;
       console.info("[CE AccessControl] hydrated users", state.users.length);
+      if (activeRoute === "users") renderUsers();
     }
     if (typeof repo.listAuditLogs === "function") {
       const logs = await repo.listAuditLogs();

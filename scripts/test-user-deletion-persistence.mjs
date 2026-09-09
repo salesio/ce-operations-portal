@@ -152,4 +152,55 @@ console.log("PASS: Deleted user did not resurrect after hydrateAccessControlFrom
 vm.runInContext("renderUsers()", context);
 console.log("PASS: renderUsers executed cleanly without errors.");
 
-console.log("=== All User Deletion Tests Passed! ===");
+console.log("\n=== Testing User Creation & Persistence Across Refresh ===");
+const createdUser = {
+  id: "u-persisted-" + Date.now(),
+  name: "Pastor Teste Persistence",
+  full_name: "Pastor Teste Persistence",
+  email: "pastor.persistence@embaixadadecristo.org",
+  phone: "+258841234567",
+  role: "Pastor Principal",
+  role_name: "Pastor Principal",
+  church_id: "a1111111-1111-4111-8111-111111111101",
+  department_permissions: ["cellMinistry", "cellReports", "fevo", "alec"],
+  status: "Active",
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString()
+};
+
+context.createdUser = createdUser;
+vm.runInContext(`
+  state.users.push(createdUser);
+  saveState('Created test user');
+  dualWriteUserRecord('create', createdUser);
+`, context);
+
+assert.ok(
+  vm.runInContext(`state.users.find(u => u.email === '${createdUser.email}')`, context),
+  "Created user must be in state.users immediately"
+);
+console.log("PASS: Created user in state.users immediately.");
+
+// Simulate reload from localStorage
+vm.runInContext("state = loadState()", context);
+const userAfterCreatedReload = vm.runInContext(
+  `state.users.find(u => u.email === '${createdUser.email}')`,
+  context
+);
+assert.ok(userAfterCreatedReload, "Created user must persist after loadState (page refresh)");
+console.log("PASS: Created user persisted after loadState (page refresh).");
+
+// Simulate hydrateAccessControlFromRepository()
+await vm.runInContext("hydrateAccessControlFromRepository()", context);
+const userAfterCreatedHydrate = vm.runInContext(
+  `state.users.find(u => u.email === '${createdUser.email}')`,
+  context
+);
+assert.ok(userAfterCreatedHydrate, "Created user must persist after hydrateAccessControlFromRepository");
+console.log("PASS: Created user persisted after hydrateAccessControlFromRepository.");
+
+vm.runInContext("renderUsers()", context);
+console.log("PASS: renderUsers executed cleanly with created user.");
+
+console.log("=== All User Creation & Deletion Persistence Tests Passed! ===");
+

@@ -80,24 +80,20 @@
   }
 
   function store(kind) {
-    var source = resolveDataSource();
     var key = KEYS[kind];
-    if (source === "local") {
-      var rows = load(key);
-      if (!rows.length) {
+    var rows = load(key);
+    if (!rows.length) {
+      if (memory[kind] && memory[kind].length) {
+        rows = memory[kind];
+      } else {
         rows = seedFor(kind).map(function (s) {
           return Object.assign({}, s);
         });
-        if (rows.length) save(key, rows);
       }
-      return { rows: rows, persist: true };
+      if (rows.length) save(key, rows);
     }
-    if (!memory[kind]) {
-      memory[kind] = seedFor(kind).map(function (s) {
-        return Object.assign({}, s);
-      });
-    }
-    return { rows: memory[kind], persist: false };
+    memory[kind] = rows;
+    return { rows: rows, persist: true };
   }
 
   function ok(data) {
@@ -120,6 +116,18 @@
       // Never store password fields
       delete row.password;
       delete row.password_hash;
+      // Deduplicate if matching email already exists
+      var emailNorm = row.email ? String(row.email).trim().toLowerCase() : "";
+      if (emailNorm) {
+        var existingIdx = s.rows.findIndex(function (r) {
+          return r.email && String(r.email).trim().toLowerCase() === emailNorm;
+        });
+        if (existingIdx >= 0) {
+          s.rows[existingIdx] = Object.assign({}, s.rows[existingIdx], row);
+          if (s.persist) save(KEYS[kind], s.rows);
+          return ok(s.rows[existingIdx]);
+        }
+      }
       s.rows.unshift(row);
       if (s.persist) save(KEYS[kind], s.rows);
       return ok(row);
@@ -127,10 +135,12 @@
     function update(kind, id, payload) {
       var s = store(kind);
       var i = s.rows.findIndex(function (r) {
-        return r.id === id;
+        return r.id === id || (payload && payload.email && r.email && String(r.email).trim().toLowerCase() === String(payload.email).trim().toLowerCase());
       });
-      if (i < 0) return fail("Não encontrado", "NOT_FOUND");
-      var next = Object.assign({}, s.rows[i], payload, { id: id });
+      if (i < 0) {
+        return create(kind, "u-", Object.assign({}, payload, { id: id }));
+      }
+      var next = Object.assign({}, s.rows[i], payload, { id: id || s.rows[i].id });
       delete next.password;
       delete next.password_hash;
       s.rows[i] = next;
