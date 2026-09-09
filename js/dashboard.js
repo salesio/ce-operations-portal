@@ -7423,8 +7423,13 @@ function cellNetworkRecordsForSelect(records) {
 
 function matchesSelectedCellChurch(record, churchId = "") {
   if (!churchId) return true;
-  if (!record?.church_id || record.church_id === churchId) return true;
-  return record.church_id === "church-hq" && isHqChurchReference(churchId);
+  if (!record?.church_id) return true;
+  if (record.church_id === churchId) return true;
+  const canonicalRecordChurch = CANONICAL_CHURCH_MAP[record.church_id] || record.church_id;
+  const canonicalSelectedChurch = CANONICAL_CHURCH_MAP[churchId] || churchId;
+  if (canonicalRecordChurch === canonicalSelectedChurch) return true;
+  if (isHqChurchReference(record.church_id) && isHqChurchReference(churchId)) return true;
+  return false;
 }
 
 function getCellGroupsForChurch(churchId = "") {
@@ -7444,11 +7449,15 @@ function getCellsForGroup(cellGroupId = "", churchId = "") {
 
   return cellNetworkRecordsForSelect(allCells)
     .filter((cell) => {
-      if (!matchesSelectedCellChurch(cell, churchId)) return false;
-      if (!cellGroupId) return true;
+      if (!cellGroupId) {
+        return matchesSelectedCellChurch(cell, churchId);
+      }
       const cGid = String(cell.group_id || cell.cell_group_id || cell.group_cell_id || "");
       const cGname = norm(cell.group_name || cell.cell_group_name || "");
-      return cGid === targetGroupId || (targetGroupName && cGname === targetGroupName) || (cGname && cGname === norm(cellGroupId));
+      const matchesGroup = cGid === targetGroupId || (targetGroupName && cGname === targetGroupName) || (cGname && cGname === norm(cellGroupId));
+      if (!matchesGroup) return false;
+      if (!churchId) return true;
+      return matchesSelectedCellChurch(cell, churchId) || (targetGroup && matchesSelectedCellChurch(targetGroup, churchId));
     })
     .sort((a, b) => String(a.cell_name || a.name || "").localeCompare(String(b.cell_name || b.name || "")));
 }

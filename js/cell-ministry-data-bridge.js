@@ -80,19 +80,34 @@
     var key = KEYS[kind];
     if (source === "local") {
       var rows = load(key);
+      var seeds =
+        kind === "groups"
+          ? seedGroups()
+          : kind === "cells"
+            ? seedCells()
+            : kind === "leaders"
+              ? seedLeaders()
+              : seedReports();
       if (!rows.length) {
-        var seeds =
-          kind === "groups"
-            ? seedGroups()
-            : kind === "cells"
-              ? seedCells()
-              : kind === "leaders"
-                ? seedLeaders()
-                : seedReports();
         rows = seeds.map(function (s) {
           return Object.assign({}, s);
         });
         if (rows.length) save(key, rows);
+      } else if (kind === "groups" || kind === "cells") {
+        var updated = false;
+        seeds.forEach(function (seed) {
+          var exists = rows.some(function (r) {
+            return String(r.id) === String(seed.id) ||
+              (r.name && seed.name && r.name === seed.name) ||
+              (r.cell_name && seed.cell_name && r.cell_name === seed.cell_name) ||
+              (r.group_name && seed.group_name && r.group_name === seed.group_name);
+          });
+          if (!exists) {
+            rows.push(Object.assign({}, seed));
+            updated = true;
+          }
+        });
+        if (updated) save(key, rows);
       }
       return { rows: rows, persist: true, source: "local" };
     }
