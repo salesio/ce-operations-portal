@@ -12475,7 +12475,29 @@ function renderCellLeaderPortal() {
             </div>
           </div>
           ${(() => {
-            const cellVisitors = (state.cellLeadership?.cellVisitors || []).filter((v) => String(v.cell_id) === String(context?.cell_id));
+            const manualVisitors = (state.cellLeadership?.cellVisitors || []).filter((v) => String(v.cell_id) === String(context?.cell_id));
+            const assignedFirstTimers = (state.firstTimers || []).filter((ft) => {
+              if (!ft.cell_id && !ft.celula) return false;
+              const matchesCellId = ft.cell_id && String(ft.cell_id) === String(context?.cell_id);
+              const matchesCellName = ft.cell_name && context?.cell_name && ft.cell_name.trim().toLowerCase() === context.cell_name.trim().toLowerCase();
+              return matchesCellId || matchesCellName;
+            }).map((ft) => {
+              const existing = manualVisitors.find((v) => v.first_timer_id === ft.id || (v.phone && (ft.telefone || ft.phone) && v.phone === (ft.telefone || ft.phone)));
+              if (existing) return null;
+              return {
+                id: `ft-v-${ft.id}`,
+                first_timer_id: ft.id,
+                cell_id: context?.cell_id,
+                name: fullName(ft),
+                phone: ft.telefone || ft.phone || "",
+                type: ft.nasceu_de_novo ? "FT_NC" : "FT",
+                attendance_count: 1,
+                last_attended_at: ft.cell_assigned_at ? ft.cell_assigned_at.slice(0, 10) : (ft.data_do_culto || ft.created_at?.slice(0, 10) || "—"),
+                first_attended_at: ft.data_do_culto || ft.created_at?.slice(0, 10) || "—",
+                promoted_to_member: Boolean(ft.converted_to_member)
+              };
+            }).filter(Boolean);
+            const cellVisitors = [...manualVisitors, ...assignedFirstTimers];
             if (!cellVisitors.length) {
               return `<p class="text-secondary small mb-0 p-3">Nenhum visitante registado recentemente nesta célula.</p>`;
             }
@@ -12813,7 +12835,8 @@ function firstTimerActions(id) {
   const workflow = row.workflow_status || "DRAFT";
   const actions = [["view", "firstTimer", id, L("view")], ["edit", "firstTimer", id, L("edit")]];
   if (["DRAFT", "READY_FOR_REVIEW", "NEEDS_CORRECTION"].includes(workflow)) actions.push(["submitIntake", "firstTimer", id, "Submeter ao Reitor"]);
-  if (workflow === "SUBMITTED_TO_RECTOR") actions.push(["approveIntake", "firstTimer", id, "Aprovar"], ["returnIntake", "firstTimer", id, "Devolver"], ["rejectIntake", "firstTimer", id, "Rejeitar"]);
+  if (workflow === "SUBMITTED_TO_RECTOR") actions.push(["approveAndAssignCell", "firstTimer", id, "Aprovar & Atribuir Célula"], ["approveIntake", "firstTimer", id, "Aprovar"], ["returnIntake", "firstTimer", id, "Devolver"], ["rejectIntake", "firstTimer", id, "Rejeitar"]);
+  actions.push(["assignCell", "firstTimer", id, (row.cell_id || row.celula) ? "Alterar Célula" : "Atribuir Célula"]);
   if (workflow === "RECTOR_APPROVED") actions.push(["handoffFollowup", "firstTimer", id, "Encaminhar Follow-Up"]);
   if (workflow === "SENT_TO_FOLLOWUP") actions.push(["receiveFollowup", "firstTimer", id, "Confirmar recepção"]);
   if (workflow === "FOLLOWUP_RECEIVED") actions.push(["createExplicitFollowup", "firstTimer", id, "Criar Follow-Up"]);
@@ -12846,9 +12869,9 @@ function renderFirstTimerRectorPanel(list) {
   const reviewRows = list.filter((person) => ["READY_FOR_REVIEW", "SUBMITTED_TO_RECTOR"].includes(person.workflow_status));
   const submittedRows = reviewRows.filter((person) => person.workflow_status === "SUBMITTED_TO_RECTOR");
   const bulkActions = submittedRows.length ? `<div class="d-flex gap-2 flex-wrap mt-2 justify-content-end"><button type="button" class="btn btn-sm btn-success" data-first-timer-bulk="approve">Aprovar todos (${submittedRows.length})</button><button type="button" class="btn btn-sm btn-outline-warning" data-first-timer-bulk="return">Devolver todos (${submittedRows.length})</button><button type="button" class="btn btn-sm btn-outline-danger" data-first-timer-bulk="reject">Rejeitar todos (${submittedRows.length})</button></div>` : "";
-  return `<article class="panel glass-panel mb-4" id="first-timer-rector-review"><div class="panel-head"><div><h3 class="panel-title"><i class="bi bi-person-check me-2 text-warning"></i>Painel do Reitor</h3><p class="text-secondary mb-0">Registos prontos ou submetidos para revisão pastoral.</p></div><div class="text-end"><span class="badge bg-warning text-dark">${reviewRows.length} pendente(s)</span>${bulkActions}</div></div>${reviewRows.length ? dataTable(["Nº", "Nome", "Igreja", "Estado", "Decisão"], reviewRows.map((person) => [person.first_timer_number || "—", fullName(person), churchName(person.church_id), badge(firstTimerWorkflowLabel(person.workflow_status)), actionButtons([
+  return `<article class="panel glass-panel mb-4" id="first-timer-rector-review"><div class="panel-head"><div><h3 class="panel-title"><i class="bi bi-person-check me-2 text-warning"></i>Painel do Reitor</h3><p class="text-secondary mb-0">Registos prontos ou submetidos para revisão pastoral.</p></div><div class="text-end"><span class="badge bg-warning text-dark">${reviewRows.length} pendente(s)</span>${bulkActions}</div></div>${reviewRows.length ? dataTable(["Nº", "Nome", "Igreja", "Célula", "Estado", "Decisão"], reviewRows.map((person) => [person.first_timer_number || "—", fullName(person), churchName(person.church_id), person.cell_name || person.celula ? `<span class="badge bg-secondary-subtle text-body"><i class="bi bi-diagram-3 me-1"></i>${escapeAttr(person.cell_name || person.celula)}</span>` : `<span class="text-secondary small">Não atribuída</span>`, badge(firstTimerWorkflowLabel(person.workflow_status)), actionButtons([
     ...(person.workflow_status === "READY_FOR_REVIEW" ? [["receiveForRectorReview", "firstTimer", person.id, "Lançar para Aprovação"]] : []),
-    ...(person.workflow_status === "SUBMITTED_TO_RECTOR" ? [["approveIntake", "firstTimer", person.id, "Aprovar"], ["returnIntake", "firstTimer", person.id, "Devolver"], ["rejectIntake", "firstTimer", person.id, "Rejeitar"]] : [])
+    ...(person.workflow_status === "SUBMITTED_TO_RECTOR" ? [["approveAndAssignCell", "firstTimer", person.id, "Aprovar & Atribuir Célula"], ["approveIntake", "firstTimer", person.id, "Aprovar"], ["returnIntake", "firstTimer", person.id, "Devolver"], ["rejectIntake", "firstTimer", person.id, "Rejeitar"]] : [])
   ])])) : `<p class="text-secondary mb-0">Não há registos a aguardar decisão do Reitor.</p>`}</article>`;
 }
 
@@ -13340,7 +13363,9 @@ function renderFirstTimerIntakeForm(record = {}) {
     <div class="col-md-6"><label class="form-label">Profissão / Ocupação</label><input name="profession" class="form-control" value="${value("profession")}" placeholder="Ex: Estudante, Doméstica"></div>
     <div class="col-md-6"><label class="form-label">Quem convidou?</label><input name="invited_by_name" list="firstTimerMemberSuggestions" class="form-control" value="${value("invited_by_name", record.convidado_por || record.invited_by || "")}" placeholder="Ex: Irmão Avelino, Sis Sintia"><datalist id="firstTimerMemberSuggestions">${members.map((member) => `<option value="${escapeAttr(fullName(member))}"></option>`).join("")}</datalist><div class="form-text">Membro ou pessoa que trouxe o visitante.</div></div>
     ${yesNo("nasceu_de_novo", "Nasceu de novo?")}${yesNo("foundation_school_interest", "Tem interesse na ESF?")}${yesNo("interesse_em_celula", "Tem interesse numa célula?")}${yesNo("next_service_interest", "Pretende vir ao próximo culto?")}
-    <div class="col-md-6"><label class="form-label">Igreja *</label><select required name="church_id" class="form-select"><option value="">Seleccionar igreja</option>${churches.map((church) => `<option value="${escapeAttr(church.id)}" ${String(record.church_id || activeUser?.church_id || "") === String(church.id) ? "selected" : ""}>${cleanDisplayText(churchOptionLabel(church))}</option>`).join("")}</select></div>
+    <div class="col-md-4"><label class="form-label">Igreja *</label><select required name="church_id" class="form-select" data-church-select><option value="">Seleccionar igreja</option>${churches.map((church) => `<option value="${escapeAttr(church.id)}" ${String(record.church_id || activeUser?.church_id || "") === String(church.id) ? "selected" : ""}>${cleanDisplayText(churchOptionLabel(church))}</option>`).join("")}</select></div>
+    ${cellGroupSelectField("cell_group_id", "Grupo de Célula", record, { colClass: "col-md-4" })}
+    ${cellSelectField("cell_id", "Célula", record, { colClass: "col-md-4" })}
     <div class="col-md-6"><label class="form-label">Estado do intake</label><select name="workflow_status" class="form-select"><option value="DRAFT" ${(record.workflow_status || "DRAFT") === "DRAFT" ? "selected" : ""}>Rascunho</option><option value="READY_FOR_REVIEW" ${record.workflow_status === "READY_FOR_REVIEW" ? "selected" : ""}>Pronto para revisão</option><option value="SUBMITTED_TO_RECTOR" ${record.workflow_status === "SUBMITTED_TO_RECTOR" ? "selected" : ""}>Submetido ao Reitor</option></select></div>
     <div class="col-12"><label class="form-label">Observações / Notas</label><textarea name="notes" class="form-control" rows="2" placeholder="Detalhes adicionais, pedidos de oração, etc.">${value("notes")}</textarea></div>`;
 }
@@ -13354,6 +13379,7 @@ function renderFirstTimerCard(person) {
     meta: [
       [L("phone"), person.telefone || person.phone, "bi-telephone"],
       [L("church"), churchName(person.church_id), "bi-building"],
+      [L("cell"), person.cell_name || person.celula || "Não atribuída", "bi-diagram-3"],
       [L("service"), person.culto || "-", "bi-calendar-event"]
     ],
     pills: [person.nasceu_de_novo ? L("bornAgainHint") : null, person.quer_escola_de_fundacao || person.foundation_school_interest ? L("foundationSchool") : null].filter(Boolean),
@@ -13394,13 +13420,13 @@ function renderFirstTimers() {
       ${(() => {
         const filtered = applyFirstTimerCardFilters(list, firstTimersPageState.filter);
         const fTableRows = filtered.map((p) => [
-          p.first_timer_number || "—", fullName(p), p.telefone || p.phone || "—", churchName(p.church_id), yesNo(p.nasceu_de_novo), yesNo(p.foundation_school_interest ?? p.quer_escola_de_fundacao), badge(firstTimerWorkflowLabel(p.workflow_status)),
+          p.first_timer_number || "—", fullName(p), p.telefone || p.phone || "—", churchName(p.church_id), p.cell_name || p.celula ? `<span class="badge bg-secondary-subtle text-body"><i class="bi bi-diagram-3 me-1"></i>${escapeAttr(p.cell_name || p.celula)}</span>` : `<span class="text-secondary small">Não atribuída</span>`, yesNo(p.nasceu_de_novo), yesNo(p.foundation_school_interest ?? p.quer_escola_de_fundacao), badge(firstTimerWorkflowLabel(p.workflow_status)),
           firstTimerActions(p.id)
         ]);
         const fCardsHtml = filtered.map((p) => renderFirstTimerCard(p)).join("");
         return view === "cards"
           ? (filtered.length ? DataCardsGrid(fCardsHtml) : noResultsHtml())
-          : (filtered.length ? dataTable(["Nº", L("name"), L("phone"), L("church"), L("bornAgain"), "ESF", "Workflow", L("actions")], fTableRows) : noResultsHtml());
+          : (filtered.length ? dataTable(["Nº", L("name"), L("phone"), L("church"), L("cell"), L("bornAgain"), "ESF", "Workflow", L("actions")], fTableRows) : noResultsHtml());
       })()}
     </article>
     ${moduleSection(L("rptFunnelTitle"), L("rptFunnelHint"), "bi-funnel", "", renderDomainReportsPanel("funnel", { module: "firstTimers", showTitle: false }))}
@@ -19093,6 +19119,12 @@ async function persistFirstTimerViaRepository(mode, personRecord) {
     foundation_school_interest: Boolean(personRecord.foundation_school_interest ?? personRecord.quer_escola_de_fundacao),
     counseling_interest: Boolean(personRecord.counseling_interest ?? personRecord.quer_aconselhamento),
     cell_interest: Boolean(personRecord.cell_interest ?? personRecord.interesse_em_celula),
+    cell_group_id: isValidUuid(personRecord.cell_group_id) ? personRecord.cell_group_id : null,
+    cell_group_name: personRecord.cell_group_name || null,
+    cell_id: isValidUuid(personRecord.cell_id) ? personRecord.cell_id : null,
+    cell_name: personRecord.cell_name || personRecord.celula || null,
+    cell_assigned_at: personRecord.cell_assigned_at || null,
+    cell_assigned_by_user_id: isValidUuid(personRecord.cell_assigned_by_user_id) ? personRecord.cell_assigned_by_user_id : null,
     workflow_status: personRecord.workflow_status || "DRAFT",
     follow_up_status: personRecord.follow_up_status || personRecord.estado_do_seguimento || "Pending",
     status: personRecord.status || "Active",
@@ -19162,6 +19194,9 @@ async function hydrateFirstTimersFromRepository() {
         cell_group_name: row.cell_group_name || null,
         cell_id: row.cell_id || null,
         cell_name: row.cell_name || null,
+        celula: row.cell_name || row.celula || null,
+        cell_assigned_at: row.cell_assigned_at || null,
+        cell_assigned_by_user_id: row.cell_assigned_by_user_id || null,
         data_do_culto: row.visit_date || row.data_do_culto || "",
         culto: row.service_name || row.culto || "Culto de Domingo",
         convidado_por: row.invited_by_name || row.invited_by || row.convidado_por || "",
@@ -27134,10 +27169,201 @@ async function submitFollowup(form) {
   setRoute(activeRoute);
 }
 
+function openAssignCellModal(firstTimerId, { approve = false } = {}) {
+  const person = (state.firstTimers || []).find((p) => p.id === firstTimerId);
+  if (!person) {
+    alert("Registo de Primeira Vez não encontrado.");
+    return;
+  }
+  modalType = "assignCellToFirstTimer";
+  modalRecordId = firstTimerId;
+
+  byId("modalEyebrow").textContent = approve ? "Aprovação & Atribuição de Célula" : "Atribuição de Célula";
+  byId("modalTitle").textContent = fullName(person);
+
+  const churches = getChurchOptions(relationalChurches());
+  const selectedChurchId = person.church_id || activeUser?.church_id || "";
+
+  byId("modalFields").innerHTML = `
+    <input type="hidden" name="first_timer_id" value="${escapeAttr(person.id)}">
+    <input type="hidden" name="approve_intake" value="${approve ? "true" : "false"}">
+    <div class="col-12">
+      <div class="p-3 rounded bg-body-tertiary border mb-3">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <h6 class="mb-1 text-primary"><i class="bi bi-person-heart me-1"></i>${escapeAttr(fullName(person))}</h6>
+            <div class="small text-secondary"><i class="bi bi-telephone me-1"></i>${escapeAttr(person.telefone || person.phone || "Sem telefone")} &bull; <i class="bi bi-geo-alt me-1"></i>${escapeAttr(person.neighborhood || person.endereco || "Sem morada")}</div>
+          </div>
+          <div class="d-flex gap-1 flex-wrap">
+            ${person.nasceu_de_novo ? '<span class="badge bg-success">Novo Convertido</span>' : '<span class="badge bg-secondary">Visitante</span>'}
+            ${person.interesse_em_celula || person.cell_interest ? '<span class="badge bg-info text-dark">Interesse Célula</span>' : ''}
+            ${person.workflow_status ? badge(firstTimerWorkflowLabel(person.workflow_status)) : ''}
+          </div>
+        </div>
+        ${person.convidado_por || person.invited_by_name ? `<div class="small mt-2 text-muted"><i class="bi bi-person-badge me-1"></i>Convidado por: <strong>${escapeAttr(person.convidado_por || person.invited_by_name)}</strong></div>` : ''}
+      </div>
+    </div>
+    <div class="col-md-12 mb-2">
+      <label class="form-label fw-bold">Igreja *</label>
+      <select required name="church_id" class="form-select" data-church-select>
+        <option value="">Seleccionar igreja</option>
+        ${churches.map((church) => `<option value="${escapeAttr(church.id)}" ${String(selectedChurchId) === String(church.id) ? "selected" : ""}>${cleanDisplayText(churchOptionLabel(church))}</option>`).join("")}
+      </select>
+    </div>
+    ${cellGroupSelectField("cell_group_id", "Grupo de Célula *", person, { colClass: "col-md-6 mb-2" })}
+    ${cellSelectField("cell_id", "Célula Destino *", person, { colClass: "col-md-6 mb-2" })}
+    <div class="col-md-6 mb-2">
+      <label class="form-label">Estado do Seguimento</label>
+      <select name="estado_do_seguimento" class="form-select">
+        <option value="Sent to Cell" selected>Encaminhado para Célula (Sent to Cell)</option>
+        <option value="Contacted">Contactado</option>
+        <option value="Pending">Pendente</option>
+      </select>
+    </div>
+    <div class="col-md-6 mb-2">
+      <label class="form-label">Responsável pela Atribuição</label>
+      <input readonly type="text" class="form-control bg-light" value="${escapeAttr(activeUser?.name || 'Reitor / Admin')}">
+    </div>
+    <div class="col-12 mb-2">
+      <label class="form-label">Notas / Instruções Pastorais para o Líder da Célula</label>
+      <textarea name="notes" class="form-control" rows="2" placeholder="Instruções para acolhimento, endereço residencial de referência, etc."></textarea>
+    </div>
+    <div class="col-12">
+      <div class="alert alert-info py-2 small mb-0">
+        <i class="bi bi-info-circle me-1"></i>
+        ${approve ? "Ao aprovar e atribuir, o registo será marcado como aprovado pelo Reitor e o visitante aparecerá no Portal do Líder da Célula escolhida para acompanhamento de 3 cultos." : "Ao atribuir a célula, o visitante aparecerá imediatamente no Portal do Líder da Célula seleccionada."}
+      </div>
+    </div>
+  `;
+
+  bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
+  requestAnimationFrame(() => {
+    mountRelationalControls(byId("entryForm"));
+  });
+}
+
+async function submitAssignCellModal(form) {
+  const data = Object.fromEntries(new FormData(form).entries());
+  const person = (state.firstTimers || []).find((p) => p.id === modalRecordId);
+  if (!person) {
+    alert("Visitante não encontrado.");
+    return;
+  }
+
+  if (!data.cell_id) {
+    alert("Por favor, seleccione uma célula de destino.");
+    return;
+  }
+
+  enrichCellSelectionFields(data);
+  const now = new Date().toISOString();
+  const today = now.slice(0, 10);
+  const approve = data.approve_intake === "true";
+
+  const previous = { ...person };
+
+  person.church_id = data.church_id || person.church_id || activeUser?.church_id;
+  person.church_name = churchName(person.church_id);
+  person.cell_group_id = data.cell_group_id || person.cell_group_id || "";
+  person.cell_group_name = data.cell_group_name || cellGroupName(person.cell_group_id) || "";
+  person.cell_id = data.cell_id;
+  person.cell_name = data.cell_name || data.celula || "";
+  person.celula = person.cell_name;
+  person.cell_assigned_at = now;
+  person.cell_assigned_by_user_id = activeUser?.id || null;
+  person.estado_do_seguimento = data.estado_do_seguimento || "Sent to Cell";
+  person.follow_up_status = person.estado_do_seguimento;
+  person.interesse_em_celula = true;
+  person.cell_interest = true;
+  person.updated_at = today;
+
+  if (data.notes) {
+    person.notas = (person.notas ? person.notas + "\n" : "") + `[${today} Atribuição Célula]: ${data.notes}`;
+  }
+
+  if (approve) {
+    person.workflow_status = "RECTOR_APPROVED";
+    person.rector_reviewed_at = now;
+    person.rector_reviewed_by_user_id = activeUser?.id || null;
+    person.rector_review_notes = (person.rector_review_notes ? person.rector_review_notes + " " : "") + (data.notes ? `[Aprovado & Atribuído à Célula ${person.cell_name}]: ${data.notes}` : `[Aprovado & Atribuído à Célula ${person.cell_name}]`);
+  }
+
+  // Ensure state.cellLeadership.cellVisitors has this visitor
+  if (!state.cellLeadership) state.cellLeadership = {};
+  if (!Array.isArray(state.cellLeadership.cellVisitors)) state.cellLeadership.cellVisitors = [];
+  const existingVisitorIdx = state.cellLeadership.cellVisitors.findIndex((v) => v.first_timer_id === person.id || (v.phone && (person.telefone || person.phone) && v.phone === (person.telefone || person.phone)));
+  if (existingVisitorIdx >= 0) {
+    state.cellLeadership.cellVisitors[existingVisitorIdx].cell_id = person.cell_id;
+  } else {
+    state.cellLeadership.cellVisitors.unshift({
+      id: `ft-v-${person.id}`,
+      first_timer_id: person.id,
+      cell_id: person.cell_id,
+      name: fullName(person),
+      phone: person.telefone || person.phone || "",
+      type: person.nasceu_de_novo ? "FT_NC" : "FT",
+      attendance_count: 1,
+      last_attended_at: today,
+      first_attended_at: person.data_do_culto || today,
+      promoted_to_member: Boolean(person.converted_to_member)
+    });
+  }
+
+  // Persist to Supabase / Repository
+  const repoResult = await persistFirstTimerViaRepository("update", migrateFirstTimerRecord(person));
+  if (repoResult && repoResult.ok === false) {
+    Object.assign(person, previous);
+    alert(repoResult.error || "Não foi possível guardar a atribuição de célula.");
+    return;
+  }
+
+  // Create follow-up log record
+  const followUpPayload = migrateFollowUpRecord({
+    id: generateUuid(),
+    first_timer_id: person.id,
+    person_type: "First Timer",
+    full_name: fullName(person),
+    phone: person.telefone || person.phone || "",
+    whatsapp: person.whatsapp || person.telefone || person.phone || "",
+    church_id: person.church_id,
+    church_name: person.church_name,
+    cell_group_id: person.cell_group_id,
+    cell_group_name: person.cell_group_name,
+    cell_id: person.cell_id,
+    cell_name: person.cell_name,
+    responsible_name: activeUser?.name || "Reitor",
+    actualizado_por: activeUser?.name || "Reitor",
+    data_do_contacto: today,
+    metodo: "Presencial",
+    resultado: `Atribuído à Célula ${person.cell_name}`,
+    proximo_passo: "Acompanhamento pelo Líder de Célula (Regra de 3 Cultos)",
+    status: "Sent to Cell",
+    estado: "Sent to Cell",
+    notas: data.notes || `Encaminhado para a célula ${person.cell_name}.`,
+    created_at: today,
+    updated_at: today
+  });
+  void persistFollowUpViaRepository("fromFirstTimer", followUpPayload);
+
+  saveState(`Atribuído First Timer ${fullName(person)} à célula ${person.cell_name}`);
+  bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide();
+
+  if (typeof showToast === "function") {
+    showToast(approve ? `Aprovado e atribuído à célula "${person.cell_name}" com sucesso!` : `Atribuído à célula "${person.cell_name}" com sucesso!`);
+  }
+
+  if (activeRoute === "firstTimers") renderFirstTimers();
+  else if (activeRoute === "cellPortal") renderCellLeaderPortal();
+  else setRoute(activeRoute);
+}
+
 function quickAction(action, type, id) {
   if (!canRenderAction(action, type)) {
     alert(L("noPermissionArea"));
     return;
+  }
+  if (type === "firstTimer" && (action === "assignCell" || action === "approveAndAssignCell")) {
+    return openAssignCellModal(id, { approve: action === "approveAndAssignCell" });
   }
   if (type === "firstTimer" && ["submitIntake", "receiveForRectorReview", "approveIntake", "returnIntake", "rejectIntake", "handoffFollowup", "receiveFollowup", "createExplicitFollowup"].includes(action)) {
     const record = (state.firstTimers || []).find((item) => item.id === id);
@@ -28728,6 +28954,7 @@ document.addEventListener("click", async (event) => {
 
 byId("entryForm")?.addEventListener("submit", async (event) => {
   event.preventDefault();
+  if (modalType === "assignCellToFirstTimer") return submitAssignCellModal(event.target);
   if (modalType === "cellMemberEdit") return submitCellMemberEditForm(event.target);
   if (modalType === "cellMemberTransfer") return submitCellMemberTransferForm(event.target);
   if (modalType === "cellMemberRemoval") return submitCellMemberRemovalForm(event.target);

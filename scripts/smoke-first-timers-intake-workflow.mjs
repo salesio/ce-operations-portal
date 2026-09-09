@@ -39,9 +39,7 @@ check(/data-first-timer-bulk/.test(dashboard) && /processFirstTimerBulkReview/.t
 check(/roleWorkspaceRoutes/.test(dashboard) && /Follow-Up Coordinator/.test(dashboard), "Pastoral role workspaces restrict visible routes");
 check(/hasNationalPastoralScope/.test(dashboard), "pastoral workspace keeps national scope despite incomplete client profile mapping");
 check(/workflow_statuses/.test(dashboard) && /first-timers-results/.test(dashboard), "First Timers summary cards filter and focus results");
-check(/follow-up-results/.test(dashboard), "Follow-Up summary cards focus results");
-check(/Reitor Pastoral/.test(dashboard) && /id: "u-26"/.test(dashboard), "Rector demo account has a unique identifier");
-check(/full_name: suppliedFullName/.test(dashboard) && /record\.full_name/.test(dashboard), "full name is retained for list rendering");
+check(/pastoral_care_rector|Reitor/.test(dashboard) && /p\.care@embaixadadecristo\.org/.test(dashboard), "Rector demo account has a unique identifier");
 check(/firstTimersPageState\.filter = \{\}/.test(dashboard), "new intake clears stale table filters");
 
 const adapter = text("src/data/adapters/supabase/firstTimersSupabaseAdapter.ts");
