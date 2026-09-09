@@ -37,14 +37,17 @@
     return { api: null, via: "none" };
   }
 
-  function isDemoRecord(item) {
+    function isDemoRecord(item) {
     if (!item) return false;
-    var str = String(item.id || "") + " " + String(item.name || "") + " " + String(item.full_name || "") + " " + String(item.student_number || "") + " " + String(item.class_code || "") + " " + String(item.teacher_number || "") + " " + String(item.enrollment_number || "") + " " + String(item.email || "");
+    var id = String(item.id || "");
+    var name = String(item.name || item.full_name || item.student_name || item.nome || "");
+    var str = id + " " + name + " " + String(item.student_number || "") + " " + String(item.class_code || "") + " " + String(item.teacher_number || "") + " " + String(item.enrollment_number || "") + " " + String(item.email || "");
     if (/demo|^8[1-5]000000-/i.test(str)) return true;
-    if (/^ftch-[0-9]+$/i.test(String(item.id || ""))) return true;
-    if (/^ftch-(rector|coordinator|matola-1|beira-1|prison-lead)$/i.test(String(item.id || ""))) return true;
-    if (/foundation\.(teacher[0-9]*|rector|coord|matola|beira|prison)@ce-mozambique\.org/i.test(String(item.email || ""))) return true;
-    if (/^Professor (João|Carlos|Edson|Samuel|David|Mateus|Miguel|Nelson|Tito|Pedro|Daniel|Rui)|^Professora (Ana|Beatriz|Marta|Helena|Rosa|Celina|Sofia|Alda|Paula|Elisa|Lúcia|Fátima|Janet Marquele)|^Pastor Coordenador|^Irmã Coordenadora/i.test(String(item.full_name || item.name || ""))) return true;
+    if (/^ftch-|^fcg-|^fsloc-demo|^flts-demo|^fls-demo|^fs-[0-9]+$/i.test(id)) return true;
+    if (/foundation.(teacher[0-9]*|rector|coord|matola|beira|prison)@ce-mozambique.org/i.test(String(item.email || ""))) return true;
+    if (/^Professor(a)?\s+(Jo[aã]o|Carlos|Edson|Samuel|David|Mateus|Miguel|Nelson|Tito|Pedro|Daniel|Rui|Ana|Beatriz|Marta|Helena|Rosa|Celina|Sofia|Alda|Paula|Elisa|L[uú]cia|F[aá]tima|Janet Marquele)/i.test(name)) return true;
+    if (/^Pastor Coordenador|^Irm[aã] Coordenadora/i.test(name)) return true;
+    if (/Turma Sede — Presencial|Turma Online —|Turma Domic[ií]lio|Turma Minist[ée]rio Prisional — Centro X|Turma Matola —|Turma Domingo 1º Culto/i.test(name)) return true;
     if (/Aluno Demo|Professor Demo|Turma.*Demo|FSC-DEMO|FST-DEMO|FSS-DEMO|FSE-DEMO/i.test(str)) return true;
     if (item.metadata && typeof item.metadata === "object" && item.metadata.demo === true) return true;
     return false;

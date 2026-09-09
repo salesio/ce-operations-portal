@@ -16122,12 +16122,15 @@ function ensureFoundationClassGroupContexts(hq, churchLabel) {
 
 function isDemoFoundationRecord(item) {
   if (!item) return false;
-  const str = String(item.id || "") + " " + String(item.name || "") + " " + String(item.full_name || "") + " " + String(item.student_number || "") + " " + String(item.class_code || "") + " " + String(item.teacher_number || "") + " " + String(item.enrollment_number || "") + " " + String(item.email || "");
+  const id = String(item.id || "");
+  const name = String(item.name || item.full_name || item.student_name || item.nome || "");
+  const str = id + " " + name + " " + String(item.student_number || "") + " " + String(item.class_code || "") + " " + String(item.teacher_number || "") + " " + String(item.enrollment_number || "") + " " + String(item.email || "");
   if (/demo|^8[1-5]000000-/i.test(str)) return true;
-  if (/^ftch-[0-9]+$/i.test(String(item.id || ""))) return true;
-  if (/^ftch-(rector|coordinator|matola-1|beira-1|prison-lead)$/i.test(String(item.id || ""))) return true;
-  if (/foundation\.(teacher[0-9]*|rector|coord|matola|beira|prison)@ce-mozambique\.org/i.test(String(item.email || ""))) return true;
-  if (/^Professor (João|Carlos|Edson|Samuel|David|Mateus|Miguel|Nelson|Tito|Pedro|Daniel|Rui)|^Professora (Ana|Beatriz|Marta|Helena|Rosa|Celina|Sofia|Alda|Paula|Elisa|Lúcia|Fátima|Janet Marquele)|^Pastor Coordenador|^Irmã Coordenadora/i.test(String(item.full_name || item.name || ""))) return true;
+  if (/^ftch-|^fcg-|^fsloc-demo|^flts-demo|^fls-demo|^fs-[0-9]+$/i.test(id)) return true;
+  if (/foundation.(teacher[0-9]*|rector|coord|matola|beira|prison)@ce-mozambique\.org/i.test(String(item.email || ""))) return true;
+  if (/^Professor(a)?\s+(Jo[aã]o|Carlos|Edson|Samuel|David|Mateus|Miguel|Nelson|Tito|Pedro|Daniel|Rui|Ana|Beatriz|Marta|Helena|Rosa|Celina|Sofia|Alda|Paula|Elisa|L[uú]cia|F[aá]tima|Janet Marquele)/i.test(name)) return true;
+  if (/^Pastor Coordenador|^Irm[aã] Coordenadora/i.test(name)) return true;
+  if (/Turma Sede — Presencial|Turma Online —|Turma Domic[ií]lio|Turma Minist[ée]rio Prisional — Centro X|Turma Matola —|Turma Domingo 1º Culto/i.test(name)) return true;
   if (/Aluno Demo|Professor Demo|Turma.*Demo|FSC-DEMO|FST-DEMO|FSS-DEMO|FSE-DEMO/i.test(str)) return true;
   if (item.metadata && typeof item.metadata === "object" && item.metadata.demo === true) return true;
   return false;
@@ -17053,7 +17056,17 @@ function renderFoundationClasses() {
               <p class="mb-2"><strong>${FS("expectedGraduation")}:</strong> ${group.expected_graduation_date || "-"}</p>
               ${foundationProgressBar(progress, "mb-2")}
               <small>${FS("averageProgress")}: ${progress}%</small>
-              <div class="mt-2"><button type="button" class="btn btn-sm btn-outline-cyan" data-foundation-class-edit="${group.id}"><i class="bi bi-pencil me-1"></i>${L("edit")}</button></div>
+              <div class="mt-2 d-flex flex-wrap gap-2 align-items-center">
+                <button type="button" class="btn btn-sm btn-outline-cyan" data-foundation-class-view="${group.id}"><i class="bi bi-eye me-1"></i>${L("view")}</button>
+                <button type="button" class="btn btn-sm btn-outline-cyan" data-foundation-class-edit="${group.id}"><i class="bi bi-pencil me-1"></i>${L("edit")}</button>
+                ${group.status !== "Concluída" ? `
+                  <button type="button" class="btn btn-sm btn-outline-warning" data-foundation-class-close="${group.id}" title="${lang === "pt" ? "Encerrar / Concluir turma mantendo no histórico" : "Close / Conclude class keeping in history"}">
+                    <i class="bi bi-check2-all me-1"></i>${lang === "pt" ? "Encerrar Turma" : "Close Class"}
+                  </button>
+                ` : `
+                  <span class="badge bg-success-subtle text-success border border-success-subtle d-inline-flex align-items-center gap-1"><i class="bi bi-check-circle-fill"></i> ${lang === "pt" ? "Concluída (Histórico)" : "Concluded (History)"}</span>
+                `}
+              </div>
             </div>
           </div>`;
         }).join("") : `<div class="col-12">${EmptyState({ compact: true, title: L("empty") })}</div>`}
@@ -17257,7 +17270,7 @@ function renderFoundationTeachers() {
         classes.length,
         lessons.length,
         badge(teacher.status),
-        actionButtons([["view", "foundationTeacher", teacher.id, L("view")], ["edit", "foundationTeacher", teacher.id, L("edit")]])
+        actionButtons([["view", "foundationTeacher", teacher.id, L("view")], ["edit", "foundationTeacher", teacher.id, L("edit")], ["delete", "foundationTeacher", teacher.id, L("delete") || (lang === "pt" ? "Eliminar" : "Delete")]])
       ];
     })) : EmptyState({ compact: true, title: lang === "pt" ? "Sem professores registados" : "No teachers registered", description: lang === "pt" ? "Adicione professores para ministrar turmas e aulas." : "Add teachers to assign to classes and lessons." })}
   `);
@@ -19198,7 +19211,9 @@ async function hydrateFoundationSchoolFromRepository() {
         byId.set(row.id, { ...(prev.get(row.id) || {}), ...row, id: row.id });
       });
       prev.forEach((localRow, id) => {
-        if (!byId.has(id) && !isDemoFoundationRecord(localRow)) byId.set(id, localRow);
+        if (!byId.has(id) && !isDemoFoundationRecord(localRow) && isValidUuid(String(id))) {
+          byId.set(id, localRow);
+        }
       });
       state.foundationTeachers = [...byId.values()];
       hydrated = true;
@@ -19215,13 +19230,16 @@ async function hydrateFoundationSchoolFromRepository() {
       if (res?.ok && Array.isArray(res.data)) classesData = res.data;
     }
     if (Array.isArray(classesData)) {
-      const prev = new Map((state.foundationClassGroups || []).map((c) => [c.id, c]));
+      const liveClasses = classesData.filter((c) => !isDemoFoundationRecord(c));
+      const prev = new Map((state.foundationClassGroups || []).filter((c) => !isDemoFoundationRecord(c)).map((c) => [c.id, c]));
       const byId = new Map();
-      classesData.forEach((row) => {
+      liveClasses.forEach((row) => {
         byId.set(row.id, { ...(prev.get(row.id) || {}), ...row, id: row.id });
       });
       prev.forEach((localRow, id) => {
-        if (!byId.has(id)) byId.set(id, localRow);
+        if (!byId.has(id) && !isDemoFoundationRecord(localRow) && isValidUuid(String(id))) {
+          byId.set(id, localRow);
+        }
       });
       state.foundationClassGroups = [...byId.values()];
       hydrated = true;
@@ -25046,7 +25064,21 @@ function openForm(type, id = null, options = {}) {
     Promise.resolve(refreshChurchesFromRepositoryForForms())
       .catch((error) => console.warn("[CE Forms] church refresh skipped", error));
   }
-  if (type === "member") {
+      if (type === "foundationTeacher") {
+      const previous = collection[index];
+      const idx = state.foundationTeachers.findIndex((item) => String(item.id) === String(id));
+      if (idx >= 0) state.foundationTeachers.splice(idx, 1);
+      foundationAudit("teacher_deleted", "foundationTeacher", id, JSON.stringify(previous), "", activeUser?.name || "Admin Principal");
+      saveState(`Deleted Foundation School teacher ${previous?.full_name || id}`);
+      if (typeof showToast === "function") showToast(lang === "pt" ? "Professor eliminado com sucesso!" : "Teacher deleted successfully!");
+      if (activeRoute === "foundation") renderFoundation();
+      else setRoute(activeRoute);
+      void Promise.resolve(persistFoundationTeacherViaRepository("delete", previous || id)).catch((error) => {
+        console.warn("[CE Foundation] delete teacher sync error", error);
+      });
+      return;
+    }
+    if (type === "member") {
     if (id && usesSupabaseMembers()) {
       Promise.resolve(fetchMemberDetailFromRepository(id))
         .then((fresh) => {
@@ -28114,6 +28146,32 @@ document.addEventListener("click", async (event) => {
   if (foundationClassAddBtn) {
     const deliveryMode = foundationClassAddBtn.getAttribute("data-delivery-mode") || "in_person";
     return openFoundationClassForm(null, "edit", { delivery_mode: deliveryMode });
+  }
+  const foundationClassViewBtn = event.target.closest("[data-foundation-class-view]");
+  if (foundationClassViewBtn) {
+    return openFoundationClassForm(foundationClassViewBtn.getAttribute("data-foundation-class-view"), "view");
+  }
+  const foundationClassCloseBtn = event.target.closest("[data-foundation-class-close]");
+  if (foundationClassCloseBtn) {
+    const classId = foundationClassCloseBtn.getAttribute("data-foundation-class-close");
+    const group = (state.foundationClassGroups || []).find((g) => String(g.id) === String(classId));
+    if (!group) return;
+    const confirmMsg = lang === "pt"
+      ? `Tem certeza que deseja encerrar/concluir a turma "${group.name}"?\n\nA turma será marcada como "Concluída" e permanecerá disponível no histórico e nos relatórios.`
+      : `Are you sure you want to close/conclude the class "${group.name}"?\n\nThe class will be marked as "Concluded" and will remain available in history and reports.`;
+    if (!confirm(confirmMsg)) return;
+
+    const previous = { ...group };
+    group.status = "Concluída";
+    group.end_date = group.end_date || new Date().toISOString().slice(0, 10);
+    group.updated_at = new Date().toISOString().slice(0, 10);
+
+    foundationAudit("class_group_closed", "foundationClassGroup", group.id, JSON.stringify(previous), JSON.stringify(group), activeUser?.name || "Admin Principal");
+    saveState(`Closed Foundation School class ${group.name}`);
+    void persistFoundationClassViaRepository("update", group).catch((err) => console.warn("[CE Foundation] close class sync error", err));
+    if (typeof showToast === "function") showToast(lang === "pt" ? "Turma encerrada com sucesso! Permanece no histórico." : "Class closed successfully! Remains in history.");
+    if (activeRoute === "foundation") renderFoundation();
+    return;
   }
   const foundationClassEditBtn = event.target.closest("[data-foundation-class-edit]");
   if (foundationClassEditBtn) {
