@@ -24753,8 +24753,8 @@ function renderUserForm(record = {}, modalMode = "create") {
             <i class="bi bi-x-lg"></i>
           </button>
         </div>
-        <div id="userMemberSuggestions" class="list-group position-absolute w-100 d-none shadow-lg z-3" style="top: 100%; left: 0; max-height: 280px; overflow-y: auto; z-index: 1055; background: #0f172a; border: 1px solid #334155;"></div>
-        <div id="userLinkedBadge" class="small text-success d-none mt-1 fw-semibold"></div>
+        <div class="person-autocomplete-suggestions list-group position-absolute w-100 d-none shadow-lg z-3" style="top: 100%; left: 0; max-height: 280px; overflow-y: auto; z-index: 1055; background: #0f172a; border: 1px solid #334155;"></div>
+        <div class="person-autocomplete-badge small text-success d-none mt-1 fw-semibold"></div>
       </div>
       <div class="col-md-6">
         <label class="form-label">E-mail *</label>
@@ -24957,23 +24957,22 @@ function renderUserForm(record = {}, modalMode = "create") {
 function mountUserFormControls(form) {
   if (!form) return;
   const nameInput = form.querySelector("#userFormNameInput") || form.querySelector('[name="name"]');
-  const suggestionsBox = form.querySelector("#userMemberSuggestions");
-  const badgeEl = form.querySelector("#userLinkedBadge");
   const clearNameBtn = form.querySelector("#btnClearUserName");
-  const emailInput = form.querySelector("#userFormEmailInput") || form.querySelector('[name="email"]');
-  const phoneInput = form.querySelector("#userFormPhoneInput") || form.querySelector('[name="phone"]');
-  const churchSelect = form.querySelector("#userFormChurchSelect") || form.querySelector('[name="church_id"]');
-  const groupSelect = form.querySelector("#userFormCellGroupSelect");
-  const cellSelect = form.querySelector("#userFormCellSelect");
-  const roleSelect = form.querySelector("#userFormRoleSelect");
   const pwInput = form.querySelector("#userFormPassword");
   const togglePwBtn = form.querySelector("#btnToggleUserPassword");
   const genPwBtn = form.querySelector("#btnGenerateUserPassword");
+  const groupSelect = form.querySelector("#userFormCellGroupSelect");
+  const cellSelect = form.querySelector("#userFormCellSelect");
+  const roleSelect = form.querySelector("#userFormRoleSelect");
 
   if (clearNameBtn && nameInput) {
     clearNameBtn.addEventListener("click", () => {
       nameInput.value = "";
+      delete nameInput.dataset.personSelected;
+      delete nameInput.dataset.selectedPersonId;
       clearNameBtn.classList.add("d-none");
+      const suggestionsBox = form.querySelector(".person-autocomplete-suggestions");
+      const badgeEl = form.querySelector(".person-autocomplete-badge");
       if (suggestionsBox) {
         suggestionsBox.classList.add("d-none");
         suggestionsBox.innerHTML = "";
@@ -24983,314 +24982,6 @@ function mountUserFormControls(form) {
         badgeEl.innerHTML = "";
       }
       nameInput.focus();
-    });
-  }
-
-  function hideUserSuggestions() {
-    if (suggestionsBox) {
-      suggestionsBox.classList.add("d-none");
-      suggestionsBox.innerHTML = "";
-    }
-  }
-
-  document.addEventListener("click", (evt) => {
-    if (form && !form.contains(evt.target)) {
-      hideUserSuggestions();
-    }
-  });
-
-  if (nameInput && suggestionsBox) {
-    let searchTimer = null;
-
-    nameInput.addEventListener("input", () => {
-      const q = nameInput.value.trim();
-      if (clearNameBtn) {
-        clearNameBtn.classList.toggle("d-none", !q);
-      }
-      if (q.length < 2) {
-        hideUserSuggestions();
-        if (badgeEl) badgeEl.classList.add("d-none");
-        if (searchTimer) clearTimeout(searchTimer);
-        return;
-      }
-
-      if (searchTimer) clearTimeout(searchTimer);
-      searchTimer = setTimeout(async () => {
-        let matches = [];
-
-        // 1. Query remote Supabase if available
-        if (typeof usesSupabaseMembers === "function" && usesSupabaseMembers()) {
-          try {
-            const client = window.CESupabase?.getRawClient?.() || window.supabase;
-            if (client && typeof client.rpc === "function") {
-              const { data, error } = await client.rpc("search_alec_candidate_members", { p_query: q });
-              if (!error && Array.isArray(data) && data.length) {
-                matches = data;
-              }
-            }
-          } catch (rpcErr) {
-            console.warn("[User Autocomplete] rpc search error", rpcErr);
-          }
-
-          if (!matches.length) {
-            const repo = typeof getMembersRepoSafe === "function" ? getMembersRepoSafe() : null;
-            if (repo?.listMembersPage) {
-              try {
-                const res = await repo.listMembersPage({ page: 1, pageSize: 20, search: q });
-                if (res?.ok && Array.isArray(res.data?.items)) {
-                  matches = res.data.items;
-                }
-              } catch (e) {
-                console.warn("[User Autocomplete] repo search fallback error", e);
-              }
-            }
-          }
-        }
-
-        // 2. Query local datasets (state.members, cellLeadership.leaders, staffProfiles, firstTimers)
-        const localPool = [];
-        (state.members || []).forEach((m) => {
-          localPool.push({
-            id: m.id,
-            full_name: m.full_name || `${m.first_name || m.nome || ""} ${m.last_name || m.apelido || ""}`.trim(),
-            phone: m.primary_phone || m.phone || m.telefone || "",
-            email: m.email || "",
-            church_id: m.church_id || "",
-            church_name: m.church_name || m.igreja || "",
-            cell_id: m.cell_id || "",
-            cell_name: m.cell_name || m.celula || "",
-            cell_group_id: m.cell_group_id || "",
-            cell_group_name: m.cell_group_name || "",
-            role: m.cell_role || "Membro",
-            source: "Membro"
-          });
-        });
-
-        (state.cellLeadership?.leaders || []).forEach((l) => {
-          localPool.push({
-            id: l.id,
-            full_name: l.nome_completo || l.name || "",
-            phone: l.contacto || l.phone || "",
-            email: l.email || "",
-            church_id: l.igreja || l.church_id || "",
-            church_name: typeof churchName === "function" ? churchName(l.igreja || l.church_id) : "",
-            cell_id: l.cell_id || "",
-            cell_name: l.celula || "",
-            cell_group_id: l.cell_group_id || "",
-            cell_group_name: l.cell_group_name || "",
-            role: l.funcao || "Líder de Célula",
-            source: "Líder de Célula"
-          });
-        });
-
-        (state.staffProfiles || []).forEach((s) => {
-          localPool.push({
-            id: s.id,
-            full_name: s.full_name || s.nome_completo || "",
-            phone: s.phone || s.telefone || "",
-            email: s.email || "",
-            church_id: s.church_id || "",
-            church_name: typeof churchName === "function" ? churchName(s.church_id) : "",
-            cell_id: s.cell_id || "",
-            cell_name: s.cell_name || "",
-            cell_group_id: s.cell_group_id || "",
-            cell_group_name: s.cell_group_name || "",
-            role: s.cargo || s.department || "Staff",
-            source: "Staff"
-          });
-        });
-
-        const qLower = q.toLowerCase();
-        const localMatches = localPool.filter((m) => {
-          const haystack = [
-            m.full_name,
-            m.phone,
-            m.email,
-            m.cell_name,
-            m.cell_group_name
-          ].filter(Boolean).join(" ").toLowerCase();
-          return haystack.includes(qLower);
-        });
-
-        // 3. Merge & deduplicate
-        const seenNames = new Set();
-        const combined = [];
-
-        matches.forEach((m) => {
-          const fn = (m.full_name || `${m.first_name || ""} ${m.last_name || ""}`).trim();
-          if (fn && !seenNames.has(fn.toLowerCase())) {
-            seenNames.add(fn.toLowerCase());
-            combined.push({
-              id: m.id,
-              full_name: fn,
-              phone: m.primary_phone || m.phone || m.secondary_phone || "",
-              email: m.email || "",
-              church_id: m.church_id || "",
-              church_name: m.church_name || m.igreja || "",
-              cell_id: m.cell_id || "",
-              cell_name: m.cell_name || m.celula || "",
-              cell_group_id: m.cell_group_id || "",
-              cell_group_name: m.cell_group_name || "",
-              role: m.cell_role || "Membro",
-              source: "Base Supabase"
-            });
-          }
-        });
-
-        localMatches.forEach((m) => {
-          const fn = (m.full_name || "").trim();
-          if (fn && !seenNames.has(fn.toLowerCase())) {
-            seenNames.add(fn.toLowerCase());
-            combined.push(m);
-          }
-        });
-
-        if (!combined.length) {
-          suggestionsBox.innerHTML = `<div class="list-group-item bg-dark text-white-50 p-2 small border-secondary"><i class="bi bi-info-circle me-1"></i>Nenhum membro encontrado na base de dados com "${escapeAttr(q)}"</div>`;
-          suggestionsBox.classList.remove("d-none");
-          return;
-        }
-
-        const topMatches = combined.slice(0, 8);
-        suggestionsBox.innerHTML = topMatches.map((m, idx) => {
-          const chName = m.church_name || (m.church_id && typeof churchName === "function" ? churchName(m.church_id) : "") || "Igreja";
-          const details = [m.phone, chName, m.cell_group_name, m.cell_name].filter(Boolean).join(" · ");
-          return `
-            <button type="button" class="list-group-item list-group-item-action bg-dark text-white border-secondary p-2 d-flex flex-column gap-1 user-member-suggestion-item" data-suggestion-idx="${idx}" style="cursor: pointer;">
-              <div class="d-flex w-100 justify-content-between align-items-center">
-                <strong class="text-gold" style="color: #f59e0b;"><i class="bi bi-person me-1"></i>${escapeAttr(m.full_name)}</strong>
-                <span class="badge text-bg-secondary" style="font-size: 0.7rem;">${escapeAttr(m.source || "Membro")}</span>
-              </div>
-              <div class="small text-white-50 text-truncate" style="font-size: 0.78rem;">
-                ${escapeAttr(details)}
-              </div>
-            </button>
-          `;
-        }).join("");
-
-        suggestionsBox.classList.remove("d-none");
-
-        suggestionsBox.querySelectorAll("[data-suggestion-idx]").forEach((btn) => {
-          btn.addEventListener("click", (evt) => {
-            evt.preventDefault();
-            evt.stopPropagation();
-            const idx = Number(btn.dataset.suggestionIdx);
-            const selected = topMatches[idx];
-            if (!selected) return;
-
-            // 1. Set Full Name
-            nameInput.value = selected.full_name;
-
-            // 2. Set Phone
-            if (phoneInput && selected.phone) {
-              phoneInput.value = selected.phone;
-            }
-
-            // 3. Set Email (use existing or generate standard format)
-            if (emailInput) {
-              if (selected.email) {
-                emailInput.value = selected.email;
-              } else if (!emailInput.value || emailInput.value.includes("@embaixadadecristo.org")) {
-                const parts = selected.full_name
-                  .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-                  .toLowerCase()
-                  .replace(/[^a-z0-9\s]/g, "")
-                  .trim()
-                  .split(/\s+/)
-                  .filter(Boolean);
-                if (parts.length >= 2) {
-                  emailInput.value = `${parts[0]}.${parts[parts.length - 1]}@embaixadadecristo.org`;
-                } else if (parts.length === 1) {
-                  emailInput.value = `${parts[0]}@embaixadadecristo.org`;
-                }
-              }
-            }
-
-            // 4. Resolve Church, Cell Group, and Cell
-            const allGroupsList = [...(window.REAL_CELL_GROUPS || []), ...(state.cellGroups || [])];
-            const allCellsList = [...(window.REAL_CELLS_REGISTRY || []), ...(state.cellRegistry || state.cells || [])];
-
-            // Match Cell
-            let matchedCell = null;
-            if (selected.cell_id) {
-              matchedCell = allCellsList.find((c) => String(c.id) === String(selected.cell_id));
-            }
-            if (!matchedCell && selected.cell_name) {
-              const cName = selected.cell_name.trim().toLowerCase();
-              matchedCell = allCellsList.find((c) => String(c.cell_name || "").trim().toLowerCase() === cName);
-            }
-
-            // Match Group
-            let matchedGroup = null;
-            if (matchedCell) {
-              const gId = matchedCell.group_id || matchedCell.cell_group_id;
-              if (gId) matchedGroup = allGroupsList.find((g) => String(g.id) === String(gId));
-              if (!matchedGroup && matchedCell.group_name) {
-                matchedGroup = allGroupsList.find((g) => String(g.group_name || "").trim().toLowerCase() === String(matchedCell.group_name).trim().toLowerCase());
-              }
-            }
-            if (!matchedGroup && selected.cell_group_id) {
-              matchedGroup = allGroupsList.find((g) => String(g.id) === String(selected.cell_group_id));
-            }
-            if (!matchedGroup && selected.cell_group_name) {
-              const gName = selected.cell_group_name.trim().toLowerCase();
-              matchedGroup = allGroupsList.find((g) => String(g.group_name || "").trim().toLowerCase() === gName);
-            }
-
-            // Match Church
-            let matchedChurchId = selected.church_id;
-            if (!matchedChurchId && selected.church_name) {
-              const chName = selected.church_name.trim().toLowerCase();
-              const foundCh = (state.churches || []).find((c) => (c.church_name || "").toLowerCase() === chName || (c.public_name || "").toLowerCase() === chName);
-              if (foundCh) matchedChurchId = foundCh.id;
-            }
-            if (!matchedChurchId && matchedGroup?.church_id) {
-              matchedChurchId = matchedGroup.church_id;
-            }
-            if (!matchedChurchId && matchedCell?.church_id) {
-              matchedChurchId = matchedCell.church_id;
-            }
-
-            if (churchSelect && matchedChurchId) {
-              churchSelect.value = matchedChurchId;
-            }
-
-            if (groupSelect && matchedGroup?.id) {
-              groupSelect.value = matchedGroup.id;
-              groupSelect.dispatchEvent(typeof Event === "function" ? new Event("change") : { type: "change" });
-            }
-
-            if (cellSelect && matchedCell?.id) {
-              cellSelect.value = matchedCell.id;
-            }
-
-            // 5. Match Role if appropriate
-            if (roleSelect && selected.role) {
-              const rLower = selected.role.toLowerCase();
-              if (rLower.includes("assistente") || rLower.includes("assistant")) {
-                roleSelect.value = "Cell Assistant";
-                roleSelect.dispatchEvent(typeof Event === "function" ? new Event("change") : { type: "change" });
-              } else if (rLower.includes("líder") || rLower.includes("lider") || rLower.includes("leader")) {
-                roleSelect.value = "Cell Leader";
-                roleSelect.dispatchEvent(typeof Event === "function" ? new Event("change") : { type: "change" });
-              }
-            }
-
-            // 6. Confirmation badge
-            if (badgeEl) {
-              const infoItems = [
-                selected.church_name || (matchedChurchId && typeof churchName === "function" ? churchName(matchedChurchId) : ""),
-                matchedGroup?.group_name || selected.cell_group_name,
-                matchedCell?.cell_name || selected.cell_name
-              ].filter(Boolean);
-              badgeEl.innerHTML = `<i class="bi bi-check-circle-fill me-1"></i> Dados importados da base (${escapeAttr(infoItems.join(" · "))})`;
-              badgeEl.classList.remove("d-none");
-            }
-
-            hideUserSuggestions();
-          });
-        });
-      }, 200);
     });
   }
 
@@ -32540,12 +32231,16 @@ function applyPersonToForm(formEl, nameInput, chosen, feedbackBadge) {
       input.value = val;
     }
     input.dispatchEvent(new Event("change", { bubbles: true }));
-    input.dispatchEvent(new Event("input", { bubbles: true }));
   };
 
   if (nameInput) {
-    nameInput.value = chosen.displayName || chosen.full_name || "";
-    nameInput.dispatchEvent(new Event("input", { bubbles: true }));
+    nameInput.value = chosen.displayName || chosen.full_name || chosen.nome || "";
+    nameInput.dataset.personSelected = "true";
+    nameInput.dataset.selectedPersonId = chosen.id || "";
+    const clearNameBtn = formEl.querySelector("#btnClearUserName");
+    if (clearNameBtn) {
+      clearNameBtn.classList.remove("d-none");
+    }
   }
 
   setVal('[name="first_name"]', chosen.first_name);
@@ -32553,14 +32248,35 @@ function applyPersonToForm(formEl, nameInput, chosen, feedbackBadge) {
   setVal('[name="nome"]', chosen.first_name || chosen.displayName);
   setVal('[name="apelido"]', chosen.last_name);
 
-  const phoneVal = chosen.primary_phone || chosen.phone || chosen.telefone || "";
+  const phoneVal = chosen.primary_phone || chosen.phone || chosen.telefone || chosen.contacto || "";
   setVal('[name="primary_phone"]', phoneVal);
   setVal('[name="phone"]', phoneVal);
   setVal('[name="telefone"]', phoneVal);
   setVal('[name="contacto"]', phoneVal);
   setVal('[name="secondary_phone"]', chosen.secondary_phone);
   setVal('[name="whatsapp"]', chosen.whatsapp || phoneVal);
-  setVal('[name="email"]', chosen.email);
+
+  if (chosen.email) {
+    setVal('[name="email"]', chosen.email);
+  } else {
+    const emailInput = formEl.querySelector('[name="email"]');
+    if (emailInput && (!emailInput.value || emailInput.value.includes("@embaixadadecristo.org"))) {
+      const fullName = chosen.displayName || chosen.full_name || "";
+      const parts = fullName
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, "")
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean);
+      if (parts.length >= 2) {
+        emailInput.value = `${parts[0]}.${parts[parts.length - 1]}@embaixadadecristo.org`;
+      } else if (parts.length === 1) {
+        emailInput.value = `${parts[0]}@embaixadadecristo.org`;
+      }
+      emailInput.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+  }
 
   setVal('[name="date_of_birth"]', chosen.date_of_birth);
   setVal('[name="data_de_nascimento"]', chosen.date_of_birth);
@@ -32574,30 +32290,83 @@ function applyPersonToForm(formEl, nameInput, chosen, feedbackBadge) {
   setVal('[name="marital_status"]', chosen.marital_status);
   setVal('[name="estado_civil"]', chosen.marital_status);
 
+  // Church matching
   if (chosen.church_id) {
     setVal('[name="church_id"]', chosen.church_id);
+  } else if (chosen.church_name) {
+    const chName = String(chosen.church_name).trim().toLowerCase();
+    const foundCh = (state.churches || []).find((c) => (c.church_name || "").toLowerCase() === chName || (c.public_name || "").toLowerCase() === chName);
+    if (foundCh) setVal('[name="church_id"]', foundCh.id);
   }
   if (chosen.church_name) {
     setVal('[name="church_name"]', chosen.church_name);
     setVal('[name="igreja"]', chosen.church_name);
   }
 
-  if (chosen.cell_group_id) {
-    setVal('[name="cell_group_id"]', chosen.cell_group_id);
-    setVal('[name="group_id"]', chosen.cell_group_id);
+  // Cell Group and Cell matching
+  const allGroupsList = [...(window.REAL_CELL_GROUPS || []), ...(state.cellGroups || [])];
+  const allCellsList = [...(window.REAL_CELLS_REGISTRY || []), ...(state.cellRegistry || state.cells || [])];
+
+  let matchedCell = null;
+  if (chosen.cell_id) {
+    matchedCell = allCellsList.find((c) => String(c.id) === String(chosen.cell_id));
   }
-  if (chosen.cell_group_name) {
-    setVal('[name="cell_group_name"]', chosen.cell_group_name);
-    setVal('[name="grupo_de_celula"]', chosen.cell_group_name);
+  if (!matchedCell && (chosen.cell_name || chosen.celula)) {
+    const cName = String(chosen.cell_name || chosen.celula).trim().toLowerCase();
+    matchedCell = allCellsList.find((c) => String(c.cell_name || "").trim().toLowerCase() === cName);
   }
 
-  if (chosen.cell_id) {
+  let matchedGroup = null;
+  if (matchedCell) {
+    const gId = matchedCell.group_id || matchedCell.cell_group_id;
+    if (gId) matchedGroup = allGroupsList.find((g) => String(g.id) === String(gId));
+    if (!matchedGroup && matchedCell.group_name) {
+      matchedGroup = allGroupsList.find((g) => String(g.group_name || "").trim().toLowerCase() === String(matchedCell.group_name).trim().toLowerCase());
+    }
+  }
+  if (!matchedGroup && (chosen.cell_group_id || chosen.group_id)) {
+    const gId = chosen.cell_group_id || chosen.group_id;
+    matchedGroup = allGroupsList.find((g) => String(g.id) === String(gId));
+  }
+  if (!matchedGroup && (chosen.cell_group_name || chosen.group_name || chosen.grupo_de_celula)) {
+    const gName = String(chosen.cell_group_name || chosen.group_name || chosen.grupo_de_celula).trim().toLowerCase();
+    matchedGroup = allGroupsList.find((g) => String(g.group_name || "").trim().toLowerCase() === gName);
+  }
+
+  if (matchedGroup?.id) {
+    setVal('[name="cell_group_id"]', matchedGroup.id);
+    setVal('[name="group_id"]', matchedGroup.id);
+  } else if (chosen.cell_group_id || chosen.group_id) {
+    setVal('[name="cell_group_id"]', chosen.cell_group_id || chosen.group_id);
+    setVal('[name="group_id"]', chosen.cell_group_id || chosen.group_id);
+  }
+  if (chosen.cell_group_name || matchedGroup?.group_name) {
+    setVal('[name="cell_group_name"]', matchedGroup?.group_name || chosen.cell_group_name);
+    setVal('[name="grupo_de_celula"]', matchedGroup?.group_name || chosen.cell_group_name);
+  }
+
+  if (matchedCell?.id) {
+    setVal('[name="cell_id"]', matchedCell.id);
+  } else if (chosen.cell_id) {
     setVal('[name="cell_id"]', chosen.cell_id);
   }
-  const cellNameVal = chosen.cell_name || chosen.celula;
+  const cellNameVal = matchedCell?.cell_name || chosen.cell_name || chosen.celula;
   if (cellNameVal) {
     setVal('[name="cell_name"]', cellNameVal);
     setVal('[name="celula"]', cellNameVal);
+  }
+
+  // Role matching
+  const roleSelect = formEl.querySelector('[name="role"]');
+  if (roleSelect && (chosen.role || chosen.cell_role || chosen.source_label)) {
+    const rLower = String(chosen.role || chosen.cell_role || chosen.source_label).toLowerCase();
+    if (rLower.includes("assistente") || rLower.includes("assistant")) {
+      roleSelect.value = "Cell Assistant";
+      roleSelect.dispatchEvent(new Event("change", { bubbles: true }));
+    } else if (rLower.includes("líder") || rLower.includes("lider") || rLower.includes("leader")) {
+      roleSelect.value = "Cell Leader";
+      roleSelect.dispatchEvent(new Event("change", { bubbles: true }));
+    }
   }
 
   let memberIdInput = formEl.querySelector('[name="member_id"]') || formEl.querySelector('[name="person_id"]');
@@ -32683,8 +32452,19 @@ function mountPersonAutocomplete(formEl, options = {}) {
     };
 
     let timer = null;
+    let searchSeq = 0;
+
     nameInput.addEventListener("input", () => {
+      if (nameInput.dataset.personSelected === "true") {
+        delete nameInput.dataset.personSelected;
+      }
+
       const q = String(nameInput.value || "").trim();
+      const clearNameBtn = fieldContainer.querySelector("#btnClearUserName");
+      if (clearNameBtn) {
+        clearNameBtn.classList.toggle("d-none", !q);
+      }
+
       if (q.length < 2) {
         hideBox();
         feedbackBadge.classList.add("d-none");
@@ -32692,9 +32472,15 @@ function mountPersonAutocomplete(formEl, options = {}) {
         return;
       }
 
+      const currentSeq = ++searchSeq;
       if (timer) clearTimeout(timer);
+
       timer = setTimeout(async () => {
+        if (currentSeq !== searchSeq || nameInput.dataset.personSelected === "true") return;
+
         const matches = await searchPersonsAcrossSystem(q);
+        if (currentSeq !== searchSeq || nameInput.dataset.personSelected === "true") return;
+
         if (!matches.length) {
           suggestionsBox.innerHTML = `<div class="list-group-item bg-dark text-white-50 p-2 small"><i class="bi bi-info-circle me-1"></i>Nenhum membro encontrado na base</div>`;
           suggestionsBox.classList.remove("d-none");
@@ -32732,8 +32518,8 @@ function mountPersonAutocomplete(formEl, options = {}) {
             const chosen = matches.find((m) => String(m.id) === String(selId));
             if (!chosen) return;
 
-            applyPersonToForm(formEl, nameInput, chosen, feedbackBadge);
             hideBox();
+            applyPersonToForm(formEl, nameInput, chosen, feedbackBadge);
           });
         });
       }, 200);
