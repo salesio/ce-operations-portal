@@ -348,6 +348,9 @@ export async function deleteUser(id: EntityId): Promise<DataResult<boolean>> {
       const { error } = await clientRes.data.rpc("admin_delete_user", { p_user_id: id });
       if (!error) return ok(true);
     } catch (_) {}
+    try {
+      await clientRes.data.from(TABLE).delete().eq("auth_user_id", id);
+    } catch (_) {}
   }
   return deleteRow(TABLE, id);
 }

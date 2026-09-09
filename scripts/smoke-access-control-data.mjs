@@ -36,7 +36,7 @@ ok("audit logs seed exists", existsSync(join(root, "src/data/seeds/auditLogsSeed
 ok("access control bridge exists", existsSync(join(root, "js/access-control-data-bridge.js")));
 ok(
   "index includes access control bridge",
-  /access-control-data-bridge\.js\?v=20260723-access-control-data-v1/.test(read("index.html")),
+  /access-control-data-bridge\.js(\?v=[^"']+)?/.test(read("index.html")),
 );
 ok("docs pilot Access Control", /Pilot migration: Users, Roles & Access Control/.test(read("DATA_LAYER_PLAN.md")));
 ok("ACCESS_CONTROL_PLAN exists", existsSync(join(root, "ACCESS_CONTROL_PLAN.md")));

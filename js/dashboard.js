@@ -4674,17 +4674,24 @@ function registerDeletedUser(user) {
   state.deletedUserIds = Array.isArray(state.deletedUserIds) ? state.deletedUserIds : [];
   state.deletedUserEmails = Array.isArray(state.deletedUserEmails) ? state.deletedUserEmails : [];
 
+  let persistentIds = [];
+  let persistentEmails = [];
+  try {
+    persistentIds = JSON.parse(localStorage.getItem("ce_tombstone_user_ids") || "[]");
+    persistentEmails = JSON.parse(localStorage.getItem("ce_tombstone_user_emails") || "[]");
+  } catch (_) {}
+
   const addId = (id) => {
-    if (id && typeof id === "string" && !state.deletedUserIds.includes(id)) {
-      state.deletedUserIds.push(id);
+    if (id && typeof id === "string") {
+      if (!state.deletedUserIds.includes(id)) state.deletedUserIds.push(id);
+      if (!persistentIds.includes(id)) persistentIds.push(id);
     }
   };
   const addEmail = (email) => {
     if (email && typeof email === "string") {
       const norm = email.trim().toLowerCase();
-      if (norm && !state.deletedUserEmails.includes(norm)) {
-        state.deletedUserEmails.push(norm);
-      }
+      if (norm && !state.deletedUserEmails.includes(norm)) state.deletedUserEmails.push(norm);
+      if (norm && !persistentEmails.includes(norm)) persistentEmails.push(norm);
     }
   };
 
@@ -4695,12 +4702,24 @@ function registerDeletedUser(user) {
     addId(user.auth_user_id);
     addEmail(user.email);
   }
+
+  try {
+    localStorage.setItem("ce_tombstone_user_ids", JSON.stringify(persistentIds));
+    localStorage.setItem("ce_tombstone_user_emails", JSON.stringify(persistentEmails));
+  } catch (_) {}
 }
 
 function isUserDeleted(user, checkState = (typeof state !== "undefined" ? state : null)) {
   if (!user) return false;
-  const deletedIds = new Set((checkState?.deletedUserIds || []).map(String));
-  const deletedEmails = new Set((checkState?.deletedUserEmails || []).map((e) => String(e).toLowerCase()));
+  let persistentIds = [];
+  let persistentEmails = [];
+  try {
+    persistentIds = JSON.parse(localStorage.getItem("ce_tombstone_user_ids") || "[]");
+    persistentEmails = JSON.parse(localStorage.getItem("ce_tombstone_user_emails") || "[]");
+  } catch (_) {}
+
+  const deletedIds = new Set([...(checkState?.deletedUserIds || []), ...persistentIds].map(String));
+  const deletedEmails = new Set([...(checkState?.deletedUserEmails || []), ...persistentEmails].map((e) => String(e).toLowerCase()));
 
   const id = typeof user === "string" ? user : user.id;
   const authId = typeof user === "object" ? user.auth_user_id : null;
@@ -4809,8 +4828,24 @@ function normalizeUserProfile(user = {}, churches = [], departments = []) {
 
 function normalizeState(saved) {
   const merged = { ...structuredClone(seedData), ...saved };
-  merged.deletedUserIds = Array.isArray(saved?.deletedUserIds) ? saved.deletedUserIds : (Array.isArray(merged.deletedUserIds) ? merged.deletedUserIds : []);
-  merged.deletedUserEmails = Array.isArray(saved?.deletedUserEmails) ? saved.deletedUserEmails : (Array.isArray(merged.deletedUserEmails) ? merged.deletedUserEmails : []);
+  let persistentIds = [];
+  let persistentEmails = [];
+  try {
+    persistentIds = JSON.parse(localStorage.getItem("ce_tombstone_user_ids") || "[]");
+    persistentEmails = JSON.parse(localStorage.getItem("ce_tombstone_user_emails") || "[]");
+  } catch (_) {}
+
+  merged.deletedUserIds = Array.from(new Set([
+    ...(Array.isArray(saved?.deletedUserIds) ? saved.deletedUserIds : []),
+    ...(Array.isArray(merged.deletedUserIds) ? merged.deletedUserIds : []),
+    ...persistentIds
+  ].map(String)));
+
+  merged.deletedUserEmails = Array.from(new Set([
+    ...(Array.isArray(saved?.deletedUserEmails) ? saved.deletedUserEmails : []),
+    ...(Array.isArray(merged.deletedUserEmails) ? merged.deletedUserEmails : []),
+    ...persistentEmails
+  ].map((e) => String(e).toLowerCase())));
 
   const deletedIds = new Set((merged.deletedUserIds || []).map(String));
   const deletedEmails = new Set((merged.deletedUserEmails || []).map((e) => String(e).toLowerCase()));
@@ -4823,7 +4858,9 @@ function normalizeState(saved) {
     return false;
   };
 
-  const cleanSavedUsers = (saved?.users || merged.users || []).filter((u) => !isTombstone(u));
+  const hasExplicitSavedUsers = Array.isArray(saved?.users);
+  const rawSavedList = hasExplicitSavedUsers ? saved.users : (merged.users || []);
+  const cleanSavedUsers = (rawSavedList || []).filter((u) => !isTombstone(u));
   const seenUserEmails = new Set();
   const seenUserIds = new Set();
   const deduplicatedUsers = [];
@@ -4838,16 +4875,23 @@ function normalizeState(saved) {
     }
   });
 
-  // Only add seed users if they were NOT deleted and NOT already present by id or email
-  seedData.users.forEach((seedUser) => {
-    const emailNorm = seedUser.email ? String(seedUser.email).trim().toLowerCase() : "";
-    const id = String(seedUser.id);
-    if (!isTombstone(seedUser) && !seenUserIds.has(id) && (!emailNorm || !seenUserEmails.has(emailNorm))) {
-      seenUserIds.add(id);
-      if (emailNorm) seenUserEmails.add(emailNorm);
-      deduplicatedUsers.push(structuredClone(seedUser));
-    }
-  });
+  // Only seed users if no saved user list exists at all
+  if (!hasExplicitSavedUsers && deduplicatedUsers.length === 0) {
+    seedData.users.forEach((seedUser) => {
+      const emailNorm = seedUser.email ? String(seedUser.email).trim().toLowerCase() : "";
+      const id = String(seedUser.id);
+      if (!isTombstone(seedUser) && !seenUserIds.has(id) && (!emailNorm || !seenUserEmails.has(emailNorm))) {
+        seenUserIds.add(id);
+        if (emailNorm) seenUserEmails.add(emailNorm);
+        deduplicatedUsers.push(structuredClone(seedUser));
+      }
+    });
+  }
+
+  // Ensure primary Super Admin account always exists as minimum bootstrap fallback
+  if (deduplicatedUsers.length === 0 && seedData.users?.[0]) {
+    deduplicatedUsers.push(structuredClone(seedData.users[0]));
+  }
 
   const venueDemoUserIds = new Set(["u-8", "u-11", "u-12", "u-13"]);
   const authenticatedCellDemoUserIds = new Set(["u-7", "u-cell-assistant", "u-cell-reviewer"]);
@@ -27703,8 +27747,8 @@ function quickAction(action, type, id) {
       : `Are you sure you want to delete this ${title} record?`;
     if (!window.confirm(message)) return;
     if (type === "user") {
-      const previous = collection[index];
-      registerDeletedUser(previous);
+      const previous = collection[index] || (state.users || []).find((u) => String(u.id) === String(id) || String(u.auth_user_id) === String(id));
+      registerDeletedUser(previous || id);
       const prevEmail = previous?.email ? String(previous.email).trim().toLowerCase() : "";
 
       state.users = (state.users || []).filter((item) => {
@@ -27714,15 +27758,33 @@ function quickAction(action, type, id) {
         return true;
       });
 
+      try {
+        const dKey = "ce-data-layer:users";
+        const raw = localStorage.getItem(dKey);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            const filtered = parsed.filter((r) => {
+              if (!r) return false;
+              if (String(r.id) === String(id)) return false;
+              if (previous?.auth_user_id && String(r.auth_user_id) === String(previous.auth_user_id)) return false;
+              if (prevEmail && r.email && String(r.email).trim().toLowerCase() === prevEmail) return false;
+              return true;
+            });
+            localStorage.setItem(dKey, JSON.stringify(filtered));
+          }
+        }
+      } catch (_) {}
+
       saveState(`Deleted user ${previous?.email || id}`);
       if (typeof showToast === "function") showToast(lang === "pt" ? "Utilizador eliminado com sucesso!" : "User deleted successfully!");
       if (activeRoute === "users") renderUsers();
       else setRoute(activeRoute);
 
-      void Promise.resolve(dualWriteUserRecord("delete", previous)).catch((error) => {
+      void Promise.resolve(dualWriteUserRecord("delete", previous || { id })).catch((error) => {
         console.warn("[CE Users] dualWrite delete sync error", error);
       });
-      void Promise.resolve(deleteUserFromSupabase(previous?.id, previous?.auth_user_id || previous?.id, previous?.email)).catch((error) => {
+      void Promise.resolve(deleteUserFromSupabase(previous?.id || id, previous?.auth_user_id || previous?.id || id, previous?.email)).catch((error) => {
         console.warn("[CE Users] background delete sync error", error);
       });
       return;
