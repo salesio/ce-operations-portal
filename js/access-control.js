@@ -363,7 +363,7 @@
       modules: {
         dashboard: { ...VIEW_ONLY, scope: "cell_group", cell_portal_permissions: ["cell_portal.view", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary"] },
         cell: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "cell_group", cell_report_permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"] },
-        cellReports: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "cell_group", cell_report_permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"] },
+        cellReports: { ...NO_ACCESS, scope: "cell_group", cell_report_permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"] },
         members: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "cell_group" },
         notifications: { ...VIEW_ONLY, scope: "cell_group" }
       }
@@ -372,7 +372,7 @@
       modules: {
         dashboard: { ...VIEW_ONLY, scope: "own", cell_portal_permissions: ["cell_portal.view", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts"] },
         cell: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "own", cell_report_permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"] },
-        cellReports: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "own", cell_report_permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"] },
+        cellReports: { ...NO_ACCESS, scope: "own", cell_report_permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"] },
         members: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "own" },
         notifications: { ...VIEW_ONLY, scope: "own" }
       }
@@ -381,7 +381,7 @@
       modules: {
         dashboard: { ...VIEW_ONLY, scope: "own", cell_portal_permissions: ["cell_portal.view", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts"] },
         cell: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "own", cell_report_permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"] },
-        cellReports: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "own", cell_report_permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"] },
+        cellReports: { ...NO_ACCESS, scope: "own", cell_report_permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"] },
         members: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "own" },
         notifications: { ...VIEW_ONLY, scope: "own" }
       }
@@ -390,7 +390,7 @@
       modules: {
         dashboard: { ...VIEW_ONLY, scope: "own", cell_portal_permissions: ["cell_portal.view", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts"] },
         cell: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "own", cell_report_permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"] },
-        cellReports: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "own", cell_report_permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"] },
+        cellReports: { ...NO_ACCESS, scope: "own", cell_report_permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"] },
         members: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "own" },
         notifications: { ...VIEW_ONLY, scope: "own" }
       }
@@ -590,9 +590,44 @@
   function legacyGrant(user, module) {
     const grants = user?.department_permissions || [];
     if (grants.includes("*")) return { ...FULL_ACCESS };
-    const isCellModule = (module === "cellMinistry" || module === "cellReports" || module === "alec" || module === "cell");
-    const hasCellGrant = grants.some((g) => ["cell", "cellMinistry", "cell_ministry"].includes(g));
-    if (isCellModule && hasCellGrant) {
+
+    if (module === "cellMinistry" && (grants.includes("cellMinistry") || grants.includes("cell_ministry"))) {
+      return {
+        can_view: true,
+        can_create: true,
+        can_edit: true,
+        can_delete: true,
+        can_approve: true,
+        can_verify: true,
+        can_export: true,
+        scope: user.can_view_all_churches ? "all" : (user.assigned_department ? "department" : "church")
+      };
+    }
+    if (module === "cellReports" && (grants.includes("cellReports") || grants.includes("cell_reports"))) {
+      return {
+        can_view: true,
+        can_create: true,
+        can_edit: true,
+        can_delete: true,
+        can_approve: true,
+        can_verify: true,
+        can_export: true,
+        scope: user.can_view_all_churches ? "all" : (user.assigned_department ? "department" : "church")
+      };
+    }
+    if (module === "alec" && (grants.includes("alec") || grants.includes("alecRegistration") || grants.includes("alecScores") || grants.includes("alec_manager"))) {
+      return {
+        can_view: true,
+        can_create: true,
+        can_edit: true,
+        can_delete: true,
+        can_approve: true,
+        can_verify: false,
+        can_export: true,
+        scope: user.can_view_all_churches ? "all" : (user.assigned_department ? "department" : "church")
+      };
+    }
+    if (module === "cell" && grants.includes("cell")) {
       return {
         can_view: true,
         can_create: true,
@@ -622,9 +657,9 @@
     if (keys.some((key) => grants.includes(key))) {
       return {
         can_view: true,
-        can_create: grants.includes("*") || (module === "finance" && grants.includes("financeHead")) || isCellModule,
+        can_create: grants.includes("*") || (module === "finance" && grants.includes("financeHead")) || module === "cellMinistry" || module === "cellReports" || module === "alec",
         can_edit: grants.includes("*") || grants.some((g) => keys.includes(g)),
-        can_delete: grants.includes("*") || isCellModule,
+        can_delete: grants.includes("*") || module === "cellMinistry" || module === "cellReports" || module === "alec",
         can_approve: grants.includes("*") || grants.includes("financeHead") || grants.includes("financeVerify") || module === "fevo" || module === "cellMinistry" || module === "cellReports" || module === "alec",
         can_verify: grants.includes("financeVerify") || grants.includes("financeHead") || module === "cellReports",
         can_export: true,
@@ -678,11 +713,10 @@
   function isExplicitlyDenied(user, module) {
     if (!user || !module) return false;
     const grants = user.department_permissions || [];
-    if (grants.includes(module) || grants.includes("*")) return false;
-    if ((module === "cellMinistry" || module === "cellReports" || module === "alec" || module === "cell") && (grants.includes("cell") || grants.includes("cellMinistry") || grants.includes("cell_ministry") || grants.includes("cellReports") || grants.includes("alec"))) return false;
-    if (module === "cellMinistry" && (grants.includes("cellMinistry") || grants.includes("cell_ministry"))) return false;
-    if (module === "cellReports" && (grants.includes("cellReports") || grants.includes("cell_reports"))) return false;
-    if (module === "alec" && (grants.includes("alec") || grants.includes("alecRegistration") || grants.includes("alecScores") || grants.includes("alec_manager"))) return false;
+    if (module === "cellMinistry" && (grants.includes("cellMinistry") || grants.includes("cell_ministry") || grants.includes("cell"))) return false;
+    if (module === "cellReports" && (grants.includes("cellReports") || grants.includes("cell_reports") || grants.includes("cell"))) return false;
+    if (module === "alec" && (grants.includes("alec") || grants.includes("alecRegistration") || grants.includes("alecScores") || grants.includes("alec_manager") || grants.includes("cell"))) return false;
+    if (module === "cell" && grants.includes("cell")) return false;
     if (module === "fevo" && (grants.includes("fevo") || grants.includes("fevoConfig") || grants.includes("fevoReports") || grants.includes("fevoAnalytics"))) return false;
     if (module === "foundation" && (grants.includes("foundation_teacher") || grants.includes("foundation_assistant") || grants.includes("foundation"))) return false;
     if (module === "followUp" && (grants.includes("followUp") || grants.includes("follow_up"))) return false;

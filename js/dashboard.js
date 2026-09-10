@@ -10159,10 +10159,10 @@ function fallbackCanViewModule(user = activeUser, module = "dashboard") {
     staffHr: ["staffHr"],
     requisitions: ["requisitions"],
     reports: ["reports"],
-    cell: ["cell", "cellMinistry", "cellReports", "alec", "cell_ministry", "cell_reports", "cellEvaluation", "churchReports", "alecRegistration", "alecScores", "finalValidation"],
-    cellMinistry: ["cellMinistry", "cell_ministry", "cell", "cellReports", "cell_reports", "alec", "alec_manager"],
-    cellReports: ["cellReports", "cell_reports", "cell", "cellMinistry", "cell_ministry", "alec", "alec_manager"],
-    alec: ["alec", "alec_manager", "alecRegistration", "alecScores", "churchReports", "cell", "cellMinistry", "cell_ministry", "cellReports", "cell_reports"],
+    cell: ["cell"],
+    cellMinistry: ["cellMinistry", "cell_ministry", "cellEvaluation", "cell"],
+    cellReports: ["cellReports", "cell_reports", "finalValidation", "cell"],
+    alec: ["alec", "alec_manager", "alecRegistration", "alecScores", "churchReports", "cell"],
     fevo: ["fevo", "fevoConfig", "fevoReports", "fevoAnalytics"],
     venueInventory: ["venueInventory", "venueInventoryRequests", "assignedEquipment", "inventory", "venues", "maintenance", "checklists"],
     prisonMinistry: ["prisonMinistry"],
@@ -10208,17 +10208,20 @@ function roleWorkspaceRoutes(user = activeUser) {
   const grants = user?.department_permissions || [];
   if (isCellLeaderOrAssistant(user)) {
     const routes = ["cellPortal", "cellReceivedReports", "cellWeeklyReport"];
-    if (userHasExtendedCellPerms(user) || grants.includes("cellMinistry") || grants.includes("cell_ministry") || grants.includes("cell") || grants.includes("*")) {
+    if (grants.includes("*") || user.role === "Super Admin" || role.includes("super_admin") || role === "cell ministry head") {
       routes.push(
         "cellMinistryOverview", "cellReceivedReports", "cellEvaluationRoute", "cellPerformance", "cellLeadersAttention", "cellActionPlan",
         "cellWeeklyReport", "cellGroups", "cellCellsList", "cellMembers", "cellLeadersRoute", "cellFinalValidation", "cellConsolidation",
         "cellAlecOverview", "cellAlecRegistration", "cellAlecScores", "cellChurchReports"
       );
     } else {
-      if (grants.includes("cellReports") || grants.includes("cell_reports")) {
+      if (grants.includes("cellMinistry") || grants.includes("cell_ministry") || grants.includes("cell")) {
+        routes.push("cellMinistryOverview", "cellReceivedReports", "cellEvaluationRoute", "cellPerformance", "cellLeadersAttention", "cellActionPlan");
+      }
+      if (grants.includes("cellReports") || grants.includes("cell_reports") || grants.includes("cell")) {
         routes.push("cellWeeklyReport", "cellGroups", "cellCellsList", "cellMembers", "cellLeadersRoute", "cellFinalValidation", "cellConsolidation");
       }
-      if (grants.includes("alec") || grants.includes("alecRegistration") || grants.includes("alecScores") || grants.includes("alec_manager")) {
+      if (grants.includes("alec") || grants.includes("alecRegistration") || grants.includes("alecScores") || grants.includes("alec_manager") || grants.includes("cell")) {
         routes.push("cellAlecOverview", "cellAlecRegistration", "cellAlecScores", "cellChurchReports");
       }
     }
