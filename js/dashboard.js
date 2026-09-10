@@ -6277,8 +6277,8 @@ function getAuthorizedCellsForUser(userId) {
     user.can_view_all_churches ||
     (user.permissions || []).includes("*");
   if (isAdmin) return [...cells];
-  if (["Church Admin", "Church Pastor", "Cell Ministry Reviewer", "Cell Ministry Head", "Cell Coordinator", "ALEC Coordinator"].includes(user.role)) {
-    return cells.filter((cell) => !user.church_id || cell.church_id === user.church_id);
+  if (userHasExtendedCellPerms(user) || ["Church Admin", "Church Pastor", "Cell Ministry Reviewer", "Cell Ministry Head", "Cell Coordinator", "ALEC Coordinator"].includes(user.role)) {
+    return cells.filter((cell) => !user.church_id || user.can_view_all_churches || cell.church_id === user.church_id);
   }
   if (user.role === "Cell Group Leader") {
     const userGroups = new Set([user.cell_group_id, ...(user.assigned_cell_groups || [])].filter(Boolean));
@@ -20244,7 +20244,8 @@ function cellModalType(activeTab) {
     alecRegistration: "alecRegistration",
     alecScores: "alecScore",
     churchReports: "churchReport",
-    receivedReports: "cellReport",
+    receivedReports: null,
+    weeklyReport: null,
     cellLeaders: "cellLeader",
     cellEvaluation: "cellEvaluation",
     finalValidation: "finalValidation"
@@ -21211,7 +21212,7 @@ function renderCellMinistry(activeTab = "alecOverview") {
         ${metric("bi-person-heart", L("totalFirstTime"), totalFt, L("firstTimers"))}
         ${metric("bi-stars", L("totalNewConverts"), totalNc, L("newConverts"))}
       </div>
-      <div class="row g-4"><div class="col-12">${modulePanel("cellReport", L("weeklyCellReport"), "cellReport", cellReportHeaders(), cellReportRows(cellReports), true, false, { rowAttrs: cellReportRowAttrs(cellReports) })}</div></div>`;
+      <div class="row g-4"><div class="col-12">${modulePanel("cellReport", L("weeklyCellReport"), null, cellReportHeaders(), cellReportRows(cellReports), true, false, { rowAttrs: cellReportRowAttrs(cellReports) })}</div></div>`;
   } else if (activeTab === "consolidation") {
     bodyHtml = `
       <div class="row g-3 mb-4">
@@ -21231,7 +21232,7 @@ function renderCellMinistry(activeTab = "alecOverview") {
       alecRegistration: () => modulePanel("alecRegistration", L("alecRegistration"), "alecRegistration", [L("fullName"), L("contact"), L("church"), L("cell"), L("cellLeaderName"), L("didFoundation"), L("isLeader"), L("status"), L("actions")], alecRegistrations.map((item) => [item.nome_completo, item.contacto, churchName(item.igreja), item.celula, item.nome_do_lider_de_celula, yesNo(item.fez_escola_de_fundacao), yesNo(item.e_lider), badge(item.estado), backendActions("alecRegistration", item.id)]), true),
       alecScores: () => modulePanel("alecScore", L("alecScores"), "alecScore", [L("fullName"), L("church"), L("cell"), L("phase1Average"), L("phase2Average"), L("finalAverage"), L("finished"), L("status"), L("progress"), L("actions")], alecScores.map((item) => [item.nome_completo, churchName(item.igreja), item.celula, alecPhaseAverage(item, 1), alecPhaseAverage(item, 2), alecFinalAverage(item), yesNo(item.terminou), badge(item.estado), alecProgress(item), backendActions("alecScore", item.id)]), true),
       churchReports: () => renderChurchReportsAnalyticalView(),
-      receivedReports: () => modulePanel("cellReport", L("receivedReports"), "cellReport", cellReportHeaders(), cellReportRows(cellReports), true, false, { rowAttrs: cellReportRowAttrs(cellReports) }),
+      receivedReports: () => modulePanel("cellReport", L("receivedReports"), null, cellReportHeaders(), cellReportRows(cellReports), true, false, { rowAttrs: cellReportRowAttrs(cellReports) }),
       cellEvaluation: () => modulePanel("cellEvaluation", L("cellEvaluation"), "cellEvaluation", [L("reports"), L("evaluator"), L("evaluationDate"), L("classification"), L("needsFollowup"), L("recommendedAction"), L("status"), L("actions")], evaluations.map((item) => [item.report_id, item.avaliador, item.data_da_avaliacao, badge(item.classificacao), yesNo(item.precisa_followup), item.acao_recomendada, badge(item.estado), backendActions("cellEvaluation", item.id)]), true),
       cellLeaders: () => modulePanel("cellLeader", L("cellLeaders"), "cellLeader", [L("fullName"), L("contact"), L("church"), L("cell"), L("actualLeader"), L("cameFromAlec"), L("alecFinished"), L("supervisor"), L("status"), L("actions")], leaders.map((item) => [item.nome_completo, item.contacto, churchName(item.igreja), item.celula, yesNo(item.e_lider_actual), yesNo(item.veio_do_alec), yesNo(item.alec_concluido), item.supervisor, badge(item.estado), backendActions("cellLeader", item.id)]), true),
       finalValidation: () => modulePanel("finalValidation", L("finalValidation"), "finalValidation", [L("reports"), L("validatedBy"), L("date"), L("decision"), L("finalStatus"), L("actions")], validations.map((item) => [item.report_id, item.validado_por, item.data_validacao, badge(item.decisao), badge(item.estado_final), backendActions("finalValidation", item.id)]), true)
