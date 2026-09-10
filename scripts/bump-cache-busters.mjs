@@ -1,6 +1,6 @@
 import fs from "node:fs";
 
-const versionTag = `20260910-isolate-cell-ministry-and-reports-v7`;
+const versionTag = `20260910-fix-counseling-accents-v8`;
 let html = fs.readFileSync("index.html", "utf8");
 html = html.replace(/\?v=[a-zA-Z0-9_.-]+/g, `?v=${versionTag}`);
 fs.writeFileSync("index.html", html, "utf8");
