@@ -350,10 +350,11 @@
     "Cell Ministry Head": {
       modules: {
         dashboard: { ...VIEW_ONLY, scope: "all", cell_portal_permissions: ["cell_portal.view", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary"] },
-        cell: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: true, can_verify: true, can_export: true, scope: "all" },
-        cellMinistry: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: true, can_verify: true, can_export: true, scope: "all" },
-        cellReports: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: true, can_verify: true, can_export: true, scope: "all" },
-        alec: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: true, can_verify: false, can_export: true, scope: "all" },
+        cell: { can_view: true, can_create: true, can_edit: true, can_delete: true, can_approve: true, can_verify: true, can_export: true, scope: "all" },
+        cellMinistry: { can_view: true, can_create: true, can_edit: true, can_delete: true, can_approve: true, can_verify: true, can_export: true, scope: "all" },
+        cellReports: { can_view: true, can_create: true, can_edit: true, can_delete: true, can_approve: true, can_verify: true, can_export: true, scope: "all" },
+        alec: { can_view: true, can_create: true, can_edit: true, can_delete: true, can_approve: true, can_verify: false, can_export: true, scope: "all" },
+        members: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "all" },
         requisitions: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "department" },
         staffHr: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "department" }
       }
@@ -589,28 +590,30 @@
   function legacyGrant(user, module) {
     const grants = user?.department_permissions || [];
     if (grants.includes("*")) return { ...FULL_ACCESS };
+    const isCellModule = (module === "cellMinistry" || module === "cellReports" || module === "alec" || module === "cell");
+    const hasCellGrant = grants.some((g) => ["cell", "cellMinistry", "cell_ministry"].includes(g));
+    if (isCellModule && hasCellGrant) {
+      return {
+        can_view: true,
+        can_create: true,
+        can_edit: true,
+        can_delete: true,
+        can_approve: true,
+        can_verify: true,
+        can_export: true,
+        scope: user.can_view_all_churches ? "all" : (user.assigned_department ? "department" : "church")
+      };
+    }
     if (grants.includes(module)) {
       return {
         can_view: true,
         can_create: true,
         can_edit: true,
-        can_delete: grants.includes("*"),
+        can_delete: true,
         can_approve: grants.includes("*") || module === "fevo" || module === "cellMinistry" || module === "cellReports" || module === "alec",
         can_verify: grants.includes("financeVerify") || grants.includes("financeHead") || module === "cellReports",
         can_export: true,
         scope: user.can_view_all_churches ? "all" : user.assigned_department ? "department" : "church"
-      };
-    }
-    if ((module === "cellMinistry" || module === "cellReports" || module === "alec" || module === "cell") && grants.includes("cell")) {
-      return {
-        can_view: true,
-        can_create: true,
-        can_edit: true,
-        can_delete: false,
-        can_approve: true,
-        can_verify: true,
-        can_export: true,
-        scope: user.can_view_all_churches ? "all" : "church"
       };
     }
     const keys = Object.entries(LEGACY_PERMISSION_MAP)
@@ -619,9 +622,9 @@
     if (keys.some((key) => grants.includes(key))) {
       return {
         can_view: true,
-        can_create: grants.includes("*") || (module === "finance" && grants.includes("financeHead")),
+        can_create: grants.includes("*") || (module === "finance" && grants.includes("financeHead")) || isCellModule,
         can_edit: grants.includes("*") || grants.some((g) => keys.includes(g)),
-        can_delete: grants.includes("*"),
+        can_delete: grants.includes("*") || isCellModule,
         can_approve: grants.includes("*") || grants.includes("financeHead") || grants.includes("financeVerify") || module === "fevo" || module === "cellMinistry" || module === "cellReports" || module === "alec",
         can_verify: grants.includes("financeVerify") || grants.includes("financeHead") || module === "cellReports",
         can_export: true,
@@ -676,7 +679,7 @@
     if (!user || !module) return false;
     const grants = user.department_permissions || [];
     if (grants.includes(module) || grants.includes("*")) return false;
-    if ((module === "cellMinistry" || module === "cellReports" || module === "alec" || module === "cell") && grants.includes("cell")) return false;
+    if ((module === "cellMinistry" || module === "cellReports" || module === "alec" || module === "cell") && (grants.includes("cell") || grants.includes("cellMinistry") || grants.includes("cell_ministry") || grants.includes("cellReports") || grants.includes("alec"))) return false;
     if (module === "cellMinistry" && (grants.includes("cellMinistry") || grants.includes("cell_ministry"))) return false;
     if (module === "cellReports" && (grants.includes("cellReports") || grants.includes("cell_reports"))) return false;
     if (module === "alec" && (grants.includes("alec") || grants.includes("alecRegistration") || grants.includes("alecScores") || grants.includes("alec_manager"))) return false;
@@ -710,19 +713,36 @@
     const rawRole = user.role || user.role_name || "";
     const roleKey = normalizeRoleKey(rawRole);
     const roleTemplate = ROLE_TEMPLATES[roleKey] || ROLE_TEMPLATES[rawRole];
+    let access = base;
     if (roleTemplate?.modules?.[module]) {
-      const access = mergeAccess(base, roleTemplate.modules[module]);
-      access.module = module;
-      return access;
+      access = mergeAccess(base, roleTemplate.modules[module]);
     }
 
     if (Array.isArray(user.permissions)) {
       const explicit = user.permissions.find((p) => p.module === module);
-      if (explicit) return mergeAccess(base, explicit);
+      if (explicit) access = mergeAccess(access, explicit);
     }
 
     const legacy = legacyGrant(user, module);
-    if (legacy) return { module, ...legacy };
+    if (legacy) {
+      access = {
+        module,
+        can_view: Boolean(access.can_view || legacy.can_view),
+        can_create: Boolean(access.can_create || legacy.can_create),
+        can_edit: Boolean(access.can_edit || legacy.can_edit),
+        can_delete: Boolean(access.can_delete || legacy.can_delete),
+        can_approve: Boolean(access.can_approve || legacy.can_approve),
+        can_verify: Boolean(access.can_verify || legacy.can_verify),
+        can_release_resources: Boolean(access.can_release_resources || legacy.can_release_resources),
+        can_export: Boolean(access.can_export || legacy.can_export),
+        scope: (access.scope === "all" || legacy.scope === "all" || user.can_view_all_churches) ? "all" : (legacy.scope || access.scope || "church")
+      };
+    }
+
+    if (access.can_view || access.can_create || access.can_edit) {
+      access.module = module;
+      return access;
+    }
 
     return base;
   }
@@ -827,7 +847,8 @@
       const canonRecordChurch = CANONICAL_CHURCH_MAP[recordChurch] || recordChurch;
       return recordChurch === userChurch || canonRecordChurch === canonUserChurch;
     }
-    if (scope === "cell" || (["Cell Leader", "Cell Assistant", "Assistant Cell Leader"].includes(user.role) && (module === "members" || module === "cell"))) {
+    const hasCellDeptGrant = (user.department_permissions || []).some((p) => ["cellMinistry", "cell_ministry", "cell", "cellReports", "alec", "*"].includes(p));
+    if (!hasCellDeptGrant && (scope === "cell" || (["Cell Leader", "Cell Assistant", "Assistant Cell Leader"].includes(user.role) && (module === "members" || module === "cell")))) {
       const authorizedCells = new Set([
         ...(user.assigned_cells || []),
         user.cell_id,
@@ -837,7 +858,7 @@
       if (!authorizedCells.size) return false;
       return authorizedCells.has(recordCellId);
     }
-    if (scope === "cell_group" || (user.role === "Cell Group Leader" && (module === "members" || module === "cell"))) {
+    if (!hasCellDeptGrant && (scope === "cell_group" || (user.role === "Cell Group Leader" && (module === "members" || module === "cell")))) {
       const authorizedGroups = new Set([
         ...(user.assigned_cell_groups || []),
         user.cell_group_id,

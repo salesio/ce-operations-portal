@@ -10160,9 +10160,9 @@ function fallbackCanViewModule(user = activeUser, module = "dashboard") {
     requisitions: ["requisitions"],
     reports: ["reports"],
     cell: ["cell", "cellMinistry", "cellReports", "alec", "cell_ministry", "cell_reports", "cellEvaluation", "churchReports", "alecRegistration", "alecScores", "finalValidation"],
-    cellMinistry: ["cellMinistry", "cell_ministry", "cell"],
-    cellReports: ["cellReports", "cell_reports", "cell"],
-    alec: ["alec", "alec_manager", "alecRegistration", "alecScores", "churchReports", "cell"],
+    cellMinistry: ["cellMinistry", "cell_ministry", "cell", "cellReports", "cell_reports", "alec", "alec_manager"],
+    cellReports: ["cellReports", "cell_reports", "cell", "cellMinistry", "cell_ministry", "alec", "alec_manager"],
+    alec: ["alec", "alec_manager", "alecRegistration", "alecScores", "churchReports", "cell", "cellMinistry", "cell_ministry", "cellReports", "cell_reports"],
     fevo: ["fevo", "fevoConfig", "fevoReports", "fevoAnalytics"],
     venueInventory: ["venueInventory", "venueInventoryRequests", "assignedEquipment", "inventory", "venues", "maintenance", "checklists"],
     prisonMinistry: ["prisonMinistry"],
@@ -10170,6 +10170,14 @@ function fallbackCanViewModule(user = activeUser, module = "dashboard") {
     media: ["media", "mediaTeam"]
   };
   return (legacyModuleKeys[module] || [module]).some((key) => grants.includes(key));
+}
+
+function userHasExtendedCellPerms(user = activeUser) {
+  if (!user) return false;
+  if ((user.department_permissions || []).includes("*") || user.role === "Super Admin" || String(user.role || "").toLowerCase().includes("super_admin")) return true;
+  const deptPerms = user.department_permissions || [];
+  return deptPerms.some((p) => ["cellMinistry", "cell_ministry", "cell", "cellReports", "cell_reports", "alec", "alec_manager"].includes(p)) ||
+    ["Cell Ministry Head", "Cell Ministry Reviewer", "ALEC Manager", "ALEC Coordinator", "Coordenadora ALEC", "Coordenador ALEC"].includes(user.role);
 }
 
 function isPastoralCareRector(user = activeUser) {
@@ -10200,14 +10208,19 @@ function roleWorkspaceRoutes(user = activeUser) {
   const grants = user?.department_permissions || [];
   if (isCellLeaderOrAssistant(user)) {
     const routes = ["cellPortal", "cellReceivedReports", "cellWeeklyReport"];
-    if (grants.includes("cellMinistry") || grants.includes("cell_ministry") || grants.includes("cell") || grants.includes("*")) {
-      routes.push("cellMinistryOverview", "cellReceivedReports", "cellEvaluationRoute", "cellPerformance", "cellLeadersAttention", "cellActionPlan");
-    }
-    if (grants.includes("cellReports") || grants.includes("cell_reports") || grants.includes("cell") || grants.includes("*")) {
-      routes.push("cellWeeklyReport", "cellGroups", "cellCellsList", "cellMembers", "cellLeadersRoute", "cellFinalValidation", "cellConsolidation");
-    }
-    if (grants.includes("alec") || grants.includes("alecRegistration") || grants.includes("alecScores") || grants.includes("alec_manager") || grants.includes("cell") || grants.includes("*")) {
-      routes.push("cellAlecOverview", "cellAlecRegistration", "cellAlecScores", "cellChurchReports");
+    if (userHasExtendedCellPerms(user) || grants.includes("cellMinistry") || grants.includes("cell_ministry") || grants.includes("cell") || grants.includes("*")) {
+      routes.push(
+        "cellMinistryOverview", "cellReceivedReports", "cellEvaluationRoute", "cellPerformance", "cellLeadersAttention", "cellActionPlan",
+        "cellWeeklyReport", "cellGroups", "cellCellsList", "cellMembers", "cellLeadersRoute", "cellFinalValidation", "cellConsolidation",
+        "cellAlecOverview", "cellAlecRegistration", "cellAlecScores", "cellChurchReports"
+      );
+    } else {
+      if (grants.includes("cellReports") || grants.includes("cell_reports")) {
+        routes.push("cellWeeklyReport", "cellGroups", "cellCellsList", "cellMembers", "cellLeadersRoute", "cellFinalValidation", "cellConsolidation");
+      }
+      if (grants.includes("alec") || grants.includes("alecRegistration") || grants.includes("alecScores") || grants.includes("alec_manager")) {
+        routes.push("cellAlecOverview", "cellAlecRegistration", "cellAlecScores", "cellChurchReports");
+      }
     }
     if (grants.includes("fevo") || grants.includes("*")) {
       routes.push("fevo", "fevoConfigRoute", "fevoFollowUpRoute", "fevoEvangelismRoute", "fevoVisitationRoute", "fevoPrayerRoute", "fevoNoReportsRoute", "fevoWeeklyReportsRoute", "fevoAnalysisRoute");
@@ -10344,7 +10357,7 @@ function renderCellSidebarNav() {
   const workspaceRoutes = roleWorkspaceRoutes();
   const parentExpanded = isSidebarGroupExpanded(CELL_NAV.parentKey) || String(activeUser?.role || "").toLowerCase().includes("venue");
   const parentActive = isCellRoute(activeRoute);
-  const hasExtendedCellPerms = (activeUser?.department_permissions || []).some((p) => ["cellMinistry", "cellReports", "alec", "cell", "*"].includes(p));
+  const hasExtendedCellPerms = userHasExtendedCellPerms(activeUser);
   if (!hasExtendedCellPerms && (isCellLeaderOrAssistant(activeUser) || ["Cell Leader", "Cell Assistant"].includes(activeUser?.role))) {
     return `<div class="nav-cell-branch is-expanded ${parentActive ? "has-active" : ""}">
       <div class="nav-cell-body"><div class="nav-cell-body-inner">
@@ -10457,7 +10470,7 @@ function applySidebarCollapse(collapsed = isSidebarCollapsed()) {
 }
 
 function renderShell() {
-  if (["Cell Leader", "Cell Assistant"].includes(activeUser?.role) || isCellLeaderOrAssistant(activeUser)) {
+  if (["Cell Leader", "Cell Assistant"].includes(activeUser?.role) && !userHasExtendedCellPerms(activeUser) || (isCellLeaderOrAssistant(activeUser) && !userHasExtendedCellPerms(activeUser))) {
     byId("sidebarNav").innerHTML = `<div class="nav-group is-expanded"><div class="nav-group-body"><div class="nav-group-body-inner">
       <button type="button" class="nav-item-btn ${["dashboard", "cellPortal"].includes(activeRoute) ? "active" : ""}" data-route="cellPortal" onclick="window.setRoute && window.setRoute('cellPortal'); return false;"><i class="bi bi-grid-1x2"></i><span>${lang === "pt" ? "Minha Célula" : "My Cell"}</span></button>
       <button type="button" class="nav-item-btn ${activeRoute === "cellReceivedReports" ? "active" : ""}" data-route="cellReceivedReports" onclick="window.setRoute && window.setRoute('cellReceivedReports'); return false;"><i class="bi bi-clock-history"></i><span>${lang === "pt" ? "Relatórios Submetidos" : "Submitted Reports"}</span></button>
@@ -10586,22 +10599,22 @@ function renderAccessDenied() {
 }
 
 function setRoute(route) {
-  if (isCellLeaderOrAssistant(activeUser) && (!route || route === "dashboard" || route === "login")) {
+  if (isCellLeaderOrAssistant(activeUser) && !userHasExtendedCellPerms(activeUser) && (!route || route === "dashboard" || route === "login")) {
     route = "cellPortal";
   } else if (isPastoralCareRector(activeUser) && (!route || route === "dashboard" || route === "login")) {
     route = "firstTimers";
   }
   const prevRoute = activeRoute;
-  activeRoute = route || (isCellLeaderOrAssistant(activeUser) ? "cellPortal" : isPastoralCareRector(activeUser) ? "firstTimers" : "dashboard");
-  if (isCellLeaderOrAssistant(activeUser) && (!activeRoute || activeRoute === "dashboard" || activeRoute === "login")) {
+  activeRoute = route || (isCellLeaderOrAssistant(activeUser) && !userHasExtendedCellPerms(activeUser) ? "cellPortal" : isPastoralCareRector(activeUser) ? "firstTimers" : "dashboard");
+  if (isCellLeaderOrAssistant(activeUser) && !userHasExtendedCellPerms(activeUser) && (!activeRoute || activeRoute === "dashboard" || activeRoute === "login")) {
     activeRoute = "cellPortal";
   }
   if (CELL_ROUTE_ALIASES[activeRoute]) activeRoute = CELL_ROUTE_ALIASES[activeRoute];
-  if (isCellLeaderOrAssistant(activeUser) && isCellRoute(activeRoute) && !["cellPortal", "cellReceivedReports", "cellWeeklyReport"].includes(activeRoute)) {
+  if (isCellLeaderOrAssistant(activeUser) && !userHasExtendedCellPerms(activeUser) && isCellRoute(activeRoute) && !["cellPortal", "cellReceivedReports", "cellWeeklyReport"].includes(activeRoute)) {
     recordCellReportSecurityEvent("cell_report_route_denied", `Restricted cell portal route: ${activeRoute}`);
     activeRoute = "cellPortal";
   }
-  if (["Cell Leader", "Cell Assistant"].includes(activeUser?.role) && isCellRoute(activeRoute) && !["cellPortal", "cellReceivedReports"].includes(activeRoute)) {
+  if (["Cell Leader", "Cell Assistant"].includes(activeUser?.role) && !userHasExtendedCellPerms(activeUser) && isCellRoute(activeRoute) && !["cellPortal", "cellReceivedReports"].includes(activeRoute)) {
     recordCellReportSecurityEvent("cell_report_route_denied", `Restricted cell portal route: ${activeRoute}`);
     activeRoute = "cellReceivedReports";
   }
@@ -21093,7 +21106,7 @@ function renderCellMinistry(activeTab = "alecOverview") {
   const alecScores = scopedNested(leadership.alecScores);
   const churchReports = scopedNested(leadership.churchReports);
   let cellReports = sortCellReportsNewestFirst(scopedNested(leadership.cellReports));
-  if (["Cell Leader", "Cell Assistant"].includes(activeUser?.role)) {
+  if (["Cell Leader", "Cell Assistant"].includes(activeUser?.role) && !userHasExtendedCellPerms(activeUser)) {
     const authorizedIds = new Set(getAuthorizedCellsForUser(activeUser.id).map((cell) => cell.id));
     cellReports = cellReports.filter((report) => authorizedIds.has(report.cell_id) || report.submitted_by_user_id === activeUser.id);
   }
@@ -24113,6 +24126,10 @@ function actionModuleForType(type) {
     cellReport: "cell",
     cellLeader: "cell",
     cellEvaluation: "cell",
+    cellActionPlan: "cell",
+    actionPlan: "cell",
+    cellPerformance: "cell",
+    cellLeadersAttention: "cell",
     finalValidation: "cell",
     alecRegistration: "cell",
     alecScore: "cell",
@@ -29875,7 +29892,7 @@ function continueEnterDashboard() {
   byId("loginView")?.classList.add("d-none");
   byId("appView")?.classList.remove("d-none");
   renderShell();
-  const isCellPortalMember = isCellLeaderOrAssistant(activeUser);
+  const isCellPortalMember = isCellLeaderOrAssistant(activeUser) && !userHasExtendedCellPerms(activeUser);
   if (isCellPortalMember) {
     history.replaceState(null, "", "#cellPortal");
     setRoute("cellPortal");
@@ -33447,7 +33464,7 @@ async function initRealAuthSession() {
           byId("loginView")?.classList.remove("d-none");
         } else if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && session?.user) {
           if (isDashboardEntered && isUserAuthenticated && activeUser?.id) {
-            if (isCellLeaderOrAssistant(activeUser) && (activeRoute === "dashboard" || !activeRoute)) {
+            if (isCellLeaderOrAssistant(activeUser) && !userHasExtendedCellPerms(activeUser) && (activeRoute === "dashboard" || !activeRoute)) {
               setRoute("cellPortal");
             }
             return;
@@ -33481,11 +33498,11 @@ async function initRealAuthSession() {
       });
     }
     if (isDashboardEntered && isUserAuthenticated && activeUser?.id) {
-            if (isCellLeaderOrAssistant(activeUser) && (activeRoute === "dashboard" || !activeRoute)) {
-              setRoute("cellPortal");
-            }
-            return;
-          }
+      if (isCellLeaderOrAssistant(activeUser) && !userHasExtendedCellPerms(activeUser) && (activeRoute === "dashboard" || !activeRoute)) {
+        setRoute("cellPortal");
+      }
+      return;
+    }
     const sessionRes = await auth.getCurrentSession?.();
     const rawSession = sessionRes?.data?.session || sessionRes?.data;
     const authUser = rawSession?.user || sessionRes?.data?.user;
