@@ -7682,11 +7682,15 @@ function refreshCellGroupSelectForChurch(form, churchId = "") {
   const groupSelect = form.querySelector("[data-cell-group-select]");
   if (!groupSelect) return;
   const groups = getCellGroupsForChurch(churchId);
+  const currentVal = groupSelect.value;
   groupSelect.innerHTML = `<option value="">${L("selectCellGroup")}</option>${groups.map((group) => {
     const gName = group.group_name || group.name || group.id;
-    return `<option value="${escapeAttr(group.id)}">${escapeHtml(gName)}</option>`;
+    const isSelected = String(group.id) === String(currentVal) || currentVal === group.group_name || currentVal === group.name;
+    return `<option value="${escapeAttr(group.id)}" ${isSelected ? "selected" : ""}>${escapeHtml(gName)}</option>`;
   }).join("")}`;
-  groupSelect.value = "";
+  if (!groups.some((g) => String(g.id) === String(currentVal) || currentVal === g.group_name || currentVal === g.name)) {
+    groupSelect.value = "";
+  }
   updateDependentCellSelect(groupSelect);
 }
 
@@ -7694,7 +7698,8 @@ function mountCellNetworkControls(form) {
   if (!form) return;
   const groupSelect = form.querySelector("[data-cell-group-select]");
   const cellSelect = form.querySelector("[data-cell-select]");
-  if (!groupSelect && !cellSelect) return;
+  const churchSelect = form.querySelector("[data-church-select], [name='church_id']");
+  if (!groupSelect && !cellSelect && !churchSelect) return;
 
   const updateCells = () => {
     if (!groupSelect) return;
@@ -7723,11 +7728,13 @@ function mountCellNetworkControls(form) {
 
   groupSelect?.addEventListener("change", updateCells);
   
-  const churchSelect = form.querySelector("[data-church-select], [name='church_id']");
   if (churchSelect) {
     churchSelect.addEventListener("change", () => {
       refreshCellGroupSelectForChurch(form, churchSelect.value);
     });
+    if (churchSelect.value && groupSelect) {
+      refreshCellGroupSelectForChurch(form, churchSelect.value);
+    }
   }
 }
 
@@ -24652,9 +24659,9 @@ const formSchemas = {
   alecScore: [["nome_completo", "fullName"], ["contacto", "contact"], ["church_id", "church", "church"], ["celula", "cell"], ["fase_1_aula_1", "phase1", "number"], ["fase_1_aula_2", "phase1", "number"], ["fase_1_aula_3", "phase1", "number"], ["fase_1_aula_4", "phase1", "number"], ["fase_2_aula_1", "phase2", "number"], ["fase_2_aula_2", "phase2", "number"], ["fase_2_aula_3", "phase2", "number"], ["terminou", "finished", "checkbox"], ["faixa_certificado_pago", "certificateBandPaid", "checkbox"], ["certificado_emitido", "certificateIssued", "checkbox"], ["estado", "status", "select", alecScoreStatuses]],
   churchReport: [["semana", "week"], ["data_do_culto", "serviceDate", "date"], ["culto", "worshipService", "select", ["Domingo", "Quarta-feira", "Outro"]], ["church_id", "church", "church"], ["ft", "firstTimeShort", "number"], ["nc", "newConvertsShort", "number"], ["rs", "RS", "number"], ["total_ft_reached", "totalFirstTime", "number"], ["comentarios", "comments", "textarea"], ["submetido_por", "submittedBy"], ["estado", "status", "select", churchReportStatuses]],
   cellGroup: [["group_name", "name"], ["church_id", "church", "church"], ["leader_name", "leaderName"], ["leader_phone", "phone"], ["status", "status", "select", ["Active", "Inactive", "Needs Review", "Closed", "Activo", "Inactivo"]], ["needs_review", "needsReview", "checkbox"], ["notes", "notes", "textarea"]],
-  cellRegistry: [["cell_name", "cell"], ["group_id", "cellGroup", "cellGroupSelect"], ["church_id", "church", "church"], ["leader_name", "leaderName"], ["leader_phone", "phone"], ["leader_title", "leaderTitle"], ["meeting_day", "weekday"], ["meeting_time", "time", "time"], ["meeting_type", "meetingType", "select", ["Presencial", "Online", "Híbrido", "Outro"]], ["meeting_location", "location"], ["status", "status", "select", ["Active", "Inactive", "Needs Review", "Activo", "Inactivo"]], ["needs_review", "needsReview", "checkbox"], ["notes", "notes", "textarea"]],
-  cellReport: [["semana", "week"], ["data_inicio", "startDate", "date"], ["data_fim", "endDate", "date"], ["report_week", "week"], ["meeting_date", "date", "date"], ["church_id", "church", "church"], ["cell_group_id", "cellGroup", "cellGroupSelect"], ["cell_id", "cell", "cellRegistrySelect"], ["celula", "cell"], ["titulo_do_lider", "leaderTitle"], ["nome_do_lider", "leaderName"], ["leader_phone", "phone"], ["att", "attendance", "number"], ["ft", "firstTimeShort", "number"], ["nc", "newConvertsShort", "number"], ["oferta", "offering", "number"], ["rs", "RS", "number"], ["cell_health_status", "cellHealth", "select", ["Saudável", "Estável", "Precisa de Acompanhamento", "Precisa de Visita Pastoral", "Pronta para Multiplicar", "Sem Encontro Esta Semana"]], ["observacoes", "observations", "textarea"], ["submetido_por", "submittedBy"], ["avaliado_por", "evaluatedBy"], ["validado_por", "validatedBy"], ["estado", "status", "select", cellReportStatuses]],
-  cellLeader: [["nome_completo", "fullName"], ["contacto", "contact"], ["titulo", "treatment"], ["church_id", "church", "church"], ["cell_group_id", "cellGroup", "cellGroupSelect"], ["cell_id", "cell", "cellRegistrySelect"], ["celula", "cell"], ["e_lider_actual", "actualLeader", "checkbox"], ["veio_do_alec", "cameFromAlec", "checkbox"], ["alec_concluido", "alecFinished", "checkbox"], ["faixa_certificado_pago", "certificateBandPaid", "checkbox"], ["estado", "status", "select", cellLeaderStatuses], ["supervisor", "supervisor"], ["observacoes", "observations", "textarea"]],
+  cellRegistry: [["church_id", "church", "church"], ["group_id", "cellGroup", "cellGroupSelect"], ["cell_name", "cell"], ["leader_name", "leaderName"], ["leader_title", "leaderTitle", "select", treatmentOptions], ["leader_phone", "phone"], ["meeting_day", "weekday", "select", ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado", "Escolher mais tarde"]], ["meeting_time", "time", "time"], ["meeting_type", "meetingType", "select", ["Presencial", "Online", "Híbrido", "Outro"]], ["meeting_location", "location"], ["status", "status", "select", ["Active", "Inactive", "Needs Review", "Activo", "Inactivo"]], ["needs_review", "needsReview", "checkbox"], ["notes", "notes", "textarea"]],
+  cellReport: [["semana", "week"], ["data_inicio", "startDate", "date"], ["data_fim", "endDate", "date"], ["report_week", "week"], ["meeting_date", "date", "date"], ["church_id", "church", "church"], ["cell_group_id", "cellGroup", "cellGroupSelect"], ["cell_id", "cell", "cellRegistrySelect"], ["celula", "cell"], ["titulo_do_lider", "leaderTitle", "select", treatmentOptions], ["nome_do_lider", "leaderName"], ["leader_phone", "phone"], ["att", "attendance", "number"], ["ft", "firstTimeShort", "number"], ["nc", "newConvertsShort", "number"], ["oferta", "offering", "number"], ["rs", "RS", "number"], ["cell_health_status", "cellHealth", "select", ["Saudável", "Estável", "Precisa de Acompanhamento", "Precisa de Visita Pastoral", "Pronta para Multiplicar", "Sem Encontro Esta Semana"]], ["observacoes", "observations", "textarea"], ["submetido_por", "submittedBy"], ["avaliado_por", "evaluatedBy"], ["validado_por", "validatedBy"], ["estado", "status", "select", cellReportStatuses]],
+  cellLeader: [["nome_completo", "fullName"], ["contacto", "contact"], ["titulo", "treatment", "select", treatmentOptions], ["church_id", "church", "church"], ["cell_group_id", "cellGroup", "cellGroupSelect"], ["cell_id", "cell", "cellRegistrySelect"], ["celula", "cell"], ["e_lider_actual", "actualLeader", "checkbox"], ["veio_do_alec", "cameFromAlec", "checkbox"], ["alec_concluido", "alecFinished", "checkbox"], ["faixa_certificado_pago", "certificateBandPaid", "checkbox"], ["estado", "status", "select", cellLeaderStatuses], ["supervisor", "supervisor"], ["observacoes", "observations", "textarea"]],
   cellEvaluation: [["report_id", "reports"], ["avaliador", "evaluator"], ["data_da_avaliacao", "evaluationDate", "date"], ["classificacao", "classification", "select", classifications], ["pontos_fortes", "strengths", "textarea"], ["pontos_a_melhorar", "improvements", "textarea"], ["acao_recomendada", "recommendedAction", "textarea"], ["precisa_followup", "needsFollowup", "checkbox"], ["church_id", "church", "church"], ["estado", "status", "select", evaluationStatuses]],
   finalValidation: [["report_id", "reports"], ["validado_por", "validatedBy"], ["data_validacao", "date", "date"], ["decisao", "decision", "select", ["Validado", "Devolver para Corre��o", "Rejeitado"]], ["comentario_final", "finalComment", "textarea"], ["church_id", "church", "church"], ["estado_final", "finalStatus", "select", validationStatuses]],
   inventoryItem: [["nome_do_item", "itemName"], ["categoria", "category", "select", inventoryCategories], ["quantidade", "quantity", "number"], ["estado", "status", "select", inventoryStatuses], ["localizacao", "location"], ["departamento_responsavel", "responsibleDepartment"], ["church_id", "church", "church"], ["data_de_entrada", "entryDate", "date"], ["valor_unitario", "unitValue", "number"], ["valor_total", "totalValue", "number"], ["serial_number", "serialNumber"], ["observacoes", "observations", "textarea"]],
