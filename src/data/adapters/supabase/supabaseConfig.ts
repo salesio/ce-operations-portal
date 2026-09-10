@@ -20,8 +20,9 @@ function readEnv(name: string): string {
         ? (window as Window & { __CE_ENV__?: Record<string, string> }).__CE_ENV__?.[name]
         : undefined;
     // Vite replaces import.meta.env.VITE_* at build time
-    const fromVite = (import.meta.env as Record<string, string | undefined>)[name];
-    return String(runtime || fromVite || "").trim();
+    const fromVite = (import.meta.env as Record<string, string | undefined>)?.[name];
+    const fromProc = typeof process !== "undefined" ? process.env?.[name] : undefined;
+    return String(runtime || fromVite || fromProc || "").trim();
   } catch {
     return "";
   }

@@ -19933,17 +19933,100 @@ async function dualWriteCellMinistryRecord(modalType, mode, record) {
         }
       }
     } else if (modalType === "cellGroup") {
-      if (mode === "create" && repo?.createCellGroup) result = await repo.createCellGroup(record);
-      else if (mode === "update" && repo?.updateCellGroup) result = await repo.updateCellGroup(record.id, record);
+      const payload = {
+        ...record,
+        group_name: record.group_name || record.name,
+        name: record.name || record.group_name,
+        church_id: record.church_id || record.igreja,
+        leader_name: record.leader_name || record.lider || "",
+        leader_phone: record.leader_phone || "",
+        status: record.status || "Active",
+        notes: record.notes || record.observacoes || "",
+        needs_review: Boolean(record.needs_review)
+      };
+      if (cellSb) {
+        if (mode === "create") {
+          result = await cellSb.createCellGroup(payload);
+          if (result?.ok && result.data) {
+            const createdId = result.data.id;
+            const oldId = record.id;
+            Object.assign(record, result.data);
+            if (oldId && createdId && oldId !== createdId && Array.isArray(state.cellGroups)) {
+              const idx = state.cellGroups.findIndex((g) => g.id === oldId);
+              if (idx >= 0) state.cellGroups[idx] = { ...state.cellGroups[idx], ...result.data };
+            }
+            saveState(`Persisted cellGroup to Supabase`);
+            if (activeRoute === "cellGroups") setRoute(activeRoute);
+          }
+        } else if (mode === "update") {
+          result = await cellSb.updateCellGroup(record.id, payload);
+          if (result?.ok && result.data) {
+            Object.assign(record, result.data);
+            saveState(`Updated cellGroup in Supabase`);
+            if (activeRoute === "cellGroups") setRoute(activeRoute);
+          }
+        } else if (mode === "delete") {
+          result = await cellSb.deleteCellGroup(record.id);
+        }
+      } else if (repo) {
+        if (mode === "create" && repo.createCellGroup) result = await repo.createCellGroup(payload);
+        else if (mode === "update" && repo.updateCellGroup) result = await repo.updateCellGroup(record.id, payload);
+        else if (mode === "delete" && repo.deleteCellGroup) result = await repo.deleteCellGroup(record.id);
+      }
     } else if (modalType === "cellRegistry" || modalType === "cell") {
       const payload = {
         ...record,
         cell_name: record.cell_name || record.nome_da_celula || record.name,
+        name: record.cell_name || record.nome_da_celula || record.name,
         cell_group_id: record.cell_group_id || record.group_id || record.group_cell_id,
-        group_id: record.group_id || record.cell_group_id
+        group_id: record.group_id || record.cell_group_id,
+        church_id: record.church_id || record.igreja,
+        leader_name: record.leader_name || record.lider || "",
+        leader_title: record.leader_title || "",
+        leader_phone: record.leader_phone || "",
+        meeting_day: record.meeting_day || "",
+        meeting_time: record.meeting_time || "",
+        meeting_type: record.meeting_type || "Presencial",
+        meeting_location: record.meeting_location || record.area || "",
+        notes: record.notes || record.observacoes || "",
+        status: record.status || record.estado || "Active",
+        needs_review: Boolean(record.needs_review)
       };
-      if (mode === "create" && repo?.createCell) result = await repo.createCell(payload);
-      else if (mode === "update" && repo?.updateCell) result = await repo.updateCell(record.id, payload);
+      if (cellSb) {
+        if (mode === "create") {
+          result = await cellSb.createCell(payload);
+          if (result?.ok && result.data) {
+            const createdId = result.data.id;
+            const oldId = record.id;
+            Object.assign(record, result.data);
+            if (oldId && createdId && oldId !== createdId) {
+              if (Array.isArray(state.cellRegistry)) {
+                const idx = state.cellRegistry.findIndex((c) => c.id === oldId);
+                if (idx >= 0) state.cellRegistry[idx] = { ...state.cellRegistry[idx], ...result.data };
+              }
+              if (Array.isArray(state.cells)) {
+                const idx = state.cells.findIndex((c) => c.id === oldId);
+                if (idx >= 0) state.cells[idx] = { ...state.cells[idx], ...result.data };
+              }
+            }
+            saveState(`Persisted cell to Supabase`);
+            if (activeRoute === "cellCellsList" || activeRoute === "cellGroups") setRoute(activeRoute);
+          }
+        } else if (mode === "update") {
+          result = await cellSb.updateCell(record.id, payload);
+          if (result?.ok && result.data) {
+            Object.assign(record, result.data);
+            saveState(`Updated cell in Supabase`);
+            if (activeRoute === "cellCellsList" || activeRoute === "cellGroups") setRoute(activeRoute);
+          }
+        } else if (mode === "delete") {
+          result = await cellSb.deleteCell(record.id);
+        }
+      } else if (repo) {
+        if (mode === "create" && repo.createCell) result = await repo.createCell(payload);
+        else if (mode === "update" && repo.updateCell) result = await repo.updateCell(record.id, payload);
+        else if (mode === "delete" && repo.deleteCell) result = await repo.deleteCell(record.id);
+      }
     } else if (modalType === "cellLeader") {
       const payload = {
         ...record,
