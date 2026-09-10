@@ -7,7 +7,7 @@ const HQ = "a1111111-1111-4111-8111-111111111101";
  * Demo/mock placeholder accounts have been removed.
  */
 export const USERS_SEED: User[] = [
-  // Super Admin
+  // 1. Super Admin
   {
     id: "9691d45a-e613-4fa3-8cb5-43955f39aa66",
     auth_user_id: "f8d9954c-a17b-4870-98f6-a7d6f2576391",
@@ -29,7 +29,7 @@ export const USERS_SEED: User[] = [
     created_at: "2024-01-01",
     updated_at: "2026-09-02"
   },
-  // Pastoral Care Rector
+  // 2. Pastoral Care Rector
   {
     id: "38ee3dab-c172-4d78-97a9-aa76c554ce63",
     auth_user_id: "ac47e5fa-f9f5-4d58-ab91-eebcb01f1b01",
@@ -51,7 +51,7 @@ export const USERS_SEED: User[] = [
     created_at: "2024-01-01",
     updated_at: "2026-09-02"
   },
-  // Venue & Facilities Manager
+  // 3. Venue & Facilities Manager
   {
     id: "e83250d7-9f03-47fb-a4f8-1c2f6636b1c4",
     auth_user_id: "e83250d7-9f03-47fb-a4f8-1c2f6636b1c4",
@@ -61,11 +61,16 @@ export const USERS_SEED: User[] = [
     email: "venue@embaixadadecristo.org",
     phone: "+258841610468",
     role: "Venue Manager",
-    role_name: "Venue Manager",
+    role_name: "Gestor de Património & Instalações",
     role_id: "11111111-1111-1111-1111-111111111113",
     church_id: HQ,
     churchId: HQ,
-    department_permissions: ["venueInventory", "cellReports"],
+    cell_group_id: "217d9a73-3d57-4979-854d-dc97662a55e5",
+    cell_group_name: "Estrelas de Sião",
+    cell_id: "601b3fd7-ea6c-457a-8d6a-fca1fcd9c594",
+    assigned_cells: ["601b3fd7-ea6c-457a-8d6a-fca1fcd9c594"],
+    assigned_cell_groups: ["217d9a73-3d57-4979-854d-dc97662a55e5"],
+    department_permissions: ["venueInventory", "inventory", "venues", "maintenance", "checklists", "cellReports", "reports"],
     can_view_all_churches: true,
     status: "Active",
     isActive: true,
@@ -74,29 +79,36 @@ export const USERS_SEED: User[] = [
     created_at: "2026-09-02",
     updated_at: "2026-09-02"
   },
-  // ALEC Coordinator
+  // 4. ALEC Coordinator
   {
-    id: "280ef567-05b5-4ef8-b7a0-ec6390655504",
-    auth_user_id: "008969ce-f123-41e3-bce0-e58f477b4622",
-    name: "Sister Angélica",
-    full_name: "Sister Angélica",
-    fullName: "Sister Angélica",
-    email: "angelicaamilcar27@gmail.com",
+    id: "bd91b99f-362f-4eb1-8e5c-c4b125065c8b",
+    auth_user_id: "bd91b99f-362f-4eb1-8e5c-c4b125065c8b",
+    name: "Irmã Angélica Amilcar Macuacua",
+    full_name: "Irmã Angélica Amilcar Macuacua",
+    fullName: "Irmã Angélica Amilcar Macuacua",
+    email: "alec@embaixadadecristo.org",
+    phone: "+258855621609",
     role: "ALEC Manager",
-    role_name: "ALEC Manager",
+    role_name: "Coordenadora ALEC",
     role_id: "2a88abc1-8972-44d4-9b80-a9c08eb35cc7",
     church_id: HQ,
     churchId: HQ,
-    department_permissions: ["cell", "alecRegistration", "alecScores", "churchReports"],
-    can_view_all_churches: true,
+    cell_group_id: "217d9a73-3d57-4979-854d-dc97662a55e5",
+    cell_group_name: "Estrelas de Sião",
+    cell_id: "1e6d6f18-d0e4-4731-8426-de2a73f2076d",
+    cell_name: "ESTRELAS DE SIÃO D",
+    assigned_cells: ["1e6d6f18-d0e4-4731-8426-de2a73f2076d"],
+    assigned_cell_groups: ["217d9a73-3d57-4979-854d-dc97662a55e5"],
+    department_permissions: ["cell", "alecRegistration", "alecScores", "churchReports", "cellReports"],
+    can_view_all_churches: false,
     status: "Active",
     isActive: true,
     has_dashboard_access: true,
     preferred_language: "pt",
     created_at: "2026-08-27",
-    updated_at: "2026-09-02"
+    updated_at: "2026-09-08"
   },
-  // Diamantes Main - Leader
+  // 5. Diamantes Main - Leader
   {
     id: "473e4df5-883c-499a-a42e-223495c266d1",
     auth_user_id: "473e4df5-883c-499a-a42e-223495c266d1",
@@ -126,8 +138,9 @@ export const USERS_SEED: User[] = [
       "d1a00000-d1a0-4000-8000-000000000010"
     ],
     assigned_cell_groups: ["d1a00000-0000-4000-8000-000000000001"],
+    assigned_foundation_teacher_id: "ftch-filipe-chamango",
     department_permissions: ["cellReports", "followUp", "foundation", "foundation_teacher", "reports"],
-    cannot_create_classes: true,
+    cannot_create_classes: false,
     permissions: [
       "cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated",
       "cell_portal.view", "cell_portal.edit", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report",
@@ -143,69 +156,28 @@ export const USERS_SEED: User[] = [
     created_at: "2026-09-01",
     updated_at: "2026-09-02"
   },
-  // Diamantes Main - Assistant
+  // 6. Visionários Main - Leader
   {
-    id: "1be83c02-cb16-4cf3-a246-58bd0ef1953f",
-    auth_user_id: "1be83c02-cb16-4cf3-a246-58bd0ef1953f",
-    name: "Michael Juma",
-    full_name: "Michael Juma",
-    fullName: "Michael Juma",
-    email: "assistant.diamantes.main@embaixadadecristo.org",
-    role: "Cell Assistant",
-    role_name: "Assistente de Célula Diamantes Main",
-    role_id: "c1c8355d-33e4-4627-9396-5b8475abfb81",
-    church_id: HQ,
-    churchId: HQ,
-    cell_id: "d1a00000-d1a0-4000-8000-000000000001",
-    cell_name: "Diamantes main",
-    cell_group_id: "d1a00000-0000-4000-8000-000000000001",
-    cell_group_name: "Diamantes Main",
-    assigned_cells: [
-      "d1a00000-d1a0-4000-8000-000000000001",
-      "d1a00000-d1a0-4000-8000-000000000002",
-      "d1a00000-d1a0-4000-8000-000000000003",
-      "d1a00000-d1a0-4000-8000-000000000004",
-      "d1a00000-d1a0-4000-8000-000000000005",
-      "d1a00000-d1a0-4000-8000-000000000006",
-      "d1a00000-d1a0-4000-8000-000000000007",
-      "d1a00000-d1a0-4000-8000-000000000008",
-      "d1a00000-d1a0-4000-8000-000000000009",
-      "d1a00000-d1a0-4000-8000-000000000010"
-    ],
-    assigned_cell_groups: ["d1a00000-0000-4000-8000-000000000001"],
-    department_permissions: ["cellReports"],
-    permissions: [
-      "cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated",
-      "cell_portal.view", "cell_portal.edit", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report",
-      "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary"
-    ],
-    can_view_all_churches: false,
-    status: "Active",
-    isActive: true,
-    has_dashboard_access: true,
-    preferred_language: "pt",
-    created_at: "2026-09-01",
-    updated_at: "2026-09-02"
-  },
-  // Diplomatas Victory - Leader
-  {
-    id: "395d050f-3422-402c-b2e9-7597dab91b3f",
-    auth_user_id: "47df0cce-9701-492c-90aa-b3cb205bbd4b",
-    name: "Líder Diplomatas Victory",
-    full_name: "Líder Diplomatas Victory",
-    fullName: "Líder Diplomatas Victory",
-    email: "d.v.lider@embaixadadecristo.org",
+    id: "1002af2a-86d0-4654-9aae-351a2dd546e7",
+    auth_user_id: "1002af2a-86d0-4654-9aae-351a2dd546e7",
+    name: "Eduarda Paula Manganhela Paula Manganhela",
+    full_name: "Eduarda Paula Manganhela Paula Manganhela",
+    fullName: "Eduarda Paula Manganhela Paula Manganhela",
+    email: "eduardapaula.jm@gmail.com",
+    phone: "+258849246778",
     role: "Cell Leader",
-    role_name: "Líder de Célula Diplomatas Victory",
+    role_name: "Cell Leader",
     role_id: "51567d05-f107-4d38-a43a-757f22d603af",
     church_id: HQ,
     churchId: HQ,
-    cell_id: "2b3a5652-b8be-4c76-8b64-b84200c8bcd4",
-    cell_name: "Diplomatas Victory",
-    cell_group_id: "a62f461e-e574-4052-8ef3-a4d0ee0c77c4",
-    cell_group_name: "Diplomatas",
-    assigned_cells: ["2b3a5652-b8be-4c76-8b64-b84200c8bcd4"],
+    cell_id: "83336c21-1928-4d0c-8284-fcb88b770048",
+    cell_name: "Visionários Main",
+    cell_group_id: "f9f013c8-346f-4567-8911-762379b97d40",
+    cell_group_name: "Visionários",
+    assigned_cells: ["83336c21-1928-4d0c-8284-fcb88b770048"],
+    assigned_cell_groups: ["f9f013c8-346f-4567-8911-762379b97d40"],
     department_permissions: ["cellReports"],
+    cannot_create_classes: false,
     permissions: [
       "cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated",
       "cell_portal.view", "cell_portal.edit", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report",
@@ -216,28 +188,26 @@ export const USERS_SEED: User[] = [
     isActive: true,
     has_dashboard_access: true,
     preferred_language: "pt",
-    created_at: "2026-08-21",
-    updated_at: "2026-09-02"
+    created_at: "2026-09-09",
+    updated_at: "2026-09-09"
   },
-  // Diplomatas Victory - Assistant
+  // 7. Test Creation Verify
   {
-    id: "a51a15ad-9213-45b8-b572-aaf6cb53dcbb",
-    auth_user_id: "9820f162-430c-4573-86db-b001097fa6dc",
-    name: "Assistente Diplomatas Victory",
-    full_name: "Assistente Diplomatas Victory",
-    fullName: "Assistente Diplomatas Victory",
-    email: "d.v.assistente@embaixadadecristo.org",
-    role: "Cell Assistant",
-    role_name: "Assistente de Célula Diplomatas Victory",
-    role_id: "c1c8355d-33e4-4627-9396-5b8475abfb81",
+    id: "edbcbcdc-f860-4cb7-8997-d667a5331e9c",
+    auth_user_id: "edbcbcdc-f860-4cb7-8997-d667a5331e9c",
+    name: "Test Creation Verify",
+    full_name: "Test Creation Verify",
+    fullName: "Test Creation Verify",
+    email: "test_creation_verify@embaixadadecristo.org",
+    role: "Cell Leader",
+    role_name: "Cell Leader",
+    role_id: "51567d05-f107-4d38-a43a-757f22d603af",
     church_id: HQ,
     churchId: HQ,
-    cell_id: "2b3a5652-b8be-4c76-8b64-b84200c8bcd4",
-    cell_name: "Diplomatas Victory",
-    cell_group_id: "a62f461e-e574-4052-8ef3-a4d0ee0c77c4",
-    cell_group_name: "Diplomatas",
-    assigned_cells: ["2b3a5652-b8be-4c76-8b64-b84200c8bcd4"],
-    department_permissions: ["cellReports"],
+    assigned_cells: [],
+    assigned_cell_groups: [],
+    department_permissions: ["cellMinistry"],
+    cannot_create_classes: false,
     permissions: [
       "cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated",
       "cell_portal.view", "cell_portal.edit", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report",
@@ -248,7 +218,7 @@ export const USERS_SEED: User[] = [
     isActive: true,
     has_dashboard_access: true,
     preferred_language: "pt",
-    created_at: "2026-08-21",
-    updated_at: "2026-09-02"
+    created_at: "2026-09-09",
+    updated_at: "2026-09-09"
   }
 ];

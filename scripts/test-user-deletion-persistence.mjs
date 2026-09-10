@@ -103,9 +103,9 @@ console.log("=== Testing User Deletion Persistence Across Refresh ===");
 const initialUsersCount = vm.runInContext("state.users.length", context);
 console.log(`Initial state.users count: ${initialUsersCount}`);
 
-// Find Michael Juma or Filipe Chamango
+// Find Test Creation Verify or second user
 const targetUser = vm.runInContext(
-  "state.users.find(u => u.email === 'assistant.diamantes.main@embaixadadecristo.org') || state.users[1]",
+  "state.users.find(u => u.email === 'test_creation_verify@embaixadadecristo.org') || state.users[1]",
   context
 );
 assert.ok(targetUser, "Target user to delete must exist");
