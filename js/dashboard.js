@@ -26274,8 +26274,9 @@ async function submitForm(form) {
         rec.certificate_paid = rec.certificado_pago;
         rec.certificate_issued = rec.certificado_emitido;
       } else if (modalType === "marriage") {
-        rec.aconselhamento_concluido = Boolean(rec.aconselhamento_concluido ?? rec.counseling_completed);
+        rec.aconselhamento_concluido = Boolean(rec.aconselhamento_concluido ?? rec.counseling_completed ?? rec.pre_marital_counseling_completed);
         rec.counseling_completed = rec.aconselhamento_concluido;
+        rec.pre_marital_counseling_completed = rec.aconselhamento_concluido;
         rec.documentos_entregues = Boolean(rec.documentos_entregues);
         rec.quer_certificado = Boolean(rec.quer_certificado);
         rec.certificado_pago = Boolean(rec.certificado_pago);
@@ -26298,6 +26299,17 @@ async function submitForm(form) {
       const certReq = Boolean(rec.quer_certificado || certPaid || certIssued);
       rec.certificate_status = certIssued ? "Issued" : (certPaid ? "Paid" : (certReq ? "Requested" : "Not Required"));
       rec.payment_status = certPaid ? "Paid" : "Pending";
+      rec.metadata = {
+        ...(rec.metadata && typeof rec.metadata === "object" ? rec.metadata : {}),
+        quer_certificado: rec.quer_certificado,
+        certificate_required: rec.quer_certificado,
+        certificado_pago: rec.certificado_pago,
+        certificate_paid: rec.certificado_pago,
+        certificado_emitido: rec.certificado_emitido,
+        certificate_issued: rec.certificado_emitido,
+        documentos_entregues: rec.documentos_entregues
+      };
+      saveState(`Updated ${modalType}`);
       void dualWriteSacramentsRecord(modalType, "update", collection[index]);
     }
     if (["fevoConfig", "fevoReport", "fevoNoReport", "fevoWeeklyReport"].includes(modalType)) {
@@ -27017,29 +27029,64 @@ function detailGrid(record, type) {
   if (!record || typeof record !== "object") return `<div class="detail-grid"></div>`;
   const ignoredKeys = new Set([
     "id", "metadata", "draft_from_requisition", "transaction_type",
-    "certificate_required", "certificate_paid", "certificate_issued"
+    "certificate_required", "certificate_paid", "certificate_issued",
+    "certificate_id", "groom_member_id", "bride_member_id", "member_id",
+    "first_timer_id", "parent_member_id", "officiating_minister_id", "minister_id",
+    "counseling_case_id", "document_ids", "created_by", "updated_by", "created_at", "updated_at"
   ]);
 
-  if (record.nome && record.apelido) ignoredKeys.add("full_name");
-  if (record.telefone && record.phone) ignoredKeys.add("phone");
-  if (record.nome && record.name) ignoredKeys.add("name");
-  if (record.estado && record.status) ignoredKeys.add("status");
+  if (record.estado !== undefined || record.status !== undefined) {
+    if (record.estado) ignoredKeys.add("status");
+  }
+  if (record.observacoes !== undefined || record.notes !== undefined) {
+    if (record.observacoes) ignoredKeys.add("notes");
+  }
+  if (record.telefone || record.telefone_do_noivo || record.telefone_da_noiva || record.telefone_dos_pais || record.telefone_do_pai) {
+    ignoredKeys.add("phone");
+    ignoredKeys.add("groom_phone");
+    ignoredKeys.add("bride_phone");
+    ignoredKeys.add("parent_phone");
+    ignoredKeys.add("father_phone");
+    ignoredKeys.add("mother_phone");
+  }
+  if (record.nome || record.nome_do_noivo || record.nome_da_noiva || record.nome_da_crianca || record.nome_do_pai || record.nome_da_mae) {
+    ignoredKeys.add("name");
+    ignoredKeys.add("first_name");
+    ignoredKeys.add("last_name");
+    ignoredKeys.add("full_name");
+    ignoredKeys.add("groom_name");
+    ignoredKeys.add("bride_name");
+    ignoredKeys.add("child_name");
+    ignoredKeys.add("child_full_name");
+    ignoredKeys.add("parent_name");
+    ignoredKeys.add("second_parent_name");
+    ignoredKeys.add("father_name");
+    ignoredKeys.add("mother_name");
+  }
+  if (record.data_do_casamento) ignoredKeys.add("marriage_date");
+  if (record.data_do_baptismo) ignoredKeys.add("baptism_date");
+  if (record.local_do_baptismo) ignoredKeys.add("baptism_location");
+  if (record.data_da_dedicacao) ignoredKeys.add("dedication_date");
+  if (record.data_de_nascimento) {
+    ignoredKeys.add("date_of_birth");
+    ignoredKeys.add("child_date_of_birth");
+  }
+  if (record.pastor_responsavel || record.baptizado_por) {
+    ignoredKeys.add("minister_name");
+    ignoredKeys.add("officiating_minister_name");
+    ignoredKeys.add("pastor_name");
+  }
   if (record.baptizado_por && record.pastor_responsavel && record.baptizado_por === record.pastor_responsavel) {
     ignoredKeys.add("pastor_responsavel");
   }
-  if (record.data_do_baptismo && record.baptism_date) ignoredKeys.add("baptism_date");
-  if (record.local_do_baptismo && record.baptism_location) ignoredKeys.add("baptism_location");
-  if (record.nome_do_noivo && record.groom_name) ignoredKeys.add("groom_name");
-  if (record.telefone_do_noivo && record.groom_phone) ignoredKeys.add("groom_phone");
-  if (record.nome_da_noiva && record.bride_name) ignoredKeys.add("bride_name");
-  if (record.telefone_da_noiva && record.bride_phone) ignoredKeys.add("bride_phone");
-  if (record.data_do_casamento && record.marriage_date) ignoredKeys.add("marriage_date");
-  if (record.aconselhamento_concluido !== undefined && record.counseling_completed !== undefined) ignoredKeys.add("counseling_completed");
-  if (record.nome_da_crianca && record.child_name) ignoredKeys.add("child_name");
-  if (record.nome_do_pai && record.parent_name) ignoredKeys.add("parent_name");
-  if (record.telefone_dos_pais && record.parent_phone) ignoredKeys.add("parent_phone");
-  if (record.nome_da_mae && record.second_parent_name) ignoredKeys.add("second_parent_name");
-  if (record.data_da_dedicacao && record.dedication_date) ignoredKeys.add("dedication_date");
+  if (record.aconselhamento_concluido !== undefined) {
+    ignoredKeys.add("counseling_completed");
+    ignoredKeys.add("pre_marital_counseling_completed");
+  }
+  if (record.quer_certificado !== undefined || record.certificado_pago !== undefined || record.certificado_emitido !== undefined) {
+    ignoredKeys.add("certificate_status");
+    ignoredKeys.add("payment_status");
+  }
 
   const formatDetailValue = (key, value) => {
     if (value === null || value === undefined || value === "") return "-";

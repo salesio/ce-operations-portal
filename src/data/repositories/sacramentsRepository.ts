@@ -87,16 +87,34 @@ export function normalizeBaptism(input: Partial<Baptism> & { id?: string }): Bap
     input.nome ||
     "";
   const date = input.scheduled_date || input.data_do_baptismo || null;
-  const certPaid = !!(input.certificate_paid ?? input.certificado_pago);
-  const certIssued =
-    !!(input.certificado_emitido) ||
-    /issued|emitido/i.test(String(input.certificate_status || input.status || ""));
-  let certStatus = input.certificate_status || "Not Required";
-  if (input.certificate_required ?? input.quer_certificado) {
-    if (certIssued) certStatus = "Issued";
-    else if (certPaid) certStatus = certStatus === "Not Required" ? "Paid" : certStatus;
-    else if (certStatus === "Not Required") certStatus = "Pending";
-  }
+  const certIssued = Boolean(
+    input.certificado_emitido !== undefined
+      ? input.certificado_emitido
+      : (input.certificate_issued !== undefined
+          ? input.certificate_issued
+          : /issued|emitido/i.test(String(input.certificate_status || input.status || "")))
+  );
+  const certPaid = Boolean(
+    input.certificado_pago !== undefined
+      ? input.certificado_pago
+      : (input.certificate_paid !== undefined
+          ? input.certificate_paid
+          : false)
+  );
+  const certReq = Boolean(
+    input.quer_certificado !== undefined
+      ? input.quer_certificado
+      : (input.certificate_required !== undefined
+          ? input.certificate_required
+          : (certPaid || certIssued))
+  );
+  const certStatus = certIssued
+    ? "Issued"
+    : (certPaid
+        ? "Paid"
+        : (certReq
+            ? (input.certificate_status && !["Not Required", "Paid", "Issued"].includes(input.certificate_status) ? input.certificate_status : "Requested")
+            : "Not Required"));
   const status = input.status || input.estado || "Pending";
   return {
     ...input,
@@ -122,18 +140,22 @@ export function normalizeBaptism(input: Partial<Baptism> & { id?: string }): Bap
     scheduled_time: input.scheduled_time || "",
     location: input.location || input.local_do_baptismo || "",
     local_do_baptismo: input.local_do_baptismo || input.location || "",
-    pastor_name: input.pastor_name || input.baptizado_por || "",
-    baptizado_por: input.baptizado_por || input.pastor_name || "",
+    pastor_name: input.pastor_name || input.baptizado_por || input.pastor_responsavel || "",
+    pastor_responsavel: input.pastor_responsavel || input.pastor_name || input.baptizado_por || "",
+    baptizado_por: input.baptizado_por || input.pastor_name || input.pastor_responsavel || "",
     baptism_type: input.baptism_type || "Water Baptism",
     status,
     estado: input.estado || status,
-    certificate_required: !!(input.certificate_required ?? input.quer_certificado),
-    quer_certificado: !!(input.quer_certificado ?? input.certificate_required),
+    certificate_required: certReq,
+    quer_certificado: certReq,
     certificate_paid: certPaid,
     certificado_pago: certPaid,
-    certificate_status: certStatus,
-    certificate_id: input.certificate_id || null,
+    certificate_issued: certIssued,
     certificado_emitido: certIssued,
+    certificate_status: certStatus,
+    payment_status: certPaid ? "Paid" : "Pending",
+    certificate_id: input.certificate_id || null,
+    documentos_entregues: Boolean(input.documentos_entregues),
     notes: input.notes || input.observacoes || "",
     observacoes: input.observacoes || input.notes || "",
     created_at: input.created_at || nowIso(),
@@ -143,10 +165,39 @@ export function normalizeBaptism(input: Partial<Baptism> & { id?: string }): Bap
 
 export function normalizeMarriage(input: Partial<Marriage> & { id?: string }): Marriage {
   const date = input.scheduled_date || input.data_do_casamento || null;
-  const counseling = !!(input.counseling_completed ?? input.aconselhamento_concluido);
+  const counseling = !!(input.counseling_completed ?? input.aconselhamento_concluido ?? input.pre_marital_counseling_completed);
   const docsDelivered = !!(input.documentos_entregues);
   let docsStatus = input.documents_status || (docsDelivered ? "Partial" : "Pending");
   const status = input.status || input.estado || "Pending";
+  const certIssued = Boolean(
+    input.certificado_emitido !== undefined
+      ? input.certificado_emitido
+      : (input.certificate_issued !== undefined
+          ? input.certificate_issued
+          : /issued|emitido/i.test(String(input.certificate_status || status)))
+  );
+  const certPaid = Boolean(
+    input.certificado_pago !== undefined
+      ? input.certificado_pago
+      : (input.certificate_paid !== undefined
+          ? input.certificate_paid
+          : false)
+  );
+  const certReq = Boolean(
+    input.quer_certificado !== undefined
+      ? input.quer_certificado
+      : (input.certificate_required !== undefined
+          ? input.certificate_required
+          : (certPaid || certIssued))
+  );
+  const certStatus = certIssued
+    ? "Issued"
+    : (certPaid
+        ? "Paid"
+        : (certReq
+            ? (input.certificate_status && !["Not Required", "Paid", "Issued"].includes(input.certificate_status) ? input.certificate_status : "Requested")
+            : "Not Required"));
+
   return {
     ...input,
     id: input.id || `mar-${Date.now()}`,
@@ -163,20 +214,27 @@ export function normalizeMarriage(input: Partial<Marriage> & { id?: string }): M
     church_name: input.church_name || "",
     counseling_completed: counseling,
     aconselhamento_concluido: counseling,
+    pre_marital_counseling_completed: counseling,
     counseling_case_id: input.counseling_case_id || null,
     documents_status: docsStatus,
     documentos_entregues: docsDelivered || /complete|verified|parcial|partial/i.test(docsStatus),
     scheduled_date: date,
     data_do_casamento: date || input.data_do_casamento || null,
     location: input.location || input.venue_space_name || "",
-    pastor_name: input.pastor_name || input.pastor_responsavel || "",
-    pastor_responsavel: input.pastor_responsavel || input.pastor_name || "",
+    pastor_name: input.pastor_name || input.pastor_responsavel || input.officiating_minister_name || "",
+    pastor_responsavel: input.pastor_responsavel || input.pastor_name || input.officiating_minister_name || "",
+    officiating_minister_name: input.officiating_minister_name || input.pastor_responsavel || input.pastor_name || "",
     witnesses: Array.isArray(input.witnesses) ? input.witnesses : [],
     status,
     estado: input.estado || status,
-    certificate_required: input.certificate_required !== false,
-    certificate_paid: !!input.certificate_paid,
-    certificate_status: input.certificate_status || "Not Required",
+    certificate_required: certReq,
+    quer_certificado: certReq,
+    certificate_paid: certPaid,
+    certificado_pago: certPaid,
+    certificate_issued: certIssued,
+    certificado_emitido: certIssued,
+    certificate_status: certStatus,
+    payment_status: certPaid ? "Paid" : "Pending",
     certificate_id: input.certificate_id || null,
     notes: input.notes || input.observacoes || "",
     observacoes: input.observacoes || input.notes || "",
@@ -189,41 +247,78 @@ export function normalizeBabyDedication(
   input: Partial<BabyDedication> & { id?: string },
 ): BabyDedication {
   const date = input.scheduled_date || input.data_da_dedicacao || null;
-  const child = input.child_full_name || input.nome_da_crianca || "";
+  const child = input.child_full_name || input.nome_da_crianca || input.child_name || "";
   const status = input.status || input.estado || "Pending";
-  const certIssued =
-    !!input.certificado_emitido ||
-    /issued|emitido/i.test(String(input.certificate_status || status));
+  const certIssued = Boolean(
+    input.certificado_emitido !== undefined
+      ? input.certificado_emitido
+      : (input.certificate_issued !== undefined
+          ? input.certificate_issued
+          : /issued|emitido/i.test(String(input.certificate_status || status)))
+  );
+  const certPaid = Boolean(
+    input.certificado_pago !== undefined
+      ? input.certificado_pago
+      : (input.certificate_paid !== undefined
+          ? input.certificate_paid
+          : false)
+  );
+  const certReq = Boolean(
+    input.quer_certificado !== undefined
+      ? input.quer_certificado
+      : (input.certificate_required !== undefined
+          ? input.certificate_required
+          : (certPaid || certIssued))
+  );
+  const certStatus = certIssued
+    ? "Issued"
+    : (certPaid
+        ? "Paid"
+        : (certReq
+            ? (input.certificate_status && !["Not Required", "Paid", "Issued"].includes(input.certificate_status) ? input.certificate_status : "Requested")
+            : "Not Required"));
+
   return {
     ...input,
     id: input.id || `baby-${Date.now()}`,
     dedication_number: input.dedication_number || "",
     child_full_name: child,
     nome_da_crianca: input.nome_da_crianca || child,
+    child_name: input.child_name || child,
     child_date_of_birth: input.child_date_of_birth || input.data_de_nascimento || null,
     data_de_nascimento: input.data_de_nascimento || input.child_date_of_birth || null,
-    father_name: input.father_name || input.nome_do_pai || "",
-    nome_do_pai: input.nome_do_pai || input.father_name || "",
-    mother_name: input.mother_name || input.nome_da_mae || "",
-    nome_da_mae: input.nome_da_mae || input.mother_name || "",
-    father_phone: input.father_phone || input.telefone_dos_pais || "",
-    mother_phone: input.mother_phone || input.telefone_dos_pais || "",
+    father_name: input.father_name || input.nome_do_pai || input.parent_name || "",
+    nome_do_pai: input.nome_do_pai || input.father_name || input.parent_name || "",
+    parent_name: input.parent_name || input.nome_do_pai || input.father_name || "",
+    mother_name: input.mother_name || input.nome_da_mae || input.second_parent_name || "",
+    nome_da_mae: input.nome_da_mae || input.mother_name || input.second_parent_name || "",
+    second_parent_name: input.second_parent_name || input.nome_da_mae || input.mother_name || "",
+    father_phone: input.father_phone || input.telefone_dos_pais || input.parent_phone || "",
+    mother_phone: input.mother_phone || input.telefone_dos_pais || input.second_parent_phone || "",
+    parent_phone: input.parent_phone || input.telefone_dos_pais || input.father_phone || "",
     telefone_dos_pais:
-      input.telefone_dos_pais || input.father_phone || input.mother_phone || "",
+      input.telefone_dos_pais || input.parent_phone || input.father_phone || input.mother_phone || "",
     church_id: input.church_id || null,
     church_name: input.church_name || "",
     scheduled_date: date,
     data_da_dedicacao: date || input.data_da_dedicacao || null,
+    dedication_date: date || input.data_da_dedicacao || input.dedication_date || null,
     location: input.location || "",
-    pastor_name: input.pastor_name || input.pastor_responsavel || "",
-    pastor_responsavel: input.pastor_responsavel || input.pastor_name || "",
+    pastor_name: input.pastor_name || input.pastor_responsavel || input.minister_name || "",
+    pastor_responsavel: input.pastor_responsavel || input.pastor_name || input.minister_name || "",
+    minister_name: input.minister_name || input.pastor_responsavel || input.pastor_name || "",
+    documentos_entregues: Boolean(input.documentos_entregues),
     status,
     estado: input.estado || status,
-    certificate_required: input.certificate_required !== false,
-    certificate_paid: !!input.certificate_paid,
-    certificate_status: input.certificate_status || (certIssued ? "Issued" : "Not Required"),
-    certificate_id: input.certificate_id || null,
+    certificate_required: certReq,
+    quer_certificado: certReq,
+    certificate_paid: certPaid,
+    certificado_pago: certPaid,
+    certificate_issued: certIssued,
     certificado_emitido: certIssued,
+    certificate_status: certStatus,
+    payment_status: certPaid ? "Paid" : "Pending",
+    certificate_id: input.certificate_id || null,
     notes: input.notes || input.observacoes || "",
     observacoes: input.observacoes || input.notes || "",
     created_at: input.created_at || nowIso(),
@@ -345,7 +440,14 @@ export async function updateBaptism(id: EntityId, payload: Partial<Baptism>) {
   try {
     const existing = await getBaptismById(id);
     if (!existing.ok || !existing.data) return fail("Baptismo não encontrado", "NOT_FOUND");
-    const row = normalizeBaptism({ ...existing.data, ...payload, id, updated_at: todayIso() });
+    const merged = { ...existing.data, ...payload };
+    if (payload.quer_certificado !== undefined) merged.certificate_required = payload.quer_certificado;
+    if (payload.certificate_required !== undefined) merged.quer_certificado = payload.certificate_required;
+    if (payload.certificado_pago !== undefined) merged.certificate_paid = payload.certificado_pago;
+    if (payload.certificate_paid !== undefined) merged.certificado_pago = payload.certificate_paid;
+    if (payload.certificado_emitido !== undefined) merged.certificate_issued = payload.certificado_emitido;
+    if (payload.certificate_issued !== undefined) merged.certificado_emitido = payload.certificate_issued;
+    const row = normalizeBaptism({ ...merged, id, updated_at: todayIso() });
     const repo = getDataProvider().baptisms;
     if (!repo.update) return fail("update not supported", "NOT_SUPPORTED");
     const result = await repo.update(id, row);
@@ -485,7 +587,18 @@ export async function updateMarriage(id: EntityId, payload: Partial<Marriage>) {
   try {
     const existing = await getMarriageById(id);
     if (!existing.ok || !existing.data) return fail("Casamento não encontrado", "NOT_FOUND");
-    const row = normalizeMarriage({ ...existing.data, ...payload, id, updated_at: todayIso() });
+    const merged = { ...existing.data, ...payload };
+    if (payload.quer_certificado !== undefined) merged.certificate_required = payload.quer_certificado;
+    if (payload.certificate_required !== undefined) merged.quer_certificado = payload.certificate_required;
+    if (payload.certificado_pago !== undefined) merged.certificate_paid = payload.certificado_pago;
+    if (payload.certificate_paid !== undefined) merged.certificado_pago = payload.certificate_paid;
+    if (payload.certificado_emitido !== undefined) merged.certificate_issued = payload.certificado_emitido;
+    if (payload.certificate_issued !== undefined) merged.certificado_emitido = payload.certificate_issued;
+    if (payload.aconselhamento_concluido !== undefined) {
+      merged.counseling_completed = payload.aconselhamento_concluido;
+      merged.pre_marital_counseling_completed = payload.aconselhamento_concluido;
+    }
+    const row = normalizeMarriage({ ...merged, id, updated_at: todayIso() });
     const repo = getDataProvider().marriages;
     if (!repo.update) return fail("update not supported", "NOT_SUPPORTED");
     const result = await repo.update(id, row);
@@ -625,9 +738,15 @@ export async function updateBabyDedication(id: EntityId, payload: Partial<BabyDe
   try {
     const existing = await getBabyDedicationById(id);
     if (!existing.ok || !existing.data) return fail("Dedicação não encontrada", "NOT_FOUND");
+    const merged = { ...existing.data, ...payload };
+    if (payload.quer_certificado !== undefined) merged.certificate_required = payload.quer_certificado;
+    if (payload.certificate_required !== undefined) merged.quer_certificado = payload.certificate_required;
+    if (payload.certificado_pago !== undefined) merged.certificate_paid = payload.certificado_pago;
+    if (payload.certificate_paid !== undefined) merged.certificado_pago = payload.certificate_paid;
+    if (payload.certificado_emitido !== undefined) merged.certificate_issued = payload.certificado_emitido;
+    if (payload.certificate_issued !== undefined) merged.certificado_emitido = payload.certificate_issued;
     const row = normalizeBabyDedication({
-      ...existing.data,
-      ...payload,
+      ...merged,
       id,
       updated_at: todayIso(),
     });
