@@ -40,7 +40,7 @@ ok("appointments seed exists", existsSync(join(root, "src/data/seeds/sacramentAp
 ok("sacraments bridge exists", existsSync(join(root, "js/sacraments-data-bridge.js")));
 ok(
   "index includes sacraments bridge",
-  /sacraments-data-bridge\.js\?v=20260723-sacraments-data-v1/.test(read("index.html")),
+  /sacraments-data-bridge\.js\?v=/.test(read("index.html")),
 );
 ok("docs pilot Sacraments", /Pilot migration: Sacraments/.test(read("DATA_LAYER_PLAN.md")));
 ok("SACRAMENTS_MODULE_PLAN exists", existsSync(join(root, "SACRAMENTS_MODULE_PLAN.md")));

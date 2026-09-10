@@ -24517,11 +24517,18 @@ function renderNotifications() {
 function labelFor(key) {
   const map = {
     nome: L("name"), apelido: L("surname"), telefone: L("phone"), data_do_baptismo: L("date"), estado: L("status"),
-    nome_do_noivo: "Noivo", nome_da_noiva: "Noiva", data_do_casamento: L("date"), nome_da_crianca: "Criança", telefone_dos_pais: L("phone"), data_da_dedicacao: L("date"),
+    nome_do_noivo: "Noivo", telefone_do_noivo: "Telefone do Noivo", nome_da_noiva: "Noiva", telefone_da_noiva: "Telefone da Noiva",
+    data_do_casamento: L("date"), nome_da_crianca: "Criança", nome_do_pai: "Nome do Pai", nome_da_mae: "Nome da Mãe",
+    telefone_dos_pais: L("phone"), telefone_do_pai: "Telefone do Pai", data_da_dedicacao: L("date"), local_do_baptismo: "Local do Baptismo",
+    baptizado_por: "Baptizado Por", pastor_responsavel: "Pastor Responsável",
+    quer_certificado: "Certificado Solicitado", certificado_pago: "Certificado Pago", certificado_emitido: "Certificado Emitido",
+    certificate_status: "Estado do Certificado", payment_status: "Estado do Pagamento",
+    aconselhamento_concluido: "Aconselhamento Concluído", documentos_entregues: "Documentos Entregues",
+    escola_fundacao_concluida: "Escola de Fundação Concluída", celula: L("cell"), idade: "Idade",
     church_name: L("church"), public_name: L("publicName"), district_or_area: L("districtOrArea"), phone_primary: L("phonePrimary"),
     phone_secondary: L("phoneSecondary"), service_times: L("serviceTimes"), parent_church_id: L("parentChurch"),
     information_status: L("informationStatus"), pastor_in_charge: L("Pastor"), facebook: L("facebook"), instagram: L("instagram"), youtube: L("youtube"),
-    endereco: L("address"), celula: L("cell"), categoria_da_contribuicao: L("category"), metodo_de_pagamento: L("method"), valor: L("amount"),
+    endereco: L("address"), categoria_da_contribuicao: L("category"), metodo_de_pagamento: L("method"), valor: L("amount"),
     referencia_da_transaccao: L("transactionReference"), recebido_por: L("receivedBy"), verificado_por: L("verifiedBy"), observacoes: L("observations"),
     imagem_do_envelope: L("envelopeImage"), imagem_envelope_ou_pop: L("envelopeImage"), verified_at: L("verifiedAt"), comentario_verificacao: L("verificationComment"),
     motivo_rejeicao: L("rejectionReason"), created_at: L("createdAt"), church_id: L("church"), whatsapp: L("whatsapp"), igreja: L("church"),
@@ -26230,6 +26237,29 @@ async function submitForm(form) {
       void dualWriteCounselingRecord(modalType, "update", collection[index]);
     }
     if (["baptism", "marriage", "baby"].includes(modalType)) {
+      const rec = collection[index];
+      if (modalType === "baptism") {
+        rec.full_name = rec.full_name || [rec.nome, rec.apelido].filter(Boolean).join(" ") || rec.nome || "";
+        rec.quer_certificado = Boolean(rec.quer_certificado);
+        rec.certificado_pago = Boolean(rec.certificado_pago);
+        rec.certificado_emitido = Boolean(rec.certificado_emitido);
+        rec.certificate_required = rec.quer_certificado;
+        rec.certificate_paid = rec.certificado_pago;
+        rec.certificate_issued = rec.certificado_emitido;
+      } else if (modalType === "marriage") {
+        rec.aconselhamento_concluido = Boolean(rec.aconselhamento_concluido ?? rec.counseling_completed);
+        rec.counseling_completed = rec.aconselhamento_concluido;
+        rec.documentos_entregues = Boolean(rec.documentos_entregues);
+        rec.quer_certificado = Boolean(rec.quer_certificado);
+        rec.certificado_pago = Boolean(rec.certificado_pago);
+        rec.certificado_emitido = Boolean(rec.certificado_emitido);
+      } else if (modalType === "baby") {
+        rec.child_name = rec.nome_da_crianca || rec.child_name || "";
+        rec.documentos_entregues = Boolean(rec.documentos_entregues);
+        rec.quer_certificado = Boolean(rec.quer_certificado);
+        rec.certificado_pago = Boolean(rec.certificado_pago);
+        rec.certificado_emitido = Boolean(rec.certificado_emitido);
+      }
       void dualWriteSacramentsRecord(modalType, "update", collection[index]);
     }
     if (["fevoConfig", "fevoReport", "fevoNoReport", "fevoWeeklyReport"].includes(modalType)) {
@@ -26548,8 +26578,12 @@ async function submitForm(form) {
         record.data_do_baptismo = record.data_do_baptismo || record.scheduled_date || "";
         record.status = record.status || record.estado || "Pending";
         record.estado = record.estado || record.status || "Pending";
-        record.certificate_required = !!(record.certificate_required ?? record.quer_certificado);
-        record.certificate_paid = !!(record.certificate_paid ?? record.certificado_pago);
+        record.quer_certificado = Boolean(record.quer_certificado ?? record.certificate_required);
+        record.certificado_pago = Boolean(record.certificado_pago ?? record.certificate_paid);
+        record.certificado_emitido = Boolean(record.certificado_emitido ?? record.certificate_issued);
+        record.certificate_required = record.quer_certificado;
+        record.certificate_paid = record.certificado_pago;
+        record.certificate_issued = record.certificado_emitido;
         // Never set finance fields
         delete record.transaction_type;
       }
@@ -26557,9 +26591,14 @@ async function submitForm(form) {
         record.groom_name = record.groom_name || record.nome_do_noivo || "";
         record.bride_name = record.bride_name || record.nome_da_noiva || "";
         record.scheduled_date = record.scheduled_date || record.data_do_casamento || "";
-        record.counseling_completed = !!(
-          record.counseling_completed ?? record.aconselhamento_concluido
+        record.aconselhamento_concluido = Boolean(
+          record.aconselhamento_concluido ?? record.counseling_completed ?? record.pre_marital_counseling_completed
         );
+        record.counseling_completed = record.aconselhamento_concluido;
+        record.documentos_entregues = Boolean(record.documentos_entregues);
+        record.quer_certificado = Boolean(record.quer_certificado);
+        record.certificado_pago = Boolean(record.certificado_pago);
+        record.certificado_emitido = Boolean(record.certificado_emitido);
         record.status = record.status || record.estado || "Pending";
         record.estado = record.estado || record.status || "Pending";
         delete record.transaction_type;
@@ -26567,7 +26606,12 @@ async function submitForm(form) {
       if (modalType === "baby") {
         record.child_full_name = record.child_full_name || record.nome_da_crianca || "";
         record.nome_da_crianca = record.nome_da_crianca || record.child_full_name || "";
+        record.child_name = record.nome_da_crianca;
         record.scheduled_date = record.scheduled_date || record.data_da_dedicacao || "";
+        record.documentos_entregues = Boolean(record.documentos_entregues);
+        record.quer_certificado = Boolean(record.quer_certificado);
+        record.certificado_pago = Boolean(record.certificado_pago);
+        record.certificado_emitido = Boolean(record.certificado_emitido);
         record.status = record.status || record.estado || "Pending";
         record.estado = record.estado || record.status || "Pending";
         delete record.transaction_type;
@@ -30546,6 +30590,20 @@ async function persistSacramentViaRepository(type, mode, record) {
 
   let dbPayload = {};
   if (type === "marriage") {
+    const certIssued = Boolean(record.certificado_emitido || record.certificate_issued || record.estado === "Certificate Issued" || record.status === "Certificate Issued");
+    const certPaid = Boolean(record.certificado_pago || record.certificate_paid || certIssued);
+    const certReq = Boolean(record.quer_certificado || record.certificate_required || certPaid || certIssued);
+    const certStatus = certIssued ? "Issued" : (certPaid ? "Paid" : (certReq ? "Requested" : (record.certificate_status || "Not Required")));
+
+    const metadata = {
+      ...(record.metadata && typeof record.metadata === "object" ? record.metadata : {}),
+      documentos_entregues: Boolean(record.documentos_entregues),
+      quer_certificado: certReq,
+      certificado_pago: certPaid,
+      certificado_emitido: certIssued,
+      finance_record_created: false
+    };
+
     dbPayload = {
       id: record.id,
       groom_name: record.nome_do_noivo || record.groom_name || "",
@@ -30555,9 +30613,12 @@ async function persistSacramentViaRepository(type, mode, record) {
       church_id: isValidUuid(record.church_id) ? record.church_id : (activeUser?.church_id && isValidUuid(activeUser.church_id) ? activeUser.church_id : null),
       marriage_date: record.data_do_casamento || record.marriage_date || null,
       officiating_minister_name: record.pastor_responsavel || record.officiating_minister_name || "",
-      pre_marital_counseling_completed: !!(record.aconselhamento_concluido ?? record.counseling_completed),
+      pre_marital_counseling_completed: Boolean(record.aconselhamento_concluido ?? record.counseling_completed ?? record.pre_marital_counseling_completed),
       status: record.estado || record.status || "Pending",
+      certificate_status: certStatus,
+      payment_status: certPaid ? "Paid" : "Pending",
       notes: record.observacoes || record.notes || "",
+      metadata: metadata,
       updated_at: new Date().toISOString()
     };
     if (mode === "create" && repo?.createMarriage) {
@@ -30573,6 +30634,25 @@ async function persistSacramentViaRepository(type, mode, record) {
     }
   } else if (type === "baptism") {
     const fullName = record.full_name || [record.nome, record.apelido].filter(Boolean).join(" ") || record.nome || "";
+    const certIssued = Boolean(record.certificado_emitido || record.certificate_issued || record.estado === "Certificate Issued" || record.status === "Certificate Issued");
+    const certPaid = Boolean(record.certificado_pago || record.certificate_paid || certIssued);
+    const certReq = Boolean(record.quer_certificado || record.certificate_required || certPaid || certIssued);
+    const certStatus = certIssued ? "Issued" : (certPaid ? "Paid" : (certReq ? "Requested" : (record.certificate_status || "Not Required")));
+
+    const metadata = {
+      ...(record.metadata && typeof record.metadata === "object" ? record.metadata : {}),
+      nome: record.nome || (fullName ? fullName.split(" ")[0] : ""),
+      apelido: record.apelido || (fullName ? fullName.split(" ").slice(1).join(" ") : ""),
+      celula: record.celula || "",
+      idade: record.idade !== undefined && record.idade !== "" ? Number(record.idade) : null,
+      quer_certificado: certReq,
+      certificado_pago: certPaid,
+      certificado_emitido: certIssued,
+      documentos_entregues: Boolean(record.documentos_entregues),
+      finance_record_created: false,
+      certificate_created: false
+    };
+
     dbPayload = {
       id: record.id,
       full_name: fullName,
@@ -30582,7 +30662,9 @@ async function persistSacramentViaRepository(type, mode, record) {
       baptism_location: record.local_do_baptismo || record.baptism_location || "",
       minister_name: record.baptizado_por || record.minister_name || record.pastor_responsavel || "",
       status: record.estado || record.status || "Pending",
+      certificate_status: certStatus,
       notes: record.observacoes || record.notes || "",
+      metadata: metadata,
       updated_at: new Date().toISOString()
     };
     if (mode === "create" && repo?.createBaptism) {
@@ -30597,6 +30679,22 @@ async function persistSacramentViaRepository(type, mode, record) {
       } catch (_) {}
     }
   } else if (type === "baby") {
+    const certIssued = Boolean(record.certificado_emitido || record.certificate_issued || record.estado === "Certificate Issued" || record.status === "Certificate Issued");
+    const certPaid = Boolean(record.certificado_pago || record.certificate_paid || certIssued);
+    const certReq = Boolean(record.quer_certificado || record.certificate_required || certPaid || certIssued);
+    const certStatus = certIssued ? "Issued" : (certPaid ? "Paid" : (certReq ? "Requested" : (record.certificate_status || "Not Required")));
+
+    const metadata = {
+      ...(record.metadata && typeof record.metadata === "object" ? record.metadata : {}),
+      nome_da_mae: record.nome_da_mae || record.second_parent_name || "",
+      documentos_entregues: Boolean(record.documentos_entregues),
+      quer_certificado: certReq,
+      certificado_pago: certPaid,
+      certificado_emitido: certIssued,
+      finance_record_created: false,
+      certificate_created: false
+    };
+
     dbPayload = {
       id: record.id,
       child_name: record.nome_da_crianca || record.child_name || "",
@@ -30608,7 +30706,9 @@ async function persistSacramentViaRepository(type, mode, record) {
       dedication_date: record.data_da_dedicacao || record.dedication_date || null,
       minister_name: record.pastor_responsavel || record.minister_name || "",
       status: record.estado || record.status || "Pending",
+      certificate_status: certStatus,
       notes: record.observacoes || record.notes || "",
+      metadata: metadata,
       updated_at: new Date().toISOString()
     };
     if (mode === "create" && repo?.createBabyDedication) {
@@ -30664,22 +30764,40 @@ async function hydrateSacramentsFromRepository() {
     }
     if (Array.isArray(bapData)) {
       const cleanBap = bapData.filter((r) => !r.metadata?.synthetic && !String(r.baptism_number || "").includes("DEMO"));
-      state.sacraments.baptisms = cleanBap.map((row) => ({
-        id: row.id,
-        nome: row.full_name ? row.full_name.split(" ")[0] : (row.nome || ""),
-        apelido: row.full_name ? row.full_name.split(" ").slice(1).join(" ") : (row.apelido || ""),
-        full_name: row.full_name || row.nome || "",
-        telefone: row.phone || row.telefone || "",
-        phone: row.phone || row.telefone || "",
-        church_id: row.church_id || "",
-        data_do_baptismo: row.baptism_date || row.data_do_baptismo || "",
-        local_do_baptismo: row.baptism_location || row.local_do_baptismo || "",
-        baptizado_por: row.minister_name || row.baptizado_por || "",
-        pastor_responsavel: row.minister_name || row.pastor_responsavel || "",
-        estado: row.status || row.estado || "Pending",
-        status: row.status || row.estado || "Pending",
-        observacoes: row.notes || row.observacoes || ""
-      }));
+      const mappedBap = cleanBap.map((row) => {
+        const meta = (row.metadata && typeof row.metadata === "object") ? row.metadata : {};
+        const fullName = row.full_name || row.nome || [meta.nome, meta.apelido].filter(Boolean).join(" ") || "";
+        const certIssued = Boolean(meta.certificado_emitido || row.certificate_status === "Issued" || row.status === "Certificate Issued" || row.estado === "Certificate Issued");
+        const certPaid = Boolean(meta.certificado_pago || row.certificate_status === "Paid" || certIssued);
+        const certReq = Boolean(meta.quer_certificado || (row.certificate_status && row.certificate_status !== "Not Required") || certPaid || certIssued);
+
+        return {
+          id: row.id,
+          nome: meta.nome || (fullName ? fullName.split(" ")[0] : (row.nome || "")),
+          apelido: meta.apelido || (fullName ? fullName.split(" ").slice(1).join(" ") : (row.apelido || "")),
+          full_name: fullName,
+          telefone: row.phone || row.telefone || "",
+          phone: row.phone || row.telefone || "",
+          church_id: row.church_id || "",
+          celula: meta.celula || row.celula || "",
+          idade: meta.idade ?? (row.idade ?? ""),
+          data_do_baptismo: row.baptism_date || row.data_do_baptismo || "",
+          local_do_baptismo: row.baptism_location || row.local_do_baptismo || "",
+          baptizado_por: row.minister_name || row.baptizado_por || row.pastor_responsavel || "",
+          pastor_responsavel: row.minister_name || row.pastor_responsavel || row.baptizado_por || "",
+          quer_certificado: certReq,
+          certificado_pago: certPaid,
+          certificado_emitido: certIssued,
+          certificate_status: row.certificate_status || (certIssued ? "Issued" : (certPaid ? "Paid" : (certReq ? "Requested" : "Not Required"))),
+          estado: row.status || row.estado || "Pending",
+          status: row.status || row.estado || "Pending",
+          observacoes: row.notes || row.observacoes || "",
+          metadata: meta
+        };
+      });
+      const fetchedIds = new Set(mappedBap.map((r) => String(r.id)));
+      const pendingLocal = (state.sacraments.baptisms || []).filter((r) => r && r.id && !fetchedIds.has(String(r.id)) && !String(r.id).includes("DEMO"));
+      state.sacraments.baptisms = [...mappedBap, ...pendingLocal];
       hydrated = true;
     }
 
@@ -30695,25 +30813,41 @@ async function hydrateSacramentsFromRepository() {
     }
     if (Array.isArray(marData)) {
       const cleanMar = marData.filter((r) => !r.metadata?.synthetic && !String(r.marriage_number || "").includes("DEMO"));
-      state.sacraments.marriages = cleanMar.map((row) => ({
-        id: row.id,
-        nome_do_noivo: row.groom_name || row.nome_do_noivo || "",
-        groom_name: row.groom_name || row.nome_do_noivo || "",
-        telefone_do_noivo: row.groom_phone || row.telefone_do_noivo || "",
-        groom_phone: row.groom_phone || row.telefone_do_noivo || "",
-        nome_da_noiva: row.bride_name || row.nome_da_noiva || "",
-        bride_name: row.bride_name || row.nome_da_noiva || "",
-        telefone_da_noiva: row.bride_phone || row.telefone_da_noiva || "",
-        bride_phone: row.bride_phone || row.telefone_da_noiva || "",
-        church_id: row.church_id || "",
-        data_do_casamento: row.marriage_date || row.data_do_casamento || "",
-        marriage_date: row.marriage_date || row.data_do_casamento || "",
-        pastor_responsavel: row.officiating_minister_name || row.pastor_responsavel || "",
-        aconselhamento_concluido: !!(row.pre_marital_counseling_completed ?? row.aconselhamento_concluido),
-        estado: row.status || row.estado || "Pending",
-        status: row.status || row.estado || "Pending",
-        observacoes: row.notes || row.observacoes || ""
-      }));
+      const mappedMar = cleanMar.map((row) => {
+        const meta = (row.metadata && typeof row.metadata === "object") ? row.metadata : {};
+        const certIssued = Boolean(meta.certificado_emitido || row.certificate_status === "Issued" || row.status === "Certificate Issued" || row.estado === "Certificate Issued");
+        const certPaid = Boolean(meta.certificado_pago || row.certificate_status === "Paid" || row.payment_status === "Paid" || certIssued);
+        const certReq = Boolean(meta.quer_certificado || (row.certificate_status && row.certificate_status !== "Not Required") || certPaid || certIssued);
+
+        return {
+          id: row.id,
+          nome_do_noivo: row.groom_name || row.nome_do_noivo || "",
+          groom_name: row.groom_name || row.nome_do_noivo || "",
+          telefone_do_noivo: row.groom_phone || row.telefone_do_noivo || "",
+          groom_phone: row.groom_phone || row.telefone_do_noivo || "",
+          nome_da_noiva: row.bride_name || row.nome_da_noiva || "",
+          bride_name: row.bride_name || row.nome_da_noiva || "",
+          telefone_da_noiva: row.bride_phone || row.telefone_da_noiva || "",
+          bride_phone: row.bride_phone || row.telefone_da_noiva || "",
+          church_id: row.church_id || "",
+          data_do_casamento: row.marriage_date || row.data_do_casamento || "",
+          marriage_date: row.marriage_date || row.data_do_casamento || "",
+          pastor_responsavel: row.officiating_minister_name || row.pastor_responsavel || "",
+          aconselhamento_concluido: Boolean(row.pre_marital_counseling_completed ?? row.aconselhamento_concluido ?? meta.aconselhamento_concluido),
+          documentos_entregues: Boolean(meta.documentos_entregues ?? row.documentos_entregues),
+          quer_certificado: certReq,
+          certificado_pago: certPaid,
+          certificado_emitido: certIssued,
+          certificate_status: row.certificate_status || (certIssued ? "Issued" : (certPaid ? "Paid" : (certReq ? "Requested" : "Not Required"))),
+          estado: row.status || row.estado || "Pending",
+          status: row.status || row.estado || "Pending",
+          observacoes: row.notes || row.observacoes || "",
+          metadata: meta
+        };
+      });
+      const fetchedMarIds = new Set(mappedMar.map((r) => String(r.id)));
+      const pendingLocalMar = (state.sacraments.marriages || []).filter((r) => r && r.id && !fetchedMarIds.has(String(r.id)) && !String(r.id).includes("DEMO"));
+      state.sacraments.marriages = [...mappedMar, ...pendingLocalMar];
       hydrated = true;
     }
 
@@ -30729,21 +30863,37 @@ async function hydrateSacramentsFromRepository() {
     }
     if (Array.isArray(babyData)) {
       const cleanBaby = babyData.filter((r) => !r.metadata?.synthetic && !String(r.dedication_number || "").includes("DEMO"));
-      state.sacraments.babies = cleanBaby.map((row) => ({
-        id: row.id,
-        nome_da_crianca: row.child_name || row.nome_da_crianca || "",
-        child_name: row.child_name || row.nome_da_crianca || "",
-        data_de_nascimento: row.child_date_of_birth || row.data_de_nascimento || "",
-        nome_do_pai: row.parent_name || row.nome_do_pai || "",
-        nome_da_mae: row.second_parent_name || row.nome_da_mae || "",
-        telefone_dos_pais: row.parent_phone || row.telefone_dos_pais || "",
-        church_id: row.church_id || "",
-        data_da_dedicacao: row.dedication_date || row.data_da_dedicacao || "",
-        pastor_responsavel: row.minister_name || row.pastor_responsavel || "",
-        estado: row.status || row.estado || "Pending",
-        status: row.status || row.estado || "Pending",
-        observacoes: row.notes || row.observacoes || ""
-      }));
+      const mappedBaby = cleanBaby.map((row) => {
+        const meta = (row.metadata && typeof row.metadata === "object") ? row.metadata : {};
+        const certIssued = Boolean(meta.certificado_emitido || row.certificate_status === "Issued" || row.status === "Certificate Issued" || row.estado === "Certificate Issued");
+        const certPaid = Boolean(meta.certificado_pago || row.certificate_status === "Paid" || certIssued);
+        const certReq = Boolean(meta.quer_certificado || (row.certificate_status && row.certificate_status !== "Not Required") || certPaid || certIssued);
+
+        return {
+          id: row.id,
+          nome_da_crianca: row.child_name || row.nome_da_crianca || "",
+          child_name: row.child_name || row.nome_da_crianca || "",
+          data_de_nascimento: row.child_date_of_birth || row.data_de_nascimento || "",
+          nome_do_pai: row.parent_name || row.nome_do_pai || "",
+          nome_da_mae: row.second_parent_name || row.nome_da_mae || meta.nome_da_mae || "",
+          telefone_dos_pais: row.parent_phone || row.telefone_dos_pais || "",
+          church_id: row.church_id || "",
+          data_da_dedicacao: row.dedication_date || row.data_da_dedicacao || "",
+          pastor_responsavel: row.minister_name || row.pastor_responsavel || "",
+          documentos_entregues: Boolean(meta.documentos_entregues ?? row.documentos_entregues),
+          quer_certificado: certReq,
+          certificado_pago: certPaid,
+          certificado_emitido: certIssued,
+          certificate_status: row.certificate_status || (certIssued ? "Issued" : (certPaid ? "Paid" : (certReq ? "Requested" : "Not Required"))),
+          estado: row.status || row.estado || "Pending",
+          status: row.status || row.estado || "Pending",
+          observacoes: row.notes || row.observacoes || "",
+          metadata: meta
+        };
+      });
+      const fetchedBabyIds = new Set(mappedBaby.map((r) => String(r.id)));
+      const pendingLocalBaby = (state.sacraments.babies || []).filter((r) => r && r.id && !fetchedBabyIds.has(String(r.id)) && !String(r.id).includes("DEMO"));
+      state.sacraments.babies = [...mappedBaby, ...pendingLocalBaby];
       hydrated = true;
     }
 
