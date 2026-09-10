@@ -119,13 +119,21 @@ function payload(table: Table, raw: SacramentsRecord): SupabaseRow {
 
     const certIssued = row.certificado_emitido !== undefined
       ? Boolean(row.certificado_emitido)
-      : Boolean(existingMeta.certificado_emitido || row.status === "Certificate Issued");
+      : (existingMeta.certificado_emitido !== undefined
+          ? Boolean(existingMeta.certificado_emitido)
+          : Boolean(row.certificate_status === "Issued" || row.status === "Certificate Issued"));
+
     const certPaid = row.certificado_pago !== undefined
       ? Boolean(row.certificado_pago)
-      : Boolean(existingMeta.certificado_pago || certIssued);
+      : (existingMeta.certificado_pago !== undefined
+          ? Boolean(existingMeta.certificado_pago)
+          : Boolean(row.certificate_status === "Paid" || row.payment_status === "Paid" || certIssued));
+
     const certReq = row.quer_certificado !== undefined
       ? Boolean(row.quer_certificado)
-      : Boolean(existingMeta.quer_certificado || (row.certificate_status && row.certificate_status !== "Not Required") || certPaid || certIssued);
+      : (existingMeta.quer_certificado !== undefined
+          ? Boolean(existingMeta.quer_certificado)
+          : Boolean((row.certificate_status && row.certificate_status !== "Not Required") || certPaid || certIssued));
 
     row.certificate_status = certIssued ? "Issued" : (certPaid ? "Paid" : (certReq ? "Requested" : "Not Required"));
 
@@ -138,7 +146,7 @@ function payload(table: Table, raw: SacramentsRecord): SupabaseRow {
       quer_certificado: certReq,
       certificado_pago: certPaid,
       certificado_emitido: certIssued,
-      documentos_entregues: Boolean(row.documentos_entregues ?? existingMeta.documentos_entregues),
+      documentos_entregues: Boolean(row.documentos_entregues !== undefined ? row.documentos_entregues : existingMeta.documentos_entregues),
       finance_record_created: false,
       certificate_created: false,
     };
@@ -155,20 +163,28 @@ function payload(table: Table, raw: SacramentsRecord): SupabaseRow {
 
     const certIssued = row.certificado_emitido !== undefined
       ? Boolean(row.certificado_emitido)
-      : Boolean(existingMeta.certificado_emitido || row.status === "Certificate Issued");
+      : (existingMeta.certificado_emitido !== undefined
+          ? Boolean(existingMeta.certificado_emitido)
+          : Boolean(row.certificate_status === "Issued" || row.status === "Certificate Issued"));
+
     const certPaid = row.certificado_pago !== undefined
       ? Boolean(row.certificado_pago)
-      : Boolean(existingMeta.certificado_pago || certIssued);
+      : (existingMeta.certificado_pago !== undefined
+          ? Boolean(existingMeta.certificado_pago)
+          : Boolean(row.certificate_status === "Paid" || row.payment_status === "Paid" || certIssued));
+
     const certReq = row.quer_certificado !== undefined
       ? Boolean(row.quer_certificado)
-      : Boolean(existingMeta.quer_certificado || (row.certificate_status && row.certificate_status !== "Not Required") || certPaid || certIssued);
+      : (existingMeta.quer_certificado !== undefined
+          ? Boolean(existingMeta.quer_certificado)
+          : Boolean((row.certificate_status && row.certificate_status !== "Not Required") || certPaid || certIssued));
 
     row.certificate_status = certIssued ? "Issued" : (certPaid ? "Paid" : (certReq ? "Requested" : "Not Required"));
     row.payment_status = certPaid ? "Paid" : "Pending";
 
     row.metadata = {
       ...existingMeta,
-      documentos_entregues: Boolean(row.documentos_entregues ?? existingMeta.documentos_entregues),
+      documentos_entregues: Boolean(row.documentos_entregues !== undefined ? row.documentos_entregues : existingMeta.documentos_entregues),
       quer_certificado: certReq,
       certificado_pago: certPaid,
       certificado_emitido: certIssued,
@@ -187,13 +203,21 @@ function payload(table: Table, raw: SacramentsRecord): SupabaseRow {
 
     const certIssued = row.certificado_emitido !== undefined
       ? Boolean(row.certificado_emitido)
-      : Boolean(existingMeta.certificado_emitido || row.status === "Certificate Issued");
+      : (existingMeta.certificado_emitido !== undefined
+          ? Boolean(existingMeta.certificado_emitido)
+          : Boolean(row.certificate_status === "Issued" || row.status === "Certificate Issued"));
+
     const certPaid = row.certificado_pago !== undefined
       ? Boolean(row.certificado_pago)
-      : Boolean(existingMeta.certificado_pago || certIssued);
+      : (existingMeta.certificado_pago !== undefined
+          ? Boolean(existingMeta.certificado_pago)
+          : Boolean(row.certificate_status === "Paid" || row.payment_status === "Paid" || certIssued));
+
     const certReq = row.quer_certificado !== undefined
       ? Boolean(row.quer_certificado)
-      : Boolean(existingMeta.quer_certificado || (row.certificate_status && row.certificate_status !== "Not Required") || certPaid || certIssued);
+      : (existingMeta.quer_certificado !== undefined
+          ? Boolean(existingMeta.quer_certificado)
+          : Boolean((row.certificate_status && row.certificate_status !== "Not Required") || certPaid || certIssued));
 
     row.certificate_status = certIssued ? "Issued" : (certPaid ? "Paid" : (certReq ? "Requested" : "Not Required"));
 

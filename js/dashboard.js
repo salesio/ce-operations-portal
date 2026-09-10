@@ -26252,6 +26252,7 @@ async function submitForm(form) {
         rec.quer_certificado = Boolean(rec.quer_certificado);
         rec.certificado_pago = Boolean(rec.certificado_pago);
         rec.certificado_emitido = Boolean(rec.certificado_emitido);
+        rec.documentos_entregues = Boolean(rec.documentos_entregues);
         rec.certificate_required = rec.quer_certificado;
         rec.certificate_paid = rec.certificado_pago;
         rec.certificate_issued = rec.certificado_emitido;
@@ -26262,13 +26263,24 @@ async function submitForm(form) {
         rec.quer_certificado = Boolean(rec.quer_certificado);
         rec.certificado_pago = Boolean(rec.certificado_pago);
         rec.certificado_emitido = Boolean(rec.certificado_emitido);
+        rec.certificate_required = rec.quer_certificado;
+        rec.certificate_paid = rec.certificado_pago;
+        rec.certificate_issued = rec.certificado_emitido;
       } else if (modalType === "baby") {
         rec.child_name = rec.nome_da_crianca || rec.child_name || "";
         rec.documentos_entregues = Boolean(rec.documentos_entregues);
         rec.quer_certificado = Boolean(rec.quer_certificado);
         rec.certificado_pago = Boolean(rec.certificado_pago);
         rec.certificado_emitido = Boolean(rec.certificado_emitido);
+        rec.certificate_required = rec.quer_certificado;
+        rec.certificate_paid = rec.certificado_pago;
+        rec.certificate_issued = rec.certificado_emitido;
       }
+      const certIssued = Boolean(rec.certificado_emitido);
+      const certPaid = Boolean(rec.certificado_pago);
+      const certReq = Boolean(rec.quer_certificado || certPaid || certIssued);
+      rec.certificate_status = certIssued ? "Issued" : (certPaid ? "Paid" : (certReq ? "Requested" : "Not Required"));
+      rec.payment_status = certPaid ? "Paid" : "Pending";
       void dualWriteSacramentsRecord(modalType, "update", collection[index]);
     }
     if (["fevoConfig", "fevoReport", "fevoNoReport", "fevoWeeklyReport"].includes(modalType)) {
@@ -26608,6 +26620,9 @@ async function submitForm(form) {
         record.quer_certificado = Boolean(record.quer_certificado);
         record.certificado_pago = Boolean(record.certificado_pago);
         record.certificado_emitido = Boolean(record.certificado_emitido);
+        record.certificate_required = record.quer_certificado;
+        record.certificate_paid = record.certificado_pago;
+        record.certificate_issued = record.certificado_emitido;
         record.status = record.status || record.estado || "Pending";
         record.estado = record.estado || record.status || "Pending";
         delete record.transaction_type;
@@ -26621,10 +26636,18 @@ async function submitForm(form) {
         record.quer_certificado = Boolean(record.quer_certificado);
         record.certificado_pago = Boolean(record.certificado_pago);
         record.certificado_emitido = Boolean(record.certificado_emitido);
+        record.certificate_required = record.quer_certificado;
+        record.certificate_paid = record.certificado_pago;
+        record.certificate_issued = record.certificado_emitido;
         record.status = record.status || record.estado || "Pending";
         record.estado = record.estado || record.status || "Pending";
         delete record.transaction_type;
       }
+      const certIssued = Boolean(record.certificado_emitido);
+      const certPaid = Boolean(record.certificado_pago);
+      const certReq = Boolean(record.quer_certificado || certPaid || certIssued);
+      record.certificate_status = certIssued ? "Issued" : (certPaid ? "Paid" : (certReq ? "Requested" : "Not Required"));
+      record.payment_status = certPaid ? "Paid" : "Pending";
       void dualWriteSacramentsRecord(modalType, "create", record);
     }
     if (["fevoConfig", "fevoReport", "fevoNoReport", "fevoWeeklyReport"].includes(modalType)) {
@@ -30599,9 +30622,9 @@ async function persistSacramentViaRepository(type, mode, record) {
 
   let dbPayload = {};
   if (type === "marriage") {
-    const certIssued = Boolean(record.certificado_emitido || record.certificate_issued || record.estado === "Certificate Issued" || record.status === "Certificate Issued");
-    const certPaid = Boolean(record.certificado_pago || record.certificate_paid || certIssued);
-    const certReq = Boolean(record.quer_certificado || record.certificate_required || certPaid || certIssued);
+    const certIssued = Boolean(record.certificado_emitido);
+    const certPaid = Boolean(record.certificado_pago);
+    const certReq = Boolean(record.quer_certificado || certPaid || certIssued);
     const certStatus = certIssued ? "Issued" : (certPaid ? "Paid" : (certReq ? "Requested" : "Not Required"));
 
     const metadata = {
@@ -30627,6 +30650,10 @@ async function persistSacramentViaRepository(type, mode, record) {
       certificate_status: certStatus,
       payment_status: certPaid ? "Paid" : "Pending",
       notes: record.observacoes || record.notes || "",
+      quer_certificado: certReq,
+      certificado_pago: certPaid,
+      certificado_emitido: certIssued,
+      documentos_entregues: Boolean(record.documentos_entregues),
       metadata: metadata,
       updated_at: new Date().toISOString()
     };
@@ -30643,9 +30670,9 @@ async function persistSacramentViaRepository(type, mode, record) {
     }
   } else if (type === "baptism") {
     const fullName = record.full_name || [record.nome, record.apelido].filter(Boolean).join(" ") || record.nome || "";
-    const certIssued = Boolean(record.certificado_emitido || record.certificate_issued || record.estado === "Certificate Issued" || record.status === "Certificate Issued");
-    const certPaid = Boolean(record.certificado_pago || record.certificate_paid || certIssued);
-    const certReq = Boolean(record.quer_certificado || record.certificate_required || certPaid || certIssued);
+    const certIssued = Boolean(record.certificado_emitido);
+    const certPaid = Boolean(record.certificado_pago);
+    const certReq = Boolean(record.quer_certificado || certPaid || certIssued);
     const certStatus = certIssued ? "Issued" : (certPaid ? "Paid" : (certReq ? "Requested" : "Not Required"));
 
     const metadata = {
@@ -30673,6 +30700,10 @@ async function persistSacramentViaRepository(type, mode, record) {
       status: record.estado || record.status || "Pending",
       certificate_status: certStatus,
       notes: record.observacoes || record.notes || "",
+      quer_certificado: certReq,
+      certificado_pago: certPaid,
+      certificado_emitido: certIssued,
+      documentos_entregues: Boolean(record.documentos_entregues),
       metadata: metadata,
       updated_at: new Date().toISOString()
     };
@@ -30688,9 +30719,9 @@ async function persistSacramentViaRepository(type, mode, record) {
       } catch (_) {}
     }
   } else if (type === "baby") {
-    const certIssued = Boolean(record.certificado_emitido || record.certificate_issued || record.estado === "Certificate Issued" || record.status === "Certificate Issued");
-    const certPaid = Boolean(record.certificado_pago || record.certificate_paid || certIssued);
-    const certReq = Boolean(record.quer_certificado || record.certificate_required || certPaid || certIssued);
+    const certIssued = Boolean(record.certificado_emitido);
+    const certPaid = Boolean(record.certificado_pago);
+    const certReq = Boolean(record.quer_certificado || certPaid || certIssued);
     const certStatus = certIssued ? "Issued" : (certPaid ? "Paid" : (certReq ? "Requested" : "Not Required"));
 
     const metadata = {
@@ -30717,6 +30748,10 @@ async function persistSacramentViaRepository(type, mode, record) {
       status: record.estado || record.status || "Pending",
       certificate_status: certStatus,
       notes: record.observacoes || record.notes || "",
+      quer_certificado: certReq,
+      certificado_pago: certPaid,
+      certificado_emitido: certIssued,
+      documentos_entregues: Boolean(record.documentos_entregues),
       metadata: metadata,
       updated_at: new Date().toISOString()
     };
@@ -30736,11 +30771,8 @@ async function persistSacramentViaRepository(type, mode, record) {
   // Direct Supabase upsert fallback
   if (sbClient && tableName) {
     try {
-      const { data, error } = await sbClient.from(tableName).upsert(dbPayload).select().single();
-      if (!error && data) return { ok: true, data };
-    } catch (err) {
-      console.warn("[CE Sacraments] Direct upsert error", err);
-    }
+      await sbClient.from(tableName).upsert(dbPayload);
+    } catch (_) {}
   }
 
   return { ok: true, data: record };
@@ -30776,9 +30808,15 @@ async function hydrateSacramentsFromRepository() {
       const mappedBap = cleanBap.map((row) => {
         const meta = (row.metadata && typeof row.metadata === "object") ? row.metadata : {};
         const fullName = row.full_name || row.nome || [meta.nome, meta.apelido].filter(Boolean).join(" ") || "";
-        const certIssued = Boolean(meta.certificado_emitido || row.certificate_status === "Issued" || row.status === "Certificate Issued" || row.estado === "Certificate Issued");
-        const certPaid = Boolean(meta.certificado_pago || row.certificate_status === "Paid" || certIssued);
-        const certReq = Boolean(meta.quer_certificado || (row.certificate_status && row.certificate_status !== "Not Required") || certPaid || certIssued);
+        const certIssued = meta.certificado_emitido !== undefined
+          ? Boolean(meta.certificado_emitido)
+          : Boolean(row.certificate_status === "Issued" || row.status === "Certificate Issued" || row.estado === "Certificate Issued");
+        const certPaid = meta.certificado_pago !== undefined
+          ? Boolean(meta.certificado_pago)
+          : Boolean(row.certificate_status === "Paid" || certIssued);
+        const certReq = meta.quer_certificado !== undefined
+          ? Boolean(meta.quer_certificado)
+          : Boolean((row.certificate_status && row.certificate_status !== "Not Required") || certPaid || certIssued);
 
         return {
           id: row.id,
@@ -30824,9 +30862,15 @@ async function hydrateSacramentsFromRepository() {
       const cleanMar = marData.filter((r) => !r.metadata?.synthetic && !String(r.marriage_number || "").includes("DEMO"));
       const mappedMar = cleanMar.map((row) => {
         const meta = (row.metadata && typeof row.metadata === "object") ? row.metadata : {};
-        const certIssued = Boolean(meta.certificado_emitido || row.certificate_status === "Issued" || row.status === "Certificate Issued" || row.estado === "Certificate Issued");
-        const certPaid = Boolean(meta.certificado_pago || row.certificate_status === "Paid" || row.payment_status === "Paid" || certIssued);
-        const certReq = Boolean(meta.quer_certificado || (row.certificate_status && row.certificate_status !== "Not Required") || certPaid || certIssued);
+        const certIssued = meta.certificado_emitido !== undefined
+          ? Boolean(meta.certificado_emitido)
+          : Boolean(row.certificate_status === "Issued" || row.status === "Certificate Issued" || row.estado === "Certificate Issued");
+        const certPaid = meta.certificado_pago !== undefined
+          ? Boolean(meta.certificado_pago)
+          : Boolean(row.certificate_status === "Paid" || row.payment_status === "Paid" || certIssued);
+        const certReq = meta.quer_certificado !== undefined
+          ? Boolean(meta.quer_certificado)
+          : Boolean((row.certificate_status && row.certificate_status !== "Not Required") || certPaid || certIssued);
 
         return {
           id: row.id,
@@ -30874,9 +30918,15 @@ async function hydrateSacramentsFromRepository() {
       const cleanBaby = babyData.filter((r) => !r.metadata?.synthetic && !String(r.dedication_number || "").includes("DEMO"));
       const mappedBaby = cleanBaby.map((row) => {
         const meta = (row.metadata && typeof row.metadata === "object") ? row.metadata : {};
-        const certIssued = Boolean(meta.certificado_emitido || row.certificate_status === "Issued" || row.status === "Certificate Issued" || row.estado === "Certificate Issued");
-        const certPaid = Boolean(meta.certificado_pago || row.certificate_status === "Paid" || certIssued);
-        const certReq = Boolean(meta.quer_certificado || (row.certificate_status && row.certificate_status !== "Not Required") || certPaid || certIssued);
+        const certIssued = meta.certificado_emitido !== undefined
+          ? Boolean(meta.certificado_emitido)
+          : Boolean(row.certificate_status === "Issued" || row.status === "Certificate Issued" || row.estado === "Certificate Issued");
+        const certPaid = meta.certificado_pago !== undefined
+          ? Boolean(meta.certificado_pago)
+          : Boolean(row.certificate_status === "Paid" || certIssued);
+        const certReq = meta.quer_certificado !== undefined
+          ? Boolean(meta.quer_certificado)
+          : Boolean((row.certificate_status && row.certificate_status !== "Not Required") || certPaid || certIssued);
 
         return {
           id: row.id,
