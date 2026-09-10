@@ -26996,8 +26996,75 @@ function openView(type, id) {
   bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
 }
 
-function detailGrid(record) {
-  return `<div class="detail-grid">${Object.entries(record).filter(([key]) => !["id"].includes(key)).map(([key, value]) => `<div><span>${labelFor(key)}</span><strong>${Array.isArray(value) ? value.join(", ") : typeof value === "boolean" ? yesNo(value) : value || "-"}</strong></div>`).join("")}</div>`;
+function detailGrid(record, type) {
+  if (!record || typeof record !== "object") return `<div class="detail-grid"></div>`;
+  const ignoredKeys = new Set([
+    "id", "metadata", "draft_from_requisition", "transaction_type",
+    "certificate_required", "certificate_paid", "certificate_issued"
+  ]);
+
+  if (record.nome && record.apelido) ignoredKeys.add("full_name");
+  if (record.telefone && record.phone) ignoredKeys.add("phone");
+  if (record.nome && record.name) ignoredKeys.add("name");
+  if (record.estado && record.status) ignoredKeys.add("status");
+  if (record.baptizado_por && record.pastor_responsavel && record.baptizado_por === record.pastor_responsavel) {
+    ignoredKeys.add("pastor_responsavel");
+  }
+  if (record.data_do_baptismo && record.baptism_date) ignoredKeys.add("baptism_date");
+  if (record.local_do_baptismo && record.baptism_location) ignoredKeys.add("baptism_location");
+  if (record.nome_do_noivo && record.groom_name) ignoredKeys.add("groom_name");
+  if (record.telefone_do_noivo && record.groom_phone) ignoredKeys.add("groom_phone");
+  if (record.nome_da_noiva && record.bride_name) ignoredKeys.add("bride_name");
+  if (record.telefone_da_noiva && record.bride_phone) ignoredKeys.add("bride_phone");
+  if (record.data_do_casamento && record.marriage_date) ignoredKeys.add("marriage_date");
+  if (record.aconselhamento_concluido !== undefined && record.counseling_completed !== undefined) ignoredKeys.add("counseling_completed");
+  if (record.nome_da_crianca && record.child_name) ignoredKeys.add("child_name");
+  if (record.nome_do_pai && record.parent_name) ignoredKeys.add("parent_name");
+  if (record.telefone_dos_pais && record.parent_phone) ignoredKeys.add("parent_phone");
+  if (record.nome_da_mae && record.second_parent_name) ignoredKeys.add("second_parent_name");
+  if (record.data_da_dedicacao && record.dedication_date) ignoredKeys.add("dedication_date");
+
+  const formatDetailValue = (key, value) => {
+    if (value === null || value === undefined || value === "") return "-";
+    if (typeof value === "boolean") return yesNo(value);
+    if (Array.isArray(value)) return value.join(", ");
+    if (typeof value === "object") return "-";
+    if (key === "church_id" || key === "igreja") return churchName(value) || value;
+    if (key === "certificate_status") {
+      const statusMap = {
+        Issued: lang === "pt" ? "Emitido" : "Issued",
+        Paid: lang === "pt" ? "Pago" : "Paid",
+        Requested: lang === "pt" ? "Solicitado" : "Requested",
+        "Not Required": lang === "pt" ? "Não Solicitado" : "Not Required"
+      };
+      return statusMap[value] || value;
+    }
+    if (key === "payment_status") {
+      const payMap = {
+        Paid: lang === "pt" ? "Pago" : "Paid",
+        Pending: lang === "pt" ? "Pendente" : "Pending"
+      };
+      return payMap[value] || value;
+    }
+    if (key === "estado" || key === "status") {
+      const estadoMap = {
+        Scheduled: lang === "pt" ? "Agendado" : "Scheduled",
+        Pending: lang === "pt" ? "Pendente" : "Pending",
+        "In Progress": lang === "pt" ? "Em Curso" : "In Progress",
+        Completed: lang === "pt" ? "Realizado" : "Completed",
+        "Certificate Issued": lang === "pt" ? "Certificado Emitido" : "Certificate Issued",
+        Active: lang === "pt" ? "Activo" : "Active",
+        Inactive: lang === "pt" ? "Inactivo" : "Inactive"
+      };
+      return estadoMap[value] || value;
+    }
+    return String(value);
+  };
+
+  return `<div class="detail-grid">${Object.entries(record)
+    .filter(([key]) => !ignoredKeys.has(key))
+    .map(([key, value]) => `<div><span>${labelFor(key)}</span><strong>${formatDetailValue(key, value)}</strong></div>`)
+    .join("")}</div>`;
 }
 
 function followupTimeline(firstTimerId) {
@@ -30807,7 +30874,9 @@ async function hydrateSacramentsFromRepository() {
       const cleanBap = bapData.filter((r) => !r.metadata?.synthetic && !String(r.baptism_number || "").includes("DEMO"));
       const mappedBap = cleanBap.map((row) => {
         const meta = (row.metadata && typeof row.metadata === "object") ? row.metadata : {};
-        const fullName = row.full_name || row.nome || [meta.nome, meta.apelido].filter(Boolean).join(" ") || "";
+        const fullName = (meta.nome && meta.apelido)
+          ? `${meta.nome} ${meta.apelido}`.trim()
+          : (row.full_name || row.nome || "");
         const certIssued = meta.certificado_emitido !== undefined
           ? Boolean(meta.certificado_emitido)
           : Boolean(row.certificate_status === "Issued" || row.status === "Certificate Issued" || row.estado === "Certificate Issued");

@@ -31,9 +31,24 @@ function aliases(table: Table, raw: SacramentsRecord): SacramentsRecord {
   const meta = (raw.metadata && typeof raw.metadata === "object") ? (raw.metadata as Record<string, unknown>) : {};
   const row = { ...meta, ...raw };
   if (table === "baptisms") {
-    const certIssued = Boolean(row.certificado_emitido ?? meta.certificado_emitido ?? (row.certificate_status === "Issued" || row.status === "Certificate Issued" || row.estado === "Certificate Issued"));
-    const certPaid = Boolean(row.certificado_pago ?? meta.certificado_pago ?? (row.certificate_status === "Paid" || certIssued));
-    const certReq = Boolean(row.quer_certificado ?? meta.quer_certificado ?? (row.certificate_status && row.certificate_status !== "Not Required") ?? certPaid ?? certIssued);
+    const certIssued = row.certificado_emitido !== undefined
+      ? Boolean(row.certificado_emitido)
+      : (meta.certificado_emitido !== undefined
+          ? Boolean(meta.certificado_emitido)
+          : Boolean(row.certificate_status === "Issued" || row.status === "Certificate Issued" || row.estado === "Certificate Issued"));
+
+    const certPaid = row.certificado_pago !== undefined
+      ? Boolean(row.certificado_pago)
+      : (meta.certificado_pago !== undefined
+          ? Boolean(meta.certificado_pago)
+          : Boolean(row.certificate_status === "Paid" || row.payment_status === "Paid" || certIssued));
+
+    const certReq = row.quer_certificado !== undefined
+      ? Boolean(row.quer_certificado)
+      : (meta.quer_certificado !== undefined
+          ? Boolean(meta.quer_certificado)
+          : Boolean((row.certificate_status && row.certificate_status !== "Not Required") || certPaid || certIssued));
+
     Object.assign(row, {
       name: row.full_name || row.name,
       data_do_baptismo: row.baptism_date || row.data_do_baptismo,
@@ -49,13 +64,28 @@ function aliases(table: Table, raw: SacramentsRecord): SacramentsRecord {
       idade: row.idade ?? meta.idade ?? "",
       nome: row.nome ?? (row.full_name ? String(row.full_name).split(" ")[0] : ""),
       apelido: row.apelido ?? (row.full_name ? String(row.full_name).split(" ").slice(1).join(" ") : ""),
-      documentos_entregues: Boolean(row.documentos_entregues ?? meta.documentos_entregues),
+      documentos_entregues: Boolean(row.documentos_entregues !== undefined ? row.documentos_entregues : meta.documentos_entregues),
     });
   }
   if (table === "marriages") {
-    const certIssued = Boolean(row.certificado_emitido ?? meta.certificado_emitido ?? (row.certificate_status === "Issued" || row.status === "Certificate Issued" || row.estado === "Certificate Issued"));
-    const certPaid = Boolean(row.certificado_pago ?? meta.certificado_pago ?? (row.certificate_status === "Paid" || row.payment_status === "Paid" || certIssued));
-    const certReq = Boolean(row.quer_certificado ?? meta.quer_certificado ?? (row.certificate_status && row.certificate_status !== "Not Required") ?? certPaid ?? certIssued);
+    const certIssued = row.certificado_emitido !== undefined
+      ? Boolean(row.certificado_emitido)
+      : (meta.certificado_emitido !== undefined
+          ? Boolean(meta.certificado_emitido)
+          : Boolean(row.certificate_status === "Issued" || row.status === "Certificate Issued" || row.estado === "Certificate Issued"));
+
+    const certPaid = row.certificado_pago !== undefined
+      ? Boolean(row.certificado_pago)
+      : (meta.certificado_pago !== undefined
+          ? Boolean(meta.certificado_pago)
+          : Boolean(row.certificate_status === "Paid" || row.payment_status === "Paid" || certIssued));
+
+    const certReq = row.quer_certificado !== undefined
+      ? Boolean(row.quer_certificado)
+      : (meta.quer_certificado !== undefined
+          ? Boolean(meta.quer_certificado)
+          : Boolean((row.certificate_status && row.certificate_status !== "Not Required") || certPaid || certIssued));
+
     Object.assign(row, {
       nome_do_noivo: row.groom_name || row.nome_do_noivo,
       telefone_do_noivo: row.groom_phone || row.telefone_do_noivo,
@@ -65,7 +95,7 @@ function aliases(table: Table, raw: SacramentsRecord): SacramentsRecord {
       pastor_responsavel: row.officiating_minister_name || row.pastor_responsavel,
       counseling_completed: row.pre_marital_counseling_completed ?? row.counseling_completed,
       aconselhamento_concluido: row.pre_marital_counseling_completed ?? row.aconselhamento_concluido,
-      documentos_entregues: Boolean(row.documentos_entregues ?? meta.documentos_entregues),
+      documentos_entregues: Boolean(row.documentos_entregues !== undefined ? row.documentos_entregues : meta.documentos_entregues),
       quer_certificado: certReq,
       certificado_pago: certPaid,
       certificado_emitido: certIssued,
@@ -73,9 +103,24 @@ function aliases(table: Table, raw: SacramentsRecord): SacramentsRecord {
     });
   }
   if (table === "dedications") {
-    const certIssued = Boolean(row.certificado_emitido ?? meta.certificado_emitido ?? (row.certificate_status === "Issued" || row.status === "Certificate Issued" || row.estado === "Certificate Issued"));
-    const certPaid = Boolean(row.certificado_pago ?? meta.certificado_pago ?? (row.certificate_status === "Paid" || certIssued));
-    const certReq = Boolean(row.quer_certificado ?? meta.quer_certificado ?? (row.certificate_status && row.certificate_status !== "Not Required") ?? certPaid ?? certIssued);
+    const certIssued = row.certificado_emitido !== undefined
+      ? Boolean(row.certificado_emitido)
+      : (meta.certificado_emitido !== undefined
+          ? Boolean(meta.certificado_emitido)
+          : Boolean(row.certificate_status === "Issued" || row.status === "Certificate Issued" || row.estado === "Certificate Issued"));
+
+    const certPaid = row.certificado_pago !== undefined
+      ? Boolean(row.certificado_pago)
+      : (meta.certificado_pago !== undefined
+          ? Boolean(meta.certificado_pago)
+          : Boolean(row.certificate_status === "Paid" || row.payment_status === "Paid" || certIssued));
+
+    const certReq = row.quer_certificado !== undefined
+      ? Boolean(row.quer_certificado)
+      : (meta.quer_certificado !== undefined
+          ? Boolean(meta.quer_certificado)
+          : Boolean((row.certificate_status && row.certificate_status !== "Not Required") || certPaid || certIssued));
+
     Object.assign(row, {
       nome_da_crianca: row.child_name || row.nome_da_crianca,
       data_de_nascimento: row.child_date_of_birth || row.data_de_nascimento,
@@ -85,7 +130,7 @@ function aliases(table: Table, raw: SacramentsRecord): SacramentsRecord {
       nome_da_mae: row.second_parent_name || row.nome_da_mae || meta.nome_da_mae,
       data_da_dedicacao: row.dedication_date || row.data_da_dedicacao,
       pastor_responsavel: row.minister_name || row.pastor_responsavel,
-      documentos_entregues: Boolean(row.documentos_entregues ?? meta.documentos_entregues),
+      documentos_entregues: Boolean(row.documentos_entregues !== undefined ? row.documentos_entregues : meta.documentos_entregues),
       quer_certificado: certReq,
       certificado_pago: certPaid,
       certificado_emitido: certIssued,
