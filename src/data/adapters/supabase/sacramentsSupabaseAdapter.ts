@@ -117,10 +117,17 @@ function payload(table: Table, raw: SacramentsRecord): SupabaseRow {
     row.foundation_school_completed ??= row.escola_fundacao_concluida;
     row.status ??= row.estado;
 
-    const certIssued = Boolean(row.certificado_emitido ?? existingMeta.certificado_emitido ?? row.status === "Certificate Issued");
-    const certPaid = Boolean(row.certificado_pago ?? existingMeta.certificado_pago ?? certIssued);
-    const certReq = Boolean(row.quer_certificado ?? existingMeta.quer_certificado ?? (row.certificate_status && row.certificate_status !== "Not Required") ?? certPaid ?? certIssued);
-    row.certificate_status = certIssued ? "Issued" : (certPaid ? "Paid" : (certReq ? "Requested" : (row.certificate_status || "Not Required")));
+    const certIssued = row.certificado_emitido !== undefined
+      ? Boolean(row.certificado_emitido)
+      : Boolean(existingMeta.certificado_emitido || row.status === "Certificate Issued");
+    const certPaid = row.certificado_pago !== undefined
+      ? Boolean(row.certificado_pago)
+      : Boolean(existingMeta.certificado_pago || certIssued);
+    const certReq = row.quer_certificado !== undefined
+      ? Boolean(row.quer_certificado)
+      : Boolean(existingMeta.quer_certificado || (row.certificate_status && row.certificate_status !== "Not Required") || certPaid || certIssued);
+
+    row.certificate_status = certIssued ? "Issued" : (certPaid ? "Paid" : (certReq ? "Requested" : "Not Required"));
 
     row.metadata = {
       ...existingMeta,
@@ -146,10 +153,17 @@ function payload(table: Table, raw: SacramentsRecord): SupabaseRow {
     row.pre_marital_counseling_completed ??= row.counseling_completed ?? row.aconselhamento_concluido;
     row.status ??= row.estado;
 
-    const certIssued = Boolean(row.certificado_emitido ?? existingMeta.certificado_emitido ?? row.status === "Certificate Issued");
-    const certPaid = Boolean(row.certificado_pago ?? existingMeta.certificado_pago ?? certIssued);
-    const certReq = Boolean(row.quer_certificado ?? existingMeta.quer_certificado ?? (row.certificate_status && row.certificate_status !== "Not Required") ?? certPaid ?? certIssued);
-    row.certificate_status = certIssued ? "Issued" : (certPaid ? "Paid" : (certReq ? "Requested" : (row.certificate_status || "Not Required")));
+    const certIssued = row.certificado_emitido !== undefined
+      ? Boolean(row.certificado_emitido)
+      : Boolean(existingMeta.certificado_emitido || row.status === "Certificate Issued");
+    const certPaid = row.certificado_pago !== undefined
+      ? Boolean(row.certificado_pago)
+      : Boolean(existingMeta.certificado_pago || certIssued);
+    const certReq = row.quer_certificado !== undefined
+      ? Boolean(row.quer_certificado)
+      : Boolean(existingMeta.quer_certificado || (row.certificate_status && row.certificate_status !== "Not Required") || certPaid || certIssued);
+
+    row.certificate_status = certIssued ? "Issued" : (certPaid ? "Paid" : (certReq ? "Requested" : "Not Required"));
     row.payment_status = certPaid ? "Paid" : "Pending";
 
     row.metadata = {
@@ -171,10 +185,17 @@ function payload(table: Table, raw: SacramentsRecord): SupabaseRow {
     row.minister_name = row.minister_name || row.pastor_responsavel;
     row.status ??= row.estado;
 
-    const certIssued = Boolean(row.certificado_emitido ?? existingMeta.certificado_emitido ?? row.status === "Certificate Issued");
-    const certPaid = Boolean(row.certificado_pago ?? existingMeta.certificado_pago ?? certIssued);
-    const certReq = Boolean(row.quer_certificado ?? existingMeta.quer_certificado ?? (row.certificate_status && row.certificate_status !== "Not Required") ?? certPaid ?? certIssued);
-    row.certificate_status = certIssued ? "Issued" : (certPaid ? "Paid" : (certReq ? "Requested" : (row.certificate_status || "Not Required")));
+    const certIssued = row.certificado_emitido !== undefined
+      ? Boolean(row.certificado_emitido)
+      : Boolean(existingMeta.certificado_emitido || row.status === "Certificate Issued");
+    const certPaid = row.certificado_pago !== undefined
+      ? Boolean(row.certificado_pago)
+      : Boolean(existingMeta.certificado_pago || certIssued);
+    const certReq = row.quer_certificado !== undefined
+      ? Boolean(row.quer_certificado)
+      : Boolean(existingMeta.quer_certificado || (row.certificate_status && row.certificate_status !== "Not Required") || certPaid || certIssued);
+
+    row.certificate_status = certIssued ? "Issued" : (certPaid ? "Paid" : (certReq ? "Requested" : "Not Required"));
 
     row.metadata = {
       ...existingMeta,

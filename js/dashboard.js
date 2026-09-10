@@ -24603,8 +24603,8 @@ const formSchemas = {
     ["can_view_all_churches", "Access Control", "checkbox"]
   ],
   baptism: [["nome", "name"], ["apelido", "surname"], ["telefone", "phone"], ["church_id", "church", "church"], ["celula", "cell"], ["idade", "Age", "number"], ["data_do_baptismo", "date", "date"], ["local_do_baptismo", "Local"], ["baptizado_por", "Pastor"], ["quer_certificado", "certificates", "checkbox"], ["certificado_pago", "Paid", "checkbox"], ["certificado_emitido", "certificateIssued", "checkbox"], ["estado", "status", "select", ["Pending", "Scheduled", "Completed", "Certificate Issued"]], ["observacoes", "notes", "textarea"]],
-  marriage: [["nome_do_noivo", "Groom"], ["telefone_do_noivo", "phone"], ["nome_da_noiva", "Bride"], ["telefone_da_noiva", "phone"], ["church_id", "church", "church"], ["aconselhamento_concluido", "counseling", "checkbox"], ["data_do_casamento", "date", "date"], ["pastor_responsavel", "Pastor"], ["documentos_entregues", "Documents", "checkbox"], ["estado", "status", "select", ["Pending", "In Progress", "Scheduled", "Completed"]], ["observacoes", "notes", "textarea"]],
-  baby: [["nome_da_crianca", "name"], ["data_de_nascimento", "birthDate", "date"], ["nome_do_pai", "Father"], ["nome_da_mae", "Mother"], ["telefone_dos_pais", "phone"], ["church_id", "church", "church"], ["data_da_dedicacao", "date", "date"], ["pastor_responsavel", "Pastor"], ["certificado_emitido", "certificateIssued", "checkbox"], ["estado", "status", "select", ["Pending", "Scheduled", "Completed", "Certificate Issued"]], ["observacoes", "notes", "textarea"]],
+  marriage: [["nome_do_noivo", "Groom"], ["telefone_do_noivo", "phone"], ["nome_da_noiva", "Bride"], ["telefone_da_noiva", "phone"], ["church_id", "church", "church"], ["data_do_casamento", "date", "date"], ["pastor_responsavel", "Pastor"], ["aconselhamento_concluido", "counseling", "checkbox"], ["documentos_entregues", "Documents", "checkbox"], ["quer_certificado", "certificates", "checkbox"], ["certificado_pago", "Paid", "checkbox"], ["certificado_emitido", "certificateIssued", "checkbox"], ["estado", "status", "select", ["Pending", "In Progress", "Scheduled", "Completed", "Certificate Issued"]], ["observacoes", "notes", "textarea"]],
+  baby: [["nome_da_crianca", "name"], ["data_de_nascimento", "birthDate", "date"], ["nome_do_pai", "Father"], ["nome_da_mae", "Mother"], ["telefone_dos_pais", "phone"], ["church_id", "church", "church"], ["data_da_dedicacao", "date", "date"], ["pastor_responsavel", "Pastor"], ["documentos_entregues", "Documents", "checkbox"], ["quer_certificado", "certificates", "checkbox"], ["certificado_pago", "Paid", "checkbox"], ["certificado_emitido", "certificateIssued", "checkbox"], ["estado", "status", "select", ["Pending", "Scheduled", "Completed", "Certificate Issued"]], ["observacoes", "notes", "textarea"]],
   counselingRequest: [["person_type", "personType", "select", ["Member", "First Timer", "Visitor", "Staff", "Other"]], ["full_name", "fullName"], ["phone", "phone"], ["whatsapp", "whatsapp"], ["email", "email", "email"], ["church_id", "church", "church"], ["cell_group_id", "cellGroup", "cellGroupSelect"], ["cell_id", "cell", "cellRegistrySelect"], ["counseling_category", "counselingCategory", "select", ["Casamento", "Fam�lia", "Neg�cios", "Crescimento Espiritual", "Ora��o", "Apoio Emocional", "Lideran�a", "Carreira", "Orienta��o Financeira", "Resolu��o de Conflitos", "Quest�o Ministerial", "Decis�o Pessoal", "Outro"]], ["counseling_subject", "counselingSubject"], ["issue_summary", "issueSummary", "textarea"], ["urgency", "urgency", "select", ["Low", "Normal", "High", "Urgent"]], ["confidentiality_level", "confidentiality", "select", ["Normal", "Sensitive", "Strictly Confidential"]], ["preferred_date", "preferredDate", "date"], ["preferred_time", "preferredTime", "time"], ["preferred_language", "language"], ["assigned_counselor_name", "assignedCounselor"], ["status", "status", "select", ["New", "Pending Review", "Assigned", "Scheduled", "In Progress", "Awaiting Feedback", "Needs Follow-Up", "Referred to Church Pastor", "Referred to Main Pastor", "Completed", "Cancelled"]], ["notes", "notes", "textarea"]],
   counselor: [["full_name", "fullName"], ["title", "treatment", "select", treatmentOptions], ["gender", "gender", "select", ["Feminino", "Masculino"]], ["phone", "phone"], ["email", "email", "email"], ["church_id", "church", "church"], ["counseling_categories", "counselingCategory"], ["languages", "language"], ["availability", "availability"], ["max_cases_per_week", "maximum", "number"], ["current_active_cases", "counselingActiveCases", "number"], ["status", "status", "select", ["Activo", "Inactivo", "Indisponível", "Em Treinamento"]], ["notes", "notes", "textarea"]],
   counselingAppointment: [["counseling_request_id", "counselingRequest"], ["person_name", "name"], ["counselor_name", "assignedCounselor"], ["church_id", "church", "church"], ["appointment_date", "date", "date"], ["appointment_time", "time", "time"], ["duration_minutes", "duration", "number"], ["location_type", "location", "select", ["Presencial", "Telefone", "WhatsApp", "Zoom", "Outro"]], ["location_details", "location"], ["meeting_link", "url"], ["status", "status", "select", ["Agendado", "Confirmado", "Reagendado", "Concluído", "Faltou", "Cancelado"]], ["reminder_sent", "reminder", "checkbox"], ["notes", "notes", "textarea"]],
@@ -25518,7 +25518,8 @@ function fieldControl([name, labelKey, inputType = "text", options = []], record
     return `<div class="col-md-6"><label class="form-label">${label}</label><select name="${name}" class="form-select">${blankOption}${selectOptions.map((o) => `<option value="${escapeAttr(o)}" ${selectedValue === o ? "selected" : ""}>${escapeAttr(memberSelectOptionLabel(name, o))}</option>`).join("")}</select></div>`;
   }
   if (inputType === "checkbox") {
-    return `<div class="col-md-6 d-flex align-items-end"><label class="form-check"><input name="${name}" type="checkbox" class="form-check-input" ${value ? "checked" : ""}> <span class="form-check-label">${label}</span></label></div>`;
+    const isChecked = Boolean(value) && value !== "false" && value !== "0" && value !== 0;
+    return `<div class="col-md-6 d-flex align-items-end"><label class="form-check"><input name="${name}" type="checkbox" class="form-check-input" ${isChecked ? "checked" : ""}> <span class="form-check-label">${label}</span></label></div>`;
   }
   if (inputType === "textarea" || inputType === "textarea-optional") {
     const optional = inputType === "textarea-optional" ? ` <span class="field-optional">(${L("optional")})</span>` : "";
@@ -25548,7 +25549,15 @@ function fieldControl([name, labelKey, inputType = "text", options = []], record
 
 async function submitForm(form) {
   const schema = modalType === "finance" ? getFinanceSchema(modalMode === "edit" ? "edit" : "create") : formSchemas[modalType];
-  const data = Object.fromEntries(new FormData(form).entries());
+  const formData = new FormData(form);
+  const data = Object.fromEntries(formData.entries());
+  if (Array.isArray(schema)) {
+    schema.forEach(([name, , inputType]) => {
+      if (inputType === "checkbox") {
+        data[name] = formData.has(name);
+      }
+    });
+  }
   if (modalType === "member") {
     const existingMember = modalRecordId ? findMemberRecord(modalRecordId) : null;
     const memberName = [data.nome, data.apelido].map((value) => String(value || "").trim()).filter(Boolean).join(" ") || data.full_name || existingMember?.full_name || "";
@@ -30593,7 +30602,7 @@ async function persistSacramentViaRepository(type, mode, record) {
     const certIssued = Boolean(record.certificado_emitido || record.certificate_issued || record.estado === "Certificate Issued" || record.status === "Certificate Issued");
     const certPaid = Boolean(record.certificado_pago || record.certificate_paid || certIssued);
     const certReq = Boolean(record.quer_certificado || record.certificate_required || certPaid || certIssued);
-    const certStatus = certIssued ? "Issued" : (certPaid ? "Paid" : (certReq ? "Requested" : (record.certificate_status || "Not Required")));
+    const certStatus = certIssued ? "Issued" : (certPaid ? "Paid" : (certReq ? "Requested" : "Not Required"));
 
     const metadata = {
       ...(record.metadata && typeof record.metadata === "object" ? record.metadata : {}),
@@ -30637,7 +30646,7 @@ async function persistSacramentViaRepository(type, mode, record) {
     const certIssued = Boolean(record.certificado_emitido || record.certificate_issued || record.estado === "Certificate Issued" || record.status === "Certificate Issued");
     const certPaid = Boolean(record.certificado_pago || record.certificate_paid || certIssued);
     const certReq = Boolean(record.quer_certificado || record.certificate_required || certPaid || certIssued);
-    const certStatus = certIssued ? "Issued" : (certPaid ? "Paid" : (certReq ? "Requested" : (record.certificate_status || "Not Required")));
+    const certStatus = certIssued ? "Issued" : (certPaid ? "Paid" : (certReq ? "Requested" : "Not Required"));
 
     const metadata = {
       ...(record.metadata && typeof record.metadata === "object" ? record.metadata : {}),
@@ -30682,7 +30691,7 @@ async function persistSacramentViaRepository(type, mode, record) {
     const certIssued = Boolean(record.certificado_emitido || record.certificate_issued || record.estado === "Certificate Issued" || record.status === "Certificate Issued");
     const certPaid = Boolean(record.certificado_pago || record.certificate_paid || certIssued);
     const certReq = Boolean(record.quer_certificado || record.certificate_required || certPaid || certIssued);
-    const certStatus = certIssued ? "Issued" : (certPaid ? "Paid" : (certReq ? "Requested" : (record.certificate_status || "Not Required")));
+    const certStatus = certIssued ? "Issued" : (certPaid ? "Paid" : (certReq ? "Requested" : "Not Required"));
 
     const metadata = {
       ...(record.metadata && typeof record.metadata === "object" ? record.metadata : {}),
