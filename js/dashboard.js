@@ -23174,6 +23174,10 @@ function renderStaffHr() {
 
 function renderUsers() {
   if (!canEnterRoute("users")) return renderAccessDenied();
+  if (typeof hydrateAccessControlFromRepository === "function" && !window.__usersHydratedOnce) {
+    window.__usersHydratedOnce = true;
+    void hydrateAccessControlFromRepository();
+  }
   const rawUsers = (state.users || []).filter((u) => !isUserDeleted(u));
   const seenEmails = new Set();
   const seenIds = new Set();
@@ -23189,6 +23193,49 @@ function renderUsers() {
     }
   });
 
+  const roleLabels = {
+    "super_admin": "Super Admin",
+    "Super Admin": "Super Admin",
+    "main_pastor": "Pastor Principal",
+    "Main Pastor": "Pastor Principal",
+    "national_admin": "Administrador Nacional",
+    "National Admin": "Administrador Nacional",
+    "church_pastor": "Pastor da Igreja",
+    "Church Pastor": "Pastor da Igreja",
+    "church_admin": "Administrador da Igreja",
+    "Church Admin": "Administrador da Igreja",
+    "pastoral_care_rector": "Reitor de Cuidados Pastorais",
+    "Pastoral Care Rector": "Reitor de Cuidados Pastorais",
+    "Reitor de Cuidados Pastorais": "Reitor de Cuidados Pastorais",
+    "alec_manager": "Gestor ALEC",
+    "ALEC Manager": "Gestor ALEC",
+    "ALEC Coordinator": "Coordenador ALEC",
+    "cell_ministry_head": "Responsável de Células",
+    "Cell Ministry Head": "Responsável de Células",
+    "cell_group_leader": "Líder de Grupo de Células",
+    "Cell Group Leader": "Líder de Grupo de Células",
+    "cell_leader": "Líder de Célula",
+    "Cell Leader": "Líder de Célula",
+    "cell_assistant": "Assistente de Célula",
+    "Cell Assistant": "Assistente de Célula",
+    "venue_manager": "Gestor de Património (Venue)",
+    "Venue Manager": "Gestor de Património (Venue)",
+    "finance_head": "Responsável de Finanças",
+    "Finance Head": "Responsável de Finanças",
+    "finance_officer": "Oficial de Finanças",
+    "Finance Officer": "Oficial de Finanças",
+    "counselor": "Conselheiro Pastoral",
+    "Counselor": "Conselheiro Pastoral",
+    "fevo_coordinator": "Coordenador F.E.V.O",
+    "F.E.V.O Coordinator": "Coordenador F.E.V.O",
+    "follow_up_coordinator": "Coordenador Follow-Up",
+    "Follow-Up Coordinator": "Coordenador Follow-Up",
+    "foundation_rector": "Reitor da Escola de Fundação",
+    "Foundation Rector": "Reitor da Escola de Fundação",
+    "foundation_teacher": "Professor da Escola de Fundação",
+    "Foundation Teacher": "Professor da Escola de Fundação"
+  };
+
   const activeCount = users.filter((u) => !/lock|bloque|suspend|inactiv|inativ/i.test(String(u.status || "Active")) && u.isActive !== false).length;
   const lockedCount = users.filter((u) => /lock|bloque|suspend|inactiv|inativ/i.test(String(u.status || ""))).length;
   const linkedCount = users.filter((u) => Boolean(u.auth_user_id)).length;
@@ -23203,14 +23250,16 @@ function renderUsers() {
     <article class="panel glass-panel">${dataTable(
       [L("name"), L("email"), L("Role"), "Auth Link", L("status"), L("church"), "Célula / Grupo", L("actions")],
       users.map((u) => {
-        const linkedCell = (state.cellRegistry || state.cells || []).find((c) => String(c.id) === String(u.cell_id));
-        const linkedGroup = (state.cellGroups || []).find((g) => String(g.id) === String(u.cell_group_id));
-        const cellScope = linkedCell ? (linkedCell.cell_name || linkedCell.nome_da_celula || u.cell_id) : (linkedGroup ? `Grupo: ${linkedGroup.group_name || linkedGroup.name}` : (u.assigned_cells?.length ? `${u.assigned_cells.length} célula(s)` : "—"));
+        const linkedCell = (state.cellRegistry || state.cells || window.REAL_CELLS_REGISTRY || []).find((c) => String(c.id) === String(u.cell_id) || c.cell_name === u.cell_id || c.name === u.cell_id);
+        const linkedGroup = (state.cellGroups || window.REAL_CELL_GROUPS || []).find((g) => String(g.id) === String(u.cell_group_id) || g.group_name === u.cell_group_id || g.name === u.cell_group_id);
+        const cellScope = u.cell_name || (linkedCell ? (linkedCell.cell_name || linkedCell.nome_da_celula || linkedCell.name) : (u.cell_group_name ? `Grupo: ${u.cell_group_name}` : (linkedGroup ? `Grupo: ${linkedGroup.group_name || linkedGroup.name}` : (u.assigned_cells?.length ? `${u.assigned_cells.length} célula(s)` : "—"))));
         const authBadge = u.auth_user_id ? `<span class="badge bg-success"><i class="bi bi-link me-1"></i>Linked</span>` : `<span class="badge bg-warning text-dark"><i class="bi bi-clock me-1"></i>Pending Setup</span>`;
+        const rawRole = u.role || u.role_name || "Cell Leader";
+        const displayRole = roleLabels[rawRole] || rawRole;
         return [
           u.name || u.full_name,
           u.email,
-          u.role || u.role_name,
+          displayRole,
           authBadge,
           badge(u.status || "Active"),
           churchName(u.church_id),
