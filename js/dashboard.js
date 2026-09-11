@@ -5744,11 +5744,24 @@ function getCellLeaderContext(userId, preferredCellId = "") {
 }
 
 function canAccessCell(userId, cellId) {
+  if (!cellId) return false;
   const user = (state.users || []).find((item) => item.id === userId) || (activeUser?.id === userId ? activeUser : null);
-  if (user && (user.role === "Super Admin" || user.role === "Main Pastor" || user.role === "National Admin" || user.can_view_all_churches || (user.permissions || []).includes("*"))) return true;
-  const allowed = new Set(getAuthorizedCellsForUser(userId).map((cell) => cell.id));
-  const granted = Boolean(cellId && (allowed.has(cellId) || allowed.size === 0));
-  if (!granted && activeUser?.id === userId && cellId) {
+  if (!user) return false;
+  if (user.role === "Super Admin" || user.role === "Main Pastor" || user.role === "National Admin" || user.can_view_all_churches || (user.permissions || []).includes("*")) return true;
+  const authorized = getAuthorizedCellsForUser(userId);
+  if (!authorized.length) {
+    if (activeUser?.id === userId) {
+      recordCellReportSecurityEvent("cell_portal_access_denied", `Blocked Cell Portal access to unauthorized cell ${cellId}`, cellId);
+    }
+    return false;
+  }
+  const target = String(cellId).trim().toLowerCase();
+  const granted = authorized.some((cell) => {
+    const id = String(cell.id || "").trim().toLowerCase();
+    const name = String(cell.cell_name || cell.name || cell.nome_da_celula || cell.raw_cell_name || "").trim().toLowerCase();
+    return id === target || name === target;
+  });
+  if (!granted && activeUser?.id === userId) {
     recordCellReportSecurityEvent("cell_portal_access_denied", `Blocked Cell Portal access to unauthorized cell ${cellId}`, cellId);
   }
   return granted;
@@ -6280,23 +6293,67 @@ function getAuthorizedCellsForUser(userId) {
   if (userHasExtendedCellPerms(user) || ["Church Admin", "Church Pastor", "Cell Ministry Reviewer", "Cell Ministry Head", "Cell Coordinator", "ALEC Coordinator"].includes(user.role)) {
     return cells.filter((cell) => !user.church_id || user.can_view_all_churches || cell.church_id === user.church_id);
   }
-  if (user.role === "Cell Group Leader") {
-    const userGroups = new Set([user.cell_group_id, ...(user.assigned_cell_groups || [])].filter(Boolean));
-    return cells.filter((cell) => userGroups.has(cell.group_id || cell.cell_group_id));
+
+  const isCellGroupLeader = [
+    "Cell Group Leader",
+    "cell_group_leader",
+    "Líder de Grupo de Células",
+    "Lider de Grupo de Celulas",
+    "Cell Group Coordinator"
+  ].includes(user.role);
+
+  if (isCellGroupLeader) {
+    const userGroups = new Set(
+      [
+        user.cell_group_id,
+        user.cell_group_name,
+        user.group_id,
+        user.group_name,
+        ...(user.assigned_cell_groups || [])
+      ]
+        .filter(Boolean)
+        .map((v) => String(v).trim().toLowerCase())
+    );
+
+    const groupCells = cells.filter((cell) => {
+      const gId = String(cell.group_id || cell.cell_group_id || "").trim().toLowerCase();
+      const gName = String(cell.group_name || cell.cell_group_name || "").trim().toLowerCase();
+      return (gId && userGroups.has(gId)) || (gName && userGroups.has(gName));
+    });
+
+    return groupCells;
   }
-  const assignedIds = new Set([...(user.assigned_cells || []), user.cell_id].filter(Boolean));
+
+  // Single Cell Leader or Cell Assistant
+  const assignedKeys = new Set(
+    [
+      ...(user.assigned_cells || []),
+      user.cell_id,
+      user.cell_name
+    ]
+      .filter(Boolean)
+      .map((v) => String(v).trim().toLowerCase())
+  );
+
   const leaders = state.cellLeadership?.leaders || [];
   leaders.forEach((leader) => {
-    const matchesUser = leader.user_id === user.id || leader.staff_id === user.staff_id || String(leader.email || "").toLowerCase() === String(user.email || "").toLowerCase();
+    const matchesUser = leader.user_id === user.id || leader.staff_id === user.staff_id || (leader.email && String(leader.email).toLowerCase() === String(user.email || "").toLowerCase());
     const active = !leader.status || /active|activo|training|treinamento/i.test(String(leader.status));
-    if (matchesUser && active && leader.cell_id) assignedIds.add(leader.cell_id);
+    if (matchesUser && active) {
+      if (leader.cell_id) assignedKeys.add(String(leader.cell_id).trim().toLowerCase());
+      if (leader.cell_name) assignedKeys.add(String(leader.cell_name).trim().toLowerCase());
+    }
   });
-  const filtered = cells.filter((cell) =>
-    assignedIds.has(cell.id) ||
-    cell.primary_leader_user_id === user.id ||
-    (cell.assistant_user_ids || []).includes(user.id)
-  );
-  return filtered.length ? filtered : [...cells];
+
+  const filtered = cells.filter((cell) => {
+    const cellId = String(cell.id || "").trim().toLowerCase();
+    const cellName = String(cell.cell_name || cell.name || cell.nome_da_celula || cell.raw_cell_name || "").trim().toLowerCase();
+    const matchesAssigned = (cellId && assignedKeys.has(cellId)) || (cellName && assignedKeys.has(cellName));
+    const matchesLeaderId = (cell.primary_leader_user_id && cell.primary_leader_user_id === user.id) || ((cell.assistant_user_ids || []).includes(user.id));
+    return matchesAssigned || matchesLeaderId;
+  });
+
+  return filtered;
 }
 
 window.getAuthorizedCellsForUser = getAuthorizedCellsForUser;
@@ -12462,16 +12519,11 @@ function renderCellLeaderPortal() {
       ...(trends.reports || []).map((report) => ({ date: portalDateValue(report), type: "Reunião de célula", title: report.topic || report.lesson_shared || "Relatório semanal", responsible: report.submitted_by_name || report.leader_name || context?.user_name, status: cellReportStatusLabel(report) })),
       ...(state.fevo?.reports || []).filter((item) => item.cell_id === context?.cell_id && portalInPeriod(item, cellPortalPageState)).map((item) => ({ date: portalDateValue(item), type: item.activity_type || "F.E.V.O", title: item.notes || item.activity_type || "Actividade", responsible: item.leader_name || "", status: item.status || item.estado || "" }))
     ].sort((a, b) => Date.parse(b.date || 0) - Date.parse(a.date || 0)).slice(0, 10);
-    const isGroupLeaderOrAbove = [
-      "Cell Group Leader", "cell_group_leader", "Cell Ministry Reviewer", "Cell Ministry Head",
-      "Cell Coordinator", "cell_coordinator", "Church Admin", "Super Admin", "super_admin", "Main Pastor", "National Admin"
-    ].includes(activeUser?.role) || Boolean(activeUser?.can_view_all_churches);
+    const isSingleCellLeader = ["Cell Leader", "Cell Assistant", "cell_leader", "assistant_cell_leader", "cell_assistant", "Líder de Célula", "Assistente de Célula"].includes(activeUser?.role) || authorizedCells.length <= 1;
+    const isGroupLeaderOnly = ["Cell Group Leader", "cell_group_leader", "Líder de Grupo de Células", "Lider de Grupo de Celulas", "Cell Group Coordinator"].includes(activeUser?.role);
+    const isHigherAdmin = ["Super Admin", "super_admin", "Main Pastor", "National Admin", "Church Admin", "Cell Ministry Head", "Cell Ministry Reviewer", "Cell Coordinator"].includes(activeUser?.role) || Boolean(activeUser?.can_view_all_churches);
 
-    const isSpecificSingleCellLeader = (activeUser?.auth_user_id === "47df0cce-9701-492c-90aa-b3cb205bbd4b") ||
-      (activeUser?.id === "47df0cce-9701-492c-90aa-b3cb205bbd4b") ||
-      (["Cell Leader", "Cell Assistant", "cell_leader", "assistant_cell_leader", "cell_assistant"].includes(activeUser?.role) && authorizedCells.length <= 1);
-
-    const showCellGroupSelectors = Boolean(isGroupLeaderOrAbove && !isSpecificSingleCellLeader);
+    const showCellGroupSelectors = Boolean(isHigherAdmin && !isSingleCellLeader && !isGroupLeaderOnly);
     const canChooseCell = authorizedCells.length > 1;
     const memberStatuses = [...new Set(allMembers.map((member) => member.status).filter(Boolean))];
     const foundationOptions = [...new Set(allMembers.map((member) => member.foundation_status).filter(Boolean))];
@@ -24882,7 +24934,9 @@ function renderUserForm(record = {}, modalMode = "create") {
         .filter((c) => !cellGroupId || String(c.group_id) === String(cellGroupId) || String(c.cell_group_id) === String(cellGroupId))
         .sort((a, b) => String(a.cell_name || a.name || "").localeCompare(String(b.cell_name || b.name || "")));
 
-  const hasAllSubcells = Array.isArray(record.assigned_cells) && record.assigned_cells.length > 1;
+  const isGroupLeaderRole = ["Cell Group Leader", "cell_group_leader", "Líder de Grupo de Células", "Lider de Grupo de Celulas"].includes(currentRole);
+  const isSingleCellLeaderRole = ["Cell Leader", "Cell Assistant", "cell_leader", "cell_assistant", "assistant_cell_leader"].includes(currentRole);
+  const hasAllSubcells = isGroupLeaderRole || (Array.isArray(record.assigned_cells) && record.assigned_cells.length > 1 && !isSingleCellLeaderRole);
 
   const roles = [
     { value: "Super Admin", label: "Super Admin (Acesso Total ao Sistema)" },
@@ -24989,7 +25043,7 @@ function renderUserForm(record = {}, modalMode = "create") {
 
       <div class="col-12">
         <div class="form-check p-2 rounded" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);">
-          <input name="assign_all_subcells" class="form-check-input ms-1" type="checkbox" id="userFormAllSubcells" ${hasAllSubcells || (!cellId && cellGroupId) ? "checked" : ""}>
+          <input name="assign_all_subcells" class="form-check-input ms-1" type="checkbox" id="userFormAllSubcells" ${hasAllSubcells ? "checked" : ""}>
           <label class="form-check-label ms-2" for="userFormAllSubcells">
             <strong>Permitir acesso de gestão a todas as sub-células deste grupo</strong>
             <div class="small text-secondary">Permite ao utilizador visualizar, alternar e gerir relatórios e membros de todas as células do grupo (ex.: Diamantes Main)</div>
@@ -25213,6 +25267,13 @@ function mountUserFormControls(form) {
           return `<option value="${escapeAttr(c.id)}" ${isSel ? "selected" : ""}>${escapeHtml(c.cell_name || c.name || "Célula")}</option>`;
         }).join("");
     });
+    cellSelect.addEventListener("change", () => {
+      const role = roleSelect?.value;
+      const allSubcellsCheckbox = form.querySelector("#userFormAllSubcells");
+      if (cellSelect.value && (role === "Cell Leader" || role === "Cell Assistant")) {
+        if (allSubcellsCheckbox) allSubcellsCheckbox.checked = false;
+      }
+    });
   }
 
   if (churchSelect && groupSelect) {
@@ -25224,6 +25285,12 @@ function mountUserFormControls(form) {
   if (roleSelect) {
     roleSelect.addEventListener("change", () => {
       const role = roleSelect.value;
+      const allSubcellsCheckbox = form.querySelector("#userFormAllSubcells");
+      if (role === "Cell Group Leader") {
+        if (allSubcellsCheckbox) allSubcellsCheckbox.checked = true;
+      } else if (role === "Cell Leader" || role === "Cell Assistant") {
+        if (allSubcellsCheckbox) allSubcellsCheckbox.checked = false;
+      }
       const roleDefaults = {
         "Cell Leader": ["cellReports"],
         "Cell Assistant": ["cellReports"],
@@ -25804,19 +25871,30 @@ async function submitForm(form) {
       cellName = cl?.cell_name || "";
     }
 
+    const isGroupLeaderRole = ["Cell Group Leader", "cell_group_leader", "Líder de Grupo de Células", "Lider de Grupo de Celulas"].includes(role);
+    const isSingleCellLeaderRole = ["Cell Leader", "Cell Assistant", "cell_leader", "cell_assistant", "assistant_cell_leader"].includes(role);
+
     let assignedCells = [];
     let assignedCellGroups = [];
-    if (formData.has("assign_all_subcells") && cellGroupId) {
+    if (isGroupLeaderRole && cellGroupId) {
       const allCells = [...(window.REAL_CELLS_REGISTRY || []), ...(state.cellRegistry || state.cells || [])]
         .filter((c, idx, arr) => c && c.id && arr.findIndex((x) => String(x.id) === String(c.id)) === idx);
       const subcells = allCells
-        .filter((c) => String(c.group_id) === String(cellGroupId) || String(c.cell_group_id) === String(cellGroupId))
+        .filter((c) => String(c.group_id) === String(cellGroupId) || String(c.cell_group_id) === String(cellGroupId) || c.group_name === cellGroupName || c.cell_group_name === cellGroupName)
+        .map((c) => c.id);
+      assignedCells = subcells.length ? subcells : (cellId ? [cellId] : []);
+      assignedCellGroups = [cellGroupId];
+    } else if (formData.has("assign_all_subcells") && cellGroupId && !isSingleCellLeaderRole) {
+      const allCells = [...(window.REAL_CELLS_REGISTRY || []), ...(state.cellRegistry || state.cells || [])]
+        .filter((c, idx, arr) => c && c.id && arr.findIndex((x) => String(x.id) === String(c.id)) === idx);
+      const subcells = allCells
+        .filter((c) => String(c.group_id) === String(cellGroupId) || String(c.cell_group_id) === String(cellGroupId) || c.group_name === cellGroupName || c.cell_group_name === cellGroupName)
         .map((c) => c.id);
       assignedCells = subcells.length ? subcells : (cellId ? [cellId] : []);
       assignedCellGroups = [cellGroupId];
     } else if (cellId) {
       assignedCells = [cellId];
-      assignedCellGroups = cellGroupId ? [cellGroupId] : [];
+      assignedCellGroups = [];
     }
 
     if (modalMode === "edit") {
@@ -26312,12 +26390,27 @@ async function submitForm(form) {
         u.cell_name = cl?.cell_name || "";
       }
 
-      if (formData.has("assign_all_subcells") && u.cell_group_id) {
+      const isGroupLeaderRole = ["Cell Group Leader", "cell_group_leader", "Líder de Grupo de Células", "Lider de Grupo de Celulas"].includes(u.role);
+      const isSingleCellLeaderRole = ["Cell Leader", "Cell Assistant", "cell_leader", "cell_assistant", "assistant_cell_leader"].includes(u.role);
+
+      if (isGroupLeaderRole && u.cell_group_id) {
         const subcells = [...(window.REAL_CELLS_REGISTRY || []), ...(state.cellRegistry || state.cells || [])]
-          .filter((c) => String(c.group_id) === String(u.cell_group_id) || String(c.cell_group_id) === String(u.cell_group_id))
+          .filter((c) => String(c.group_id) === String(u.cell_group_id) || String(c.cell_group_id) === String(u.cell_group_id) || c.group_name === u.cell_group_name || c.cell_group_name === u.cell_group_name)
           .map((c) => c.id);
         u.assigned_cells = subcells.length ? subcells : (u.cell_id ? [u.cell_id] : []);
         u.assigned_cell_groups = [u.cell_group_id];
+      } else if (formData.has("assign_all_subcells") && u.cell_group_id && !isSingleCellLeaderRole) {
+        const subcells = [...(window.REAL_CELLS_REGISTRY || []), ...(state.cellRegistry || state.cells || [])]
+          .filter((c) => String(c.group_id) === String(u.cell_group_id) || String(c.cell_group_id) === String(u.cell_group_id) || c.group_name === u.cell_group_name || c.cell_group_name === u.cell_group_name)
+          .map((c) => c.id);
+        u.assigned_cells = subcells.length ? subcells : (u.cell_id ? [u.cell_id] : []);
+        u.assigned_cell_groups = [u.cell_group_id];
+      } else if (u.cell_id) {
+        u.assigned_cells = [u.cell_id];
+        u.assigned_cell_groups = [];
+      } else {
+        u.assigned_cells = [];
+        u.assigned_cell_groups = [];
       }
 
       void saveUserToSupabase(u);
@@ -26618,16 +26711,28 @@ async function submitForm(form) {
         record.cell_name = cl?.cell_name || "";
       }
 
-      // Assign all subcells if requested
-      if (formData.has("assign_all_subcells") && record.cell_group_id) {
+      const isGroupLeaderRole = ["Cell Group Leader", "cell_group_leader", "Líder de Grupo de Células", "Lider de Grupo de Celulas"].includes(record.role);
+      const isSingleCellLeaderRole = ["Cell Leader", "Cell Assistant", "cell_leader", "cell_assistant", "assistant_cell_leader"].includes(record.role);
+
+      // Assign subcells
+      if (isGroupLeaderRole && record.cell_group_id) {
         const subcells = [...(window.REAL_CELLS_REGISTRY || []), ...(state.cellRegistry || state.cells || [])]
-          .filter((c) => String(c.group_id) === String(record.cell_group_id) || String(c.cell_group_id) === String(record.cell_group_id))
+          .filter((c) => String(c.group_id) === String(record.cell_group_id) || String(c.cell_group_id) === String(record.cell_group_id) || c.group_name === record.cell_group_name || c.cell_group_name === record.cell_group_name)
+          .map((c) => c.id);
+        record.assigned_cells = subcells.length ? subcells : (record.cell_id ? [record.cell_id] : []);
+        record.assigned_cell_groups = [record.cell_group_id];
+      } else if (formData.has("assign_all_subcells") && record.cell_group_id && !isSingleCellLeaderRole) {
+        const subcells = [...(window.REAL_CELLS_REGISTRY || []), ...(state.cellRegistry || state.cells || [])]
+          .filter((c) => String(c.group_id) === String(record.cell_group_id) || String(c.cell_group_id) === String(record.cell_group_id) || c.group_name === record.cell_group_name || c.cell_group_name === record.cell_group_name)
           .map((c) => c.id);
         record.assigned_cells = subcells.length ? subcells : (record.cell_id ? [record.cell_id] : []);
         record.assigned_cell_groups = [record.cell_group_id];
       } else if (record.cell_id) {
         record.assigned_cells = [record.cell_id];
-        record.assigned_cell_groups = record.cell_group_id ? [record.cell_group_id] : [];
+        record.assigned_cell_groups = [];
+      } else {
+        record.assigned_cells = [];
+        record.assigned_cell_groups = [];
       }
 
       delete record.password;

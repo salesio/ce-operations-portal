@@ -59,12 +59,12 @@ export function mapUserFromRow(row: SupabaseRow | null | undefined): User | null
     department_name: (meta.department_name as string) || "",
     assigned_department: (meta.department_name as string) || "",
     department_permissions: Array.isArray(meta.department_permissions) ? (meta.department_permissions as string[]) : [],
-    cell_id: (meta.cell_id as string) || null,
-    cell_name: (meta.cell_name as string) || null,
-    cell_group_id: (meta.cell_group_id as string) || null,
-    cell_group_name: (meta.cell_group_name as string) || null,
-    assigned_cells: Array.isArray(meta.assigned_cells) ? (meta.assigned_cells as string[]) : [],
-    assigned_cell_groups: Array.isArray(meta.assigned_cell_groups) ? (meta.assigned_cell_groups as string[]) : [],
+    cell_id: (row.cell_id as string) || (meta.cell_id as string) || null,
+    cell_name: (row.cell_name as string) || (meta.cell_name as string) || null,
+    cell_group_id: (row.cell_group_id as string) || (meta.cell_group_id as string) || null,
+    cell_group_name: (row.cell_group_name as string) || (meta.cell_group_name as string) || null,
+    assigned_cells: Array.isArray(row.assigned_cells) ? (row.assigned_cells as string[]) : (Array.isArray(meta.assigned_cells) ? (meta.assigned_cells as string[]) : []),
+    assigned_cell_groups: Array.isArray(row.assigned_cell_groups) ? (row.assigned_cell_groups as string[]) : (Array.isArray(meta.assigned_cell_groups) ? (meta.assigned_cell_groups as string[]) : []),
     status,
     isActive: /active|activo/i.test(status) && !/inactive|inactivo|suspend/i.test(status),
     has_dashboard_access: meta.has_dashboard_access !== false,
@@ -114,6 +114,12 @@ export function mapUserToRow(user: Partial<User>, forUpdate = false): SupabaseRo
     }
     if (user.department_id !== undefined) {
       row.department_id = user.department_id && isValidUuid(user.department_id) ? user.department_id : null;
+    }
+    if (user.cell_id !== undefined) {
+      row.cell_id = user.cell_id && isValidUuid(user.cell_id) ? user.cell_id : null;
+    }
+    if (user.cell_group_id !== undefined) {
+      row.cell_group_id = user.cell_group_id && isValidUuid(user.cell_group_id) ? user.cell_group_id : null;
     }
     if (user.last_login_at !== undefined) row.last_login_at = user.last_login_at;
     if (user.last_active_at !== undefined) row.last_active_at = user.last_active_at;
@@ -193,6 +199,12 @@ export function mapUserToRow(user: Partial<User>, forUpdate = false): SupabaseRo
   }
   if (user.department_id !== undefined) {
     row.department_id = user.department_id && isValidUuid(user.department_id) ? user.department_id : null;
+  }
+  if (user.cell_id !== undefined) {
+    row.cell_id = user.cell_id && isValidUuid(user.cell_id) ? user.cell_id : null;
+  }
+  if (user.cell_group_id !== undefined) {
+    row.cell_group_id = user.cell_group_id && isValidUuid(user.cell_group_id) ? user.cell_group_id : null;
   }
   if (user.last_login_at !== undefined) row.last_login_at = user.last_login_at;
   if (user.last_active_at !== undefined) row.last_active_at = user.last_active_at;
