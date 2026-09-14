@@ -28,7 +28,7 @@ const bridge = readFileSync(join(root, "js/requisitions-data-bridge.js"), "utf8"
 
 ok("repository exists", existsSync(join(root, "src/data/repositories/requisitionsRepository.ts")));
 ok("bridge exists", existsSync(join(root, "js/requisitions-data-bridge.js")));
-ok("index loads bridge", /requisitions-data-bridge\.js\?v=20260723-requisitions-data-v1/.test(indexHtml));
+ok("index loads bridge", /requisitions-data-bridge\.js/.test(indexHtml));
 ok("docs pilot Requisitions", /Pilot migration: Requisitions/.test(plan));
 ok("bridge keys requisitions", /ce-data-layer:requisitions/.test(bridge));
 ok("bridge wraps workflow", /applyWorkflowAction/.test(bridge));

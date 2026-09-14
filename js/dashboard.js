@@ -2635,7 +2635,12 @@ Object.assign(TEXT.pt, {
 });
 
 Object.assign(TEXT.en, {
-  venueInventory: "Venue & Inventory Management",
+  loading: "Loading data...",
+    saving: "Saving...",
+    emptyVenue: "No inventory items or spaces registered yet.",
+    emptyMedia: "No media schedules or team members registered yet.",
+    emptyRequisitions: "No requisitions registered yet.",
+    venueInventory: "Venue & Inventory Management",
   venueInventoryShort: "Venue & Inventory",
   venueInventorySubtitle: "Inventory, staff equipment, maintenance, movements, venues and service checklists under Marcelo Panguene.",
   generalInventory: "General Inventory",
@@ -3508,26 +3513,8 @@ const seedData = {
     { id: "not-17", title: "Aconselhamento agendado", message: "Aminata Chivinda tem sessão de aconselhamento confirmada.", type: "reminder", module: "counseling", entity_type: "counseling_appointment", entity_id: "ca-1", priority: "normal", recipient_user_id: "u-2", recipient_role: "", recipient_department_id: "", recipient_church_id: "church-hq", scope: "user", action_url: "counseling", action_label: "Ver Agenda", is_read: false, read_at: "", created_at: "2026-07-15T08:10:00.000Z", expires_at: "", metadata: {} },
     { id: "not-18", title: "Acompanhamento necessário", message: "Um caso de aconselhamento precisa de acompanhamento pastoral.", type: "action_required", module: "counseling", entity_type: "counseling_feedback", entity_id: "cfb-1", priority: "high", recipient_user_id: "", recipient_role: "Follow-Up Coordinator", recipient_department_id: "", recipient_church_id: "church-hq", scope: "role", action_url: "counseling", action_label: "Criar Acompanhamento", is_read: false, read_at: "", created_at: "2026-07-15T08:20:00.000Z", expires_at: "", metadata: {} }
   ],
-  requisitions: [
-    { id: "req-1", request_number: "REQ-2026-0001", requested_by_user_id: "u-12", requested_by_name: "Department Head Demo", department_id: "dept-cell", department_name: "Cell Ministry", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", requisition_type: "Material de Minist�rio", title: "Materiais para Escola de C�lulas", description: "Livros, manuais e apostilas para forma��o de l�deres.", justification: "Prepara��o do trimestre de lideran�a celular.", estimated_amount: 18500, currency: "MZN", urgency: "Normal", needed_by_date: "2026-08-01", attachments: [], supplier_or_vendor: "Loveworld Books", quotation_number: "QT-2026-014", reviewed_by: "", reviewed_at: "", review_notes: "", sent_to_main_pastor_at: "", approved_by: "", approved_at: "", approval_notes: "", rejected_by: "", rejected_at: "", rejection_reason: "", resources_released_by: "", resources_released_at: "", amount_released: 0, finance_record_id: "", inventory_item_id: "", status: "Submetido", created_at: "2026-07-08T10:00:00.000Z", updated_at: "2026-07-08T10:00:00.000Z" },
-    { id: "req-2", request_number: "REQ-2026-0002", requested_by_user_id: "u-13", requested_by_name: "Staff Member Demo", department_id: "dept-finance", department_name: "Finan�as", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", requisition_type: "Apoio Operacional", title: "Material de escrit�rio para Finan�as", description: "Papel A4, pastas e toners para impress�o de relat�rios.", justification: "Reposi��o de consum�veis do departamento.", estimated_amount: 4200, currency: "MZN", urgency: "Baixa", needed_by_date: "2026-07-20", attachments: [], supplier_or_vendor: "Office Supply Maputo", quotation_number: "", reviewed_by: "Pastora Respons�vel Requisi��es", reviewed_at: "2026-07-09T11:00:00.000Z", review_notes: "Organizado e encaminhado.", sent_to_main_pastor_at: "", approved_by: "", approved_at: "", approval_notes: "", rejected_by: "", rejected_at: "", rejection_reason: "", resources_released_by: "", resources_released_at: "", amount_released: 0, finance_record_id: "", inventory_item_id: "", status: "Em Revis�o", created_at: "2026-07-07T09:00:00.000Z", updated_at: "2026-07-09T11:00:00.000Z" },
-    { id: "req-3", request_number: "REQ-2026-0003", requested_by_user_id: "u-5", requested_by_name: "Pastora Flavia", department_id: "dept-cell", department_name: "Minist�rio de C�lulas", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", requisition_type: "Transporte", title: "Transporte para visita��o celular � Beira", description: "Desloca��o da equipa nacional para apoio � rede de Beira.", justification: "Visita pastoral e forma��o de l�deres.", estimated_amount: 28000, currency: "MZN", urgency: "Alta", needed_by_date: "2026-07-25", attachments: [{ type: "budget", name: "Orcamento-Beira.pdf" }, { type: "proforma", name: "Proforma-Transporte.pdf" }], supplier_or_vendor: "Transporte CE", quotation_number: "QT-2026-021", reviewed_by: "Pastora Respons�vel Requisi��es", reviewed_at: "2026-07-10T08:00:00.000Z", review_notes: "Prioridade confirmada com Pastor Principal.", sent_to_main_pastor_by: "Pastora Respons�vel Requisi��es", sent_to_main_pastor_at: "2026-07-10T09:00:00.000Z", approved_by: "", approved_at: "", approval_notes: "", rejected_by: "", rejected_at: "", rejection_reason: "", returned_by: "", returned_at: "", return_notes: "", resources_released_by: "", resources_released_at: "", amount_released: 0, finance_record_id: "", inventory_item_id: "", audit_history: [], status: "Enviado ao Pastor Principal", created_at: "2026-07-05T14:00:00.000Z", updated_at: "2026-07-10T09:00:00.000Z" },
-    { id: "req-4", request_number: "REQ-2026-0004", requested_by_user_id: "u-11", requested_by_name: "Marcelo Panguene", department_id: "dept-venue", department_name: "Venue Management", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", requisition_type: "Nova Aquisi��o", title: "Microfones sem fio adicionais", description: "Compra de 4 microfones BMK ES600 para cultos simult�neos.", justification: "Expans�o do audit�rio e culto online.", estimated_amount: 74000, currency: "MZN", urgency: "Normal", needed_by_date: "2026-08-10", attachments: [], supplier_or_vendor: "Audio Supplier", quotation_number: "QT-2026-033", reviewed_by: "Pastora Respons�vel Requisi��es", reviewed_at: "2026-07-01T10:00:00.000Z", review_notes: "Aprovado para compra ap�s verifica��o t�cnica.", sent_to_main_pastor_by: "Pastora Respons�vel Requisi��es", sent_to_main_pastor_at: "2026-07-02T10:00:00.000Z", approved_by: "Pastor Kene Ume", approved_by_user_id: "u-17", approved_at: "2026-07-03T10:00:00.000Z", approved_amount: 74000, approval_notes: "Autorizado � prioridade media.", final_priority: "Normal", rejected_by: "", rejected_at: "", rejection_reason: "", resources_released_by: "Finance Head Demo", released_by: "Finance Head Demo", resources_released_at: "2026-07-04T15:00:00.000Z", released_at: "2026-07-04T15:00:00.000Z", released_amount: 74000, amount_released: 74000, finance_status: "Recursos Liberados", sent_to_finance: true, sent_to_finance_at: "2026-07-03T10:00:00.000Z", finance_disbursement_id: "disb-req-4", payment_method: "Banco", payment_reference: "TRF-2026-044", payment_notes: "Transfer�ncia banc�ria aprovada.", finance_record_id: "", inventory_item_id: "", audit_history: [], status: "Recursos Liberados", created_at: "2026-06-28T08:00:00.000Z", updated_at: "2026-07-04T15:00:00.000Z" },
-    { id: "req-5", request_number: "REQ-2026-0005", requested_by_user_id: "u-9", requested_by_name: "Sister Cassandra", department_id: "dept-programs", department_name: "Programas", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", requisition_type: "Evento/Programa", title: "Apoio log�stico � Semana F.E.V.O", description: "Material de evangeliza��o, transporte e refei��es para equipas.", justification: "Semana intensiva de F.E.V.O nacional.", estimated_amount: 52000, currency: "MZN", urgency: "Urgente", needed_by_date: "2026-07-15", attachments: [{ type: "budget", name: "Orcamento-FEVO.xlsx" }], supplier_or_vendor: "", quotation_number: "", reviewed_by: "Pastora Respons�vel Requisi��es", reviewed_at: "2026-07-11T09:00:00.000Z", review_notes: "Encaminhado ao Pastor Principal.", sent_to_main_pastor_by: "Pastora Respons�vel Requisi��es", sent_to_main_pastor_at: "2026-07-11T10:00:00.000Z", approved_by: "", approved_at: "", approval_notes: "", rejected_by: "", rejected_at: "", rejection_reason: "", returned_by: "", returned_at: "", return_notes: "", resources_released_by: "", resources_released_at: "", amount_released: 0, finance_record_id: "", inventory_item_id: "", audit_history: [], status: "Enviado ao Pastor Principal", created_at: "2026-07-09T12:00:00.000Z", updated_at: "2026-07-11T10:00:00.000Z" },
-    { id: "req-8", request_number: "REQ-2026-0008", requested_by_user_id: "u-12", requested_by_name: "Department Head Demo", department_id: "dept-cell", department_name: "Cell Ministry", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", requisition_type: "Material de Minist�rio", title: "Banners e material gr�fico para evangeliza��o", description: "Impress�o de banners roll-up e flyers para campanha de Julho.", justification: "Campanha de evangeliza��o nas c�lulas.", estimated_amount: 16500, currency: "MZN", urgency: "Alta", needed_by_date: "2026-07-18", attachments: [], supplier_or_vendor: "Print House", quotation_number: "QT-2026-040", reviewed_by: "Pastora Respons�vel Requisi��es", reviewed_at: "2026-07-08T10:00:00.000Z", review_notes: "Aprovado internamente.", sent_to_main_pastor_by: "Pastora Respons�vel Requisi��es", sent_to_main_pastor_at: "2026-07-08T11:00:00.000Z", approved_by: "Pastor Kene Ume", approved_by_user_id: "u-17", approved_at: "2026-07-09T14:00:00.000Z", approved_amount: 15000, approval_notes: "Aprovado com limite de 15.000 MZN.", final_priority: "Alta", rejected_by: "", rejected_at: "", rejection_reason: "", resources_released_by: "", resources_released_at: "", released_amount: 0, amount_released: 0, finance_status: "Aguardando Libera��o", sent_to_finance: true, sent_to_finance_at: "2026-07-09T14:00:00.000Z", finance_disbursement_id: "disb-req-8", payment_method: "", payment_reference: "", payment_notes: "", finance_record_id: "", inventory_item_id: "", audit_history: [], status: "Aprovado � Aguardando Libera��o de Recursos", created_at: "2026-07-06T08:00:00.000Z", updated_at: "2026-07-09T14:00:00.000Z" },
-    { id: "req-6", request_number: "REQ-2026-0006", requested_by_user_id: "u-14", requested_by_name: "Finance Officer Demo", department_id: "dept-finance", department_name: "Finan�as", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", requisition_type: "Pagamento de Servi�o", title: "Auditoria externa trimestral", description: "Servi�o de revis�o de registos financeiros Q2.", justification: "Conformidade e transpar�ncia.", estimated_amount: 35000, currency: "MZN", urgency: "Normal", needed_by_date: "2026-07-30", attachments: [], supplier_or_vendor: "Audit Partners Lda", quotation_number: "QT-AUD-02", reviewed_by: "Pastora Respons�vel Requisi��es", reviewed_at: "2026-07-06T10:00:00.000Z", review_notes: "N�o priorit�rio neste momento.", sent_to_main_pastor_at: "2026-07-06T11:00:00.000Z", approved_by: "", approved_at: "", approval_notes: "", rejected_by: "Pastor Kene Ume", rejected_at: "2026-07-07T09:00:00.000Z", rejection_reason: "Adiar para o pr�ximo trimestre.", resources_released_by: "", resources_released_at: "", amount_released: 0, finance_record_id: "", inventory_item_id: "", status: "Rejeitado", created_at: "2026-07-04T08:00:00.000Z", updated_at: "2026-07-07T09:00:00.000Z" },
-    { id: "req-9", request_number: "REQ-2026-0009", requested_by_user_id: "u-8", requested_by_name: "Pastor da Igreja", department_id: "dept-media", department_name: "Media", church_id: "church-matola", church_name: "Igreja Embaixada de Cristo Matola", requisition_type: "Equipamento", title: "C�maras adicionais para transmiss�o", description: "Duas c�maras PTZ para melhorar transmiss�o dos cultos em Matola.", justification: "Expans�o do minist�rio de media local.", estimated_amount: 48000, currency: "MZN", urgency: "Normal", needed_by_date: "2026-07-28", attachments: [], supplier_or_vendor: "AV Supplier", quotation_number: "QT-AV-12", reviewed_by: "Pastora Respons�vel Requisi��es", reviewed_at: "2026-06-25T10:00:00.000Z", review_notes: "Aprovado internamente.", sent_to_main_pastor_by: "Pastora Respons�vel Requisi��es", sent_to_main_pastor_at: "2026-06-26T10:00:00.000Z", approved_by: "Pastor Kene Ume", approved_by_user_id: "u-17", approved_at: "2026-06-27T10:00:00.000Z", approved_amount: 45000, approval_notes: "Aprovado parcialmente at� 45.000 MZN.", final_priority: "Normal", rejected_by: "", rejected_at: "", rejection_reason: "", resources_released_by: "Finance Head Demo", released_by: "Finance Head Demo", resources_released_at: "2026-07-01T10:00:00.000Z", released_at: "2026-07-01T10:00:00.000Z", released_amount: 25000, amount_released: 25000, finance_status: "Parcialmente Pago", sent_to_finance: true, sent_to_finance_at: "2026-06-27T10:00:00.000Z", finance_disbursement_id: "disb-req-9", payment_method: "Banco", payment_reference: "TRF-AV-01", payment_notes: "Primeira tranche de pagamento.", finance_record_id: "", inventory_item_id: "", audit_history: [], status: "Aprovado � Aguardando Libera��o de Recursos", created_at: "2026-06-20T08:00:00.000Z", updated_at: "2026-07-01T10:00:00.000Z" },
-    { id: "req-10", request_number: "REQ-2026-0010", requested_by_user_id: "u-3", requested_by_name: "Sister Janet Marquele", department_id: "dept-programs", department_name: "Programas", church_id: "church-beira", church_name: "Igreja Embaixada de Cristo Beira", requisition_type: "Transporte", title: "Transporte para confer�ncia regional � Beira", description: "Desloca��o de equipa de apoio para confer�ncia em Beira.", justification: "Apoio ao evento regional de Julho.", estimated_amount: 22000, currency: "MZN", urgency: "Alta", needed_by_date: "2026-07-22", attachments: [], supplier_or_vendor: "Transporte CE", quotation_number: "QT-BR-03", reviewed_by: "Pastora Respons�vel Requisi��es", reviewed_at: "2026-07-07T10:00:00.000Z", review_notes: "Encaminhado.", sent_to_main_pastor_by: "Pastora Respons�vel Requisi��es", sent_to_main_pastor_at: "2026-07-07T11:00:00.000Z", approved_by: "Pastor Kene Ume", approved_by_user_id: "u-17", approved_at: "2026-07-08T09:00:00.000Z", approved_amount: 20000, approval_notes: "Aprovado com tecto de 20.000 MZN.", final_priority: "Alta", rejected_by: "", rejected_at: "", rejection_reason: "", resources_released_by: "", resources_released_at: "", released_amount: 0, amount_released: 0, finance_status: "Aguardando Libera��o", sent_to_finance: true, sent_to_finance_at: "2026-07-08T09:00:00.000Z", finance_disbursement_id: "disb-req-10", payment_method: "", payment_reference: "", payment_notes: "", finance_record_id: "", inventory_item_id: "", audit_history: [], status: "Aprovado � Aguardando Libera��o de Recursos", created_at: "2026-07-04T08:00:00.000Z", updated_at: "2026-07-08T09:00:00.000Z" },
-    { id: "req-11", request_number: "REQ-2026-0011", requested_by_user_id: "u-4", requested_by_name: "Sister Angelica", department_id: "dept-cell", department_name: "Minist�rio de C�lulas", church_id: "church-nampula", church_name: "Igreja Embaixada de Cristo Nampula", requisition_type: "Material de Minist�rio", title: "Manuais e apostilas � Escola de C�lulas Nampula", description: "Material impresso para forma��o de l�deres de c�lula.", justification: "Forma��o trimestral em Nampula.", estimated_amount: 12000, currency: "MZN", urgency: "Normal", needed_by_date: "2026-08-05", attachments: [], supplier_or_vendor: "Print Nampula", quotation_number: "QT-NPL-07", reviewed_by: "Pastora Respons�vel Requisi��es", reviewed_at: "2026-06-15T10:00:00.000Z", review_notes: "OK.", sent_to_main_pastor_by: "Pastora Respons�vel Requisi��es", sent_to_main_pastor_at: "2026-06-16T10:00:00.000Z", approved_by: "Pastor Kene Ume", approved_by_user_id: "u-17", approved_at: "2026-06-17T10:00:00.000Z", approved_amount: 12000, approval_notes: "Aprovado.", final_priority: "Normal", rejected_by: "", rejected_at: "", rejection_reason: "", resources_released_by: "Finance Head Demo", released_by: "Finance Head Demo", resources_released_at: "2026-06-18T10:00:00.000Z", released_at: "2026-06-18T10:00:00.000Z", released_amount: 12000, amount_released: 12000, finance_status: "Recursos Liberados", sent_to_finance: true, sent_to_finance_at: "2026-06-17T10:00:00.000Z", finance_disbursement_id: "disb-req-11", payment_method: "M-Pesa", payment_reference: "MP-NPL-07", payment_notes: "", finance_record_id: "", inventory_item_id: "", audit_history: [], status: "Recursos Liberados", created_at: "2026-06-10T08:00:00.000Z", updated_at: "2026-06-18T10:00:00.000Z" },
-    { id: "req-7", request_number: "REQ-2026-0007", requested_by_user_id: "u-11", requested_by_name: "Marcelo Panguene", department_id: "dept-venue", department_name: "Venue Management", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", requisition_type: "Equipamento", title: "Laptop para t�cnico de som", description: "Laptop dedicado para software de som digital.", justification: "Substitui��o de equipamento antigo.", estimated_amount: 62000, currency: "MZN", urgency: "Normal", needed_by_date: "2026-06-30", attachments: [], supplier_or_vendor: "IT Supplier", quotation_number: "QT-IT-08", reviewed_by: "Pastora Respons�vel Requisi��es", reviewed_at: "2026-06-20T10:00:00.000Z", review_notes: "Compra conclu�da e registada.", sent_to_main_pastor_at: "2026-06-21T10:00:00.000Z", approved_by: "Pastor Kene Ume", approved_at: "2026-06-22", approval_notes: "Aprovado.", rejected_by: "", rejected_at: "", rejection_reason: "", resources_released_by: "Finance Head Demo", released_by: "Finance Head Demo", resources_released_at: "2026-06-23T10:00:00.000Z", released_at: "2026-06-23T10:00:00.000Z", released_amount: 62000, amount_released: 62000, finance_status: "Pago", sent_to_finance: true, sent_to_finance_at: "2026-06-22T10:00:00.000Z", finance_disbursement_id: "disb-req-7", payment_method: "Banco", payment_reference: "TRF-IT-07", finance_record_id: "", inventory_item_id: "inv-req-req-7", status: "Fechado", created_at: "2026-06-15T08:00:00.000Z", updated_at: "2026-06-28T10:00:00.000Z" }
-  ],
-  financeDisbursements: [
-    { id: "disb-req-8", requisition_id: "req-8", request_number: "REQ-2026-0008", title: "Banners e material gr�fico para evangeliza��o", department_name: "Cell Ministry", church_name: "E.C. Maputo Central - Sede", requested_by: "Department Head Demo", approved_by: "Pastor Kene Ume", approved_at: "2026-07-09T14:00:00.000Z", approved_amount: 15000, released_amount: 0, status: "Aguardando Libera��o", source: "requisition", transaction_type: "expense", created_at: "2026-07-09T14:00:00.000Z", updated_at: "2026-07-09T14:00:00.000Z" },
-    { id: "disb-req-4", requisition_id: "req-4", request_number: "REQ-2026-0004", title: "Microfones sem fio adicionais", department_name: "Venue Management", church_name: "E.C. Maputo Central - Sede", requested_by: "Marcelo Panguene", approved_by: "Pastor Kene Ume", approved_at: "2026-07-03T10:00:00.000Z", approved_amount: 74000, released_amount: 74000, released_by: "Finance Head Demo", released_at: "2026-07-04T15:00:00.000Z", payment_method: "Banco", payment_reference: "TRF-2026-044", status: "Recursos Liberados", source: "requisition", transaction_type: "expense", created_at: "2026-07-03T10:00:00.000Z", updated_at: "2026-07-04T15:00:00.000Z" },
-    { id: "disb-req-9", requisition_id: "req-9", request_number: "REQ-2026-0009", title: "C�maras adicionais para transmiss�o", department_name: "Media", church_name: "Igreja Embaixada de Cristo Matola", requested_by: "Pastor da Igreja", approved_by: "Pastor Kene Ume", approved_at: "2026-06-27T10:00:00.000Z", approved_amount: 45000, released_amount: 25000, released_by: "Finance Head Demo", released_at: "2026-07-01T10:00:00.000Z", payment_method: "Banco", payment_reference: "TRF-AV-01", status: "Parcialmente Pago", source: "requisition", transaction_type: "expense", created_at: "2026-06-27T10:00:00.000Z", updated_at: "2026-07-01T10:00:00.000Z" },
-    { id: "disb-req-10", requisition_id: "req-10", request_number: "REQ-2026-0010", title: "Transporte para confer�ncia regional � Beira", department_name: "Programas", church_name: "Igreja Embaixada de Cristo Beira", requested_by: "Sister Janet Marquele", approved_by: "Pastor Kene Ume", approved_at: "2026-07-08T09:00:00.000Z", approved_amount: 20000, released_amount: 0, status: "Aguardando Libera��o", source: "requisition", transaction_type: "expense", created_at: "2026-07-08T09:00:00.000Z", updated_at: "2026-07-08T09:00:00.000Z" },
-    { id: "disb-req-11", requisition_id: "req-11", request_number: "REQ-2026-0011", title: "Manuais e apostilas — Escola de Células Nampula", department_name: "Ministério de Células", church_name: "Igreja Embaixada de Cristo Nampula", requested_by: "Sister Angelica", approved_by: "Pastor Kene Ume", approved_at: "2026-06-17T10:00:00.000Z", approved_amount: 12000, released_amount: 12000, released_by: "Finance Head Demo", released_at: "2026-06-18T10:00:00.000Z", payment_method: "M-Pesa", payment_reference: "MP-NPL-07", status: "Recursos Liberados", source: "requisition", transaction_type: "expense", created_at: "2026-06-17T10:00:00.000Z", updated_at: "2026-06-18T10:00:00.000Z" }
-  ],
+  requisitions: [],
+  financeDisbursements: [],
   staffProfiles: [
     { id: "staff-1", user_id: "u-5", full_name: "Flavia Moneedi Tivane", title: "Pastora", gender: "Feminino", phone: "860000101", whatsapp: "860000101", email: "flavia@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", department_id: "dept-cell", department_name: "Ministério de Células", role_title: "Cell Ministry Head", supervisor_user_id: "u-17", supervisor_name: "Pastor Kene Ume", start_date: "2024-01-15", employment_type: "Full-time", salary_or_allowance: 45000, payment_frequency: "Mensal", payment_method: "Banco", bank_name: "BCI", bank_account_number: "****4521", bank_or_mobile_details: "BCI ****4521", marital_status: "Casado/a", address: "Maputo, KaMpfumo", contract_start_date: "2024-01-15", status: "Activo", date_of_birth: "1990-03-14", notes: "", created_at: "2024-01-15", updated_at: "2026-07-10" },
     { id: "staff-2", user_id: "u-4", full_name: "Angelica Amilcar Macuacua", title: "Irm�", gender: "Feminino", phone: "860000102", whatsapp: "860000102", email: "angelica@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", department_id: "dept-cell", department_name: "Minist�rio de C�lulas", role_title: "ALEC Coordinator", supervisor_user_id: "u-5", supervisor_name: "Pastora Flavia", start_date: "2023-06-01", employment_type: "Full-time", salary_or_allowance: 38000, payment_frequency: "Mensal", payment_method: "M-Pesa", mobile_money_number: "860000102", bank_or_mobile_details: "86XXXXXXX", marital_status: "Solteiro/a", address: "Matola, Mo�ambique", status: "Activo", date_of_birth: "1992-07-22", notes: "", created_at: "2023-06-01", updated_at: "2026-07-10" },
@@ -3653,70 +3640,14 @@ const seedData = {
     ]
   },
   venueInventory: {
-    inventory: [
-      { id: "inv-1", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-01-10", updated_at: "2026-07-10", status: "Bom", nome_do_item: "Yamaha Mixer", categoria: "Som", quantidade: 1, estado: "Bom", localizacao: "Auditório Principal", departamento_responsavel: "Som", igreja: "church-hq", data_de_entrada: "2026-01-10", valor_unitario: 85000, valor_total: 85000, serial_number: "YMX-001", observacoes: "" },
-      { id: "inv-2", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-01-12", updated_at: "2026-07-10", status: "Bom", nome_do_item: "Amplificador Pevey", categoria: "Som", quantidade: 1, estado: "Bom", localizacao: "Auditório Principal", departamento_responsavel: "Som", igreja: "church-hq", data_de_entrada: "2026-01-12", valor_unitario: 42000, valor_total: 42000, serial_number: "PVY-AMP-01", observacoes: "" },
-      { id: "inv-3", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-02-01", updated_at: "2026-07-10", status: "Em Repara��o", nome_do_item: "Microphone FM Wireless", categoria: "Som", quantidade: 4, estado: "Em Repara��o", localizacao: "Media Room", departamento_responsavel: "Media", igreja: "church-hq", data_de_entrada: "2026-02-01", valor_unitario: 9500, valor_total: 38000, serial_number: "MIC-FM-SET", observacoes: "Dois microfones com ru�do." },
-      { id: "inv-4", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-02-05", updated_at: "2026-07-10", status: "Bom", nome_do_item: "Yamaha Piano", categoria: "Instrumentos", quantidade: 1, estado: "Bom", localizacao: "Palco", departamento_responsavel: "Música", igreja: "church-hq", data_de_entrada: "2026-02-05", valor_unitario: 120000, valor_total: 120000, serial_number: "YPI-88", observacoes: "" },
-      { id: "inv-5", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-02-08", updated_at: "2026-07-10", status: "Mau", nome_do_item: "Guitar Bass", categoria: "Instrumentos", quantidade: 1, estado: "Mau", localizacao: "Palco", departamento_responsavel: "M�sica", igreja: "church-hq", data_de_entrada: "2026-02-08", valor_unitario: 35000, valor_total: 35000, serial_number: "BASS-01", observacoes: "Necessita revis�o." },
-      { id: "inv-6", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-03-01", updated_at: "2026-07-10", status: "Bom", nome_do_item: "Colunas Hybrid", categoria: "Som", quantidade: 6, estado: "Bom", localizacao: "Auditório Principal", departamento_responsavel: "Som", igreja: "church-hq", data_de_entrada: "2026-03-01", valor_unitario: 30000, valor_total: 180000, serial_number: "HYB-SPK", observacoes: "" },
-      { id: "inv-7", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-03-05", updated_at: "2026-07-10", status: "Bom", nome_do_item: "Canon Projectors", categoria: "Media", quantidade: 2, estado: "Bom", localizacao: "Media Room", departamento_responsavel: "Media", igreja: "church-hq", data_de_entrada: "2026-03-05", valor_unitario: 58000, valor_total: 116000, serial_number: "CAN-PROJ", observacoes: "" },
-      { id: "inv-8", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-03-10", updated_at: "2026-07-10", status: "Bom", nome_do_item: "Stabilizador de Energia 5000W", categoria: "Energia", quantidade: 1, estado: "Bom", localizacao: "Sala Técnica", departamento_responsavel: "Venue Management", igreja: "church-hq", data_de_entrada: "2026-03-10", valor_unitario: 65000, valor_total: 65000, serial_number: "STB-5000", observacoes: "" },
-      { id: "inv-9", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-04-01", updated_at: "2026-07-10", status: "Bom", nome_do_item: "Air Conditioners", categoria: "AC / Climatiza��o", quantidade: 5, estado: "Bom", localizacao: "Audit�rio e Escrit�rios", departamento_responsavel: "Venue Management", igreja: "church-hq", data_de_entrada: "2026-04-01", valor_unitario: 52000, valor_total: 260000, serial_number: "AC-HIS", observacoes: "" },
-      { id: "inv-10", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-04-10", updated_at: "2026-07-10", status: "Bom", nome_do_item: "C�maras de V�deo", categoria: "Media", quantidade: 3, estado: "Bom", localizacao: "Media Room", departamento_responsavel: "Media", igreja: "church-hq", data_de_entrada: "2026-04-10", valor_unitario: 98000, valor_total: 294000, serial_number: "VID-CAM", observacoes: "" },
-      { id: "inv-11", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-04-12", updated_at: "2026-07-10", status: "Bom", nome_do_item: "Cabos HDMI", categoria: "Media", quantidade: 12, estado: "Bom", localizacao: "Media Room", departamento_responsavel: "Media", igreja: "church-hq", data_de_entrada: "2026-04-12", valor_unitario: 900, valor_total: 10800, serial_number: "HDMI-BULK", observacoes: "" },
-      { id: "inv-12", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-04-13", updated_at: "2026-07-10", status: "Bom", nome_do_item: "Camera Stand", categoria: "Media", quantidade: 4, estado: "Bom", localizacao: "Media Room", departamento_responsavel: "Media", igreja: "church-hq", data_de_entrada: "2026-04-13", valor_unitario: 6500, valor_total: 26000, serial_number: "CAM-STAND", observacoes: "" }
-    ],
-    acquisitions: [
-      { id: "acq-1", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-05-02", updated_at: "2026-05-02", status: "Bom", codigo_do_item: "NEW-001", descricao: "Canon EOS R5 MK-III BODY", categoria: "Media", quantidade: 1, serial_number: "CAN-R5-III", estado: "Bom", data_de_compra_ou_entrada: "2026-05-02", valor_unitario: 245000, valor_total: 245000, fornecedor: "Canon Supplier", recebido_por: "Marcelo Panguene", comprovativo_ou_factura: "INV-2026-001", observacoes: "" },
-      { id: "acq-2", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-05-02", updated_at: "2026-05-02", status: "Bom", codigo_do_item: "NEW-002", descricao: "Canon RF 24-105mm", categoria: "Media", quantidade: 1, serial_number: "RF-24-105", estado: "Bom", data_de_compra_ou_entrada: "2026-05-02", valor_unitario: 85000, valor_total: 85000, fornecedor: "Canon Supplier", recebido_por: "Marcelo Panguene", comprovativo_ou_factura: "INV-2026-002", observacoes: "" },
-      { id: "acq-3", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-06-10", updated_at: "2026-06-10", status: "Bom", codigo_do_item: "NEW-003", descricao: "Laptop", categoria: "Informática", quantidade: 2, serial_number: "LTP-2026", estado: "Bom", data_de_compra_ou_entrada: "2026-06-10", valor_unitario: 62000, valor_total: 124000, fornecedor: "IT Supplier", recebido_por: "Marcelo Panguene", comprovativo_ou_factura: "INV-2026-003", observacoes: "" },
-      { id: "acq-4", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-06-15", updated_at: "2026-06-15", status: "Bom", codigo_do_item: "NEW-004", descricao: "Hisense BTU AC", categoria: "AC / Climatiza��o", quantidade: 2, serial_number: "HIS-AC", estado: "Bom", data_de_compra_ou_entrada: "2026-06-15", valor_unitario: 54000, valor_total: 108000, fornecedor: "Hisense", recebido_por: "Marcelo Panguene", comprovativo_ou_factura: "INV-2026-004", observacoes: "" },
-      { id: "acq-5", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-07-01", updated_at: "2026-07-01", status: "Bom", codigo_do_item: "NEW-005", descricao: "Moving Wash Light", categoria: "Luzes", quantidade: 4, serial_number: "MWL-4", estado: "Bom", data_de_compra_ou_entrada: "2026-07-01", valor_unitario: 27500, valor_total: 110000, fornecedor: "Lighting Supplier", recebido_por: "Marcelo Panguene", comprovativo_ou_factura: "INV-2026-005", observacoes: "" },
-      { id: "acq-6", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-07-02", updated_at: "2026-07-02", status: "Bom", codigo_do_item: "NEW-006", descricao: "Avolites Quartz Lighting Console", categoria: "Luzes", quantidade: 1, serial_number: "AVL-QTZ", estado: "Bom", data_de_compra_ou_entrada: "2026-07-02", valor_unitario: 180000, valor_total: 180000, fornecedor: "Avolites", recebido_por: "Marcelo Panguene", comprovativo_ou_factura: "INV-2026-006", observacoes: "" },
-      { id: "acq-7", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-07-03", updated_at: "2026-07-03", status: "Bom", codigo_do_item: "NEW-007", descricao: "Panasonic 4K Camera", categoria: "Media", quantidade: 1, serial_number: "PAN-4K", estado: "Bom", data_de_compra_ou_entrada: "2026-07-03", valor_unitario: 135000, valor_total: 135000, fornecedor: "Panasonic", recebido_por: "Marcelo Panguene", comprovativo_ou_factura: "INV-2026-007", observacoes: "" },
-      { id: "acq-8", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-07-04", updated_at: "2026-07-04", status: "Bom", codigo_do_item: "NEW-008", descricao: "Canon 100-400MM Lens", categoria: "Media", quantidade: 1, serial_number: "CAN-100-400", estado: "Bom", data_de_compra_ou_entrada: "2026-07-04", valor_unitario: 112000, valor_total: 112000, fornecedor: "Canon Supplier", recebido_por: "Marcelo Panguene", comprovativo_ou_factura: "INV-2026-008", observacoes: "" },
-      { id: "acq-9", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-07-05", updated_at: "2026-07-05", status: "Bom", codigo_do_item: "NEW-009", descricao: "BMK ES600 Wireless Microphones", categoria: "Som", quantidade: 2, serial_number: "BMK-ES600", estado: "Bom", data_de_compra_ou_entrada: "2026-07-05", valor_unitario: 18500, valor_total: 37000, fornecedor: "Audio Supplier", recebido_por: "Marcelo Panguene", comprovativo_ou_factura: "INV-2026-009", observacoes: "" },
-      { id: "acq-10", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-07-06", updated_at: "2026-07-06", status: "Bom", codigo_do_item: "NEW-010", descricao: "Trip�s de C�mera", categoria: "Media", quantidade: 3, serial_number: "TRP-CAM-3", estado: "Bom", data_de_compra_ou_entrada: "2026-07-06", valor_unitario: 12000, valor_total: 36000, fornecedor: "Media Supplier", recebido_por: "Marcelo Panguene", comprovativo_ou_factura: "INV-2026-010", observacoes: "" }
-    ],
-    staffEquipment: [
-      { id: "staff-eq-1", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-01-05", updated_at: "2026-07-10", status: "Activo", nome_do_funcionario: "Flavia Moneedi Tivane", departamento: "Cell Ministry", igreja: "church-hq", data_onboarding: "2026-01-05", dispositivo: "Laptop", modelo: "Dell Latitude 5410", device_id: "DL-5410-FL", product_id: "P-FL-001", data_de_entrega: "2026-01-05", estado_na_entrega: "Bom", estado_actual: "Bom", responsavel_pela_entrega: "Marcelo Panguene", assinatura_confirmada: true, data_de_devolucao: "", observacoes: "" },
-      { id: "staff-eq-2", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-01-05", updated_at: "2026-07-10", status: "Activo", nome_do_funcionario: "Flavia Moneedi Tivane", departamento: "Cell Ministry", igreja: "church-hq", data_onboarding: "2026-01-05", dispositivo: "Celular", modelo: "Movitel M9114", device_id: "M9114-FL", product_id: "P-FL-002", data_de_entrega: "2026-01-05", estado_na_entrega: "Bom", estado_actual: "Bom", responsavel_pela_entrega: "Marcelo Panguene", assinatura_confirmada: true, data_de_devolucao: "", observacoes: "" },
-      { id: "staff-eq-3", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-01-08", updated_at: "2026-07-10", status: "Activo", nome_do_funcionario: "Angelica Amilcar Macuacua", departamento: "Cell Ministry", igreja: "church-hq", data_onboarding: "2026-01-08", dispositivo: "Laptop", modelo: "HP ENVY", device_id: "HP-ENVY-ANG", product_id: "P-ANG-001", data_de_entrega: "2026-01-08", estado_na_entrega: "Bom", estado_actual: "Reparado", responsavel_pela_entrega: "Marcelo Panguene", assinatura_confirmada: true, data_de_devolucao: "", observacoes: "" },
-      { id: "staff-eq-4", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-01-10", updated_at: "2026-07-10", status: "Activo", nome_do_funcionario: "Marcelo Moises Panguene", departamento: "Venue Management", igreja: "church-hq", data_onboarding: "2026-01-10", dispositivo: "Laptop", modelo: "HP ProBook 450 G6", device_id: "HP-PB-MAR", product_id: "P-MAR-001", data_de_entrega: "2026-01-10", estado_na_entrega: "Bom", estado_actual: "Reparado", responsavel_pela_entrega: "Admin Principal", assinatura_confirmada: true, data_de_devolucao: "", observacoes: "" },
-      { id: "staff-eq-5", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-01-12", updated_at: "2026-07-10", status: "Activo", nome_do_funcionario: "Laiza Teresa Chirindza", departamento: "Finanças", igreja: "church-hq", data_onboarding: "2026-01-12", dispositivo: "Laptop", modelo: "Lenovo 81D2", device_id: "LEN-LAIZA", product_id: "P-LAI-001", data_de_entrega: "2026-01-12", estado_na_entrega: "Bom", estado_actual: "Bom", responsavel_pela_entrega: "Marcelo Panguene", assinatura_confirmada: true, data_de_devolucao: "", observacoes: "" },
-      { id: "staff-eq-6", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-01-15", updated_at: "2026-07-10", status: "Activo", nome_do_funcionario: "Eduarda Paula Mnganhela", departamento: "Cell Ministry", igreja: "church-hq", data_onboarding: "2026-01-15", dispositivo: "Laptop", modelo: "Inspiron 5482", device_id: "INS-EDU", product_id: "P-EDU-001", data_de_entrega: "2026-01-15", estado_na_entrega: "Bom", estado_actual: "Bom", responsavel_pela_entrega: "Marcelo Panguene", assinatura_confirmada: true, data_de_devolucao: "", observacoes: "" },
-      { id: "staff-eq-7", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-01-18", updated_at: "2026-07-10", status: "Activo", nome_do_funcionario: "Janet Baptista Ngoca", departamento: "Partnership, Prison Ministry, Ministry Materials and Programs", igreja: "church-hq", data_onboarding: "2026-01-18", dispositivo: "Laptop", modelo: "Dell Latitude 7420", device_id: "DL-7420-JAN", product_id: "P-JAN-001", data_de_entrega: "2026-01-18", estado_na_entrega: "Bom", estado_actual: "Bom", responsavel_pela_entrega: "Marcelo Panguene", assinatura_confirmada: true, data_de_devolucao: "", observacoes: "" }
-    ],
-    maintenance: [
-      { id: "maint-1", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-06-01", updated_at: "2026-06-04", status: "Reparado", item: "Laptop da Angelica", categoria: "Informática", quantidade: 1, problema_reportado: "Sistema lento e bateria fraca", estado_antes: "Mau", estado_depois: "Bom", custo_da_reparacao: 2500, tecnico_ou_responsavel: "Técnico Local", data_de_envio: "2026-06-01", data_de_retorno: "2026-06-04", estado: "Reparado", observacoes: "" },
-      { id: "maint-2", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-06-03", updated_at: "2026-06-08", status: "Reparado", item: "Laptop do Deacon", categoria: "Inform�tica", quantidade: 1, problema_reportado: "Ecr� danificado", estado_antes: "Mau", estado_depois: "Bom", custo_da_reparacao: 6000, tecnico_ou_responsavel: "T�cnico Local", data_de_envio: "2026-06-03", data_de_retorno: "2026-06-08", estado: "Reparado", observacoes: "" },
-      { id: "maint-3", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-06-05", updated_at: "2026-06-10", status: "Reparado", item: "Laptop do Marcelo", categoria: "Informática", quantidade: 1, problema_reportado: "Disco com falhas", estado_antes: "Mau", estado_depois: "Bom", custo_da_reparacao: 5500, tecnico_ou_responsavel: "Técnico Local", data_de_envio: "2026-06-05", data_de_retorno: "2026-06-10", estado: "Reparado", observacoes: "" },
-      { id: "maint-4", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-06-07", updated_at: "2026-06-12", status: "Reparado", item: "Laptop do Bro. Valdemiro", categoria: "Informática", quantidade: 1, problema_reportado: "Teclado e sistema", estado_antes: "Mau", estado_depois: "Bom", custo_da_reparacao: 5500, tecnico_ou_responsavel: "Técnico Local", data_de_envio: "2026-06-07", data_de_retorno: "2026-06-12", estado: "Reparado", observacoes: "" }
-    ],
-    movements: [
-      { id: "move-1", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-07-05", updated_at: "2026-07-05", status: "Solicitado", item: "Canon Projector", quantidade: 1, origem: "Media Room", destino: "Sala de Forma��o", departamento_solicitante: "Escola de Funda��o", pessoa_responsavel: "Sister Angelica", data_de_saida: "2026-07-06", data_prevista_de_retorno: "2026-07-07", data_real_de_retorno: "", estado_ao_sair: "Bom", estado_ao_voltar: "", aprovado_por: "", estado: "Solicitado", observacoes: "" },
-      { id: "move-2", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-07-06", updated_at: "2026-07-08", status: "Devolvido", item: "Microphone FM Wireless", quantidade: 2, origem: "Auditório", destino: "Culto Online", departamento_solicitante: "Media", pessoa_responsavel: "Media Team", data_de_saida: "2026-07-06", data_prevista_de_retorno: "2026-07-08", data_real_de_retorno: "2026-07-08", estado_ao_sair: "Bom", estado_ao_voltar: "Bom", aprovado_por: "Marcelo Panguene", estado: "Devolvido", observacoes: "" }
-    ],
-    venues: [
-      { id: "venue-1", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-01-01", updated_at: "2026-07-10", status: "Activo", nome_do_espaco: "Auditório Principal", localizacao: "Sede Nacional", igreja: "church-hq", capacidade: 350, tipo: "Auditório", equipamentos_fixos: "Som, Luzes, AC, Projectores", estado: "Activo", responsavel: "Marcelo Panguene", observacoes: "" },
-      { id: "venue-2", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-01-01", updated_at: "2026-07-10", status: "Activo", nome_do_espaco: "Sala de Forma��o", localizacao: "Sede Nacional", igreja: "church-hq", capacidade: 60, tipo: "Sala", equipamentos_fixos: "Projector, cadeiras, quadro", estado: "Activo", responsavel: "Sister Angelica", observacoes: "" },
-      { id: "venue-3", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-01-01", updated_at: "2026-07-10", status: "Em Manuten��o", nome_do_espaco: "Media Room", localizacao: "Sede Nacional", igreja: "church-hq", capacidade: 12, tipo: "Est�dio", equipamentos_fixos: "C�maras, computadores, �udio", estado: "Em Manuten��o", responsavel: "Media Team", observacoes: "Organizar cablagem." }
-    ],
-    checklists: [
-      { id: "check-1", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-07-05", updated_at: "2026-07-05", status: "Pronto", data_do_culto: "2026-07-05", igreja: "church-hq", espaco: "Auditório Principal", tipo_de_culto_ou_evento: "Domingo - 1º Culto", som_verificado: true, luzes_verificadas: true, ac_verificado: true, projector_verificado: true, cadeiras_organizadas: true, pulpito_pronto: true, cameras_prontas: true, microfones_prontos: true, limpeza_feita: true, responsavel: "Marcelo Panguene", estado: "Pronto", observacoes: "" },
-      { id: "check-2", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-07-09", updated_at: "2026-07-09", status: "Parcial", data_do_culto: "2026-07-12", igreja: "church-hq", espaco: "Auditrio Principal", tipo_de_culto_ou_evento: "Domingo - 2 Culto", som_verificado: true, luzes_verificadas: false, ac_verificado: true, projector_verificado: true, cadeiras_organizadas: false, pulpito_pronto: true, cameras_prontas: true, microfones_prontos: true, limpeza_feita: false, responsavel: "Marcelo Panguene", estado: "Parcial", observacoes: "Concluir organizao das cadeiras e limpeza." }
-    ],
-    reports: [
-      { id: "ven-report-1", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-07-10", updated_at: "2026-07-10", status: "Concluído", name: "Inventário por Categoria", category: "Inventário", report_type: "inventoryByCategory" },
-      { id: "ven-report-2", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-07-10", updated_at: "2026-07-10", status: "Concluído", name: "Inventário por Estado", category: "Inventário", report_type: "inventoryByStatus" },
-      { id: "ven-report-3", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-07-10", updated_at: "2026-07-10", status: "Concluído", name: "Equipamentos Atribuídos ao Staff", category: "Staff", report_type: "staffEquipmentReport" },
-      { id: "ven-report-4", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-07-10", updated_at: "2026-07-10", status: "Concluído", name: "Equipamentos Danificados", category: "Inventário", report_type: "damagedItemsReport" },
-      { id: "ven-report-5", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-07-10", updated_at: "2026-07-10", status: "Concludo", name: "Histrico de Reparaes", category: "Manuteno", report_type: "repairHistory" },
-      { id: "ven-report-6", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-07-10", updated_at: "2026-07-10", status: "Concluído", name: "Movimentações por Período", category: "Movimentações", report_type: "movementsByPeriod" },
-      { id: "ven-report-7", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-07-10", updated_at: "2026-07-10", status: "Concluído", name: "Checklist de Culto por Semana", category: "Checklist", report_type: "checklistByWeek" },
-      { id: "ven-report-8", church_id: "church-hq", created_by: "Marcelo Panguene", updated_by: "Marcelo Panguene", created_at: "2026-07-10", updated_at: "2026-07-10", status: "Concluído", name: "Novas Aquisições por Mês", category: "Aquisições", report_type: "newAcquisitionsByMonth" }
-    ]
+    inventory: [],
+    acquisitions: [],
+    staffEquipment: [],
+    maintenance: [],
+    movements: [],
+    venues: [],
+    checklists: [],
+    reports: []
   },
   prisonMinistry: {
     prisons: [
@@ -3774,69 +3705,13 @@ const seedData = {
   // Catalog of partnership arms (analytics layer; financeRecords remain the source of truth)
   partnershipArms: typeof PARTNERSHIP_ARMS_SEED !== "undefined" ? structuredClone(PARTNERSHIP_ARMS_SEED) : [],
   media: {
-    technicians: [
-      { id: "mt-1", staff_id: "staff-4", full_name: "Marcelo Panguene", title: "Sr.", phone: "860000104", whatsapp: "860000104", email: "marcelo.panguene@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", department_id: "dept-media", department_name: "M�dia", status: "Activo", profile_photo: "", notes: "Respons�vel pela direc��o t�cnica e transmiss�o.", roles_can_perform: ["mediaDirector", "mediaSupervisor", "streamingTechnician", "videoMixerOperator"], preferred_services: ["Todos"], availability_notes: "Dispon�vel para cultos principais e programas globais.", skill_level: "Supervisor", start_date: "2023-01-10", supervisor_id: "u-17", supervisor_name: "Pastor Kene Ume", created_at: "2026-07-01", updated_at: "2026-07-15" },
-      { id: "mt-2", full_name: "T�cnico A", title: "Irm�o", phone: "860001001", whatsapp: "860001001", email: "tecnico.a@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", department_id: "dept-media", department_name: "M�dia", status: "Activo", profile_photo: "", notes: "", roles_can_perform: ["cameraOperator"], preferred_services: ["Domingo 07:30", "Domingo 09:30"], availability_notes: "Dispon�vel aos domingos.", skill_level: "Interm�dio", start_date: "2025-02-01", supervisor_id: "mt-1", supervisor_name: "Marcelo Panguene", created_at: "2026-07-01", updated_at: "2026-07-15" },
-      { id: "mt-3", full_name: "T�cnico B", title: "Irm�o", phone: "860001002", whatsapp: "860001002", email: "tecnico.b@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", department_id: "dept-media", department_name: "M�dia", status: "Activo", profile_photo: "", notes: "", roles_can_perform: ["soundTechnician"], preferred_services: ["Todos"], availability_notes: "Som e apoio t�cnico.", skill_level: "Avan�ado", start_date: "2024-09-12", supervisor_id: "mt-1", supervisor_name: "Marcelo Panguene", created_at: "2026-07-01", updated_at: "2026-07-15" },
-      { id: "mt-4", full_name: "T�cnico C", title: "Irm�", phone: "860001003", whatsapp: "860001003", email: "tecnico.c@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", department_id: "dept-media", department_name: "M�dia", status: "Em Treinamento", profile_photo: "", notes: "", roles_can_perform: ["videoMixerOperator", "slidesOperator"], preferred_services: ["Quarta-feira 18:00"], availability_notes: "Em treinamento no video mixer.", skill_level: "Iniciante", start_date: "2026-02-10", supervisor_id: "mt-1", supervisor_name: "Marcelo Panguene", created_at: "2026-07-01", updated_at: "2026-07-15" },
-      { id: "mt-5", full_name: "T�cnico D", title: "Irm�", phone: "860001004", whatsapp: "860001004", email: "tecnico.d@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", department_id: "dept-media", department_name: "M�dia", status: "Activo", profile_photo: "", notes: "", roles_can_perform: ["photographer"], preferred_services: ["Domingo 09:30"], availability_notes: "Fotografia e social media.", skill_level: "Interm�dio", start_date: "2025-06-20", supervisor_id: "mt-1", supervisor_name: "Marcelo Panguene", created_at: "2026-07-01", updated_at: "2026-07-15" },
-      { id: "mt-6", full_name: "T�cnico E", title: "Irm�o", phone: "860001005", whatsapp: "860001005", email: "tecnico.e@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", department_id: "dept-media", department_name: "M�dia", status: "Activo", profile_photo: "", notes: "", roles_can_perform: ["scriptureOperator", "slidesOperator"], preferred_services: ["Quarta-feira 18:00", "Domingo 07:30"], availability_notes: "ProPresenter / EasyWorship.", skill_level: "Avan�ado", start_date: "2024-04-18", supervisor_id: "mt-1", supervisor_name: "Marcelo Panguene", created_at: "2026-07-01", updated_at: "2026-07-15" },
-      { id: "mt-7", full_name: "T�cnico F", title: "Irm�o", phone: "860001006", whatsapp: "860001006", email: "tecnico.f@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", department_id: "dept-media", department_name: "M�dia", status: "Activo", profile_photo: "", notes: "", roles_can_perform: ["streamingTechnician"], preferred_services: ["Todos"], availability_notes: "Streaming e rede.", skill_level: "Interm�dio", start_date: "2025-11-03", supervisor_id: "mt-1", supervisor_name: "Marcelo Panguene", created_at: "2026-07-01", updated_at: "2026-07-15" }
-    ],
-    roles: [
-      { id: "mr-1", name: "Operador de C�mara", key: "cameraOperator", description: "Opera c�maras durante cultos e programas.", category: "Video", required_skill_level: "Interm�dio", is_required_for_service: true, allow_multiple: true, is_active: true, created_at: "2026-07-01", updated_at: "2026-07-15" },
-      { id: "mr-2", name: "Fot�grafo", key: "photographer", description: "Regista momentos para arquivo e comunica��o.", category: "Foto", required_skill_level: "Interm�dio", is_required_for_service: false, allow_multiple: true, is_active: true, created_at: "2026-07-01", updated_at: "2026-07-15" },
-      { id: "mr-3", name: "T�cnico de Som", key: "soundTechnician", description: "Gere som, microfones e capta��o.", category: "Som", required_skill_level: "Avan�ado", is_required_for_service: true, allow_multiple: false, is_active: true, created_at: "2026-07-01", updated_at: "2026-07-15" },
-      { id: "mr-4", name: "Operador de Video Mixer", key: "videoMixerOperator", description: "Opera switcher/video mixer.", category: "Video", required_skill_level: "Avançado", is_required_for_service: true, allow_multiple: false, is_active: true, created_at: "2026-07-01", updated_at: "2026-07-15" },
-      { id: "mr-5", name: "T�cnico de Transmiss�o", key: "streamingTechnician", description: "Configura e monitoriza transmiss�es.", category: "Streaming", required_skill_level: "Avan�ado", is_required_for_service: true, allow_multiple: false, is_active: true, created_at: "2026-07-01", updated_at: "2026-07-15" },
-      { id: "mr-6", name: "Lançador de Escrituras", key: "scriptureOperator", description: "Projecta escrituras, letras e slides.", category: "Slides", required_skill_level: "Intermédio", is_required_for_service: true, allow_multiple: false, is_active: true, created_at: "2026-07-01", updated_at: "2026-07-15" },
-      { id: "mr-7", name: "Supervisor de Mídia", key: "mediaSupervisor", description: "Coordena a equipa em cada culto.", category: "Liderança", required_skill_level: "Supervisor", is_required_for_service: true, allow_multiple: false, is_active: true, created_at: "2026-07-01", updated_at: "2026-07-15" },
-      { id: "mr-8", name: "Director de Mídia", key: "mediaDirector", description: "Responsável pelo ministério de mídia.", category: "Liderança", required_skill_level: "Supervisor", is_required_for_service: false, allow_multiple: false, is_active: true, created_at: "2026-07-01", updated_at: "2026-07-15" },
-      { id: "mr-9", name: "Operador de ProPresenter / EasyWorship", key: "presentationOperator", description: "Opera letras, escrituras e slides de apoio ao culto.", category: "Slides", required_skill_level: "Intermédio", is_required_for_service: true, allow_multiple: false, is_active: true, created_at: "2026-07-01", updated_at: "2026-07-15" },
-      { id: "mr-10", name: "Operador de Slides", key: "slidesOperator", description: "Apoia projec��o de apresenta��es e conte�dos visuais.", category: "Slides", required_skill_level: "Iniciante", is_required_for_service: false, allow_multiple: true, is_active: true, created_at: "2026-07-01", updated_at: "2026-07-15" },
-      { id: "mr-11", name: "Assistente T�cnico", key: "technicalAssistant", description: "Apoia montagem, cabos, comunica��o e substitui��es.", category: "Suporte", required_skill_level: "Iniciante", is_required_for_service: false, allow_multiple: true, is_active: true, created_at: "2026-07-01", updated_at: "2026-07-15" },
-      { id: "mr-12", name: "Ilumina��o", key: "lightingOperator", description: "Gere luzes e ambiente visual do culto.", category: "Luzes", required_skill_level: "Interm�dio", is_required_for_service: false, allow_multiple: false, is_active: true, created_at: "2026-07-01", updated_at: "2026-07-15" },
-      { id: "mr-13", name: "Edi��o de V�deo", key: "videoEditor", description: "Edita clips, mensagens e conte�do p�s-culto.", category: "P�s-produ��o", required_skill_level: "Interm�dio", is_required_for_service: false, allow_multiple: true, is_active: true, created_at: "2026-07-01", updated_at: "2026-07-15" },
-      { id: "mr-14", name: "Social Media / Publica��o", key: "socialMediaPublisher", description: "Publica clips, chamadas e destaques nas redes sociais.", category: "Comunica��o", required_skill_level: "Interm�dio", is_required_for_service: false, allow_multiple: true, is_active: true, created_at: "2026-07-01", updated_at: "2026-07-15" }
-    ],
-    services: [
-      { id: "ms-1", name: "Culto de Quarta-feira", service_type: "Culto Regular", day_of_week: "Quarta-feira", time: "18:00", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", is_recurring: true, recurrence_rule: "weekly", is_special_event: false, event_date: "", status: "Activo", needs_streaming: true, needs_full_team: true, channels_used: ["Facebook", "YouTube"], responsible_name: "Marcelo Panguene", notes: "" },
-      { id: "ms-2", name: "Domingo 1º Culto", service_type: "Culto Regular", day_of_week: "Domingo", time: "07:30", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", is_recurring: true, recurrence_rule: "weekly", is_special_event: false, event_date: "", status: "Activo", needs_streaming: true, needs_full_team: true, channels_used: ["Facebook", "YouTube"], responsible_name: "Marcelo Panguene", notes: "" },
-      { id: "ms-3", name: "Domingo 2º Culto", service_type: "Culto Regular", day_of_week: "Domingo", time: "09:30", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", is_recurring: true, recurrence_rule: "weekly", is_special_event: false, event_date: "", status: "Activo", needs_streaming: true, needs_full_team: true, channels_used: ["Facebook", "YouTube", "Live TV"], responsible_name: "Marcelo Panguene", notes: "" },
-      { id: "ms-4", name: "Ora��es", service_type: "Ora��o", day_of_week: "Segunda-feira", time: "17:30", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", is_recurring: true, recurrence_rule: "weekly", is_special_event: false, event_date: "", status: "Activo", needs_streaming: false, needs_full_team: false, channels_used: ["Zoom"], responsible_name: "Media Supervisor Demo", notes: "" },
-      { id: "ms-5", name: "Master Class", service_type: "Master Class", day_of_week: "Segunda-feira", time: "19:00", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", is_recurring: true, recurrence_rule: "weekly", is_special_event: false, event_date: "", status: "Activo", needs_streaming: true, needs_full_team: false, channels_used: ["Zoom"], responsible_name: "Media Supervisor Demo", notes: "" },
-      { id: "ms-6", name: "Pray-a-thon", service_type: "Programa Especial", day_of_week: "", time: "18:00", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", is_recurring: false, recurrence_rule: "", is_special_event: true, event_date: "2026-07-24", status: "Planeado", needs_streaming: true, needs_full_team: true, channels_used: ["Facebook", "YouTube"], responsible_name: "Marcelo Panguene", notes: "Programa especial requer equipa de mídia." }
-    ],
-    schedules: [
-      { id: "sch-1", service_id: "ms-3", service_name: "Domingo 2º Culto", service_date: "2026-07-19", church_id: "church-hq", status: "Publicada", supervisor_id: "mt-1", supervisor_name: "Marcelo Panguene", notes: "Escala principal de domingo.", assignments: [
-        { id: "as-1", role_id: "mr-7", role_name: "Supervisor de Mídia", technician_id: "mt-1", technician_name: "Marcelo Panguene", status: "Confirmado", check_in_time: "", check_out_time: "", attendance_status: "Presente", performance_status: "Avaliado", notes: "" },
-        { id: "as-2", role_id: "mr-4", role_name: "Operador de Video Mixer", technician_id: "mt-4", technician_name: "Técnico C", status: "Escalado", check_in_time: "", check_out_time: "", attendance_status: "Pendente", performance_status: "Pendente", notes: "" },
-        { id: "as-3", role_id: "mr-3", role_name: "Técnico de Som", technician_id: "mt-3", technician_name: "Técnico B", status: "Confirmado", check_in_time: "", check_out_time: "", attendance_status: "Pendente", performance_status: "Pendente", notes: "" },
-        { id: "as-4", role_id: "mr-1", role_name: "Operador de C�mara", technician_id: "mt-2", technician_name: "T�cnico A", status: "Confirmado", check_in_time: "", check_out_time: "", attendance_status: "Pendente", performance_status: "Pendente", notes: "C�mara 1" },
-        { id: "as-5", role_id: "mr-2", role_name: "Fotógrafo", technician_id: "mt-5", technician_name: "Técnico D", status: "Escalado", check_in_time: "", check_out_time: "", attendance_status: "Pendente", performance_status: "Pendente", notes: "" },
-        { id: "as-6", role_id: "mr-6", role_name: "Lançador de Escrituras", technician_id: "mt-6", technician_name: "Técnico E", status: "Confirmado", check_in_time: "", check_out_time: "", attendance_status: "Pendente", performance_status: "Pendente", notes: "" },
-        { id: "as-7", role_id: "mr-5", role_name: "T�cnico de Transmiss�o", technician_id: "mt-7", technician_name: "T�cnico F", status: "Confirmado", check_in_time: "", check_out_time: "", attendance_status: "Pendente", performance_status: "Pendente", notes: "" }
-      ], created_at: "2026-07-15", updated_at: "2026-07-15" },
-      { id: "sch-2", service_id: "ms-1", service_name: "Culto de Quarta-feira", service_date: "2026-07-15", church_id: "church-hq", status: "Confirmada", supervisor_id: "mt-1", supervisor_name: "Marcelo Panguene", notes: "", assignments: [
-        { id: "as-8", role_id: "mr-7", role_name: "Supervisor de Mídia", technician_id: "mt-1", technician_name: "Marcelo Panguene", status: "Confirmado", attendance_status: "Pendente", performance_status: "Pendente", notes: "" },
-        { id: "as-9", role_id: "mr-6", role_name: "Lançador de Escrituras", technician_id: "mt-6", technician_name: "Técnico E", status: "Confirmado", attendance_status: "Pendente", performance_status: "Pendente", notes: "" }
-      ], created_at: "2026-07-14", updated_at: "2026-07-15" }
-    ],
-    streamingChannels: [
-      { id: "mc-1", name: "Facebook", platform: "Facebook", channel_url: "https://www.facebook.com/christembassymozambique", status: "Activo", responsible_user_id: "u-20", responsible_name: "Marcelo Panguene", notes: "Canal principal de live.", created_at: "2026-07-01", updated_at: "2026-07-15" },
-      { id: "mc-2", name: "YouTube", platform: "YouTube", channel_url: "https://www.youtube.com/@embaixadadecristomocambiqu6895", status: "Activo", responsible_user_id: "u-20", responsible_name: "Marcelo Panguene", notes: "Cultos e arquivo de vídeos.", created_at: "2026-07-01", updated_at: "2026-07-15" },
-      { id: "mc-3", name: "Instagram", platform: "Instagram", channel_url: "https://www.instagram.com/embaixada_de_cristo_mocambique/", status: "Por Configurar", responsible_user_id: "u-21", responsible_name: "Media Supervisor Demo", notes: "Uso para clips e chamadas.", created_at: "2026-07-01", updated_at: "2026-07-15" },
-      { id: "mc-4", name: "Zoom", platform: "Zoom", channel_url: "#", status: "Activo", responsible_user_id: "u-21", responsible_name: "Media Supervisor Demo", notes: "Orações e Master Class.", created_at: "2026-07-01", updated_at: "2026-07-15" },
-      { id: "mc-5", name: "Live TV no Site P�blico", platform: "Live TV", channel_url: "https://salesio.github.io/ce-mozambique-site/culto.html", status: "Em Prepara��o", responsible_user_id: "u-20", responsible_name: "Marcelo Panguene", notes: "Transmiss�o directa para a p�gina LIVE TV do site p�blico.", created_at: "2026-07-01", updated_at: "2026-07-15" }
-    ],
-    performanceEvaluations: [
-      { id: "mev-1", technician_id: "mt-2", technician_name: "T�cnico A", schedule_id: "sch-1", service_id: "ms-3", service_date: "2026-07-19", role_performed: "Operador de C�mara", evaluated_by: "", evaluated_at: "", punctuality_score: 0, technical_quality_score: 0, teamwork_score: 0, responsibility_score: 0, problem_solving_score: 0, spiritual_attitude_score: 0, overall_score: 0, strengths: "", areas_to_improve: "", notes: "", status: "Pendente" },
-      { id: "mev-2", technician_id: "mt-1", technician_name: "Marcelo Panguene", schedule_id: "sch-1", service_id: "ms-3", service_date: "2026-07-19", role_performed: "Supervisor de Mídia", evaluated_by: "Pastor Kene Ume", evaluated_at: "2026-07-20", punctuality_score: 5, technical_quality_score: 5, teamwork_score: 5, responsibility_score: 5, problem_solving_score: 5, spiritual_attitude_score: 5, overall_score: 5, strengths: "Liderança e estabilidade técnica.", areas_to_improve: "", notes: "", status: "Avaliado" }
-    ],
-    awards: [
-      { id: "maw-1", year: 2026, category: "T�cnico do Ano", technician_id: "mt-1", technician_name: "Marcelo Panguene", reason: "Excel�ncia na supervis�o e transmiss�o.", score_basis: "M�dia 5/5 + presen�a consistente", awarded_by: "Pastor Kene Ume", awarded_at: "", notes: "Candidato sugerido." },
-      { id: "maw-2", year: 2026, category: "Mais Pontual", technician_id: "mt-6", technician_name: "Técnico E", reason: "Alta pontualidade nas escalas.", score_basis: "Presença pontual", awarded_by: "Marcelo Panguene", awarded_at: "", notes: "Candidato sugerido." }
-    ]
+    technicians: [],
+    roles: [],
+    services: [],
+    schedules: [],
+    streamingChannels: [],
+    performanceEvaluations: [],
+    awards: []
   },
   auditLogs: [{ id: "audit-1", church_id: "church-hq", actor: "Admin Principal", action: "Created operations prototype", date: "2026-07-06" }]
 };
@@ -4457,7 +4332,12 @@ Object.assign(TEXT.pt, {
   cellLeaders: "Líderes",
   fevoFull: "Acompanhamento, Evangelização, Visitação e Oração",
   fevoSubtitle: "Equipas semanais rotativas para acompanhamento, evangelização, visitação e oração.",
-  venueInventory: "Gestão de Espaços & Inventário",
+  loading: "A carregar dados...",
+    saving: "A guardar...",
+    emptyVenue: "Ainda não existem itens de inventário ou espaços registados.",
+    emptyMedia: "Ainda não existem escalas ou membros de mídia registados.",
+    emptyRequisitions: "Ainda não existem requisições registadas.",
+    venueInventory: "Gestão de Espaços & Inventário",
   venueInventoryShort: "Espaços & Inventário",
   cellAlecOverview: "Visão Geral ALEC",
   cellMinistryOverview: "Visão Geral",
@@ -4840,7 +4720,15 @@ function normalizeUserProfile(user = {}, churches = [], departments = []) {
   };
 }
 
+
+function isLegacyMockRecord(item, prefix) {
+  if (!item) return false;
+  const id = String(item.id || '');
+  return id.startsWith(prefix);
+}
+
 function normalizeState(saved) {
+  saved = saved || {};
   const merged = { ...structuredClone(seedData), ...saved };
   let persistentIds = [];
   let persistentEmails = [];
@@ -4957,12 +4845,15 @@ function normalizeState(saved) {
     freeFunds: [], reports: [], requests: []
   };
   merged.programs = [];
-  merged.media = Array.isArray(saved.media)
-    ? structuredClone(seedData.media)
-    : {
-      ...structuredClone(seedData.media),
-      ...(saved.media || {})
-    };
+  merged.media = {
+    technicians: (saved.media?.technicians || []).filter(r => !isLegacyMockRecord(r, 'mt-')),
+    roles: (saved.media?.roles || []).filter(r => !isLegacyMockRecord(r, 'mr-')),
+    services: (saved.media?.services || []).filter(r => !isLegacyMockRecord(r, 'ms-')),
+    schedules: (saved.media?.schedules || []).filter(r => !isLegacyMockRecord(r, 'sch-')),
+    streamingChannels: (saved.media?.streamingChannels || []).filter(r => !isLegacyMockRecord(r, 'mc-')),
+    performanceEvaluations: (saved.media?.performanceEvaluations || []).filter(r => !isLegacyMockRecord(r, 'mev-')),
+    awards: (saved.media?.awards || []).filter(r => !isLegacyMockRecord(r, 'maw-'))
+  };
   merged.counseling = Array.isArray(saved.counseling)
     ? structuredClone(seedData.counseling)
     : {
@@ -4978,7 +4869,8 @@ function normalizeState(saved) {
   }
   merged.cellReportSubmissions = Array.isArray(merged.cellReportSubmissions) ? merged.cellReportSubmissions : [];
   merged.memberRegistrationCandidates = Array.isArray(merged.memberRegistrationCandidates) ? merged.memberRegistrationCandidates : [];
-  merged.financeDisbursements = Array.isArray(merged.financeDisbursements) ? merged.financeDisbursements : [];
+  merged.financeDisbursements = (saved.financeDisbursements || []).filter(r => !isLegacyMockRecord(r, 'disb-req-'));
+  merged.requisitions = (saved.requisitions || []).filter(r => !isLegacyMockRecord(r, 'req-'));
   if (!Array.isArray(merged.partnershipArms) || !merged.partnershipArms.length) {
     merged.partnershipArms = typeof PARTNERSHIP_ARMS_SEED !== "undefined"
       ? structuredClone(PARTNERSHIP_ARMS_SEED)
@@ -5017,23 +4909,15 @@ function normalizeState(saved) {
     ...(saved.fevo || {})
   };
   merged.venueInventory = {
-    ...structuredClone(seedData.venueInventory),
-    ...(saved.venueInventory || {})
+    inventory: (saved.venueInventory?.inventory || []).filter(r => !isLegacyMockRecord(r, 'inv-')),
+    acquisitions: (saved.venueInventory?.acquisitions || []).filter(r => !isLegacyMockRecord(r, 'acq-')),
+    staffEquipment: (saved.venueInventory?.staffEquipment || []).filter(r => !isLegacyMockRecord(r, 'staff-eq-')),
+    maintenance: (saved.venueInventory?.maintenance || []).filter(r => !isLegacyMockRecord(r, 'maint-')),
+    movements: (saved.venueInventory?.movements || []).filter(r => !isLegacyMockRecord(r, 'move-')),
+    venues: (saved.venueInventory?.venues || []).filter(r => !isLegacyMockRecord(r, 'venue-')),
+    checklists: (saved.venueInventory?.checklists || []).filter(r => !isLegacyMockRecord(r, 'check-')),
+    reports: (saved.venueInventory?.reports || []).filter(r => !isLegacyMockRecord(r, 'ven-report-'))
   };
-  merged.notifications = Array.isArray(merged.notifications) ? merged.notifications : [];
-  const savedNotificationIds = new Set(merged.notifications.map((item) => item.id));
-  (seedData.notifications || []).forEach((item) => {
-    if (!savedNotificationIds.has(item.id)) merged.notifications.push(structuredClone(item));
-  });
-  ["inventory", "acquisitions", "staffEquipment", "maintenance", "movements", "venues", "checklists", "reports"].forEach((key) => {
-    const seedItems = seedData.venueInventory[key] || [];
-    const savedItems = merged.venueInventory[key] || [];
-    const savedIds = new Set(savedItems.map((item) => item.id));
-    seedItems.forEach((item) => {
-      if (!savedIds.has(item.id)) savedItems.push(structuredClone(item));
-    });
-    merged.venueInventory[key] = savedItems;
-  });
   merged.followUps = Array.isArray(merged.followUps) ? merged.followUps : structuredClone(seedData.followUps);
   merged.sacraments = merged.sacraments || structuredClone(seedData.sacraments);
   merged.sacraments.baptisms = merged.sacraments.baptisms || merged.sacraments.baptism || [];
@@ -5062,7 +4946,7 @@ function normalizeState(saved) {
   merged.contributors = Array.isArray(merged.contributors) ? merged.contributors : structuredClone(seedData.contributors || []);
   merged.publicGivingSubmissions = Array.isArray(merged.publicGivingSubmissions) ? merged.publicGivingSubmissions : structuredClone(seedData.publicGivingSubmissions || []);
   merged.foundationStudents = (merged.foundationStudents || []).map((student) => migrateFoundationStudent(student));
-  ["departments", "requisitions", "staffSalaries", "staffPerformance", "staffAttendance", "staffDocuments"].forEach((key) => {
+  ["departments", "staffSalaries", "staffPerformance", "staffAttendance", "staffDocuments"].forEach((key) => {
     merged[key] = Array.isArray(merged[key]) ? merged[key] : structuredClone(seedData[key] || []);
     const seedItems = seedData[key] || [];
     const savedIds = new Set(merged[key].map((item) => item.id));
@@ -32498,29 +32382,22 @@ function dualWriteMediaRecord(modalType, mode, record) {
   else if (mode === "update" && bridge[pair[1]]) void bridge[pair[1]](record.id, record);
 }
 
-async function hydrateMediaFromRepository() {
+async async function hydrateMediaFromRepository() {
   const repo = window.CEMedia || window.CEDataLayer?.media;
   if (!repo?.listMediaTeam) return false;
+  window.mediaLoading = true;
   try {
     let hydrated = false;
-    const media = getMediaState();
-    state.media = state.media && !Array.isArray(state.media) ? state.media : structuredClone(seedData.media || {});
+    state.media = state.media && !Array.isArray(state.media) ? state.media : {
+      technicians: [], roles: [], services: [], schedules: [],
+      streamingChannels: [], performanceEvaluations: [], awards: []
+    };
 
     async function merge(listFn, key, mapRow) {
       if (typeof listFn !== "function") return;
       const result = await listFn();
-      if (!result?.ok || !Array.isArray(result.data) || !result.data.length) return;
-      const prev = new Map((state.media[key] || []).map((r) => [r.id, r]));
-      const byId = new Map();
-      result.data.forEach((row) => {
-        const previous = prev.get(row.id) || {};
-        const mapped = mapRow ? mapRow(row) : row;
-        byId.set(row.id, { ...mapped, ...previous, id: row.id });
-      });
-      prev.forEach((localRow, id) => {
-        if (!byId.has(id)) byId.set(id, localRow);
-      });
-      state.media[key] = [...byId.values()];
+      if (!result?.ok || !Array.isArray(result.data)) return;
+      state.media[key] = result.data.map((row) => (mapRow ? mapRow(row) : row));
       hydrated = true;
     }
 
@@ -32539,7 +32416,7 @@ async function hydrateMediaFromRepository() {
       ...row,
       date: row.date || row.service_date,
       status: row.status || "Publicada",
-      assignments: Array.isArray(row.assignments) ? row.assignments : previousAssignments(row),
+      assignments: Array.isArray(row.assignments) ? row.assignments : [],
     }));
     await merge(repo.listMediaChannels?.bind(repo), "streamingChannels", (row) => ({
       ...row,
@@ -32562,20 +32439,17 @@ async function hydrateMediaFromRepository() {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       } catch (_) {}
-      console.info("[CE Media] hydrated", {
-        technicians: (state.media.technicians || []).length,
-        schedules: (state.media.schedules || []).length,
-      });
+      if (activeRoute === "media" && typeof renderMedia === "function") {
+        renderMedia();
+      }
     }
     return hydrated;
   } catch (error) {
     console.warn("[CE Media] hydrate failed", error);
     return false;
+  } finally {
+    window.mediaLoading = false;
   }
-}
-
-function previousAssignments(row) {
-  return Array.isArray(row?.assignments) ? row.assignments : [];
 }
 
 function isDemoUser(u) {
@@ -33074,34 +32948,30 @@ async function hydrateVenueInventoryFromRepository() {
   }
 }
 
-async function hydrateRequisitionsFromRepository() {
+async async function hydrateRequisitionsFromRepository() {
   const repo =
     window.CERequisitionsDataBridge ||
     window.CEDataLayer?.requisitionsWorkflow ||
     window.CEDataLayer?.requisitions ||
     window.CERequisitionsData;
   if (!repo?.listRequisitions) return false;
+  window.requisitionsLoading = true;
   try {
     const result = await repo.listRequisitions();
-    if (!result?.ok || !Array.isArray(result.data) || !result.data.length) return false;
-    const prev = new Map((state.requisitions || []).map((r) => [r.id, r]));
-    const byId = new Map();
-    result.data.forEach((row) => {
-      const previous = prev.get(row.id) || {};
-      byId.set(row.id, { ...row, ...previous, id: row.id });
-    });
-    prev.forEach((localRow, id) => {
-      if (!byId.has(id)) byId.set(id, localRow);
-    });
-    state.requisitions = [...byId.values()];
+    if (!result?.ok || !Array.isArray(result.data)) return false;
+    state.requisitions = result.data.map((row) => ({ ...row, id: row.id }));
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch (_) {}
-    console.info("[CE Requisitions] hydrated", state.requisitions.length);
+    if (activeRoute === "requisitions" && typeof renderRequisitions === "function") {
+      renderRequisitions();
+    }
     return true;
   } catch (error) {
     console.warn("[CE Requisitions] hydrate failed", error);
     return false;
+  } finally {
+    window.requisitionsLoading = false;
   }
 }
 

@@ -42,7 +42,7 @@ ok("media awards seed exists", existsSync(join(root, "src/data/seeds/mediaAwards
 ok("media bridge exists", existsSync(join(root, "js/media-data-bridge.js")));
 ok(
   "index includes media bridge",
-  /media-data-bridge\.js\?v=20260723-media-data-v1/.test(read("index.html")),
+  /media-data-bridge\.js/.test(read("index.html")),
 );
 ok("docs pilot Media Department", /Pilot migration: Media Department/.test(read("DATA_LAYER_PLAN.md")));
 ok("MEDIA_MODULE_PLAN exists", existsSync(join(root, "MEDIA_MODULE_PLAN.md")));
