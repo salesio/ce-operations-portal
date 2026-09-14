@@ -5723,12 +5723,14 @@ function getCellLeaderContext(userId, preferredCellId = "") {
   if (!user) return null;
   const authorizedCells = getAuthorizedCellsForUser(user.id);
   const authorizedIds = authorizedCells.map((cell) => cell.id);
-  const selectedId = preferredCellId || cellPortalPageState.cellId;
-  const cell = authorizedCells.find((item) => String(item.id) === String(selectedId)) || authorizedCells[0] || null;
-  const groupId = cell?.cell_group_id || cell?.group_id || "";
+  const selectedId = preferredCellId || cellPortalPageState.cellId || user.cell_id || user.cellId;
+  const cell = authorizedCells.find((item) => String(item.id) === String(selectedId)) ||
+    (user.cell_id ? authorizedCells.find((item) => String(item.id) === String(user.cell_id)) : null) ||
+    authorizedCells[0] || null;
+  const groupId = cell?.cell_group_id || cell?.group_id || user.cell_group_id || user.cellGroupId || "";
   const allGroups = [...(window.REAL_CELL_GROUPS || []), ...(state.cellGroups || []), ...(state.cellMinistry?.groups || [])];
   const group = allGroups.find((item) => String(item.id) === String(groupId) || item.group_name === cell?.group_name || item.name === cell?.group_name || item.name === cell?.cell_group_name) || null;
-  const church = (state.churches || []).find((item) => item.id === cell?.church_id) || null;
+  const church = (state.churches || []).find((item) => item.id === (cell?.church_id || user.church_id)) || null;
   const roleMap = {
     "Cell Leader": "Leader",
     "Cell Assistant": "Assistant",
@@ -5745,11 +5747,11 @@ function getCellLeaderContext(userId, preferredCellId = "") {
     church_id: cell?.church_id || user.church_id || "",
     church_name: church?.church_name || church?.public_name || cell?.church_name || "E.C. Maputo Central - Sede",
     cell_group_id: groupId,
-    cell_group_name: group?.group_name || group?.name || cell?.group_name || cell?.cell_group_name || "Diplomatas",
-    cell_id: cell?.id || "",
-    cell_name: cell ? portalCellName(cell) : "Célula Principal",
+    cell_group_name: group?.group_name || group?.name || cell?.group_name || cell?.cell_group_name || user.cell_group_name || "Grupo de Células",
+    cell_id: cell?.id || user.cell_id || "",
+    cell_name: cell ? portalCellName(cell) : (user.cell_name || "Célula Principal"),
     cell_role: roleMap[user.role] || user.role || "Admin",
-    authorized_cell_ids: authorizedIds.length ? authorizedIds : (cell?.id ? [cell.id] : []),
+    authorized_cell_ids: authorizedIds.length ? authorizedIds : (cell?.id ? [cell.id] : (user.cell_id ? [user.cell_id] : [])),
     permissions: [...new Set([...(user.permissions || []), ...(CELL_PORTAL_ROLE_PERMISSIONS[user.role] || [])])]
   };
 }
@@ -10268,8 +10270,10 @@ function fallbackCanViewModule(user = activeUser, module = "dashboard") {
 function userHasExtendedCellPerms(user = activeUser) {
   if (!user) return false;
   if ((user.department_permissions || []).includes("*") || user.role === "Super Admin" || String(user.role || "").toLowerCase().includes("super_admin")) return true;
+  const isCellLeader = isCellLeaderOrAssistant(user) || ["Cell Leader", "Cell Assistant", "Assistant Cell Leader"].includes(user.role);
+  if (isCellLeader && user.role !== "Super Admin") return false;
   const deptPerms = user.department_permissions || [];
-  return deptPerms.some((p) => ["cellMinistry", "cell_ministry", "cell", "cellReports", "cell_reports", "alec", "alec_manager"].includes(p)) ||
+  return deptPerms.some((p) => ["cellMinistry", "cell_ministry", "cell", "alec", "alec_manager"].includes(p)) ||
     ["Cell Ministry Head", "Cell Ministry Reviewer", "ALEC Manager", "ALEC Coordinator", "Coordenadora ALEC", "Coordenador ALEC"].includes(user.role);
 }
 
@@ -12464,26 +12468,24 @@ function renderCellLeaderPortal() {
       recordCellReportSecurityEvent("cell_portal_no_assignment", "Authenticated user has no assigned cell");
       return;
     }
+    if (!cellPortalPageState.cellGroupId && (activeUser?.cell_group_id || activeUser?.cellGroupId)) {
+      cellPortalPageState.cellGroupId = activeUser.cell_group_id || activeUser.cellGroupId;
+    }
     if (cellPortalPageState.cellGroupId) {
       const currentCell = authorizedCells.find((c) => String(c.id) === String(cellPortalPageState.cellId));
       if (!currentCell || String(currentCell.group_id || currentCell.cell_group_id || "") !== String(cellPortalPageState.cellGroupId)) {
-        const groupAuthCell = authorizedCells.find((c) => String(c.group_id || c.cell_group_id || "") === String(cellPortalPageState.cellGroupId));
+        const groupAuthCell = authorizedCells.find((c) => String(c.id) === String(activeUser?.cell_id || activeUser?.cellId || "")) ||
+          authorizedCells.find((c) => String(c.group_id || c.cell_group_id || "") === String(cellPortalPageState.cellGroupId));
         if (groupAuthCell) {
           cellPortalPageState.cellId = groupAuthCell.id;
         }
       }
     }
     if (!cellPortalPageState.cellId || !canAccessCell(activeUser?.id, cellPortalPageState.cellId)) {
-      if (cellPortalPageState.cellGroupId) {
-        const groupAuthCell = authorizedCells.find((c) => String(c.group_id || c.cell_group_id || "") === String(cellPortalPageState.cellGroupId));
-        if (groupAuthCell) {
-          cellPortalPageState.cellId = groupAuthCell.id;
-        } else {
-          cellPortalPageState.cellId = authorizedCells[0].id;
-        }
-      } else {
-        cellPortalPageState.cellId = authorizedCells[0].id;
-      }
+      const preferredCell = authorizedCells.find((c) => String(c.id) === String(activeUser?.cell_id || activeUser?.cellId || "")) ||
+        (cellPortalPageState.cellGroupId ? authorizedCells.find((c) => String(c.group_id || c.cell_group_id || "") === String(cellPortalPageState.cellGroupId)) : null) ||
+        authorizedCells[0];
+      cellPortalPageState.cellId = preferredCell?.id || authorizedCells[0]?.id;
     }
     const context = getCellLeaderContext(activeUser?.id, cellPortalPageState.cellId);
     if (!cellPortalPageState.cellGroupId && context?.cell_group_id) {

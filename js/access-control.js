@@ -881,8 +881,9 @@
       const canonRecordChurch = CANONICAL_CHURCH_MAP[recordChurch] || recordChurch;
       return recordChurch === userChurch || canonRecordChurch === canonUserChurch;
     }
-    const hasCellDeptGrant = (user.department_permissions || []).some((p) => ["cellMinistry", "cell_ministry", "cell", "cellReports", "alec", "*"].includes(p));
-    if (!hasCellDeptGrant && (scope === "cell" || (["Cell Leader", "Cell Assistant", "Assistant Cell Leader"].includes(user.role) && (module === "members" || module === "cell")))) {
+    const isCellLeader = ["Cell Leader", "Cell Assistant", "Assistant Cell Leader"].includes(user.role);
+    const hasCellDeptGrant = !isCellLeader && (user.department_permissions || []).some((p) => ["cellMinistry", "cell_ministry", "cell", "alec", "*"].includes(p));
+    if (!hasCellDeptGrant && (scope === "cell" || (isCellLeader && (module === "members" || module === "cell")))) {
       const authorizedCells = new Set([
         ...(user.assigned_cells || []),
         user.cell_id,
