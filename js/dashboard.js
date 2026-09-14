@@ -33442,11 +33442,28 @@ function mountPersonAutocomplete(formEl, options = {}) {
   if (!formEl) return;
   if (modalType === "memberMerge") return;
 
-  const selector = options.selector || [
+  // Non-person entity modals where 'name' / 'nome' refers to an event, facility, inventory, or entity title — NOT a person's name.
+  const isNonPersonEntityModal = [
+    "program",
+    "programs",
+    "church",
+    "cellGroup",
+    "cellRegistry",
+    "cell",
+    "materialCatalogue",
+    "material",
+    "inventoryItem",
+    "venueSpace",
+    "venueAcquisition",
+    "venueMaintenance",
+    "venueChecklist",
+    "prisonLocation",
+    "fevoConfig"
+  ].includes(modalType);
+
+  const defaultSelectors = [
     'input[name="full_name"]',
     'input[name="nome_completo"]',
-    'input[name="name"]',
-    'input[name="nome"]',
     'input[name="teacher_name"]',
     'input[name="student_name"]',
     'input[name="lider"]',
@@ -33459,7 +33476,13 @@ function mountPersonAutocomplete(formEl, options = {}) {
     'input[name="noiva"]',
     'input[name="pai"]',
     'input[name="mae"]'
-  ].join(", ");
+  ];
+
+  if (!isNonPersonEntityModal) {
+    defaultSelectors.push('input[name="name"]', 'input[name="nome"]');
+  }
+
+  const selector = options.selector || defaultSelectors.join(", ");
 
   const nameInputs = Array.from(formEl.querySelectorAll(selector));
   if (!nameInputs.length) return;
