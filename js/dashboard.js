@@ -32450,26 +32450,43 @@ async function hydrateCounselingFromRepository() {
   }
 }
 
-function dualWriteMediaRecord(modalType, mode, record) {
+async function dualWriteMediaRecord(modalType, mode, record) {
   const bridge = window.CEMedia || window.CEDataLayer?.media;
   if (!bridge || !record) return;
-  if (typeof bridge.dualWriteRecord === "function") {
-    void bridge.dualWriteRecord(modalType, mode, record);
-    return;
+  try {
+    let result;
+    if (typeof bridge.dualWriteRecord === "function") {
+      result = await bridge.dualWriteRecord(modalType, mode, record);
+    } else {
+      const map = {
+        mediaTechnician: ["createMediaTeamMember", "updateMediaTeamMember"],
+        mediaRole: ["createMediaRole", "updateMediaRole"],
+        mediaService: ["createMediaService", "updateMediaService"],
+        mediaSchedule: ["createMediaSchedule", "updateMediaSchedule"],
+        streamingChannel: ["createMediaChannel", "updateMediaChannel"],
+        mediaEvaluation: ["createMediaPerformanceReview", "updateMediaPerformanceReview"],
+        mediaAward: ["createMediaAward", "updateMediaAward"],
+      };
+      const pair = map[modalType];
+      if (!pair) return;
+      if (mode === "create" && bridge[pair[0]]) result = await bridge[pair[0]](record);
+      else if (mode === "update" && bridge[pair[1]]) result = await bridge[pair[1]](record.id, record);
+    }
+    if (result && result.ok && result.data) {
+      if (result.data.id && mode === "create") {
+        const oldId = record.id;
+        record.id = result.data.id;
+        const col = getCollection(modalType);
+        const idx = col.findIndex((item) => item.id === oldId || item === record);
+        if (idx >= 0) {
+          col[idx] = { ...col[idx], ...result.data };
+        }
+      }
+      saveState(`Saved ${modalType} to Supabase`);
+    }
+  } catch (err) {
+    console.warn("[CE Media] dualWrite error", err);
   }
-  const map = {
-    mediaTechnician: ["createMediaTeamMember", "updateMediaTeamMember"],
-    mediaRole: ["createMediaRole", "updateMediaRole"],
-    mediaService: ["createMediaService", "updateMediaService"],
-    mediaSchedule: ["createMediaSchedule", "updateMediaSchedule"],
-    streamingChannel: ["createMediaChannel", "updateMediaChannel"],
-    mediaEvaluation: ["createMediaPerformanceReview", "updateMediaPerformanceReview"],
-    mediaAward: ["createMediaAward", "updateMediaAward"],
-  };
-  const pair = map[modalType];
-  if (!pair) return;
-  if (mode === "create" && bridge[pair[0]]) void bridge[pair[0]](record);
-  else if (mode === "update" && bridge[pair[1]]) void bridge[pair[1]](record.id, record);
 }
 
 async function hydrateMediaFromRepository() {
@@ -32816,71 +32833,34 @@ async function hydrateStaffHrFromRepository() {
     }
     return hydrated;
   } catch (error) {
-    console.warn("[CE StaffHR] hydrate failed", error);
+    console.warn("[CE StaffHR] hydrate from repository failed", error);
     return false;
   }
 }
 
 function getVenueInventoryRepoSafe() {
-  return (
-    window.CEVenueInventory ||
-    window.CEDataLayer?.venueInventory ||
-    window.CEDataLayer?.inventoryItems ||
-    null
-  );
-}
-
-function dualWriteVenueInventoryRecord(modalType, mode, record) {
   const bridge = window.CEVenueInventory || window.CEDataLayer?.venueInventory;
-  if (!bridge || !record) return;
-  if (typeof bridge.dualWriteRecord === "function") {
-    void bridge.dualWriteRecord(modalType, mode, record);
-    return;
-  }
-  const map = {
-    inventoryItem: ["createInventoryItem", "updateInventoryItem"],
-    venueAcquisition: ["createInventoryItem", "updateInventoryItem"],
-    venueStaffEquipment: ["createInventoryItem", "updateInventoryItem"],
-    venueMaintenance: ["createMaintenanceRecord", "updateMaintenanceRecord"],
-    venueMovement: ["createInventoryMovement", "updateInventoryMovement"],
-    venueSpace: ["createVenueSpace", "updateVenueSpace"],
-    venueChecklist: ["createServiceChecklist", "updateServiceChecklist"],
-  };
-  const pair = map[modalType];
-  if (!pair) return;
-  if (mode === "create" && bridge[pair[0]]) void bridge[pair[0]](record);
-  else if (mode === "update" && bridge[pair[1]]) void bridge[pair[1]](record.id, record);
+  if (bridge && typeof bridge.listInventoryItems === "function") return bridge;
+  return null;
 }
 
 function mapStaffEquipmentFromItem(item) {
-  if (!item) return null;
-  if (!item.assigned_to_user_id && !item.assigned_to_name) return null;
+  if (!item || !item.assigned_to_staff_id) return null;
   return {
-    id: item.id.startsWith("inv-staff-") ? item.id.replace("inv-", "staff-eq-") : `staff-eq-${item.id}`,
-    church_id: item.church_id,
-    created_by: item.created_by,
-    updated_by: item.updated_by,
-    created_at: item.created_at,
-    updated_at: item.updated_at,
-    status: "Activo",
-    estado: "Activo",
-    nome_do_funcionario: item.assigned_to_name || "",
-    departamento: item.department_name || item.departamento_responsavel || "",
-    igreja: item.church_id,
-    data_onboarding: item.acquisition_date || item.data_de_entrada || "",
-    dispositivo: item.category === "IT / Computers" || item.categoria === "Informática" ? "Laptop" : item.name || item.nome_do_item,
-    modelo: item.model || item.name || item.nome_do_item || "",
-    device_id: item.serial_number || item.item_code || "",
-    product_id: item.item_code || "",
-    data_de_entrega: item.acquisition_date || item.data_de_entrada || "",
-    estado_na_entrega: "Bom",
-    estado_actual: item.condition === "Good" || item.estado === "Bom" ? "Bom" : item.estado || "Bom",
-    responsavel_pela_entrega: item.created_by_name || item.created_by || "",
-    assinatura_confirmada: true,
-    data_de_devolucao: "",
-    observacoes: item.observacoes || "",
+    id: `staff-eq-${item.id}`,
+    staff_id: item.assigned_to_staff_id,
+    staff_name: item.assigned_to_staff_name || "",
     inventory_item_id: item.id,
-    assigned_to_user_id: item.assigned_to_user_id,
+    codigo_do_item: item.item_code || item.id,
+    nome_do_item: item.name || item.nome_do_item || "",
+    categoria: item.categoria || item.category || "",
+    serial_number: item.serial_number || "",
+    data_de_atribuicao: item.assigned_date || item.data_de_atribuicao || "",
+    termo_assinado: Boolean(item.termo_assinado),
+    termo_url: item.termo_url || "",
+    estado: item.estado || item.status || "Bom",
+    devolvido_em: item.devolvido_em || null,
+    observacoes: item.observacoes || "",
   };
 }
 
@@ -33038,6 +33018,44 @@ async function hydrateVenueInventoryFromRepository() {
   }
 }
 
+async function dualWriteVenueInventoryRecord(modalType, mode, record) {
+  const bridge = window.CEVenueInventory || window.CEDataLayer?.venueInventory;
+  if (!bridge || !record) return;
+  try {
+    let result;
+    if (typeof bridge.dualWriteRecord === "function") {
+      result = await bridge.dualWriteRecord(modalType, mode, record);
+    } else {
+      const map = {
+        inventoryItem: ["createInventoryItem", "updateInventoryItem"],
+        acquisition: ["createAcquisition", "updateAcquisition"],
+        staffEquipment: ["createStaffEquipment", "updateStaffEquipment"],
+        movement: ["createInventoryMovement", "updateInventoryMovement"],
+        maintenance: ["createMaintenanceRecord", "updateMaintenanceRecord"],
+        space: ["createVenueSpace", "updateVenueSpace"],
+        serviceChecklist: ["createServiceChecklist", "updateServiceChecklist"],
+      };
+      const pair = map[modalType];
+      if (pair) {
+        if (mode === "create" && bridge[pair[0]]) {
+          result = await bridge[pair[0]](record);
+        } else if (mode === "update" && bridge[pair[1]]) {
+          result = await bridge[pair[1]](record.id, record);
+        }
+      }
+    }
+    if (result && result.ok && result.data && result.data.id && mode === "create") {
+      record.id = result.data.id;
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (_) {}
+    }
+    return result;
+  } catch (err) {
+    console.warn("[CE VenueInventory] dualWrite failed", err);
+  }
+}
+
 async function hydrateRequisitionsFromRepository() {
   const repo =
     window.CERequisitionsDataBridge ||
@@ -33065,15 +33083,32 @@ async function hydrateRequisitionsFromRepository() {
   }
 }
 
-function dualWriteRequisitionRecord(mode, record) {
-  const bridge = window.CERequisitionsDataBridge || window.CEDataLayer?.requisitions;
+async function dualWriteRequisitionRecord(mode, record) {
+  const bridge =
+    window.CERequisitionsDataBridge ||
+    window.CEDataLayer?.requisitionsWorkflow ||
+    window.CEDataLayer?.requisitions ||
+    window.CERequisitionsData;
   if (!bridge || !record) return;
-  if (typeof bridge.dualWriteRecord === "function") {
-    void bridge.dualWriteRecord(mode, record);
-    return;
+  try {
+    let result;
+    if (typeof bridge.dualWriteRecord === "function") {
+      result = await bridge.dualWriteRecord(mode, record);
+    } else if (mode === "create" && bridge.createRequisition) {
+      result = await bridge.createRequisition(record);
+    } else if (mode === "update" && bridge.updateRequisition) {
+      result = await bridge.updateRequisition(record.id, record);
+    }
+    if (result && result.ok && result.data && result.data.id && mode === "create") {
+      record.id = result.data.id;
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (_) {}
+    }
+    return result;
+  } catch (err) {
+    console.warn("[CE Requisitions] dualWrite failed", err);
   }
-  if (mode === "create" && bridge.createRequisition) void bridge.createRequisition(record);
-  else if (mode === "update" && bridge.updateRequisition) void bridge.updateRequisition(record.id, record);
 }
 
 /**

@@ -25,6 +25,12 @@
     checklists: null,
   };
 
+  var underlyingSupabaseApi = null;
+  var rawExisting = window.CEVenueInventory || (window.CEDataLayer && window.CEDataLayer.venueInventory);
+  if (rawExisting && typeof rawExisting.dualWriteRecord !== "function") {
+    underlyingSupabaseApi = rawExisting;
+  }
+
   function resolveDataSource() {
     try {
       var runtime = window.__CE_ENV__ && window.__CE_ENV__.VITE_DATA_SOURCE;
@@ -34,24 +40,27 @@
           : window.CEDataLayer && typeof window.CEDataLayer.getDataSource === "function"
             ? window.CEDataLayer.getDataSource()
             : "";
-      var value = String(runtime || fromBundle || "mock")
+      var value = String(runtime || fromBundle || "supabase")
         .trim()
         .toLowerCase();
       if (value === "local" || value === "api" || value === "supabase" || value === "mock") return value;
     } catch (_) {}
-    return "mock";
+    return "supabase";
   }
 
   function resolveApi() {
-    var layer = window.CEDataLayer && window.CEDataLayer.venueInventory;
-    if (layer && typeof layer.createInventoryItem === "function") {
-      return { api: layer, via: "CEDataLayer.venueInventory" };
-    }
-    if (window.CEVenueInventory && typeof window.CEVenueInventory.createInventoryItem === "function") {
-      return { api: window.CEVenueInventory, via: "CEVenueInventory" };
+    if (underlyingSupabaseApi && typeof underlyingSupabaseApi.createInventoryItem === "function") {
+      return { api: underlyingSupabaseApi, via: "underlyingSupabaseApi" };
     }
     if (window.CESupabase && typeof window.CESupabase.createInventoryItem === "function") {
       return { api: window.CESupabase, via: "CESupabase" };
+    }
+    var layer = window.CEDataLayer && window.CEDataLayer.venueInventory;
+    if (layer && typeof layer.createInventoryItem === "function" && typeof layer.dualWriteRecord !== "function") {
+      return { api: layer, via: "CEDataLayer.venueInventory" };
+    }
+    if (window.CEVenueInventory && typeof window.CEVenueInventory.createInventoryItem === "function" && typeof window.CEVenueInventory.dualWriteRecord !== "function") {
+      return { api: window.CEVenueInventory, via: "CEVenueInventory" };
     }
     return { api: null, via: "none" };
   }

@@ -10,6 +10,12 @@
   };
   var memory = { requisitions: null, timeline: null };
 
+  var underlyingSupabaseApi = null;
+  var rawExisting = window.CERequisitionsData || (window.CEDataLayer && (window.CEDataLayer.requisitionsWorkflow || window.CEDataLayer.requisitions));
+  if (rawExisting && typeof rawExisting.dualWriteRecord !== "function") {
+    underlyingSupabaseApi = rawExisting;
+  }
+
   function resolveDataSource() {
     try {
       var runtime = window.__CE_ENV__ && window.__CE_ENV__.VITE_DATA_SOURCE;
@@ -19,22 +25,25 @@
           : window.CEDataLayer && typeof window.CEDataLayer.getDataSource === "function"
             ? window.CEDataLayer.getDataSource()
             : "";
-      var value = String(runtime || fromBundle || "mock").trim().toLowerCase();
+      var value = String(runtime || fromBundle || "supabase").trim().toLowerCase();
       if (value === "local" || value === "api" || value === "supabase" || value === "mock") return value;
     } catch (_) {}
-    return "mock";
+    return "supabase";
   }
 
   function resolveApi() {
-    var layer = window.CEDataLayer && (window.CEDataLayer.requisitionsWorkflow || window.CEDataLayer.requisitions);
-    if (layer && typeof layer.createRequisition === "function") {
-      return { api: layer, via: "CEDataLayer.requisitions" };
-    }
-    if (window.CERequisitionsData && typeof window.CERequisitionsData.createRequisition === "function") {
-      return { api: window.CERequisitionsData, via: "CERequisitionsData" };
+    if (underlyingSupabaseApi && typeof underlyingSupabaseApi.createRequisition === "function") {
+      return { api: underlyingSupabaseApi, via: "underlyingSupabaseApi" };
     }
     if (window.CESupabase && typeof window.CESupabase.createRequisition === "function") {
       return { api: window.CESupabase, via: "CESupabase" };
+    }
+    var layer = window.CEDataLayer && (window.CEDataLayer.requisitionsWorkflow || window.CEDataLayer.requisitions);
+    if (layer && typeof layer.createRequisition === "function" && typeof layer.dualWriteRecord !== "function") {
+      return { api: layer, via: "CEDataLayer.requisitions" };
+    }
+    if (window.CERequisitionsData && typeof window.CERequisitionsData.createRequisition === "function" && typeof window.CERequisitionsData.dualWriteRecord !== "function") {
+      return { api: window.CERequisitionsData, via: "CERequisitionsData" };
     }
     return { api: null, via: "none" };
   }
