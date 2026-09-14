@@ -133,7 +133,9 @@ export function mapUserToRow(user: Partial<User>, forUpdate = false): SupabaseRo
     if (user.role_name !== undefined || user.role !== undefined) { metaUpdates.role_name = user.role_name || user.role; hasMeta = true; }
     if (user.church_name !== undefined) { metaUpdates.church_name = user.church_name; hasMeta = true; }
     if (user.department_name !== undefined || user.assigned_department !== undefined) { metaUpdates.department_name = user.department_name || user.assigned_department; hasMeta = true; }
-    if (user.department_permissions !== undefined) { metaUpdates.department_permissions = user.department_permissions; hasMeta = true; }
+    if (user.department_permissions !== undefined) { metaUpdates.department_permissions = Array.isArray(user.department_permissions) ? user.department_permissions : []; hasMeta = true; }
+    if (user.cannot_create_classes !== undefined) { metaUpdates.cannot_create_classes = Boolean(user.cannot_create_classes); hasMeta = true; }
+    if (user.can_view_all_churches !== undefined) { metaUpdates.can_view_all_churches = Boolean(user.can_view_all_churches); hasMeta = true; }
     if (user.cell_id !== undefined) { metaUpdates.cell_id = user.cell_id; hasMeta = true; }
     if (user.cell_name !== undefined) { metaUpdates.cell_name = user.cell_name; hasMeta = true; }
     if (user.cell_group_id !== undefined) { metaUpdates.cell_group_id = user.cell_group_id; hasMeta = true; }
@@ -342,6 +344,19 @@ export async function createUser(user: Partial<User>): Promise<DataResult<User>>
 }
 
 export async function updateUser(id: EntityId, patch: Partial<User>): Promise<DataResult<User>> {
+  const clientRes = requireClient();
+  if (clientRes.ok && isValidUuid(id)) {
+    const existingRes = await getUserById(id);
+    if (existingRes.ok && existingRes.data) {
+      const merged = { ...existingRes.data, ...patch };
+      const payload = mapUserToRow(merged, false);
+      const r = await updateRow<SupabaseRow>(TABLE, id, payload);
+      if (!r.ok) return fail(r.error, r.code);
+      const mapped = mapUserFromRow(r.data);
+      if (!mapped) return fail("Failed to map updated user", "MAP_ERROR");
+      return ok(mapped);
+    }
+  }
   const payload = mapUserToRow(patch, true);
   const r = await updateRow<SupabaseRow>(TABLE, id, payload);
   if (!r.ok) return fail(r.error, r.code);

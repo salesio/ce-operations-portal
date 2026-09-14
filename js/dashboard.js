@@ -25110,7 +25110,7 @@ function renderUserForm(record = {}, modalMode = "create") {
           <div class="row g-2">
             <div class="col-sm-6 col-lg-4">
               <label class="form-check">
-                <input type="checkbox" name="dept_perm" value="cellMinistry" class="form-check-input" ${deptPerms.has("cellMinistry") || deptPerms.has("cell_ministry") || deptPerms.has("cell") || deptPerms.has("*") ? "checked" : ""}>
+                <input type="checkbox" name="dept_perm" value="cellMinistry" class="form-check-input" ${deptPerms.has("cellMinistry") || deptPerms.has("cell_ministry") || deptPerms.has("*") ? "checked" : ""}>
                 <span class="form-check-label"><i class="bi bi-diagram-3 me-1 text-info"></i> Ministério de Células</span>
               </label>
             </div>
@@ -25128,7 +25128,7 @@ function renderUserForm(record = {}, modalMode = "create") {
             </div>
             <div class="col-sm-6 col-lg-4">
               <label class="form-check">
-                <input type="checkbox" name="dept_perm" value="alec" class="form-check-input" ${deptPerms.has("alec") || deptPerms.has("alec_manager") || deptPerms.has("cell") || deptPerms.has("*") ? "checked" : ""}>
+                <input type="checkbox" name="dept_perm" value="alec" class="form-check-input" ${deptPerms.has("alec") || deptPerms.has("alec_manager") || deptPerms.has("*") ? "checked" : ""}>
                 <span class="form-check-label"><i class="bi bi-mortarboard me-1 text-primary"></i> ALEC (Academia de Líderes)</span>
               </label>
             </div>
@@ -25363,7 +25363,7 @@ function mountUserFormControls(form) {
       const defaults = roleDefaults[role];
       if (defaults) {
         form.querySelectorAll('input[name="dept_perm"]').forEach((cb) => {
-          if (defaults.includes("*") || defaults.includes(cb.value)) cb.checked = true;
+          cb.checked = defaults.includes("*") || defaults.includes(cb.value);
         });
       }
     });
@@ -25906,7 +25906,7 @@ async function submitForm(form) {
     const canViewAllChurches = formData.has("can_view_all_churches") || role === "Super Admin";
     const status = data.status || "Active";
 
-    const departmentPermissions = checkedPerms.length ? checkedPerms : (role === "Super Admin" ? ["*"] : ["cellReports"]);
+    const departmentPermissions = (role === "Super Admin" && !checkedPerms.length) ? ["*"] : checkedPerms;
 
     let cellGroupName = "";
     if (cellGroupId) {
@@ -26426,7 +26426,7 @@ async function submitForm(form) {
       u.email = String(u.email || "").trim().toLowerCase();
       u.role = u.role || "Cell Leader";
       u.role_name = u.role;
-      u.department_permissions = checkedPerms.length ? checkedPerms : (u.role === "Super Admin" ? ["*"] : ["cellReports"]);
+      u.department_permissions = (u.role === "Super Admin" && !checkedPerms.length) ? ["*"] : checkedPerms;
       u.cannot_create_classes = formData.has("cannot_create_classes");
       u.can_view_all_churches = formData.has("can_view_all_churches") || u.role === "Super Admin";
 
@@ -26744,7 +26744,7 @@ async function submitForm(form) {
       record.email = String(record.email || "").trim().toLowerCase();
       record.role = record.role || "Cell Leader";
       record.role_name = record.role;
-      record.department_permissions = checkedPerms.length ? checkedPerms : (record.role === "Super Admin" ? ["*"] : ["cellReports"]);
+      record.department_permissions = (record.role === "Super Admin" && !checkedPerms.length) ? ["*"] : checkedPerms;
       record.cannot_create_classes = formData.has("cannot_create_classes");
       record.can_view_all_churches = formData.has("can_view_all_churches") || record.role === "Super Admin";
       record.status = record.status || "Active";
