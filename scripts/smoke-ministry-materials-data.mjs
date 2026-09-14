@@ -179,6 +179,39 @@ if (api?.listMaterialsCatalog) {
       });
       ok("adjustMaterialStock ok", !!adj?.ok, adj?.error || "");
     }
+
+    const weeklyStock = await api.createMaterialStock({
+      material_id: mat?.data?.id || "mat-1",
+      titulo_do_material: "Rhapsody of Realities",
+      church_id: "church-hq",
+      stock_inicial: 100,
+      entradas: 50,
+      saidas: 20,
+      stock_final: 130,
+      diferenca: 0,
+      semana_inicio: "2026-09-01",
+      semana_fim: "2026-09-07",
+      observacoes: "Contagem semanal regular",
+      status: "Available"
+    });
+    ok("createMaterialStock weekly numbers ok", !!weeklyStock?.ok, weeklyStock?.error || "");
+    ok("weekly stock_inicial preserved", weeklyStock?.data?.stock_inicial === 100, String(weeklyStock?.data?.stock_inicial));
+    ok("weekly entradas preserved", weeklyStock?.data?.entradas === 50, String(weeklyStock?.data?.entradas));
+    ok("weekly saidas preserved", weeklyStock?.data?.saidas === 20, String(weeklyStock?.data?.saidas));
+    ok("weekly stock_final preserved", weeklyStock?.data?.stock_final === 130, String(weeklyStock?.data?.stock_final));
+
+    if (weeklyStock?.ok && api.updateMaterialStock) {
+      const updatedWeekly = await api.updateMaterialStock(weeklyStock.data.id, {
+        stock_inicial: 100,
+        entradas: 60,
+        saidas: 30,
+        stock_final: 130,
+        diferenca: 0
+      });
+      ok("updateMaterialStock weekly numbers ok", !!updatedWeekly?.ok, updatedWeekly?.error || "");
+      ok("updated weekly entradas preserved", updatedWeekly?.data?.entradas === 60, String(updatedWeekly?.data?.entradas));
+      ok("updated weekly saidas preserved", updatedWeekly?.data?.saidas === 30, String(updatedWeekly?.data?.saidas));
+    }
   }
 
   if (api.createMaterialSale) {

@@ -26275,6 +26275,37 @@ function mountMaterialSaleFormControls(form) {
   renderPopPreview();
 }
 
+function mountMaterialStockFormControls(form) {
+  if (!form || modalType !== "materialStock") return;
+  const initInput = form.querySelector('[name="stock_inicial"]');
+  const inInput = form.querySelector('[name="entradas"]');
+  const outInput = form.querySelector('[name="saidas"]');
+  const finalInput = form.querySelector('[name="stock_final"]');
+  const diffInput = form.querySelector('[name="diferenca"]');
+  if (!initInput || !inInput || !outInput || !finalInput) return;
+
+  function recalculateStock() {
+    const init = Number(initInput.value || 0);
+    const entradas = Number(inInput.value || 0);
+    const saidas = Number(outInput.value || 0);
+    const calculatedFinal = init + entradas - saidas;
+    finalInput.value = calculatedFinal;
+    if (diffInput && (diffInput.value === "" || diffInput.value === "0" || diffInput.dataset.autoCalc === "true")) {
+      diffInput.value = 0;
+      diffInput.dataset.autoCalc = "true";
+    }
+  }
+
+  initInput.addEventListener("input", recalculateStock);
+  inInput.addEventListener("input", recalculateStock);
+  outInput.addEventListener("input", recalculateStock);
+  if (diffInput) {
+    diffInput.addEventListener("input", () => {
+      diffInput.dataset.autoCalc = "false";
+    });
+  }
+}
+
 function openForm(type, id = null, options = {}) {
   const action = id ? "edit" : "add";
   if (!canRenderAction(action, type)) {
@@ -26341,6 +26372,7 @@ function openForm(type, id = null, options = {}) {
       mountRelationalControls(byId("entryForm"));
       mountMediaScheduleFormControls(byId("entryForm"));
       if (type === "materialSale") mountMaterialSaleFormControls(byId("entryForm"));
+      if (type === "materialStock") mountMaterialStockFormControls(byId("entryForm"));
       if (type === "user") mountUserFormControls(byId("entryForm"));
       mountAlecMemberAutocompleteControls(byId("entryForm"));
       if (["alecRegistration", "alecScore", "churchReport"].includes(type)) {
@@ -26513,7 +26545,11 @@ function fieldControl([name, labelKey, inputType = "text", options = []], record
     else if (name === "source_type") display = contributorSourceLabel(value);
     return `<div class="col-md-6"><label class="form-label">${label}</label><input class="form-control" value="${display}" readonly tabindex="-1"></div>`;
   }
-  return `<div class="col-md-6"><label class="form-label">${label}</label><input name="${name}" type="${inputType}" class="form-control" value="${value || ""}"></div>`;
+  if (inputType === "number") {
+    const numVal = (value !== "" && value !== null && value !== undefined && !Number.isNaN(Number(value))) ? Number(value) : (value ?? "");
+    return `<div class="col-md-6"><label class="form-label">${label}</label><input name="${name}" type="number" step="any" class="form-control" value="${numVal}"></div>`;
+  }
+  return `<div class="col-md-6"><label class="form-label">${label}</label><input name="${name}" type="${inputType}" class="form-control" value="${value ?? ""}"></div>`;
 }
 
 async function submitForm(form) {
@@ -27355,6 +27391,31 @@ async function submitForm(form) {
         rec.church_name = rec.church_name || (rec.church_id ? churchName(rec.church_id) : "") || rec.proveniencia || "";
         rec.finance_record_id = null;
       }
+      if (modalType === "materialStock") {
+        const rec = collection[index];
+        rec.material_name = rec.material_name || rec.titulo_do_material || "";
+        rec.titulo_do_material = rec.titulo_do_material || rec.material_name || "";
+        if (!rec.catalog_item_id && rec.titulo_do_material) {
+          const m = (state.ministryMaterials?.catalogue || []).find((cat) => (cat.titulo_do_material || cat.name) === rec.titulo_do_material);
+          if (m && m.id) {
+            rec.catalog_item_id = m.id;
+            rec.material_id = m.id;
+          }
+        }
+        rec.stock_inicial = Number(data.stock_inicial !== undefined && data.stock_inicial !== "" ? data.stock_inicial : (rec.stock_inicial ?? 0));
+        rec.entradas = Number(data.entradas !== undefined && data.entradas !== "" ? data.entradas : (rec.entradas ?? 0));
+        rec.saidas = Number(data.saidas !== undefined && data.saidas !== "" ? data.saidas : (rec.saidas ?? 0));
+        rec.stock_final = Number(data.stock_final !== undefined && data.stock_final !== "" ? data.stock_final : (rec.stock_final ?? (rec.stock_inicial + rec.entradas - rec.saidas)));
+        rec.quantity_available = rec.stock_final;
+        rec.stock_actual = rec.stock_final;
+        rec.diferenca = Number(data.diferenca !== undefined && data.diferenca !== "" ? data.diferenca : (rec.diferenca ?? 0));
+        rec.semana_inicio = data.semana_inicio || rec.semana_inicio || "";
+        rec.semana_fim = data.semana_fim || rec.semana_fim || "";
+        rec.observacoes = data.observacoes || rec.observacoes || rec.notes || "";
+        rec.notes = rec.observacoes;
+        rec.status = rec.status || rec.estado || "Available";
+        rec.estado = rec.estado || rec.status || "Disponível";
+      }
       const persisted = await persistDopRecord(modalType, "update", collection[index]);
       if (!persisted?.ok) {
         collection[index] = previousRecord;
@@ -27837,9 +27898,26 @@ async function submitForm(form) {
       if (modalType === "materialStock") {
         record.material_name = record.material_name || record.titulo_do_material || "";
         record.titulo_do_material = record.titulo_do_material || record.material_name || "";
-        record.quantity_available =
-          record.quantity_available ?? record.stock_final ?? record.stock_actual ?? 0;
-        record.stock_final = record.stock_final ?? record.quantity_available ?? 0;
+        if (!record.catalog_item_id && record.titulo_do_material) {
+          const m = (state.ministryMaterials?.catalogue || []).find((cat) => (cat.titulo_do_material || cat.name) === record.titulo_do_material);
+          if (m && m.id) {
+            record.catalog_item_id = m.id;
+            record.material_id = m.id;
+          }
+        }
+        record.stock_inicial = Number(record.stock_inicial !== undefined && record.stock_inicial !== "" ? record.stock_inicial : 0);
+        record.entradas = Number(record.entradas !== undefined && record.entradas !== "" ? record.entradas : 0);
+        record.saidas = Number(record.saidas !== undefined && record.saidas !== "" ? record.saidas : 0);
+        record.stock_final = Number(record.stock_final !== undefined && record.stock_final !== "" ? record.stock_final : (record.stock_inicial + record.entradas - record.saidas));
+        record.quantity_available = record.stock_final;
+        record.stock_actual = record.stock_final;
+        record.diferenca = Number(record.diferenca !== undefined && record.diferenca !== "" ? record.diferenca : 0);
+        record.semana_inicio = record.semana_inicio || "";
+        record.semana_fim = record.semana_fim || "";
+        record.observacoes = record.observacoes || record.notes || "";
+        record.notes = record.observacoes;
+        record.status = record.status || record.estado || "Available";
+        record.estado = record.estado || record.status || "Disponível";
       }
       if (modalType === "materialFund") {
         record.amount = Number(record.amount ?? record.valor_levantado ?? 0);
@@ -31547,18 +31625,30 @@ async function hydrateMinistryMaterialsFromRepository() {
       status: row.status || row.estado || "Pending",
     }));
 
-    await merge(repo.listMaterialStock?.bind(repo), "weeklyStock", (row) => ({
-      ...row,
-      titulo_do_material: row.titulo_do_material || row.material_name || row.catalog_item_title || row.location_name || "",
-      semana_inicio: row.semana_inicio || "",
-      semana_fim: row.semana_fim || "",
-      stock_inicial: row.stock_inicial ?? row.quantity_available ?? 0,
-      entradas: row.entradas ?? row.quantity_distributed ?? 0,
-      saidas: row.saidas ?? row.quantity_sold ?? 0,
-      stock_final: row.stock_final ?? row.quantity_available ?? 0,
-      diferenca: row.diferenca ?? 0,
-      estado: row.estado || row.status || "Concluído",
-    }));
+    await merge(repo.listMaterialStock?.bind(repo), "weeklyStock", (row) => {
+      const meta = (row.metadata && typeof row.metadata === "object") ? row.metadata : {};
+      const sInit = Number(row.stock_inicial ?? meta.stock_inicial ?? row.quantity_available ?? 0);
+      const sIn = Number(row.entradas ?? meta.entradas ?? 0);
+      const sOut = Number(row.saidas ?? meta.saidas ?? 0);
+      const sFin = Number(row.stock_final ?? meta.stock_final ?? row.quantity_available ?? (sInit + sIn - sOut));
+      const sDiff = Number(row.diferenca ?? meta.diferenca ?? 0);
+      return {
+        ...row,
+        titulo_do_material: row.titulo_do_material || meta.titulo_do_material || row.material_name || row.catalog_item_title || row.location_name || "",
+        semana_inicio: row.semana_inicio || meta.semana_inicio || "",
+        semana_fim: row.semana_fim || meta.semana_fim || "",
+        stock_inicial: sInit,
+        entradas: sIn,
+        saidas: sOut,
+        stock_final: sFin,
+        stock_actual: sFin,
+        quantity_available: sFin,
+        diferenca: sDiff,
+        observacoes: row.observacoes || meta.observacoes || row.notes || "",
+        estado: row.estado || row.status || "Disponível",
+        status: row.status || row.estado || "Available",
+      };
+    });
 
     await merge(repo.listMaterialFunds?.bind(repo), "freeFunds", (row) => ({
       ...row,

@@ -179,10 +179,35 @@
         return list("stock");
       },
       createMaterialStock: function (p) {
-        return create("stock", "mstock-", Object.assign({ status: "Available" }, p || {}));
+        var row = Object.assign({ status: "Available", estado: "Disponível" }, p || {});
+        row.stock_inicial = Number(row.stock_inicial != null && row.stock_inicial !== "" ? row.stock_inicial : 0);
+        row.entradas = Number(row.entradas != null && row.entradas !== "" ? row.entradas : 0);
+        row.saidas = Number(row.saidas != null && row.saidas !== "" ? row.saidas : 0);
+        row.stock_final = Number(row.stock_final != null && row.stock_final !== "" ? row.stock_final : (row.stock_inicial + row.entradas - row.saidas));
+        row.quantity_available = row.stock_final;
+        row.stock_actual = row.stock_final;
+        row.diferenca = Number(row.diferenca != null && row.diferenca !== "" ? row.diferenca : 0);
+        return create("stock", "mstock-", row);
       },
       updateMaterialStock: function (id, p) {
-        return update("stock", id, p);
+        var row = Object.assign({}, p || {});
+        if (row.stock_inicial !== undefined && row.stock_inicial !== "") row.stock_inicial = Number(row.stock_inicial);
+        if (row.entradas !== undefined && row.entradas !== "") row.entradas = Number(row.entradas);
+        if (row.saidas !== undefined && row.saidas !== "") row.saidas = Number(row.saidas);
+        if (row.stock_final !== undefined && row.stock_final !== "") {
+          row.stock_final = Number(row.stock_final);
+          row.quantity_available = row.stock_final;
+          row.stock_actual = row.stock_final;
+        } else if (row.stock_inicial !== undefined || row.entradas !== undefined || row.saidas !== undefined) {
+          var sInit = Number(row.stock_inicial ?? 0);
+          var sIn = Number(row.entradas ?? 0);
+          var sOut = Number(row.saidas ?? 0);
+          row.stock_final = sInit + sIn - sOut;
+          row.quantity_available = row.stock_final;
+          row.stock_actual = row.stock_final;
+        }
+        if (row.diferenca !== undefined && row.diferenca !== "") row.diferenca = Number(row.diferenca);
+        return update("stock", id, row);
       },
       adjustMaterialStock: function (id, p) {
         var s = store("stock");
