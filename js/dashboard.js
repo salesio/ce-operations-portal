@@ -27462,15 +27462,18 @@ function openMemberProfileView(id) {
 
 function openView(type, id) {
   if (type === "member") return openMemberProfileView(id);
-  restoreEntryModalFooter();
   if (type === "church") return openChurchDrawer("view", id);
   if (type === "finance") return openFinanceDrawer("view", id);
   if (type === "staffProfile") return openStaffProfileView(id);
   if (type === "mediaSchedule") {
-    const record = getCollection(type).find((item) => item.id === id);
+    const record = (getCollection(type) || []).find((item) => String(item.id) === String(id));
     byId("modalEyebrow").textContent = L("view");
     byId("modalTitle").textContent = L("mediaSchedules");
     byId("modalFields").innerHTML = mediaScheduleViewHtml(record || {});
+    const footer = byId("entryForm")?.querySelector(".ops-modal-footer");
+    if (footer) {
+      footer.innerHTML = `<button type="button" class="btn btn-outline-glass btn-touch" data-bs-dismiss="modal">${lang === "pt" ? "Fechar" : "Close"}</button>`;
+    }
     modalType = null;
     bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
     requestAnimationFrame(() => cleanRenderedText(byId("entryModal")));
@@ -27479,86 +27482,59 @@ function openView(type, id) {
   if (type === "foundationStudent") return openFoundationStudentForm(id, "view");
   if (type === "foundationTeacher") return openFoundationTeacherForm(id, "view");
   if (type === "foundationClassGroup") return openFoundationClassForm(id, "view");
-  const record = getCollection(type).find((item) => item.id === id);
+
+  const collection = getCollection(type) || [];
+  const record = collection.find((item) => String(item.id) === String(id)) || {};
   byId("modalEyebrow").textContent = L("view");
   byId("modalTitle").textContent = formTitle(type);
   byId("modalFields").innerHTML = `
-    <div class="col-12">${detailGrid(record)}</div>
-    ${type === "firstTimer" ? `<div class="col-12"><h5>${L("followupTimeline")}</h5>${followupTimeline(id)}</div>` : ""}
+    <div class="col-12">${detailGrid(record, type)}</div>
+    ${type === "firstTimer" ? `<div class="col-12 mt-3"><h5>${L("followupTimeline")}</h5>${followupTimeline(id)}</div>` : ""}
   `;
+
+  const footer = byId("entryForm")?.querySelector(".ops-modal-footer");
+  if (footer) {
+    const canEdit = canRenderAction("edit", type);
+    footer.innerHTML = `
+      <button type="button" class="btn btn-outline-glass btn-touch" data-bs-dismiss="modal">${lang === "pt" ? "Fechar" : "Close"}</button>
+      ${canEdit ? `<button type="button" class="btn btn-ce-gold btn-touch" data-view-edit-type="${escapeAttr(type)}" data-view-edit-id="${escapeAttr(id)}"><i class="bi bi-pencil me-1"></i>${lang === "pt" ? "Editar" : "Edit"}</button>` : ""}
+    `;
+  }
   modalType = null;
   bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
+  requestAnimationFrame(() => cleanRenderedText(byId("entryModal")));
 }
 
-function detailGrid(record, type) {
+function detailGrid(record, type = "") {
   if (!record || typeof record !== "object") return `<div class="detail-grid"></div>`;
-  const ignoredKeys = new Set([
-    "id", "metadata", "draft_from_requisition", "transaction_type",
-    "certificate_required", "certificate_paid", "certificate_issued",
-    "certificate_id", "groom_member_id", "bride_member_id", "member_id",
-    "first_timer_id", "parent_member_id", "officiating_minister_id", "minister_id",
-    "counseling_case_id", "document_ids", "created_by", "updated_by", "created_at", "updated_at"
-  ]);
 
-  if (record.estado !== undefined || record.status !== undefined) {
-    if (record.estado) ignoredKeys.add("status");
-  }
-  if (record.observacoes !== undefined || record.notes !== undefined) {
-    if (record.observacoes) ignoredKeys.add("notes");
-  }
-  if (record.telefone || record.telefone_do_noivo || record.telefone_da_noiva || record.telefone_dos_pais || record.telefone_do_pai) {
-    ignoredKeys.add("phone");
-    ignoredKeys.add("groom_phone");
-    ignoredKeys.add("bride_phone");
-    ignoredKeys.add("parent_phone");
-    ignoredKeys.add("father_phone");
-    ignoredKeys.add("mother_phone");
-  }
-  if (record.nome || record.nome_do_noivo || record.nome_da_noiva || record.nome_da_crianca || record.nome_do_pai || record.nome_da_mae) {
-    ignoredKeys.add("name");
-    ignoredKeys.add("first_name");
-    ignoredKeys.add("last_name");
-    ignoredKeys.add("full_name");
-    ignoredKeys.add("groom_name");
-    ignoredKeys.add("bride_name");
-    ignoredKeys.add("child_name");
-    ignoredKeys.add("child_full_name");
-    ignoredKeys.add("parent_name");
-    ignoredKeys.add("second_parent_name");
-    ignoredKeys.add("father_name");
-    ignoredKeys.add("mother_name");
-  }
-  if (record.data_do_casamento) ignoredKeys.add("marriage_date");
-  if (record.data_do_baptismo) ignoredKeys.add("baptism_date");
-  if (record.local_do_baptismo) ignoredKeys.add("baptism_location");
-  if (record.data_da_dedicacao) ignoredKeys.add("dedication_date");
-  if (record.data_de_nascimento) {
-    ignoredKeys.add("date_of_birth");
-    ignoredKeys.add("child_date_of_birth");
-  }
-  if (record.pastor_responsavel || record.baptizado_por) {
-    ignoredKeys.add("minister_name");
-    ignoredKeys.add("officiating_minister_name");
-    ignoredKeys.add("pastor_name");
-  }
-  if (record.baptizado_por && record.pastor_responsavel && record.baptizado_por === record.pastor_responsavel) {
-    ignoredKeys.add("pastor_responsavel");
-  }
-  if (record.aconselhamento_concluido !== undefined) {
-    ignoredKeys.add("counseling_completed");
-    ignoredKeys.add("pre_marital_counseling_completed");
-  }
-  if (record.quer_certificado !== undefined || record.certificado_pago !== undefined || record.certificado_emitido !== undefined) {
-    ignoredKeys.add("certificate_status");
-    ignoredKeys.add("payment_status");
-  }
+  const normalizedType = type === "programs" ? "program" : type;
+  const schema = (formSchemas && formSchemas[normalizedType]) || (forms && forms[normalizedType]);
 
-  const formatDetailValue = (key, value) => {
-    if (value === null || value === undefined || value === "") return "-";
-    if (typeof value === "boolean") return yesNo(value);
-    if (Array.isArray(value)) return value.join(", ");
-    if (typeof value === "object") return "-";
-    if (key === "church_id" || key === "igreja") return churchName(value) || value;
+  const formatDetailVal = (key, val, fieldType = "") => {
+    if (val === null || val === undefined || val === "") return "—";
+    if (typeof val === "boolean" || fieldType === "checkbox") return yesNo(val);
+    if (Array.isArray(val)) return val.length ? val.join(", ") : "—";
+    if (typeof val === "object") return "—";
+
+    if (key === "church_id" || key === "igreja" || key === "church" || fieldType === "church" || fieldType === "parentChurch") {
+      return churchName(val) || val;
+    }
+    if (key === "cell_group_id" || key === "group_id" || fieldType === "cellGroupSelect") {
+      const g = (state.cellGroups || []).find((cg) => String(cg.id) === String(val));
+      return g?.group_name || g?.name || val;
+    }
+    if (key === "cell_id" || fieldType === "cellRegistrySelect") {
+      const c = (state.cellRegistry || []).find((cr) => String(cr.id) === String(val)) || (state.cells || []).find((cl) => String(cl.id) === String(val));
+      return c?.cell_name || c?.nome_da_celula || val;
+    }
+    if (key === "prisao" || fieldType === "prison") {
+      return prisonName(val) || val;
+    }
+    if (key === "titulo_do_material" && fieldType === "material") {
+      const m = (state.ministryMaterials?.catalogue || []).find((item) => String(item.id) === String(val));
+      return m?.titulo_do_material || val;
+    }
     if (key === "certificate_status") {
       const statusMap = {
         Issued: lang === "pt" ? "Emitido" : "Issued",
@@ -27566,33 +27542,90 @@ function detailGrid(record, type) {
         Requested: lang === "pt" ? "Solicitado" : "Requested",
         "Not Required": lang === "pt" ? "Não Solicitado" : "Not Required"
       };
-      return statusMap[value] || value;
+      return statusMap[val] || val;
     }
     if (key === "payment_status") {
       const payMap = {
         Paid: lang === "pt" ? "Pago" : "Paid",
         Pending: lang === "pt" ? "Pendente" : "Pending"
       };
-      return payMap[value] || value;
+      return payMap[val] || val;
     }
     if (key === "estado" || key === "status") {
-      const estadoMap = {
-        Scheduled: lang === "pt" ? "Agendado" : "Scheduled",
-        Pending: lang === "pt" ? "Pendente" : "Pending",
-        "In Progress": lang === "pt" ? "Em Curso" : "In Progress",
-        Completed: lang === "pt" ? "Realizado" : "Completed",
-        "Certificate Issued": lang === "pt" ? "Certificado Emitido" : "Certificate Issued",
-        Active: lang === "pt" ? "Activo" : "Active",
-        Inactive: lang === "pt" ? "Inactivo" : "Inactive"
-      };
-      return estadoMap[value] || value;
+      return badge(val);
     }
-    return String(value);
+    return escapeAttr(String(val));
   };
+
+  // If a schema is defined for this entity type, render precisely the fields defined in the schema
+  if (Array.isArray(schema) && schema.length > 0) {
+    const items = [];
+    for (const field of schema) {
+      if (!Array.isArray(field) || field.length < 2) continue;
+      const [name, labelKey, fieldType, options] = field;
+      if (!name || fieldType === "section") continue;
+
+      let rawVal = record[name];
+      if (rawVal === undefined || rawVal === null || rawVal === "") {
+        if (name === "name") rawVal = record.nome || record.title || record.titulo;
+        else if (name === "nome") rawVal = record.name || record.title;
+        else if (name === "responsible_name") rawVal = record.owner || record.coordenador || record.lider || record.responsible;
+        else if (name === "owner") rawVal = record.responsible_name || record.coordenador || record.lider;
+        else if (name === "start_date") rawVal = record.data || record.data_inicio;
+        else if (name === "end_date") rawVal = record.data_fim;
+        else if (name === "start_time") rawVal = record.hora_inicio;
+        else if (name === "end_time") rawVal = record.hora_fim;
+        else if (name === "location") rawVal = record.local || record.localizacao;
+        else if (name === "status") rawVal = record.estado;
+        else if (name === "estado") rawVal = record.status;
+        else if (name === "description") rawVal = record.descricao;
+        else if (name === "notes") rawVal = record.observacoes;
+        else if (name === "observacoes") rawVal = record.notes;
+        else if (name === "church_id") rawVal = record.igreja;
+        else if (name === "group_name") rawVal = record.nome_do_grupo;
+        else if (name === "leader_name") rawVal = record.nome_do_lider;
+      }
+
+      const label = L(labelKey) || labelFor(name);
+      const isFullWidth = fieldType === "textarea" || (options && options.fullWidth);
+      const formatted = formatDetailVal(name, rawVal, fieldType);
+
+      items.push(`
+        <div class="${isFullWidth ? "detail-item-full" : ""}">
+          <span>${escapeAttr(label)}</span>
+          <strong>${formatted}</strong>
+        </div>
+      `);
+    }
+
+    return `<div class="detail-grid">${items.join("")}</div>`;
+  }
+
+  // Fallback for un-schematized records: clean up internal keys & deduplicate
+  const ignoredKeys = new Set([
+    "id", "metadata", "draft_from_requisition", "transaction_type",
+    "certificate_required", "certificate_paid", "certificate_issued",
+    "certificate_id", "groom_member_id", "bride_member_id", "member_id",
+    "first_timer_id", "parent_member_id", "officiating_minister_id", "minister_id",
+    "counseling_case_id", "document_ids", "created_by", "updated_by", "created_at", "updated_at",
+    "main_church_id", "main_church_name", "venue_space_id", "venue_space_name",
+    "responsible_staff_id", "responsible_user_id", "department_id",
+    "streaming_required", "registration_required", "requisition_status",
+    "budget_status", "media_status", "requires_registration", "requires_media",
+    "requires_budget", "requires_resources", "requires_checklist",
+    "expected_attendance", "actual_attendance", "budget_required", "approved_budget",
+    "currency", "registration_status", "recurrence", "location_type", "priority",
+    "program_code", "tenant_id", "auth_user_id"
+  ]);
+
+  if (record.estado !== undefined && record.status !== undefined) ignoredKeys.add("status");
+  if (record.observacoes !== undefined && record.notes !== undefined) ignoredKeys.add("notes");
+  if (record.igreja !== undefined && record.church_id !== undefined) ignoredKeys.add("igreja");
+  if (record.nome !== undefined && record.name !== undefined) ignoredKeys.add("nome");
 
   return `<div class="detail-grid">${Object.entries(record)
     .filter(([key]) => !ignoredKeys.has(key))
-    .map(([key, value]) => `<div><span>${labelFor(key)}</span><strong>${formatDetailValue(key, value)}</strong></div>`)
+    .map(([key, value]) => `<div><span>${escapeAttr(labelFor(key))}</span><strong>${formatDetailVal(key, value)}</strong></div>`)
     .join("")}</div>`;
 }
 
@@ -28809,6 +28842,10 @@ document.addEventListener("click", async (event) => {
   const memberProfileEdit = event.target.closest("[data-member-profile-edit]");
   if (memberProfileEdit) {
     return openForm("member", memberProfileEdit.dataset.memberProfileEdit);
+  }
+  const viewEditBtn = event.target.closest("[data-view-edit-type]");
+  if (viewEditBtn) {
+    return openForm(viewEditBtn.dataset.viewEditType, viewEditBtn.dataset.viewEditId);
   }
   const portalSection = event.target.closest("[data-cell-portal-section]");
   if (portalSection) return scrollContentTo(portalSection.dataset.cellPortalSection);

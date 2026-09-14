@@ -2591,6 +2591,10 @@ tr[data-public-cell-report="1"] td:last-child {
   background: rgba(255, 255, 255, 0.08);
 }
 
+.detail-grid div.detail-item-full {
+  grid-column: 1 / -1;
+}
+
 .detail-grid span,
 .timeline span {
   display: block;
