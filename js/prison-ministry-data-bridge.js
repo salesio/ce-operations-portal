@@ -70,15 +70,15 @@
   }
 
   function resolveApi() {
-    var layer = window.CEDataLayer && window.CEDataLayer.prisonMinistry;
-    if (layer && typeof layer.createPrisonLocation === "function") {
-      return { api: layer, via: "CEDataLayer.prisonMinistry" };
-    }
-    if (window.CEPrisonMinistry && typeof window.CEPrisonMinistry.createPrisonLocation === "function") {
-      return { api: window.CEPrisonMinistry, via: "CEPrisonMinistry" };
-    }
     if (window.CESupabase && typeof window.CESupabase.createPrisonLocation === "function") {
       return { api: window.CESupabase, via: "CESupabase" };
+    }
+    var layer = window.CEDataLayer && window.CEDataLayer.prisonMinistry;
+    if (layer && typeof layer.createPrisonLocation === "function" && typeof layer.dualWriteRecord !== "function") {
+      return { api: layer, via: "CEDataLayer.prisonMinistry" };
+    }
+    if (window.CEPrisonMinistry && typeof window.CEPrisonMinistry.createPrisonLocation === "function" && typeof window.CEPrisonMinistry.dualWriteRecord !== "function") {
+      return { api: window.CEPrisonMinistry, via: "CEPrisonMinistry" };
     }
     return { api: null, via: "none" };
   }

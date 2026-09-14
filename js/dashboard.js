@@ -10403,8 +10403,8 @@ function roleWorkspaceRoutes(user = activeUser) {
     if (grants.includes("ministryMaterials")) routes.push("cellMaterials");
     if (grants.includes("staffHr")) routes.push("staffHr");
     if (grants.includes("requisitions")) routes.push("requisitions");
+    if (grants.includes("dashboard")) routes.push("dashboard");
     if (routes.length) {
-      if (!routes.includes("dashboard")) routes.unshift("dashboard");
       return routes;
     }
   }
@@ -10420,7 +10420,7 @@ function isRouteInRoleWorkspace(route, user = activeUser) {
 function roleWorkspaceDefaultRoute(user = activeUser) {
   const allowed = roleWorkspaceRoutes(user);
   if (!allowed || !allowed.length) return "dashboard";
-  if (allowed.includes("dashboard")) return "dashboard";
+  if (allowed.includes("dashboard") && (user?.role === "Super Admin" || (user?.department_permissions || []).includes("*") || ["Main Pastor", "National Admin", "Church Admin", "Church Pastor"].includes(user?.role))) return "dashboard";
   return allowed[0] || "dashboard";
 }
 
@@ -25004,9 +25004,10 @@ const formSchemas = {
 
 function getCollection(type) {
   if (type === "firstTimer") return state.firstTimers;
-  if (type === "member") return state.members;
-  if (type === "program") return state.programs || [];
-  if (type === "foundationStudent") return state.foundationStudents;
+  if (type === "program" || type === "programs") {
+    if (!Array.isArray(state.programs)) state.programs = [];
+    return state.programs;
+  }
   if (type === "foundationTeacher") return state.foundationTeachers || [];
   if (type === "finance") return state.finance;
   if (type === "church") return state.churches;
@@ -30245,10 +30246,26 @@ async function refreshDashboardData({ render = true } = {}) {
     counseling: hydrateCounselingFromRepository,
     sacraments: hydrateSacramentsFromRepository,
     programs: hydrateProgramsFromRepository,
+    cellPrison: hydratePrisonMinistryFromRepository,
+    prisonMinistry: hydratePrisonMinistryFromRepository,
+    cellMaterials: hydrateMinistryMaterialsFromRepository,
+    ministryMaterials: hydrateMinistryMaterialsFromRepository,
     settings: hydrateSettingsFromRepository,
     notifications: hydrateNotificationsFromRepository
   };
-  const routeTask = activeRoute?.startsWith("cell") ? hydrateCellMinistryFromRepository : activeRoute?.startsWith("fevo") ? hydrateFevoFromRepository : activeRoute?.startsWith("venueInventory") ? hydrateVenueInventoryFromRepository : routeRefreshers[activeRoute] || hydrateNotificationsFromRepository;
+  const routeTask = (activeRoute === "cellPrison" || activeRoute === "prisonMinistry")
+    ? hydratePrisonMinistryFromRepository
+    : (activeRoute === "cellMaterials" || activeRoute === "ministryMaterials")
+    ? hydrateMinistryMaterialsFromRepository
+    : activeRoute === "programs"
+    ? hydrateProgramsFromRepository
+    : activeRoute?.startsWith("cell")
+    ? hydrateCellMinistryFromRepository
+    : activeRoute?.startsWith("fevo")
+    ? hydrateFevoFromRepository
+    : activeRoute?.startsWith("venueInventory")
+    ? hydrateVenueInventoryFromRepository
+    : routeRefreshers[activeRoute] || hydrateNotificationsFromRepository;
   try {
     await Promise.resolve().then(routeTask);
     dashboardLastRefreshAt = Date.now();

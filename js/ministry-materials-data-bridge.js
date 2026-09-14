@@ -41,15 +41,15 @@
   }
 
   function resolveApi() {
-    var layer = window.CEDataLayer && window.CEDataLayer.ministryMaterials;
-    if (layer && typeof layer.createMaterial === "function") {
-      return { api: layer, via: "CEDataLayer.ministryMaterials" };
-    }
-    if (window.CEMinistryMaterials && typeof window.CEMinistryMaterials.createMaterial === "function") {
-      return { api: window.CEMinistryMaterials, via: "CEMinistryMaterials" };
-    }
     if (window.CESupabase && typeof window.CESupabase.createMaterial === "function") {
       return { api: window.CESupabase, via: "CESupabase" };
+    }
+    var layer = window.CEDataLayer && window.CEDataLayer.ministryMaterials;
+    if (layer && typeof layer.createMaterial === "function" && typeof layer.dualWriteRecord !== "function") {
+      return { api: layer, via: "CEDataLayer.ministryMaterials" };
+    }
+    if (window.CEMinistryMaterials && typeof window.CEMinistryMaterials.createMaterial === "function" && typeof window.CEMinistryMaterials.dualWriteRecord !== "function") {
+      return { api: window.CEMinistryMaterials, via: "CEMinistryMaterials" };
     }
     return { api: null, via: "none" };
   }

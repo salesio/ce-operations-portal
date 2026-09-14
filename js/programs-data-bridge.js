@@ -46,15 +46,15 @@
   }
 
   function resolveApi() {
-    var layer = window.CEDataLayer && window.CEDataLayer.programs;
-    if (layer && typeof layer.createProgram === "function") {
-      return { api: layer, via: "CEDataLayer.programs" };
-    }
-    if (window.CEPrograms && typeof window.CEPrograms.createProgram === "function") {
-      return { api: window.CEPrograms, via: "CEPrograms" };
-    }
     if (window.CESupabase && typeof window.CESupabase.createProgram === "function") {
       return { api: window.CESupabase, via: "CESupabase" };
+    }
+    var layer = window.CEDataLayer && window.CEDataLayer.programs;
+    if (layer && typeof layer.createProgram === "function" && typeof layer.dualWriteRecord !== "function") {
+      return { api: layer, via: "CEDataLayer.programs" };
+    }
+    if (window.CEPrograms && typeof window.CEPrograms.createProgram === "function" && typeof window.CEPrograms.dualWriteRecord !== "function") {
+      return { api: window.CEPrograms, via: "CEPrograms" };
     }
     return { api: null, via: "none" };
   }
@@ -487,6 +487,7 @@
       if (kind === "programs" || kind === "program") {
         if (mode === "create") return call("createProgram", [record]);
         if (mode === "update") return call("updateProgram", [record.id, record]);
+        if (mode === "delete") return call("deleteProgram", [record.id]);
       }
       return Promise.resolve({ ok: true, skipped: true });
     },

@@ -199,24 +199,24 @@
     },
     "Department Head": {
       modules: {
-        dashboard: { ...VIEW_ONLY, scope: "department" },
-        members: { ...VIEW_ONLY, scope: "department" },
-        firstTimers: { ...VIEW_ONLY, scope: "department" },
-        followUp: { ...VIEW_ONLY, scope: "department" },
-        reports: { ...VIEW_ONLY, scope: "department", can_export: true },
-        requisitions: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "department" },
-        staffHr: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "department" },
-        venueInventory: { can_view: true, can_create: true, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "department" },
-        fevo: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "department" },
-        cell: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "department" },
-        programs: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: true, can_verify: true, can_export: true, scope: "department" },
-        prisonMinistry: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: true, can_verify: true, can_export: true, scope: "department" },
-        ministryMaterials: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: true, can_verify: true, can_export: true, scope: "department" },
-        media: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "department" },
-        counseling: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "department" },
-        sacraments: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "department" },
-        foundation: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "department" },
-        finance: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "department" }
+        dashboard: { ...VIEW_ONLY, scope: "church" },
+        members: { ...VIEW_ONLY, scope: "church" },
+        firstTimers: { ...VIEW_ONLY, scope: "church" },
+        followUp: { ...VIEW_ONLY, scope: "church" },
+        reports: { ...VIEW_ONLY, scope: "church", can_export: true },
+        requisitions: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "church" },
+        staffHr: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "church" },
+        venueInventory: { can_view: true, can_create: true, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "church" },
+        fevo: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "church" },
+        cell: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "church" },
+        programs: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: true, can_verify: true, can_export: true, scope: "church" },
+        prisonMinistry: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: true, can_verify: true, can_export: true, scope: "church" },
+        ministryMaterials: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: true, can_verify: true, can_export: true, scope: "church" },
+        media: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "church" },
+        counseling: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "church" },
+        sacraments: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "church" },
+        foundation: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "church" },
+        finance: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "church" }
       }
     },
     "Counseling Head": {
@@ -943,7 +943,9 @@
       const deptNames = new Set([...(user.department_names || []), user.assigned_department].filter(Boolean).map((v) => String(v).toLowerCase()));
       const recordDeptId = record.department_id || record.recipient_department_id || record.departamento_id;
       const recordDeptName = String(record.department_name || record.departamento || record.department || record.departamento_responsavel || "").toLowerCase();
-      return (recordDeptId && deptIds.has(recordDeptId)) || (recordDeptName && deptNames.has(recordDeptName));
+      if ((recordDeptId && deptIds.has(recordDeptId)) || (recordDeptName && deptNames.has(recordDeptName))) return true;
+      if (recordDeptId || recordDeptName) return false;
+      // Fall through to church scoping if the record has no specific departmental tag
     }
     const userChurch = user.church_id || user.churchId;
     const canonUserChurch = CANONICAL_CHURCH_MAP[userChurch] || userChurch;
