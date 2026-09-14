@@ -2192,8 +2192,14 @@ Object.assign(TEXT.pt, {
   currentStock: "Stock Actual",
   minimumStock: "Stock Mínimo",
   reportWeek: "Semana do Relatório",
+  reportWeekOptional: "Semana (Opcional)",
+  provenanceOrChurch: "Proveniência / Origem",
+  provenance: "Proveniência",
   buyer: "Comprador",
   paymentProof: "POP / Prova de Pagamento",
+  paymentProofUpload: "Prova de Pagamento (Upload)",
+  viewProof: "Ver POP",
+  noProof: "Sem POP",
   receivedBy: "Recebido Por",
   destinationChurch: "Igreja Destinatária",
   distributionType: "Tipo de Distribui��o",
@@ -2442,7 +2448,7 @@ Object.assign(TEXT.pt, {
   inactive: "Inactivo",
   cellName: "Nome da Célula",
   observation: "Observa��o",
-  reportWeek: "Julho Semana 1",
+  reportWeek: "Semana do Relatório",
   responsibleArea: "Área Responsável",
   clearFilter: "Limpar filtro",
   filteredByGroup: "Filtrado por grupo",
@@ -2839,7 +2845,7 @@ Object.assign(TEXT.en, {
   inactive: "Inactive",
   cellName: "Cell Name",
   observation: "Observation",
-  reportWeek: "July Week 1",
+  reportWeek: "Report Week",
   responsibleArea: "Responsible Area",
   clearFilter: "Clear filter",
   filteredByGroup: "Filtered by group",
@@ -3056,8 +3062,14 @@ Object.assign(TEXT.en, {
   currentStock: "Current Stock",
   minimumStock: "Minimum Stock",
   reportWeek: "Report Week",
+  reportWeekOptional: "Report Week (Optional)",
+  provenanceOrChurch: "Provenance / Origin",
+  provenance: "Provenance",
   buyer: "Buyer",
   paymentProof: "POP / Payment Proof",
+  paymentProofUpload: "Proof of Payment (Upload)",
+  viewProof: "View POP",
+  noProof: "No POP",
   receivedBy: "Received By",
   destinationChurch: "Destination Church",
   distributionType: "Distribution Type",
@@ -22249,7 +22261,28 @@ function renderMinistryMaterials() {
     </div>
     <div class="row g-4">
       <div class="col-12">${modulePanel("materialCatalogue", L("catalogue"), "materialCatalogue", [L("materialTitle"), L("materialType"), L("format"), L("price"), L("currentStock"), L("minimumStock"), L("status"), L("actions")], catalogue.map((item) => [item.titulo_do_material, item.tipo, item.formato, money(item.preco), item.stock_actual, item.stock_minimo, badge(item.estado), backendActions("materialCatalogue", item.id)]), true, true)}</div>
-      <div class="col-12">${modulePanel("materialSale", L("sales"), "materialSale", [L("date"), L("reportWeek"), L("buyer"), L("materialTitle"), L("quantitySold"), L("amount"), L("method"), L("status"), L("actions")], sales.map((item) => [item.data, item.semana_do_relatorio, item.comprador, materialName(item.titulo_do_material), item.quantidade, money(item.valor), item.metodo_de_pagamento, badge(item.estado), backendActions("materialSale", item.id, [["verify", "materialSale", item.id, L("confirm")], ["reject", "materialSale", item.id, L("reject")]])]), true, true)}</div>
+      <div class="col-12">${modulePanel("materialSale", L("sales"), "materialSale", [L("date"), L("reportWeekOptional"), L("buyer"), L("provenance"), L("materialTitle"), L("quantitySold"), L("amount"), L("method"), "POP", L("status"), L("actions")], sales.map((item) => {
+        const popVal = item.pop_prova_de_pagamento || item.payment_reference || item.metadata?.pop_prova_de_pagamento;
+        const isPdf = popVal && (String(popVal).startsWith("data:application/pdf") || String(popVal).toLowerCase().endsWith(".pdf"));
+        const popBtn = popVal
+          ? `<button type="button" class="btn btn-sm btn-outline-info py-0 px-2" style="font-size:0.78rem" onclick="window.previewMaterialPaymentProof && window.previewMaterialPaymentProof('${escapeAttr(item.id)}', '')" title="${L("viewProof")}"><i class="bi ${isPdf ? "bi-file-earmark-pdf" : "bi-image"} me-1"></i>${L("viewProof")}</button>`
+          : `<span class="text-muted small" style="font-size:0.75rem">—</span>`;
+        const prov = item.proveniencia || (item.church_id ? churchName(item.church_id) : "") || item.church_name || "—";
+        const semana = item.semana_do_relatorio || "—";
+        return [
+          item.data || item.sale_date || "—",
+          semana,
+          item.comprador || item.buyer_name || "—",
+          prov,
+          materialName(item.titulo_do_material || item.material_name || item.catalog_item_title),
+          item.quantidade ?? item.quantity ?? 0,
+          money(item.valor ?? item.total_amount ?? 0),
+          item.metodo_de_pagamento || item.payment_method || "—",
+          popBtn,
+          badge(item.estado || item.status || "Confirmado"),
+          backendActions("materialSale", item.id, [["verify", "materialSale", item.id, L("confirm")], ["reject", "materialSale", item.id, L("reject")]])
+        ];
+      }), true, true)}</div>
       <div class="col-12">${modulePanel("materialDistribution", L("churchDistribution"), "materialDistribution", [L("date"), L("destinationChurch"), L("materialTitle"), L("quantitySold"), L("distributionType"), L("sentBy"), L("status"), L("actions")], distributions.map((item) => [item.data, churchName(item.igreja_destinataria), materialName(item.titulo_do_material), item.quantidade, item.tipo_de_distribuicao, item.responsavel_pelo_envio, badge(item.estado), backendActions("materialDistribution", item.id)]), true, true)}</div>
       <div class="col-xl-7">${modulePanel("materialStock", L("weeklyStock"), "materialStock", [L("weekStart"), L("weekEnd"), L("materialTitle"), L("openingStock"), L("entries"), L("exits"), L("finalStock"), L("difference"), L("actions")], stocks.map((item) => [item.semana_inicio, item.semana_fim, materialName(item.titulo_do_material), item.stock_inicial, item.entradas, item.saidas, item.stock_final, item.diferenca, backendActions("materialStock", item.id)]), false, true)}</div>
       <div class="col-xl-5">${modulePanel("materialFund", L("freeDistributionFunds"), "materialFund", [L("campaign"), L("targetAmount"), L("raisedAmount"), L("status"), L("actions")], funds.map((item) => [item.campanha, money(item.valor_alvo), money(item.valor_levantado), badge(item.estado), backendActions("materialFund", item.id)]), false)}</div>
@@ -25764,6 +25797,372 @@ async function deleteUserFromSupabase(userId, authUserId, userEmail) {
   }
 }
 
+function previewMaterialPaymentProof(saleId = "", proofData = "") {
+  let proof = proofData;
+  if (!proof && saleId) {
+    const sale = (state.ministryMaterials?.sales || []).find((s) => String(s.id) === String(saleId));
+    proof = sale?.pop_prova_de_pagamento || sale?.payment_reference || sale?.metadata?.pop_prova_de_pagamento;
+  }
+  if (!proof) {
+    alert(typeof L === "function" ? L("noProof") || "Nenhum comprovativo anexado." : "Nenhum comprovativo anexado.");
+    return;
+  }
+  
+  let modalEl = document.getElementById("popPreviewModal");
+  if (!modalEl) {
+    modalEl = document.createElement("div");
+    modalEl.id = "popPreviewModal";
+    modalEl.className = "modal fade";
+    modalEl.tabIndex = -1;
+    modalEl.setAttribute("aria-hidden", "true");
+    modalEl.innerHTML = `
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content glass-card">
+          <div class="modal-header border-0 pb-0">
+            <h5 class="modal-title d-flex align-items-center gap-2">
+              <i class="bi bi-receipt-cutoff text-gold"></i>
+              <span>${typeof L === "function" ? L("paymentProof") || "Comprovativo de Pagamento (POP)" : "Comprovativo de Pagamento (POP)"}</span>
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body text-center p-3" id="popPreviewBody"></div>
+          <div class="modal-footer border-0 pt-0 justify-content-between">
+            <a id="popDownloadBtn" href="#" target="_blank" download="comprovativo-pagamento" class="btn btn-sm btn-outline-cyan">
+              <i class="bi bi-download me-1"></i>${typeof L === "function" ? L("download") || "Descarregar" : "Descarregar"}
+            </a>
+            <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">
+              ${typeof L === "function" ? L("close") || "Fechar" : "Fechar"}
+            </button>
+          </div>
+        </div>
+      </div>`;
+    document.body.appendChild(modalEl);
+  }
+
+  const isPdf = String(proof).startsWith("data:application/pdf") || String(proof).toLowerCase().endsWith(".pdf");
+  const bodyEl = modalEl.querySelector("#popPreviewBody");
+  const downloadBtn = modalEl.querySelector("#popDownloadBtn");
+  if (downloadBtn) {
+    downloadBtn.href = proof;
+    downloadBtn.download = isPdf ? "comprovativo-pagamento.pdf" : "comprovativo-pagamento.png";
+  }
+
+  if (isPdf) {
+    bodyEl.innerHTML = `
+      <div class="pdf-preview-container mb-2" style="height:550px;">
+        <object data="${escapeAttr(proof)}" type="application/pdf" width="100%" height="100%" class="rounded border">
+          <div class="p-4 text-center">
+            <i class="bi bi-file-earmark-pdf-fill text-danger display-3"></i>
+            <p class="mt-2 text-muted">${lang === "pt" ? "Documento PDF carregado com sucesso." : "PDF document successfully loaded."}</p>
+            <a href="${escapeAttr(proof)}" target="_blank" class="btn btn-primary btn-sm mt-2">${lang === "pt" ? "Abrir PDF em nova janela" : "Open PDF in new window"}</a>
+          </div>
+        </object>
+      </div>`;
+  } else {
+    bodyEl.innerHTML = `
+      <div class="image-preview-container d-flex justify-content-center align-items-center p-2 bg-dark rounded" style="max-height:550px; overflow:auto;">
+        <img src="${escapeAttr(proof)}" alt="Comprovativo de Pagamento" class="img-fluid rounded shadow" style="max-height:500px; object-fit:contain;" />
+      </div>`;
+  }
+
+  const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
+  modalInstance.show();
+}
+window.previewMaterialPaymentProof = previewMaterialPaymentProof;
+
+function renderMaterialSaleForm(record = {}, modalMode = "create") {
+  const isEdit = modalMode === "edit";
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const dataVal = record.data || record.sale_date || todayIso;
+  const semanaVal = record.semana_do_relatorio || "";
+  const compradorVal = record.comprador || record.buyer_name || "";
+  const churchIdVal = record.church_id || "";
+  const provenienciaVal = record.proveniencia || (churchIdVal ? churchName(churchIdVal) : "") || record.church_name || "";
+  const materialVal = record.titulo_do_material || record.material_id || record.catalog_item_title || "";
+  const quantidadeVal = record.quantidade ?? record.quantity ?? 1;
+  const valorVal = record.valor ?? record.total_amount ?? "";
+  const metodoVal = record.metodo_de_pagamento || record.payment_method || (paymentMethods[0] || "Dinheiro");
+  const popVal = record.pop_prova_de_pagamento || record.payment_reference || "";
+  const recebidoVal = record.recebido_por || (typeof activeUser !== "undefined" && activeUser?.name ? activeUser.name : "");
+  const estadoVal = record.estado || record.status || "Confirmado";
+  const observacoesVal = record.observacoes || record.notes || "";
+
+  let provType = "igreja_ce";
+  let customProv = "";
+  if (churchIdVal || (state.churches || []).some((c) => c.name === provenienciaVal || c.id === churchIdVal)) {
+    provType = "igreja_ce";
+  } else if (/externo|outra denom/i.test(provenienciaVal)) {
+    provType = "externo";
+    customProv = provenienciaVal;
+  } else if (/livraria|balc[aã]o/i.test(provenienciaVal)) {
+    provType = "livraria";
+    customProv = provenienciaVal;
+  } else if (/p[uú]blico|visitante/i.test(provenienciaVal)) {
+    provType = "publico";
+    customProv = provenienciaVal;
+  } else if (provenienciaVal) {
+    provType = "outro";
+    customProv = provenienciaVal;
+  }
+
+  const catalogItems = state.ministryMaterials?.catalogue || [];
+  const churchesList = state.churches || [];
+
+  return `
+    <div class="col-12">
+      <div class="alert alert-info py-2 px-3 mb-3 d-flex align-items-center gap-2" style="font-size:0.875rem">
+        <i class="bi bi-info-circle-fill text-info"></i>
+        <span><strong>${L("sales")}:</strong> ${lang === "pt" ? "Registe vendas de materiais ministeriais com cálculo automático de valor, proveniência detalhada e upload de comprovativo de pagamento (POP)." : "Record ministry material sales with automatic amount calculation, detailed buyer provenance, and payment proof (POP) upload."}</span>
+      </div>
+    </div>
+
+    <!-- Data e Semana (Opcional) -->
+    <div class="col-md-6 mb-3">
+      <label class="form-label fw-semibold">${L("date")} <span class="text-danger">*</span></label>
+      <input type="date" class="form-control" name="data" value="${escapeAttr(dataVal)}" required />
+    </div>
+    <div class="col-md-6 mb-3">
+      <label class="form-label fw-semibold">${L("reportWeekOptional")} <small class="text-muted">(${lang === "pt" ? "Opcional" : "Optional"})</small></label>
+      <input type="text" class="form-control" name="semana_do_relatorio" value="${escapeAttr(semanaVal)}" placeholder="${lang === "pt" ? "ex: Julho Semana 1 (ou em branco)" : "e.g. July Week 1 (or blank)"}" />
+    </div>
+
+    <!-- Comprador e Proveniência -->
+    <div class="col-md-6 mb-3">
+      <label class="form-label fw-semibold">${L("buyer")} <span class="text-danger">*</span></label>
+      <input type="text" class="form-control" name="comprador" value="${escapeAttr(compradorVal)}" placeholder="${lang === "pt" ? "Nome completo do comprador" : "Buyer full name"}" required />
+    </div>
+    <div class="col-md-6 mb-3">
+      <label class="form-label fw-semibold">${L("provenanceOrChurch")} <span class="text-danger">*</span></label>
+      <select class="form-select" id="materialSale_prov_type" name="proveniencia_tipo">
+        <option value="igreja_ce" ${provType === "igreja_ce" ? "selected" : ""}>${lang === "pt" ? "🏛️ Membro / Igreja Christ Embassy" : "🏛️ Member / Christ Embassy Church"}</option>
+        <option value="externo" ${provType === "externo" ? "selected" : ""}>${lang === "pt" ? "🌐 Comprador Externo / Outra Denominação" : "🌐 External Buyer / Other Denomination"}</option>
+        <option value="livraria" ${provType === "livraria" ? "selected" : ""}>${lang === "pt" ? "📚 Livraria / Balcão de Venda" : "📚 Bookshop / Sales Counter"}</option>
+        <option value="publico" ${provType === "publico" ? "selected" : ""}>${lang === "pt" ? "👥 Público Geral / Visitante" : "👥 General Public / Visitor"}</option>
+        <option value="outro" ${provType === "outro" ? "selected" : ""}>${lang === "pt" ? "✍️ Outro (especificar...)" : "✍️ Other (specify...)"}</option>
+      </select>
+    </div>
+
+    <!-- Sub-seletor de Igreja CE ou Campo de texto de Proveniência Externa -->
+    <div class="col-md-6 mb-3" id="materialSale_church_select_box" style="${provType === "igreja_ce" ? "" : "display:none;"}">
+      <label class="form-label fw-semibold">${L("church")} CE</label>
+      <select class="form-select" name="church_id" id="materialSale_church_id">
+        <option value="">${L("filterChurch")}...</option>
+        ${churchesList.map((c) => `<option value="${c.id}" ${String(c.id) === String(churchIdVal) ? "selected" : ""}>${escapeAttr(c.name || c.nome)}</option>`).join("")}
+      </select>
+    </div>
+    <div class="col-md-6 mb-3" id="materialSale_custom_prov_box" style="${provType !== "igreja_ce" ? "" : "display:none;"}">
+      <label class="form-label fw-semibold">${L("provenance")} / ${lang === "pt" ? "Descrição" : "Description"}</label>
+      <input type="text" class="form-control" name="proveniencia_custom" id="materialSale_proveniencia_custom" value="${escapeAttr(customProv)}" placeholder="${lang === "pt" ? "ex: Igreja Baptista Central / Visitante" : "e.g. Baptist Church / Visitor"}" />
+    </div>
+    <input type="hidden" name="proveniencia" id="materialSale_proveniencia_hidden" value="${escapeAttr(provenienciaVal)}" />
+
+    <!-- Material e Detalhes de Stock/Preço -->
+    <div class="col-md-6 mb-3">
+      <label class="form-label fw-semibold">${L("materialTitle")} <span class="text-danger">*</span></label>
+      <select class="form-select" name="titulo_do_material" id="materialSale_material_select" required>
+        <option value="" data-price="0" data-stock="0">${lang === "pt" ? "Selecione o Material..." : "Select Material..."}</option>
+        ${catalogItems.map((m) => {
+          const isSel = String(m.titulo_do_material || m.name || m.id) === String(materialVal) || String(m.id) === String(record.material_id);
+          const p = Number(m.preco ?? m.unit_price ?? 0);
+          const st = Number(m.stock_actual ?? 0);
+          return `<option value="${escapeAttr(m.titulo_do_material || m.name)}" data-id="${m.id}" data-price="${p}" data-stock="${st}" ${isSel ? "selected" : ""}>${escapeAttr(m.titulo_do_material || m.name)} — ${money(p)} (Stock: ${st})</option>`;
+        }).join("")}
+      </select>
+      <div class="form-text" id="materialSale_stock_hint"></div>
+    </div>
+
+    <!-- Quantidade e Valor Total -->
+    <div class="col-md-3 mb-3">
+      <label class="form-label fw-semibold">${L("quantitySold")} <span class="text-danger">*</span></label>
+      <input type="number" class="form-control" name="quantidade" id="materialSale_qty_input" min="1" step="1" value="${quantidadeVal}" required />
+    </div>
+    <div class="col-md-3 mb-3">
+      <label class="form-label fw-semibold">${L("amount")} (MTn) <span class="text-danger">*</span></label>
+      <input type="number" class="form-control" name="valor" id="materialSale_amount_input" step="0.01" value="${valorVal}" placeholder="0.00" required />
+      <div class="form-text small text-muted" id="materialSale_calc_hint">${lang === "pt" ? "Cálculo automático ativo" : "Auto-calculated"}</div>
+    </div>
+
+    <!-- Método de Pagamento e Recebido Por -->
+    <div class="col-md-6 mb-3">
+      <label class="form-label fw-semibold">${L("method")} <span class="text-danger">*</span></label>
+      <select class="form-select" name="metodo_de_pagamento">
+        ${paymentMethods.map((m) => `<option value="${escapeAttr(m)}" ${m === metodoVal ? "selected" : ""}>${escapeAttr(m)}</option>`).join("")}
+      </select>
+    </div>
+    <div class="col-md-6 mb-3">
+      <label class="form-label fw-semibold">${L("receivedBy")}</label>
+      <input type="text" class="form-control" name="recebido_por" value="${escapeAttr(recebidoVal)}" />
+    </div>
+
+    <!-- Estado -->
+    <div class="col-md-6 mb-3">
+      <label class="form-label fw-semibold">${L("status")}</label>
+      <select class="form-select" name="estado">
+        ${materialSalesStatuses.map((s) => `<option value="${escapeAttr(s)}" ${s === estadoVal ? "selected" : ""}>${escapeAttr(s)}</option>`).join("")}
+      </select>
+    </div>
+
+    <!-- Upload Prova de Pagamento (POP) -->
+    <div class="col-md-6 mb-3">
+      <label class="form-label fw-semibold">${L("paymentProofUpload")}</label>
+      <div class="input-group">
+        <input type="file" class="form-control" id="materialSale_pop_file" accept="image/png,image/jpeg,image/webp,application/pdf" style="display:none;" />
+        <button type="button" class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center gap-2" id="materialSale_pop_btn">
+          <i class="bi bi-cloud-arrow-up-fill"></i>
+          <span>${lang === "pt" ? "Carregar Imagem ou PDF" : "Upload Image or PDF"}</span>
+        </button>
+      </div>
+      <input type="hidden" name="pop_prova_de_pagamento" id="materialSale_pop_data" value="${escapeAttr(popVal)}" />
+      <div id="materialSale_pop_preview" class="mt-2"></div>
+    </div>
+
+    <!-- Observações -->
+    <div class="col-12 mb-3">
+      <label class="form-label fw-semibold">${L("observations")}</label>
+      <textarea class="form-control" name="observacoes" rows="2" placeholder="${lang === "pt" ? "Notas ou detalhes adicionais sobre a venda..." : "Additional notes or details about the sale..."}">${escapeAttr(observacoesVal)}</textarea>
+    </div>
+  `;
+}
+
+function mountMaterialSaleFormControls(form) {
+  if (!form) return;
+  const provTypeSel = form.querySelector("#materialSale_prov_type");
+  const churchBox = form.querySelector("#materialSale_church_select_box");
+  const churchSel = form.querySelector("#materialSale_church_id");
+  const customBox = form.querySelector("#materialSale_custom_prov_box");
+  const customInput = form.querySelector("#materialSale_proveniencia_custom");
+  const hiddenProv = form.querySelector("#materialSale_proveniencia_hidden");
+
+  function syncProvenance() {
+    if (!provTypeSel) return;
+    const type = provTypeSel.value;
+    if (type === "igreja_ce") {
+      if (churchBox) churchBox.style.display = "";
+      if (customBox) customBox.style.display = "none";
+      const churchNameText = churchSel && churchSel.selectedIndex > 0 ? churchSel.options[churchSel.selectedIndex].text : "";
+      if (hiddenProv) hiddenProv.value = churchNameText;
+    } else {
+      if (churchBox) churchBox.style.display = "none";
+      if (customBox) customBox.style.display = "";
+      if (churchSel) churchSel.value = "";
+      let defaultLabel = "";
+      if (type === "externo") defaultLabel = lang === "pt" ? "Comprador Externo / Outra Denominação" : "External Buyer / Other Denomination";
+      else if (type === "livraria") defaultLabel = lang === "pt" ? "Livraria / Balcão de Venda" : "Bookshop / Sales Counter";
+      else if (type === "publico") defaultLabel = lang === "pt" ? "Público Geral / Visitante" : "General Public / Visitor";
+      
+      if (customInput && !customInput.value.trim() && type !== "outro") {
+        customInput.value = defaultLabel;
+      }
+      if (hiddenProv) hiddenProv.value = (customInput && customInput.value.trim()) || defaultLabel;
+    }
+  }
+
+  if (provTypeSel) provTypeSel.addEventListener("change", syncProvenance);
+  if (churchSel) churchSel.addEventListener("change", syncProvenance);
+  if (customInput) {
+    customInput.addEventListener("input", () => {
+      if (hiddenProv) hiddenProv.value = customInput.value.trim();
+    });
+  }
+
+  const matSelect = form.querySelector("#materialSale_material_select");
+  const qtyInput = form.querySelector("#materialSale_qty_input");
+  const amountInput = form.querySelector("#materialSale_amount_input");
+  const stockHint = form.querySelector("#materialSale_stock_hint");
+  const calcHint = form.querySelector("#materialSale_calc_hint");
+
+  function updatePriceAndStock(manualOverride = false) {
+    if (!matSelect) return;
+    const opt = matSelect.options[matSelect.selectedIndex];
+    if (!opt || matSelect.selectedIndex === 0) {
+      if (stockHint) stockHint.textContent = "";
+      return;
+    }
+    const price = parseFloat(opt.getAttribute("data-price") || "0");
+    const stock = parseInt(opt.getAttribute("data-stock") || "0", 10);
+    if (stockHint) {
+      stockHint.innerHTML = `<span class="badge ${stock > 0 ? "bg-success" : "bg-danger"}">${lang === "pt" ? "Stock disponível" : "Available stock"}: ${stock}</span> · <span class="text-muted">${lang === "pt" ? "Preço unitário" : "Unit price"}: ${money(price)}</span>`;
+    }
+    if (!manualOverride && amountInput) {
+      const qty = parseFloat(qtyInput?.value || "1");
+      const total = (price * (isNaN(qty) ? 1 : qty)).toFixed(2);
+      amountInput.value = total;
+      if (calcHint) calcHint.textContent = `${lang === "pt" ? "Auto-calculado" : "Auto-calculated"}: ${qty} × ${money(price)} = ${money(total)}`;
+    }
+  }
+
+  if (matSelect) {
+    matSelect.addEventListener("change", () => updatePriceAndStock(false));
+  }
+  if (qtyInput) {
+    qtyInput.addEventListener("input", () => updatePriceAndStock(false));
+  }
+  if (amountInput) {
+    amountInput.addEventListener("input", () => {
+      if (calcHint) calcHint.textContent = lang === "pt" ? "Valor editado manualmente" : "Manually edited";
+    });
+  }
+  updatePriceAndStock(true);
+
+  const popFile = form.querySelector("#materialSale_pop_file");
+  const popBtn = form.querySelector("#materialSale_pop_btn");
+  const popDataInput = form.querySelector("#materialSale_pop_data");
+  const popPreview = form.querySelector("#materialSale_pop_preview");
+
+  function renderPopPreview() {
+    if (!popPreview || !popDataInput) return;
+    const val = popDataInput.value;
+    if (!val) {
+      popPreview.innerHTML = "";
+      return;
+    }
+    const isPdf = val.startsWith("data:application/pdf") || val.toLowerCase().endsWith(".pdf");
+    popPreview.innerHTML = `
+      <div class="d-flex align-items-center justify-content-between p-2 rounded border bg-light-subtle">
+        <div class="d-flex align-items-center gap-2 overflow-hidden">
+          <i class="bi ${isPdf ? "bi-file-earmark-pdf-fill text-danger fs-4" : "bi-file-earmark-image-fill text-primary fs-4"}"></i>
+          <span class="text-truncate small fw-semibold">${isPdf ? "Comprovativo (PDF)" : "Comprovativo (Imagem)"}</span>
+        </div>
+        <div class="d-flex gap-1">
+          <button type="button" class="btn btn-sm btn-outline-info py-0 px-2" onclick="window.previewMaterialPaymentProof && window.previewMaterialPaymentProof('', '${escapeAttr(val)}')">
+            <i class="bi bi-eye"></i> ${lang === "pt" ? "Ver" : "View"}
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2" id="materialSale_pop_clear">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+      </div>
+    `;
+    const clearBtn = popPreview.querySelector("#materialSale_pop_clear");
+    if (clearBtn) {
+      clearBtn.addEventListener("click", () => {
+        popDataInput.value = "";
+        if (popFile) popFile.value = "";
+        renderPopPreview();
+      });
+    }
+  }
+
+  if (popBtn && popFile) {
+    popBtn.addEventListener("click", () => popFile.click());
+    popFile.addEventListener("change", (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      if (file.size > 10 * 1024 * 1024) {
+        alert(lang === "pt" ? "O ficheiro é demasiado grande. Limite máximo: 10MB." : "File is too large. Maximum size: 10MB.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        if (popDataInput) popDataInput.value = ev.target.result;
+        renderPopPreview();
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+  renderPopPreview();
+}
+
 function openForm(type, id = null, options = {}) {
   const action = id ? "edit" : "add";
   if (!canRenderAction(action, type)) {
@@ -25813,6 +26212,8 @@ function openForm(type, id = null, options = {}) {
     byId("modalTitle").textContent = type === "finance" && !id ? L("addFinance") : formTitle(type);
     if (type === "finance" && !id) {
       byId("modalFields").innerHTML = renderFinanceAddForm(record);
+    } else if (type === "materialSale") {
+      byId("modalFields").innerHTML = renderMaterialSaleForm(record, modalMode);
     } else if (type === "firstTimer") {
       byId("modalFields").innerHTML = renderFirstTimerIntakeForm(record || {});
     } else if (type === "mediaSchedule") {
@@ -25827,6 +26228,7 @@ function openForm(type, id = null, options = {}) {
     requestAnimationFrame(() => {
       mountRelationalControls(byId("entryForm"));
       mountMediaScheduleFormControls(byId("entryForm"));
+      if (type === "materialSale") mountMaterialSaleFormControls(byId("entryForm"));
       if (type === "user") mountUserFormControls(byId("entryForm"));
       mountAlecMemberAutocompleteControls(byId("entryForm"));
       if (["alecRegistration", "alecScore", "churchReport"].includes(type)) {
@@ -26818,6 +27220,29 @@ async function submitForm(form) {
         "materialReport",
       ].includes(modalType)
     ) {
+      if (modalType === "materialSale") {
+        const rec = collection[index];
+        rec.material_name = rec.material_name || rec.titulo_do_material || "";
+        rec.titulo_do_material = rec.titulo_do_material || rec.material_name || "";
+        if (!rec.material_id && rec.titulo_do_material) {
+          const m = (state.ministryMaterials?.catalogue || []).find((cat) => (cat.titulo_do_material || cat.name) === rec.titulo_do_material);
+          if (m && m.id) rec.material_id = m.id;
+        }
+        rec.quantity = Number(rec.quantity ?? rec.quantidade ?? 0);
+        rec.quantidade = Number(rec.quantidade ?? rec.quantity ?? 0);
+        rec.total_amount = Number(rec.total_amount ?? rec.valor ?? 0);
+        rec.valor = Number(rec.valor ?? rec.total_amount ?? 0);
+        rec.sale_date = rec.sale_date || rec.data || "";
+        rec.data = rec.data || rec.sale_date || "";
+        rec.buyer_name = rec.buyer_name || rec.comprador || "";
+        rec.comprador = rec.comprador || rec.buyer_name || "";
+        rec.payment_reference = rec.payment_reference || rec.pop_prova_de_pagamento || "";
+        rec.pop_prova_de_pagamento = rec.pop_prova_de_pagamento || rec.payment_reference || "";
+        rec.semana_do_relatorio = rec.semana_do_relatorio || "";
+        rec.proveniencia = rec.proveniencia || (rec.church_id ? churchName(rec.church_id) : "") || rec.church_name || "";
+        rec.church_name = rec.church_name || (rec.church_id ? churchName(rec.church_id) : "") || rec.proveniencia || "";
+        rec.finance_record_id = null;
+      }
       const persisted = await persistDopRecord(modalType, "update", collection[index]);
       if (!persisted?.ok) {
         collection[index] = previousRecord;
@@ -27266,12 +27691,23 @@ async function submitForm(form) {
       if (modalType === "materialSale") {
         record.material_name = record.material_name || record.titulo_do_material || "";
         record.titulo_do_material = record.titulo_do_material || record.material_name || "";
+        if (!record.material_id && record.titulo_do_material) {
+          const m = (state.ministryMaterials?.catalogue || []).find((cat) => (cat.titulo_do_material || cat.name) === record.titulo_do_material);
+          if (m && m.id) record.material_id = m.id;
+        }
         record.quantity = Number(record.quantity ?? record.quantidade ?? 0);
         record.quantidade = Number(record.quantidade ?? record.quantity ?? 0);
         record.total_amount = Number(record.total_amount ?? record.valor ?? 0);
         record.valor = Number(record.valor ?? record.total_amount ?? 0);
         record.sale_date = record.sale_date || record.data || "";
         record.data = record.data || record.sale_date || "";
+        record.buyer_name = record.buyer_name || record.comprador || "";
+        record.comprador = record.comprador || record.buyer_name || "";
+        record.payment_reference = record.payment_reference || record.pop_prova_de_pagamento || "";
+        record.pop_prova_de_pagamento = record.pop_prova_de_pagamento || record.payment_reference || "";
+        record.semana_do_relatorio = record.semana_do_relatorio || "";
+        record.proveniencia = record.proveniencia || (record.church_id ? churchName(record.church_id) : "") || record.church_name || "";
+        record.church_name = record.church_name || (record.church_id ? churchName(record.church_id) : "") || record.proveniencia || "";
         record.finance_record_id = null;
         record.status = record.status || record.estado || "Completed";
         record.estado = record.estado || record.status || "Confirmado";
@@ -27575,6 +28011,11 @@ function detailGrid(record, type = "") {
         Pending: lang === "pt" ? "Pendente" : "Pending"
       };
       return payMap[val] || val;
+    }
+    if (key === "pop_prova_de_pagamento" || key === "payment_reference" || key === "payment_proof") {
+      if (!val) return `<span class="text-muted">${L("noProof") || "Sem comprovativo"}</span>`;
+      const isPdf = String(val).startsWith("data:application/pdf") || String(val).toLowerCase().endsWith(".pdf");
+      return `<button type="button" class="btn btn-sm btn-outline-info py-0 px-2" onclick="window.previewMaterialPaymentProof && window.previewMaterialPaymentProof('', '${escapeAttr(val)}')"><i class="bi ${isPdf ? "bi-file-earmark-pdf" : "bi-image"} me-1"></i>${L("viewProof") || "Ver POP"}</button>`;
     }
     if (key === "estado" || key === "status") {
       return badge(val);
@@ -28529,7 +28970,8 @@ function quickAction(action, type, id) {
     if (!record) return;
     if (type === "materialSale") {
       record.estado = action === "verify" ? "Confirmado" : "Rejeitado";
-      record.status = record.estado;
+      record.status = action === "verify" ? "Completed" : "Cancelled";
+      void persistDopRecord("materialSale", "update", record);
     } else if (type.startsWith("fevo")) {
       record.status = action === "verify" ? "Aprovado" : "Rejeitado";
       record.estado = record.status;
@@ -30973,6 +31415,10 @@ async function hydrateMinistryMaterialsFromRepository() {
       data: row.data || row.sale_date || "",
       comprador: row.comprador || row.buyer_name || "",
       metodo_de_pagamento: row.metodo_de_pagamento || row.payment_method || "",
+      pop_prova_de_pagamento: row.pop_prova_de_pagamento || row.payment_reference || row.metadata?.pop_prova_de_pagamento || "",
+      semana_do_relatorio: row.semana_do_relatorio || row.metadata?.semana_do_relatorio || "",
+      proveniencia: row.proveniencia || row.church_name || row.metadata?.proveniencia || "",
+      church_id: row.church_id || "",
       estado: row.estado || row.status || "Confirmado",
       status: row.status || row.estado || "Completed",
       finance_record_id: row.finance_record_id ?? null,
