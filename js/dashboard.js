@@ -32472,7 +32472,7 @@ function dualWriteMediaRecord(modalType, mode, record) {
   else if (mode === "update" && bridge[pair[1]]) void bridge[pair[1]](record.id, record);
 }
 
-async async function hydrateMediaFromRepository() {
+async function hydrateMediaFromRepository() {
   const repo = window.CEMedia || window.CEDataLayer?.media;
   if (!repo?.listMediaTeam) return false;
   window.mediaLoading = true;
@@ -33038,7 +33038,7 @@ async function hydrateVenueInventoryFromRepository() {
   }
 }
 
-async async function hydrateRequisitionsFromRepository() {
+async function hydrateRequisitionsFromRepository() {
   const repo =
     window.CERequisitionsDataBridge ||
     window.CEDataLayer?.requisitionsWorkflow ||
