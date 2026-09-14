@@ -3555,8 +3555,7 @@ const seedData = {
     { id: "a1111111-1111-4111-8111-111111111104", church_id: "a1111111-1111-4111-8111-111111111104", church_name: "Christ Embassy Beira", public_name: "E.C. Beira", type: "Igreja Local", province: "Sofala", city: "Beira", district_or_area: "Beira", address: "Beira, Sofala", pastor_in_charge: "", phone_primary: "", phone_secondary: "", email: "", facebook: "Igreja Embaixada de Cristo Beira", instagram: "@embaixada_de_cristo_beira", youtube: "", service_times: defaultSeedServiceTimes("a1111111-1111-4111-8111-111111111104", "Igreja Local"), parent_church_id: "a1111111-1111-4111-8111-111111111101", status: "Activa", information_status: "Confirmado", notes: "Endereço e contactos a confirmar com a igreja local.", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [40, 38, 42, 39] },
     { id: "a1111111-1111-4111-8111-111111111105", church_id: "a1111111-1111-4111-8111-111111111105", church_name: "Christ Embassy Nampula", public_name: "E.C. Nampula", type: "Igreja Local", province: "Nampula", city: "Nampula", district_or_area: "Muhala-Expansão", address: "Terminal de Chapa Muhala-Expansão, Paragem Igreja", pastor_in_charge: "Pastor Armando de Jesus", phone_primary: "", phone_secondary: "", email: "", facebook: "Embaixada De Cristo Nampula", instagram: "@embaixada_de_cristo.nampula", youtube: "", service_times: defaultSeedServiceTimes("a1111111-1111-4111-8111-111111111105", "Igreja Local"), parent_church_id: "a1111111-1111-4111-8111-111111111101", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [36, 34, 35, 37] },
     { id: "a1111111-1111-4111-8111-111111111106", church_id: "a1111111-1111-4111-8111-111111111106", church_name: "Christ Embassy Choupal", public_name: "E.C. Choupal", type: "Igreja Local", province: "Maputo Cidade", city: "KaMubukwana", district_or_area: "Choupal", address: "Choupal, Maputo", pastor_in_charge: "", phone_primary: "", phone_secondary: "", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("a1111111-1111-4111-8111-111111111106", "Igreja Local"), parent_church_id: "a1111111-1111-4111-8111-111111111101", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [28, 30, 27, 31] },
-    { id: "a1111111-1111-4111-8111-111111111107", church_id: "a1111111-1111-4111-8111-111111111107", church_name: "Christ Embassy Online Church", public_name: "E.C. Online", type: "Igreja Online", province: "Online", city: "Online", district_or_area: "Virtual", address: "Transmissão online", pastor_in_charge: "Equipa de Media", phone_primary: "+258 86 877 389", phone_secondary: "", email: "online@embaixada-de-cristo.org", facebook: "", instagram: "", youtube: "Christ Embassy Mozambique Online", service_times: defaultSeedServiceTimes("a1111111-1111-4111-8111-111111111107", "Igreja Online"), parent_church_id: "a1111111-1111-4111-8111-111111111101", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2024-06-01", updated_at: "2026-07-10", attendance_last_4_weeks: [54, 61, 48, 57] },
-    { id: "3ef77e8e-519a-4137-9ee7-59d9e620c6dd", church_id: "3ef77e8e-519a-4137-9ee7-59d9e620c6dd", church_name: "E.C. - Muhalaze", public_name: "E.C. - Muhalaze", type: "Igreja Local", province: "Maputo Província", city: "Matola", district_or_area: "Muhalaze", address: "Muhalaze, Matola", pastor_in_charge: "", phone_primary: "", phone_secondary: "", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("3ef77e8e-519a-4137-9ee7-59d9e620c6dd", "Igreja Local"), parent_church_id: "a1111111-1111-4111-8111-111111111101", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [25, 27, 26, 28] }
+    { id: "a1111111-1111-4111-8111-111111111107", church_id: "a1111111-1111-4111-8111-111111111107", church_name: "Christ Embassy Online Church", public_name: "E.C. Online", type: "Igreja Online", province: "Online", city: "Online", district_or_area: "Virtual", address: "Transmissão online", pastor_in_charge: "Equipa de Media", phone_primary: "+258 86 877 389", phone_secondary: "", email: "online@embaixada-de-cristo.org", facebook: "", instagram: "", youtube: "Christ Embassy Mozambique Online", service_times: defaultSeedServiceTimes("a1111111-1111-4111-8111-111111111107", "Igreja Online"), parent_church_id: "a1111111-1111-4111-8111-111111111101", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2024-06-01", updated_at: "2026-07-10", attendance_last_4_weeks: [54, 61, 48, 57] }
   ],
   firstTimers: [],
   followUps: [],
@@ -10871,6 +10870,15 @@ function setRoute(route) {
     console.error("[setRoute renderer error]", activeRoute, renderError);
   }
   if (activeRoute === "members" && !modulePageState.members.loading) void loadMembersPage();
+  if (activeRoute === "churches") {
+    Promise.resolve(hydrateChurchesFromRepository())
+      .then((hydrated) => {
+        if (hydrated && activeRoute === "churches") {
+          try { renderChurches(); } catch (_) {}
+        }
+      })
+      .catch((err) => console.warn("[CE Churches] route hydrate skipped", err));
+  }
   const memberDependentRoutes = [
     "cellMembers", "cellGroups", "cellCellsList", "cellMinistryOverview",
     "counseling", "sacraments", "foundation", "fevo", "staffHr",
@@ -30343,6 +30351,16 @@ function continueEnterDashboard() {
       }
     })
     .catch((error) => console.warn("[CE Foundation] background hydrate skipped", error));
+
+  // Active background sync for churches from Supabase
+  Promise.resolve()
+    .then(() => hydrateChurchesFromRepository())
+    .then((hydrated) => {
+      if (hydrated && activeRoute === "churches") {
+        try { renderChurches(); } catch (_) {}
+      }
+    })
+    .catch((error) => console.warn("[CE Churches] background hydrate skipped", error));
 
   if (window.__CE_LEGACY_EAGER_HYDRATE__ === true) {
   // Data-layer pilots: sync churches + members + first timers without blocking UI paint

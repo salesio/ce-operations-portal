@@ -1,6 +1,6 @@
 import fs from "node:fs";
 
-const versionTag = `20260914-fix-cell-attendance-visitor-popup-v1`;
+const versionTag = `20260914-sync-live-churches-db-v1`;
 let html = fs.readFileSync("index.html", "utf8");
 html = html.replace(/\?v=[a-zA-Z0-9_.-]+/g, `?v=${versionTag}`);
 fs.writeFileSync("index.html", html, "utf8");
