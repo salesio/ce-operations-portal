@@ -2820,6 +2820,7 @@ function installDataLayerGlobals(): void {
     ...fevoSupabase,
     ...prisonMinistrySupabase,
     ...ministryMaterialsSupabase,
+    ...programsEvents,
     ...counselingSupabase,
     ...sacramentsSupabase,
     ...churches,

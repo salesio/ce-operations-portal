@@ -30823,7 +30823,7 @@ function dopPersistenceError(result) {
 }
 
 async function hydrateProgramsFromRepository() {
-  const repo = window.CEPrograms || window.CEDataLayer?.programs;
+  const repo = window.CESupabase || window.CEPrograms || window.CEDataLayer?.programs;
   if (!repo?.listPrograms) return false;
   try {
     let hydrated = false;
@@ -30832,14 +30832,14 @@ async function hydrateProgramsFromRepository() {
       state.programs = result.data.map((row) => ({
         ...row,
         id: row.id,
-        name: row.name || "",
-        owner: row.owner || row.responsible_name || "",
-        responsible_name: row.responsible_name || row.owner || "",
-        category: row.category || "",
+        name: row.name || row.nome || "",
+        owner: row.owner || row.responsible_name || row.coordenador || "",
+        responsible_name: row.responsible_name || row.owner || row.coordenador || "",
+        category: row.category || row.categoria || "",
         status: row.status || row.estado || "Draft",
-        church_id: row.church_id || "",
-        program_type: row.program_type || "",
-        start_date: row.start_date || "",
+        church_id: row.church_id || row.igreja || "",
+        program_type: row.program_type || row.tipo || "",
+        start_date: row.start_date || row.data || "",
       }));
       hydrated = true;
     }

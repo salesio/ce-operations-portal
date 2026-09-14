@@ -46,14 +46,14 @@
   }
 
   function resolveApi() {
-    if (window.CESupabase && typeof window.CESupabase.createProgram === "function") {
+    if (window.CESupabase && (typeof window.CESupabase.createProgram === "function" || typeof window.CESupabase.listPrograms === "function")) {
       return { api: window.CESupabase, via: "CESupabase" };
     }
     var layer = window.CEDataLayer && window.CEDataLayer.programs;
-    if (layer && typeof layer.createProgram === "function" && typeof layer.dualWriteRecord !== "function") {
+    if (layer && (typeof layer.createProgram === "function" || typeof layer.listPrograms === "function") && typeof layer.dualWriteRecord !== "function") {
       return { api: layer, via: "CEDataLayer.programs" };
     }
-    if (window.CEPrograms && typeof window.CEPrograms.createProgram === "function" && typeof window.CEPrograms.dualWriteRecord !== "function") {
+    if (window.CEPrograms && (typeof window.CEPrograms.createProgram === "function" || typeof window.CEPrograms.listPrograms === "function") && typeof window.CEPrograms.dualWriteRecord !== "function") {
       return { api: window.CEPrograms, via: "CEPrograms" };
     }
     return { api: null, via: "none" };
