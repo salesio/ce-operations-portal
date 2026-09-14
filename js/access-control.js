@@ -208,7 +208,15 @@
         staffHr: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "department" },
         venueInventory: { can_view: true, can_create: true, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "department" },
         fevo: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "department" },
-        cell: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "department" }
+        cell: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "department" },
+        programs: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: true, can_verify: true, can_export: true, scope: "department" },
+        prisonMinistry: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: true, can_verify: true, can_export: true, scope: "department" },
+        ministryMaterials: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: true, can_verify: true, can_export: true, scope: "department" },
+        media: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "department" },
+        counseling: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "department" },
+        sacraments: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "department" },
+        foundation: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "department" },
+        finance: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "department" }
       }
     },
     "Counseling Head": {
@@ -713,6 +721,12 @@
   function isExplicitlyDenied(user, module) {
     if (!user || !module) return false;
     const grants = user.department_permissions || [];
+    if (grants.includes("*")) return false;
+    if (grants.includes(module)) return false;
+    if (LEGACY_PERMISSION_MAP[module] && grants.includes(LEGACY_PERMISSION_MAP[module])) return false;
+    for (const g of grants) {
+      if (LEGACY_PERMISSION_MAP[g] === module || ROUTE_MODULE_MAP[g] === module) return false;
+    }
     if (module === "cellMinistry" && (grants.includes("cellMinistry") || grants.includes("cell_ministry") || grants.includes("cell"))) return false;
     if (module === "cellReports" && (grants.includes("cellReports") || grants.includes("cell_reports") || grants.includes("cell"))) return false;
     if (module === "alec" && (grants.includes("alec") || grants.includes("alecRegistration") || grants.includes("alecScores") || grants.includes("alec_manager") || grants.includes("cell"))) return false;
@@ -722,6 +736,16 @@
     if (module === "followUp" && (grants.includes("followUp") || grants.includes("follow_up"))) return false;
     if (module === "reports" && (grants.includes("reports") || grants.includes("reports_viewer"))) return false;
     if (module === "firstTimers" && (grants.includes("firstTimers") || grants.includes("first_timers"))) return false;
+    if (module === "programs" && grants.includes("programs")) return false;
+    if (module === "prisonMinistry" && (grants.includes("prisonMinistry") || grants.includes("cellPrison"))) return false;
+    if (module === "ministryMaterials" && (grants.includes("ministryMaterials") || grants.includes("cellMaterials"))) return false;
+    if (module === "media" && (grants.includes("media") || grants.includes("mediaTeam"))) return false;
+    if (module === "counseling" && grants.includes("counseling")) return false;
+    if (module === "sacraments" && grants.includes("sacraments")) return false;
+    if (module === "venueInventory" && (grants.includes("venueInventory") || grants.includes("inventory") || grants.includes("venues"))) return false;
+    if (module === "finance" && (grants.includes("finance") || grants.includes("financeHead") || grants.includes("financeOfficer"))) return false;
+    if (module === "staffHr" && grants.includes("staffHr")) return false;
+    if (module === "requisitions" && grants.includes("requisitions")) return false;
     const rawRole = user.role || user.role_name || "";
     const norm = normalizeRoleKey(rawRole);
     return Boolean(EXPLICIT_DENIED_MODULES[norm]?.has(module) || EXPLICIT_DENIED_MODULES[rawRole]?.has(module));

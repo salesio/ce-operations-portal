@@ -10270,11 +10270,11 @@ function fallbackCanViewModule(user = activeUser, module = "dashboard") {
 function userHasExtendedCellPerms(user = activeUser) {
   if (!user) return false;
   if ((user.department_permissions || []).includes("*") || user.role === "Super Admin" || String(user.role || "").toLowerCase().includes("super_admin")) return true;
-  const isCellLeader = isCellLeaderOrAssistant(user) || ["Cell Leader", "Cell Assistant", "Assistant Cell Leader"].includes(user.role);
-  if (isCellLeader && user.role !== "Super Admin") return false;
   const deptPerms = user.department_permissions || [];
+  const nonCellPerms = deptPerms.filter((p) => !["cellReports", "cell_reports"].includes(p));
+  if (nonCellPerms.length > 0) return true;
   return deptPerms.some((p) => ["cellMinistry", "cell_ministry", "cell", "alec", "alec_manager"].includes(p)) ||
-    ["Cell Ministry Head", "Cell Ministry Reviewer", "ALEC Manager", "ALEC Coordinator", "Coordenadora ALEC", "Coordenador ALEC"].includes(user.role);
+    ["Cell Ministry Head", "Cell Ministry Reviewer", "ALEC Manager", "ALEC Coordinator", "Coordenadora ALEC", "Coordenador ALEC", "Department Head", "Program Coordinator", "Prison Ministry Coordinator", "Ministry Materials Manager", "Media Director", "Venue Manager", "Finance Head", "Finance Officer", "Counselor", "HR Manager", "Requisition Officer", "Staff Member"].includes(user.role);
 }
 
 function isPastoralCareRector(user = activeUser) {
@@ -10290,20 +10290,21 @@ function isPastoralCareRector(user = activeUser) {
 
 function isCellLeaderOrAssistant(user = activeUser) {
   const role = String(user?.role || user?.role_name || "").toLowerCase().trim();
+  const hasCell = Boolean(user?.cell_id || user?.cell_group_id || (Array.isArray(user?.assigned_cells) && user.assigned_cells.length > 0) || (Array.isArray(user?.assigned_cell_groups) && user.assigned_cell_groups.length > 0));
   return (
     user?.auth_user_id === "47df0cce-9701-492c-90aa-b3cb205bbd4b" ||
     user?.id === "47df0cce-9701-492c-90aa-b3cb205bbd4b" ||
-    [
+    (hasCell && [
       "cell leader", "cell assistant", "cell_leader", "assistant_cell_leader",
       "cell_assistant", "líder de célula", "lider de celula", "assistente de célula", "assistente de celula"
-    ].includes(role)
+    ].includes(role))
   );
 }
 
 function roleWorkspaceRoutes(user = activeUser) {
   const role = String(user?.role || user?.role_name || "").toLowerCase().trim();
   const grants = user?.department_permissions || [];
-  if (isCellLeaderOrAssistant(user)) {
+  if (isCellLeaderOrAssistant(user) && !userHasExtendedCellPerms(user)) {
     const routes = ["cellPortal", "cellReceivedReports", "cellWeeklyReport"];
     if (grants.includes("*") || user.role === "Super Admin" || role.includes("super_admin") || role === "cell ministry head") {
       routes.push(
@@ -10369,6 +10370,45 @@ function roleWorkspaceRoutes(user = activeUser) {
     return ["firstTimers", "followUp", "foundation", "sacraments", "counseling"];
   }
   if (role === "follow-up coordinator" || role === "follow_up_coordinator") return ["firstTimers", "followUp"];
+
+  // For department managers and staff users with specific department permissions:
+  if (grants.length && !grants.includes("*")) {
+    const routes = [];
+    if (grants.includes("cellMinistry") || grants.includes("cell_ministry")) {
+      routes.push("cellMinistryOverview", "cellReceivedReports", "cellEvaluationRoute", "cellPerformance", "cellLeadersAttention", "cellActionPlan");
+    }
+    if (grants.includes("cellReports") || grants.includes("cell_reports")) {
+      routes.push("cellWeeklyReport", "cellGroups", "cellCellsList", "cellMembers", "cellLeadersRoute", "cellFinalValidation", "cellConsolidation");
+    }
+    if (grants.includes("alec") || grants.includes("alecRegistration") || grants.includes("alecScores") || grants.includes("alec_manager")) {
+      routes.push("cellAlecOverview", "cellAlecRegistration", "cellAlecScores", "cellChurchReports");
+    }
+    if (grants.includes("fevo")) {
+      routes.push("fevo", "fevoConfigRoute", "fevoFollowUpRoute", "fevoEvangelismRoute", "fevoVisitationRoute", "fevoPrayerRoute", "fevoNoReportsRoute", "fevoWeeklyReportsRoute", "fevoAnalysisRoute");
+    }
+    if (grants.includes("followUp") || grants.includes("follow_up")) routes.push("followUp");
+    if (grants.includes("firstTimers") || grants.includes("first_timers")) routes.push("firstTimers");
+    if (grants.includes("foundation") || grants.includes("foundation_teacher") || grants.includes("foundation_assistant")) routes.push("foundation");
+    if (grants.includes("reports") || grants.includes("reports_viewer")) routes.push("reports");
+    if (grants.includes("pastoralCare")) routes.push("counseling", "sacraments");
+    if (grants.includes("counseling")) routes.push("counseling");
+    if (grants.includes("sacraments")) routes.push("sacraments");
+    if (grants.includes("venueInventory")) {
+      routes.push("venueInventory", "venueInventoryGeneral", "venueInventoryAcquisitions", "venueInventoryStaff", "venueInventoryMaintenance", "venueInventoryMovements", "venueInventorySpaces", "venueInventoryChecklist", "venueInventoryReports");
+    }
+    if (grants.includes("finance")) routes.push("finance");
+    if (grants.includes("media")) routes.push("media");
+    if (grants.includes("programs")) routes.push("programs");
+    if (grants.includes("prisonMinistry")) routes.push("cellPrison");
+    if (grants.includes("ministryMaterials")) routes.push("cellMaterials");
+    if (grants.includes("staffHr")) routes.push("staffHr");
+    if (grants.includes("requisitions")) routes.push("requisitions");
+    if (routes.length) {
+      if (!routes.includes("dashboard")) routes.unshift("dashboard");
+      return routes;
+    }
+  }
+
   return null;
 }
 
@@ -10378,7 +10418,10 @@ function isRouteInRoleWorkspace(route, user = activeUser) {
 }
 
 function roleWorkspaceDefaultRoute(user = activeUser) {
-  return roleWorkspaceRoutes(user)?.[0] || "dashboard";
+  const allowed = roleWorkspaceRoutes(user);
+  if (!allowed || !allowed.length) return "dashboard";
+  if (allowed.includes("dashboard")) return "dashboard";
+  return allowed[0] || "dashboard";
 }
 
 function fallbackRouteAccess(route) {
@@ -10570,7 +10613,8 @@ function applySidebarCollapse(collapsed = isSidebarCollapsed()) {
 }
 
 function renderShell() {
-  if (["Cell Leader", "Cell Assistant"].includes(activeUser?.role) && !userHasExtendedCellPerms(activeUser) || (isCellLeaderOrAssistant(activeUser) && !userHasExtendedCellPerms(activeUser))) {
+  const isCellPortalOnly = isCellLeaderOrAssistant(activeUser) && !userHasExtendedCellPerms(activeUser) && Boolean(activeUser?.cell_id || activeUser?.cell_group_id || (Array.isArray(activeUser?.assigned_cells) && activeUser.assigned_cells.length) || (Array.isArray(activeUser?.assigned_cell_groups) && activeUser.assigned_cell_groups.length));
+  if (isCellPortalOnly) {
     byId("sidebarNav").innerHTML = `<div class="nav-group is-expanded"><div class="nav-group-body"><div class="nav-group-body-inner">
       <button type="button" class="nav-item-btn ${["dashboard", "cellPortal"].includes(activeRoute) ? "active" : ""}" data-route="cellPortal" onclick="window.setRoute && window.setRoute('cellPortal'); return false;"><i class="bi bi-grid-1x2"></i><span>${lang === "pt" ? "Minha Célula" : "My Cell"}</span></button>
       <button type="button" class="nav-item-btn ${activeRoute === "cellReceivedReports" ? "active" : ""}" data-route="cellReceivedReports" onclick="window.setRoute && window.setRoute('cellReceivedReports'); return false;"><i class="bi bi-clock-history"></i><span>${lang === "pt" ? "Relatórios Submetidos" : "Submitted Reports"}</span></button>
@@ -25034,7 +25078,6 @@ function renderUserForm(record = {}, modalMode = "create") {
   const name = record.name || record.full_name || "";
   const email = record.email || "";
   const phone = record.phone || "";
-  const currentRole = record.role || record.role_name || "Cell Leader";
   const churchId = record.church_id || record.churchId || activeUser?.church_id || "a1111111-1111-4111-8111-111111111101";
   const cellGroupId = record.cell_group_id || record.groupId || "";
   const cellId = record.cell_id || record.cellId || "";
@@ -25044,6 +25087,9 @@ function renderUserForm(record = {}, modalMode = "create") {
 
   const rawDept = record.department_permissions;
   const deptPerms = new Set(Array.isArray(rawDept) ? rawDept : String(rawDept || "").split(",").map((s) => s.trim()).filter(Boolean));
+
+  // Dynamic base role calculation
+  const currentRole = record.role || record.role_name || (cellId ? "Cell Leader" : (cellGroupId ? "Cell Group Leader" : (deptPerms.size ? "Department Head" : "Staff Member")));
 
   // Real 18 groups from Supabase/Seed
   const groups = typeof getAllRegisteredCellGroups === "function" 
@@ -25071,6 +25117,9 @@ function renderUserForm(record = {}, modalMode = "create") {
     { value: "Church Pastor", label: "Pastor da Igreja" },
     { value: "Church Admin", label: "Administrador da Igreja" },
     { value: "Department Head", label: "Responsável de Departamento" },
+    { value: "Program Coordinator", label: "Coordenador de Programas & Eventos" },
+    { value: "Prison Ministry Coordinator", label: "Coordenador do Ministério Prisional" },
+    { value: "Ministry Materials Manager", label: "Gestor de Materiais do Ministério" },
     { value: "ALEC Manager", label: "Gestor ALEC" },
     { value: "Reitor de Cuidados Pastorais", label: "Reitor de Cuidados Pastorais" },
     { value: "Cell Ministry Head", label: "Responsável do Ministério de Células" },
@@ -25378,6 +25427,26 @@ function mountUserFormControls(form) {
     });
   }
 
+  const updateRoleFromCellSelection = () => {
+    if (!roleSelect) return;
+    const hasCell = Boolean(cellSelect?.value);
+    const hasGroup = Boolean(groupSelect?.value);
+    const currentRoleVal = roleSelect.value;
+    const checkedPerms = Array.from(form.querySelectorAll('input[name="dept_perm"]:checked')).map((cb) => cb.value);
+
+    if (hasCell && ["Staff Member", "Department Head", "Viewer"].includes(currentRoleVal)) {
+      roleSelect.value = "Cell Leader";
+    } else if (!hasCell && hasGroup && ["Staff Member", "Department Head", "Viewer"].includes(currentRoleVal)) {
+      roleSelect.value = "Cell Group Leader";
+    } else if (!hasCell && !hasGroup && ["Cell Leader", "Cell Assistant", "Cell Group Leader"].includes(currentRoleVal)) {
+      if (checkedPerms.length > 0) {
+        roleSelect.value = "Department Head";
+      } else {
+        roleSelect.value = "Staff Member";
+      }
+    }
+  };
+
   if (groupSelect && cellSelect) {
     groupSelect.addEventListener("change", () => {
       const selectedGroupId = groupSelect.value;
@@ -25392,6 +25461,8 @@ function mountUserFormControls(form) {
           const isSel = String(c.id) === String(currentCellVal) || (c.cell_name && c.cell_name === currentCellVal) || (c.name && c.name === currentCellVal);
           return `<option value="${escapeAttr(c.id)}" ${isSel ? "selected" : ""}>${escapeHtml(c.cell_name || c.name || "Célula")}</option>`;
         }).join("");
+
+      updateRoleFromCellSelection();
     });
     cellSelect.addEventListener("change", () => {
       const role = roleSelect?.value;
@@ -25399,6 +25470,7 @@ function mountUserFormControls(form) {
       if (cellSelect.value && (role === "Cell Leader" || role === "Cell Assistant")) {
         if (allSubcellsCheckbox) allSubcellsCheckbox.checked = false;
       }
+      updateRoleFromCellSelection();
     });
   }
 
@@ -25407,6 +25479,35 @@ function mountUserFormControls(form) {
       groupSelect.dispatchEvent(new Event("change", { bubbles: true }));
     });
   }
+
+  // Two-way dynamic synchronization between Role select and Department Permissions
+  const roleDefaults = {
+    "Cell Leader": ["cellReports"],
+    "Cell Assistant": ["cellReports"],
+    "Cell Group Leader": ["cellReports", "reports"],
+    "Cell Ministry Head": ["cellMinistry", "cellReports", "alec", "reports", "requisitions"],
+    "ALEC Manager": ["alec", "reports"],
+    "F.E.V.O Coordinator": ["fevo", "followUp", "reports"],
+    "Follow-Up Coordinator": ["followUp", "firstTimers"],
+    "Foundation Teacher": ["foundation", "foundation_teacher"],
+    "Foundation Rector": ["foundation", "foundation_teacher", "reports"],
+    "Reitor de Cuidados Pastorais": ["pastoralCare", "followUp", "counseling", "sacraments", "reports"],
+    "Department Head": ["reports"],
+    "Program Coordinator": ["programs", "reports"],
+    "Prison Ministry Coordinator": ["prisonMinistry", "reports"],
+    "Ministry Materials Manager": ["ministryMaterials", "reports"],
+    "Venue Manager": ["venueInventory"],
+    "Finance Head": ["finance", "reports"],
+    "Finance Officer": ["finance"],
+    "Counselor": ["counseling", "followUp"],
+    "Media Director": ["media"],
+    "HR Manager": ["staffHr"],
+    "Requisition Officer": ["requisitions"],
+    "Staff Member": [],
+    "Viewer": [],
+    "Super Admin": ["*"],
+    "Church Pastor": ["cellMinistry", "cellReports", "fevo", "followUp", "foundation", "pastoralCare", "reports"]
+  };
 
   if (roleSelect) {
     roleSelect.addEventListener("change", () => {
@@ -25417,26 +25518,6 @@ function mountUserFormControls(form) {
       } else if (role === "Cell Leader" || role === "Cell Assistant") {
         if (allSubcellsCheckbox) allSubcellsCheckbox.checked = false;
       }
-      const roleDefaults = {
-        "Cell Leader": ["cellReports"],
-        "Cell Assistant": ["cellReports"],
-        "Cell Group Leader": ["cellReports", "reports"],
-        "Cell Ministry Head": ["cellMinistry", "cellReports", "alec", "reports", "requisitions"],
-        "ALEC Manager": ["alec", "reports"],
-        "F.E.V.O Coordinator": ["fevo", "followUp", "reports"],
-        "Follow-Up Coordinator": ["followUp", "firstTimers"],
-        "Foundation Teacher": ["foundation", "foundation_teacher"],
-        "Foundation Rector": ["foundation", "foundation_teacher", "reports"],
-        "Reitor de Cuidados Pastorais": ["pastoralCare", "followUp", "counseling", "sacraments", "reports"],
-        "Department Head": ["reports"],
-        "Venue Manager": ["venueInventory"],
-        "Finance Head": ["finance", "reports"],
-        "Finance Officer": ["finance"],
-        "Counselor": ["counseling", "followUp"],
-        "Media Director": ["media"],
-        "Super Admin": ["*"],
-        "Church Pastor": ["cellMinistry", "cellReports", "fevo", "followUp", "foundation", "pastoralCare", "reports"]
-      };
       const defaults = roleDefaults[role];
       if (defaults) {
         form.querySelectorAll('input[name="dept_perm"]').forEach((cb) => {
@@ -25445,6 +25526,45 @@ function mountUserFormControls(form) {
       }
     });
   }
+
+  // When clicking department permission checkboxes: dynamically adjust role if user has no cell assigned
+  form.querySelectorAll('input[name="dept_perm"]').forEach((cb) => {
+    cb.addEventListener("change", () => {
+      if (!roleSelect) return;
+      const checked = Array.from(form.querySelectorAll('input[name="dept_perm"]:checked')).map((c) => c.value);
+      const currentRoleVal = roleSelect.value;
+      const hasCellAssigned = Boolean(cellSelect?.value || groupSelect?.value);
+
+      if (!hasCellAssigned && ["Cell Leader", "Cell Assistant", "Staff Member", "Viewer", ""].includes(currentRoleVal)) {
+        if (checked.length === 1) {
+          const single = checked[0];
+          const singleMap = {
+            programs: "Program Coordinator",
+            prisonMinistry: "Prison Ministry Coordinator",
+            ministryMaterials: "Ministry Materials Manager",
+            media: "Media Director",
+            venueInventory: "Venue Manager",
+            finance: "Finance Officer",
+            counseling: "Counselor",
+            foundation_teacher: "Foundation Teacher",
+            foundation: "Foundation Rector",
+            alec: "ALEC Manager",
+            fevo: "F.E.V.O Coordinator",
+            followUp: "Follow-Up Coordinator",
+            staffHr: "HR Manager",
+            requisitions: "Requisition Officer"
+          };
+          if (singleMap[single]) {
+            roleSelect.value = singleMap[single];
+            return;
+          }
+        }
+        if (checked.length > 0) {
+          roleSelect.value = "Department Head";
+        }
+      }
+    });
+  });
 }
 
 async function saveUserToSupabase(user) {
@@ -25960,7 +26080,21 @@ async function submitForm(form) {
     const checkedPerms = formData.getAll("dept_perm").map((s) => String(s).trim()).filter(Boolean);
     const nowIso = new Date().toISOString();
     const today = nowIso.slice(0, 10);
-    const role = String(data.role || "Cell Leader").trim();
+    let role = String(data.role || "").trim();
+    if (!role || (role === "Cell Leader" && !data.cell_id && !data.cell_group_id && checkedPerms.length > 0)) {
+      if (checkedPerms.includes("programs") && checkedPerms.length === 1) role = "Program Coordinator";
+      else if (checkedPerms.includes("prisonMinistry") && checkedPerms.length === 1) role = "Prison Ministry Coordinator";
+      else if (checkedPerms.includes("ministryMaterials") && checkedPerms.length === 1) role = "Ministry Materials Manager";
+      else if (checkedPerms.length >= 2) role = "Department Head";
+      else if (checkedPerms.includes("foundation")) role = "Foundation School Coordinator";
+      else if (checkedPerms.includes("media")) role = "Media Technician";
+      else if (checkedPerms.includes("finance")) role = "Finance Officer";
+      else if (checkedPerms.includes("counseling")) role = "Counseling Coordinator";
+      else if (checkedPerms.includes("sacraments")) role = "Sacraments Coordinator";
+      else role = role || (data.cell_group_id || data.cell_id ? "Cell Leader" : "Staff Member");
+    } else if (!role) {
+      role = (data.cell_group_id || data.cell_id) ? "Cell Leader" : "Staff Member";
+    }
     const name = String(data.name || data.full_name || "").trim();
     const email = String(data.email || "").trim().toLowerCase();
     const phone = String(formData.get("phone") || data.phone || "").trim();
@@ -30269,7 +30403,7 @@ function continueEnterDashboard() {
   byId("loginView")?.classList.add("d-none");
   byId("appView")?.classList.remove("d-none");
   renderShell();
-  const isCellPortalMember = isCellLeaderOrAssistant(activeUser) && !userHasExtendedCellPerms(activeUser);
+  const isCellPortalMember = isCellLeaderOrAssistant(activeUser) && !userHasExtendedCellPerms(activeUser) && Boolean(activeUser?.cell_id || activeUser?.cell_group_id || (Array.isArray(activeUser?.assigned_cells) && activeUser.assigned_cells.length) || (Array.isArray(activeUser?.assigned_cell_groups) && activeUser.assigned_cell_groups.length));
   if (isCellPortalMember) {
     history.replaceState(null, "", "#cellPortal");
     setRoute("cellPortal");
