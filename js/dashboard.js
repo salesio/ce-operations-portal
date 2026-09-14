@@ -5157,7 +5157,7 @@ const CANONICAL_CHURCH_MAP = {
   "a1111111-1111-4111-8111-111111111107": "a1111111-1111-4111-8111-111111111107",
 };
 
-function scoped(records, module = "dashboard") {
+function scoped(records, module = (typeof activeRoute !== "undefined" && activeRoute ? (window.CEAccessControl?.routeToModule?.(activeRoute) || activeRoute) : "dashboard")) {
   const list = Array.isArray(records) ? records : [];
   if (!activeUser) return list;
   const isSuperAdmin = activeUser.role === "Super Admin" ||
@@ -10975,6 +10975,33 @@ function setRoute(route) {
         })
         .catch((err) => console.warn("[CE CellMinistry] route hydrate skipped", err));
     }
+  }
+  if (activeRoute === "programs") {
+    Promise.resolve(hydrateProgramsFromRepository())
+      .then((hydrated) => {
+        if (hydrated && activeRoute === "programs") {
+          try { renderPrograms(); } catch (_) {}
+        }
+      })
+      .catch((err) => console.warn("[CE Programs] route hydrate skipped", err));
+  }
+  if (activeRoute === "cellPrison" || activeRoute === "prisonMinistry") {
+    Promise.resolve(hydratePrisonMinistryFromRepository())
+      .then((hydrated) => {
+        if (hydrated && (activeRoute === "cellPrison" || activeRoute === "prisonMinistry")) {
+          try { renderPrisonMinistry(); } catch (_) {}
+        }
+      })
+      .catch((err) => console.warn("[CE PrisonMinistry] route hydrate skipped", err));
+  }
+  if (activeRoute === "cellMaterials" || activeRoute === "ministryMaterials") {
+    Promise.resolve(hydrateMinistryMaterialsFromRepository())
+      .then((hydrated) => {
+        if (hydrated && (activeRoute === "cellMaterials" || activeRoute === "ministryMaterials")) {
+          try { renderMinistryMaterials(); } catch (_) {}
+        }
+      })
+      .catch((err) => console.warn("[CE MinistryMaterials] route hydrate skipped", err));
   }
   history.replaceState(null, "", `#${activeRoute}`);
   document.querySelector(".ops-sidebar")?.classList.remove("is-open");
@@ -21738,7 +21765,7 @@ function renderCellCellsList() {
   triggerTabParallax();
 }
 
-function scopedNested(records, module = "cell") {
+function scopedNested(records, module = (typeof activeRoute !== "undefined" && activeRoute ? (window.CEAccessControl?.routeToModule?.(activeRoute) || activeRoute) : "cell")) {
   return scoped(records || [], module);
 }
 
@@ -21765,7 +21792,7 @@ function backendActions(type, id, extra = []) {
 }
 
 function renderPrograms() {
-  const allPrograms = scoped(state.programs || []);
+  const allPrograms = scoped(state.programs || [], "programs");
   const selectedStatusGroup = programsPageState.filter?.statusGroup || "";
   const matchesProgramStatusGroup = (program) => {
     const status = String(program.status || program.estado || "").toLowerCase();
@@ -21824,9 +21851,9 @@ function renderPrograms() {
 }
 
 function renderPrisonMinistry() {
-  const prisons = scopedNested(state.prisonMinistry.prisons);
-  const services = scopedNested(state.prisonMinistry.services);
-  const students = scopedNested(state.prisonMinistry.foundationStudents);
+  const prisons = scopedNested(state.prisonMinistry.prisons, "prisonMinistry");
+  const services = scopedNested(state.prisonMinistry.services, "prisonMinistry");
+  const students = scopedNested(state.prisonMinistry.foundationStudents, "prisonMinistry");
   const foundationPrisonStudents = (state.foundationStudents || []).filter((student) => student.is_prison_ministry_student || student.assigned_delivery_mode === "prison_ministry" || foundationClassGroupById(student.class_group_id).delivery_mode === "prison_ministry");
   const foundationPrisonSessions = (state.foundationLessonSessions || []).filter((session) => session.delivery_mode === "prison_ministry");
   const foundationPrisonReady = foundationPrisonStudents.filter((student) => foundationReadyForExamStudents().some((ready) => ready.id === student.id));
@@ -21845,8 +21872,8 @@ function renderPrisonMinistry() {
         backendActions("foundationStudent", item.id)
       ])
     : students.map((item) => [item.nome_do_participante, prisonName(item.prisao), `${prisonClassCount(item)}/7`, item.nota_exame || "-", yesNo(item.pratica_evangelismo), yesNo(item.graduado), badge(item.estado), prisonProgress(item), backendActions("prisonFoundation", item.id)]);
-  const agenda = scopedNested(state.prisonMinistry.weeklyAgenda);
-  const reports = scopedNested(state.prisonMinistry.reports);
+  const agenda = scopedNested(state.prisonMinistry.weeklyAgenda, "prisonMinistry");
+  const reports = scopedNested(state.prisonMinistry.reports, "prisonMinistry");
   const thisWeekServices = services.filter((service) => service.data >= "2026-07-06" && service.data <= "2026-07-12");
   setPageContent( `
     ${outreachModuleTabs("cellPrison")}
@@ -22189,12 +22216,12 @@ function renderVenueInventory(activeTab = "overview") {
 }
 
 function renderMinistryMaterials() {
-  const catalogue = scopedNested(state.ministryMaterials.catalogue);
-  const sales = scopedNested(state.ministryMaterials.sales);
-  const distributions = scopedNested(state.ministryMaterials.distributions);
-  const stocks = scopedNested(state.ministryMaterials.weeklyStock);
-  const funds = scopedNested(state.ministryMaterials.freeFunds);
-  const reports = scopedNested(state.ministryMaterials.reports);
+  const catalogue = scopedNested(state.ministryMaterials.catalogue, "ministryMaterials");
+  const sales = scopedNested(state.ministryMaterials.sales, "ministryMaterials");
+  const distributions = scopedNested(state.ministryMaterials.distributions, "ministryMaterials");
+  const stocks = scopedNested(state.ministryMaterials.weeklyStock, "ministryMaterials");
+  const funds = scopedNested(state.ministryMaterials.freeFunds, "ministryMaterials");
+  const reports = scopedNested(state.ministryMaterials.reports, "ministryMaterials");
   const todayIso = new Date().toISOString().slice(0, 10);
   const thisMonthIso = new Date().toISOString().slice(0, 7);
   const monthSales = sales.filter((item) => String(item.data || item.sale_date || "").startsWith(thisMonthIso));
@@ -25004,10 +25031,8 @@ const formSchemas = {
 
 function getCollection(type) {
   if (type === "firstTimer") return state.firstTimers;
-  if (type === "program" || type === "programs") {
-    if (!Array.isArray(state.programs)) state.programs = [];
-    return state.programs;
-  }
+  if (type === "program") return state.programs || [];
+  if (type === "programs") return state.programs || [];
   if (type === "foundationTeacher") return state.foundationTeachers || [];
   if (type === "finance") return state.finance;
   if (type === "church") return state.churches;
@@ -30551,6 +30576,34 @@ function continueEnterDashboard() {
       }
     })
     .catch((error) => console.warn("[CE Churches] background hydrate skipped", error));
+
+  // Active background sync for DOP modules (programs, prison ministry, ministry materials)
+  Promise.resolve()
+    .then(() => hydrateProgramsFromRepository())
+    .then((hydrated) => {
+      if (hydrated && activeRoute === "programs") {
+        try { renderPrograms(); } catch (_) {}
+      }
+    })
+    .catch((error) => console.warn("[CE Programs] background hydrate skipped", error));
+
+  Promise.resolve()
+    .then(() => hydratePrisonMinistryFromRepository())
+    .then((hydrated) => {
+      if (hydrated && (activeRoute === "cellPrison" || activeRoute === "prisonMinistry")) {
+        try { renderPrisonMinistry(); } catch (_) {}
+      }
+    })
+    .catch((error) => console.warn("[CE PrisonMinistry] background hydrate skipped", error));
+
+  Promise.resolve()
+    .then(() => hydrateMinistryMaterialsFromRepository())
+    .then((hydrated) => {
+      if (hydrated && (activeRoute === "cellMaterials" || activeRoute === "ministryMaterials")) {
+        try { renderMinistryMaterials(); } catch (_) {}
+      }
+    })
+    .catch((error) => console.warn("[CE MinistryMaterials] background hydrate skipped", error));
 
   if (window.__CE_LEGACY_EAGER_HYDRATE__ === true) {
   // Data-layer pilots: sync churches + members + first timers without blocking UI paint
