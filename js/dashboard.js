@@ -2008,20 +2008,20 @@ function buildHqServicePreset() {
 
 function defaultSeedServiceTimes(churchId, type) {
   const id = churchId || "church-new";
-  if (id === "church-hq") {
+  if (id === "church-hq" || id === "a1111111-1111-4111-8111-111111111101") {
     return [
       seedServiceTime(id, 0, { day_of_week: "Domingo", service_name: "1º Culto", time: "07:45", service_type: "Presencial" }),
       seedServiceTime(id, 1, { day_of_week: "Domingo", service_name: "2º Culto", time: "09:30", service_type: "Presencial" }),
       seedServiceTime(id, 2, { day_of_week: "Quarta-feira", service_name: "Culto de Quarta-feira", time: "18:00", service_type: "Presencial" })
     ];
   }
-  if (id === "church-nampula") {
+  if (id === "church-nampula" || id === "a1111111-1111-4111-8111-111111111105") {
     return [
       seedServiceTime(id, 0, { day_of_week: "Domingo", service_name: "Culto de Domingo", time: "09:00", service_type: "Presencial" }),
       seedServiceTime(id, 1, { day_of_week: "Quarta-feira", service_name: "Quarta-feira do Amor", time: "17:00", service_type: "Presencial" })
     ];
   }
-  if (id === "church-virtual" || ONLINE_CHURCH_TYPES.has(type)) {
+  if (id === "church-virtual" || id === "a1111111-1111-4111-8111-111111111107" || ONLINE_CHURCH_TYPES.has(type)) {
     return [
       seedServiceTime(id, 0, { day_of_week: "Domingo", service_name: "Culto de Domingo", time: "09:00", service_type: "Online" }),
       seedServiceTime(id, 1, { day_of_week: "Quarta-feira", service_name: "Culto de Quarta-feira", time: "18:00", service_type: "Online" })
@@ -3549,13 +3549,14 @@ const seedData = {
   staffPerformance: [],
   staffAttendance: [],
   churches: [
-    { id: "church-hq", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", public_name: "E.C. Maputo Central - Sede", type: "Sede Nacional", province: "Maputo Cidade", city: "KaMpfumo", district_or_area: "Maputo", address: "Avenida de Angola, ao lado da CETRACO, Maputo", pastor_in_charge: "Pastor Kene Ume", phone_primary: "+258 86 227 0000", phone_secondary: "", email: "info@embaixada-de-cristo.obiuba.com", facebook: "Embaixada de Cristo Moçambique", instagram: "@embaixada_de_cristo_mocambique", youtube: "", service_times: defaultSeedServiceTimes("church-hq", "Sede Nacional"), parent_church_id: "", status: "Activa", information_status: "Por Confirmar", notes: "Dados iniciais importados para o protótipo. Confirmar detalhes com a equipa local.", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2024-01-01", updated_at: "2026-07-10", attendance_last_4_weeks: [112, 98, 104, 92] },
-    { id: "church-matola", church_id: "church-matola", church_name: "Igreja Embaixada de Cristo Matola", public_name: "Embaixada de Cristo Matola", type: "Igreja Local", province: "Maputo Província", city: "Matola", district_or_area: "Matola", address: "Rua Mário Estêves Coluna, Nr 63B, perto do KFC / DNIC", pastor_in_charge: "", phone_primary: "+258 84 372 2630", phone_secondary: "+258 84 643 5951 / +258 87 780 9005", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("church-matola", "Igreja Local"), parent_church_id: "church-hq", status: "Activa", information_status: "Por Confirmar", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [48, 52, 46, 50] },
-    { id: "church-khongolote", church_id: "church-khongolote", church_name: "Igreja Embaixada de Cristo Khongolote", public_name: "Embaixada de Cristo Khongolote", type: "Igreja Local", province: "Maputo Província", city: "Matola", district_or_area: "Khongolote", address: "Rua Licuacuanine, 648 – Khongolote, Matola", pastor_in_charge: "", phone_primary: "", phone_secondary: "", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("church-khongolote", "Igreja Local"), parent_church_id: "church-hq", status: "Activa", information_status: "Por Confirmar", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [32, 28, 30, 29] },
-    { id: "church-choupal", church_id: "church-choupal", church_name: "Igreja Embaixada de Cristo Choupal", public_name: "Embaixada de Cristo Choupal", type: "Igreja Local", province: "Maputo Cidade", city: "KaMubukwana", district_or_area: "Choupal", address: "Choupal, Maputo", pastor_in_charge: "", phone_primary: "", phone_secondary: "", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("church-choupal", "Igreja Local"), parent_church_id: "church-hq", status: "Activa", information_status: "Por Confirmar", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [28, 30, 27, 31] },
-    { id: "church-beira", church_id: "church-beira", church_name: "Igreja Embaixada de Cristo Beira", public_name: "Igreja Embaixada de Cristo Beira", type: "Igreja Local", province: "Sofala", city: "Beira", district_or_area: "Beira", address: "Por confirmar", pastor_in_charge: "", phone_primary: "", phone_secondary: "", email: "", facebook: "Igreja Embaixada de Cristo Beira", instagram: "@embaixada_de_cristo_beira", youtube: "", service_times: defaultSeedServiceTimes("church-beira", "Igreja Local"), parent_church_id: "church-hq", status: "Activa", information_status: "Por Confirmar", notes: "Endereço e contactos a confirmar com a igreja local.", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [40, 38, 42, 39] },
-    { id: "church-nampula", church_id: "church-nampula", church_name: "Igreja Embaixada de Cristo Nampula", public_name: "Embaixada De Cristo Nampula", type: "Igreja Local", province: "Nampula", city: "Nampula", district_or_area: "Muhala-Expansão", address: "Terminal de Chapa Muhala-Expansão, Paragem Igreja", pastor_in_charge: "Pastor Armando de Jesus", phone_primary: "", phone_secondary: "", email: "", facebook: "Embaixada De Cristo Nampula", instagram: "@embaixada_de_cristo.nampula", youtube: "", service_times: defaultSeedServiceTimes("church-nampula", "Igreja Local"), parent_church_id: "church-hq", status: "Activa", information_status: "Por Confirmar", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [36, 34, 35, 37] },
-    { id: "church-virtual", church_id: "church-virtual", church_name: "CE Mozambique Online Church", public_name: "Igreja Embaixada de Cristo Online", type: "Igreja Online", province: "Online", city: "Online", district_or_area: "Virtual", address: "Transmissão online", pastor_in_charge: "Equipa de Media", phone_primary: "+258 86 877 389", phone_secondary: "", email: "online@embaixada-de-cristo.obiuba.com", facebook: "", instagram: "", youtube: "Christ Embassy Mozambique Online", service_times: defaultSeedServiceTimes("church-virtual", "Igreja Online"), parent_church_id: "church-hq", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2024-06-01", updated_at: "2026-07-10", attendance_last_4_weeks: [54, 61, 48, 57] }
+    { id: "a1111111-1111-4111-8111-111111111101", church_id: "a1111111-1111-4111-8111-111111111101", church_name: "E.C. Maputo Central - Sede", public_name: "E.C. Maputo Central - Sede", type: "Sede Nacional", province: "Maputo Cidade", city: "KaMpfumo", district_or_area: "Urbanização", address: "Avenida de Angola, ao lado da CETRACO, Maputo", pastor_in_charge: "Pastor Kene Ume", phone_primary: "+258 86 227 0000", phone_secondary: "", email: "info@embaixadadecristo.org", facebook: "Embaixada de Cristo Moçambique", instagram: "@embaixada_de_cristo_mocambique", youtube: "", service_times: defaultSeedServiceTimes("a1111111-1111-4111-8111-111111111101", "Sede Nacional"), parent_church_id: "", status: "Activa", information_status: "Confirmado", notes: "Sede Nacional", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2024-01-01", updated_at: "2026-07-10", attendance_last_4_weeks: [112, 98, 104, 92] },
+    { id: "a1111111-1111-4111-8111-111111111102", church_id: "a1111111-1111-4111-8111-111111111102", church_name: "Christ Embassy Matola", public_name: "E.C. Matola", type: "Igreja Local", province: "Maputo Província", city: "Matola", district_or_area: "Matola", address: "Rua Mário Estêves Coluna, Nr 63B, perto do KFC / DNIC", pastor_in_charge: "", phone_primary: "+258 84 372 2630", phone_secondary: "+258 84 643 5951 / +258 87 780 9005", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("a1111111-1111-4111-8111-111111111102", "Igreja Local"), parent_church_id: "a1111111-1111-4111-8111-111111111101", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [48, 52, 46, 50] },
+    { id: "a1111111-1111-4111-8111-111111111103", church_id: "a1111111-1111-4111-8111-111111111103", church_name: "Christ Embassy Khongolote", public_name: "E.C. Khongolote", type: "Igreja Local", province: "Maputo Província", city: "Matola", district_or_area: "Khongolote", address: "Rua Licuacuanine, 648 – Khongolote, Matola", pastor_in_charge: "", phone_primary: "", phone_secondary: "", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("a1111111-1111-4111-8111-111111111103", "Igreja Local"), parent_church_id: "a1111111-1111-4111-8111-111111111101", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [32, 28, 30, 29] },
+    { id: "a1111111-1111-4111-8111-111111111104", church_id: "a1111111-1111-4111-8111-111111111104", church_name: "Christ Embassy Beira", public_name: "E.C. Beira", type: "Igreja Local", province: "Sofala", city: "Beira", district_or_area: "Beira", address: "Beira, Sofala", pastor_in_charge: "", phone_primary: "", phone_secondary: "", email: "", facebook: "Igreja Embaixada de Cristo Beira", instagram: "@embaixada_de_cristo_beira", youtube: "", service_times: defaultSeedServiceTimes("a1111111-1111-4111-8111-111111111104", "Igreja Local"), parent_church_id: "a1111111-1111-4111-8111-111111111101", status: "Activa", information_status: "Confirmado", notes: "Endereço e contactos a confirmar com a igreja local.", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [40, 38, 42, 39] },
+    { id: "a1111111-1111-4111-8111-111111111105", church_id: "a1111111-1111-4111-8111-111111111105", church_name: "Christ Embassy Nampula", public_name: "E.C. Nampula", type: "Igreja Local", province: "Nampula", city: "Nampula", district_or_area: "Muhala-Expansão", address: "Terminal de Chapa Muhala-Expansão, Paragem Igreja", pastor_in_charge: "Pastor Armando de Jesus", phone_primary: "", phone_secondary: "", email: "", facebook: "Embaixada De Cristo Nampula", instagram: "@embaixada_de_cristo.nampula", youtube: "", service_times: defaultSeedServiceTimes("a1111111-1111-4111-8111-111111111105", "Igreja Local"), parent_church_id: "a1111111-1111-4111-8111-111111111101", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [36, 34, 35, 37] },
+    { id: "a1111111-1111-4111-8111-111111111106", church_id: "a1111111-1111-4111-8111-111111111106", church_name: "Christ Embassy Choupal", public_name: "E.C. Choupal", type: "Igreja Local", province: "Maputo Cidade", city: "KaMubukwana", district_or_area: "Choupal", address: "Choupal, Maputo", pastor_in_charge: "", phone_primary: "", phone_secondary: "", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("a1111111-1111-4111-8111-111111111106", "Igreja Local"), parent_church_id: "a1111111-1111-4111-8111-111111111101", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [28, 30, 27, 31] },
+    { id: "a1111111-1111-4111-8111-111111111107", church_id: "a1111111-1111-4111-8111-111111111107", church_name: "Christ Embassy Online Church", public_name: "E.C. Online", type: "Igreja Online", province: "Online", city: "Online", district_or_area: "Virtual", address: "Transmissão online", pastor_in_charge: "Equipa de Media", phone_primary: "+258 86 877 389", phone_secondary: "", email: "online@embaixada-de-cristo.org", facebook: "", instagram: "", youtube: "Christ Embassy Mozambique Online", service_times: defaultSeedServiceTimes("a1111111-1111-4111-8111-111111111107", "Igreja Online"), parent_church_id: "a1111111-1111-4111-8111-111111111101", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2024-06-01", updated_at: "2026-07-10", attendance_last_4_weeks: [54, 61, 48, 57] },
+    { id: "3ef77e8e-519a-4137-9ee7-59d9e620c6dd", church_id: "3ef77e8e-519a-4137-9ee7-59d9e620c6dd", church_name: "E.C. - Muhalaze", public_name: "E.C. - Muhalaze", type: "Igreja Local", province: "Maputo Província", city: "Matola", district_or_area: "Muhalaze", address: "Muhalaze, Matola", pastor_in_charge: "", phone_primary: "", phone_secondary: "", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("3ef77e8e-519a-4137-9ee7-59d9e620c6dd", "Igreja Local"), parent_church_id: "a1111111-1111-4111-8111-111111111101", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [25, 27, 26, 28] }
   ],
   firstTimers: [],
   followUps: [],
@@ -4909,6 +4910,17 @@ function normalizeState(saved) {
   });
   // Purge legacy mock data
   const isLegacyMockId = (id) => /^m-[123]$|^ft-[123]$|^fu-[123456]$|^fs-[123]$|^cr-[123]$|^ca-[12]$|^fin-[12345678]$|^disb-req-[489]$|^req-[123456789]$|^bap-[0-9]+|^mar-[0-9]+|^baby-[0-9]+|^coun-[0-9]+|^counselor-[0-9]+|^apt-[0-9]+|^ref-[0-9]+|^fb-[0-9]+/i.test(String(id || ""));
+  const isLegacyChurchId = (id) => /^church-/i.test(String(id || ""));
+  const cleanChurches = (merged.churches || []).filter((c) => !isLegacyChurchId(c?.id));
+  const seenChurchIds = new Set();
+  const dedupedChurches = [];
+  (cleanChurches.length ? cleanChurches : structuredClone(seedData.churches)).forEach((c) => {
+    if (c && c.id && !seenChurchIds.has(String(c.id))) {
+      seenChurchIds.add(String(c.id));
+      dedupedChurches.push(c);
+    }
+  });
+  merged.churches = dedupedChurches;
   merged.members = (merged.members || []).filter((m) => !isLegacyMockId(m?.id));
   merged.firstTimers = (merged.firstTimers || []).filter((ft) => !isLegacyMockId(ft?.id));
   merged.followUps = (merged.followUps || []).filter((fu) => !isLegacyMockId(fu?.id));
@@ -7433,13 +7445,26 @@ function openCellReportDetails(reportId) {
 }
 
 function relationalChurches() {
-  if (Array.isArray(state.churches) && state.churches.length) {
-    return state.churches;
+  const isLegacy = (id) => /^church-/i.test(String(id || ""));
+  const sanitize = (list) => {
+    if (!Array.isArray(list)) return [];
+    const seen = new Set();
+    return list.filter((c) => {
+      if (!c || !c.id || isLegacy(c.id) || seen.has(String(c.id))) return false;
+      seen.add(String(c.id));
+      return true;
+    });
+  };
+
+  const fromState = sanitize(state?.churches);
+  if (fromState.length) {
+    return fromState;
   }
   if (typeof window !== "undefined" && Array.isArray(window.REAL_CHURCHES) && window.REAL_CHURCHES.length) {
-    return window.REAL_CHURCHES;
+    const fromReal = sanitize(window.REAL_CHURCHES);
+    if (fromReal.length) return fromReal;
   }
-  return state.churches || [];
+  return sanitize(seedData?.churches) || [];
 }
 window.relationalChurches = relationalChurches;
 
@@ -18716,11 +18741,15 @@ async function refreshChurchesFromRepositoryForForms() {
     }
     if (!Array.isArray(list) || !list.length) return false;
     if (state && Array.isArray(state.churches)) {
-      const existingIds = new Set(state.churches.map((c) => String(c.id)));
-      let changed = false;
+      const isLegacy = (id) => /^church-/i.test(String(id || ""));
+      const cleanCurrent = state.churches.filter((c) => c && c.id && !isLegacy(c.id));
+      const existingIds = new Set(cleanCurrent.map((c) => String(c.id)));
+      let changed = cleanCurrent.length !== state.churches.length;
+      state.churches = cleanCurrent;
       list.forEach((c) => {
-        if (c && c.id && !existingIds.has(String(c.id))) {
+        if (c && c.id && !isLegacy(c.id) && !existingIds.has(String(c.id))) {
           state.churches.push(c);
+          existingIds.add(String(c.id));
           changed = true;
         }
       });
@@ -18790,8 +18819,9 @@ async function hydrateChurchesFromRepository() {
       console.info("[CE Churches] hydrate skipped", result);
       return false;
     }
-    const previousById = new Map((state.churches || []).map((item) => [item.id, item]));
-    state.churches = result.data.map((repoChurch) => {
+    const isLegacy = (id) => /^church-/i.test(String(id || ""));
+    const previousById = new Map((state.churches || []).filter((item) => item && !isLegacy(item.id)).map((item) => [item.id, item]));
+    state.churches = result.data.filter((c) => c && c.id && !isLegacy(c.id)).map((repoChurch) => {
       const previous = previousById.get(repoChurch.id) || {};
       return migrateChurchRecord({ ...previous, ...repoChurch });
     });
