@@ -33441,9 +33441,24 @@ let currentMergeState = {
   selectedFields: {}
 };
 
+function refreshMemberMergeModalUI() {
+  const fieldsContainer = byId("modalFields");
+  const formEl = byId("entryForm");
+  if (!fieldsContainer || !formEl) return;
+
+  fieldsContainer.innerHTML = renderMemberMergeContent(currentMergeState.secondary, currentMergeState.primary);
+  mountMemberMergeControls(formEl, currentMergeState.secondary, currentMergeState.primary);
+
+  const confirmBtn = byId("btnConfirmMemberMerge");
+  if (confirmBtn) {
+    confirmBtn.disabled = !currentMergeState.primary || !currentMergeState.secondary;
+    confirmBtn.onclick = () => submitMergeMembers(formEl);
+  }
+}
+
 function renderMemberMergeContent(source, target) {
-  currentMergeState.secondary = source || null;
-  currentMergeState.primary = target || null;
+  if (source !== undefined) currentMergeState.secondary = source || null;
+  if (target !== undefined) currentMergeState.primary = target || null;
 
   const renderMemberCardSummary = (m, label, roleClass, roleBadge) => {
     if (!m) {
@@ -33454,13 +33469,13 @@ function renderMemberMergeContent(source, target) {
             <span class="input-group-text bg-dark border-secondary text-secondary"><i class="bi bi-search"></i></span>
             <input type="text" class="form-control" data-merge-search="${roleClass}" placeholder="Pesquisar por nome ou telefone...">
           </div>
-          <div class="list-group position-relative mt-2 d-none" data-merge-suggestions="${roleClass}" style="max-height: 180px; overflow-y: auto;"></div>
+          <div class="list-group position-relative mt-2 d-none" data-merge-suggestions="${roleClass}" style="max-height: 180px; overflow-y: auto; z-index: 1055;"></div>
         </div>
       `;
     }
 
     const cGroup = memberCellGroupLabel(m) || m.cell_group_name || "—";
-    const cCell = memberCellLabel(m) || m.cell_name || "—";
+    const cCell = memberCellLabel(m) || m.cell_name || m.celula || "—";
 
     return `
       <div class="p-3 rounded border ${roleClass === 'primary' ? 'border-success' : 'border-warning'} bg-dark position-relative">
@@ -33468,7 +33483,7 @@ function renderMemberMergeContent(source, target) {
           <span class="badge ${roleBadge}">${label}</span>
           <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" data-merge-clear="${roleClass}">Alterar</button>
         </div>
-        <h5 class="text-light mb-1">${escapeAttr(fullName(m) || m.full_name || m.name || "Membro")}</h5>
+        <h5 class="text-light mb-1">${escapeAttr(fullName(m) || m.full_name || m.name || m.nome || "Membro")}</h5>
         <div class="small text-secondary mb-2">
           <div><i class="bi bi-telephone me-1"></i>${escapeAttr(m.primary_phone || m.phone || m.telefone || "Sem telefone")}</div>
           <div><i class="bi bi-building me-1"></i>${escapeAttr(churchName(m.church_id) || m.church_name || "Igreja")}</div>
@@ -33485,13 +33500,13 @@ function renderMemberMergeContent(source, target) {
   let comparisonTable = "";
   if (p && s) {
     const fields = [
-      { key: "full_name", label: "Nome Completo", valP: fullName(p) || p.full_name || p.name, valS: fullName(s) || s.full_name || s.name },
+      { key: "full_name", label: "Nome Completo", valP: fullName(p) || p.full_name || p.name || p.nome, valS: fullName(s) || s.full_name || s.name || s.nome },
       { key: "primary_phone", label: "Telefone Principal", valP: p.primary_phone || p.phone || p.telefone, valS: s.primary_phone || s.phone || s.telefone },
       { key: "secondary_phone", label: "Telefone Secundário / WhatsApp", valP: p.secondary_phone || p.whatsapp, valS: s.secondary_phone || s.whatsapp },
       { key: "email", label: "E-mail", valP: p.email, valS: s.email },
-      { key: "church_id", label: "Igreja", valP: churchName(p.church_id), valS: churchName(s.church_id), rawP: p.church_id, rawS: s.church_id },
-      { key: "cell_group_name", label: "Grupo de Célula", valP: memberCellGroupLabel(p), valS: memberCellGroupLabel(s), rawP: p.cell_group_id, rawS: s.cell_group_id },
-      { key: "cell_name", label: "Célula", valP: memberCellLabel(p), valS: memberCellLabel(s), rawP: p.cell_id, rawS: s.cell_id },
+      { key: "church_id", label: "Igreja", valP: churchName(p.church_id) || p.church_name, valS: churchName(s.church_id) || s.church_name, rawP: p.church_id, rawS: s.church_id },
+      { key: "cell_group_name", label: "Grupo de Célula", valP: memberCellGroupLabel(p) || p.cell_group_name, valS: memberCellGroupLabel(s) || s.cell_group_name, rawP: p.cell_group_id, rawS: s.cell_group_id },
+      { key: "cell_name", label: "Célula", valP: memberCellLabel(p) || p.cell_name || p.celula, valS: memberCellLabel(s) || s.cell_name || s.celula, rawP: p.cell_id, rawS: s.cell_id },
       { key: "date_of_birth", label: "Data de Nascimento", valP: p.date_of_birth || p.data_de_nascimento, valS: s.date_of_birth || s.data_de_nascimento },
       { key: "gender", label: "Género", valP: p.gender || p.genero || p.sexo, valS: s.gender || s.genero || s.sexo },
       { key: "neighborhood", label: "Bairro", valP: p.neighborhood || p.bairro, valS: s.neighborhood || s.bairro },
@@ -33567,7 +33582,7 @@ function renderMemberMergeContent(source, target) {
   `;
 }
 
-function mountMemberMergeControls(formEl, source, target) {
+function mountMemberMergeControls(formEl) {
   if (!formEl) return;
 
   const setupSearch = (role) => {
@@ -33594,8 +33609,8 @@ function mountMemberMergeControls(formEl, source, target) {
 
         box.innerHTML = matches.map((m) => `
           <button type="button" class="list-group-item list-group-item-action bg-dark text-white border-secondary p-2 d-flex flex-column text-start" data-choose-merge="${role}" data-id="${m.id}">
-            <strong class="text-warning">${escapeAttr(m.displayName || m.full_name)}</strong>
-            <small class="text-white-50">${[m.primary_phone || m.phone, m.church_name, m.cell_name].filter(Boolean).join(" · ")}</small>
+            <strong class="text-warning">${escapeAttr(m.displayName || fullName(m) || m.full_name || m.name || "Membro")}</strong>
+            <small class="text-white-50">${[m.primary_phone || m.phone || m.telefone, churchName(m.church_id) || m.church_name, memberCellLabel(m) || m.cell_name || m.celula].filter(Boolean).join(" · ")}</small>
           </button>
         `).join("");
         box.classList.remove("d-none");
@@ -33604,12 +33619,14 @@ function mountMemberMergeControls(formEl, source, target) {
           btn.addEventListener("click", () => {
             const chosenId = btn.dataset.id;
             const chosen = matches.find((item) => String(item.id) === String(chosenId));
-            if (role === "primary") {
-              currentMergeState.primary = chosen;
-            } else {
-              currentMergeState.secondary = chosen;
+            if (chosen) {
+              if (role === "primary") {
+                currentMergeState.primary = chosen;
+              } else {
+                currentMergeState.secondary = chosen;
+              }
+              refreshMemberMergeModalUI();
             }
-            openMergeMemberModal(currentMergeState.secondary?.id, currentMergeState.primary?.id);
           });
         });
       }, 200);
@@ -33624,7 +33641,7 @@ function mountMemberMergeControls(formEl, source, target) {
       const role = btn.dataset.mergeClear;
       if (role === "primary") currentMergeState.primary = null;
       else currentMergeState.secondary = null;
-      openMergeMemberModal(currentMergeState.secondary?.id, currentMergeState.primary?.id);
+      refreshMemberMergeModalUI();
     });
   });
 
@@ -33634,7 +33651,7 @@ function mountMemberMergeControls(formEl, source, target) {
       const temp = currentMergeState.primary;
       currentMergeState.primary = currentMergeState.secondary;
       currentMergeState.secondary = temp;
-      openMergeMemberModal(currentMergeState.secondary?.id, currentMergeState.primary?.id);
+      refreshMemberMergeModalUI();
     });
   }
 
@@ -33645,48 +33662,54 @@ function mountMemberMergeControls(formEl, source, target) {
   }
 }
 
-async function openMergeMemberModal(sourceMemberId = null, targetMemberId = null) {
-  let source = (sourceMemberId && sourceMemberId !== "new") ? (findMemberRecord(sourceMemberId) || (state.memberRegistrationCandidates || []).find((c) => String(c.id) === String(sourceMemberId))) : currentMergeState.secondary;
-  let target = (targetMemberId && targetMemberId !== "new") ? (findMemberRecord(targetMemberId) || (state.memberRegistrationCandidates || []).find((c) => String(c.id) === String(targetMemberId))) : currentMergeState.primary;
-
-  if (source && usesSupabaseMembers() && typeof fetchMemberDetailFromRepository === "function") {
-    try {
-      const fullSource = await fetchMemberDetailFromRepository(source.id);
-      if (fullSource) source = { ...source, ...fullSource };
-    } catch (e) {
-      console.warn("[Member Merge] detail fetch", e);
+async function openMergeMemberModal(sourceMemberParam = null, targetMemberParam = null) {
+  const resolveRecord = async (param) => {
+    if (!param || param === "new") return null;
+    if (typeof param === "object" && (param.id || param.full_name || param.name)) return param;
+    const id = String(param);
+    let found = (typeof findMemberRecord === "function" ? findMemberRecord(id) : null) ||
+      (state.members || []).find((m) => String(m.id) === id) ||
+      (state.memberRegistrationCandidates || []).find((c) => String(c.id) === id);
+    if (!found && usesSupabaseMembers() && typeof fetchMemberDetailFromRepository === "function") {
+      try {
+        found = await fetchMemberDetailFromRepository(id);
+      } catch (e) {
+        console.warn("[Member Merge] fetchMemberDetailFromRepository failed", e);
+      }
     }
-  }
+    return found || null;
+  };
 
-  if (target && usesSupabaseMembers() && typeof fetchMemberDetailFromRepository === "function") {
-    try {
-      const fullTarget = await fetchMemberDetailFromRepository(target.id);
-      if (fullTarget) target = { ...target, ...fullTarget };
-    } catch (e) {
-      console.warn("[Member Merge] detail fetch", e);
-    }
-  }
+  let source = await resolveRecord(sourceMemberParam);
+  let target = await resolveRecord(targetMemberParam);
 
   if (source && !target) {
-    const dups = candidateDuplicates(source);
-    if (dups.length) target = dups[0].member;
+    const dups = typeof candidateDuplicates === "function" ? candidateDuplicates(source) : [];
+    if (dups.length) {
+      target = dups[0].member;
+    } else {
+      target = source;
+      source = null;
+    }
   }
+
+  currentMergeState.secondary = source;
+  currentMergeState.primary = target;
 
   modalType = "memberMerge";
   modalMode = "edit";
-  modalRecordId = source?.id || null;
+  modalRecordId = source?.id || target?.id || null;
 
   byId("modalEyebrow").textContent = "Gestão de Membros & Fusão";
   byId("modalTitle").textContent = "Fundir / Unir Membros Duplicados";
 
-  byId("modalFields").innerHTML = renderMemberMergeContent(source, target);
-  mountMemberMergeControls(byId("entryForm"), source, target);
+  refreshMemberMergeModalUI();
 
   const footer = byId("entryForm")?.querySelector(".ops-modal-footer");
   if (footer) {
     footer.innerHTML = `
       <button type="button" class="btn btn-outline-glass btn-touch" data-bs-dismiss="modal">Cancelar</button>
-      <button type="button" class="btn btn-warning btn-touch fw-bold" id="btnConfirmMemberMerge" ${(!source || !target) ? "disabled" : ""}>
+      <button type="button" class="btn btn-warning btn-touch fw-bold" id="btnConfirmMemberMerge" ${(!currentMergeState.primary || !currentMergeState.secondary) ? "disabled" : ""}>
         <i class="bi bi-arrows-collapse me-1"></i>Confirmar Fusão de Membros
       </button>
     `;
@@ -33711,27 +33734,38 @@ async function submitMergeMembers(formEl) {
   // Collect radio choices
   const getFieldChoice = (key, fallbackP, fallbackS) => {
     const radio = formEl.querySelector(`input[name="merge_field_${key}"]:checked`);
-    if (radio?.value === "secondary") return fallbackS || fallbackP;
-    return fallbackP || fallbackS;
+    if (radio?.value === "secondary") return (fallbackS !== undefined && fallbackS !== null && fallbackS !== "") ? fallbackS : fallbackP;
+    return (fallbackP !== undefined && fallbackP !== null && fallbackP !== "") ? fallbackP : fallbackS;
   };
+
+  const chosenFullName = getFieldChoice("full_name", fullName(p) || p.full_name || p.name || p.nome, fullName(s) || s.full_name || s.name || s.nome);
+  const nameParts = (chosenFullName || "").trim().split(/\s+/);
+  const derivedNome = nameParts[0] || p.nome || s.nome || "";
+  const derivedApelido = nameParts.slice(1).join(" ") || p.apelido || s.apelido || "";
+
+  const chosenChurchId = getFieldChoice("church_id", p.church_id, s.church_id) || p.church_id;
+  const chosenCellGroupId = getFieldChoice("cell_group_name", p.cell_group_id, s.cell_group_id) || p.cell_group_id || null;
+  const chosenCellGroupName = getFieldChoice("cell_group_name", memberCellGroupLabel(p) || p.cell_group_name, memberCellGroupLabel(s) || s.cell_group_name) || null;
+  const chosenCellId = getFieldChoice("cell_name", p.cell_id, s.cell_id) || p.cell_id || null;
+  const chosenCellName = getFieldChoice("cell_name", memberCellLabel(p) || p.cell_name || p.celula, memberCellLabel(s) || s.cell_name || s.celula) || null;
 
   const consolidatedMember = {
     ...p,
-    full_name: getFieldChoice("full_name", fullName(p) || p.full_name || p.name, fullName(s) || s.full_name || s.name),
-    nome: p.nome || s.nome,
-    apelido: p.apelido || s.apelido,
+    full_name: chosenFullName,
+    nome: derivedNome,
+    apelido: derivedApelido,
     primary_phone: getFieldChoice("primary_phone", p.primary_phone || p.phone || p.telefone, s.primary_phone || s.phone || s.telefone) || null,
     telefone: getFieldChoice("primary_phone", p.primary_phone || p.phone || p.telefone, s.primary_phone || s.phone || s.telefone) || null,
     secondary_phone: getFieldChoice("secondary_phone", p.secondary_phone || p.whatsapp, s.secondary_phone || s.whatsapp) || null,
     whatsapp: getFieldChoice("secondary_phone", p.whatsapp || p.secondary_phone, s.whatsapp || s.secondary_phone) || null,
     email: getFieldChoice("email", p.email, s.email) || null,
-    church_id: getFieldChoice("church_id", p.church_id, s.church_id) || p.church_id,
-    church_name: churchName(getFieldChoice("church_id", p.church_id, s.church_id) || p.church_id),
-    cell_group_id: getFieldChoice("cell_group_name", p.cell_group_id, s.cell_group_id) || p.cell_group_id || null,
-    cell_group_name: getFieldChoice("cell_group_name", memberCellGroupLabel(p), memberCellGroupLabel(s)) || p.cell_group_name || null,
-    cell_id: getFieldChoice("cell_name", p.cell_id, s.cell_id) || p.cell_id || null,
-    cell_name: getFieldChoice("cell_name", memberCellLabel(p), memberCellLabel(s)) || p.cell_name || null,
-    celula: getFieldChoice("cell_name", memberCellLabel(p), memberCellLabel(s)) || p.celula || null,
+    church_id: chosenChurchId,
+    church_name: churchName(chosenChurchId) || p.church_name || s.church_name || "Igreja",
+    cell_group_id: chosenCellGroupId,
+    cell_group_name: chosenCellGroupName,
+    cell_id: chosenCellId,
+    cell_name: chosenCellName,
+    celula: chosenCellName,
     date_of_birth: getFieldChoice("date_of_birth", p.date_of_birth || p.data_de_nascimento, s.date_of_birth || s.data_de_nascimento) || null,
     gender: getFieldChoice("gender", p.gender || p.genero, s.gender || s.genero) || null,
     neighborhood: getFieldChoice("neighborhood", p.neighborhood || p.bairro, s.neighborhood || s.bairro) || null,
@@ -33747,6 +33781,13 @@ async function submitMergeMembers(formEl) {
     Object.assign(existingLocalPrimary, consolidatedMember);
   } else {
     state.members.push(consolidatedMember);
+  }
+
+  if (Array.isArray(modulePageState?.members?.items)) {
+    const idx = modulePageState.members.items.findIndex((m) => String(m.id) === primaryId);
+    if (idx >= 0) {
+      modulePageState.members.items[idx] = { ...modulePageState.members.items[idx], ...consolidatedMember };
+    }
   }
 
   const primaryResult = await persistMemberViaRepository("update", consolidatedMember);
@@ -33782,8 +33823,12 @@ async function submitMergeMembers(formEl) {
   const secondaryMemberIndex = (state.members || []).findIndex((m) => String(m.id) === secondaryId);
   if (secondaryMemberIndex >= 0) {
     state.members.splice(secondaryMemberIndex, 1);
-    void persistMemberViaRepository("delete", secondaryId);
   }
+  if (Array.isArray(modulePageState?.members?.items)) {
+    const sIdx = modulePageState.members.items.findIndex((m) => String(m.id) === secondaryId);
+    if (sIdx >= 0) modulePageState.members.items.splice(sIdx, 1);
+  }
+  await persistMemberViaRepository("delete", secondaryId);
 
   const secondaryCandidate = (state.memberRegistrationCandidates || []).find((c) => String(c.id) === secondaryId);
   if (secondaryCandidate) {
@@ -33823,7 +33868,11 @@ async function submitMergeMembers(formEl) {
   if (activeRoute === "cellPortal") {
     renderCellLeaderPortal();
   } else {
-    renderMembers();
+    if (typeof loadMembersPage === "function" && usesSupabaseMembers()) {
+      void loadMembersPage({ force: true });
+    } else {
+      renderMembers();
+    }
   }
 }
 window.submitMergeMembers = submitMergeMembers;
