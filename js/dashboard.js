@@ -14217,7 +14217,11 @@ function stepAttendanceCounter(field, delta) {
 }
 if (typeof window !== "undefined") window.stepAttendanceCounter = stepAttendanceCounter;
 
-function addCellAttendanceVisitorFromInput() {
+function addCellAttendanceVisitorFromInput(event) {
+  if (event) {
+    if (typeof event.preventDefault === "function") event.preventDefault();
+    if (typeof event.stopPropagation === "function") event.stopPropagation();
+  }
   const nameInput = document.getElementById("newVisitorName");
   const phoneInput = document.getElementById("newVisitorPhone");
   const typeSelect = document.getElementById("newVisitorType");
@@ -14235,6 +14239,11 @@ function addCellAttendanceVisitorFromInput() {
   const isFT = type === "FT" || type === "FT_NC";
   const isNC = type === "NC" || type === "FT_NC";
 
+  if (!Array.isArray(currentSessionVisitors)) {
+    currentSessionVisitors = [];
+    if (typeof window !== "undefined") window.currentSessionVisitors = currentSessionVisitors;
+  }
+
   currentSessionVisitors.push({
     name,
     phone,
@@ -14248,7 +14257,9 @@ function addCellAttendanceVisitorFromInput() {
   if (phoneInput) phoneInput.value = "";
   nameInput?.focus();
 
-  refreshAttendanceVisitorsList();
+  if (typeof refreshAttendanceVisitorsList === "function") {
+    refreshAttendanceVisitorsList();
+  }
 }
 if (typeof window !== "undefined") window.addCellAttendanceVisitorFromInput = addCellAttendanceVisitorFromInput;
 
@@ -14357,7 +14368,7 @@ function openCellAttendanceModal() {
                 </select>
               </div>
               <div class="col-md-2">
-                <button type="button" class="btn btn-sm btn-warning w-100" data-add-visitor-row onclick="window.addCellAttendanceVisitorFromInput &amp;&amp; window.addCellAttendanceVisitorFromInput(); return false;">
+                <button type="button" class="btn btn-sm btn-warning w-100" data-add-visitor-row onclick="window.addCellAttendanceVisitorFromInput &amp;&amp; window.addCellAttendanceVisitorFromInput(event); return false;">
                   <i class="bi bi-plus-lg me-1"></i>Adicionar
                 </button>
               </div>
@@ -14445,6 +14456,32 @@ async function submitCellAttendanceModal(form) {
   if (!Array.isArray(state.firstTimers)) state.firstTimers = [];
 
   const promotedNames = [];
+
+  // Auto-capture pending visitor input if user typed name without clicking "+ Adicionar"
+  const pendingNameInput = document.getElementById("newVisitorName");
+  const pendingPhoneInput = document.getElementById("newVisitorPhone");
+  const pendingTypeSelect = document.getElementById("newVisitorType");
+  const pendingName = (pendingNameInput?.value || "").trim();
+  if (pendingName) {
+    const pendingPhone = (pendingPhoneInput?.value || "").trim();
+    const pendingType = pendingTypeSelect?.value || "FT";
+    const isFT = pendingType === "FT" || pendingType === "FT_NC";
+    const isNC = pendingType === "NC" || pendingType === "FT_NC";
+    if (!Array.isArray(currentSessionVisitors)) currentSessionVisitors = [];
+    currentSessionVisitors.push({
+      name: pendingName,
+      phone: pendingPhone,
+      type: pendingType,
+      isFT,
+      isNC,
+      id: typeof generateUuid === "function" ? generateUuid() : "v-" + Date.now()
+    });
+    if (pendingNameInput) pendingNameInput.value = "";
+    if (pendingPhoneInput) pendingPhoneInput.value = "";
+    if (typeof refreshAttendanceVisitorsList === "function") {
+      refreshAttendanceVisitorsList();
+    }
+  }
 
   // Register dynamic visitors and apply 3-attendance rule
   if (currentSessionVisitors && currentSessionVisitors.length) {
@@ -33923,37 +33960,11 @@ function refreshAttendanceVisitorsList() {
 document.addEventListener("click", (event) => {
   // Add visitor row
   if (event.target.closest("[data-add-visitor-row]")) {
-    const nameInput = document.getElementById("newVisitorName");
-    const phoneInput = document.getElementById("newVisitorPhone");
-    const typeSelect = document.getElementById("newVisitorType");
-
-    const name = (nameInput?.value || "").trim();
-    const phone = (phoneInput?.value || "").trim();
-    const type = typeSelect?.value || "FT";
-
-    if (!name) {
-      alert("Por favor introduza o nome do visitante / novo membro.");
-      nameInput?.focus();
-      return;
+    if (typeof addCellAttendanceVisitorFromInput === "function") {
+      const nameInput = document.getElementById("newVisitorName");
+      // If there's input or triggered by click, delegate to the primary function
+      addCellAttendanceVisitorFromInput(event);
     }
-
-    const isFT = type === "FT" || type === "FT_NC";
-    const isNC = type === "NC" || type === "FT_NC";
-
-    currentSessionVisitors.push({
-      name,
-      phone,
-      type,
-      isFT,
-      isNC,
-      id: typeof generateUuid === "function" ? generateUuid() : "v-" + Date.now()
-    });
-
-    if (nameInput) nameInput.value = "";
-    if (phoneInput) phoneInput.value = "";
-    nameInput?.focus();
-
-    refreshAttendanceVisitorsList();
     return;
   }
 
