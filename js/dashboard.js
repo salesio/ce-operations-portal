@@ -25872,6 +25872,9 @@ window.previewMaterialPaymentProof = previewMaterialPaymentProof;
 
 function renderMaterialSaleForm(record = {}, modalMode = "create") {
   const isEdit = modalMode === "edit";
+  const catalogItems = state.ministryMaterials?.catalogue || [];
+  const churchesList = state.churches || [];
+
   const todayIso = new Date().toISOString().slice(0, 10);
   const dataVal = record.data || record.sale_date || todayIso;
   const semanaVal = record.semana_do_relatorio || "";
@@ -25880,7 +25883,14 @@ function renderMaterialSaleForm(record = {}, modalMode = "create") {
   const provenienciaVal = record.proveniencia || (churchIdVal ? churchName(churchIdVal) : "") || record.church_name || "";
   const materialVal = record.titulo_do_material || record.material_id || record.catalog_item_title || "";
   const quantidadeVal = record.quantidade ?? record.quantity ?? 1;
-  const valorVal = record.valor ?? record.total_amount ?? "";
+  let valorVal = record.valor ?? record.total_amount ?? "";
+  if ((valorVal === "" || valorVal === undefined || valorVal === null) && materialVal) {
+    const item = catalogItems.find((m) => (m.titulo_do_material || m.name) === materialVal || String(m.id) === String(record.material_id));
+    if (item) {
+      const p = Number(item.preco ?? item.unit_price ?? 0);
+      if (p > 0) valorVal = (p * (quantidadeVal || 1)).toFixed(2);
+    }
+  }
   const metodoVal = record.metodo_de_pagamento || record.payment_method || (paymentMethods[0] || "Dinheiro");
   const popVal = record.pop_prova_de_pagamento || record.payment_reference || "";
   const recebidoVal = record.recebido_por || (typeof activeUser !== "undefined" && activeUser?.name ? activeUser.name : "");
@@ -25889,7 +25899,7 @@ function renderMaterialSaleForm(record = {}, modalMode = "create") {
 
   let provType = "igreja_ce";
   let customProv = "";
-  if (churchIdVal || (state.churches || []).some((c) => c.name === provenienciaVal || c.id === churchIdVal)) {
+  if (churchIdVal || churchesList.some((c) => c.name === provenienciaVal || c.id === churchIdVal)) {
     provType = "igreja_ce";
   } else if (/externo|outra denom/i.test(provenienciaVal)) {
     provType = "externo";
@@ -25904,9 +25914,6 @@ function renderMaterialSaleForm(record = {}, modalMode = "create") {
     provType = "outro";
     customProv = provenienciaVal;
   }
-
-  const catalogItems = state.ministryMaterials?.catalogue || [];
-  const churchesList = state.churches || [];
 
   return `
     <div class="col-12">
@@ -25926,10 +25933,21 @@ function renderMaterialSaleForm(record = {}, modalMode = "create") {
       <input type="text" class="form-control" name="semana_do_relatorio" value="${escapeAttr(semanaVal)}" placeholder="${lang === "pt" ? "ex: Julho Semana 1 (ou em branco)" : "e.g. July Week 1 (or blank)"}" />
     </div>
 
-    <!-- Comprador e Proveniência -->
-    <div class="col-md-6 mb-3">
-      <label class="form-label fw-semibold">${L("buyer")} <span class="text-danger">*</span></label>
-      <input type="text" class="form-control" name="comprador" value="${escapeAttr(compradorVal)}" placeholder="${lang === "pt" ? "Nome completo do comprador" : "Buyer full name"}" required />
+    <!-- Comprador e Proveniência com Auto-Complete -->
+    <div class="col-md-6 mb-3 position-relative">
+      <div class="d-flex justify-content-between align-items-center mb-1">
+        <label class="form-label fw-semibold mb-0">${L("buyer")} <span class="text-danger">*</span></label>
+        <small class="text-info" style="font-size:0.75rem;"><i class="bi bi-person-bounding-box me-1"></i>${lang === "pt" ? "Pesquisa na Base de Dados" : "Database Search & Autofill"}</small>
+      </div>
+      <div class="input-group">
+        <span class="input-group-text bg-dark border-secondary text-secondary"><i class="bi bi-person-search"></i></span>
+        <input type="text" class="form-control" name="comprador" id="materialSale_buyer_input" value="${escapeAttr(compradorVal)}" placeholder="${lang === "pt" ? "Digite o nome para pesquisar membros ou compradores..." : "Type name to search members or buyers..."}" required autocomplete="off" />
+        <button class="btn btn-outline-secondary ${compradorVal ? "" : "d-none"}" type="button" id="materialSale_buyer_clear" title="Limpar">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+      <div class="material-buyer-suggestions list-group position-absolute w-100 d-none shadow-lg z-3" style="top:100%; left:0; max-height:260px; overflow-y:auto; z-index:1060; background:#0f172a; border:1px solid #334155;"></div>
+      <div class="material-buyer-badge small text-success d-none mt-1 fw-semibold"></div>
     </div>
     <div class="col-md-6 mb-3">
       <label class="form-label fw-semibold">${L("provenanceOrChurch")} <span class="text-danger">*</span></label>
@@ -26065,44 +26083,254 @@ function mountMaterialSaleFormControls(form) {
     });
   }
 
+  // Auto-complete / Search for Buyer from Database
+  const buyerInput = form.querySelector("#materialSale_buyer_input") || form.querySelector('[name="comprador"]');
+  const buyerClearBtn = form.querySelector("#materialSale_buyer_clear");
+  const buyerSuggestionsBox = form.querySelector(".material-buyer-suggestions");
+  const buyerBadgeEl = form.querySelector(".material-buyer-badge");
+
+  function getBuyerCandidates() {
+    const list = [];
+    const seen = new Set();
+
+    (state.members || []).forEach((m) => {
+      const name = typeof fullName === "function" ? fullName(m) : (m.name || m.full_name || [m.nome, m.apelido].filter(Boolean).join(" "));
+      if (!name || seen.has(name.toLowerCase())) return;
+      seen.add(name.toLowerCase());
+      list.push({
+        name,
+        type: lang === "pt" ? "Membro" : "Member",
+        badgeClass: "bg-success",
+        church_id: m.church_id || "",
+        church_name: (typeof churchName === "function" ? churchName(m.church_id) : "") || m.church_name || m.igreja || "",
+        cell_name: m.cell_name || m.celula || "",
+        phone: m.primary_phone || m.phone || m.telefone || ""
+      });
+    });
+
+    (state.firstTimers || []).forEach((ft) => {
+      const name = typeof fullName === "function" ? fullName(ft) : (ft.name || ft.full_name || [ft.nome, ft.apelido].filter(Boolean).join(" "));
+      if (!name || seen.has(name.toLowerCase())) return;
+      seen.add(name.toLowerCase());
+      list.push({
+        name,
+        type: lang === "pt" ? "Primeira Vez" : "First Timer",
+        badgeClass: "bg-info text-dark",
+        church_id: ft.church_id || "",
+        church_name: (typeof churchName === "function" ? churchName(ft.church_id) : "") || ft.church_name || "",
+        cell_name: ft.cell_name || ft.celula || "",
+        phone: ft.phone || ft.telefone || ""
+      });
+    });
+
+    (state.ministryMaterials?.sales || []).forEach((s) => {
+      const name = s.comprador || s.buyer_name;
+      if (!name || seen.has(name.toLowerCase())) return;
+      seen.add(name.toLowerCase());
+      list.push({
+        name,
+        type: lang === "pt" ? "Comprador Regular" : "Regular Buyer",
+        badgeClass: "bg-warning text-dark",
+        church_id: s.church_id || "",
+        church_name: s.proveniencia || (s.church_id && typeof churchName === "function" ? churchName(s.church_id) : "") || s.church_name || "",
+        cell_name: "",
+        phone: s.buyer_phone || ""
+      });
+    });
+
+    (state.users || []).forEach((u) => {
+      const name = u.name || u.full_name;
+      if (!name || seen.has(name.toLowerCase())) return;
+      seen.add(name.toLowerCase());
+      list.push({
+        name,
+        type: lang === "pt" ? "Equipa / Líder" : "Staff / Leader",
+        badgeClass: "bg-primary",
+        church_id: u.church_id || "",
+        church_name: (typeof churchName === "function" ? churchName(u.church_id) : "") || "",
+        cell_name: "",
+        phone: u.phone || ""
+      });
+    });
+
+    return list;
+  }
+
+  if (buyerInput && buyerSuggestionsBox) {
+    const candidates = getBuyerCandidates();
+
+    function renderBuyerSuggestions(query = "") {
+      const clean = String(query || "").trim().toLowerCase();
+      if (!clean || clean.length < 2) {
+        buyerSuggestionsBox.classList.add("d-none");
+        buyerSuggestionsBox.innerHTML = "";
+        return;
+      }
+      const matches = candidates.filter((c) => 
+        c.name.toLowerCase().includes(clean) || 
+        (c.phone && c.phone.includes(clean)) ||
+        (c.church_name && c.church_name.toLowerCase().includes(clean))
+      ).slice(0, 8);
+
+      if (!matches.length) {
+        buyerSuggestionsBox.classList.add("d-none");
+        buyerSuggestionsBox.innerHTML = "";
+        return;
+      }
+
+      buyerSuggestionsBox.innerHTML = matches.map((m, idx) => `
+        <button type="button" class="list-group-item list-group-item-action text-light d-flex justify-content-between align-items-center py-2 px-3 border-secondary" style="background:#0f172a;" data-candidate-idx="${idx}">
+          <div class="text-truncate me-2 text-start">
+            <div class="fw-semibold text-truncate text-cyan">${escapeHtml(m.name)}</div>
+            <div class="small text-muted text-truncate">${escapeHtml(m.church_name || "Igreja CE")}${m.cell_name ? ` · ${escapeHtml(m.cell_name)}` : ""}${m.phone ? ` · ${escapeHtml(m.phone)}` : ""}</div>
+          </div>
+          <span class="badge ${m.badgeClass} flex-shrink-0">${escapeHtml(m.type)}</span>
+        </button>
+      `).join("");
+      buyerSuggestionsBox.classList.remove("d-none");
+
+      buyerSuggestionsBox.querySelectorAll("[data-candidate-idx]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const idx = parseInt(btn.getAttribute("data-candidate-idx"), 10);
+          const selected = matches[idx];
+          if (!selected) return;
+
+          buyerInput.value = selected.name;
+          if (buyerClearBtn) buyerClearBtn.classList.remove("d-none");
+
+          if (selected.church_id && churchSel) {
+            if (provTypeSel) provTypeSel.value = "igreja_ce";
+            churchSel.value = selected.church_id;
+            syncProvenance();
+          } else if (selected.church_name && churchSel) {
+            const matchingOpt = Array.from(churchSel.options).find((opt) => opt.text.toLowerCase() === selected.church_name.toLowerCase());
+            if (matchingOpt) {
+              if (provTypeSel) provTypeSel.value = "igreja_ce";
+              churchSel.value = matchingOpt.value;
+              syncProvenance();
+            } else {
+              if (provTypeSel) provTypeSel.value = "externo";
+              if (customInput) customInput.value = selected.church_name;
+              syncProvenance();
+            }
+          }
+
+          if (buyerBadgeEl) {
+            buyerBadgeEl.innerHTML = `<i class="bi bi-check-circle-fill me-1"></i>${lang === "pt" ? "Identificado" : "Identified"}: <strong>${escapeHtml(selected.type)}</strong> (${escapeHtml(selected.church_name || "Christ Embassy")}${selected.cell_name ? ` · ${escapeHtml(selected.cell_name)}` : ""})`;
+            buyerBadgeEl.classList.remove("d-none");
+          }
+
+          buyerSuggestionsBox.classList.add("d-none");
+          buyerSuggestionsBox.innerHTML = "";
+        });
+      });
+    }
+
+    buyerInput.addEventListener("input", (e) => {
+      const val = e.target.value;
+      if (buyerClearBtn) buyerClearBtn.classList.toggle("d-none", !val);
+      if (buyerBadgeEl && !val) {
+        buyerBadgeEl.classList.add("d-none");
+        buyerBadgeEl.innerHTML = "";
+      }
+      renderBuyerSuggestions(val);
+    });
+
+    buyerInput.addEventListener("focus", (e) => {
+      if (e.target.value && e.target.value.length >= 2) {
+        renderBuyerSuggestions(e.target.value);
+      }
+    });
+
+    if (buyerClearBtn) {
+      buyerClearBtn.addEventListener("click", () => {
+        buyerInput.value = "";
+        buyerClearBtn.classList.add("d-none");
+        if (buyerBadgeEl) {
+          buyerBadgeEl.classList.add("d-none");
+          buyerBadgeEl.innerHTML = "";
+        }
+        if (buyerSuggestionsBox) {
+          buyerSuggestionsBox.classList.add("d-none");
+          buyerSuggestionsBox.innerHTML = "";
+        }
+        buyerInput.focus();
+      });
+    }
+
+    document.addEventListener("click", (e) => {
+      if (!buyerInput.contains(e.target) && !buyerSuggestionsBox.contains(e.target)) {
+        buyerSuggestionsBox.classList.add("d-none");
+      }
+    });
+  }
+
   const matSelect = form.querySelector("#materialSale_material_select");
   const qtyInput = form.querySelector("#materialSale_qty_input");
   const amountInput = form.querySelector("#materialSale_amount_input");
   const stockHint = form.querySelector("#materialSale_stock_hint");
   const calcHint = form.querySelector("#materialSale_calc_hint");
 
-  function updatePriceAndStock(manualOverride = false) {
-    if (!matSelect) return;
+  function getMaterialData() {
+    if (!matSelect || matSelect.selectedIndex <= 0) return { price: 0, stock: 0, title: "" };
     const opt = matSelect.options[matSelect.selectedIndex];
-    if (!opt || matSelect.selectedIndex === 0) {
-      if (stockHint) stockHint.textContent = "";
+    if (!opt) return { price: 0, stock: 0, title: "" };
+    let price = parseFloat(opt.getAttribute("data-price") || "0");
+    let stock = parseInt(opt.getAttribute("data-stock") || "0", 10);
+    const title = opt.value || opt.text;
+    if (!price || isNaN(price)) {
+      const item = (state.ministryMaterials?.catalogue || []).find((m) => (m.titulo_do_material || m.name) === title || String(m.id) === title);
+      if (item) {
+        price = Number(item.preco ?? item.unit_price ?? 0);
+        stock = Number(item.stock_actual ?? item.quantity_available ?? 0);
+      }
+    }
+    return { price: isNaN(price) ? 0 : price, stock: isNaN(stock) ? 0 : stock, title };
+  }
+
+  function updatePriceAndStock(isManualEdit = false) {
+    if (!matSelect) return;
+    const { price, stock, title } = getMaterialData();
+    const isSelected = Boolean(matSelect.selectedIndex > 0 && title);
+
+    if (!isSelected) {
+      if (stockHint) stockHint.innerHTML = `<span class="text-muted small">${lang === "pt" ? "Selecione um material para ver o preço e calcular o valor." : "Select a material to see price and calculate total."}</span>`;
+      if (calcHint) calcHint.innerHTML = `<span class="text-muted small">${lang === "pt" ? "Selecione o material para calcular o valor automaticamente" : "Select material to auto-calculate amount"}</span>`;
       return;
     }
-    const price = parseFloat(opt.getAttribute("data-price") || "0");
-    const stock = parseInt(opt.getAttribute("data-stock") || "0", 10);
+
     if (stockHint) {
-      stockHint.innerHTML = `<span class="badge ${stock > 0 ? "bg-success" : "bg-danger"}">${lang === "pt" ? "Stock disponível" : "Available stock"}: ${stock}</span> · <span class="text-muted">${lang === "pt" ? "Preço unitário" : "Unit price"}: ${money(price)}</span>`;
+      stockHint.innerHTML = `<span class="badge ${stock > 0 ? "bg-success" : "bg-danger"}">${lang === "pt" ? "Stock disponível" : "Available stock"}: ${stock}</span> · <span class="text-primary fw-semibold">${lang === "pt" ? "Preço unitário" : "Unit price"}: ${money(price)}</span>`;
     }
-    if (!manualOverride && amountInput) {
-      const qty = parseFloat(qtyInput?.value || "1");
-      const total = (price * (isNaN(qty) ? 1 : qty)).toFixed(2);
+
+    if (!isManualEdit && amountInput) {
+      const rawQty = qtyInput?.value;
+      const qty = parseFloat(rawQty || "1");
+      const validQty = isNaN(qty) || qty < 0 ? 0 : qty;
+      const total = (price * validQty).toFixed(2);
       amountInput.value = total;
-      if (calcHint) calcHint.textContent = `${lang === "pt" ? "Auto-calculado" : "Auto-calculated"}: ${qty} × ${money(price)} = ${money(total)}`;
+      if (calcHint) {
+        calcHint.innerHTML = `<span class="text-success fw-semibold"><i class="bi bi-calculator me-1"></i>${lang === "pt" ? "Auto-calculado" : "Auto-calculated"}:</span> ${validQty} × ${money(price)} = <strong>${money(total)}</strong>`;
+      }
     }
   }
 
   if (matSelect) {
     matSelect.addEventListener("change", () => updatePriceAndStock(false));
+    matSelect.addEventListener("input", () => updatePriceAndStock(false));
   }
   if (qtyInput) {
     qtyInput.addEventListener("input", () => updatePriceAndStock(false));
+    qtyInput.addEventListener("change", () => updatePriceAndStock(false));
+    qtyInput.addEventListener("keyup", () => updatePriceAndStock(false));
+    qtyInput.addEventListener("paste", () => setTimeout(() => updatePriceAndStock(false), 20));
   }
   if (amountInput) {
     amountInput.addEventListener("input", () => {
       if (calcHint) calcHint.textContent = lang === "pt" ? "Valor editado manualmente" : "Manually edited";
     });
   }
-  updatePriceAndStock(true);
+  updatePriceAndStock(false);
 
   const popFile = form.querySelector("#materialSale_pop_file");
   const popBtn = form.querySelector("#materialSale_pop_btn");
