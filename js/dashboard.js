@@ -3599,25 +3599,17 @@ const seedData = {
     churchReports: [
       { id: "church-report-1", church_id: "church-hq", created_by: "Sister Angelica", updated_by: "Sister Angelica", created_at: "2026-06-07", updated_at: "2026-06-07", status: "Submetido", semana: "2026 Junho Semana 1", data_inicio: "2026-06-01", data_fim: "2026-06-07", culto: "Domingo", celula: "Cell Central", titulo_do_lider: "Pastor", nome_do_lider: "Kene Ume", att: 112, ft: 14, nc: 9, rs: 8, total_ft_reached: 12, comentarios: "Bom crescimento no culto de domingo.", submetido_por: "Sister Angelica", estado: "Submetido" }
     ],
-    cellReports: [
-      { id: "cell-report-1", church_id: "church-hq", created_by: "Cell Leader Demo", updated_by: "Pastora Flavia", created_at: "2026-07-05", updated_at: "2026-07-06", status: "Em Avalia��o", semana: "Julho Semana 1", data_inicio: "2026-06-29", data_fim: "2026-07-05", celula: "Cell Central", cell_id: "cell-1", titulo_do_lider: "Irm�o", nome_do_lider: "Mateus Nhantumbo", leader_id: "leader-1", att: 18, ft: 5, nc: 3, oferta: 2300, rs: 2, observacoes: "EXPLOSAO - pronta para multiplica��o.", submetido_por: "Cell Leader Demo", avaliado_por: "Pastora Flavia", validado_por: "", estado: "Em Avalia��o" },
-      { id: "cell-report-2", church_id: "church-hq", created_by: "Cell Leader Demo", updated_by: "Sister Eduarda", created_at: "2026-07-05", updated_at: "2026-07-06", status: "Validado", semana: "Julho Semana 1", data_inicio: "2026-06-29", data_fim: "2026-07-05", celula: "Cell Mavalane", cell_id: "cell-2", titulo_do_lider: "Irm�", nome_do_lider: "Aminata Chivinda", leader_id: "leader-2", att: 9, ft: 1, nc: 1, oferta: 850, rs: 1, observacoes: "Precisa acompanhamento para crescimento.", submetido_por: "Cell Leader Demo", avaliado_por: "Pastora Flavia", validado_por: "Sister Eduarda", estado: "Validado" }
-    ],
+    cellReports: [],
     leaders: [
       { id: "leader-1", user_id: "u-7", staff_id: "staff-8", role_type: "Leader", cell_id: "cr-0001", cell_group_id: "cg-001", church_id: "church-hq", created_by: "Sister Angelica", updated_by: "Pastora Flavia", created_at: "2026-07-03", updated_at: "2026-08-06", status: "Activo", nome_completo: "Cell Leader Demo", contacto: "862720011", titulo: "Irmo", igreja: "church-hq", celula: "Dominio 1", e_lider_actual: true, veio_do_alec: true, alec_concluido: true, faixa_certificado_pago: true, estado: "Activo", supervisor: "Pastora Flavia", observacoes: "Pode submeter relatórios apenas da célula atribuída." },
       { id: "leader-assistant-1", user_id: "u-cell-assistant", staff_id: null, role_type: "Assistant", cell_id: "cr-0001", cell_group_id: "cg-001", church_id: "church-hq", created_by: "Pastora Flavia", updated_by: "Pastora Flavia", created_at: "2026-08-06", updated_at: "2026-08-06", status: "Activo", nome_completo: "Cell Assistant Demo", contacto: "862720012", titulo: "Irmã", igreja: "church-hq", celula: "Dominio 1", e_lider_actual: false, veio_do_alec: true, alec_concluido: true, faixa_certificado_pago: false, estado: "Activo", supervisor: "Pastora Flavia", observacoes: "Assistente autorizada da célula atribuída." },
-      { id: "leader-2", church_id: "church-hq", created_by: "Sister Angelica", updated_by: "Pastora Flavia", created_at: "2026-07-03", updated_at: "2026-07-06", status: "Em Treinamento", nome_completo: "Aminata Chivinda", contacto: "848287179", titulo: "Irm�", igreja: "church-hq", celula: "Cell Mavalane", e_lider_actual: true, veio_do_alec: true, alec_concluido: false, faixa_certificado_pago: false, estado: "Em Treinamento", supervisor: "Pastora Flavia", observacoes: "Acompanhar conclus�o do ALEC." }
+      { id: "leader-2", church_id: "church-hq", created_by: "Sister Angelica", updated_by: "Pastora Flavia", created_at: "2026-07-03", updated_at: "2026-07-06", status: "Em Treinamento", nome_completo: "Aminata Chivinda", contacto: "848287179", titulo: "Irm", igreja: "church-hq", celula: "Cell Mavalane", e_lider_actual: true, veio_do_alec: true, alec_concluido: false, faixa_certificado_pago: false, estado: "Em Treinamento", supervisor: "Pastora Flavia", observacoes: "Acompanhar concluso do ALEC." }
     ],
-    evaluations: [
-      { id: "eval-1", church_id: "church-hq", created_by: "Pastora Flavia", updated_by: "Pastora Flavia", created_at: "2026-07-06", updated_at: "2026-07-06", status: "Encaminhado para Valida��o", report_id: "cell-report-1", avaliador: "Pastora Flavia", data_da_avaliacao: "2026-07-06", classificacao: "Excelente", pontos_fortes: "Alto FT, NC consistente e c�lula em explos�o.", pontos_a_melhorar: "Preparar novo l�der auxiliar.", acao_recomendada: "Recomendar divis�o da c�lula.", precisa_followup: true, estado: "Encaminhado para Valida��o" },
-      { id: "eval-2", church_id: "church-hq", created_by: "Pastora Flavia", updated_by: "Pastora Flavia", created_at: "2026-07-06", updated_at: "2026-07-06", status: "Aprovado", report_id: "cell-report-2", avaliador: "Pastora Flavia", data_da_avaliacao: "2026-07-06", classificacao: "Precisa de Aten��o", pontos_fortes: "L�der constante.", pontos_a_melhorar: "Aumentar evangelismo e assist�ncia.", acao_recomendada: "Acompanhamento semanal com supervisora.", precisa_followup: true, estado: "Aprovado" }
-    ],
-    validations: [
-      { id: "validation-1", church_id: "church-hq", created_by: "Sister Eduarda", updated_by: "Sister Eduarda", created_at: "2026-07-06", updated_at: "2026-07-06", status: "Validado", report_id: "cell-report-2", validado_por: "Sister Eduarda", data_validacao: "2026-07-06", decisao: "Validado", comentario_final: "Relat�rio aceite para consolida��o nacional.", estado_final: "Validado" }
-    ],
+    evaluations: [],
+    validations: [],
     actionPlans: [
       { id: "ap-1", church_id: "church-hq", leader_name: "Aminata Chivinda", cell_name: "Cell Mavalane", action: "Acompanhamento semanal com supervisora e reforço de evangelismo.", due_date: "2026-07-17", status: "Em Curso", owner: "Pastora Flavia", created_by: "Pastora Flavia", updated_by: "Pastora Flavia", created_at: "2026-07-06", updated_at: "2026-07-06" },
-      { id: "ap-2", church_id: "church-hq", leader_name: "Mateus Nhantumbo", cell_name: "Cell Central", action: "Preparar divis�o da c�lula e identificar l�der auxiliar.", due_date: "2026-07-20", status: "Planeado", owner: "Pastora Flavia", created_by: "Pastora Flavia", updated_by: "Pastora Flavia", created_at: "2026-07-06", updated_at: "2026-07-06" }
+      { id: "ap-2", church_id: "church-hq", leader_name: "Mateus Nhantumbo", cell_name: "Cell Central", action: "Preparar diviso da clula e identificar lder auxiliar.", due_date: "2026-07-20", status: "Planeado", owner: "Pastora Flavia", created_by: "Pastora Flavia", updated_by: "Pastora Flavia", created_at: "2026-07-06", updated_at: "2026-07-06" }
     ]
   },
   fevo: {
@@ -4904,6 +4896,18 @@ function normalizeState(saved) {
     });
     merged[key] = savedItems.length ? savedItems : structuredClone(seedItems);
   });
+  if (merged.cellLeadership && Array.isArray(merged.cellLeadership.cellReports)) {
+    merged.cellLeadership.cellReports = merged.cellLeadership.cellReports.filter((r) => r && r.id !== "cell-report-1" && r.id !== "cell-report-2");
+  }
+  if (Array.isArray(merged.cellReportSubmissions)) {
+    merged.cellReportSubmissions = merged.cellReportSubmissions.filter((r) => r && r.id !== "cell-report-1" && r.id !== "cell-report-2");
+  }
+  if (merged.cellLeadership && Array.isArray(merged.cellLeadership.evaluations)) {
+    merged.cellLeadership.evaluations = merged.cellLeadership.evaluations.filter((e) => e && e.id !== "eval-1" && e.id !== "eval-2");
+  }
+  if (merged.cellLeadership && Array.isArray(merged.cellLeadership.validations)) {
+    merged.cellLeadership.validations = merged.cellLeadership.validations.filter((v) => v && v.id !== "validation-1");
+  }
   merged.fevo = {
     ...structuredClone(seedData.fevo),
     ...(saved.fevo || {})
@@ -7093,6 +7097,39 @@ function updateCellReportReviewAction(action, reportId) {
   if (!report) return;
   if (action === "view") {
     openCellReportDetails(reportId);
+    return;
+  }
+  if (action === "delete") {
+    const cellNameStr = report.celula || report.cell_name || report.cellName || report.id;
+    const confirmMsg = lang === "pt"
+      ? `Tem a certeza de que pretende eliminar este relatório de célula (${cellNameStr})?`
+      : `Are you sure you want to delete this cell report (${cellNameStr})?`;
+    if (!window.confirm(confirmMsg)) return;
+
+    if (Array.isArray(state.cellLeadership?.cellReports)) {
+      state.cellLeadership.cellReports = state.cellLeadership.cellReports.filter((item) => item.id !== reportId);
+    }
+    if (Array.isArray(state.cellReportSubmissions)) {
+      state.cellReportSubmissions = state.cellReportSubmissions.filter((item) => item.id !== reportId);
+    }
+
+    void dualWriteCellMinistryRecord("cellReport", "delete", report);
+
+    try {
+      const sbClient = window.CESupabase?.getRawClient?.() || window.CESupabase?.getSupabaseFoundationClient?.() || window.CESupabase?.getSupabaseClient?.() || window.supabase;
+      if (sbClient) {
+        void sbClient.from("cell_reports").delete().eq("id", reportId);
+      }
+    } catch (e) {
+      console.warn("[CE Cell Report Delete] direct delete failed", e);
+    }
+
+    if (typeof autoConsolidateAllChurchReports === "function") autoConsolidateAllChurchReports();
+
+    saveState(`Cell report deleted: ${reportId}`);
+    if (activeRoute === "cellWeeklyReport") renderCellMinistry("weeklyReport");
+    else if (activeRoute === "cellReceivedReports") renderCellMinistry("receivedReports");
+    else setRoute(activeRoute);
     return;
   }
   const requiredPermission = action === "validate"
@@ -20238,6 +20275,8 @@ async function dualWriteCellMinistryRecord(modalType, mode, record) {
             Object.assign(record, result.data);
             saveState(`Updated cellReport in Supabase`);
           }
+        } else if (mode === "delete") {
+          if (cellSb.deleteCellReport) result = await cellSb.deleteCellReport(record.id);
         }
       } else if (repo) {
         const payload = {
@@ -20255,6 +20294,7 @@ async function dualWriteCellMinistryRecord(modalType, mode, record) {
         };
         if (mode === "create" && repo.createCellReport) result = await repo.createCellReport(payload);
         else if (mode === "update" && repo.updateCellReport) result = await repo.updateCellReport(record.id, payload);
+        else if (mode === "delete" && repo.deleteCellReport) result = await repo.deleteCellReport(record.id);
       }
     }
     if (result && result.ok === false) {
@@ -20583,13 +20623,97 @@ function cellReportReviewActions(report) {
   if (/pastoral|visita/i.test(String(report.cell_health_status || "")) || Number(report.needs_pastoral_visit_count || 0) > 0) {
     actions.push(["pastoral", report.id, lang === "pt" ? "Encaminhar Visita Pastoral" : "Forward Pastoral Visit"]);
   }
+  // Delete action
+  actions.push(["delete", report.id, lang === "pt" ? "Apagar" : "Delete"]);
+
   return `<div class="action-buttons cell-report-actions">${actions.map(([action, id, label]) => {
     const tone =
       action === "approve" || action === "validate" ? "action-btn--approve" :
-      action === "reject" ? "action-btn--reject" :
+      action === "reject" || action === "delete" ? "action-btn--reject" :
       action === "finance" ? "action-btn--primary" : "";
-    return `<button type="button" class="action-btn ${tone}" data-cell-report-action="${action}" data-cell-report-id="${escapeAttr(id)}">${label}</button>`;
+    const icon = action === "delete" ? `<i class="bi bi-trash3 me-1"></i>` : "";
+    return `<button type="button" class="action-btn ${tone}" data-cell-report-action="${action}" data-cell-report-id="${escapeAttr(id)}">${icon}${label}</button>`;
   }).join("")}</div>`;
+}
+
+const cellReportsPageState = {
+  view: (function () {
+    try {
+      const v = localStorage.getItem("ce_cell_reports_view_mode");
+      return v === "cards" ? "card" : (v || "table");
+    } catch (_) {
+      return "table";
+    }
+  })()
+};
+
+function renderCellReportCard(item) {
+  const offering = Number(item.oferta || item.offering_amount || 0);
+  const financeStatus = item.finance_review_status || (offering > 0 ? "Pending Finance Review" : "Not Applicable");
+  const statusLabel = cellReportStatusLabel(item);
+  const cName = churchName(item.church_id || item.igreja || item.church_name);
+  const gName = cellGroupName(item.cell_group_id || item.group_name) || item.cell_group_name || item.group_name || "—";
+  const clName = item.celula || item.cell_name || "—";
+  const ldrName = item.nome_do_lider || item.leader_name || "—";
+  const weekLabel = item.semana || item.report_week || "—";
+  const dateLabel = item.meeting_date || item.data_fim || item.created_at?.slice?.(0, 10) || "—";
+
+  const badges = [
+    badge(statusLabel),
+    cellReportSourceBadge(item)
+  ];
+  if (item.possible_duplicate) badges.push(badge(lang === "pt" ? "Duplicado?" : "Duplicate?"));
+  if (item.needs_review) badges.push(badge(L("reportNeedsReview")));
+
+  const pills = [
+    `<strong>ATT:</strong> ${item.att ?? item.attendance_count ?? 0}`,
+    `<strong>FT:</strong> ${item.ft ?? item.first_timers_count ?? 0}`,
+    `<strong>NC:</strong> ${item.nc ?? item.new_converts_count ?? 0}`,
+    `<strong>${L("cellOffering") || "Oferta"}:</strong> ${money(offering)} <span class="badge-soft badge-finance-pending" style="font-size:0.75em">${escapeAttr(financeStatus)}</span>`
+  ];
+
+  const meta = [
+    [L("week") || "Semana", weekLabel, "bi-calendar-week"],
+    [L("date") || "Data", dateLabel, "bi-calendar-date"],
+    [L("church") || "Igreja", cName, "bi-building"],
+    [L("cellGroup") || "Grupo", gName, "bi-collection"],
+    [L("cellLeader") || "Líder", ldrName, "bi-person-badge"],
+    [L("cellStatus") || "Estado da Célula", item.cell_health_status || "Saudável", "bi-heart-pulse"]
+  ];
+  if (item.observacoes) {
+    meta.push([L("notes") || "Observações", escapeAttr(item.observacoes), "bi-chat-text"]);
+  }
+
+  const actions = cellReportReviewActions(item);
+
+  if (typeof DataCard === "function") {
+    return DataCard({
+      title: clName,
+      subtitle: `${weekLabel} · ${dateLabel}`,
+      badges,
+      meta,
+      pills,
+      actions,
+      className: "cell-report-card"
+    });
+  }
+
+  return `
+    <article class="data-card record-card light-surface cell-report-card h-100">
+      <div class="data-card-head">
+        <div class="data-card-titles">
+          <span class="eyebrow">${escapeAttr(weekLabel)} · ${escapeAttr(dateLabel)}</span>
+          <h3 class="data-card-title">${escapeAttr(clName)}</h3>
+        </div>
+        <div class="data-card-badges">${badges.join("")}</div>
+      </div>
+      <div class="data-card-meta">
+        ${meta.map(([label, value, icon]) => `<div class="data-card-meta-row"><span class="chart-label">${icon ? `<i class="bi ${icon}"></i> ` : ""}${label}</span><strong>${value ?? "-"}</strong></div>`).join("")}
+      </div>
+      <div class="data-card-pills mt-2">${pills.map((pill) => `<span class="data-card-pill">${pill}</span>`).join("")}</div>
+      <footer class="data-card-foot mt-3">${actions}</footer>
+    </article>
+  `;
 }
 
 function cellReportSourceBadge(item) {
@@ -21517,6 +21641,26 @@ function renderCellMinistry(activeTab = "alecOverview") {
   } else if (activeTab === "actionPlan") {
     bodyHtml = `<div class="row g-4"><div class="col-12">${modulePanel("cellActionPlan", L("actionPlan"), null, [L("cell"), L("leaderName"), L("recommendedActions"), L("actionOwner"), L("dueDate"), L("status"), L("actions")], actionPlans.map((item) => [item.cell_name, item.leader_name, item.action, item.owner, item.due_date, badge(item.status), actionButtons([["view", "cellActionPlan", item.id, L("view")], ["edit", "cellActionPlan", item.id, L("edit")]])]), true)}</div></div>`;
   } else if (activeTab === "weeklyReport") {
+    const cellReportsViewToggle = `
+      <div class="view-toggle light-surface" role="group" aria-label="${cleanDisplayText(L("viewMode"))}">
+        <button type="button" class="view-toggle-btn ${cellReportsPageState.view !== "card" && cellReportsPageState.view !== "cards" ? "active" : ""}" data-view-mode="table">
+          <i class="bi bi-table"></i>
+          <span>${cleanDisplayText(L("tableView") || "Tabela")}</span>
+        </button>
+        <button type="button" class="view-toggle-btn ${cellReportsPageState.view === "card" || cellReportsPageState.view === "cards" ? "active" : ""}" data-view-mode="card">
+          <i class="bi bi-grid-fill"></i>
+          <span>${cleanDisplayText(lang === "pt" ? "Modo Card" : "Card View")}</span>
+        </button>
+      </div>
+    `;
+    const cellReportCardsHtml = cellReports.length
+      ? `<div class="row g-4 mt-1">${cellReports.map((report) => `
+          <div class="col-12 col-md-6 col-xl-4"${cellReportRowAttrs([report])[0] || ""}>
+            ${renderCellReportCard(report)}
+          </div>
+        `).join("")}</div>`
+      : `<div class="col-12 text-center p-4 text-secondary">${lang === "pt" ? "Nenhum relatório submetido." : "No submitted reports."}</div>`;
+
     bodyHtml = `
       <div class="row g-3 mb-4">
         ${metric("bi-calendar-week", L("weeklyCellReport"), cellReports.length, L("reportWeek"))}
@@ -21524,7 +21668,7 @@ function renderCellMinistry(activeTab = "alecOverview") {
         ${metric("bi-person-heart", L("totalFirstTime"), totalFt, L("firstTimers"))}
         ${metric("bi-stars", L("totalNewConverts"), totalNc, L("newConverts"))}
       </div>
-      <div class="row g-4"><div class="col-12">${modulePanel("cellReport", L("weeklyCellReport"), null, cellReportHeaders(), cellReportRows(cellReports), true, false, { rowAttrs: cellReportRowAttrs(cellReports) })}</div></div>`;
+      <div class="row g-4"><div class="col-12">${modulePanel("cellReport", L("weeklyCellReport"), null, cellReportHeaders(), cellReportRows(cellReports), true, false, { rowAttrs: cellReportRowAttrs(cellReports), view: cellReportsPageState.view, viewToggle: cellReportsViewToggle, cardsHtml: cellReportCardsHtml })}</div></div>`;
   } else if (activeTab === "consolidation") {
     bodyHtml = `
       <div class="row g-3 mb-4">
@@ -21540,11 +21684,31 @@ function renderCellMinistry(activeTab = "alecOverview") {
       </div>
       ${moduleSection(L("rptCellTitle"), L("rptCellHint"), "bi-graph-up", "", renderDomainReportsPanel("cell", { module: "cell", showTitle: false }))}`;
   } else {
+    const cellReportsViewToggle = `
+      <div class="view-toggle light-surface" role="group" aria-label="${cleanDisplayText(L("viewMode"))}">
+        <button type="button" class="view-toggle-btn ${cellReportsPageState.view !== "card" && cellReportsPageState.view !== "cards" ? "active" : ""}" data-view-mode="table">
+          <i class="bi bi-table"></i>
+          <span>${cleanDisplayText(L("tableView") || "Tabela")}</span>
+        </button>
+        <button type="button" class="view-toggle-btn ${cellReportsPageState.view === "card" || cellReportsPageState.view === "cards" ? "active" : ""}" data-view-mode="card">
+          <i class="bi bi-grid-fill"></i>
+          <span>${cleanDisplayText(lang === "pt" ? "Modo Card" : "Card View")}</span>
+        </button>
+      </div>
+    `;
+    const cellReportCardsHtml = cellReports.length
+      ? `<div class="row g-4 mt-1">${cellReports.map((report) => `
+          <div class="col-12 col-md-6 col-xl-4"${cellReportRowAttrs([report])[0] || ""}>
+            ${renderCellReportCard(report)}
+          </div>
+        `).join("")}</div>`
+      : `<div class="col-12 text-center p-4 text-secondary">${lang === "pt" ? "Nenhum relatório submetido." : "No submitted reports."}</div>`;
+
     const panels = {
       alecRegistration: () => modulePanel("alecRegistration", L("alecRegistration"), "alecRegistration", [L("fullName"), L("contact"), L("church"), L("cell"), L("cellLeaderName"), L("didFoundation"), L("isLeader"), L("status"), L("actions")], alecRegistrations.map((item) => [item.nome_completo, item.contacto, churchName(item.igreja), item.celula, item.nome_do_lider_de_celula, yesNo(item.fez_escola_de_fundacao), yesNo(item.e_lider), badge(item.estado), backendActions("alecRegistration", item.id)]), true),
       alecScores: () => modulePanel("alecScore", L("alecScores"), "alecScore", [L("fullName"), L("church"), L("cell"), L("phase1Average"), L("phase2Average"), L("finalAverage"), L("finished"), L("status"), L("progress"), L("actions")], alecScores.map((item) => [item.nome_completo, churchName(item.igreja), item.celula, alecPhaseAverage(item, 1), alecPhaseAverage(item, 2), alecFinalAverage(item), yesNo(item.terminou), badge(item.estado), alecProgress(item), backendActions("alecScore", item.id)]), true),
       churchReports: () => renderChurchReportsAnalyticalView(),
-      receivedReports: () => modulePanel("cellReport", L("receivedReports"), null, cellReportHeaders(), cellReportRows(cellReports), true, false, { rowAttrs: cellReportRowAttrs(cellReports) }),
+      receivedReports: () => modulePanel("cellReport", L("receivedReports"), null, cellReportHeaders(), cellReportRows(cellReports), true, false, { rowAttrs: cellReportRowAttrs(cellReports), view: cellReportsPageState.view, viewToggle: cellReportsViewToggle, cardsHtml: cellReportCardsHtml }),
       cellEvaluation: () => modulePanel("cellEvaluation", L("cellEvaluation"), "cellEvaluation", [L("reports"), L("evaluator"), L("evaluationDate"), L("classification"), L("needsFollowup"), L("recommendedAction"), L("status"), L("actions")], evaluations.map((item) => [item.report_id, item.avaliador, item.data_da_avaliacao, badge(item.classificacao), yesNo(item.precisa_followup), item.acao_recomendada, badge(item.estado), backendActions("cellEvaluation", item.id)]), true),
       cellLeaders: () => modulePanel("cellLeader", L("cellLeaders"), "cellLeader", [L("fullName"), L("contact"), L("church"), L("cell"), L("actualLeader"), L("cameFromAlec"), L("alecFinished"), L("supervisor"), L("status"), L("actions")], leaders.map((item) => [item.nome_completo, item.contacto, churchName(item.igreja), item.celula, yesNo(item.e_lider_actual), yesNo(item.veio_do_alec), yesNo(item.alec_concluido), item.supervisor, badge(item.estado), backendActions("cellLeader", item.id)]), true),
       finalValidation: () => modulePanel("finalValidation", L("finalValidation"), "finalValidation", [L("reports"), L("validatedBy"), L("date"), L("decision"), L("finalStatus"), L("actions")], validations.map((item) => [item.report_id, item.validado_por, item.data_validacao, badge(item.decisao), badge(item.estado_final), backendActions("finalValidation", item.id)]), true)
@@ -22335,6 +22499,10 @@ function renderMinistryMaterials() {
 function modulePanel(type, title, modalType, headers, rows, showFilters = false, materialFilters = false, options = {}) {
   const tableOptions = options.tableOptions || {};
   if (Array.isArray(options.rowAttrs)) tableOptions.rowAttrs = options.rowAttrs;
+  const isCardView = options.view === "card" || options.view === "cards";
+  const viewToggleHtml = options.viewToggle || "";
+  const cardsHtml = options.cardsHtml || "";
+  const filterOptions = { viewToggle: viewToggleHtml, ...(options.filterOptions || {}) };
   return `
     <article id="panel-${type}" class="panel glass-panel h-100">
       <div class="panel-head">
@@ -22344,20 +22512,21 @@ function modulePanel(type, title, modalType, headers, rows, showFilters = false,
           <button type="button" class="btn btn-sm btn-outline-cyan action-secondary" data-action="export" data-type="${type}" data-id="${type}"><i class="bi bi-download me-1"></i>${L("export")}</button>
         </div>
       </div>
-      ${showFilters ? advancedFilterBar(materialFilters) : ""}
-      ${dataTable(headers, rows, tableOptions)}
+      ${showFilters ? advancedFilterBar(materialFilters, filterOptions) : ""}
+      ${isCardView ? (cardsHtml || `<div class="p-4 text-center text-secondary">${L("noResultsFound") || "Sem registos"}</div>`) : dataTable(headers, rows, tableOptions)}
     </article>
   `;
 }
 
-function advancedFilterBar(materialFilters = false) {
+function advancedFilterBar(materialFilters = false, extraOptions = {}) {
   const materialFields = materialFilters
     ? `<select class="form-select"><option value="">${L("filterMaterial")}</option>${state.ministryMaterials.catalogue.map((item) => `<option>${item.titulo_do_material}</option>`).join("")}</select><select class="form-select"><option value="">${L("filterPaymentMethod")}</option>${paymentMethods.map((item) => `<option>${item}</option>`).join("")}</select>`
     : "";
   return filterBar({
     month: false,
     extraFields: `<input class="form-control" type="week" aria-label="${L("filterWeek")}">${materialFields}`,
-    className: "advanced-filter mb-3"
+    className: "advanced-filter mb-3",
+    ...extraOptions
   });
 }
 
@@ -30245,6 +30414,12 @@ document.addEventListener("click", async (event) => {
       churchPageState.view = mode;
       try { localStorage.setItem(CHURCH_VIEW_KEY, mode); } catch (_) {}
       renderChurches();
+    } else if (activeRoute === "cellWeeklyReport" || activeRoute === "cellReceivedReports" || (typeof isCellRoute === "function" && isCellRoute(activeRoute))) {
+      cellReportsPageState.view = mode === "cards" ? "card" : mode;
+      try { localStorage.setItem("ce_cell_reports_view_mode", cellReportsPageState.view); } catch (_) {}
+      if (activeRoute === "cellWeeklyReport") renderCellMinistry("weeklyReport");
+      else if (activeRoute === "cellReceivedReports") renderCellMinistry("receivedReports");
+      else setRoute(activeRoute);
     }
     return;
   }
