@@ -68,7 +68,7 @@ export function normalizeMemberRegistrationCandidate(
   return {
     ...input,
     id: idVal,
-    candidate_number: cleanString(input.candidate_number) || `MC-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`,
+    candidate_number: cleanString(input.candidate_number) || `MC-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}${Math.floor(100 + Math.random() * 900)}`,
     full_name: fullName,
     first_name: first,
     last_name: last,

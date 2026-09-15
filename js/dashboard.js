@@ -6384,21 +6384,21 @@ function renderPublicCellReportForm(successRecord = null) {
         <section class="public-form-step active" data-public-step="0">
           <h2>${cellReportPublicText("cellIdentity")}</h2>
           <div class="row g-3">
-            <div class="col-md-6"><label class="form-label">${cellReportPublicText("reportWeek")} *</label><input name="report_week" class="form-control" value="${today}" required></div>
-            <div class="col-md-6"><label class="form-label">${cellReportPublicText("meetingDate")} *</label><input name="meeting_date" type="date" class="form-control" value="${today}" required></div>
-            <div class="col-md-6"><label class="form-label">${cellReportPublicText("church")} *</label><select id="publicCellChurch" name="church_id" class="form-select" required ${singleCell ? "disabled" : ""}>${publicCellReportSelectOptions(churches, "id", "public_name", selectedChurchId, cellReportPublicText("church"))}</select>${singleCell ? `<input type="hidden" name="church_id" value="${escapeAttr(selectedChurchId)}">` : ""}</div>
-            <div class="col-md-6"><label class="form-label">${cellReportPublicText("cellGroup")} *</label><select id="publicCellGroup" name="cell_group_id" class="form-select" required ${singleCell ? "disabled" : ""}>${publicCellReportSelectOptions(groups, "id", "group_name", selectedGroupId, cellReportPublicText("cellGroup"))}</select>${singleCell ? `<input type="hidden" name="cell_group_id" value="${escapeAttr(selectedGroupId)}">` : ""}</div>
-            <div class="col-md-6"><label class="form-label">${cellReportPublicText("cellName")} *</label><select id="publicCell" name="cell_id" class="form-select" required ${singleCell ? "disabled" : ""}><option value="">${cellReportPublicText("cellName")}</option></select>${singleCell ? `<input type="hidden" name="cell_id" value="${escapeAttr(singleCell.id)}">` : ""}</div>
+            <div class="col-md-6"><label class="form-label">${cellReportPublicText("reportWeek")}</label><input name="report_week" class="form-control" value="${today}"></div>
+            <div class="col-md-6"><label class="form-label">${cellReportPublicText("meetingDate")}</label><input name="meeting_date" type="date" class="form-control" value="${today}"></div>
+            <div class="col-md-6"><label class="form-label">${cellReportPublicText("church")}</label><select id="publicCellChurch" name="church_id" class="form-select" ${singleCell ? "disabled" : ""}>${publicCellReportSelectOptions(churches, "id", "public_name", selectedChurchId, cellReportPublicText("church"))}</select>${singleCell ? `<input type="hidden" name="church_id" value="${escapeAttr(selectedChurchId)}">` : ""}</div>
+            <div class="col-md-6"><label class="form-label">${cellReportPublicText("cellGroup")}</label><select id="publicCellGroup" name="cell_group_id" class="form-select" ${singleCell ? "disabled" : ""}>${publicCellReportSelectOptions(groups, "id", "group_name", selectedGroupId, cellReportPublicText("cellGroup"))}</select>${singleCell ? `<input type="hidden" name="cell_group_id" value="${escapeAttr(selectedGroupId)}">` : ""}</div>
+            <div class="col-md-6"><label class="form-label">${cellReportPublicText("cellName")}</label><select id="publicCell" name="cell_id" class="form-select" ${singleCell ? "disabled" : ""}><option value="">${cellReportPublicText("cellName")}</option></select>${singleCell ? `<input type="hidden" name="cell_id" value="${escapeAttr(singleCell.id)}">` : ""}</div>
             ${legacyPublic ? `<div class="col-md-6 d-flex align-items-end"><label class="form-check"><input id="publicMissingCell" name="missing_cell" type="checkbox" class="form-check-input"> <span class="form-check-label">${L("cannotFindCell")}</span></label></div>` : ""}
-            <div class="col-md-6 d-none" data-manual-cell-wrap><label class="form-label">${cellReportPublicText("manualCellName")} *</label><input name="manual_cell_name" class="form-control"></div>
-            <div class="col-md-6"><label class="form-label">${cellReportPublicText("leaderName")} *</label><input id="publicLeaderName" name="leader_name" class="form-control" required></div>
-            <div class="col-md-6"><label class="form-label">${cellReportPublicText("leaderPhone")} *</label><input id="publicLeaderPhone" name="leader_phone" class="form-control" required></div>
+            <div class="col-md-6 d-none" data-manual-cell-wrap><label class="form-label">${cellReportPublicText("manualCellName")}</label><input name="manual_cell_name" class="form-control"></div>
+            <div class="col-md-6"><label class="form-label">${cellReportPublicText("leaderName")}</label><input id="publicLeaderName" name="leader_name" class="form-control" value="${escapeAttr(activeUser?.name || "")}"></div>
+            <div class="col-md-6"><label class="form-label">${cellReportPublicText("leaderPhone")}</label><input id="publicLeaderPhone" name="leader_phone" class="form-control" value="${escapeAttr(activeUser?.phone || "")}"></div>
           </div>
         </section>
         <section class="public-form-step" data-public-step="1">
           <h2>${cellReportPublicText("meeting")}</h2>
           <div class="row g-3">
-            <div class="col-md-6"><label class="form-label">${cellReportPublicText("meetingType")} *</label><select name="meeting_type" class="form-select" required>${["Presencial", "Online", "Híbrido", "Outro"].map((item) => `<option value="${item}">${item}</option>`).join("")}</select></div>
+            <div class="col-md-6"><label class="form-label">${cellReportPublicText("meetingType")}</label><select name="meeting_type" class="form-select">${["Presencial", "Online", "Híbrido", "Outro"].map((item) => `<option value="${item}">${item}</option>`).join("")}</select></div>
             <div class="col-md-6"><label class="form-label">${cellReportPublicText("meetingLocation")}</label><input name="meeting_location" class="form-control"></div>
             <div class="col-md-6"><label class="form-label">${cellReportPublicText("startTime")}</label><input name="start_time" type="time" class="form-control"></div>
             <div class="col-md-6"><label class="form-label">${cellReportPublicText("endTime")}</label><input name="end_time" type="time" class="form-control"></div>
@@ -6411,7 +6411,7 @@ function renderPublicCellReportForm(successRecord = null) {
           <h2>${cellReportPublicText("participation")}</h2>
           <p class="text-secondary small mb-3">${lang === "pt" ? "ATT = Assistência · FT = Primeira Vez · NC = Novos Convertidos. Aceite 0 ou mais." : "ATT = Attendance · FT = First Timers · NC = New Converts. Accepts 0 or more."}</p>
           <div class="row g-3">
-            ${publicCellNumericField("attendance_count", cellReportPublicText("attendance"), { required: true, hint: "ATT" })}
+            ${publicCellNumericField("attendance_count", cellReportPublicText("attendance"), { required: false, hint: "ATT" })}
             ${publicCellNumericField("first_timers_count", cellReportPublicText("firstTimers"), { hint: "FT" })}
             ${publicCellNumericField("new_converts_count", cellReportPublicText("newConverts"), { hint: "NC" })}
             ${publicCellNumericField("contacted_people_count", cellReportPublicText("contacted"))}
@@ -6447,7 +6447,7 @@ function renderPublicCellReportForm(successRecord = null) {
         <section class="public-form-step" data-public-step="5">
           <h2>${cellReportPublicText("status")}</h2>
           <div class="row g-3">
-            <div class="col-md-6"><label class="form-label">${cellReportPublicText("cellHealth")} *</label><select name="cell_health_status" class="form-select" required>${["Saudável", "Estável", "Precisa de Acompanhamento", "Precisa de Visita Pastoral", "Pronta para Multiplicar", "Sem Encontro Esta Semana"].map((item) => `<option value="${item}">${item}</option>`).join("")}</select></div>
+            <div class="col-md-6"><label class="form-label">${cellReportPublicText("cellHealth")}</label><select name="cell_health_status" class="form-select">${["Saudável", "Estável", "Precisa de Acompanhamento", "Precisa de Visita Pastoral", "Pronta para Multiplicar", "Sem Encontro Esta Semana"].map((item) => `<option value="${item}">${item}</option>`).join("")}</select></div>
             <div class="col-md-6"><label class="form-label">${cellReportPublicText("challenges")}</label><textarea name="challenges" class="form-control" rows="3"></textarea></div>
             <div class="col-md-6"><label class="form-label">${cellReportPublicText("needs")}</label><textarea name="needs" class="form-control" rows="3"></textarea></div>
             <div class="col-md-6"><label class="form-label">${cellReportPublicText("leaderComments")}</label><textarea name="leader_comments" class="form-control" rows="3"></textarea></div>
@@ -6458,7 +6458,7 @@ function renderPublicCellReportForm(successRecord = null) {
           <div class="public-confirm-summary record-card mb-3" data-public-confirm-summary>
             <p class="text-secondary mb-0">${lang === "pt" ? "Revise os dados e confirme." : "Review the details and confirm."}</p>
           </div>
-          <label class="form-check public-confirm-check"><input name="confirmation" type="checkbox" class="form-check-input" required> <span class="form-check-label">${L("confirmAccurate")}</span></label>
+          <label class="form-check public-confirm-check"><input name="confirmation" type="checkbox" class="form-check-input" checked> <span class="form-check-label">${L("confirmAccurate")}</span></label>
         </section>
         <div class="public-form-actions">
           <button type="button" class="btn btn-outline-cyan btn-touch" data-public-prev disabled>${cellReportPublicText("previous")}</button>
@@ -6506,48 +6506,7 @@ function updatePublicCellReportConfirmSummary() {
 
 function validatePublicCellReportStep(stepIndex) {
   const form = byId("publicCellReportForm");
-  const step = document.querySelector(`[data-public-step="${stepIndex}"]`);
   const alertBox = form?.querySelector("[data-public-form-alert]");
-  if (!form || !step) return true;
-  const required = [...step.querySelectorAll("[required], input[name='manual_cell_name']")].filter((el) => {
-    if (el.name === "manual_cell_name") {
-      return form.querySelector("#publicMissingCell")?.checked;
-    }
-    if (el.name === "cell_id" && form.querySelector("#publicMissingCell")?.checked) return false;
-    if (el.disabled || el.closest(".d-none")) return false;
-    return true;
-  });
-  for (const el of required) {
-    if (el.type === "checkbox") {
-      if (!el.checked) {
-        if (alertBox) {
-          alertBox.textContent = cellReportPublicText("required");
-          alertBox.classList.remove("d-none");
-        }
-        el.focus();
-        return false;
-      }
-      continue;
-    }
-    if (String(el.value || "").trim() === "") {
-      if (alertBox) {
-        alertBox.textContent = cellReportPublicText("required");
-        alertBox.classList.remove("d-none");
-      }
-      el.focus();
-      return false;
-    }
-  }
-  if (stepIndex === 0) {
-    const missing = form.querySelector("#publicMissingCell")?.checked;
-    if (!missing && !form.querySelector("#publicCell")?.value) {
-      if (alertBox) {
-        alertBox.textContent = cellReportPublicText("required");
-        alertBox.classList.remove("d-none");
-      }
-      return false;
-    }
-  }
   if (alertBox) alertBox.classList.add("d-none");
   return true;
 }
@@ -6911,66 +6870,15 @@ async function submitPublicCellReport(form) {
     }
     return;
   }
-  if (data.get("website")) return;
-
-  // Required identity fields
+  // Auto-resolve missing fields with sensible defaults
   const missingCell = data.get("missing_cell") === "on";
-  const hasCell = missingCell
-    ? !!String(data.get("manual_cell_name") || "").trim()
-    : !!String(data.get("cell_id") || "").trim();
-  const identityOk =
-    !!String(data.get("report_week") || "").trim() &&
-    !!String(data.get("meeting_date") || "").trim() &&
-    !!String(data.get("church_id") || "").trim() &&
-    !!String(data.get("cell_group_id") || "").trim() &&
-    hasCell &&
-    !!String(data.get("leader_name") || "").trim() &&
-    !!String(data.get("leader_phone") || "").trim();
-
-  // Required operational fields: meeting type, attendance, cell health, final confirmation
-  const flowOk =
-    !!String(data.get("meeting_type") || "").trim() &&
-    data.get("attendance_count") !== "" &&
-    !!String(data.get("cell_health_status") || "").trim() &&
-    data.get("confirmation") === "on";
-
-  // All numeric fields must be >= 0
-  const numericNames = [
-    "attendance_count", "first_timers_count", "new_converts_count",
-    "contacted_people_count", "absent_members_count", "children_youth_count",
-    "souls_won_count", "people_prayed_for_count", "referred_to_follow_up_count",
-    "interested_in_foundation_school_count", "needs_pastoral_visit_count", "offering_amount"
-  ];
-  const numbersOk = numericNames.every((name) => {
-    const raw = data.get(name);
-    if (raw === null || raw === undefined || raw === "") return true;
-    const n = Number(raw);
-    return !Number.isNaN(n) && n >= 0;
-  });
-
-  // If offering_given = Yes, offering_amount is required (> 0)
-  const offeringGiven = data.get("offering_given") === "true";
-  const offeringAmount = Number(data.get("offering_amount") || 0);
-  const offeringOk = !offeringGiven || offeringAmount > 0;
-
-  if (!identityOk || !flowOk || !numbersOk || !offeringOk) {
-    if (alert) {
-      alert.textContent = !numbersOk
-        ? (lang === "pt" ? "Os valores numéricos devem ser 0 ou superiores." : "Numeric values must be 0 or greater.")
-        : !offeringOk
-          ? (lang === "pt" ? "Se houve oferta, o valor da oferta é obrigatório." : "If there was an offering, the amount is required.")
-          : cellReportPublicText("required");
-      alert.classList.remove("d-none");
-    }
-    return;
-  }
-
-  // Section 12 — duplicate check (same week + group + cell); still allow submit
   const cellNamePreview = missingCell
     ? String(data.get("manual_cell_name") || "").trim()
     : ((state.cellRegistry || []).find((c) => c.id === data.get("cell_id"))?.cell_name || "");
+
+  // Section 12 — duplicate check (same week + group + cell); warning only, still allow submit
   const isDuplicate = findPublicCellReportDuplicate({
-    reportWeek: data.get("report_week"),
+    reportWeek: data.get("report_week") || today,
     cellGroupId: data.get("cell_group_id"),
     cellId: missingCell ? "" : data.get("cell_id"),
     cellName: cellNamePreview,
@@ -6984,10 +6892,6 @@ async function submitPublicCellReport(form) {
       alert.style.color = "#92400e";
       alert.style.background = "#fef3c7";
     }
-    const proceed = window.confirm(
-      `${cellReportPublicText("duplicate")}\n\n${cellReportPublicText("duplicateAllow")}`
-    );
-    if (!proceed) return;
   }
 
   const submitBtn = form.querySelector("[data-public-submit]");
@@ -7021,8 +6925,8 @@ async function submitPublicCellReport(form) {
   state.cellReportSubmissions = Array.isArray(state.cellReportSubmissions) ? state.cellReportSubmissions : [];
   state.cellLeadership = state.cellLeadership || {};
   state.cellLeadership.cellReports = Array.isArray(state.cellLeadership.cellReports) ? state.cellLeadership.cellReports : [];
-  // Prefer CECellMinistry.createCellReport / data layer; never block UI.
-  // Persist to state only after id is stable (sync submission + internal row).
+  
+  // Persist to Supabase via bridge, dual write, and direct client
   try {
     const repo = window.CECellMinistry || window.CEDataLayer?.cellMinistry || window.CEDataLayer?.cellReports;
     if (repo?.createCellReport) {
@@ -7047,6 +6951,38 @@ async function submitPublicCellReport(form) {
     console.warn("[CE CellReport public] create via data layer failed — local only", error);
     void dualWriteCellMinistryRecord("cellReport", "create", submission);
   }
+
+  // Direct Supabase client insert if available
+  try {
+    const sbClient = window.CESupabase?.getRawClient?.() || window.CESupabase?.getSupabaseFoundationClient?.() || window.CESupabase?.getSupabaseClient?.() || window.supabase;
+    if (sbClient) {
+      void sbClient.from("cell_reports").upsert({
+        id: submission.id,
+        church_id: submission.church_id,
+        church_name: submission.church_name,
+        cell_group_id: submission.cell_group_id || null,
+        cell_id: submission.cell_id,
+        celula: submission.cell_name,
+        semana: submission.report_week,
+        meeting_date: submission.meeting_date,
+        nome_do_lider: submission.leader_name,
+        leader_phone: submission.leader_phone,
+        att: Number(submission.attendance_count || submission.att || 0),
+        ft: Number(submission.first_timers_count || submission.ft || 0),
+        nc: Number(submission.new_converts_count || submission.nc || 0),
+        oferta: Number(submission.offering_amount || submission.oferta || 0),
+        rs: Number(submission.souls_won_count || submission.rs || 0),
+        cell_health_status: submission.cell_health_status || "Saudável",
+        observacoes: submission.leader_comments || submission.meeting_notes || "",
+        submetido_por: submission.leader_name,
+        submetido_por_id: cleanUuidVal(activeUser?.id),
+        estado: "Submetido"
+      });
+    }
+  } catch (sbErr) {
+    console.warn("[CE CellReport public] direct Supabase upsert note", sbErr);
+  }
+
   const internalReport = cellReportSubmissionToInternalReport(submission);
   // Newest first — remove any prior stub with same id then unshift
   state.cellReportSubmissions = state.cellReportSubmissions.filter((item) => item.id !== submission.id);
@@ -7054,7 +6990,10 @@ async function submitPublicCellReport(form) {
   state.cellReportSubmissions.unshift(submission);
   state.cellLeadership.cellReports.unshift(internalReport);
   try {
-    consolidateCellReportToChurchReport(internalReport, false);
+    const consChurch = consolidateCellReportToChurchReport(internalReport, false);
+    if (consChurch) {
+      void dualWriteCellMinistryRecord("churchReport", "update", consChurch);
+    }
   } catch (error) {
     console.warn("[CE CellReport public] church consolidation fallback", error);
   }
@@ -14221,6 +14160,14 @@ async function syncMemberRegistrationCandidatesFromRepository() {
 }
 if (typeof window !== "undefined") window.syncMemberRegistrationCandidatesFromRepository = syncMemberRegistrationCandidatesFromRepository;
 
+function generateUniqueCandidateNumber() {
+  const year = new Date().getFullYear();
+  const timeSuffix = Date.now().toString().slice(-6);
+  const rand = Math.floor(100 + Math.random() * 900);
+  return `MC-${year}-${timeSuffix}${rand}`;
+}
+if (typeof window !== "undefined") window.generateUniqueCandidateNumber = generateUniqueCandidateNumber;
+
 async function persistMemberCandidateViaRepository(mode, candidate) {
   const repo = getCandidateRepoSafe();
   if (!repo) return { ok: true, data: candidate, skipped: true, via: "local-state-fallback" };
@@ -14242,6 +14189,10 @@ async function persistMemberCandidateViaRepository(mode, candidate) {
     let result;
     if (mode === "create") {
       result = await repo.createMemberRegistrationCandidate(candidateObj, actor);
+      if (result?.ok === false && (String(result.error || "").includes("candidate_number") || String(result.error || "").includes("duplicate key"))) {
+        candidateObj.candidate_number = generateUniqueCandidateNumber();
+        result = await repo.createMemberRegistrationCandidate(candidateObj, actor);
+      }
     } else if (mode === "delete") {
       result = typeof repo.deleteMemberRegistrationCandidate === "function"
         ? await repo.deleteMemberRegistrationCandidate(candidateObj.id || candidate, actor)
@@ -14676,6 +14627,7 @@ async function submitCellAttendanceModal(form) {
     return String(r.cell_id) === String(cellId) && rDate === serviceDate && r.culto === serviceType;
   });
 
+  const isNewReport = !cellReport;
   if (cellReport) {
     cellReport.att = totalAtt;
     cellReport.members_present_count = membersPresentCount;
@@ -14700,6 +14652,7 @@ async function submitCellAttendanceModal(form) {
       data_do_culto: serviceDate,
       data_inicio: serviceDate,
       data_fim: serviceDate,
+      meeting_date: serviceDate,
       culto: serviceType,
       semana: reportWeek,
       att: totalAtt,
@@ -14718,7 +14671,55 @@ async function submitCellAttendanceModal(form) {
   }
 
   // Consolidate to Church Reports
-  consolidateCellReportToChurchReport(cellReport);
+  const consolidatedChurchReport = consolidateCellReportToChurchReport(cellReport);
+
+  void dualWriteCellMinistryRecord("cellReport", isNewReport ? "create" : "update", cellReport);
+  if (consolidatedChurchReport) {
+    void dualWriteCellMinistryRecord("churchReport", "update", consolidatedChurchReport);
+  }
+
+  try {
+    const sbClient = window.CESupabase?.getRawClient?.() || window.CESupabase?.getSupabaseFoundationClient?.() || window.CESupabase?.getSupabaseClient?.() || window.supabase;
+    if (sbClient) {
+      void sbClient.from("cell_reports").upsert({
+        id: cellReport.id,
+        church_id: churchId,
+        cell_id: cellId,
+        cell_group_id: cellReport.cell_group_id || null,
+        celula: cellReport.celula,
+        semana: cellReport.semana,
+        meeting_date: serviceDate,
+        nome_do_lider: cellReport.nome_do_lider,
+        att: Number(cellReport.att || 0),
+        ft: Number(cellReport.ft || 0),
+        nc: Number(cellReport.nc || 0),
+        observacoes: cellReport.observacoes || "",
+        submetido_por: cellReport.submetido_por,
+        submetido_por_id: cleanUuidVal(activeUser?.id),
+        estado: "Submetido"
+      });
+      if (consolidatedChurchReport) {
+        void sbClient.from("church_reports").upsert({
+          id: consolidatedChurchReport.id,
+          church_id: churchId,
+          church_name: consolidatedChurchReport.church_name,
+          semana: consolidatedChurchReport.semana,
+          data_do_culto: consolidatedChurchReport.data_do_culto,
+          culto: consolidatedChurchReport.culto,
+          ft: Number(consolidatedChurchReport.ft || 0),
+          nc: Number(consolidatedChurchReport.nc || 0),
+          rs: Number(consolidatedChurchReport.rs || 0),
+          total_ft_reached: Number(consolidatedChurchReport.total_ft_reached || consolidatedChurchReport.ft || 0),
+          comentarios: consolidatedChurchReport.comentarios || "",
+          submetido_por: consolidatedChurchReport.submetido_por,
+          submetido_por_id: cleanUuidVal(activeUser?.id),
+          estado: "Submetido"
+        });
+      }
+    }
+  } catch (syncErr) {
+    console.warn("[CE Cell Attendance] sync note", syncErr);
+  }
 
   saveState("Cell attendance recorded");
   bootstrap.Modal.getInstance(byId("entryModal"))?.hide();
@@ -14841,7 +14842,7 @@ async function submitMemberCandidateForm(form, { submit = false } = {}) {
     ...existing,
     ...data,
     id: recordId,
-    candidate_number: existing?.candidate_number || `MC-${new Date().getFullYear()}-${String((state.memberRegistrationCandidates || []).length + 1).padStart(4, "0")}`,
+    candidate_number: existing?.candidate_number || generateUniqueCandidateNumber(),
     full_name: fullName,
     first_name: firstName || existing?.first_name || null,
     last_name: lastName || existing?.last_name || null,
@@ -20290,9 +20291,35 @@ async function hydrateCellMinistryFromRepository() {
     if (churchReportsRes.status === "fulfilled" && churchReportsRes.value?.ok && Array.isArray(churchReportsRes.value.data)) {
       const data = churchReportsRes.value.data;
       state.cellLeadership = state.cellLeadership || {};
-      if (data.length > 0 || usingSupabase) {
-        state.cellLeadership.churchReports = data;
-      }
+      const prev = new Map((state.cellLeadership.churchReports || []).map((r) => [r.id, r]));
+      const byId = new Map();
+      data.forEach((row) => {
+        const previous = prev.get(row.id) || {};
+        byId.set(row.id, {
+          ...previous,
+          ...row,
+          id: row.id,
+          church_id: row.church_id || previous.church_id,
+          church_name: row.church_name || previous.church_name,
+          semana: row.semana || previous.semana,
+          data_do_culto: row.data_do_culto || previous.data_do_culto,
+          culto: row.culto || previous.culto,
+          att: row.att ?? previous.att ?? 0,
+          ft: row.ft ?? previous.ft ?? 0,
+          nc: row.nc ?? previous.nc ?? 0,
+          rs: row.rs ?? previous.rs ?? 0,
+          total_ft_reached: row.total_ft_reached ?? previous.total_ft_reached ?? 0,
+          oferta: row.oferta ?? previous.oferta ?? 0,
+          comentarios: row.comentarios || previous.comentarios || "",
+          submetido_por: row.submetido_por || previous.submetido_por || "",
+          estado: row.estado || row.status || previous.estado || "Submetido",
+          status: row.status || row.estado || previous.status || "Submetido"
+        });
+      });
+      prev.forEach((localRow, id) => {
+        if (!byId.has(id)) byId.set(id, localRow);
+      });
+      state.cellLeadership.churchReports = [...byId.values()];
       hydrated = true;
     }
 
@@ -20389,50 +20416,58 @@ async function hydrateCellMinistryFromRepository() {
     // 7. Cell Reports
     if (cellReportsRes.status === "fulfilled" && cellReportsRes.value?.ok && Array.isArray(cellReportsRes.value.data) && cellReportsRes.value.data.length) {
       state.cellLeadership = state.cellLeadership || {};
-      if (cellSb?.listCellReports) {
-        state.cellLeadership.cellReports = cellReportsRes.value.data;
-        state.cellReportSubmissions = cellReportsRes.value.data.map((r) => ({ ...r }));
-      } else {
-        const prev = new Map((state.cellLeadership.cellReports || []).map((r) => [r.id, r]));
-        const byId = new Map();
-        cellReportsRes.value.data.forEach((row) => {
-          const previous = prev.get(row.id) || {};
-          const merged = {
-            ...row,
-            ...previous,
-            id: row.id,
-            semana: previous.semana || row.semana || row.report_week,
-            report_week: previous.report_week || row.report_week || previous.semana || row.semana,
-            celula: previous.celula || row.celula || row.cell_name,
-            cell_name: previous.cell_name || row.cell_name || previous.celula || row.celula,
-            nome_do_lider: previous.nome_do_lider || row.nome_do_lider || row.leader_name,
-            leader_name: previous.leader_name || row.leader_name || previous.nome_do_lider || row.nome_do_lider,
-            att: previous.att ?? row.att ?? row.attendance_count,
-            ft: previous.ft ?? row.ft ?? row.first_timers_count,
-            nc: previous.nc ?? row.nc ?? row.new_converts_count,
-            oferta: previous.oferta ?? row.oferta ?? row.offering_amount,
-            offering_amount: previous.offering_amount ?? row.offering_amount ?? previous.oferta ?? row.oferta,
-            offering_given: previous.offering_given ?? row.offering_given,
-            finance_review_status: previous.finance_review_status || row.finance_review_status || "Not Applicable",
-            submitted_by_type: previous.submitted_by_type || row.submitted_by_type || previous.submetido_por || row.submetido_por || "",
-            submitted_from: previous.submitted_from || row.submitted_from || "",
-            submetido_por: previous.submetido_por || row.submetido_por || previous.submitted_by_type || row.submitted_by_type || "",
-            needs_review: previous.needs_review ?? row.needs_review,
-            possible_duplicate: previous.possible_duplicate ?? row.possible_duplicate,
-            cell_health_status: previous.cell_health_status || row.cell_health_status || "",
-            estado: previous.estado || row.estado || row.status,
-            status: previous.status || row.status || row.estado
-          };
-          byId.set(row.id, merged);
-        });
-        prev.forEach((localRow, id) => {
-          if (!byId.has(id)) byId.set(id, localRow);
-        });
-        state.cellLeadership.cellReports = [...byId.values()];
-        state.cellReportSubmissions = state.cellLeadership.cellReports.map((r) => ({ ...r }));
-      }
+      const prev = new Map((state.cellLeadership.cellReports || []).map((r) => [r.id, r]));
+      const byId = new Map();
+      cellReportsRes.value.data.forEach((row) => {
+        const previous = prev.get(row.id) || {};
+        const merged = {
+          ...row,
+          ...previous,
+          id: row.id,
+          church_id: row.church_id || previous.church_id,
+          cell_id: row.cell_id || previous.cell_id,
+          cell_group_id: row.cell_group_id || previous.cell_group_id,
+          semana: previous.semana || row.semana || row.report_week,
+          report_week: previous.report_week || row.report_week || previous.semana || row.semana,
+          celula: previous.celula || row.celula || row.cell_name,
+          cell_name: previous.cell_name || row.cell_name || previous.celula || row.celula,
+          nome_do_lider: previous.nome_do_lider || row.nome_do_lider || row.leader_name,
+          leader_name: previous.leader_name || row.leader_name || previous.nome_do_lider || row.nome_do_lider,
+          culto: previous.culto || row.culto || "Domingo",
+          data_do_culto: previous.data_do_culto || row.data_do_culto || row.meeting_date,
+          meeting_date: previous.meeting_date || row.meeting_date || previous.data_do_culto || row.data_do_culto,
+          att: previous.att ?? row.att ?? row.attendance_count,
+          attendance_count: previous.attendance_count ?? row.attendance_count ?? previous.att ?? row.att ?? 0,
+          ft: previous.ft ?? row.ft ?? row.first_timers_count,
+          first_timers_count: previous.first_timers_count ?? row.first_timers_count ?? previous.ft ?? row.ft ?? 0,
+          nc: previous.nc ?? row.nc ?? row.new_converts_count,
+          new_converts_count: previous.new_converts_count ?? row.new_converts_count ?? previous.nc ?? row.nc ?? 0,
+          rs: previous.rs ?? row.rs ?? row.souls_won_count,
+          souls_won_count: previous.souls_won_count ?? row.souls_won_count ?? previous.rs ?? row.rs ?? 0,
+          oferta: previous.oferta ?? row.oferta ?? row.offering_amount,
+          offering_amount: previous.offering_amount ?? row.offering_amount ?? previous.oferta ?? row.oferta,
+          offering_given: previous.offering_given ?? row.offering_given,
+          observacoes: previous.observacoes || row.observacoes || "",
+          finance_review_status: previous.finance_review_status || row.finance_review_status || "Not Applicable",
+          submitted_by_type: previous.submitted_by_type || row.submitted_by_type || previous.submetido_por || row.submetido_por || "",
+          submitted_from: previous.submitted_from || row.submitted_from || "",
+          submetido_por: previous.submetido_por || row.submetido_por || previous.submitted_by_type || row.submitted_by_type || "",
+          needs_review: previous.needs_review ?? row.needs_review,
+          possible_duplicate: previous.possible_duplicate ?? row.possible_duplicate,
+          cell_health_status: previous.cell_health_status || row.cell_health_status || "",
+          estado: previous.estado || row.estado || row.status,
+          status: previous.status || row.status || row.estado
+        };
+        byId.set(row.id, merged);
+      });
+      prev.forEach((localRow, id) => {
+        if (!byId.has(id)) byId.set(id, localRow);
+      });
+      state.cellLeadership.cellReports = [...byId.values()];
+      state.cellReportSubmissions = state.cellLeadership.cellReports.map((r) => ({ ...r }));
       hydrated = true;
     }
+    if (typeof autoConsolidateAllChurchReports === "function") autoConsolidateAllChurchReports();
     if (Array.isArray(state.members) && state.members.length) syncMemberDerivedCellNetwork();
     if (hydrated) localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     return hydrated;
@@ -35619,6 +35654,7 @@ document.addEventListener("click", (event) => {
       return String(r.cell_id) === String(cellId) && rDate === serviceDate && r.culto === serviceType;
     });
 
+    const isNewReport = !cellReport;
     if (cellReport) {
       cellReport.att = totalAtt;
       cellReport.members_present_count = membersPresentCount;
@@ -35665,7 +35701,59 @@ document.addEventListener("click", (event) => {
     }
 
     // Automatically consolidate to Church Reports
-    consolidateCellReportToChurchReport(cellReport);
+    const consolidatedChurchReport = consolidateCellReportToChurchReport(cellReport);
+
+    void dualWriteCellMinistryRecord("cellReport", isNewReport ? "create" : "update", cellReport);
+    if (consolidatedChurchReport) {
+      void dualWriteCellMinistryRecord("churchReport", "update", consolidatedChurchReport);
+    }
+
+    try {
+      const sbClient = window.CESupabase?.getRawClient?.() || window.CESupabase?.getSupabaseFoundationClient?.() || window.CESupabase?.getSupabaseClient?.() || window.supabase;
+      if (sbClient) {
+        void sbClient.from("cell_reports").upsert({
+          id: cellReport.id,
+          church_id: churchId,
+          cell_id: cellId,
+          cell_group_id: cellReport.cell_group_id || null,
+          celula: cellReport.celula,
+          semana: cellReport.semana,
+          meeting_date: serviceDate,
+          nome_do_lider: cellReport.nome_do_lider,
+          att: Number(cellReport.att || 0),
+          ft: Number(cellReport.ft || 0),
+          nc: Number(cellReport.nc || 0),
+          oferta: Number(cellReport.oferta || 0),
+          observacoes: cellReport.observacoes || "",
+          submetido_por: cellReport.submetido_por,
+          submetido_por_id: cleanUuidVal(activeUser?.id),
+          estado: "Submetido"
+        });
+        if (consolidatedChurchReport) {
+          void sbClient.from("church_reports").upsert({
+            id: consolidatedChurchReport.id,
+            church_id: churchId,
+            church_name: consolidatedChurchReport.church_name,
+            semana: consolidatedChurchReport.semana,
+            data_do_culto: consolidatedChurchReport.data_do_culto,
+            culto: consolidatedChurchReport.culto,
+            att: Number(consolidatedChurchReport.att || 0),
+            ft: Number(consolidatedChurchReport.ft || 0),
+            nc: Number(consolidatedChurchReport.nc || 0),
+            rs: Number(consolidatedChurchReport.rs || 0),
+            total_ft_reached: Number(consolidatedChurchReport.total_ft_reached || consolidatedChurchReport.ft || 0),
+            oferta: Number(consolidatedChurchReport.oferta || 0),
+            comentarios: consolidatedChurchReport.comentarios || "",
+            submetido_por: consolidatedChurchReport.submetido_por,
+            submetido_por_id: cleanUuidVal(activeUser?.id),
+            estado: "Submetido"
+          });
+        }
+      }
+    } catch (syncErr) {
+      console.warn("[CE Cell Attendance] Supabase direct upsert skipped:", syncErr);
+    }
+    saveState("Saved cell attendance & updated church report");
 
     alert(lang === "pt"
       ? `Presenças da célula salvas com sucesso! (${membersPresentCount} membros + ${ftCount} FT = ${totalAtt} presentes). Os dados foram consolidados no Relatório Geral da Igreja.`

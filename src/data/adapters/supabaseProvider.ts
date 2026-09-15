@@ -877,7 +877,7 @@ function sanitizeCandidateRow(record: any): Record<string, unknown> {
 
   const row: Record<string, unknown> = {
     ...(idVal ? { id: idVal } : {}),
-    candidate_number: cleanStr(record.candidate_number) || `MC-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`,
+    candidate_number: cleanStr(record.candidate_number) || `MC-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}${Math.floor(100 + Math.random() * 900)}`,
     full_name: fullName,
     first_name: first,
     last_name: last,
