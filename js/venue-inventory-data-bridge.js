@@ -101,6 +101,8 @@
   }
 
   function seedsFor(kind) {
+    var source = resolveDataSource();
+    if (source === "supabase" || source === "api") return [];
     if (kind === "items") return seedItems();
     if (kind === "movements") return seedMovements();
     if (kind === "maintenance") return seedMaintenance();
@@ -109,9 +111,29 @@
     return [];
   }
 
+  function isMockRecordId(id) {
+    return /^inv-[0-9]+$|^venue-[0-9]+$|^check-[0-9]+$|^move-[0-9]+$|^maint-[0-9]+$|^staff-eq-|^acq-/i.test(String(id || ""));
+  }
+
   function store(kind) {
     var source = resolveDataSource();
     var key = KEYS[kind];
+    if (source === "supabase" || source === "api") {
+      try {
+        var rawCached = localStorage.getItem(key);
+        if (rawCached) {
+          var parsed = JSON.parse(rawCached);
+          if (Array.isArray(parsed)) {
+            var filtered = parsed.filter(function (r) {
+              return !isMockRecordId(r && r.id);
+            });
+            if (filtered.length !== parsed.length) {
+              localStorage.setItem(key, JSON.stringify(filtered));
+            }
+          }
+        }
+      } catch (_) {}
+    }
     if (source === "local") {
       var rows = load(key);
       if (!rows.length) {

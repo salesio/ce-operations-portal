@@ -4808,7 +4808,7 @@ function normalizeState(saved) {
     return normalizeUserProfile(mergedUser, merged.churches || [], merged.departments || []);
   });
   // Purge legacy mock data
-  const isLegacyMockId = (id) => /^m-[123]$|^ft-[123]$|^fu-[123456]$|^fs-[123]$|^cr-[123]$|^ca-[12]$|^fin-[12345678]$|^disb-req-[489]$|^req-[123456789]$|^bap-[0-9]+|^mar-[0-9]+|^baby-[0-9]+|^coun-[0-9]+|^counselor-[0-9]+|^apt-[0-9]+|^ref-[0-9]+|^fb-[0-9]+/i.test(String(id || ""));
+  const isLegacyMockId = (id) => /^m-[123]$|^ft-[123]$|^fu-[123456]$|^fs-[123]$|^cr-[123]$|^ca-[12]$|^fin-[12345678]$|^disb-req-[489]$|^req-[123456789]$|^bap-[0-9]+|^mar-[0-9]+|^baby-[0-9]+|^coun-[0-9]+|^counselor-[0-9]+|^apt-[0-9]+|^ref-[0-9]+|^fb-[0-9]+|^inv-[0-9]+|^venue-[0-9]+|^check-[0-9]+|^move-[0-9]+|^maint-[0-9]+|^staff-eq-|^acq-|^ven-report-/i.test(String(id || ""));
   const isLegacyChurchId = (id) => /^church-/i.test(String(id || ""));
   const cleanChurches = (merged.churches || []).filter((c) => !isLegacyChurchId(c?.id));
   const seenChurchIds = new Set();
@@ -4909,14 +4909,14 @@ function normalizeState(saved) {
     ...(saved.fevo || {})
   };
   merged.venueInventory = {
-    inventory: (saved.venueInventory?.inventory || []).filter(r => !isLegacyMockRecord(r, 'inv-')),
-    acquisitions: (saved.venueInventory?.acquisitions || []).filter(r => !isLegacyMockRecord(r, 'acq-')),
-    staffEquipment: (saved.venueInventory?.staffEquipment || []).filter(r => !isLegacyMockRecord(r, 'staff-eq-')),
-    maintenance: (saved.venueInventory?.maintenance || []).filter(r => !isLegacyMockRecord(r, 'maint-')),
-    movements: (saved.venueInventory?.movements || []).filter(r => !isLegacyMockRecord(r, 'move-')),
-    venues: (saved.venueInventory?.venues || []).filter(r => !isLegacyMockRecord(r, 'venue-')),
-    checklists: (saved.venueInventory?.checklists || []).filter(r => !isLegacyMockRecord(r, 'check-')),
-    reports: (saved.venueInventory?.reports || []).filter(r => !isLegacyMockRecord(r, 'ven-report-'))
+    inventory: (saved.venueInventory?.inventory || []).filter(r => !isLegacyMockRecord(r, 'inv-') && !isLegacyMockId(r?.id)),
+    acquisitions: (saved.venueInventory?.acquisitions || []).filter(r => !isLegacyMockRecord(r, 'acq-') && !isLegacyMockId(r?.id)),
+    staffEquipment: (saved.venueInventory?.staffEquipment || []).filter(r => !isLegacyMockRecord(r, 'staff-eq-') && !isLegacyMockId(r?.id)),
+    maintenance: (saved.venueInventory?.maintenance || []).filter(r => !isLegacyMockRecord(r, 'maint-') && !isLegacyMockId(r?.id)),
+    movements: (saved.venueInventory?.movements || []).filter(r => !isLegacyMockRecord(r, 'move-') && !isLegacyMockId(r?.id)),
+    venues: (saved.venueInventory?.venues || []).filter(r => !isLegacyMockRecord(r, 'venue-') && !isLegacyMockId(r?.id)),
+    checklists: (saved.venueInventory?.checklists || []).filter(r => !isLegacyMockRecord(r, 'check-') && !isLegacyMockId(r?.id)),
+    reports: (saved.venueInventory?.reports || []).filter(r => !isLegacyMockRecord(r, 'ven-report-') && !isLegacyMockId(r?.id))
   };
   merged.followUps = Array.isArray(merged.followUps) ? merged.followUps : structuredClone(seedData.followUps);
   merged.sacraments = merged.sacraments || structuredClone(seedData.sacraments);

@@ -1268,6 +1268,10 @@ export async function registerItemFromRequisition(
 
 export async function ensureVenueInventorySeeded(): Promise<DataResult<boolean>> {
   try {
+    const source = getDataSource();
+    if (source === "supabase" || source === "api") {
+      return ok(true);
+    }
     const items = await listInventoryItems();
     if (items.ok && items.data.length === 0) {
       for (const s of INVENTORY_ITEMS_SEED) {
