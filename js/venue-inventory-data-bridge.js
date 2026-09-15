@@ -28,7 +28,7 @@
   var underlyingSupabaseApi = null;
   var rawExisting = window.CEVenueInventory || (window.CEDataLayer && window.CEDataLayer.venueInventory);
   if (rawExisting && typeof rawExisting.dualWriteRecord !== "function") {
-    underlyingSupabaseApi = rawExisting;
+    underlyingSupabaseApi = Object.assign({}, rawExisting);
   }
 
   function resolveDataSource() {
@@ -49,18 +49,18 @@
   }
 
   function resolveApi() {
-    if (underlyingSupabaseApi && typeof underlyingSupabaseApi.createInventoryItem === "function") {
+    if (underlyingSupabaseApi && typeof underlyingSupabaseApi.listInventoryItems === "function" && typeof underlyingSupabaseApi.dualWriteRecord !== "function") {
       return { api: underlyingSupabaseApi, via: "underlyingSupabaseApi" };
     }
-    if (window.CESupabase && typeof window.CESupabase.createInventoryItem === "function") {
+    if (window.venueInventorySupabaseAdapter && typeof window.venueInventorySupabaseAdapter.listInventoryItems === "function") {
+      return { api: window.venueInventorySupabaseAdapter, via: "venueInventorySupabaseAdapter" };
+    }
+    if (window.CESupabase && typeof window.CESupabase.listInventoryItems === "function" && typeof window.CESupabase.dualWriteRecord !== "function") {
       return { api: window.CESupabase, via: "CESupabase" };
     }
     var layer = window.CEDataLayer && window.CEDataLayer.venueInventory;
-    if (layer && typeof layer.createInventoryItem === "function" && typeof layer.dualWriteRecord !== "function") {
+    if (layer && typeof layer.listInventoryItems === "function" && typeof layer.dualWriteRecord !== "function") {
       return { api: layer, via: "CEDataLayer.venueInventory" };
-    }
-    if (window.CEVenueInventory && typeof window.CEVenueInventory.createInventoryItem === "function" && typeof window.CEVenueInventory.dualWriteRecord !== "function") {
-      return { api: window.CEVenueInventory, via: "CEVenueInventory" };
     }
     return { api: null, via: "none" };
   }
