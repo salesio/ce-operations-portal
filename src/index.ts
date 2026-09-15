@@ -35,6 +35,7 @@ export {
   createSupabaseProvider,
   getSupabaseProviderInfo,
   getSupabaseFoundationClient,
+  getSupabaseFoundationClient as getRawClient,
   getSupabaseInfo,
   resetSupabaseFoundationClient,
   getSupabaseEnvConfig,
@@ -369,6 +370,7 @@ export {
   getInventoryMovementById,
   createInventoryMovement,
   updateInventoryMovement,
+  deleteInventoryMovement,
   getMovementsByItem,
   getMovementsByUser,
   getMovementsByChurch,
@@ -377,6 +379,7 @@ export {
   getMaintenanceRecordById,
   createMaintenanceRecord,
   updateMaintenanceRecord,
+  deleteMaintenanceRecord,
   closeMaintenanceRecord,
   getMaintenanceByItem,
   getOpenMaintenanceRecords,
@@ -392,6 +395,7 @@ export {
   getServiceChecklistById,
   createServiceChecklist,
   updateServiceChecklist,
+  deleteServiceChecklist,
   completeServiceChecklist,
   getChecklistsByChurch,
   getChecklistsByServiceDate,
@@ -1011,8 +1015,10 @@ import * as reportsSupabase from "./data/adapters/supabase/reportsSupabaseAdapte
 import * as notificationsSupabase from "./data/adapters/supabase/notificationsSupabaseAdapter";
 import * as auditSystemSupabase from "./data/adapters/supabase/auditSystemSupabaseAdapter";
 import * as cellMinistrySupabase from "./data/adapters/supabase/cellMinistrySupabaseAdapter";
+import * as venueInventorySupabase from "./data/adapters/supabase/venueInventorySupabaseAdapter";
 
 export * as cellMinistrySupabaseAdapter from "./data/adapters/supabase/cellMinistrySupabaseAdapter";
+export * as venueInventorySupabaseAdapter from "./data/adapters/supabase/venueInventorySupabaseAdapter";
 export {
   listChurchReports,
   getChurchReportById,
@@ -3361,6 +3367,8 @@ function installDataLayerGlobals(): void {
   }
   root.cellMinistrySupabaseAdapter = cellMinistrySupabase;
   root.CECellMinistry = Object.assign(root.CECellMinistry || {}, cellMinistrySupabase);
+  root.venueInventorySupabaseAdapter = venueInventorySupabase;
+  root.CEVenueInventory = Object.assign(root.CEVenueInventory || {}, venueInventory, venueInventorySupabase);
   root.CEReports = Object.assign(root.CEReports || {}, reportsSupabase);
   root.CEReportExports = Object.assign(root.CEReportExports || {}, {
     listReportExportJobs: reportsSupabase.listReportExportJobs,

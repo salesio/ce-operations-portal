@@ -29240,30 +29240,31 @@ async function quickAction(action, type, id) {
       }
     }
 
-    if (["inventoryItem", "venueAcquisition", "venueStaffEquipment", "venueMaintenance", "venueMovement", "venueSpace", "venueChecklist"].includes(type)) {
+    if (["inventoryItem", "venueAcquisition", "venueStaffEquipment", "venueMaintenance", "venueMovement", "venueSpace", "venueChecklist", "serviceChecklist", "venueServiceChecklist"].includes(type)) {
       const venueBridge = window.CEVenueInventory || window.CEDataLayer?.venueInventory;
-      if (venueBridge && previous?.id) {
+      const targetId = previous?.id || id;
+      if (venueBridge && targetId) {
         try {
           if (["inventoryItem", "venueAcquisition", "venueStaffEquipment"].includes(type) && venueBridge.deleteInventoryItem) {
-            await venueBridge.deleteInventoryItem(previous.id);
+            await venueBridge.deleteInventoryItem(targetId);
           } else if (type === "venueMaintenance" && venueBridge.deleteMaintenanceRecord) {
-            await venueBridge.deleteMaintenanceRecord(previous.id);
+            await venueBridge.deleteMaintenanceRecord(targetId);
           } else if (type === "venueMovement" && venueBridge.deleteInventoryMovement) {
-            await venueBridge.deleteInventoryMovement(previous.id);
+            await venueBridge.deleteInventoryMovement(targetId);
           } else if (type === "venueSpace" && venueBridge.deleteVenueSpace) {
-            await venueBridge.deleteVenueSpace(previous.id);
-          } else if (type === "venueChecklist" && venueBridge.deleteServiceChecklist) {
-            await venueBridge.deleteServiceChecklist(previous.id);
+            await venueBridge.deleteVenueSpace(targetId);
+          } else if (["venueChecklist", "serviceChecklist", "venueServiceChecklist"].includes(type) && venueBridge.deleteServiceChecklist) {
+            await venueBridge.deleteServiceChecklist(targetId);
           }
         } catch (err) {
           console.warn("[CE VenueInventory] delete sync error", err);
         }
       }
 
-      if (typeof window !== "undefined" && (window.CESupabase?.getRawClient?.() || window.supabase)) {
+      const client = (typeof window !== "undefined" && (window.CESupabase?.getRawClient?.() || window.CESupabase?.getSupabaseFoundationClient?.() || window.CESupabase?.getSupabaseClient?.() || window.supabase));
+      if (client && targetId) {
         try {
-          const client = window.CESupabase?.getRawClient?.() || window.supabase;
-          const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(previous?.id || id || ""));
+          const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(targetId));
           if (isUuid) {
             const tableMap = {
               inventoryItem: "inventory_items",
@@ -29272,10 +29273,12 @@ async function quickAction(action, type, id) {
               venueMaintenance: "inventory_maintenance_records",
               venueMovement: "inventory_movements",
               venueSpace: "venue_spaces",
-              venueChecklist: "service_checklists"
+              venueChecklist: "service_checklists",
+              serviceChecklist: "service_checklists",
+              venueServiceChecklist: "service_checklists"
             };
             const tbl = tableMap[type];
-            if (tbl) await client.from(tbl).delete().eq("id", previous?.id || id);
+            if (tbl) await client.from(tbl).delete().eq("id", targetId);
           }
         } catch (_) {}
       }
@@ -29288,7 +29291,9 @@ async function quickAction(action, type, id) {
           venueMaintenance: "ce-data-layer:maintenance-records",
           venueMovement: "ce-data-layer:inventory-movements",
           venueSpace: "ce-data-layer:venue-spaces",
-          venueChecklist: "ce-data-layer:service-checklists"
+          venueChecklist: "ce-data-layer:service-checklists",
+          serviceChecklist: "ce-data-layer:service-checklists",
+          venueServiceChecklist: "ce-data-layer:service-checklists"
         };
         const lk = localKeyMap[type];
         if (lk) {
@@ -29296,7 +29301,7 @@ async function quickAction(action, type, id) {
           if (rawLocal) {
             const parsed = JSON.parse(rawLocal);
             if (Array.isArray(parsed)) {
-              const filtered = parsed.filter((item) => String(item.id) !== String(previous?.id || id));
+              const filtered = parsed.filter((item) => String(item.id) !== String(targetId));
               localStorage.setItem(lk, JSON.stringify(filtered));
             }
           }

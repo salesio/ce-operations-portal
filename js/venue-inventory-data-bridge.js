@@ -228,6 +228,9 @@
       updateInventoryMovement: function (id, payload) {
         return update("movements", id, payload);
       },
+      deleteInventoryMovement: function (id) {
+        return remove("movements", id);
+      },
       listMaintenanceRecords: function () {
         return list("maintenance");
       },
@@ -236,6 +239,9 @@
       },
       updateMaintenanceRecord: function (id, payload) {
         return update("maintenance", id, payload);
+      },
+      deleteMaintenanceRecord: function (id) {
+        return remove("maintenance", id);
       },
       closeMaintenanceRecord: function (id, payload) {
         return update(
@@ -257,6 +263,9 @@
       updateVenueSpace: function (id, payload) {
         return update("spaces", id, payload);
       },
+      deleteVenueSpace: function (id) {
+        return remove("spaces", id);
+      },
       listServiceChecklists: function () {
         return list("checklists");
       },
@@ -265,6 +274,9 @@
       },
       updateServiceChecklist: function (id, payload) {
         return update("checklists", id, payload);
+      },
+      deleteServiceChecklist: function (id) {
+        return remove("checklists", id);
       },
       completeServiceChecklist: function (id, payload) {
         return update(
@@ -498,6 +510,28 @@
       if (!entry) return Promise.resolve({ ok: true, skipped: true });
       if (mode === "create") return call(entry.create, [record]);
       if (mode === "update") return call(entry.update, [record.id, record]);
+      if (mode === "delete") {
+        var delMap = {
+          inventoryItem: "deleteInventoryItem",
+          inventory: "deleteInventoryItem",
+          items: "deleteInventoryItem",
+          venueAcquisition: "deleteInventoryItem",
+          acquisition: "deleteInventoryItem",
+          venueStaffEquipment: "deleteInventoryItem",
+          staffEquipment: "deleteInventoryItem",
+          venueMaintenance: "deleteMaintenanceRecord",
+          maintenance: "deleteMaintenanceRecord",
+          venueMovement: "deleteInventoryMovement",
+          movement: "deleteInventoryMovement",
+          venueSpace: "deleteVenueSpace",
+          space: "deleteVenueSpace",
+          venueChecklist: "deleteServiceChecklist",
+          serviceChecklist: "deleteServiceChecklist",
+          venueServiceChecklist: "deleteServiceChecklist",
+        };
+        var delFn = delMap[kind];
+        if (delFn) return call(delFn, [record.id || record]);
+      }
       return Promise.resolve({ ok: true, skipped: true });
     },
   };
@@ -509,6 +543,8 @@
   window.CEDataLayer = window.CEDataLayer || {};
   if (!window.CEDataLayer.venueInventory) {
     window.CEDataLayer.venueInventory = dataApi;
+  } else {
+    Object.assign(window.CEDataLayer.venueInventory, dataApi);
   }
   if (!window.CEDataLayer.inventoryItems) {
     window.CEDataLayer.inventoryItems = {
@@ -517,36 +553,50 @@
       updateInventoryItem: dataApi.updateInventoryItem,
       deleteInventoryItem: dataApi.deleteInventoryItem,
     };
+  } else {
+    window.CEDataLayer.inventoryItems.deleteInventoryItem = dataApi.deleteInventoryItem;
   }
   if (!window.CEDataLayer.inventoryMovements) {
     window.CEDataLayer.inventoryMovements = {
       listInventoryMovements: dataApi.listInventoryMovements,
       createInventoryMovement: dataApi.createInventoryMovement,
       updateInventoryMovement: dataApi.updateInventoryMovement,
+      deleteInventoryMovement: dataApi.deleteInventoryMovement,
     };
+  } else {
+    window.CEDataLayer.inventoryMovements.deleteInventoryMovement = dataApi.deleteInventoryMovement;
   }
   if (!window.CEDataLayer.inventoryMaintenance) {
     window.CEDataLayer.inventoryMaintenance = {
       listMaintenanceRecords: dataApi.listMaintenanceRecords,
       createMaintenanceRecord: dataApi.createMaintenanceRecord,
       updateMaintenanceRecord: dataApi.updateMaintenanceRecord,
+      deleteMaintenanceRecord: dataApi.deleteMaintenanceRecord,
       closeMaintenanceRecord: dataApi.closeMaintenanceRecord,
     };
+  } else {
+    window.CEDataLayer.inventoryMaintenance.deleteMaintenanceRecord = dataApi.deleteMaintenanceRecord;
   }
   if (!window.CEDataLayer.venueSpaces) {
     window.CEDataLayer.venueSpaces = {
       listVenueSpaces: dataApi.listVenueSpaces,
       createVenueSpace: dataApi.createVenueSpace,
       updateVenueSpace: dataApi.updateVenueSpace,
+      deleteVenueSpace: dataApi.deleteVenueSpace,
     };
+  } else {
+    window.CEDataLayer.venueSpaces.deleteVenueSpace = dataApi.deleteVenueSpace;
   }
   if (!window.CEDataLayer.serviceChecklists) {
     window.CEDataLayer.serviceChecklists = {
       listServiceChecklists: dataApi.listServiceChecklists,
       createServiceChecklist: dataApi.createServiceChecklist,
       updateServiceChecklist: dataApi.updateServiceChecklist,
+      deleteServiceChecklist: dataApi.deleteServiceChecklist,
       completeServiceChecklist: dataApi.completeServiceChecklist,
     };
+  } else {
+    window.CEDataLayer.serviceChecklists.deleteServiceChecklist = dataApi.deleteServiceChecklist;
   }
 
   try {

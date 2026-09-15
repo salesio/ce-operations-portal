@@ -693,6 +693,16 @@ export async function updateInventoryMovement(
   }
 }
 
+export async function deleteInventoryMovement(id: EntityId): Promise<DataResult<boolean>> {
+  try {
+    const repo = getDataProvider().inventoryMovements;
+    if (!repo.remove) return fail("delete not supported", "NOT_SUPPORTED");
+    return (await repo.remove(id)) as DataResult<boolean>;
+  } catch (e) {
+    return fail(e instanceof Error ? e.message : "deleteInventoryMovement failed");
+  }
+}
+
 export async function getMovementsByItem(itemId: EntityId) {
   const list = await listInventoryMovements();
   if (!list.ok) return list;
@@ -822,6 +832,16 @@ export async function updateMaintenanceRecord(
     return ok(normalizeMaintenanceRecord(result.data as InventoryMaintenanceRecord));
   } catch (e) {
     return fail(e instanceof Error ? e.message : "updateMaintenanceRecord failed");
+  }
+}
+
+export async function deleteMaintenanceRecord(id: EntityId): Promise<DataResult<boolean>> {
+  try {
+    const repo = getDataProvider().inventoryMaintenance;
+    if (!repo.remove) return fail("delete not supported", "NOT_SUPPORTED");
+    return (await repo.remove(id)) as DataResult<boolean>;
+  } catch (e) {
+    return fail(e instanceof Error ? e.message : "deleteMaintenanceRecord failed");
   }
 }
 
@@ -1058,6 +1078,16 @@ export async function updateServiceChecklist(
     return ok(normalizeServiceChecklist(result.data as ServiceChecklist));
   } catch (e) {
     return fail(e instanceof Error ? e.message : "updateServiceChecklist failed");
+  }
+}
+
+export async function deleteServiceChecklist(id: EntityId): Promise<DataResult<boolean>> {
+  try {
+    const repo = getDataProvider().serviceChecklists;
+    if (!repo.remove) return fail("delete not supported", "NOT_SUPPORTED");
+    return (await repo.remove(id)) as DataResult<boolean>;
+  } catch (e) {
+    return fail(e instanceof Error ? e.message : "deleteServiceChecklist failed");
   }
 }
 

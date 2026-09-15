@@ -1169,6 +1169,7 @@ export {
   getInventoryMovementById,
   createInventoryMovement,
   updateInventoryMovement,
+  deleteInventoryMovement,
   getMovementsByItem,
   getMovementsByUser,
   getMovementsByChurch,
@@ -1177,6 +1178,7 @@ export {
   getMaintenanceRecordById,
   createMaintenanceRecord,
   updateMaintenanceRecord,
+  deleteMaintenanceRecord,
   closeMaintenanceRecord,
   getMaintenanceByItem,
   getOpenMaintenanceRecords,
@@ -1192,6 +1194,7 @@ export {
   getServiceChecklistById,
   createServiceChecklist,
   updateServiceChecklist,
+  deleteServiceChecklist,
   completeServiceChecklist,
   getChecklistsByChurch,
   getChecklistsByServiceDate,
@@ -1289,6 +1292,8 @@ export * as reportsSupabaseAdapter from "./adapters/supabase/reportsSupabaseAdap
 export * as notificationsSupabaseAdapter from "./adapters/supabase/notificationsSupabaseAdapter";
 export * as auditSystemSupabaseAdapter from "./adapters/supabase/auditSystemSupabaseAdapter";
 export * as cellMinistrySupabaseAdapter from "./adapters/supabase/cellMinistrySupabaseAdapter";
+export * as venueInventorySupabaseAdapter from "./adapters/supabase/venueInventorySupabaseAdapter";
 export * as reportsApiAdapter from "./adapters/api/reportsApiAdapter";
 export * as notificationsApiAdapter from "./adapters/api/notificationsApiAdapter";
 export * as auditSystemApiAdapter from "./adapters/api/auditSystemApiAdapter";
+export * as venueInventoryApiAdapter from "./adapters/api/venueInventoryApiAdapter";
