@@ -360,6 +360,9 @@ function createInventoryMovementsRepository(): EntityRepository<InventoryMovemen
     async create(input: Partial<InventoryMovement>) {
       return venueInventorySb.createInventoryMovement(input);
     },
+    async remove(id: EntityId) {
+      return venueInventorySb.deleteInventoryMovement(id);
+    },
   };
 }
 
@@ -376,6 +379,9 @@ function createInventoryMaintenanceRepository(): EntityRepository<InventoryMaint
     },
     async update(id: EntityId, input: Partial<InventoryMaintenanceRecord>) {
       return venueInventorySb.updateMaintenanceRecord(id, input);
+    },
+    async remove(id: EntityId) {
+      return venueInventorySb.deleteMaintenanceRecord(id);
     },
   };
 }
@@ -395,6 +401,9 @@ function createVenueSpacesRepository(): EntityRepository<VenueSpace> {
     async update(id: EntityId, input: Partial<VenueSpace>) {
       return venueInventorySb.updateVenueSpace(id, input);
     },
+    async remove(id: EntityId) {
+      return venueInventorySb.deleteVenueSpace(id);
+    },
   };
 }
 
@@ -412,6 +421,9 @@ function createServiceChecklistsRepository(): EntityRepository<ServiceChecklist>
     },
     async update(id: EntityId, input: Partial<ServiceChecklist>) {
       return venueInventorySb.updateServiceChecklist(id, input);
+    },
+    async remove(id: EntityId) {
+      return venueInventorySb.deleteServiceChecklist(id);
     },
   };
 }

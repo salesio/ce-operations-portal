@@ -75,12 +75,14 @@ export const getUnderMaintenanceItems = () => getInventoryItemsByStatus("Under M
 
 export const listInventoryMovements = () => list<InventoryMovement>("inventory-movements");
 export const createInventoryMovement = (payload: Partial<InventoryMovement>) => create<InventoryMovement>("inventory-movements", payload);
+export const deleteInventoryMovement = (id: EntityId) => remove("inventory-movements", id);
 export const getMovementsByItem = (itemId: EntityId) => list<InventoryMovement>(`inventory-movements?item_id=${itemId}`);
 export const getMovementsByDateRange = (startDate: string, endDate: string) => list<InventoryMovement>(`inventory-movements?start=${startDate}&end=${endDate}`);
 
 export const listMaintenanceRecords = () => list<InventoryMaintenanceRecord>("inventory-maintenance-records");
 export const createMaintenanceRecord = (payload: Partial<InventoryMaintenanceRecord>) => create<InventoryMaintenanceRecord>("inventory-maintenance-records", payload);
 export const updateMaintenanceRecord = (id: EntityId, payload: Partial<InventoryMaintenanceRecord>) => update<InventoryMaintenanceRecord>("inventory-maintenance-records", id, payload);
+export const deleteMaintenanceRecord = (id: EntityId) => remove("inventory-maintenance-records", id);
 export const closeMaintenanceRecord = (id: EntityId, payload: Partial<InventoryMaintenanceRecord>) => updateMaintenanceRecord(id, { ...payload, status: "Completed" });
 export const getMaintenanceByItem = (itemId: EntityId) => list<InventoryMaintenanceRecord>(`inventory-maintenance-records?item_id=${itemId}`);
 export const getOpenMaintenanceRecords = () => list<InventoryMaintenanceRecord>("inventory-maintenance-records?status=open");
@@ -88,11 +90,13 @@ export const getOpenMaintenanceRecords = () => list<InventoryMaintenanceRecord>(
 export const listVenueSpaces = () => list<VenueSpace>("venue-spaces");
 export const createVenueSpace = (payload: Partial<VenueSpace>) => create<VenueSpace>("venue-spaces", payload);
 export const updateVenueSpace = (id: EntityId, payload: Partial<VenueSpace>) => update<VenueSpace>("venue-spaces", id, payload);
+export const deleteVenueSpace = (id: EntityId) => remove("venue-spaces", id);
 export const getVenueSpacesByChurch = (churchId: EntityId) => list<VenueSpace>(`venue-spaces?church_id=${churchId}`);
 
 export const listServiceChecklists = () => list<ServiceChecklist>("service-checklists");
 export const createServiceChecklist = (payload: Partial<ServiceChecklist>) => create<ServiceChecklist>("service-checklists", payload);
 export const updateServiceChecklist = (id: EntityId, payload: Partial<ServiceChecklist>) => update<ServiceChecklist>("service-checklists", id, payload);
+export const deleteServiceChecklist = (id: EntityId) => remove("service-checklists", id);
 export const completeServiceChecklist = (id: EntityId, payload: Partial<ServiceChecklist>) => updateServiceChecklist(id, { ...payload, status: "Completed" });
 export const getChecklistsByChurch = (churchId: EntityId) => list<ServiceChecklist>(`service-checklists?church_id=${churchId}`);
 export const getOpenChecklists = () => list<ServiceChecklist>("service-checklists?status=open");

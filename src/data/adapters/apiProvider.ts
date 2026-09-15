@@ -219,24 +219,28 @@ export function createApiProvider(): DataProvider & ApiProviderExtras {
     list: venueInventoryApi.listInventoryMovements,
     getById: async () => ({ ok: true, data: null }),
     create: venueInventoryApi.createInventoryMovement,
+    remove: venueInventoryApi.deleteInventoryMovement,
   } as EntityRepository<unknown>;
   map.inventory_maintenance = {
     list: venueInventoryApi.listMaintenanceRecords,
     getById: async () => ({ ok: true, data: null }),
     create: venueInventoryApi.createMaintenanceRecord,
     update: venueInventoryApi.updateMaintenanceRecord,
+    remove: venueInventoryApi.deleteMaintenanceRecord,
   } as EntityRepository<unknown>;
   map.venue_spaces = {
     list: venueInventoryApi.listVenueSpaces,
     getById: async () => ({ ok: true, data: null }),
     create: venueInventoryApi.createVenueSpace,
     update: venueInventoryApi.updateVenueSpace,
+    remove: venueInventoryApi.deleteVenueSpace,
   } as EntityRepository<unknown>;
   map.service_checklists = {
     list: venueInventoryApi.listServiceChecklists,
     getById: async () => ({ ok: true, data: null }),
     create: venueInventoryApi.createServiceChecklist,
     update: venueInventoryApi.updateServiceChecklist,
+    remove: venueInventoryApi.deleteServiceChecklist,
   } as EntityRepository<unknown>;
   map.staff = {
     list: staffHrApi.listStaffMembers,
