@@ -2855,3 +2855,41 @@ CREATE INDEX IF NOT EXISTS idx_prison_material_requests_status ON public.prison_
 
 COMMENT ON TABLE public.prison_participants IS 'Pastoral participation data only. Criminal, judicial, sentence and inmate-identification data are prohibited.';
 
+-- ---------------------------------------------------------------------------
+-- PARTNERSHIPS: partnership_arms
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.partnership_arms (
+  id                          text PRIMARY KEY,
+  name                        text NOT NULL,
+  description                 text,
+  icon                        text DEFAULT 'bi-stars',
+  logo_url                    text,
+  monthly_goal                numeric(14, 2) DEFAULT 10000,
+  status                      text NOT NULL DEFAULT 'Active',
+  is_active                   boolean NOT NULL DEFAULT true,
+  created_at                  timestamptz NOT NULL DEFAULT now(),
+  updated_at                  timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_partnership_arms_name ON public.partnership_arms(name);
+CREATE INDEX IF NOT EXISTS idx_partnership_arms_status ON public.partnership_arms(status);
+CREATE INDEX IF NOT EXISTS idx_partnership_arms_is_active ON public.partnership_arms(is_active);
+
+ALTER TABLE public.partnership_arms ENABLE ROW LEVEL SECURITY;
+
+DO $$ BEGIN
+  CREATE POLICY "Allow read access to partnership_arms"
+    ON public.partnership_arms FOR SELECT
+    TO authenticated, anon
+    USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Allow write access to partnership_arms"
+    ON public.partnership_arms FOR ALL
+    TO authenticated, anon
+    USING (true)
+    WITH CHECK (true);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;

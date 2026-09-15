@@ -566,6 +566,8 @@
     reports: "reports",
     prisonMinistry: "prisonMinistry",
     ministryMaterials: "ministryMaterials",
+    partnership: "partnership",
+    partnerships: "partnership",
     media: "media",
     mediaTeam: "media",
     requisitions: "requisitions",

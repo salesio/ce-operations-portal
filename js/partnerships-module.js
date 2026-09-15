@@ -1,20 +1,42 @@
 /**
  * Partnerships / Parcerias — analytics layer over verified financeRecords.
  * Does NOT duplicate finance data. Income only, Verified only.
+ * Full CRUD for Partnership Arms with custom logo management & Supabase sync.
  */
 (function (global) {
   const PARTNERSHIP_ARMS_SEED = [
-    { id: "arm-healing", name: "Escola de Cura", description: "Escola de Cura e ministério de cura.", icon: "bi-heart-pulse", monthly_goal: 15000 },
-    { id: "arm-rhapsody", name: "Rapsódia de Realidades", description: "Distribuição e parcerias de Rapsódia.", icon: "bi-book", monthly_goal: 20000 },
-    { id: "arm-lw-sat", name: "Loveworld SAT", description: "Parceria Loveworld SAT (não é departamento).", icon: "bi-broadcast", monthly_goal: 12000 },
-    { id: "arm-vision", name: "Construtores de Visão", description: "Apoio a projectos de visão e expansão.", icon: "bi-building", monthly_goal: 25000 },
-    { id: "arm-interior", name: "Missões de Cidades do Interior", description: "Missões e alcance no interior.", icon: "bi-geo-alt", monthly_goal: 10000 },
-    { id: "arm-reach-mz", name: "Alcançar Moçambique", description: "Campanhas nacionais de alcance.", icon: "bi-flag", monthly_goal: 18000 },
-    { id: "arm-church-project", name: "Projecto da Igreja", description: "Projectos locais da igreja.", icon: "bi-house-heart", monthly_goal: 15000 },
-    { id: "arm-construction", name: "Projecto de Construção de Igreja", description: "Construção e infra-estrutura.", icon: "bi-bricks", monthly_goal: 30000 },
-    { id: "arm-kids-rhapsody", name: "Rapsódias das Crianças", description: "Rapsódia infantil e ministério kids.", icon: "bi-emoji-smile", monthly_goal: 8000 },
-    { id: "arm-cell-mandate", name: "Mandato de Célula", description: "Mandato e crescimento celular.", icon: "bi-diagram-3", monthly_goal: 10000 },
-    { id: "arm-other", name: "Outros Braços", description: "Outras parcerias e projectos.", icon: "bi-stars", monthly_goal: 5000 }
+    { id: "arm-healing", name: "Escola de Cura", description: "Escola de Cura e ministério de cura.", icon: "bi-heart-pulse", logo_url: "", monthly_goal: 15000, status: "Active", is_active: true },
+    { id: "arm-rhapsody", name: "Rapsódia de Realidades", description: "Distribuição e parcerias de Rapsódia.", icon: "bi-book", logo_url: "", monthly_goal: 20000, status: "Active", is_active: true },
+    { id: "arm-lw-sat", name: "Loveworld SAT", description: "Parceria Loveworld SAT (não é departamento).", icon: "bi-broadcast", logo_url: "", monthly_goal: 12000, status: "Active", is_active: true },
+    { id: "arm-vision", name: "Construtores de Visão", description: "Apoio a projectos de visão e expansão.", icon: "bi-building", logo_url: "", monthly_goal: 25000, status: "Active", is_active: true },
+    { id: "arm-interior", name: "Missões de Cidades do Interior", description: "Missões e alcance no interior.", icon: "bi-geo-alt", logo_url: "", monthly_goal: 10000, status: "Active", is_active: true },
+    { id: "arm-reach-mz", name: "Alcançar Moçambique", description: "Campanhas nacionais de alcance.", icon: "bi-flag", logo_url: "", monthly_goal: 18000, status: "Active", is_active: true },
+    { id: "arm-church-project", name: "Projecto da Igreja", description: "Projectos locais da igreja.", icon: "bi-house-heart", logo_url: "", monthly_goal: 15000, status: "Active", is_active: true },
+    { id: "arm-construction", name: "Projecto de Construção de Igreja", description: "Construção e infra-estrutura.", icon: "bi-bricks", logo_url: "", monthly_goal: 30000, status: "Active", is_active: true },
+    { id: "arm-kids-rhapsody", name: "Rapsódias das Crianças", description: "Rapsódia infantil e ministério kids.", icon: "bi-emoji-smile", logo_url: "", monthly_goal: 8000, status: "Active", is_active: true },
+    { id: "arm-cell-mandate", name: "Mandato de Célula", description: "Mandato e crescimento celular.", icon: "bi-diagram-3", logo_url: "", monthly_goal: 10000, status: "Active", is_active: true },
+    { id: "arm-other", name: "Outros Braços", description: "Outras parcerias e projectos.", icon: "bi-stars", logo_url: "", monthly_goal: 5000, status: "Active", is_active: true }
+  ];
+
+  const PARTNERSHIP_ICONS = [
+    { icon: "bi-stars", label: "Estrelas / Geral" },
+    { icon: "bi-heart-pulse", label: "Cura / Saúde" },
+    { icon: "bi-book", label: "Livro / Rapsódia" },
+    { icon: "bi-broadcast", label: "Transmissão / TV" },
+    { icon: "bi-building", label: "Edifício / Estrutura" },
+    { icon: "bi-geo-alt", label: "Missões / Localização" },
+    { icon: "bi-flag", label: "Bandeira / Nacional" },
+    { icon: "bi-house-heart", label: "Igreja Local" },
+    { icon: "bi-bricks", label: "Construção" },
+    { icon: "bi-emoji-smile", label: "Crianças / Kids" },
+    { icon: "bi-diagram-3", label: "Células" },
+    { icon: "bi-cash-coin", label: "Finanças / Doação" },
+    { icon: "bi-globe", label: "Global / Internacional" },
+    { icon: "bi-people", label: "Comunidade" },
+    { icon: "bi-trophy", label: "Conquistas" },
+    { icon: "bi-award", label: "Reconhecimento" },
+    { icon: "bi-lightbulb", label: "Inovação / Visão" },
+    { icon: "bi-hand-thumbs-up", label: "Apoio / Serviço" }
   ];
 
   const partnershipPageState = {
@@ -37,20 +59,116 @@
     return typeof lang !== "undefined" ? lang === "pt" : true;
   }
 
+  function getSupabaseClient() {
+    return (
+      (typeof window !== "undefined" &&
+        (window.CESupabase?.getRawClient?.() ||
+          window.CESupabase?.getSupabaseFoundationClient?.() ||
+          window.CESupabase?.getSupabaseClient?.() ||
+          window.supabase)) ||
+      null
+    );
+  }
+
   function getArms() {
-    const stored = (typeof state !== "undefined" && Array.isArray(state.partnershipArms) && state.partnershipArms.length)
-      ? state.partnershipArms
-      : PARTNERSHIP_ARMS_SEED;
+    const stored =
+      typeof state !== "undefined" && Array.isArray(state.partnershipArms) && state.partnershipArms.length
+        ? state.partnershipArms
+        : PARTNERSHIP_ARMS_SEED;
     return stored.map((arm) => ({
       logo_url: "",
-      logo_pending: true,
       monthly_goal: 10000,
       status: "Active",
       is_active: true,
+      icon: "bi-stars",
       created_at: "2026-01-01",
       updated_at: "2026-07-01",
       ...arm
     }));
+  }
+
+  function persistArmsState(arms) {
+    if (typeof state !== "undefined") {
+      state.partnershipArms = arms;
+      try {
+        const storageKey = typeof STORAGE_KEY !== "undefined" ? STORAGE_KEY : "ce_mozambique_state";
+        localStorage.setItem(storageKey, JSON.stringify(state));
+      } catch (err) {
+        console.warn("[Partnerships] Could not persist to localStorage:", err);
+      }
+    }
+  }
+
+  async function hydratePartnershipArms() {
+    const client = getSupabaseClient();
+    if (!client) return;
+    try {
+      const { data, error } = await client
+        .from("partnership_arms")
+        .select("*")
+        .order("created_at", { ascending: true });
+
+      if (!error && Array.isArray(data) && data.length > 0) {
+        persistArmsState(data);
+        if (typeof activeRoute !== "undefined" && activeRoute === "partnership") {
+          renderPartnerships();
+        }
+      } else if (!error && Array.isArray(data) && data.length === 0) {
+        // Table exists but is empty -> seed initial arms
+        const toSeed = PARTNERSHIP_ARMS_SEED.map((arm) => ({
+          ...arm,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }));
+        await client.from("partnership_arms").upsert(toSeed);
+        persistArmsState(toSeed);
+      }
+    } catch (err) {
+      console.warn("[Partnerships] Hydration from Supabase skipped:", err);
+    }
+  }
+
+  async function savePartnershipArmToSupabase(arm) {
+    const client = getSupabaseClient();
+    if (!client) return { success: true, offline: true };
+    try {
+      const payload = {
+        id: arm.id,
+        name: arm.name,
+        description: arm.description || "",
+        icon: arm.icon || "bi-stars",
+        logo_url: arm.logo_url || null,
+        monthly_goal: Number(arm.monthly_goal || 0),
+        status: arm.status || "Active",
+        is_active: arm.is_active !== false,
+        updated_at: new Date().toISOString()
+      };
+      const { error } = await client.from("partnership_arms").upsert([payload]);
+      if (error) {
+        console.error("[Partnerships] Supabase upsert error:", error);
+        return { success: false, error };
+      }
+      return { success: true };
+    } catch (err) {
+      console.error("[Partnerships] Supabase save error:", err);
+      return { success: false, error: err };
+    }
+  }
+
+  async function deletePartnershipArmFromSupabase(armId) {
+    const client = getSupabaseClient();
+    if (!client) return { success: true, offline: true };
+    try {
+      const { error } = await client.from("partnership_arms").delete().eq("id", armId);
+      if (error) {
+        console.error("[Partnerships] Supabase delete error:", error);
+        return { success: false, error };
+      }
+      return { success: true };
+    } catch (err) {
+      console.error("[Partnerships] Supabase delete error:", err);
+      return { success: false, error: err };
+    }
   }
 
   function isVerifiedIncomeRecord(record) {
@@ -75,7 +193,12 @@
 
   function resolveArmId(record) {
     if (record.partnership_arm_id) return record.partnership_arm_id;
-    const name = record.partnership_arm_name || record.partnership_arm || record.contribution_category || record.categoria_da_contribuicao || "";
+    const name =
+      record.partnership_arm_name ||
+      record.partnership_arm ||
+      record.contribution_category ||
+      record.categoria_da_contribuicao ||
+      "";
     const found = getArms().find((a) => a.name === name || a.id === name);
     return found ? found.id : "arm-other";
   }
@@ -134,18 +257,20 @@
   }
 
   function getPartnershipFinanceList() {
-    const list = typeof getScopedFinanceList === "function"
-      ? getScopedFinanceList()
-      : ((typeof state !== "undefined" ? state.finance : []) || []).map((r) =>
-          typeof migrateFinanceRecord === "function" ? migrateFinanceRecord(r) : r
-        );
+    const list =
+      typeof getScopedFinanceList === "function"
+        ? getScopedFinanceList()
+        : ((typeof state !== "undefined" ? state.finance : []) || []).map((r) =>
+            typeof migrateFinanceRecord === "function" ? migrateFinanceRecord(r) : r
+          );
     return list.filter(isPartnershipRecord);
   }
 
   function getPendingPartnershipCount() {
-    const list = typeof getScopedFinanceList === "function"
-      ? getScopedFinanceList()
-      : (typeof state !== "undefined" ? state.finance : []) || [];
+    const list =
+      typeof getScopedFinanceList === "function"
+        ? getScopedFinanceList()
+        : (typeof state !== "undefined" ? state.finance : []) || [];
     return list.filter((r) => {
       const st = String(r.status || r.estado || "").toLowerCase();
       const pending = st.includes("pending") || st.includes("pendente");
@@ -198,75 +323,80 @@
     const previous = all.filter((r) => inRange(recordDate(r), range.prevStart, range.prevEnd));
 
     return getArms().map((arm) => {
-      const cur = current.filter((r) => resolveArmId(r) === arm.id);
-      const prev = previous.filter((r) => resolveArmId(r) === arm.id);
-      const total = cur.reduce((s, r) => s + amountOf(r), 0);
-      const prevTotal = prev.reduce((s, r) => s + amountOf(r), 0);
-      const donors = new Set(cur.map(contributorKey));
-      const amounts = cur.map(amountOf).filter((n) => n > 0);
+      const armRecords = current.filter((r) => resolveArmId(r) === arm.id);
+      const prevRecords = previous.filter((r) => resolveArmId(r) === arm.id);
+      const totalAmount = armRecords.reduce((s, r) => s + amountOf(r), 0);
+      const prevAmount = prevRecords.reduce((s, r) => s + amountOf(r), 0);
+      const donors = new Set(armRecords.map(contributorKey));
+      const amounts = armRecords.map(amountOf);
       const maxDonation = amounts.length ? Math.max(...amounts) : 0;
-      const avg = amounts.length ? total / amounts.length : 0;
-      const last = cur.map(recordDate).filter(Boolean).sort().reverse()[0] || "";
-      const growth = prevTotal > 0 ? Math.round(((total - prevTotal) / prevTotal) * 100) : total > 0 ? 100 : 0;
-      const periodData = {
-        total_amount: total,
+      const avgDonation = armRecords.length ? totalAmount / armRecords.length : 0;
+
+      const allArmRecords = all.filter((r) => resolveArmId(r) === arm.id).sort((a, b) => (recordDate(b) > recordDate(a) ? 1 : -1));
+      const lastDate = allArmRecords[0] ? recordDate(allArmRecords[0]) : "";
+
+      const growth = prevAmount > 0 ? ((totalAmount - prevAmount) / prevAmount) * 100 : totalAmount > 0 ? 100 : 0;
+      const goal = Number(arm.monthly_goal || 0);
+      const progress = goal > 0 ? Math.min(100, Math.round((totalAmount / goal) * 100)) : 0;
+
+      const promo = getPartnershipArmPromotionStatus(arm, {
+        total_amount: totalAmount,
         donor_count: donors.size,
         growth_percent: growth,
-        days_since_last_donation: daysSince(last)
-      };
-      const promo = getPartnershipArmPromotionStatus(arm, periodData);
+        days_since_last_donation: daysSince(lastDate)
+      });
+
       return {
         ...arm,
-        total_amount: total,
+        total_amount: totalAmount,
+        previous_amount: prevAmount,
+        growth_percent: Math.round(growth),
         donor_count: donors.size,
-        donation_count: cur.length,
-        average_donation: avg,
+        average_donation: Math.round(avgDonation),
         max_donation: maxDonation,
-        last_donation_date: last,
-        growth_percent: growth,
-        needs_promotion: promo.needs_promotion,
-        status_label: promo.status_label,
-        goal_progress: arm.monthly_goal ? Math.min(100, Math.round((total / arm.monthly_goal) * 100)) : 0,
-        records: cur
+        last_donation_date: lastDate,
+        days_since_last_donation: daysSince(lastDate),
+        goal_progress: progress,
+        records: armRecords,
+        ...promo
       };
     });
   }
 
-  function computePartners(periodKey = partnershipPageState.period) {
-    const range = periodRange(periodKey);
-    const list = getPartnershipFinanceList().filter((r) => inRange(recordDate(r), range.start, range.end));
+  function computePartners() {
+    const list = getPartnershipFinanceList();
     const map = new Map();
+
     list.forEach((r) => {
       const key = contributorKey(r);
+      const armName = resolveArmName(r);
+      const amt = amountOf(r);
+      const d = recordDate(r);
       if (!map.has(key)) {
         map.set(key, {
-          id: key,
-          contributor_id: r.contributor_id || r.partner_id || "",
-          contributor_name: r.contributor_name || [r.nome, r.apelido].filter(Boolean).join(" ") || "-",
-          phone: r.telefone || r.contributor_phone || r.whatsapp || "",
-          email: r.email || r.contributor_email || "",
+          contributor_name: r.contributor_name || [r.nome, r.apelido].filter(Boolean).join(" ") || (isPt() ? "Anónimo" : "Anonymous"),
           church_id: r.church_id || "",
-          church_name: r.church_name || r.igreja || "",
-          cell_group_id: r.cell_group_id || "",
+          church_name: r.church_name || "",
           cell_group_name: r.cell_group_name || r.grupo_de_celula || "",
-          cell_id: r.cell_id || "",
           cell_name: r.cell_name || r.celula || "",
           total_amount: 0,
           donation_count: 0,
-          arms_supported: new Set(),
           last_donation_date: "",
+          arms_supported: new Set(),
           records: []
         });
       }
-      const p = map.get(key);
-      p.total_amount += amountOf(r);
-      p.donation_count += 1;
-      p.arms_supported.add(resolveArmName(r));
-      p.records.push(r);
-      const d = recordDate(r);
-      if (d && (!p.last_donation_date || d > p.last_donation_date)) p.last_donation_date = d;
+      const entry = map.get(key);
+      entry.total_amount += amt;
+      entry.donation_count += 1;
+      entry.arms_supported.add(armName);
+      entry.records.push(r);
+      if (!entry.last_donation_date || d > entry.last_donation_date) {
+        entry.last_donation_date = d;
+      }
     });
-    return [...map.values()]
+
+    return Array.from(map.values())
       .map((p) => {
         const days = daysSince(p.last_donation_date);
         let status = isPt() ? "Activo" : "Active";
@@ -275,7 +405,7 @@
         else if (days > 30 || p.donation_count < 2) status = isPt() ? "Precisa de Acompanhamento" : "Needs Follow-Up";
         return {
           ...p,
-          arms_supported: [...p.arms_supported],
+          arms_supported: Array.from(p.arms_supported),
           status
         };
       })
@@ -283,13 +413,14 @@
   }
 
   function partnershipAccess() {
-    const role = (typeof activeUser !== "undefined" && activeUser?.role) || "";
+    const user = typeof activeUser !== "undefined" ? activeUser : null;
+    const role = user?.role || "";
+    const grants = user?.department_permissions || [];
+    const isSuper = role === "Super Admin" || grants.includes("*");
+    const hasDeptGrant = grants.includes("partnership") || grants.includes("partnerships") || grants.includes("finance");
     const canView = typeof canEnterRoute === "function" ? canEnterRoute("partnership") : true;
-    const canEdit =
-      ["Super Admin", "National Admin", "Partnership Coordinator"].includes(role);
-    const canExport =
-      canEdit ||
-      ["Main Pastor", "Finance Head", "Finance Officer", "Church Pastor"].includes(role);
+    const canEdit = isSuper || hasDeptGrant || ["National Admin", "Partnership Coordinator", "Finance Head"].includes(role);
+    const canExport = isSuper || hasDeptGrant || ["Main Pastor", "National Admin", "Finance Head", "Finance Officer", "Church Pastor"].includes(role);
     return { canView, canEdit, canExport, role };
   }
 
@@ -316,7 +447,7 @@
   }
 
   function moneyFmt(n) {
-    return typeof money === "function" ? money(n) : `${Number(n || 0).toFixed(0)} MZN`;
+    return typeof money === "function" ? money(n) : `${Number(n || 0).toLocaleString("pt-MZ")} MZN`;
   }
 
   function badgeHtml(label, tone = "") {
@@ -326,7 +457,7 @@
 
   function armLogoHtml(arm) {
     if (arm.logo_url) {
-      return `<img src="${arm.logo_url}" alt="${arm.name}" class="partnership-arm-logo">`;
+      return `<img src="${arm.logo_url}" alt="${arm.name}" class="partnership-arm-logo" style="width: 3.5rem; height: 3.5rem; border-radius: 1rem; object-fit: cover; border: 1px solid rgba(215, 174, 75, 0.3);">`;
     }
     const initials = String(arm.name || "?")
       .split(/\s+/)
@@ -334,7 +465,7 @@
       .map((w) => w[0] || "")
       .join("")
       .toUpperCase();
-    return `<div class="partnership-arm-placeholder" title="${isPt() ? "Logotipo pendente" : "Logo pending"}"><i class="bi ${arm.icon || "bi-stars"}"></i><span>${initials}</span></div>`;
+    return `<div class="partnership-arm-placeholder" title="${isPt() ? "Ícone padrão" : "Default icon"}"><i class="bi ${arm.icon || "bi-stars"}"></i><span>${initials}</span></div>`;
   }
 
   function summaryCardsHtml(arms, partners) {
@@ -356,18 +487,20 @@
       { icon: "bi-person-plus", label: isPt() ? "Novos Parceiros Este Mês" : "New Partners This Month", value: newPartners, tab: "partners" },
       { icon: "bi-hourglass-split", label: isPt() ? "Contribuições Pendentes de Verificação" : "Pending Verification", value: pending, route: "finance" }
     ];
-    const metricFn = typeof metric === "function" ? metric : null;
-    if (metricFn) {
-      return `<div class="row g-3 summary-cards-row mb-4">${cards
-        .map(
-          (c) =>
-            `<div class="col-6 col-md-4 col-xl-3"><button type="button" class="w-100 border-0 bg-transparent p-0 text-start" data-partnership-jump="${c.tab || ""}" data-partnership-arm="${c.armId || ""}" data-partnership-route="${c.route || ""}">${metricFn(c.icon, c.label, c.value, isPt() ? "Parcerias" : "Partnerships")}</button></div>`
-        )
-        .join("")}</div>`;
-    }
-    return `<div class="row g-3 mb-4">${cards
+
+    return `<div class="row g-3 summary-cards-row mb-4">${cards
       .map(
-        (c) => `<div class="col-6 col-md-3"><article class="record-card data-card"><span class="eyebrow">${c.label}</span><h3>${c.value}</h3></article></div>`
+        (c) => `
+        <div class="col-6 col-md-4 col-xl-3">
+          <article class="metric-card summary-card light-surface summary-card--clickable h-100" data-partnership-jump="${c.tab || ""}" data-partnership-arm="${c.armId || ""}" data-partnership-route="${c.route || ""}" role="button" tabindex="0" aria-label="${c.label}">
+            <div class="metric-icon summary-card-icon"><i class="bi ${c.icon}"></i></div>
+            <div class="summary-card-body">
+              <span class="summary-card-label metric-label chart-label label">${c.label}</span>
+              <strong class="summary-card-value metric-value">${c.value}</strong>
+              <small class="summary-card-hint meta-text subtitle">${isPt() ? "Clique para ver detalhes" : "Click to view"}</small>
+            </div>
+          </article>
+        </div>`
       )
       .join("")}</div>`;
   }
@@ -378,39 +511,69 @@
       .map((arm) => {
         const promoBadge = arm.needs_promotion
           ? `<span class="badge badge-promo">${isPt() ? "Precisa de Promoção" : "Needs Promotion"}</span>`
-          : badgeHtml(arm.status_label);
+          : badgeHtml(arm.status_label || (arm.status === "Inactive" ? "Inactive" : "Active"));
+
+        const editButtons = access.canEdit
+          ? `<button type="button" class="btn btn-sm btn-outline-primary" data-partnership-arm-edit="${arm.id}" title="${isPt() ? "Editar Braço e Logotipo" : "Edit Arm & Logo"}"><i class="bi bi-pencil me-1"></i>${isPt() ? "Editar" : "Edit"}</button>
+             <button type="button" class="btn btn-sm btn-outline-danger" data-partnership-arm-delete="${arm.id}" title="${isPt() ? "Eliminar Braço" : "Delete Arm"}"><i class="bi bi-trash"></i></button>`
+          : "";
+
         return `
       <div class="col-12 col-md-6 col-xl-4">
-        <article class="panel glass-panel partnership-arm-card h-100" data-arm-id="${arm.id}">
-          <div class="partnership-arm-card-head">
-            ${armLogoHtml(arm)}
-            <div>
-              <span class="eyebrow">${isPt() ? "Braço de Parceria" : "Partnership Arm"}</span>
-              <h3 class="mb-1">${arm.name}</h3>
-              ${promoBadge}
+        <article class="panel glass-panel partnership-arm-card h-100 d-flex flex-column justify-content-between" data-arm-id="${arm.id}">
+          <div>
+            <div class="partnership-arm-card-head">
+              ${armLogoHtml(arm)}
+              <div class="flex-grow-1">
+                <span class="eyebrow">${isPt() ? "Braço de Parceria" : "Partnership Arm"}</span>
+                <h3 class="mb-1 h5 fw-bold text-wrap">${arm.name}</h3>
+                ${promoBadge}
+              </div>
+            </div>
+            <p class="text-secondary small mb-2">${arm.description || (isPt() ? "Sem descrição adicional." : "No description.")}</p>
+            <div class="partnership-arm-stats">
+              <div><span>${isPt() ? "Total" : "Total"}</span><strong>${moneyFmt(arm.total_amount)}</strong></div>
+              <div><span>${isPt() ? "Dadores" : "Donors"}</span><strong>${arm.donor_count}</strong></div>
+              <div><span>${isPt() ? "Média" : "Average"}</span><strong>${moneyFmt(arm.average_donation)}</strong></div>
+              <div><span>${isPt() ? "Maior" : "Largest"}</span><strong>${moneyFmt(arm.max_donation)}</strong></div>
+              <div><span>${isPt() ? "Última" : "Last"}</span><strong>${arm.last_donation_date || "-"}</strong></div>
+              <div><span>${isPt() ? "Crescimento" : "Growth"}</span><strong>${arm.growth_percent > 0 ? "+" : ""}${arm.growth_percent}%</strong></div>
+            </div>
+            <div class="d-flex justify-content-between align-items-center small text-secondary mb-1">
+              <span>${isPt() ? "Meta Mensal:" : "Monthly Target:"} <strong>${moneyFmt(arm.monthly_goal)}</strong></span>
+              <span class="fw-bold ${arm.goal_progress >= 100 ? "text-success" : "text-ce-gold"}">${arm.goal_progress}%</span>
+            </div>
+            <div class="progress partnership-goal-bar mb-3" role="progressbar" aria-valuenow="${arm.goal_progress}">
+              <div class="progress-bar ${arm.goal_progress >= 100 ? "bg-success" : "bg-warning"}" style="width:${Math.min(100, arm.goal_progress)}%"></div>
             </div>
           </div>
-          <p class="text-secondary small">${arm.description || ""}</p>
-          <div class="partnership-arm-stats">
-            <div><span>${isPt() ? "Total" : "Total"}</span><strong>${moneyFmt(arm.total_amount)}</strong></div>
-            <div><span>${isPt() ? "Dadores" : "Donors"}</span><strong>${arm.donor_count}</strong></div>
-            <div><span>${isPt() ? "Média" : "Average"}</span><strong>${moneyFmt(arm.average_donation)}</strong></div>
-            <div><span>${isPt() ? "Maior" : "Largest"}</span><strong>${moneyFmt(arm.max_donation)}</strong></div>
-            <div><span>${isPt() ? "Última" : "Last"}</span><strong>${arm.last_donation_date || "-"}</strong></div>
-            <div><span>${isPt() ? "Crescimento" : "Growth"}</span><strong>${arm.growth_percent > 0 ? "+" : ""}${arm.growth_percent}%</strong></div>
-          </div>
-          <div class="progress partnership-goal-bar mb-3" role="progressbar" aria-valuenow="${arm.goal_progress}">
-            <div class="progress-bar" style="width:${arm.goal_progress}%"></div>
-          </div>
-          <div class="d-flex flex-wrap gap-2">
-            <button type="button" class="btn btn-sm btn-ce-gold" data-partnership-arm-detail="${arm.id}"><i class="bi bi-eye me-1"></i>${isPt() ? "Ver Detalhes" : "View Details"}</button>
-            <button type="button" class="btn btn-sm btn-outline-cyan" data-partnership-arm-partners="${arm.id}"><i class="bi bi-people me-1"></i>${isPt() ? "Ver Parceiros" : "View Partners"}</button>
-            <button type="button" class="btn btn-sm btn-outline-cyan" data-partnership-arm-report="${arm.id}"><i class="bi bi-bar-chart me-1"></i>${isPt() ? "Ver Relatório" : "View Report"}</button>
+          <div class="d-flex flex-wrap gap-2 pt-2 border-top border-secondary border-opacity-10">
+            <button type="button" class="btn btn-sm btn-ce-gold" data-partnership-arm-detail="${arm.id}"><i class="bi bi-eye me-1"></i>${isPt() ? "Detalhes" : "Details"}</button>
+            <button type="button" class="btn btn-sm btn-outline-cyan" data-partnership-arm-partners="${arm.id}"><i class="bi bi-people me-1"></i>${isPt() ? "Parceiros" : "Partners"}</button>
+            <button type="button" class="btn btn-sm btn-outline-cyan" data-partnership-arm-report="${arm.id}"><i class="bi bi-bar-chart me-1"></i>${isPt() ? "Relatório" : "Report"}</button>
+            ${editButtons}
           </div>
         </article>
       </div>`;
       })
       .join("")}</div>`;
+  }
+
+  function renderArmsTab(arms) {
+    const access = partnershipAccess();
+    const createBtn = access.canEdit
+      ? `<button type="button" class="btn btn-ce-gold btn-sm d-flex align-items-center gap-1" data-partnership-arm-create><i class="bi bi-plus-lg"></i><span>${isPt() ? "Novo Braço de Parceria" : "New Partnership Arm"}</span></button>`
+      : "";
+
+    return `
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <div>
+          <h3 class="h5 mb-0">${isPt() ? "Braços de Parceria Cadastrados" : "Registered Partnership Arms"}</h3>
+          <span class="small text-secondary">${arms.length} ${isPt() ? "braços configurados" : "configured arms"}</span>
+        </div>
+        ${createBtn}
+      </div>
+      ${armCardsHtml(arms)}`;
   }
 
   function partnersTableHtml(partners) {
@@ -637,6 +800,264 @@
     }
   }
 
+  function getOrCreateArmModal() {
+    let modalEl = document.getElementById("partnershipArmEditModal");
+    if (!modalEl) {
+      modalEl = document.createElement("div");
+      modalEl.id = "partnershipArmEditModal";
+      modalEl.className = "modal fade ops-modal-shell";
+      modalEl.tabIndex = -1;
+      modalEl.setAttribute("aria-hidden", "true");
+      modalEl.innerHTML = `
+        <div class="modal-dialog modal-lg modal-dialog-centered ops-modal-dialog">
+          <form id="partnershipArmForm" class="modal-content ops-modal">
+            <div class="modal-header ops-modal-header">
+              <div>
+                <span id="armModalEyebrow" class="eyebrow">${isPt() ? "Gestão de Parcerias" : "Partnership Management"}</span>
+                <h5 id="armModalTitle" class="modal-title">${isPt() ? "Editar Braço de Parceria" : "Edit Partnership Arm"}</h5>
+              </div>
+              <button type="button" class="icon-btn ops-modal-close" data-bs-dismiss="modal" aria-label="Fechar">
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
+              </button>
+            </div>
+            <div id="armModalFields" class="modal-body ops-modal-body row g-3">
+              <!-- Dynamically populated -->
+            </div>
+            <div class="modal-footer ops-modal-footer d-flex justify-content-between">
+              <button type="button" class="btn btn-outline-glass btn-touch" data-bs-dismiss="modal">${isPt() ? "Cancelar" : "Cancel"}</button>
+              <button type="submit" class="btn btn-ce-gold btn-touch"><i class="bi bi-check-lg me-1"></i>${isPt() ? "Guardar Braço" : "Save Arm"}</button>
+            </div>
+          </form>
+        </div>`;
+      document.body.appendChild(modalEl);
+
+      // Bind form submission once
+      const form = modalEl.querySelector("#partnershipArmForm");
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const armId = form.dataset.armId || "";
+        const name = form.querySelector("#armFormName")?.value.trim() || "";
+        if (!name) {
+          if (typeof showToast === "function") showToast(isPt() ? "Insira o nome do braço." : "Enter the arm name.", "error");
+          return;
+        }
+        const description = form.querySelector("#armFormDesc")?.value.trim() || "";
+        const monthly_goal = Number(form.querySelector("#armFormGoal")?.value || 10000);
+        const icon = form.querySelector("#armFormIcon")?.value || "bi-stars";
+        const status = form.querySelector("#armFormStatus")?.value || "Active";
+        const logo_url = form.querySelector("#armFormLogoUrl")?.value.trim() || "";
+
+        const currentArms = getArms();
+        let targetArm = null;
+
+        if (armId) {
+          const index = currentArms.findIndex((a) => a.id === armId);
+          if (index >= 0) {
+            targetArm = {
+              ...currentArms[index],
+              name,
+              description,
+              monthly_goal,
+              icon,
+              status,
+              is_active: status === "Active",
+              logo_url,
+              updated_at: new Date().toISOString()
+            };
+            currentArms[index] = targetArm;
+          }
+        }
+
+        if (!targetArm) {
+          const newId = `arm-${name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || Date.now()}`;
+          targetArm = {
+            id: newId,
+            name,
+            description,
+            monthly_goal,
+            icon,
+            status,
+            is_active: status === "Active",
+            logo_url,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          };
+          currentArms.push(targetArm);
+        }
+
+        persistArmsState(currentArms);
+        renderPartnerships();
+
+        if (typeof bootstrap !== "undefined") {
+          const bsModal = bootstrap.Modal.getInstance(modalEl);
+          bsModal?.hide();
+        }
+
+        if (typeof showToast === "function") {
+          showToast(isPt() ? "Braço de parceria guardado com sucesso!" : "Partnership arm saved successfully!", "success");
+        }
+
+        // Asynchronously sync to Supabase
+        await savePartnershipArmToSupabase(targetArm);
+      });
+    }
+    return modalEl;
+  }
+
+  function openPartnershipArmModal(armId = "") {
+    const modalEl = getOrCreateArmModal();
+    const currentArms = getArms();
+    const arm = armId ? currentArms.find((a) => a.id === armId) : null;
+    const form = modalEl.querySelector("#partnershipArmForm");
+    form.dataset.armId = arm ? arm.id : "";
+
+    const titleEl = modalEl.querySelector("#armModalTitle");
+    const eyebrowEl = modalEl.querySelector("#armModalEyebrow");
+    if (titleEl) titleEl.textContent = arm ? (isPt() ? `Editar: ${arm.name}` : `Edit: ${arm.name}`) : (isPt() ? "Novo Braço de Parceria" : "New Partnership Arm");
+    if (eyebrowEl) eyebrowEl.textContent = arm ? (isPt() ? "Modificar Braço" : "Modify Arm") : (isPt() ? "Criar Braço" : "Create Arm");
+
+    const iconOpts = PARTNERSHIP_ICONS.map(
+      (opt) => `<option value="${opt.icon}" ${(arm?.icon || "bi-stars") === opt.icon ? "selected" : ""}>${opt.label} (${opt.icon})</option>`
+    ).join("");
+
+    const fieldsEl = modalEl.querySelector("#armModalFields");
+    fieldsEl.innerHTML = `
+      <div class="col-12 col-md-8">
+        <label class="form-label required fw-bold">${isPt() ? "Nome do Braço de Parceria" : "Partnership Arm Name"}</label>
+        <input type="text" id="armFormName" class="form-control" required value="${arm?.name || ""}" placeholder="${isPt() ? "Ex: Escola de Cura, Rapsódia de Realidades..." : "E.g. Healing School, Rhapsody..."}">
+      </div>
+      <div class="col-12 col-md-4">
+        <label class="form-label fw-bold">${isPt() ? "Estado" : "Status"}</label>
+        <select id="armFormStatus" class="form-select">
+          <option value="Active" ${arm?.status !== "Inactive" ? "selected" : ""}>${isPt() ? "Activo" : "Active"}</option>
+          <option value="Inactive" ${arm?.status === "Inactive" ? "selected" : ""}>${isPt() ? "Inactivo" : "Inactive"}</option>
+        </select>
+      </div>
+      <div class="col-12">
+        <label class="form-label fw-bold">${isPt() ? "Descrição e Objectivos" : "Description & Objectives"}</label>
+        <textarea id="armFormDesc" class="form-control" rows="2" placeholder="${isPt() ? "Breve resumo do propósito deste braço de parceria..." : "Brief summary of this partnership arm..."}">${arm?.description || ""}</textarea>
+      </div>
+      <div class="col-12 col-md-6">
+        <label class="form-label fw-bold">${isPt() ? "Meta Mensal (MZN)" : "Monthly Target (MZN)"}</label>
+        <input type="number" id="armFormGoal" class="form-control" min="0" step="500" value="${arm?.monthly_goal ?? 10000}">
+      </div>
+      <div class="col-12 col-md-6">
+        <label class="form-label fw-bold">${isPt() ? "Ícone de Fallback" : "Fallback Icon"}</label>
+        <select id="armFormIcon" class="form-select">
+          ${iconOpts}
+        </select>
+      </div>
+
+      <!-- Logo Customization Box -->
+      <div class="col-12">
+        <div class="p-3 rounded border" style="background: rgba(15, 23, 42, 0.4); border-color: rgba(148, 163, 184, 0.2) !important;">
+          <label class="form-label fw-bold d-flex justify-content-between align-items-center mb-2">
+            <span><i class="bi bi-image me-1 text-warning"></i> ${isPt() ? "Logotipo do Braço de Parceria" : "Partnership Arm Logo"}</span>
+            <span class="badge bg-secondary">${isPt() ? "Opcional" : "Optional"}</span>
+          </label>
+          
+          <div class="d-flex flex-column flex-sm-row gap-3 align-items-center">
+            <!-- Preview Box -->
+            <div id="armFormLogoPreviewBox" class="d-flex flex-column align-items-center justify-content-center border rounded p-1 text-center" style="width: 5.5rem; height: 5.5rem; background: rgba(255, 255, 255, 0.05); flex-shrink: 0; overflow: hidden;">
+              ${arm?.logo_url 
+                ? `<img src="${arm.logo_url}" id="armFormLogoImg" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem;">` 
+                : `<i class="bi ${arm?.icon || "bi-stars"} fs-1 text-cyan" id="armFormLogoIcon"></i>`}
+            </div>
+
+            <div class="flex-grow-1 w-100">
+              <div class="mb-2">
+                <label class="small text-secondary mb-1">${isPt() ? "Carregar ficheiro de imagem (PNG, JPG, SVG, WebP)" : "Upload image file"}</label>
+                <input type="file" id="armFormLogoFile" class="form-control form-control-sm" accept="image/*">
+              </div>
+              <div>
+                <label class="small text-secondary mb-1">${isPt() ? "Ou introduzir URL da Imagem" : "Or enter Image URL"}</label>
+                <div class="input-group input-group-sm">
+                  <input type="url" id="armFormLogoUrl" class="form-control" placeholder="https://..." value="${arm?.logo_url || ""}">
+                  <button type="button" class="btn btn-outline-danger" id="armFormClearLogoBtn" title="${isPt() ? "Remover Logotipo" : "Remove Logo"}"><i class="bi bi-trash"></i></button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+
+    // Bind image file reader & URL changer
+    const fileInput = fieldsEl.querySelector("#armFormLogoFile");
+    const urlInput = fieldsEl.querySelector("#armFormLogoUrl");
+    const clearBtn = fieldsEl.querySelector("#armFormClearLogoBtn");
+    const previewBox = fieldsEl.querySelector("#armFormLogoPreviewBox");
+    const iconSelect = fieldsEl.querySelector("#armFormIcon");
+
+    const updatePreview = () => {
+      const url = urlInput.value.trim();
+      const selectedIcon = iconSelect.value || "bi-stars";
+      if (url) {
+        previewBox.innerHTML = `<img src="${url}" id="armFormLogoImg" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem;" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\\'bi ${selectedIcon} fs-1 text-danger\\'></i>';">`;
+      } else {
+        previewBox.innerHTML = `<i class="bi ${selectedIcon} fs-1 text-cyan" id="armFormLogoIcon"></i>`;
+      }
+    };
+
+    if (fileInput) {
+      fileInput.addEventListener("change", (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          const result = evt.target?.result;
+          if (result && typeof result === "string") {
+            urlInput.value = result;
+            updatePreview();
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    if (urlInput) {
+      urlInput.addEventListener("input", updatePreview);
+    }
+
+    if (iconSelect) {
+      iconSelect.addEventListener("change", updatePreview);
+    }
+
+    if (clearBtn) {
+      clearBtn.addEventListener("click", () => {
+        urlInput.value = "";
+        if (fileInput) fileInput.value = "";
+        updatePreview();
+      });
+    }
+
+    if (typeof bootstrap !== "undefined") {
+      bootstrap.Modal.getOrCreateInstance(modalEl).show();
+    }
+  }
+
+  async function deletePartnershipArm(armId) {
+    const currentArms = getArms();
+    const arm = currentArms.find((a) => a.id === armId);
+    if (!arm) return;
+
+    const confirmMsg = isPt()
+      ? `Tem a certeza que deseja eliminar o braço "${arm.name}"?\n(Os registos financeiros históricos em Finanças permanecerão intactos).`
+      : `Are you sure you want to delete the arm "${arm.name}"?\n(Financial records in Finance will remain intact).`;
+
+    if (!confirm(confirmMsg)) return;
+
+    const updated = currentArms.filter((a) => a.id !== armId);
+    persistArmsState(updated);
+    renderPartnerships();
+
+    if (typeof showToast === "function") {
+      showToast(isPt() ? `Braço "${arm.name}" eliminado com sucesso.` : `Arm "${arm.name}" deleted.`, "success");
+    }
+
+    // Dual write deletion to Supabase
+    await deletePartnershipArmFromSupabase(armId);
+  }
+
   function exportData(format) {
     const range = periodRange(partnershipPageState.period);
     const list = getPartnershipFinanceList().filter((r) => inRange(recordDate(r), range.start, range.end));
@@ -683,7 +1104,7 @@
     let body = "";
     switch (partnershipPageState.tab) {
       case "arms":
-        body = armCardsHtml(arms);
+        body = renderArmsTab(arms);
         break;
       case "partners":
         body = partnersTableHtml(partners);
@@ -723,8 +1144,8 @@
         ? sectionHeader(
             isPt() ? "Parcerias" : "Partnerships",
             isPt()
-              ? "Visão analítica sobre contribuições de parceria verificadas em Finanças. Loveworld SAT é um braço, não um departamento."
-              : "Analytics over verified partnership contributions from Finance. Loveworld SAT is a partnership arm, not a department.",
+              ? "Visão analítica sobre contribuições de parceria verificadas em Finanças. Loveworld SAT é um braço de parceria."
+              : "Analytics over verified partnership contributions from Finance. Loveworld SAT is a partnership arm.",
             null,
             "bi-stars"
           )
@@ -773,6 +1194,21 @@
         openArmDetail(detail.getAttribute("data-partnership-arm-detail"));
         return;
       }
+      const armCreate = event.target.closest("[data-partnership-arm-create]");
+      if (armCreate) {
+        openPartnershipArmModal("");
+        return;
+      }
+      const armEdit = event.target.closest("[data-partnership-arm-edit]");
+      if (armEdit) {
+        openPartnershipArmModal(armEdit.getAttribute("data-partnership-arm-edit"));
+        return;
+      }
+      const armDelete = event.target.closest("[data-partnership-arm-delete]");
+      if (armDelete) {
+        deletePartnershipArm(armDelete.getAttribute("data-partnership-arm-delete"));
+        return;
+      }
       const armPartners = event.target.closest("[data-partnership-arm-partners]");
       if (armPartners) {
         partnershipPageState.armId = armPartners.getAttribute("data-partnership-arm-partners") || "";
@@ -802,6 +1238,11 @@
     });
   }
 
+  // Hydrate from Supabase on init
+  if (typeof window !== "undefined") {
+    setTimeout(hydratePartnershipArms, 1000);
+  }
+
   global.PARTNERSHIP_ARMS_SEED = PARTNERSHIP_ARMS_SEED;
   global.partnershipPageState = partnershipPageState;
   global.renderPartnerships = renderPartnerships;
@@ -810,12 +1251,18 @@
   global.computePartnershipArmAnalytics = computeArmAnalytics;
   global.computePartnershipPartners = computePartners;
   global.isPartnershipFinanceRecord = isPartnershipRecord;
+  global.openPartnershipArmModal = openPartnershipArmModal;
+  global.deletePartnershipArm = deletePartnershipArm;
+  global.hydratePartnershipArms = hydratePartnershipArms;
   global.CEPartnerships = {
     getArms,
     getPartnershipFinanceList,
     computeArmAnalytics,
     computePartners,
     getPartnershipArmPromotionStatus,
+    openArmModal: openPartnershipArmModal,
+    deleteArm: deletePartnershipArm,
+    hydrate: hydratePartnershipArms,
     render: renderPartnerships
   };
 })(typeof window !== "undefined" ? window : globalThis);

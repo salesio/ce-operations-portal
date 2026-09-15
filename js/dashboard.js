@@ -4968,6 +4968,11 @@ function normalizeState(saved) {
     const seedItem = seedStaff.find((seed) => seed.id === item.id) || {};
     return normalizeStaffProfileRecord(seedItem, item);
   });
+  if (Array.isArray(saved.partnershipArms) && saved.partnershipArms.length) {
+    merged.partnershipArms = saved.partnershipArms;
+  } else if (!Array.isArray(merged.partnershipArms) || !merged.partnershipArms.length) {
+    merged.partnershipArms = typeof PARTNERSHIP_ARMS_SEED !== "undefined" ? structuredClone(PARTNERSHIP_ARMS_SEED) : [];
+  }
   merged.users = (merged.users || seedData.users || []).filter((u) => !isDemoUser(u));
   normalizeEcChurchLabelsInTree(merged);
   normalizeServiceLabelsInTree(merged);
@@ -25672,6 +25677,12 @@ function renderUserForm(record = {}, modalMode = "create") {
               <label class="form-check">
                 <input type="checkbox" name="dept_perm" value="requisitions" class="form-check-input" ${deptPerms.has("requisitions") || deptPerms.has("*") ? "checked" : ""}>
                 <span class="form-check-label"><i class="bi bi-cart-check me-1 text-primary"></i> Requisições & Compras</span>
+              </label>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+              <label class="form-check">
+                <input type="checkbox" name="dept_perm" value="partnership" class="form-check-input" ${deptPerms.has("partnership") || deptPerms.has("partnerships") || deptPerms.has("*") ? "checked" : ""}>
+                <span class="form-check-label"><i class="bi bi-stars me-1 text-warning"></i> Parcerias (Partnerships)</span>
               </label>
             </div>
           </div>
