@@ -4044,7 +4044,7 @@ const churchPageState = {
   view: localStorage.getItem(CHURCH_VIEW_KEY) || "cards",
   filters: { search: "", province: "", city: "", type: "", status: "", information_status: "" }
 };
-const requisitionsPageState = { tab: "overview", cardFilter: {}, reportFilters: { period: "month", dateFrom: "", dateTo: "", churchId: "", department: "", requisition_type: "", urgency: "", finance_status: "", requisition_status: "", requester: "", approved_by: "", released_by: "", minValue: "", maxValue: "", card_filter: "" } };
+const requisitionsPageState = { tab: "overview", cardFilter: {}, view: localStorage.getItem("ce_requisitions_view_mode") || "table", reportFilters: { period: "month", dateFrom: "", dateTo: "", churchId: "", department: "", requisition_type: "", urgency: "", finance_status: "", requisition_status: "", requester: "", approved_by: "", released_by: "", minValue: "", maxValue: "", card_filter: "" } };
 const staffHrPageState = {
   tab: "overview",
   selectedStaffId: "",
@@ -4065,7 +4065,7 @@ const firstTimersPageState = { filter: {} };
 const followUpPageState = { filter: {} };
 const counselingPageState = { tab: "overview", filter: {} };
 const fevoPageState = { filter: {} };
-const venuePageState = { route: "venueInventory", filter: {}, page: 1, pageSize: 10 };
+const venuePageState = { route: "venueInventory", filter: {}, page: 1, pageSize: 10, view: localStorage.getItem("ce_venue_view_mode") || "table" };
 const sacramentsPageState = { panel: "", filter: {} };
 const mediaPageState = { tab: "overview", filter: {} };
 const programsPageState = { filter: {} };
@@ -21970,6 +21970,7 @@ function venueFilterBar(activeTab = "inventory") {
           <i class="bi bi-x-circle me-1"></i>${lang === "pt" ? "Limpar" : "Clear"}
         </button>
       ` : ""}
+      ${typeof ViewToggle === "function" ? ViewToggle(venuePageState.view || "table") : ""}
     </div>
   `;
 }
@@ -22002,6 +22003,30 @@ function renderVenuePaginationPages(currentPage, totalPages, activeTab) {
   }).join("");
 }
 
+function renderVenueItemCard(type, headers, row) {
+  if (typeof DataCard !== "function") return "";
+  const title = String(row[0] || "-").replace(/<[^>]*>/g, "");
+  const actions = row[row.length - 1] || "";
+  const meta = [];
+  let badges = [];
+  for (let i = 1; i < row.length - 1; i++) {
+    const header = headers[i];
+    const val = row[i];
+    if (header === L("status") || String(header).toLowerCase().includes("status") || String(header).toLowerCase().includes("estado")) {
+      badges.push(typeof val === "string" && val.includes("<") ? val : badge(val));
+    } else {
+      meta.push([header, val]);
+    }
+  }
+  return DataCard({
+    title: title,
+    subtitle: L(type) || type,
+    badges: badges.filter(Boolean),
+    meta: meta.slice(0, 6),
+    actions: actions
+  });
+}
+
 function venueModulePanel(type, title, modalType, headers, rows, { showFilters = true, allowAdd = true, activeTab = "inventory" } = {}) {
   const canAdd = allowAdd && modalType && (canManageVenue() || (modalType === "venueMovement" && canRequestVenueEquipment()));
   const totalRows = rows.length;
@@ -22012,6 +22037,7 @@ function venueModulePanel(type, title, modalType, headers, rows, { showFilters =
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = Math.min(startIndex + pageSize, totalRows);
   const pagedRows = rows.slice(startIndex, endIndex);
+  const view = venuePageState.view || "table";
 
   const paginationHtml = `
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-3 pt-3 border-top border-secondary border-opacity-25 venue-pagination-bar" data-venue-tab="${activeTab}">
@@ -22040,6 +22066,10 @@ function venueModulePanel(type, title, modalType, headers, rows, { showFilters =
     </div>
   `;
 
+  const contentHtml = view === "cards"
+    ? (pagedRows.length ? (typeof DataCardsGrid === "function" ? DataCardsGrid(pagedRows.map((r) => renderVenueItemCard(type, headers, r)).join("")) : pagedRows.map((r) => renderVenueItemCard(type, headers, r)).join("")) : noResultsHtml())
+    : dataTable(headers, pagedRows);
+
   return `
     <article id="panel-${type}" class="panel h-100">
       <div class="panel-head">
@@ -22051,7 +22081,7 @@ function venueModulePanel(type, title, modalType, headers, rows, { showFilters =
         </div>
       </div>
       ${showFilters ? venueFilterBar(activeTab) : ""}
-      ${dataTable(headers, pagedRows)}
+      ${contentHtml}
       ${paginationHtml}
     </article>
   `;
@@ -22564,15 +22594,23 @@ function requisitionActionButtonClass(action) {
   if (action === "approve") return "action-btn action-btn--approve";
   if (action === "reject") return "action-btn action-btn--reject";
   if (action === "returnForCorrection") return "action-btn action-btn--return";
+  if (action === "delete") return "action-btn action-btn--danger text-danger border-danger-subtle";
   return "action-btn";
 }
 
 function requisitionActionButtons(record) {
   const lib = window.CERequisitions;
   if (!lib) return "";
+  const access = lib.resolveAccess ? lib.resolveAccess(activeUser) : {};
   const actions = (lib.tableActions ? lib.tableActions(activeUser, record) : lib.availableActions(activeUser, record))
     .filter((a) => a !== "view");
   const buttons = [["view", "requisition", record.id, L("view")], ...actions.map((a) => [a, "requisition", record.id, requisitionActionLabel(a)])];
+  const canDelete = access.can_delete ||
+    (record.requested_by_user_id && String(record.requested_by_user_id) === String(activeUser.id) && ["Rascunho", "Rejeitado", "Draft", "Rejected"].includes(record.status)) ||
+    ["Super Admin", "Requisition Officer"].includes(activeUser.role);
+  if (canDelete && !buttons.some(([act]) => act === "delete")) {
+    buttons.push(["delete", "requisition", record.id, L("delete") || "Apagar"]);
+  }
   return `<div class="action-cluster">${buttons.map(([action, type, id, label]) =>
     `<button type="button" class="${requisitionActionButtonClass(action)}" data-action="${action}" data-type="${type}" data-id="${id}">${label}</button>`
   ).join("")}</div>`;
@@ -22755,15 +22793,23 @@ function openRequisitionDrawer(id, presetDecision = "") {
   body.innerHTML = requisitionDetailHtml(record, presetDecision);
 
   const lib = window.CERequisitions;
+  const access = lib?.resolveAccess ? lib.resolveAccess(activeUser) : {};
   const showPastoral = lib?.canPastoralDecide(activeUser) && record.status === lib?.STATUSES.SENT_TO_PASTOR;
+  const canDelete = access.can_delete ||
+    (record.requested_by_user_id && String(record.requested_by_user_id) === String(activeUser.id) && ["Rascunho", "Rejeitado", "Draft", "Rejected"].includes(record.status)) ||
+    ["Super Admin", "Requisition Officer"].includes(activeUser.role);
+  const deleteBtn = canDelete ? `<button type="button" class="btn btn-outline-danger me-auto" data-action="delete" data-type="requisition" data-id="${record.id}"><i class="bi bi-trash me-1"></i>${L("delete") || "Apagar"}</button>` : "";
   if (showPastoral) {
     foot.innerHTML = `
+      ${deleteBtn}
       <button type="button" class="btn btn-outline-glass" data-requisition-drawer-close>${L("cancel")}</button>
       <button type="button" class="btn btn-outline-warning req-btn-return" data-req-pastoral-action="returnForCorrection">${L("reqReturnForCorrection")}</button>
       <button type="button" class="btn btn-outline-danger req-btn-reject" data-req-pastoral-action="reject">${L("reqReject")}</button>
       <button type="button" class="btn btn-ce-gold req-btn-approve" data-req-pastoral-action="approve">${L("reqApprove")}</button>`;
   } else {
-    foot.innerHTML = `<button type="button" class="btn btn-outline-glass" data-requisition-drawer-close>${L("cancel")}</button>`;
+    foot.innerHTML = `
+      ${deleteBtn}
+      <button type="button" class="btn btn-outline-glass" data-requisition-drawer-close>${L("cancel")}</button>`;
   }
 
   drawer.classList.remove("d-none");
@@ -22832,6 +22878,27 @@ function submitRequisitionPastoralDecision(decision) {
   setRoute(activeRoute);
 }
 
+function renderRequisitionCard(record) {
+  if (typeof DataCard !== "function") return "";
+  const urgencyBadge = record.urgency ? `<span class="badge ${record.urgency === "Urgente" || record.urgency === "Alta" ? "bg-danger-subtle text-danger" : "bg-secondary-subtle text-body"}">${record.urgency}</span>` : "";
+  const statusBadge = requisitionStatusBadge(record.status);
+  return DataCard({
+    title: record.title || record.request_number || L("requisitions"),
+    subtitle: record.request_number || "",
+    badges: [statusBadge, urgencyBadge].filter(Boolean),
+    meta: [
+      [L("reqDepartment"), record.department_name || "-", "bi-diagram-3"],
+      [L("church"), record.church_name || churchName(record.church_id) || "-", "bi-building"],
+      [L("reqRequester"), record.requested_by_name || "-", "bi-person"],
+      [L("reqType"), record.requisition_type || "-", "bi-tag"],
+      [L("reqEstimated"), money(record.estimated_amount), "bi-cash"],
+      [L("reqNeededBy"), record.needed_by_date || "-", "bi-calendar-event"]
+    ],
+    pills: [record.finance_status ? `${L("finFinanceStatus")}: ${record.finance_status}` : null].filter(Boolean),
+    actions: requisitionActionButtons(record)
+  });
+}
+
 function renderRequisitions() {
   const lib = window.CERequisitions;
   if (!lib?.resolveAccess(activeUser).can_view) return renderAccessDenied();
@@ -22841,9 +22908,17 @@ function renderRequisitions() {
   const access = lib.resolveAccess(activeUser);
   const scoped = lib.scopeFilter(state.requisitions || [], activeUser, access);
   const stats = lib.computeStats(scoped);
+  const view = requisitionsPageState.view || "table";
+  const viewToggleHtml = typeof ViewToggle === "function" ? ViewToggle(view) : "";
   let tabContent = "";
 
   if (requisitionsPageState.tab === "overview") {
+    const rCardsHtml = scoped.slice(0, 12).map((r) => renderRequisitionCard(r)).join("");
+    const rTableRows = scoped.slice(0, 8).map((r) => [r.request_number, r.title, r.department_name, r.requisition_type, money(r.estimated_amount), requisitionStatusBadge(r.status), requisitionActionButtons(r)]);
+    const listHtml = view === "cards"
+      ? (scoped.length ? (typeof DataCardsGrid === "function" ? DataCardsGrid(rCardsHtml) : rCardsHtml) : noResultsHtml())
+      : dataTable([L("reqNumber"), L("reqTitle"), L("reqDepartment"), L("reqType"), L("reqEstimated"), L("status"), L("actions")], rTableRows);
+
     tabContent = `
       <div class="row g-3 mb-4">
         ${sm("bi-hourglass-split", L("reqPending"), stats.pending, "requisitions", { targetTab: "received", filterPayload: { status_group: "pending" } })}
@@ -22855,9 +22930,11 @@ function renderRequisitions() {
         ${sm("bi-graph-up", L("reqApprovedValue"), money(stats.approvedTotal), "requisitions", { targetTab: "approved" })}
         ${sm("bi-clock-history", L("reqPendingValue"), money(stats.pendingValue), "requisitions", { targetTab: "received", filterPayload: { pending_value: true } })}
       </div>
-      ${summaryFilterChips("requisitions")}
-      ${dataTable([L("reqNumber"), L("reqTitle"), L("reqDepartment"), L("reqType"), L("reqEstimated"), L("status"), L("actions")],
-        scoped.slice(0, 8).map((r) => [r.request_number, r.title, r.department_name, r.requisition_type, money(r.estimated_amount), requisitionStatusBadge(r.status), requisitionActionButtons(r)]))}`;
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        ${summaryFilterChips("requisitions")}
+        ${viewToggleHtml}
+      </div>
+      ${listHtml}`;
   } else if (requisitionsPageState.tab === "reports") {
     tabContent = renderRequisitionReportsPanel({
       mode: "workflow",
@@ -22876,12 +22953,23 @@ function renderRequisitions() {
   } else {
     let filtered = lib.filterByTab(scoped, requisitionsPageState.tab);
     if (requisitionsPageState.cardFilter?.pending_value) {
-      filtered = filtered.filter((r) => ["Submetido", "Em Revis�o", "Rascunho", "Devolvido para Corre��o"].includes(r.status) && Number(r.estimated_amount || 0) > 0);
+      filtered = filtered.filter((r) => ["Submetido", "Em Revisão", "Rascunho", "Devolvido para Correção"].includes(r.status) && Number(r.estimated_amount || 0) > 0);
     }
-    tabContent = `${summaryFilterChips("requisitions")}${filtered.length ? dataTable(
-      [L("reqNumber"), L("reqTitle"), L("reqDepartment"), L("reqUrgency"), L("reqNeededBy"), L("reqEstimated"), L("status"), L("actions")],
-      filtered.map((r) => [r.request_number, r.title, r.department_name, r.urgency, r.needed_by_date || "-", money(r.estimated_amount), requisitionStatusBadge(r.status), requisitionActionButtons(r)])
-    ) : noResultsHtml()}`;
+    const rCardsHtml = filtered.map((r) => renderRequisitionCard(r)).join("");
+    const rTableRows = filtered.map((r) => [r.request_number, r.title, r.department_name, r.urgency, r.needed_by_date || "-", money(r.estimated_amount), requisitionStatusBadge(r.status), requisitionActionButtons(r)]);
+    const listHtml = view === "cards"
+      ? (filtered.length ? (typeof DataCardsGrid === "function" ? DataCardsGrid(rCardsHtml) : rCardsHtml) : noResultsHtml())
+      : (filtered.length ? dataTable(
+          [L("reqNumber"), L("reqTitle"), L("reqDepartment"), L("reqUrgency"), L("reqNeededBy"), L("reqEstimated"), L("status"), L("actions")],
+          rTableRows
+        ) : noResultsHtml());
+
+    tabContent = `
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        ${summaryFilterChips("requisitions")}
+        ${viewToggleHtml}
+      </div>
+      ${listHtml}`;
   }
 
   setPageContent(`
@@ -29056,6 +29144,34 @@ async function quickAction(action, type, id) {
     if (action === "approve" || action === "reject") return openRequisitionDrawer(id, action);
     if (action === "edit") return openForm("requisition", id);
     if (action === "releaseResources") return openFinanceReleaseDrawer(id, "release");
+    if (action === "delete") {
+      const title = record.request_number || record.title || "esta requisição";
+      const message = lang === "pt"
+        ? `Tem certeza que deseja apagar a requisição ${title}?`
+        : `Are you sure you want to delete requisition ${title}?`;
+      if (!window.confirm(message)) return;
+      closeRequisitionDrawer();
+      state.requisitions = (state.requisitions || []).filter((r) => r.id !== id);
+      saveState(`Deleted requisition ${title}`);
+      if (typeof showToast === "function") showToast(lang === "pt" ? "Requisição apagada com sucesso!" : "Requisition deleted successfully!");
+      if (activeRoute === "requisitions" && typeof renderRequisitions === "function") renderRequisitions();
+      else setRoute(activeRoute);
+      try {
+        const repo = window.CERequisitionsDataBridge || window.CEDataLayer?.requisitionsWorkflow || window.CEDataLayer?.requisitions || window.CERequisitionsData;
+        if (repo && typeof repo.deleteRequisition === "function") {
+          void repo.deleteRequisition(id);
+        } else if (repo && typeof repo.dualWriteRecord === "function") {
+          void repo.dualWriteRecord("delete", record);
+        }
+        const client = (typeof window !== "undefined" && (window.CESupabase?.getRawClient?.() || window.CESupabase?.getSupabaseFoundationClient?.() || window.CESupabase?.getSupabaseClient?.() || window.supabase));
+        if (client && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(id))) {
+          void client.from("requisitions").delete().eq("id", id);
+        }
+      } catch (err) {
+        console.warn("[CE Requisitions] delete sync error", err);
+      }
+      return;
+    }
     const result = window.CERequisitions.applyWorkflowAction(state, activeUser, id, action, {});
     if (result.ok) {
       saveState(`${action} requisition ${record.request_number}`);
@@ -30082,6 +30198,18 @@ document.addEventListener("click", async (event) => {
     } else if (activeRoute === "firstTimers" || activeRoute === "counseling") {
       modulePageState.firstTimers.view = mode;
       renderFirstTimers();
+    } else if (activeRoute === "requisitions") {
+      requisitionsPageState.view = mode;
+      try { localStorage.setItem("ce_requisitions_view_mode", mode); } catch (_) {}
+      renderRequisitions();
+    } else if (activeRoute === "venueInventory" || activeRoute.startsWith("venueInventory")) {
+      venuePageState.view = mode;
+      try { localStorage.setItem("ce_venue_view_mode", mode); } catch (_) {}
+      renderVenueInventory(venuePageState.activeTab || "overview");
+    } else if (activeRoute === "churches") {
+      churchPageState.view = mode;
+      try { localStorage.setItem(CHURCH_VIEW_KEY, mode); } catch (_) {}
+      renderChurches();
     }
     return;
   }
