@@ -440,8 +440,8 @@ export async function updateInventoryItem(
 ): Promise<DataResult<InventoryItem>> {
   try {
     const existing = await getInventoryItemById(id);
-    if (!existing.ok || !existing.data) return fail("Item não encontrado", "NOT_FOUND");
-    const row = normalizeInventoryItem({ ...existing.data, ...payload, id, updated_at: todayIso() });
+    const existingData = existing.ok && existing.data ? existing.data : {};
+    const row = normalizeInventoryItem({ ...existingData, ...payload, id, updated_at: todayIso() });
     const repo = getDataProvider().inventoryItems;
     if (!repo.update) return fail("update not supported", "NOT_SUPPORTED");
     const result = await repo.update(id, row);
@@ -808,9 +808,9 @@ export async function updateMaintenanceRecord(
 ): Promise<DataResult<InventoryMaintenanceRecord>> {
   try {
     const existing = await getMaintenanceRecordById(id);
-    if (!existing.ok || !existing.data) return fail("Registo não encontrado", "NOT_FOUND");
+    const existingData = existing.ok && existing.data ? existing.data : {};
     const row = normalizeMaintenanceRecord({
-      ...existing.data,
+      ...existingData,
       ...payload,
       id,
       updated_at: todayIso(),
@@ -965,8 +965,8 @@ export async function updateVenueSpace(
 ): Promise<DataResult<VenueSpace>> {
   try {
     const existing = await getVenueSpaceById(id);
-    if (!existing.ok || !existing.data) return fail("Espaço não encontrado", "NOT_FOUND");
-    const row = normalizeVenueSpace({ ...existing.data, ...payload, id, updated_at: todayIso() });
+    const existingData = existing.ok && existing.data ? existing.data : {};
+    const row = normalizeVenueSpace({ ...existingData, ...payload, id, updated_at: todayIso() });
     const repo = getDataProvider().venueSpaces;
     if (!repo.update) return fail("update not supported", "NOT_SUPPORTED");
     const result = await repo.update(id, row);
@@ -1044,9 +1044,9 @@ export async function updateServiceChecklist(
 ): Promise<DataResult<ServiceChecklist>> {
   try {
     const existing = await getServiceChecklistById(id);
-    if (!existing.ok || !existing.data) return fail("Checklist não encontrado", "NOT_FOUND");
+    const existingData = existing.ok && existing.data ? existing.data : {};
     const row = normalizeServiceChecklist({
-      ...existing.data,
+      ...existingData,
       ...payload,
       id,
       updated_at: todayIso(),

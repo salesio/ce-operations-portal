@@ -444,6 +444,7 @@ export const getDamagedInventoryItems = () => getInventoryItemsByStatus("Damaged
 export const getUnderMaintenanceItems = () => getInventoryItemsByStatus("Under Maintenance");
 
 export const listInventoryMovements = () => crudList(MOVEMENTS, mapMovementFromRow, "movement_date");
+export const getInventoryMovementById = (id: EntityId) => crudGet(MOVEMENTS, id, mapMovementFromRow);
 export async function createInventoryMovement(payload: Partial<InventoryMovement>) {
   const res = await createRow(MOVEMENTS, mapMovementToRow(payload));
   if (!res.ok) return fail<InventoryMovement>(res.error, res.code);
@@ -461,6 +462,7 @@ export async function getMovementsByDateRange(startDate: string, endDate: string
 }
 
 export const listMaintenanceRecords = () => crudList(MAINTENANCE, mapMaintenanceFromRow, "reported_at");
+export const getMaintenanceRecordById = (id: EntityId) => crudGet(MAINTENANCE, id, mapMaintenanceFromRow);
 export async function createMaintenanceRecord(payload: Partial<InventoryMaintenanceRecord>) {
   const res = await createRow(MAINTENANCE, mapMaintenanceToRow(payload));
   if (!res.ok) return fail<InventoryMaintenanceRecord>(res.error, res.code);
@@ -490,6 +492,7 @@ export async function getOpenMaintenanceRecords() {
 }
 
 export const listVenueSpaces = () => crudList(SPACES, mapVenueSpaceFromRow);
+export const getVenueSpaceById = (id: EntityId) => crudGet(SPACES, id, mapVenueSpaceFromRow);
 export async function createVenueSpace(payload: Partial<VenueSpace>) {
   const res = await createRow(SPACES, mapVenueSpaceToRow(payload));
   if (!res.ok) return fail<VenueSpace>(res.error, res.code);
@@ -507,6 +510,7 @@ export async function getVenueSpacesByChurch(churchId: EntityId) {
 }
 
 export const listServiceChecklists = () => crudList(CHECKLISTS, mapChecklistFromRow, "service_date");
+export const getServiceChecklistById = (id: EntityId) => crudGet(CHECKLISTS, id, mapChecklistFromRow);
 export async function createServiceChecklist(payload: Partial<ServiceChecklist>) {
   const res = await createRow(CHECKLISTS, mapChecklistToRow(payload));
   if (!res.ok) return fail<ServiceChecklist>(res.error, res.code);

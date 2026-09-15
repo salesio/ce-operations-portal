@@ -217,27 +217,27 @@ export function createApiProvider(): DataProvider & ApiProviderExtras {
   } as EntityRepository<unknown>;
   map.inventory_movements = {
     list: venueInventoryApi.listInventoryMovements,
-    getById: async () => ({ ok: true, data: null }),
+    getById: venueInventoryApi.getInventoryMovementById,
     create: venueInventoryApi.createInventoryMovement,
     remove: venueInventoryApi.deleteInventoryMovement,
   } as EntityRepository<unknown>;
   map.inventory_maintenance = {
     list: venueInventoryApi.listMaintenanceRecords,
-    getById: async () => ({ ok: true, data: null }),
+    getById: venueInventoryApi.getMaintenanceRecordById,
     create: venueInventoryApi.createMaintenanceRecord,
     update: venueInventoryApi.updateMaintenanceRecord,
     remove: venueInventoryApi.deleteMaintenanceRecord,
   } as EntityRepository<unknown>;
   map.venue_spaces = {
     list: venueInventoryApi.listVenueSpaces,
-    getById: async () => ({ ok: true, data: null }),
+    getById: venueInventoryApi.getVenueSpaceById,
     create: venueInventoryApi.createVenueSpace,
     update: venueInventoryApi.updateVenueSpace,
     remove: venueInventoryApi.deleteVenueSpace,
   } as EntityRepository<unknown>;
   map.service_checklists = {
     list: venueInventoryApi.listServiceChecklists,
-    getById: async () => ({ ok: true, data: null }),
+    getById: venueInventoryApi.getServiceChecklistById,
     create: venueInventoryApi.createServiceChecklist,
     update: venueInventoryApi.updateServiceChecklist,
     remove: venueInventoryApi.deleteServiceChecklist,

@@ -354,8 +354,8 @@ function createInventoryMovementsRepository(): EntityRepository<InventoryMovemen
     async list() {
       return venueInventorySb.listInventoryMovements();
     },
-    async getById(_id: EntityId) {
-      return { ok: true, data: null };
+    async getById(id: EntityId) {
+      return venueInventorySb.getInventoryMovementById(id);
     },
     async create(input: Partial<InventoryMovement>) {
       return venueInventorySb.createInventoryMovement(input);
@@ -371,8 +371,8 @@ function createInventoryMaintenanceRepository(): EntityRepository<InventoryMaint
     async list() {
       return venueInventorySb.listMaintenanceRecords();
     },
-    async getById(_id: EntityId) {
-      return { ok: true, data: null };
+    async getById(id: EntityId) {
+      return venueInventorySb.getMaintenanceRecordById(id);
     },
     async create(input: Partial<InventoryMaintenanceRecord>) {
       return venueInventorySb.createMaintenanceRecord(input);
@@ -392,8 +392,8 @@ function createVenueSpacesRepository(): EntityRepository<VenueSpace> {
       if (options?.churchId) return venueInventorySb.getVenueSpacesByChurch(options.churchId);
       return venueInventorySb.listVenueSpaces();
     },
-    async getById(_id: EntityId) {
-      return { ok: true, data: null };
+    async getById(id: EntityId) {
+      return venueInventorySb.getVenueSpaceById(id);
     },
     async create(input: Partial<VenueSpace>) {
       return venueInventorySb.createVenueSpace(input);
@@ -413,8 +413,8 @@ function createServiceChecklistsRepository(): EntityRepository<ServiceChecklist>
       if (options?.churchId) return venueInventorySb.getChecklistsByChurch(options.churchId);
       return venueInventorySb.listServiceChecklists();
     },
-    async getById(_id: EntityId) {
-      return { ok: true, data: null };
+    async getById(id: EntityId) {
+      return venueInventorySb.getServiceChecklistById(id);
     },
     async create(input: Partial<ServiceChecklist>) {
       return venueInventorySb.createServiceChecklist(input);
