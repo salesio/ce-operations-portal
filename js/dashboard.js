@@ -28674,7 +28674,7 @@ async function submitAssignCellModal(form) {
   else setRoute(activeRoute);
 }
 
-function quickAction(action, type, id) {
+async function quickAction(action, type, id) {
   if (!canRenderAction(action, type)) {
     alert(L("noPermissionArea"));
     return;
@@ -28998,28 +28998,31 @@ function quickAction(action, type, id) {
       ? `Tem certeza que deseja apagar este registo de ${title}?`
       : `Are you sure you want to delete this ${title} record?`;
     if (!window.confirm(message)) return;
+
+    const previous = collection[index];
+
     if (type === "user") {
-      const previous = collection[index] || (state.users || []).find((u) => String(u.id) === String(id) || String(u.auth_user_id) === String(id));
-      registerDeletedUser(previous || id);
-      const prevEmail = previous?.email ? String(previous.email).trim().toLowerCase() : "";
+      const targetUser = previous || (state.users || []).find((u) => String(u.id) === String(id) || String(u.auth_user_id) === String(id));
+      registerDeletedUser(targetUser || id);
+      const prevEmail = targetUser?.email ? String(targetUser.email).trim().toLowerCase() : "";
 
       state.users = (state.users || []).filter((item) => {
         if (String(item.id) === String(id)) return false;
-        if (previous?.auth_user_id && String(item.auth_user_id) === String(previous.auth_user_id)) return false;
+        if (targetUser?.auth_user_id && String(item.auth_user_id) === String(targetUser.auth_user_id)) return false;
         if (prevEmail && item.email && String(item.email).trim().toLowerCase() === prevEmail) return false;
         return true;
       });
 
       try {
         const dKey = "ce-data-layer:users";
-        const raw = localStorage.getItem(dKey);
-        if (raw) {
-          const parsed = JSON.parse(raw);
+        const rawUsers = localStorage.getItem(dKey);
+        if (rawUsers) {
+          const parsed = JSON.parse(rawUsers);
           if (Array.isArray(parsed)) {
             const filtered = parsed.filter((r) => {
               if (!r) return false;
               if (String(r.id) === String(id)) return false;
-              if (previous?.auth_user_id && String(r.auth_user_id) === String(previous.auth_user_id)) return false;
+              if (targetUser?.auth_user_id && String(r.auth_user_id) === String(targetUser.auth_user_id)) return false;
               if (prevEmail && r.email && String(r.email).trim().toLowerCase() === prevEmail) return false;
               return true;
             });
@@ -29028,141 +29031,312 @@ function quickAction(action, type, id) {
         }
       } catch (_) {}
 
-      saveState(`Deleted user ${previous?.email || id}`);
+      saveState(`Deleted user ${targetUser?.email || id}`);
       if (typeof showToast === "function") showToast(lang === "pt" ? "Utilizador eliminado com sucesso!" : "User deleted successfully!");
       if (activeRoute === "users") renderUsers();
       else setRoute(activeRoute);
 
-      void Promise.resolve(dualWriteUserRecord("delete", previous || { id })).catch((error) => {
-        console.warn("[CE Users] dualWrite delete sync error", error);
-      });
-      void Promise.resolve(deleteUserFromSupabase(previous?.id || id, previous?.auth_user_id || previous?.id || id, previous?.email)).catch((error) => {
-        console.warn("[CE Users] background delete sync error", error);
-      });
-      return;
-    }
-    if (type === "member") {
-      const previous = collection[index];
-      const idx = state.members.findIndex((item) => item.id === id);
-      if (idx >= 0) state.members.splice(idx, 1);
-      saveState(`Deleted member ${id}`);
-      setRoute(activeRoute);
-      void Promise.resolve(persistMemberViaRepository("delete", previous)).catch((error) => {
-        console.warn("[CE Members] background delete sync error", error);
-      });
-      return;
-    }
-    if (type === "firstTimer") {
-      const previous = collection[index];
-      const idx = state.firstTimers.findIndex((item) => item.id === id);
-      if (idx >= 0) state.firstTimers.splice(idx, 1);
-      saveState(`Deleted first timer ${id}`);
-      setRoute(activeRoute);
-      void Promise.resolve(persistFirstTimerViaRepository("delete", previous)).catch((error) => {
-        console.warn("[CE FirstTimers] background delete sync error", error);
-      });
-      return;
-    }
-    if (type === "program") {
-      const previous = collection[index];
-      const programsBridge = window.CEPrograms || window.CEDataLayer?.programs;
-      if (!programsBridge?.deleteProgram) {
-        alert(lang === "pt" ? "Não foi possível eliminar o programa porque a ligação de dados não está disponível." : "The program could not be deleted because the data connection is unavailable.");
-        return;
+      try {
+        await Promise.allSettled([
+          Promise.resolve(dualWriteUserRecord("delete", targetUser || { id })),
+          Promise.resolve(deleteUserFromSupabase(targetUser?.id || id, targetUser?.auth_user_id || targetUser?.id || id, targetUser?.email))
+        ]);
+      } catch (error) {
+        console.warn("[CE Users] delete sync error", error);
       }
-      Promise.resolve(programsBridge.deleteProgram(previous.id))
-        .then((result) => {
-          if (!result?.ok) {
-            alert(result?.error || (lang === "pt" ? "Não foi possível eliminar o programa." : "The program could not be deleted."));
+      return;
+    }
+
+    if (type === "member") {
+      collection.splice(index, 1);
+      saveState(`Deleted member ${id}`);
+      try {
+        await persistMemberViaRepository("delete", previous);
+      } catch (error) {
+        console.warn("[CE Members] delete sync error", error);
+      }
+      if (typeof showToast === "function") showToast(lang === "pt" ? "Membro eliminado com sucesso!" : "Member deleted successfully!");
+      if (activeRoute === "members") renderMembers();
+      else setRoute(activeRoute);
+      return;
+    }
+
+    if (type === "firstTimer") {
+      collection.splice(index, 1);
+      saveState(`Deleted first timer ${id}`);
+      try {
+        await persistFirstTimerViaRepository("delete", previous);
+      } catch (error) {
+        console.warn("[CE FirstTimers] delete sync error", error);
+      }
+      if (typeof showToast === "function") showToast(lang === "pt" ? "Registo eliminado com sucesso!" : "Record deleted successfully!");
+      if (activeRoute === "firstTimers") renderFirstTimers();
+      else setRoute(activeRoute);
+      return;
+    }
+
+    if (type === "program") {
+      const programsBridge = window.CEPrograms || window.CEDataLayer?.programs;
+      if (programsBridge?.deleteProgram && previous?.id) {
+        try {
+          const res = await programsBridge.deleteProgram(previous.id);
+          if (res && res.ok === false) {
+            alert(res.error || (lang === "pt" ? "Não foi possível eliminar o programa." : "The program could not be deleted."));
             return;
           }
-          const currentIndex = collection.findIndex((item) => String(item.id) === String(previous.id));
-          if (currentIndex >= 0) collection.splice(currentIndex, 1);
-          saveState(`Deleted program ${previous.id}`);
-          if (typeof showToast === "function") {
-            showToast(lang === "pt" ? "Programa eliminado com sucesso!" : "Program deleted successfully!");
-          }
-          setRoute(activeRoute);
-        })
-        .catch((error) => {
+        } catch (error) {
           console.warn("[CE Programs] delete sync error", error);
-          alert(lang === "pt" ? "Não foi possível eliminar o programa." : "The program could not be deleted.");
-        });
+        }
+      }
+      collection.splice(index, 1);
+      saveState(`Deleted program ${previous.id}`);
+      if (typeof showToast === "function") showToast(lang === "pt" ? "Programa eliminado com sucesso!" : "Program deleted successfully!");
+      setRoute(activeRoute);
       return;
     }
+
     if (["baptism", "marriage", "baby"].includes(type)) {
-      const previous = collection[index];
       collection.splice(index, 1);
       saveState(`Deleted ${type} ${id}`);
-      setRoute(activeRoute);
-      void Promise.resolve(persistSacramentViaRepository(type, "delete", previous)).catch((err) => {
-        console.warn("[CE Sacraments] background delete sync error", err);
-      });
+      try {
+        await persistSacramentViaRepository(type, "delete", previous);
+      } catch (err) {
+        console.warn("[CE Sacraments] delete sync error", err);
+      }
+      if (typeof showToast === "function") showToast(lang === "pt" ? "Registo eliminado com sucesso!" : "Record deleted successfully!");
+      if (activeRoute === "sacraments") renderSacraments();
+      else setRoute(activeRoute);
       return;
     }
+
+    if (type === "foundationStudent" || type === "foundationTeacher" || type === "foundationClass") {
+      collection.splice(index, 1);
+      saveState(`Deleted ${type} ${id}`);
+      try {
+        if (type === "foundationStudent") await persistFoundationStudentViaRepository("delete", previous);
+        else if (type === "foundationTeacher") await persistFoundationTeacherViaRepository("delete", previous);
+        else if (type === "foundationClass") await persistFoundationClassViaRepository("delete", previous);
+      } catch (err) {
+        console.warn("[CE Foundation] delete sync error", err);
+      }
+      if (typeof showToast === "function") showToast(lang === "pt" ? "Registo eliminado com sucesso!" : "Record deleted successfully!");
+      if (activeRoute === "foundation") renderFoundation();
+      else setRoute(activeRoute);
+      return;
+    }
+
     if (["churchReport", "alecRegistration", "alecScore", "cellReport"].includes(type)) {
-      const previous = collection[index];
       const cellSb = window.CESupabase?.cellMinistrySupabaseAdapter || window.cellMinistrySupabaseAdapter;
       if (cellSb && previous?.id) {
-        if (type === "churchReport" && cellSb.deleteChurchReport) void cellSb.deleteChurchReport(previous.id);
-        else if (type === "alecRegistration" && cellSb.deleteAlecRegistration) void cellSb.deleteAlecRegistration(previous.id);
-        else if (type === "alecScore" && cellSb.deleteAlecScore) void cellSb.deleteAlecScore(previous.id);
-        else if (type === "cellReport" && cellSb.deleteCellReport) void cellSb.deleteCellReport(previous.id);
+        try {
+          if (type === "churchReport" && cellSb.deleteChurchReport) await cellSb.deleteChurchReport(previous.id);
+          else if (type === "alecRegistration" && cellSb.deleteAlecRegistration) await cellSb.deleteAlecRegistration(previous.id);
+          else if (type === "alecScore" && cellSb.deleteAlecScore) await cellSb.deleteAlecScore(previous.id);
+          else if (type === "cellReport" && cellSb.deleteCellReport) await cellSb.deleteCellReport(previous.id);
+        } catch (err) {
+          console.warn("[CE CellMinistry] delete sync error", err);
+        }
       }
     }
+
     if (["inventoryItem", "venueAcquisition", "venueStaffEquipment", "venueMaintenance", "venueMovement", "venueSpace", "venueChecklist"].includes(type)) {
-      const previous = collection[index];
       const venueBridge = window.CEVenueInventory || window.CEDataLayer?.venueInventory;
       if (venueBridge && previous?.id) {
-        if (["inventoryItem", "venueAcquisition", "venueStaffEquipment"].includes(type) && venueBridge.deleteInventoryItem) {
-          void venueBridge.deleteInventoryItem(previous.id);
-        } else if (type === "venueMaintenance" && venueBridge.deleteMaintenanceRecord) {
-          void venueBridge.deleteMaintenanceRecord(previous.id);
-        } else if (type === "venueMovement" && venueBridge.deleteInventoryMovement) {
-          void venueBridge.deleteInventoryMovement(previous.id);
-        } else if (type === "venueSpace" && venueBridge.deleteVenueSpace) {
-          void venueBridge.deleteVenueSpace(previous.id);
-        } else if (type === "venueChecklist" && venueBridge.deleteServiceChecklist) {
-          void venueBridge.deleteServiceChecklist(previous.id);
+        try {
+          if (["inventoryItem", "venueAcquisition", "venueStaffEquipment"].includes(type) && venueBridge.deleteInventoryItem) {
+            await venueBridge.deleteInventoryItem(previous.id);
+          } else if (type === "venueMaintenance" && venueBridge.deleteMaintenanceRecord) {
+            await venueBridge.deleteMaintenanceRecord(previous.id);
+          } else if (type === "venueMovement" && venueBridge.deleteInventoryMovement) {
+            await venueBridge.deleteInventoryMovement(previous.id);
+          } else if (type === "venueSpace" && venueBridge.deleteVenueSpace) {
+            await venueBridge.deleteVenueSpace(previous.id);
+          } else if (type === "venueChecklist" && venueBridge.deleteServiceChecklist) {
+            await venueBridge.deleteServiceChecklist(previous.id);
+          }
+        } catch (err) {
+          console.warn("[CE VenueInventory] delete sync error", err);
         }
       }
+
+      if (typeof window !== "undefined" && (window.CESupabase?.getRawClient?.() || window.supabase)) {
+        try {
+          const client = window.CESupabase?.getRawClient?.() || window.supabase;
+          const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(previous?.id || id || ""));
+          if (isUuid) {
+            const tableMap = {
+              inventoryItem: "inventory_items",
+              venueAcquisition: "inventory_items",
+              venueStaffEquipment: "inventory_items",
+              venueMaintenance: "inventory_maintenance_records",
+              venueMovement: "inventory_movements",
+              venueSpace: "venue_spaces",
+              venueChecklist: "service_checklists"
+            };
+            const tbl = tableMap[type];
+            if (tbl) await client.from(tbl).delete().eq("id", previous?.id || id);
+          }
+        } catch (_) {}
+      }
+
+      try {
+        const localKeyMap = {
+          inventoryItem: "ce-data-layer:inventory-items",
+          venueAcquisition: "ce-data-layer:inventory-items",
+          venueStaffEquipment: "ce-data-layer:inventory-items",
+          venueMaintenance: "ce-data-layer:maintenance-records",
+          venueMovement: "ce-data-layer:inventory-movements",
+          venueSpace: "ce-data-layer:venue-spaces",
+          venueChecklist: "ce-data-layer:service-checklists"
+        };
+        const lk = localKeyMap[type];
+        if (lk) {
+          const rawLocal = localStorage.getItem(lk);
+          if (rawLocal) {
+            const parsed = JSON.parse(rawLocal);
+            if (Array.isArray(parsed)) {
+              const filtered = parsed.filter((item) => String(item.id) !== String(previous?.id || id));
+              localStorage.setItem(lk, JSON.stringify(filtered));
+            }
+          }
+        }
+      } catch (_) {}
+
+      collection.splice(index, 1);
+      saveState(`Deleted ${type} ${id}`);
+      if (typeof showToast === "function") showToast(lang === "pt" ? "Item eliminado com sucesso!" : "Item deleted successfully!");
+      if (activeRoute === "venueInventory" || String(activeRoute || "").startsWith("venueInventory")) {
+        const routeToTab = {
+          venueInventory: "overview",
+          venueInventoryGeneral: "inventory",
+          venueInventoryAcquisitions: "acquisitions",
+          venueInventoryStaff: "staff",
+          venueInventoryMaintenance: "maintenance",
+          venueInventoryMovements: "movements",
+          venueInventorySpaces: "spaces",
+          venueInventoryChecklist: "checklist",
+          venueInventoryReports: "reports",
+        };
+        if (typeof renderVenueInventory === "function") {
+          renderVenueInventory(routeToTab[activeRoute] || "overview");
+        }
+      } else {
+        setRoute(activeRoute);
+      }
+      return;
     }
+
     if (["prisonLocation", "prisonService", "prisonFoundation", "prisonAgenda", "prisonReport"].includes(type)) {
-      const previous = collection[index];
       const prisonBridge = window.CEPrisonMinistry || window.CEDataLayer?.prisonMinistry;
       if (prisonBridge && previous?.id) {
-        if (type === "prisonLocation" && prisonBridge.deletePrisonLocation) {
-          void prisonBridge.deletePrisonLocation(previous.id);
-        } else if (type === "prisonService" && prisonBridge.deletePrisonService) {
-          void prisonBridge.deletePrisonService(previous.id);
-        } else if (type === "prisonFoundation" && prisonBridge.deletePrisonFoundationStudent) {
-          void prisonBridge.deletePrisonFoundationStudent(previous.id);
-        } else if (type === "prisonAgenda" && (prisonBridge.deletePrisonAgendaItem || prisonBridge.deletePrisonWeeklyAgenda)) {
-          void (prisonBridge.deletePrisonAgendaItem || prisonBridge.deletePrisonWeeklyAgenda)(previous.id);
-        } else if (type === "prisonReport" && prisonBridge.deletePrisonReport) {
-          void prisonBridge.deletePrisonReport(previous.id);
+        try {
+          if (type === "prisonLocation" && prisonBridge.deletePrisonLocation) await prisonBridge.deletePrisonLocation(previous.id);
+          else if (type === "prisonService" && prisonBridge.deletePrisonService) await prisonBridge.deletePrisonService(previous.id);
+          else if (type === "prisonFoundation" && prisonBridge.deletePrisonFoundationStudent) await prisonBridge.deletePrisonFoundationStudent(previous.id);
+          else if (type === "prisonAgenda" && (prisonBridge.deletePrisonAgendaItem || prisonBridge.deletePrisonWeeklyAgenda)) await (prisonBridge.deletePrisonAgendaItem || prisonBridge.deletePrisonWeeklyAgenda)(previous.id);
+          else if (type === "prisonReport" && prisonBridge.deletePrisonReport) await prisonBridge.deletePrisonReport(previous.id);
+        } catch (err) {
+          console.warn("[CE Prison] delete sync error", err);
         }
       }
     }
+
     if (["materialCatalogue", "materialSale", "materialDistribution", "materialStock", "materialFund", "materialReport"].includes(type)) {
-      const previous = collection[index];
       const matBridge = window.CEMinistryMaterials || window.CEDataLayer?.ministryMaterials;
       if (matBridge && previous?.id) {
-        if (type === "materialCatalogue" && (matBridge.deleteMaterialCatalogItem || matBridge.deleteMaterial)) {
-          void (matBridge.deleteMaterialCatalogItem || matBridge.deleteMaterial)(previous.id);
-        } else if (type === "materialStock" && matBridge.deleteMaterialStock) {
-          void matBridge.deleteMaterialStock(previous.id);
-        } else if (type === "materialSale" && matBridge.deleteMaterialSale) {
-          void matBridge.deleteMaterialSale(previous.id);
-        } else if (type === "materialDistribution" && matBridge.deleteMaterialDistribution) {
-          void matBridge.deleteMaterialDistribution(previous.id);
-        } else if (type === "materialFund" && matBridge.deleteMaterialFund) {
-          void matBridge.deleteMaterialFund(previous.id);
-        } else if (type === "materialReport" && matBridge.deleteMaterialReport) {
-          void matBridge.deleteMaterialReport(previous.id);
+        try {
+          if (type === "materialCatalogue" && (matBridge.deleteMaterialCatalogItem || matBridge.deleteMaterial)) await (matBridge.deleteMaterialCatalogItem || matBridge.deleteMaterial)(previous.id);
+          else if (type === "materialStock" && matBridge.deleteMaterialStock) await matBridge.deleteMaterialStock(previous.id);
+          else if (type === "materialSale" && matBridge.deleteMaterialSale) await matBridge.deleteMaterialSale(previous.id);
+          else if (type === "materialDistribution" && matBridge.deleteMaterialDistribution) await matBridge.deleteMaterialDistribution(previous.id);
+          else if (type === "materialFund" && matBridge.deleteMaterialFund) await matBridge.deleteMaterialFund(previous.id);
+          else if (type === "materialReport" && matBridge.deleteMaterialReport) await matBridge.deleteMaterialReport(previous.id);
+        } catch (err) {
+          console.warn("[CE Materials] delete sync error", err);
         }
       }
     }
+
+    if (["staffProfile", "staffDepartment", "staffRole", "staffSalary", "staffPerformance"].includes(type)) {
+      const staffBridge = window.CEStaffHr || window.CEDataLayer?.staffHr;
+      if (staffBridge && previous?.id) {
+        try {
+          if (type === "staffProfile" && staffBridge.deleteStaffMember) await staffBridge.deleteStaffMember(previous.id);
+          else if (type === "staffDepartment" && staffBridge.deleteStaffDepartment) await staffBridge.deleteStaffDepartment(previous.id);
+          else if (type === "staffRole" && staffBridge.deleteStaffRole) await staffBridge.deleteStaffRole(previous.id);
+          else if (type === "staffSalary" && staffBridge.deleteStaffSalary) await staffBridge.deleteStaffSalary(previous.id);
+          else if (type === "staffPerformance" && staffBridge.deletePerformanceReview) await staffBridge.deletePerformanceReview(previous.id);
+        } catch (err) {
+          console.warn("[CE StaffHR] delete sync error", err);
+        }
+      }
+    }
+
+    if (["mediaTechnician", "mediaRole", "mediaSchedule", "mediaService", "streamingChannel", "mediaEvaluation", "mediaAward"].includes(type)) {
+      const mediaBridge = window.CEMedia || window.CEDataLayer?.media;
+      if (mediaBridge && previous?.id) {
+        try {
+          if (type === "mediaTechnician" && mediaBridge.deleteTechnician) await mediaBridge.deleteTechnician(previous.id);
+          else if (type === "mediaRole" && mediaBridge.deleteRole) await mediaBridge.deleteRole(previous.id);
+          else if (type === "mediaSchedule" && mediaBridge.deleteSchedule) await mediaBridge.deleteSchedule(previous.id);
+          else if (type === "mediaService" && mediaBridge.deleteService) await mediaBridge.deleteService(previous.id);
+          else if (type === "streamingChannel" && mediaBridge.deleteStreamingChannel) await mediaBridge.deleteStreamingChannel(previous.id);
+          else if (type === "mediaEvaluation" && mediaBridge.deleteEvaluation) await mediaBridge.deleteEvaluation(previous.id);
+          else if (type === "mediaAward" && mediaBridge.deleteAward) await mediaBridge.deleteAward(previous.id);
+        } catch (err) {
+          console.warn("[CE Media] delete sync error", err);
+        }
+      }
+    }
+
+    if (["counselingRequest", "counselor", "counselingAppointment", "counselingReferral", "counselingFeedback"].includes(type)) {
+      const counselBridge = window.CECounseling || window.CEDataLayer?.counseling;
+      if (counselBridge && previous?.id) {
+        try {
+          if (type === "counselingRequest" && counselBridge.deleteCounselingRequest) await counselBridge.deleteCounselingRequest(previous.id);
+          else if (type === "counselor" && counselBridge.deleteCounselor) await counselBridge.deleteCounselor(previous.id);
+          else if (type === "counselingAppointment" && counselBridge.deleteCounselingAppointment) await counselBridge.deleteCounselingAppointment(previous.id);
+          else if (type === "counselingReferral" && counselBridge.deleteCounselingReferral) await counselBridge.deleteCounselingReferral(previous.id);
+          else if (type === "counselingFeedback" && counselBridge.deleteCounselingFeedback) await counselBridge.deleteCounselingFeedback(previous.id);
+        } catch (err) {
+          console.warn("[CE Counseling] delete sync error", err);
+        }
+      }
+    }
+
+    if (type === "requisition") {
+      const reqBridge = window.CERequisitions || window.CEDataLayer?.requisitions;
+      if (reqBridge && previous?.id) {
+        try {
+          if (reqBridge.deleteRequisition) await reqBridge.deleteRequisition(previous.id);
+        } catch (err) {
+          console.warn("[CE Requisitions] delete sync error", err);
+        }
+      }
+    }
+
+    if (type === "church") {
+      const churchBridge = window.CEChurches || window.CEDataLayer?.churches;
+      if (churchBridge && previous?.id) {
+        try {
+          if (churchBridge.deleteChurch) await churchBridge.deleteChurch(previous.id);
+        } catch (err) {
+          console.warn("[CE Churches] delete sync error", err);
+        }
+      }
+    }
+
+    if (type === "finance") {
+      const financeBridge = window.CEFinance || window.CEDataLayer?.finance;
+      if (financeBridge && previous?.id) {
+        try {
+          if (financeBridge.deleteRecord) await financeBridge.deleteRecord(previous.id);
+        } catch (err) {
+          console.warn("[CE Finance] delete sync error", err);
+        }
+      }
+    }
+
     collection.splice(index, 1);
     saveState(`Deleted ${type} ${id}`);
     if (typeof showToast === "function") {
