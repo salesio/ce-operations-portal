@@ -27346,15 +27346,108 @@ async function submitForm(form) {
     if (
       [
         "inventoryItem",
+        "inventory",
         "venueAcquisition",
+        "acquisition",
         "venueStaffEquipment",
+        "staffEquipment",
         "venueMaintenance",
+        "maintenance",
         "venueMovement",
+        "movement",
         "venueSpace",
+        "space",
         "venueChecklist",
+        "serviceChecklist",
+        "venueServiceChecklist",
       ].includes(modalType)
     ) {
-      void dualWriteVenueInventoryRecord(modalType, "update", collection[index]);
+      if (modalType === "venueSpace" || modalType === "space") {
+        const rec = collection[index];
+        rec.name = data.nome_do_espaco || data.name || rec.name || rec.nome_do_espaco;
+        rec.nome_do_espaco = rec.name;
+        rec.capacity = Number(data.capacidade ?? data.capacity ?? rec.capacity ?? 0);
+        rec.capacidade = rec.capacity;
+        rec.space_type = data.tipo || data.space_type || rec.space_type || rec.tipo;
+        rec.tipo = rec.space_type;
+        rec.responsible_name = data.responsavel || data.responsible_name || rec.responsible_name || rec.responsavel;
+        rec.responsavel = rec.responsible_name;
+        rec.description = data.observacoes || data.description || rec.description || rec.observacoes;
+        rec.observacoes = rec.description;
+        rec.notes = rec.description;
+        rec.status = data.estado || data.status || rec.status || "Available";
+        rec.estado = rec.status;
+        if (data.igreja || data.church_id) {
+          rec.church_id = data.igreja || data.church_id;
+          rec.igreja = rec.church_id;
+        }
+      }
+      if (["inventoryItem", "inventory", "venueAcquisition", "acquisition", "venueStaffEquipment", "staffEquipment"].includes(modalType)) {
+        const rec = collection[index];
+        rec.name = data.nome_do_item || data.name || rec.name || rec.nome_do_item;
+        rec.nome_do_item = rec.name;
+        rec.category = data.categoria || data.category || rec.category || rec.categoria;
+        rec.categoria = rec.category;
+        rec.quantity = Number(data.quantidade ?? data.quantity ?? rec.quantity ?? 1);
+        rec.quantidade = rec.quantity;
+        rec.acquisition_cost = Number(data.valor_unitario ?? data.acquisition_cost ?? rec.acquisition_cost ?? 0);
+        rec.valor_unitario = rec.acquisition_cost;
+        rec.valor_total = rec.acquisition_cost * rec.quantity;
+        rec.space_name = data.localizacao || data.space_name || rec.space_name || rec.localizacao;
+        rec.localizacao = rec.space_name;
+        rec.department_name = data.departamento_responsavel || data.department_name || rec.department_name || rec.departamento_responsavel;
+        rec.departamento_responsavel = rec.department_name;
+        rec.status = data.estado || data.status || rec.status || "Available";
+        rec.estado = rec.status;
+        rec.description = data.observacoes || data.description || rec.description || rec.observacoes;
+        rec.observacoes = rec.description;
+        if (data.igreja || data.church_id) {
+          rec.church_id = data.igreja || data.church_id;
+          rec.igreja = rec.church_id;
+        }
+      }
+      if (modalType === "venueMaintenance" || modalType === "maintenance") {
+        const rec = collection[index];
+        rec.issue_title = data.problema_reportado || data.issue_title || rec.issue_title || rec.problema_reportado;
+        rec.issue_description = data.problema_reportado || data.issue_description || rec.issue_description || rec.problema_reportado;
+        rec.problema_reportado = rec.issue_description;
+        rec.actual_cost = Number(data.custo_da_reparacao ?? data.actual_cost ?? rec.actual_cost ?? 0);
+        rec.estimated_cost = Number(data.custo_da_reparacao ?? data.estimated_cost ?? rec.estimated_cost ?? 0);
+        rec.custo_da_reparacao = rec.actual_cost;
+        rec.assigned_to_name = data.tecnico_ou_responsavel || data.assigned_to_name || rec.assigned_to_name || rec.tecnico_ou_responsavel;
+        rec.tecnico_ou_responsavel = rec.assigned_to_name;
+        rec.status = data.estado || data.status || rec.status || "Reported";
+        rec.estado = rec.status;
+      }
+      if (modalType === "venueMovement" || modalType === "movement") {
+        const rec = collection[index];
+        rec.from_space_name = data.origem || data.from_space_name || rec.from_space_name || rec.origem;
+        rec.origem = rec.from_space_name;
+        rec.to_space_name = data.destino || data.to_space_name || rec.to_space_name || rec.destino;
+        rec.destino = rec.to_space_name;
+        rec.quantity = Number(data.quantidade ?? data.quantity ?? rec.quantity ?? 1);
+        rec.quantidade = rec.quantity;
+        rec.movement_date = data.data_de_saida || data.movement_date || rec.movement_date || rec.data_de_saida;
+        rec.data_de_saida = rec.movement_date;
+        rec.performed_by_name = data.pessoa_responsavel || data.performed_by_name || rec.performed_by_name || rec.pessoa_responsavel;
+        rec.pessoa_responsavel = rec.performed_by_name;
+        rec.approved_by_name = data.aprovado_por || data.approved_by_name || rec.approved_by_name || rec.aprovado_por;
+        rec.aprovado_por = rec.approved_by_name;
+        rec.status = data.estado || data.status || rec.status || "Completed";
+        rec.estado = rec.status;
+      }
+      if (modalType === "venueChecklist" || modalType === "serviceChecklist" || modalType === "venueServiceChecklist") {
+        const rec = collection[index];
+        rec.service_name = data.tipo_de_culto_ou_evento || data.service_name || rec.service_name || rec.tipo_de_culto_ou_evento;
+        rec.tipo_de_culto_ou_evento = rec.service_name;
+        rec.service_date = data.data_do_culto || data.service_date || rec.service_date || rec.data_do_culto;
+        rec.data_do_culto = rec.service_date;
+        rec.responsible_name = data.responsavel || data.responsible_name || rec.responsible_name || rec.responsavel;
+        rec.responsavel = rec.responsible_name;
+        rec.status = data.estado || data.status || rec.status || "Open";
+        rec.estado = rec.status;
+      }
+      await dualWriteVenueInventoryRecord(modalType, "update", collection[index]);
     }
     if (
       [
@@ -27721,15 +27814,23 @@ async function submitForm(form) {
     if (
       [
         "inventoryItem",
+        "inventory",
         "venueAcquisition",
+        "acquisition",
         "venueStaffEquipment",
+        "staffEquipment",
         "venueMaintenance",
+        "maintenance",
         "venueMovement",
+        "movement",
         "venueSpace",
+        "space",
         "venueChecklist",
+        "serviceChecklist",
+        "venueServiceChecklist",
       ].includes(modalType)
     ) {
-      void dualWriteVenueInventoryRecord(modalType, "create", record);
+      await dualWriteVenueInventoryRecord(modalType, "create", record);
     }
     if (
       [
@@ -33291,12 +33392,20 @@ async function dualWriteVenueInventoryRecord(modalType, mode, record) {
     } else {
       const map = {
         inventoryItem: ["createInventoryItem", "updateInventoryItem"],
+        inventory: ["createInventoryItem", "updateInventoryItem"],
         acquisition: ["createAcquisition", "updateAcquisition"],
+        venueAcquisition: ["createAcquisition", "updateAcquisition"],
         staffEquipment: ["createStaffEquipment", "updateStaffEquipment"],
+        venueStaffEquipment: ["createStaffEquipment", "updateStaffEquipment"],
         movement: ["createInventoryMovement", "updateInventoryMovement"],
+        venueMovement: ["createInventoryMovement", "updateInventoryMovement"],
         maintenance: ["createMaintenanceRecord", "updateMaintenanceRecord"],
+        venueMaintenance: ["createMaintenanceRecord", "updateMaintenanceRecord"],
         space: ["createVenueSpace", "updateVenueSpace"],
+        venueSpace: ["createVenueSpace", "updateVenueSpace"],
         serviceChecklist: ["createServiceChecklist", "updateServiceChecklist"],
+        venueChecklist: ["createServiceChecklist", "updateServiceChecklist"],
+        venueServiceChecklist: ["createServiceChecklist", "updateServiceChecklist"],
       };
       const pair = map[modalType];
       if (pair) {

@@ -433,7 +433,19 @@
           create: "createInventoryItem",
           update: "updateInventoryItem",
         },
+        inventory: {
+          create: "createInventoryItem",
+          update: "updateInventoryItem",
+        },
+        items: {
+          create: "createInventoryItem",
+          update: "updateInventoryItem",
+        },
         venueAcquisition: {
+          create: "createInventoryItem",
+          update: "updateInventoryItem",
+        },
+        acquisition: {
           create: "createInventoryItem",
           update: "updateInventoryItem",
         },
@@ -441,7 +453,15 @@
           create: "createInventoryItem",
           update: "updateInventoryItem",
         },
+        staffEquipment: {
+          create: "createInventoryItem",
+          update: "updateInventoryItem",
+        },
         venueMaintenance: {
+          create: "createMaintenanceRecord",
+          update: "updateMaintenanceRecord",
+        },
+        maintenance: {
           create: "createMaintenanceRecord",
           update: "updateMaintenanceRecord",
         },
@@ -449,11 +469,27 @@
           create: "createInventoryMovement",
           update: "updateInventoryMovement",
         },
+        movement: {
+          create: "createInventoryMovement",
+          update: "updateInventoryMovement",
+        },
         venueSpace: {
           create: "createVenueSpace",
           update: "updateVenueSpace",
         },
+        space: {
+          create: "createVenueSpace",
+          update: "updateVenueSpace",
+        },
         venueChecklist: {
+          create: "createServiceChecklist",
+          update: "updateServiceChecklist",
+        },
+        serviceChecklist: {
+          create: "createServiceChecklist",
+          update: "updateServiceChecklist",
+        },
+        venueServiceChecklist: {
           create: "createServiceChecklist",
           update: "updateServiceChecklist",
         },
