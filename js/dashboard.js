@@ -10899,6 +10899,97 @@ function setRoute(route) {
       })
       .catch((err) => console.warn("[CE MinistryMaterials] route hydrate skipped", err));
   }
+  if (activeRoute === "venueInventory" || String(activeRoute || "").startsWith("venueInventory")) {
+    Promise.resolve(hydrateVenueInventoryFromRepository())
+      .then((hydrated) => {
+        if (hydrated && (activeRoute === "venueInventory" || String(activeRoute || "").startsWith("venueInventory"))) {
+          try {
+            const routeToTab = {
+              venueInventory: "overview",
+              venueInventoryGeneral: "inventory",
+              venueInventoryAcquisitions: "acquisitions",
+              venueInventoryStaff: "staff",
+              venueInventoryMaintenance: "maintenance",
+              venueInventoryMovements: "movements",
+              venueInventorySpaces: "spaces",
+              venueInventoryChecklist: "checklist",
+              venueInventoryReports: "reports",
+            };
+            if (typeof renderVenueInventory === "function") {
+              renderVenueInventory(routeToTab[activeRoute] || "overview");
+            }
+          } catch (_) {}
+        }
+      })
+      .catch((err) => console.warn("[CE VenueInventory] route hydrate skipped", err));
+  }
+  if (activeRoute === "requisitions") {
+    Promise.resolve(hydrateRequisitionsFromRepository())
+      .then((hydrated) => {
+        if (hydrated && activeRoute === "requisitions") {
+          try {
+            if (typeof renderRequisitions === "function") renderRequisitions();
+          } catch (_) {}
+        }
+      })
+      .catch((err) => console.warn("[CE Requisitions] route hydrate skipped", err));
+  }
+  if (activeRoute === "media") {
+    Promise.resolve(hydrateMediaFromRepository())
+      .then((hydrated) => {
+        if (hydrated && activeRoute === "media") {
+          try {
+            if (typeof renderMedia === "function") renderMedia();
+          } catch (_) {}
+        }
+      })
+      .catch((err) => console.warn("[CE Media] route hydrate skipped", err));
+  }
+  if (activeRoute === "staffHr") {
+    Promise.resolve(hydrateStaffHrFromRepository())
+      .then((hydrated) => {
+        if (hydrated && activeRoute === "staffHr") {
+          try {
+            if (typeof renderStaffHr === "function") renderStaffHr();
+          } catch (_) {}
+        }
+      })
+      .catch((err) => console.warn("[CE StaffHR] route hydrate skipped", err));
+  }
+  if (activeRoute === "counseling") {
+    Promise.resolve(hydrateCounselingFromRepository())
+      .then((hydrated) => {
+        if (hydrated && activeRoute === "counseling") {
+          try {
+            if (typeof renderCounseling === "function") renderCounseling();
+          } catch (_) {}
+        }
+      })
+      .catch((err) => console.warn("[CE Counseling] route hydrate skipped", err));
+  }
+  if (activeRoute === "finance" || String(activeRoute || "").startsWith("finance")) {
+    Promise.resolve(hydrateFinanceFromRepository())
+      .then((hydrated) => {
+        if (hydrated && (activeRoute === "finance" || String(activeRoute || "").startsWith("finance"))) {
+          try {
+            (renderers[activeRoute] || renderDashboard)();
+          } catch (_) {}
+        }
+      })
+      .catch((err) => console.warn("[CE Finance] route hydrate skipped", err));
+  }
+  if (activeRoute === "firstTimers" || activeRoute === "followUp") {
+    Promise.resolve(hydrateFirstTimersFromRepository())
+      .then((hydrated) => {
+        if (hydrated && (activeRoute === "firstTimers" || activeRoute === "followUp")) {
+          try {
+            if (activeRoute === "firstTimers" && typeof renderFirstTimers === "function") renderFirstTimers();
+            else if (typeof renderFollowUp === "function") renderFollowUp();
+          } catch (_) {}
+        }
+      })
+      .catch((err) => console.warn("[CE FirstTimers] route hydrate skipped", err));
+  }
   history.replaceState(null, "", `#${activeRoute}`);
   document.querySelector(".ops-sidebar")?.classList.remove("is-open");
   const contentEl = byId("content");
@@ -31237,8 +31328,7 @@ function continueEnterDashboard() {
     })
     .catch((error) => console.warn("[CE MinistryMaterials] background hydrate skipped", error));
 
-  if (window.__CE_LEGACY_EAGER_HYDRATE__ === true) {
-  // Data-layer pilots: sync churches + members + first timers without blocking UI paint
+  // Data-layer background hydration: sync all modules without blocking UI paint
   Promise.resolve()
     .then(() => hydrateChurchesFromRepository())
     .then((hydrated) => {
@@ -31412,7 +31502,6 @@ function continueEnterDashboard() {
       if (typeof updateNotificationCenter === "function") updateNotificationCenter();
     })
     .catch((error) => console.warn("[CE Notifications] background hydrate skipped", error));
-  }
 }
 
 function dualWriteFevoRecord(modalType, mode, record) {
