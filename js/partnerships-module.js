@@ -71,10 +71,21 @@
   }
 
   function getArms() {
-    const stored =
-      typeof state !== "undefined" && Array.isArray(state.partnershipArms) && state.partnershipArms.length
-        ? state.partnershipArms
-        : PARTNERSHIP_ARMS_SEED;
+    let stored = null;
+    if (typeof state !== "undefined" && Array.isArray(state.partnershipArms) && state.partnershipArms.length) {
+      stored = state.partnershipArms;
+    } else {
+      try {
+        const raw = localStorage.getItem("ce_partnership_arms_backup");
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length) stored = parsed;
+        }
+      } catch (_) {}
+    }
+    if (!stored || !stored.length) {
+      stored = PARTNERSHIP_ARMS_SEED;
+    }
     return stored.map((arm) => ({
       logo_url: "",
       monthly_goal: 10000,
@@ -91,8 +102,12 @@
     if (typeof state !== "undefined") {
       state.partnershipArms = arms;
       try {
-        const storageKey = typeof STORAGE_KEY !== "undefined" ? STORAGE_KEY : "ce_mozambique_state";
-        localStorage.setItem(storageKey, JSON.stringify(state));
+        const primaryKey = (typeof window !== "undefined" && window.STORAGE_KEY) ? window.STORAGE_KEY : "ce-ops-dashboard-v3";
+        localStorage.setItem(primaryKey, JSON.stringify(state));
+        localStorage.setItem("ce_partnership_arms_backup", JSON.stringify(arms));
+        if (typeof saveState === "function") {
+          saveState("Updated partnership arms");
+        }
       } catch (err) {
         console.warn("[Partnerships] Could not persist to localStorage:", err);
       }
@@ -108,14 +123,31 @@
         .select("*")
         .order("created_at", { ascending: true });
 
-      if (!error && Array.isArray(data) && data.length > 0) {
-        persistArmsState(data);
+      if (error) {
+        // Table may not have been created yet in Supabase SQL editor
+        console.info("[Partnerships] Supabase table 'partnership_arms' not available yet (using localStorage):", error.message);
+        return;
+      }
+
+      if (Array.isArray(data) && data.length > 0) {
+        const currentArms = (typeof state !== "undefined" && Array.isArray(state.partnershipArms)) ? state.partnershipArms : [];
+        const remoteIds = new Set(data.map((d) => d.id));
+        const merged = [...data];
+        // Preserve any newly created local arms not yet in remote
+        currentArms.forEach((ca) => {
+          if (!remoteIds.has(ca.id)) {
+            merged.push(ca);
+            void savePartnershipArmToSupabase(ca);
+          }
+        });
+        persistArmsState(merged);
         if (typeof activeRoute !== "undefined" && activeRoute === "partnership") {
           renderPartnerships();
         }
-      } else if (!error && Array.isArray(data) && data.length === 0) {
-        // Table exists but is empty -> seed initial arms
-        const toSeed = PARTNERSHIP_ARMS_SEED.map((arm) => ({
+      } else if (Array.isArray(data) && data.length === 0) {
+        // Table exists in Supabase but is empty -> seed initial arms
+        const current = getArms();
+        const toSeed = current.map((arm) => ({
           ...arm,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()

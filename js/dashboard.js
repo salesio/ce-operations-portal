@@ -1,4 +1,7 @@
 const STORAGE_KEY = "ce-ops-dashboard-v3";
+if (typeof window !== "undefined") {
+  window.STORAGE_KEY = STORAGE_KEY;
+}
 const LANG_KEY = "ce-dashboard-lang";
 const SIDEBAR_GROUPS_KEY = "ce-dashboard-sidebar-groups";
 const MODULE_NAV_KEY = "ce-dashboard-module-nav";
