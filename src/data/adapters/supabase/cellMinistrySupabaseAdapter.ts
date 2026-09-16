@@ -12,6 +12,8 @@ const TABLES = {
   alecRegistrations: "alec_registrations",
   alecScores: "alec_scores",
   cellReports: "cell_reports",
+  cellEvaluations: "cell_evaluations",
+  cellActionPlans: "cell_action_plans",
 } as const;
 
 const COLUMNS: Record<Table, string[]> = {
@@ -21,6 +23,8 @@ const COLUMNS: Record<Table, string[]> = {
   alecRegistrations: ["id", "church_id", "church_name", "member_id", "nome_completo", "contacto", "celula", "nome_do_lider_de_celula", "fez_escola_de_fundacao", "e_lider", "motivo_de_fazer_alec", "estado", "observacoes", "metadata", "created_at", "updated_at"],
   alecScores: ["id", "church_id", "church_name", "registration_id", "member_id", "nome_completo", "contacto", "celula", "fase_1_aula_1", "fase_1_aula_2", "fase_1_aula_3", "fase_1_aula_4", "fase_2_aula_1", "fase_2_aula_2", "fase_2_aula_3", "terminou", "faixa_certificado_pago", "certificado_emitido", "estado", "metadata", "created_at", "updated_at"],
   cellReports: ["id", "church_id", "church_name", "cell_group_id", "cell_id", "celula", "semana", "meeting_date", "titulo_do_lider", "nome_do_lider", "leader_phone", "att", "ft", "nc", "oferta", "rs", "cell_health_status", "observacoes", "submetido_por", "submetido_por_id", "avaliado_por", "validado_por", "estado", "metadata", "created_at", "updated_at"],
+  cellEvaluations: ["id", "church_id", "report_id", "cell_id", "cell_name", "avaliador", "data_da_avaliacao", "classificacao", "pontos_fortes", "pontos_a_melhorar", "acao_recomendada", "precisa_followup", "estado", "metadata", "created_at", "updated_at"],
+  cellActionPlans: ["id", "church_id", "cell_id", "cell_name", "leader_id", "leader_name", "action", "owner", "due_date", "status", "notes", "metadata", "created_at", "updated_at"],
 };
 
 const ok = <T>(data: T): DataResult<T> => ({ ok: true, data });
@@ -114,6 +118,25 @@ function aliases(t: Table, x: CellMinistryRecord) {
       offering_amount: r.oferta,
       souls_won_count: r.rs,
       status: r.estado,
+    });
+  }
+  if (t === "cellEvaluations") {
+    Object.assign(r, {
+      igreja: r.church_id,
+      status: r.estado,
+      evaluation_date: r.data_da_avaliacao,
+      classification: r.classificacao,
+      needs_followup: r.precisa_followup,
+      recommended_action: r.acao_recomendada,
+      evaluator: r.avaliador,
+    });
+  }
+  if (t === "cellActionPlans") {
+    Object.assign(r, {
+      igreja: r.church_id,
+      estado: r.status,
+      responsible_person: r.owner,
+      target_date: r.due_date,
     });
   }
   return r;
@@ -232,6 +255,37 @@ function payload(t: Table, x: CellMinistryRecord): SupabaseRow {
     if (x.offering_amount !== undefined && !row.oferta) row.oferta = Number(x.offering_amount);
     if (x.souls_won_count !== undefined && !row.rs) row.rs = Number(x.souls_won_count);
     if (x.status && !row.estado) row.estado = String(x.status);
+  } else if (t === "cellEvaluations") {
+    if (x.report_id && !row.report_id) row.report_id = String(x.report_id);
+    if (x.cell_name && !row.cell_name) row.cell_name = String(x.cell_name);
+    if (x.avaliador && !row.avaliador) row.avaliador = String(x.avaliador);
+    if (x.evaluator && !row.avaliador) row.avaliador = String(x.evaluator);
+    if (x.data_da_avaliacao && !row.data_da_avaliacao) row.data_da_avaliacao = String(x.data_da_avaliacao);
+    if (x.evaluation_date && !row.data_da_avaliacao) row.data_da_avaliacao = String(x.evaluation_date);
+    if (x.classificacao && !row.classificacao) row.classificacao = String(x.classificacao);
+    if (x.classification && !row.classificacao) row.classificacao = String(x.classification);
+    if (x.pontos_fortes && !row.pontos_fortes) row.pontos_fortes = String(x.pontos_fortes);
+    if (x.pontos_a_melhorar && !row.pontos_a_melhorar) row.pontos_a_melhorar = String(x.pontos_a_melhorar);
+    if (x.acao_recomendada && !row.acao_recomendada) row.acao_recomendada = String(x.acao_recomendada);
+    if (x.recommended_action && !row.acao_recomendada) row.acao_recomendada = String(x.recommended_action);
+    if (x.precisa_followup !== undefined) row.precisa_followup = Boolean(x.precisa_followup);
+    if (x.needs_followup !== undefined && row.precisa_followup === undefined) row.precisa_followup = Boolean(x.needs_followup);
+    if (x.estado && !row.estado) row.estado = String(x.estado);
+    if (x.status && !row.estado) row.estado = String(x.status);
+    if (x.cell_id && isValidUuid(String(x.cell_id))) row.cell_id = String(x.cell_id);
+  } else if (t === "cellActionPlans") {
+    if (x.cell_name && !row.cell_name) row.cell_name = String(x.cell_name);
+    if (x.leader_name && !row.leader_name) row.leader_name = String(x.leader_name);
+    if (x.action && !row.action) row.action = String(x.action);
+    if (x.owner && !row.owner) row.owner = String(x.owner);
+    if (x.responsible_person && !row.owner) row.owner = String(x.responsible_person);
+    if (x.due_date && !row.due_date) row.due_date = String(x.due_date);
+    if (x.target_date && !row.due_date) row.due_date = String(x.target_date);
+    if (x.status && !row.status) row.status = String(x.status);
+    if (x.estado && !row.status) row.status = String(x.estado);
+    if (x.notes && !row.notes) row.notes = String(x.notes);
+    if (x.cell_id && isValidUuid(String(x.cell_id))) row.cell_id = String(x.cell_id);
+    if (x.leader_id && isValidUuid(String(x.leader_id))) row.leader_id = String(x.leader_id);
   }
 
   if (row.id && !isValidUuid(String(row.id))) delete row.id;
@@ -325,3 +379,20 @@ export const createCellReport = (p: CellMinistryRecord) => create("cellReports",
 export const updateCellReport = (id: EntityId, p: CellMinistryRecord) => update("cellReports", id, p);
 export const deleteCellReport = (id: EntityId) => remove("cellReports", id);
 export const getCellReportsByChurch = (churchId: EntityId) => list("cellReports", { church_id: String(churchId) });
+
+// Cell Evaluations
+export const listCellEvaluations = (filters: Record<string, string | number | boolean | null> = {}) => list("cellEvaluations", filters, "data_da_avaliacao");
+export const getCellEvaluationById = (id: EntityId) => get("cellEvaluations", id);
+export const createCellEvaluation = (p: CellMinistryRecord) => create("cellEvaluations", p);
+export const updateCellEvaluation = (id: EntityId, p: CellMinistryRecord) => update("cellEvaluations", id, p);
+export const deleteCellEvaluation = (id: EntityId) => remove("cellEvaluations", id);
+export const getCellEvaluationsByChurch = (churchId: EntityId) => list("cellEvaluations", { church_id: String(churchId) });
+
+// Cell Action Plans
+export const listCellActionPlans = (filters: Record<string, string | number | boolean | null> = {}) => list("cellActionPlans", filters, "due_date");
+export const getCellActionPlanById = (id: EntityId) => get("cellActionPlans", id);
+export const createCellActionPlan = (p: CellMinistryRecord) => create("cellActionPlans", p);
+export const updateCellActionPlan = (id: EntityId, p: CellMinistryRecord) => update("cellActionPlans", id, p);
+export const deleteCellActionPlan = (id: EntityId) => remove("cellActionPlans", id);
+export const getCellActionPlansByChurch = (churchId: EntityId) => list("cellActionPlans", { church_id: String(churchId) });
+

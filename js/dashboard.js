@@ -20362,18 +20362,60 @@ async function dualWriteCellMinistryRecord(modalType, mode, record) {
         else if (mode === "delete" && repo.deleteCellReport) result = await repo.deleteCellReport(record.id);
       }
     } else if (modalType === "cellEvaluation") {
-      const bridge = window.CECellMinistry;
-      if (bridge) {
-        if (mode === "create" && bridge.createCellEvaluation) result = await bridge.createCellEvaluation(record);
-        else if (mode === "update" && bridge.updateCellEvaluation) result = await bridge.updateCellEvaluation(record.id, record);
-        else if (mode === "delete" && bridge.deleteCellEvaluation) result = await bridge.deleteCellEvaluation(record.id);
+      if (cellSb) {
+        if (mode === "create" && cellSb.createCellEvaluation) {
+          result = await cellSb.createCellEvaluation(record);
+          if (result?.ok && result.data) {
+            Object.assign(record, result.data);
+            saveState("Persisted cellEvaluation to Supabase");
+            if (activeRoute === "cellEvaluationRoute") renderCellMinistry("cellEvaluation");
+          }
+        } else if (mode === "update" && cellSb.updateCellEvaluation) {
+          result = await cellSb.updateCellEvaluation(record.id, record);
+          if (result?.ok && result.data) {
+            Object.assign(record, result.data);
+            saveState("Updated cellEvaluation in Supabase");
+            if (activeRoute === "cellEvaluationRoute") renderCellMinistry("cellEvaluation");
+          }
+        } else if (mode === "delete" && cellSb.deleteCellEvaluation) {
+          result = await cellSb.deleteCellEvaluation(record.id);
+        }
+      }
+      if (!result || result.ok === false) {
+        const bridge = window.CECellMinistry;
+        if (bridge) {
+          if (mode === "create" && bridge.createCellEvaluation) result = await bridge.createCellEvaluation(record);
+          else if (mode === "update" && bridge.updateCellEvaluation) result = await bridge.updateCellEvaluation(record.id, record);
+          else if (mode === "delete" && bridge.deleteCellEvaluation) result = await bridge.deleteCellEvaluation(record.id);
+        }
       }
     } else if (modalType === "cellActionPlan") {
-      const bridge = window.CECellMinistry;
-      if (bridge) {
-        if (mode === "create" && bridge.createCellActionPlan) result = await bridge.createCellActionPlan(record);
-        else if (mode === "update" && bridge.updateCellActionPlan) result = await bridge.updateCellActionPlan(record.id, record);
-        else if (mode === "delete" && bridge.deleteCellActionPlan) result = await bridge.deleteCellActionPlan(record.id);
+      if (cellSb) {
+        if (mode === "create" && cellSb.createCellActionPlan) {
+          result = await cellSb.createCellActionPlan(record);
+          if (result?.ok && result.data) {
+            Object.assign(record, result.data);
+            saveState("Persisted cellActionPlan to Supabase");
+            if (activeRoute === "cellActionPlan") renderCellMinistry("actionPlan");
+          }
+        } else if (mode === "update" && cellSb.updateCellActionPlan) {
+          result = await cellSb.updateCellActionPlan(record.id, record);
+          if (result?.ok && result.data) {
+            Object.assign(record, result.data);
+            saveState("Updated cellActionPlan in Supabase");
+            if (activeRoute === "cellActionPlan") renderCellMinistry("actionPlan");
+          }
+        } else if (mode === "delete" && cellSb.deleteCellActionPlan) {
+          result = await cellSb.deleteCellActionPlan(record.id);
+        }
+      }
+      if (!result || result.ok === false) {
+        const bridge = window.CECellMinistry;
+        if (bridge) {
+          if (mode === "create" && bridge.createCellActionPlan) result = await bridge.createCellActionPlan(record);
+          else if (mode === "update" && bridge.updateCellActionPlan) result = await bridge.updateCellActionPlan(record.id, record);
+          else if (mode === "delete" && bridge.deleteCellActionPlan) result = await bridge.deleteCellActionPlan(record.id);
+        }
       }
     }
     if (result && result.ok === false) {
@@ -20586,21 +20628,77 @@ async function hydrateCellMinistryFromRepository() {
       state.cellReportSubmissions = state.cellLeadership.cellReports.map((r) => ({ ...r }));
       hydrated = true;
     }
-    if (window.CECellMinistry) {
-      if (typeof window.CECellMinistry.listCellEvaluations === "function") {
-        const evalsRes = await window.CECellMinistry.listCellEvaluations();
-        if (evalsRes && evalsRes.ok && Array.isArray(evalsRes.data) && evalsRes.data.length) {
-          state.cellLeadership.evaluations = evalsRes.data;
-          hydrated = true;
-        }
+    // 8. Evaluations
+    const evalsRes = cellSb?.listCellEvaluations
+      ? await cellSb.listCellEvaluations()
+      : (typeof repo?.listCellEvaluations === "function" ? await repo.listCellEvaluations() : (window.CECellMinistry?.listCellEvaluations ? await window.CECellMinistry.listCellEvaluations() : null));
+
+    if (evalsRes && evalsRes.ok && Array.isArray(evalsRes.data) && (evalsRes.data.length || usingSupabase)) {
+      state.cellLeadership = state.cellLeadership || {};
+      const prev = new Map((state.cellLeadership.evaluations || []).map((e) => [e.id, e]));
+      const byId = new Map();
+      evalsRes.data.forEach((row) => {
+        const previous = prev.get(row.id) || {};
+        byId.set(row.id, {
+          ...(usingSupabase ? previous : row),
+          ...(usingSupabase ? row : previous),
+          id: row.id,
+          report_id: row.report_id || previous.report_id,
+          cell_id: row.cell_id || previous.cell_id,
+          cell_name: row.cell_name || previous.cell_name,
+          avaliador: row.avaliador || previous.avaliador || row.evaluator,
+          data_da_avaliacao: row.data_da_avaliacao || previous.data_da_avaliacao || row.evaluation_date,
+          classificacao: row.classificacao || previous.classificacao || row.classification,
+          pontos_fortes: row.pontos_fortes || previous.pontos_fortes || "",
+          pontos_a_melhorar: row.pontos_a_melhorar || previous.pontos_a_melhorar || "",
+          acao_recomendada: row.acao_recomendada || previous.acao_recomendada || row.recommended_action || "",
+          precisa_followup: row.precisa_followup ?? previous.precisa_followup ?? false,
+          estado: row.estado || previous.estado || row.status || "Pendente"
+        });
+      });
+      if (!usingSupabase) {
+        prev.forEach((localRow, id) => {
+          if (!byId.has(id)) byId.set(id, localRow);
+        });
       }
-      if (typeof window.CECellMinistry.listCellActionPlans === "function") {
-        const plansRes = await window.CECellMinistry.listCellActionPlans();
-        if (plansRes && plansRes.ok && Array.isArray(plansRes.data) && plansRes.data.length) {
-          state.cellLeadership.actionPlans = plansRes.data;
-          hydrated = true;
-        }
+      state.cellLeadership.evaluations = [...byId.values()];
+      hydrated = true;
+    }
+
+    // 9. Action Plans
+    const plansRes = cellSb?.listCellActionPlans
+      ? await cellSb.listCellActionPlans()
+      : (typeof repo?.listCellActionPlans === "function" ? await repo.listCellActionPlans() : (window.CECellMinistry?.listCellActionPlans ? await window.CECellMinistry.listCellActionPlans() : null));
+
+    if (plansRes && plansRes.ok && Array.isArray(plansRes.data) && (plansRes.data.length || usingSupabase)) {
+      state.cellLeadership = state.cellLeadership || {};
+      const prev = new Map((state.cellLeadership.actionPlans || []).map((p) => [p.id, p]));
+      const byId = new Map();
+      plansRes.data.forEach((row) => {
+        const previous = prev.get(row.id) || {};
+        byId.set(row.id, {
+          ...(usingSupabase ? previous : row),
+          ...(usingSupabase ? row : previous),
+          id: row.id,
+          church_id: row.church_id || previous.church_id,
+          cell_id: row.cell_id || previous.cell_id,
+          cell_name: row.cell_name || previous.cell_name,
+          leader_id: row.leader_id || previous.leader_id,
+          leader_name: row.leader_name || previous.leader_name,
+          action: row.action || previous.action,
+          owner: row.owner || previous.owner || row.responsible_person,
+          due_date: row.due_date || previous.due_date || row.target_date,
+          status: row.status || previous.status || row.estado || "Planeado",
+          notes: row.notes || previous.notes || ""
+        });
+      });
+      if (!usingSupabase) {
+        prev.forEach((localRow, id) => {
+          if (!byId.has(id)) byId.set(id, localRow);
+        });
       }
+      state.cellLeadership.actionPlans = [...byId.values()];
+      hydrated = true;
     }
     if (typeof autoConsolidateAllChurchReports === "function") autoConsolidateAllChurchReports();
     if (Array.isArray(state.members) && state.members.length) syncMemberDerivedCellNetwork();
@@ -21109,10 +21207,7 @@ function renderCellActionPlanCard(item) {
     meta.push([L("notes") || "Notas", escapeAttr(item.notes), "bi-chat-text"]);
   }
 
-  const actions = actionButtons([
-    ["view", "cellActionPlan", item.id, L("view")],
-    ["edit", "cellActionPlan", item.id, L("edit")]
-  ]);
+  const actions = backendActions("cellActionPlan", item.id);
 
   if (typeof DataCard === "function") {
     return DataCard({
@@ -28607,7 +28702,7 @@ function openForm(type, id = null, options = {}) {
 }
 
 function formTitle(type) {
-  const map = { firstTimer: L("firstTimers"), member: L("members"), program: L("programs"), foundationStudent: L("foundationSchool"), finance: L("finance"), church: L("churches"), cell: L("cellLeadership"), cellGroup: L("cellGroups"), cellRegistry: L("cellCellsList"), user: L("usersRoles"), requisition: L("requisitions"), staffProfile: L("staffHr"), staffPerformance: L("staffTabPerformance"), baptism: L("baptismTab"), marriage: L("marriageTab"), baby: L("babyTab"), counselingRequest: L("newCounselingRequest"), counselor: L("counselingCounselors"), counselingAppointment: L("counselingAppointments"), counselingReferral: L("counselingReferrals"), counselingFeedback: L("counselingFeedbackReports"), fevoConfig: L("weeklyConfiguration"), fevoReport: L("weeklyReports"), fevoNoReport: L("groupsWithoutReport"), fevoWeeklyReport: L("weeklyReports"), prisonLocation: L("prisonsLocations"), prisonService: L("prisonServices"), prisonFoundation: L("foundationSchool"), prisonAgenda: L("weeklyAgenda"), prisonReport: L("ministryReports"), materialCatalogue: L("catalogue"), materialSale: L("sales"), materialDistribution: L("churchDistribution"), materialStock: L("weeklyStock"), materialFund: L("freeDistributionFunds"), materialReport: L("ministryReports"), alecRegistration: L("alecRegistration"), alecScore: L("alecScores"), churchReport: L("churchReports"), cellReport: L("cellReports"), cellLeader: L("cellLeaders"), cellEvaluation: L("cellEvaluation"), finalValidation: L("finalValidation"), inventoryItem: L("generalInventory"), venueAcquisition: L("newAcquisitions"), venueStaffEquipment: L("staffEquipment"), venueMaintenance: L("maintenanceRepairs"), venueMovement: L("loansMovements"), venueSpace: L("venuesRooms"), venueChecklist: L("serviceChecklist"), mediaTechnician: L("mediaTechnicalTeam"), mediaRole: L("mediaRolesFunctions"), mediaSchedule: L("mediaSchedules"), mediaService: L("mediaServicesPrograms"), streamingChannel: L("mediaStreamingChannels"), mediaEvaluation: L("mediaPerformanceEvaluation"), mediaAward: L("mediaAwards") };
+  const map = { firstTimer: L("firstTimers"), member: L("members"), program: L("programs"), foundationStudent: L("foundationSchool"), finance: L("finance"), church: L("churches"), cell: L("cellLeadership"), cellGroup: L("cellGroups"), cellRegistry: L("cellCellsList"), user: L("usersRoles"), requisition: L("requisitions"), staffProfile: L("staffHr"), staffPerformance: L("staffTabPerformance"), baptism: L("baptismTab"), marriage: L("marriageTab"), baby: L("babyTab"), counselingRequest: L("newCounselingRequest"), counselor: L("counselingCounselors"), counselingAppointment: L("counselingAppointments"), counselingReferral: L("counselingReferrals"), counselingFeedback: L("counselingFeedbackReports"), fevoConfig: L("weeklyConfiguration"), fevoReport: L("weeklyReports"), fevoNoReport: L("groupsWithoutReport"), fevoWeeklyReport: L("weeklyReports"), prisonLocation: L("prisonsLocations"), prisonService: L("prisonServices"), prisonFoundation: L("foundationSchool"), prisonAgenda: L("weeklyAgenda"), prisonReport: L("ministryReports"), materialCatalogue: L("catalogue"), materialSale: L("sales"), materialDistribution: L("churchDistribution"), materialStock: L("weeklyStock"), materialFund: L("freeDistributionFunds"), materialReport: L("ministryReports"), alecRegistration: L("alecRegistration"), alecScore: L("alecScores"), churchReport: L("churchReports"), cellReport: L("cellReports"), cellLeader: L("cellLeaders"), cellEvaluation: L("cellEvaluation"), cellActionPlan: L("actionPlan"), actionPlan: L("actionPlan"), finalValidation: L("finalValidation"), inventoryItem: L("generalInventory"), venueAcquisition: L("newAcquisitions"), venueStaffEquipment: L("staffEquipment"), venueMaintenance: L("maintenanceRepairs"), venueMovement: L("loansMovements"), venueSpace: L("venuesRooms"), venueChecklist: L("serviceChecklist"), mediaTechnician: L("mediaTechnicalTeam"), mediaRole: L("mediaRolesFunctions"), mediaSchedule: L("mediaSchedules"), mediaService: L("mediaServicesPrograms"), streamingChannel: L("mediaStreamingChannels"), mediaEvaluation: L("mediaPerformanceEvaluation"), mediaAward: L("mediaAwards") };
   return map[type] || type;
 }
 
@@ -31345,18 +31440,18 @@ async function quickAction(action, type, id) {
       return;
     }
 
-    if (["churchReport", "alecRegistration", "alecScore", "cellReport"].includes(type)) {
-      const cellSb = window.CESupabase?.cellMinistrySupabaseAdapter || window.cellMinistrySupabaseAdapter;
-      if (cellSb && previous?.id) {
-        try {
-          if (type === "churchReport" && cellSb.deleteChurchReport) await cellSb.deleteChurchReport(previous.id);
-          else if (type === "alecRegistration" && cellSb.deleteAlecRegistration) await cellSb.deleteAlecRegistration(previous.id);
-          else if (type === "alecScore" && cellSb.deleteAlecScore) await cellSb.deleteAlecScore(previous.id);
-          else if (type === "cellReport" && cellSb.deleteCellReport) await cellSb.deleteCellReport(previous.id);
-        } catch (err) {
-          console.warn("[CE CellMinistry] delete sync error", err);
-        }
-      }
+    if (["churchReport", "alecRegistration", "alecScore", "cellReport", "cellEvaluation", "cellActionPlan", "cellLeader", "cellGroup", "cellRegistry"].includes(type)) {
+      collection.splice(index, 1);
+      saveState(`Deleted ${type} ${id}`);
+      void dualWriteCellMinistryRecord(type, "delete", previous || { id });
+      if (typeof showToast === "function") showToast(lang === "pt" ? "Registo eliminado com sucesso!" : "Record deleted successfully!");
+      if (activeRoute === "cellEvaluationRoute") renderCellMinistry("cellEvaluation");
+      else if (activeRoute === "cellActionPlan") renderCellMinistry("actionPlan");
+      else if (activeRoute === "cellLeadersAttention") renderCellMinistry("leadersAttention");
+      else if (activeRoute === "cellReceivedReports" || activeRoute === "cellWeeklyReport") renderCellMinistry("receivedReports");
+      else if (activeRoute === "cellPerformance") renderCellMinistry("cellPerformance");
+      else setRoute(activeRoute);
+      return;
     }
 
     if (["inventoryItem", "venueAcquisition", "venueStaffEquipment", "venueMaintenance", "venueMovement", "venueSpace", "venueChecklist", "serviceChecklist", "venueServiceChecklist"].includes(type)) {
@@ -33638,39 +33733,67 @@ document.addEventListener("click", (event) => {
   }
 });
 
-document.addEventListener("input", (event) => {
-  if (!event.target.matches('[data-member-filter="search"]')) return;
-  if (memberSearchDebounceTimer) window.clearTimeout(memberSearchDebounceTimer);
-  const searchVal = event.target.value;
-  memberSearchDebounceTimer = window.setTimeout(() => {
-    const filterBar = event.target.closest("[data-member-filter-bar]");
-    if (!filterBar || activeRoute !== "members") return;
-    modulePageState.members.filter = {
-      ...(modulePageState.members.filter || {}),
-      search: searchVal.trim(),
-      church_id: filterBar.querySelector('[data-member-filter="church_id"]')?.value || "",
-      cell_group: filterBar.querySelector('[data-member-filter="cell_group"]')?.value || "",
-      cell: filterBar.querySelector('[data-member-filter="cell"]')?.value || "",
-      status: filterBar.querySelector('[data-member-filter="status"]')?.value || ""
-    };
-    modulePageState.members.page = 1;
-    modulePageState.members.loaded = false;
-    void loadMembersPage({ force: true, liveSearch: true });
-  }, 250);
-});
+// Universal reactive live-filtering helper for Cell Ministry filter bars (cellPerformance, receivedReports, weeklyReport, cellEvaluation, leadersAttention, actionPlan)
+function triggerCellMinistryAutoFilter(filterBar, isSearchInput = false) {
+  if (!filterBar) return;
+  const scope = filterBar.dataset.cellMinistryFilterBar;
+  if (!scope) return;
 
-document.addEventListener("change", (event) => {
-  if (event.target.matches('[data-cell-filter="church_id"], [data-cell-filter="cell_group"]')) {
-    updateCellMinistryDependentFilters(event.target.closest("[data-cell-ministry-filter-bar]"));
+  if (!cellMinistryFilterState[scope]) {
+    cellMinistryFilterState[scope] = { search: "", church_id: "", cell_group: "", cell: "", status: "", week: "" };
   }
-  if (event.target.matches('[data-member-filter="cell_group"]')) {
-    updateMemberDependentCellFilter(event.target.closest("[data-member-filter-bar]"));
+
+  cellMinistryFilterState[scope] = {
+    search: filterBar.querySelector('[data-cell-filter="search"]')?.value?.trim() || "",
+    church_id: filterBar.querySelector('[data-cell-filter="church_id"]')?.value || "",
+    cell_group: filterBar.querySelector('[data-cell-filter="cell_group"]')?.value || "",
+    cell: filterBar.querySelector('[data-cell-filter="cell"]')?.value || "",
+    status: filterBar.querySelector('[data-cell-filter="status"]')?.value || "",
+    week: filterBar.querySelector('[data-cell-filter="week"]')?.value || ""
+  };
+
+  const executeRender = () => {
+    if (scope === "receivedReports" || scope === "weeklyReport") renderCellMinistry(scope === "weeklyReport" ? "weeklyReport" : "receivedReports");
+    else if (scope === "cellEvaluation") renderCellMinistry("cellEvaluation");
+    else if (scope === "cellPerformance") renderCellMinistry("cellPerformance");
+    else if (scope === "leadersAttention") renderCellMinistry("leadersAttention");
+    else if (scope === "actionPlan") renderCellMinistry("actionPlan");
+    else setRoute(activeRoute);
+  };
+
+  if (isSearchInput) {
+    if (window.__cellMinistrySearchDebounce) clearTimeout(window.__cellMinistrySearchDebounce);
+    window.__cellMinistrySearchDebounce = setTimeout(() => {
+      executeRender();
+      const inp = document.querySelector(`[data-cell-ministry-filter-bar="${scope}"] [data-cell-filter="search"]`);
+      if (inp) {
+        inp.focus();
+        inp.setSelectionRange(inp.value.length, inp.value.length);
+      }
+    }, 200);
+  } else {
+    executeRender();
   }
-  if (event.target.matches('[data-member-filter="church_id"], [data-member-filter="cell_group"], [data-member-filter="cell"], [data-member-filter="status"]')) {
-    const filterBar = event.target.closest("[data-member-filter-bar]");
-    if (filterBar && activeRoute === "members") {
+}
+
+document.addEventListener("input", (event) => {
+  // Cell Ministry search input (e.g. Desempenho das Células, Submissões, Avaliação, etc.)
+  const cellMinistryBar = event.target.closest("[data-cell-ministry-filter-bar]");
+  if (cellMinistryBar && event.target.matches('[data-cell-filter="search"]')) {
+    triggerCellMinistryAutoFilter(cellMinistryBar, true);
+    return;
+  }
+
+  // Members search input
+  if (event.target.matches('[data-member-filter="search"]')) {
+    if (memberSearchDebounceTimer) window.clearTimeout(memberSearchDebounceTimer);
+    const searchVal = event.target.value;
+    memberSearchDebounceTimer = window.setTimeout(() => {
+      const filterBar = event.target.closest("[data-member-filter-bar]");
+      if (!filterBar || activeRoute !== "members") return;
       modulePageState.members.filter = {
-        search: filterBar.querySelector('[data-member-filter="search"]')?.value?.trim() || "",
+        ...(modulePageState.members.filter || {}),
+        search: searchVal.trim(),
         church_id: filterBar.querySelector('[data-member-filter="church_id"]')?.value || "",
         cell_group: filterBar.querySelector('[data-member-filter="cell_group"]')?.value || "",
         cell: filterBar.querySelector('[data-member-filter="cell"]')?.value || "",
@@ -33678,13 +33801,171 @@ document.addEventListener("change", (event) => {
       };
       modulePageState.members.page = 1;
       modulePageState.members.loaded = false;
+      void loadMembersPage({ force: true, liveSearch: true });
+    }, 250);
+    return;
+  }
+
+  // Foundation teacher search input
+  const teacherFilterForm = event.target.closest("[data-foundation-teacher-filters]");
+  if (teacherFilterForm && event.target.name === "search") {
+    clearTimeout(window.__foundationTeacherSearchDebounce);
+    window.__foundationTeacherSearchDebounce = setTimeout(() => {
+      const data = Object.fromEntries(new FormData(teacherFilterForm).entries());
+      foundationPageState.teacherFilter = {
+        ...(foundationPageState.teacherFilter || {}),
+        search: data.search || ""
+      };
+      if (activeRoute === "foundation") renderFoundation();
+    }, 250);
+    return;
+  }
+
+  // Foundation class search input
+  const classFilterForm = event.target.closest("[data-foundation-class-filters]");
+  if (classFilterForm && event.target.name === "search") {
+    clearTimeout(window.__foundationClassSearchDebounce);
+    window.__foundationClassSearchDebounce = setTimeout(() => {
+      const data = Object.fromEntries(new FormData(classFilterForm).entries());
+      foundationPageState.classFilter = {
+        ...(foundationPageState.classFilter || {}),
+        search: data.search || ""
+      };
+      if (activeRoute === "foundation") renderFoundation();
+    }, 250);
+    return;
+  }
+
+  // Generic .filter-toolbar search input
+  const filterToolbar = event.target.closest(".filter-toolbar");
+  if (filterToolbar && event.target.matches('[data-filter-search], input[type="search"]')) {
+    const applyBtn = filterToolbar.querySelector("[data-filter-apply]");
+    const scope = applyBtn?.dataset?.filterApply || filterToolbar.dataset?.filterScope || "";
+    if (scope && typeof applyFilterToolbar === "function") {
+      clearTimeout(window.__genericFilterSearchDebounce);
+      window.__genericFilterSearchDebounce = setTimeout(() => {
+        applyFilterToolbar(scope, event.target);
+      }, 250);
+    }
+  }
+});
+
+document.addEventListener("change", (event) => {
+  // Cell Ministry filter bars (Igreja, Grupo, Célula, Estado, Semana/Data)
+  const cellMinistryBar = event.target.closest("[data-cell-ministry-filter-bar]");
+  if (cellMinistryBar && event.target.matches("[data-cell-filter]")) {
+    if (event.target.matches('[data-cell-filter="church_id"], [data-cell-filter="cell_group"]')) {
+      updateCellMinistryDependentFilters(cellMinistryBar);
+    }
+    triggerCellMinistryAutoFilter(cellMinistryBar, false);
+    return;
+  }
+
+  // Members filter bars
+  if (event.target.matches('[data-member-filter="cell_group"]')) {
+    updateMemberDependentCellFilter(event.target.closest("[data-member-filter-bar]"));
+  }
+  if (event.target.matches('[data-member-filter="church_id"], [data-member-filter="cell_group"], [data-member-filter="cell"], [data-member-filter="status"], [data-member-filter="department"], [data-member-filter="role"]')) {
+    const filterBar = event.target.closest("[data-member-filter-bar]");
+    if (filterBar && activeRoute === "members") {
+      modulePageState.members.filter = {
+        search: filterBar.querySelector('[data-member-filter="search"]')?.value?.trim() || "",
+        church_id: filterBar.querySelector('[data-member-filter="church_id"]')?.value || "",
+        cell_group: filterBar.querySelector('[data-member-filter="cell_group"]')?.value || "",
+        cell: filterBar.querySelector('[data-member-filter="cell"]')?.value || "",
+        status: filterBar.querySelector('[data-member-filter="status"]')?.value || "",
+        department: filterBar.querySelector('[data-member-filter="department"]')?.value || "",
+        role: filterBar.querySelector('[data-member-filter="role"]')?.value || ""
+      };
+      modulePageState.members.page = 1;
+      modulePageState.members.loaded = false;
       void loadMembersPage({ force: true });
     }
+    return;
   }
   if (event.target.matches("[data-members-page-size]")) {
     modulePageState.members.pageSize = Number(event.target.value) || 50;
     modulePageState.members.page = 1;
     void loadMembersPage({ force: true });
+    return;
+  }
+
+  // Foundation School teacher filters
+  const teacherFilterForm = event.target.closest("[data-foundation-teacher-filters]");
+  if (teacherFilterForm) {
+    const data = Object.fromEntries(new FormData(teacherFilterForm).entries());
+    foundationPageState.teacherFilter = {
+      search: data.search || "",
+      churchId: data.churchId || "",
+      status: data.status || "",
+      role_type: data.role_type || "",
+      deliveryMode: data.deliveryMode || "",
+      lesson: data.lesson || "",
+      prisonOnly: teacherFilterForm.querySelector('[name="prisonOnly"]')?.checked || false
+    };
+    if (activeRoute === "foundation") renderFoundation();
+    return;
+  }
+
+  // Foundation School class filters
+  const classFilterForm = event.target.closest("[data-foundation-class-filters]");
+  if (classFilterForm) {
+    const data = Object.fromEntries(new FormData(classFilterForm).entries());
+    foundationPageState.classFilter = {
+      search: data.search || "",
+      churchId: data.churchId || "",
+      quarter: data.quarter || "",
+      deliveryMode: data.deliveryMode || "",
+      teacherId: data.teacherId || "",
+      status: data.status || ""
+    };
+    if (activeRoute === "foundation") renderFoundation();
+    return;
+  }
+
+  // Requisition / Finance report filters
+  if (event.target.closest("[data-requisition-report-filters]")) {
+    const form = event.target.closest("[data-requisition-report-filters]");
+    const data = Object.fromEntries(new FormData(form).entries());
+    financePageState.requisitionReportFilters = { ...financePageState.requisitionReportFilters, ...data };
+    if (activeRoute === "finance") renderFinance();
+    else if (activeRoute === "reports") renderReports();
+    return;
+  }
+  if (event.target.closest("[data-requisition-module-report-filters]")) {
+    const form = event.target.closest("[data-requisition-module-report-filters]");
+    const data = Object.fromEntries(new FormData(form).entries());
+    requisitionsPageState.reportFilters = { ...requisitionsPageState.reportFilters, ...data };
+    if (activeRoute === "requisitions") renderRequisitions();
+    return;
+  }
+  if (event.target.closest("[data-domain-report-filters]")) {
+    const form = event.target.closest("[data-domain-report-filters]");
+    const data = Object.fromEntries(new FormData(form).entries());
+    const domainId = data.domain || form.dataset.reportDomain;
+    if (domainId && domainReportFilters[domainId]) {
+      domainReportFilters[domainId] = { ...domainReportFilters[domainId], ...data };
+      if (activeRoute === "reports") renderReports();
+      else setRoute(activeRoute);
+    }
+    return;
+  }
+  if (event.target.closest("[data-finance-approved-req-filters]")) {
+    const form = event.target.closest("[data-finance-approved-req-filters]");
+    const data = Object.fromEntries(new FormData(form).entries());
+    financePageState.approvedReqFilters = { ...financePageState.approvedReqFilters, ...data };
+    if (activeRoute === "finance") renderFinance();
+    return;
+  }
+
+  // Generic .filter-toolbar (First Timers, Follow-Up, Sacraments, Foundation, Programs, etc.)
+  const filterToolbar = event.target.closest(".filter-toolbar");
+  if (filterToolbar && (event.target.matches("[data-filter-church], [data-filter-status], [data-filter-month], select, input[type='month'], input[type='date'], input[type='week']"))) {
+    const applyBtn = filterToolbar.querySelector("[data-filter-apply]");
+    const scope = applyBtn?.dataset?.filterApply || filterToolbar.dataset?.filterScope || "";
+    if (scope && typeof applyFilterToolbar === "function") {
+      applyFilterToolbar(scope, event.target);
+    }
   }
 });
 

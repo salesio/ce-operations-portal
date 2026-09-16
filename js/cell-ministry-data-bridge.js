@@ -100,41 +100,30 @@
   }
 
   function store(kind) {
-    var source = resolveDataSource();
     var key = KEYS[kind];
-    if (source === "local") {
-      var rows = load(key);
-      var seeds = getSeeds(kind);
-      if (!rows.length) {
-        rows = seeds.map(function (s) {
-          return Object.assign({}, s);
-        });
-        if (rows.length) save(key, rows);
-      } else if (kind === "groups" || kind === "cells") {
-        var updated = false;
-        seeds.forEach(function (seed) {
-          var exists = rows.some(function (r) {
-            return String(r.id) === String(seed.id) ||
-              (r.name && seed.name && r.name === seed.name) ||
-              (r.cell_name && seed.cell_name && r.cell_name === seed.cell_name) ||
-              (r.group_name && seed.group_name && r.group_name === seed.group_name);
-          });
-          if (!exists) {
-            rows.push(Object.assign({}, seed));
-            updated = true;
-          }
-        });
-        if (updated) save(key, rows);
-      }
-      return { rows: rows, persist: true, source: "local" };
-    }
-    if (!memory[kind]) {
-      var seeds2 = getSeeds(kind);
-      memory[kind] = seeds2.map(function (s) {
+    var rows = load(key);
+    var seeds = getSeeds(kind);
+    if (!rows || !rows.length) {
+      rows = seeds.map(function (s) {
         return Object.assign({}, s);
       });
+      if (rows.length) save(key, rows);
+    } else if (kind === "groups" || kind === "cells" || kind === "evaluations" || kind === "actionPlans") {
+      var updated = false;
+      seeds.forEach(function (seed) {
+        var exists = rows.some(function (r) {
+          return String(r.id) === String(seed.id) ||
+            (r.name && seed.name && r.name === seed.name) ||
+            (r.cell_name && seed.cell_name && r.cell_name === seed.cell_name && r.report_id && seed.report_id && r.report_id === seed.report_id);
+        });
+        if (!exists) {
+          rows.push(Object.assign({}, seed));
+          updated = true;
+        }
+      });
+      if (updated) save(key, rows);
     }
-    return { rows: memory[kind], persist: false, source: source };
+    return { rows: rows, persist: true, source: resolveDataSource() };
   }
 
   function ok(data) {
@@ -155,25 +144,30 @@
         updated_at: new Date().toISOString().slice(0, 10),
       });
       s.rows.push(row);
-      if (s.persist) save(KEYS[kind], s.rows);
+      save(KEYS[kind], s.rows);
       return ok(row);
     }
     function update(kind, id, payload) {
       var s = store(kind);
       var i = s.rows.findIndex(function (r) {
-        return r.id === id;
+        return String(r.id) === String(id);
       });
-      if (i < 0) return fail("Registo não encontrado.", "NOT_FOUND");
-      s.rows[i] = Object.assign({}, s.rows[i], payload, { id: id });
-      if (s.persist) save(KEYS[kind], s.rows);
+      if (i < 0) {
+        var newRow = Object.assign({}, payload, { id: id, updated_at: new Date().toISOString().slice(0, 10) });
+        s.rows.push(newRow);
+        save(KEYS[kind], s.rows);
+        return ok(newRow);
+      }
+      s.rows[i] = Object.assign({}, s.rows[i], payload, { id: id, updated_at: new Date().toISOString().slice(0, 10) });
+      save(KEYS[kind], s.rows);
       return ok(s.rows[i]);
     }
     function remove(kind, id) {
       var s = store(kind);
       s.rows = s.rows.filter(function (r) {
-        return r.id !== id;
+        return String(r.id) !== String(id);
       });
-      if (s.persist) save(KEYS[kind], s.rows);
+      save(KEYS[kind], s.rows);
       return ok(true);
     }
     return {
@@ -303,7 +297,15 @@
       return fail("Repositório de Células & Liderança indisponível.", "UNAVAILABLE");
     }
     try {
-      return await fn.apply(resolved.api, args || []);
+      var res = await fn.apply(resolved.api, args || []);
+      if (res && res.ok !== false && (method.indexOf("create") === 0 || method.indexOf("update") === 0 || method.indexOf("delete") === 0)) {
+        try {
+          if (fallback[method] && fn !== fallback[method]) {
+            await fallback[method].apply(fallback, args || []);
+          }
+        } catch (_) {}
+      }
+      return res;
     } catch (error) {
       console.warn("[CE CellMinistry] " + method + " threw", error);
       if (!resolved.fallback && fallback[method]) {

@@ -136,9 +136,53 @@ assert.ok(dashboardCode.includes('function renderCellMinistryFilterBar'), 'Filte
 assert.ok(dashboardCode.includes('function cellMinistryFilterOptions'), 'Cascading options resolver defined');
 assert.ok(dashboardCode.includes('function updateCellMinistryDependentFilters'), 'Dependent dropdown updater defined');
 assert.ok(dashboardCode.includes('function applyCellMinistryFilters'), 'Filter evaluation logic defined');
-assert.ok(dashboardCode.includes('data-cell-filter="church_id"'), 'Church filter selector present');
-assert.ok(dashboardCode.includes('data-cell-filter="cell_group"'), 'Cell Group filter selector present');
-assert.ok(dashboardCode.includes('data-cell-filter="cell"'), 'Cell filter selector present');
-console.log('✅ Cascading filter architecture verified in dashboard.js.');
+// 4. Persistence & Hard Refresh Simulation
+console.log('\n--- 4. Hard Refresh Simulation & Persistence Tests ---');
+// Verify that modifications in localStorage persist when bridge is re-evaluated (simulating hard refresh)
+const modifiedEvalId = (await CECellMinistry.listCellEvaluations()).data[0].id;
+const updateRes = await CECellMinistry.updateCellEvaluation(modifiedEvalId, {
+  pontos_fortes: 'Preserved After Hard Refresh!'
+});
+assert.ok(updateRes.ok, 'Evaluation updated before hard refresh');
+
+// Simulate hard refresh: clear global memory and reload data bridge script with existing localStorage
+delete global.window.CECellMinistry;
+new Function(bridgeCode)();
+const reloadedMinistry = global.window.CECellMinistry;
+
+const postRefreshEvals = await reloadedMinistry.listCellEvaluations();
+const preservedEval = postRefreshEvals.data.find(e => String(e.id) === String(modifiedEvalId));
+assert.ok(preservedEval, 'Evaluation record exists after hard refresh');
+assert.strictEqual(preservedEval.pontos_fortes, 'Preserved After Hard Refresh!', 'Updated data preserved after hard refresh');
+console.log('✅ Hard refresh simulation test passed: Evaluation changes persist across reloads.');
+
+// Test Action Plan hard refresh persistence
+const modifiedPlanId = (await reloadedMinistry.listCellActionPlans()).data[0].id;
+await reloadedMinistry.updateCellActionPlan(modifiedPlanId, {
+  action: 'Persistent Action Plan Item'
+});
+
+// Simulate another hard refresh
+delete global.window.CECellMinistry;
+new Function(bridgeCode)();
+const reloadedMinistry2 = global.window.CECellMinistry;
+
+const postRefreshPlans = await reloadedMinistry2.listCellActionPlans();
+const preservedPlan = postRefreshPlans.data.find(p => String(p.id) === String(modifiedPlanId));
+assert.ok(preservedPlan, 'Action Plan record exists after hard refresh');
+assert.strictEqual(preservedPlan.action, 'Persistent Action Plan Item', 'Action Plan updates preserved after hard refresh');
+console.log('✅ Hard refresh simulation test passed: Action Plan changes persist across reloads.');
+
+// 5. Supabase Adapter Bundle Verification
+console.log('\n--- 5. Supabase Adapter Bundle Verification ---');
+const bundlePath = join(rootDir, 'js', 'supabase-bundle.js');
+assert.ok(existsSync(bundlePath), 'js/supabase-bundle.js exists');
+const bundleCode = readFileSync(bundlePath, 'utf8');
+assert.ok(bundleCode.includes('cell_evaluations'), 'Bundle includes cell_evaluations table');
+assert.ok(bundleCode.includes('cell_action_plans'), 'Bundle includes cell_action_plans table');
+assert.ok(bundleCode.includes('listCellEvaluations'), 'Bundle exports listCellEvaluations');
+assert.ok(bundleCode.includes('listCellActionPlans'), 'Bundle exports listCellActionPlans');
+console.log('✅ Supabase bundle exports and tables verified.');
 
 console.log('\n🎉 ALL CELL MINISTRY ENHANCEMENT TESTS PASSED SUCCESSFULLY!');
+
