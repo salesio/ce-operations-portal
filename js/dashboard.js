@@ -20825,6 +20825,24 @@ function cellReportRowAttrs(reports) {
 // CHURCH REPORTS & CELL ATTENDANCE ANALYTICS ENGINE
 // ============================================================================
 
+const alecRegistrationPageState = {
+  view: localStorage.getItem("ce_alec_registration_view_mode") || "table", // "table" | "card"
+  churchId: "",
+  cellGroupId: "",
+  cellId: "",
+  status: "",
+  search: ""
+};
+
+const alecScoresPageState = {
+  view: localStorage.getItem("ce_alec_scores_view_mode") || "table", // "table" | "card"
+  churchId: "",
+  cellGroupId: "",
+  cellId: "",
+  status: "",
+  search: ""
+};
+
 const churchReportPageState = {
   level: "church", // "church" | "group" | "cell"
   service: "", // "", "Domingo - 1º Culto", "Domingo - 2º Culto", "Quarta-feira", etc.
@@ -20835,7 +20853,8 @@ const churchReportPageState = {
   cellGroupId: "",
   cellId: "",
   search: "",
-  chartType: "trend" // "trend" | "comparative"
+  chartType: "trend", // "trend" | "comparative"
+  view: localStorage.getItem("ce_church_reports_view_mode") || "card" // Default is "card"
 };
 
 const cellAttendancePageState = {
@@ -21218,6 +21237,549 @@ function isRecordFromChurch(record, targetChurchId) {
   return false;
 }
 
+
+// ============================================================================
+// ALEC REGISTRATION & SCORES (PAUTA ALEC) SYNCHRONIZATION & ANALYTICS
+// ============================================================================
+
+function syncAlecRegistrationsWithScores() {
+  if (!state.cellLeadership) state.cellLeadership = { ...seedData.cellLeadership };
+  if (!Array.isArray(state.cellLeadership.alecRegistrations)) state.cellLeadership.alecRegistrations = [];
+  if (!Array.isArray(state.cellLeadership.alecScores)) state.cellLeadership.alecScores = [];
+
+  const registrations = state.cellLeadership.alecRegistrations;
+  const scores = state.cellLeadership.alecScores;
+
+  registrations.forEach((reg) => {
+    if (!reg || !reg.nome_completo) return;
+    const cleanName = String(reg.nome_completo).trim().toLowerCase();
+    let scoreItem = scores.find((s) => {
+      if (reg.id && s.registration_id && String(s.registration_id) === String(reg.id)) return true;
+      if (reg.member_id && s.member_id && String(s.member_id) === String(reg.member_id)) return true;
+      return String(s.nome_completo || "").trim().toLowerCase() === cleanName &&
+             (String(s.church_id || s.igreja || "") === String(reg.church_id || reg.igreja || ""));
+    });
+
+    if (!scoreItem) {
+      scoreItem = {
+        id: typeof generateUuid === "function" ? generateUuid() : `score-${reg.id || Date.now()}`,
+        registration_id: reg.id || null,
+        member_id: reg.member_id || null,
+        nome_completo: reg.nome_completo,
+        contacto: reg.contacto || "",
+        church_id: reg.church_id || reg.igreja || "",
+        igreja: reg.igreja || reg.church_id || "",
+        celula: reg.celula || "",
+        cell_id: reg.cell_id || "",
+        cell_group_id: reg.cell_group_id || "",
+        nome_do_lider_de_celula: reg.nome_do_lider_de_celula || "",
+        fase_1_aula_1: 0,
+        fase_1_aula_2: 0,
+        fase_1_aula_3: 0,
+        fase_1_aula_4: 0,
+        fase_2_aula_1: 0,
+        fase_2_aula_2: 0,
+        fase_2_aula_3: 0,
+        terminou: ["Concluído", "Graduado", "Completed"].includes(reg.estado),
+        faixa_certificado_pago: false,
+        certificado_emitido: false,
+        estado: reg.estado || "Em Formação",
+        created_at: reg.created_at || new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      scores.push(scoreItem);
+    } else {
+      scoreItem.registration_id = scoreItem.registration_id || reg.id;
+      scoreItem.member_id = scoreItem.member_id || reg.member_id;
+      scoreItem.contacto = scoreItem.contacto || reg.contacto;
+      scoreItem.church_id = scoreItem.church_id || reg.church_id || reg.igreja;
+      scoreItem.igreja = scoreItem.igreja || reg.igreja || reg.church_id;
+      scoreItem.celula = scoreItem.celula || reg.celula;
+      scoreItem.nome_do_lider_de_celula = scoreItem.nome_do_lider_de_celula || reg.nome_do_lider_de_celula;
+    }
+  });
+}
+
+function renderAlecRegistrationCard(item) {
+  const cName = churchName(item.church_id || item.igreja);
+  const clName = item.celula || "—";
+  const ldrName = item.nome_do_lider_de_celula || "—";
+  const contact = item.contacto || "—";
+  const stLabel = item.estado || item.status || "Em Formação";
+
+  const badges = [badge(stLabel)];
+  if (item.fez_escola_de_fundacao) badges.push('<span class="badge bg-info-subtle text-info border border-info-subtle"><i class="bi bi-book me-1"></i>Escola de Fundação</span>');
+  if (item.e_lider) badges.push('<span class="badge bg-warning-subtle text-warning border border-warning-subtle"><i class="bi bi-person-badge me-1"></i>Líder de Célula</span>');
+
+  const meta = [
+    [L("church") || "Igreja", cName, "bi-building"],
+    [L("contact") || "Contacto", contact, "bi-telephone"],
+    [L("cell") || "Célula", clName, "bi-diagram-3"],
+    [L("cellLeaderName") || "Líder de Célula", ldrName, "bi-person-badge"]
+  ];
+
+  if (item.motivo_de_fazer_alec) {
+    meta.push(["Motivo ALEC", escapeAttr(item.motivo_de_fazer_alec), "bi-chat-quote"]);
+  }
+  if (item.observacoes) {
+    meta.push([L("notes") || "Observações", escapeAttr(item.observacoes), "bi-chat-text"]);
+  }
+
+  const actions = backendActions("alecRegistration", item.id);
+
+  if (typeof DataCard === "function") {
+    return DataCard({
+      title: item.nome_completo || "Aluno ALEC",
+      subtitle: `${clName} · Líder: ${ldrName}`,
+      badges,
+      meta,
+      actions,
+      className: "alec-registration-card"
+    });
+  }
+
+  return `
+    <article class="data-card record-card light-surface alec-registration-card h-100">
+      <div class="data-card-head">
+        <div class="data-card-titles">
+          <span class="eyebrow">${escapeAttr(cName)} · ${escapeAttr(clName)}</span>
+          <h3 class="data-card-title">${escapeAttr(item.nome_completo || "Aluno ALEC")}</h3>
+        </div>
+        <div class="data-card-badges">${badges.join("")}</div>
+      </div>
+      <div class="data-card-meta">
+        ${meta.map(([label, value, icon]) => `<div class="data-card-meta-row"><span class="chart-label">${icon ? `<i class="bi ${icon}"></i> ` : ""}${label}</span><strong>${value ?? "-"}</strong></div>`).join("")}
+      </div>
+      <div class="data-card-actions mt-3 pt-2 border-top border-secondary border-opacity-25">${actions}</div>
+    </article>
+  `;
+}
+
+function renderAlecRegistrationAnalyticalView() {
+  syncAlecRegistrationsWithScores();
+  const leadership = state.cellLeadership || seedData.cellLeadership;
+  const registrations = scopedNested(leadership.alecRegistrations || []);
+  const churchesList = scoped(state.churches || []);
+  const groups = typeof getAllRegisteredCellGroups === "function" ? getAllRegisteredCellGroups() : (state.cellGroups || []);
+  const cells = typeof getAllRegisteredCells === "function" ? getAllRegisteredCells() : (state.cellRegistry || state.cells || []);
+
+  const st = alecRegistrationPageState;
+
+  // Cascading groups based on chosen church
+  const availableGroups = groups.filter((g) => {
+    if (!st.churchId) return true;
+    return isRecordFromChurch(g, st.churchId);
+  });
+  if (st.cellGroupId && !availableGroups.some((g) => String(g.id) === String(st.cellGroupId))) {
+    st.cellGroupId = "";
+  }
+
+  // Cascading cells based on chosen church and group
+  const availableCells = cells.filter((c) => {
+    if (st.churchId) {
+      const parentGroup = groups.find((g) => String(g.id) === String(c.group_id || c.cell_group_id || c.group_cell_id || ""));
+      const cellMatchesChurch = isRecordFromChurch(c, st.churchId);
+      const groupMatchesChurch = parentGroup ? isRecordFromChurch(parentGroup, st.churchId) : false;
+      if (!cellMatchesChurch && !groupMatchesChurch) return false;
+    }
+    if (st.cellGroupId) {
+      const cGroupId = String(c.cell_group_id || c.group_id || c.group_cell_id || "");
+      if (cGroupId !== String(st.cellGroupId)) return false;
+    }
+    return true;
+  });
+  if (st.cellId && !availableCells.some((c) => String(c.id) === String(st.cellId))) {
+    st.cellId = "";
+  }
+
+  // Filter registrations
+  let filtered = [...registrations];
+
+  if (st.churchId) {
+    filtered = filtered.filter((r) => isRecordFromChurch(r, st.churchId));
+  }
+  if (st.cellGroupId) {
+    const targetGroup = groups.find((g) => String(g.id) === String(st.cellGroupId));
+    const targetGroupName = targetGroup?.group_name || targetGroup?.name || "";
+    const groupCellIds = new Set(cells.filter((c) => String(c.group_id || c.cell_group_id) === String(st.cellGroupId)).map((c) => String(c.id)));
+    const groupCellNames = new Set(cells.filter((c) => String(c.group_id || c.cell_group_id) === String(st.cellGroupId)).map((c) => String(c.cell_name || c.name).toLowerCase()));
+
+    filtered = filtered.filter((r) => {
+      if (r.cell_group_id && String(r.cell_group_id) === String(st.cellGroupId)) return true;
+      if (r.grupo_de_celula && r.grupo_de_celula === targetGroupName) return true;
+      if (r.cell_id && groupCellIds.has(String(r.cell_id))) return true;
+      if (r.celula && groupCellNames.has(String(r.celula).toLowerCase())) return true;
+      return false;
+    });
+  }
+  if (st.cellId) {
+    const targetCell = cells.find((c) => String(c.id) === String(st.cellId));
+    const targetCellName = String(targetCell?.cell_name || targetCell?.name || "").toLowerCase();
+    filtered = filtered.filter((r) => {
+      if (r.cell_id && String(r.cell_id) === String(st.cellId)) return true;
+      if (r.celula && String(r.celula).toLowerCase() === targetCellName) return true;
+      return false;
+    });
+  }
+  if (st.status) {
+    filtered = filtered.filter((r) => String(r.estado || r.status || "").toLowerCase() === st.status.toLowerCase());
+  }
+  if (st.search) {
+    const q = st.search.toLowerCase();
+    filtered = filtered.filter((r) => {
+      const name = String(r.nome_completo || "").toLowerCase();
+      const cell = String(r.celula || "").toLowerCase();
+      const leader = String(r.nome_do_lider_de_celula || "").toLowerCase();
+      const phone = String(r.contacto || "").toLowerCase();
+      const church = churchName(r.church_id || r.igreja).toLowerCase();
+      return name.includes(q) || cell.includes(q) || leader.includes(q) || phone.includes(q) || church.includes(q);
+    });
+  }
+
+  const isCardView = st.view === "card" || st.view === "cards";
+
+  return `
+    <section class="panel glass-panel mb-4">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <div>
+          <h3 class="panel-title mb-1"><i class="bi bi-mortarboard-fill me-2 text-gold"></i>${L("alecRegistration") || "Cadastro ALEC"}</h3>
+          <p class="text-secondary mb-0">Gestão de inscrições de líderes e membros na formação da Academia de Liderança (ALEC).</p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap align-items-center">
+          <div class="view-toggle light-surface" role="group" aria-label="Modo de Visualização">
+            <button type="button" class="view-toggle-btn ${!isCardView ? "active" : ""}" data-alec-view-mode="table">
+              <i class="bi bi-table"></i>
+              <span>${cleanDisplayText(L("tableView") || "Tabela")}</span>
+            </button>
+            <button type="button" class="view-toggle-btn ${isCardView ? "active" : ""}" data-alec-view-mode="card">
+              <i class="bi bi-grid-fill"></i>
+              <span>${cleanDisplayText(lang === "pt" ? "Modo Card" : "Card View")}</span>
+            </button>
+          </div>
+          <button type="button" class="btn btn-ce-gold btn-touch" data-open-form="alecRegistration"><i class="bi bi-plus-lg me-1"></i>${L("add") || "Nova Inscrição"}</button>
+          <button type="button" class="btn btn-outline-cyan btn-touch" data-action="export" data-type="alecRegistration" data-id="alecRegistration"><i class="bi bi-download me-1"></i>${L("export") || "Exportar"}</button>
+        </div>
+      </div>
+
+      <!-- KPI Summary Cards -->
+      <div class="row g-3 summary-cards-row mb-4">
+        ${metric("bi-mortarboard", L("totalAlecRegistered") || "Total Inscritos", registrations.length, L("alecFull") || "Academia de Liderança")}
+        ${metric("bi-hourglass-split", L("inTraining") || "Em Formação", registrations.filter((r) => ["Em Formação", "Em Formao", "Inscrito", "Activo"].includes(r.estado)).length, L("active") || "Activos")}
+        ${metric("bi-patch-check", L("alecCompleted") || "Concluídos", registrations.filter((r) => ["Concluído", "Graduado"].includes(r.estado)).length, L("certificateIssued") || "Certificados")}
+        ${metric("bi-person-badge", L("alreadyLeaders") || "Já Líderes", registrations.filter((r) => r.e_lider).length, L("cellLeaders") || "Líderes de Célula")}
+        ${metric("bi-book", L("didFoundationSchool") || "Escola de Fundação", registrations.filter((r) => r.fez_escola_de_fundacao).length, L("foundationSchool") || "Concluída")}
+      </div>
+
+      <!-- Cascading Filters Toolbar -->
+      <form class="filter-toolbar filter-bar mb-4" data-alec-registration-filters>
+        <select class="form-select" name="churchId" data-alec-filter-field>
+          <option value="">Todas as Igrejas</option>
+          ${churchesList.map((ch) => `<option value="${ch.id}" ${String(st.churchId) === String(ch.id) ? "selected" : ""}>${ch.public_name || ch.church_name || ch.name || churchName(ch.id) || "Igreja"}</option>`).join("")}
+        </select>
+
+        <select class="form-select" name="cellGroupId" data-alec-filter-field>
+          <option value="">Todos os Grupos de Célula</option>
+          ${availableGroups.map((g) => `<option value="${g.id}" ${String(st.cellGroupId) === String(g.id) ? "selected" : ""}>${g.group_name || g.name || "Grupo"}</option>`).join("")}
+        </select>
+
+        <select class="form-select" name="cellId" data-alec-filter-field>
+          <option value="">Todas as Células Individuais</option>
+          ${availableCells.map((c) => `<option value="${c.id}" ${String(st.cellId) === String(c.id) ? "selected" : ""}>${c.cell_name || c.name || "Célula"}</option>`).join("")}
+        </select>
+
+        <select class="form-select" name="status" data-alec-filter-field>
+          <option value="">Todos os Estados</option>
+          ${alecRegistrationStatuses.map((s) => `<option value="${s}" ${st.status === s ? "selected" : ""}>${s}</option>`).join("")}
+        </select>
+
+        <input type="text" class="form-control" name="search" placeholder="Pesquisar aluno, líder ou contacto..." value="${st.search || ""}" data-alec-filter-field>
+        <button type="button" class="btn btn-outline-cyan btn-touch" data-alec-filter-reset><i class="bi bi-arrow-counterclockwise me-1"></i>Limpar</button>
+      </form>
+
+      <!-- Content Area: Cards or Table -->
+      <div class="panel glass-panel">
+        ${isCardView ? (
+          filtered.length ? `<div class="row g-4">${filtered.map((item) => `
+            <div class="col-12 col-md-6 col-xl-4">
+              ${renderAlecRegistrationCard(item)}
+            </div>
+          `).join("")}</div>` : `<div class="p-4 text-center text-secondary">${L("noResultsFound") || "Nenhum aluno encontrado com os filtros actuais."}</div>`
+        ) : (
+          filtered.length ? dataTable([L("fullName") || "Nome Completo", L("contact") || "Contacto", L("church") || "Igreja", L("cell") || "Célula", L("cellLeaderName") || "Líder de Célula", L("didFoundation") || "Escola de Fundação", L("isLeader") || "É Líder", L("status") || "Estado", L("actions") || "Acções"], filtered.map((item) => [
+            `<strong>${item.nome_completo || "—"}</strong>`,
+            item.contacto || "—",
+            churchName(item.igreja || item.church_id),
+            item.celula || "—",
+            item.nome_do_lider_de_celula || "—",
+            yesNo(item.fez_escola_de_fundacao),
+            yesNo(item.e_lider),
+            badge(item.estado || "Em Formação"),
+            backendActions("alecRegistration", item.id)
+          ])) : EmptyState({ compact: true, title: "Sem inscrições ALEC", description: "Nenhuma inscrição encontrada para os filtros seleccionados." })
+        )}
+      </div>
+    </section>
+  `;
+}
+
+function renderAlecScoresAnalyticalView() {
+  syncAlecRegistrationsWithScores();
+  const leadership = state.cellLeadership || seedData.cellLeadership;
+  const scores = scopedNested(leadership.alecScores || []);
+  const churchesList = scoped(state.churches || []);
+  const groups = typeof getAllRegisteredCellGroups === "function" ? getAllRegisteredCellGroups() : (state.cellGroups || []);
+  const cells = typeof getAllRegisteredCells === "function" ? getAllRegisteredCells() : (state.cellRegistry || state.cells || []);
+
+  const st = alecScoresPageState;
+
+  // Cascading groups based on chosen church
+  const availableGroups = groups.filter((g) => {
+    if (!st.churchId) return true;
+    return isRecordFromChurch(g, st.churchId);
+  });
+  if (st.cellGroupId && !availableGroups.some((g) => String(g.id) === String(st.cellGroupId))) {
+    st.cellGroupId = "";
+  }
+
+  // Cascading cells based on chosen church and group
+  const availableCells = cells.filter((c) => {
+    if (st.churchId) {
+      const parentGroup = groups.find((g) => String(g.id) === String(c.group_id || c.cell_group_id || c.group_cell_id || ""));
+      const cellMatchesChurch = isRecordFromChurch(c, st.churchId);
+      const groupMatchesChurch = parentGroup ? isRecordFromChurch(parentGroup, st.churchId) : false;
+      if (!cellMatchesChurch && !groupMatchesChurch) return false;
+    }
+    if (st.cellGroupId) {
+      const cGroupId = String(c.cell_group_id || c.group_id || c.group_cell_id || "");
+      if (cGroupId !== String(st.cellGroupId)) return false;
+    }
+    return true;
+  });
+  if (st.cellId && !availableCells.some((c) => String(c.id) === String(st.cellId))) {
+    st.cellId = "";
+  }
+
+  // Filter scores
+  let filtered = [...scores];
+
+  if (st.churchId) {
+    filtered = filtered.filter((r) => isRecordFromChurch(r, st.churchId));
+  }
+  if (st.cellGroupId) {
+    const targetGroup = groups.find((g) => String(g.id) === String(st.cellGroupId));
+    const targetGroupName = targetGroup?.group_name || targetGroup?.name || "";
+    const groupCellIds = new Set(cells.filter((c) => String(c.group_id || c.cell_group_id) === String(st.cellGroupId)).map((c) => String(c.id)));
+    const groupCellNames = new Set(cells.filter((c) => String(c.group_id || c.cell_group_id) === String(st.cellGroupId)).map((c) => String(c.cell_name || c.name).toLowerCase()));
+
+    filtered = filtered.filter((r) => {
+      if (r.cell_group_id && String(r.cell_group_id) === String(st.cellGroupId)) return true;
+      if (r.grupo_de_celula && r.grupo_de_celula === targetGroupName) return true;
+      if (r.cell_id && groupCellIds.has(String(r.cell_id))) return true;
+      if (r.celula && groupCellNames.has(String(r.celula).toLowerCase())) return true;
+      return false;
+    });
+  }
+  if (st.cellId) {
+    const targetCell = cells.find((c) => String(c.id) === String(st.cellId));
+    const targetCellName = String(targetCell?.cell_name || targetCell?.name || "").toLowerCase();
+    filtered = filtered.filter((r) => {
+      if (r.cell_id && String(r.cell_id) === String(st.cellId)) return true;
+      if (r.celula && String(r.celula).toLowerCase() === targetCellName) return true;
+      return false;
+    });
+  }
+  if (st.status) {
+    filtered = filtered.filter((r) => String(r.estado || r.status || "").toLowerCase() === st.status.toLowerCase());
+  }
+  if (st.search) {
+    const q = st.search.toLowerCase();
+    filtered = filtered.filter((r) => {
+      const name = String(r.nome_completo || "").toLowerCase();
+      const cell = String(r.celula || "").toLowerCase();
+      const phone = String(r.contacto || "").toLowerCase();
+      const church = churchName(r.church_id || r.igreja).toLowerCase();
+      return name.includes(q) || cell.includes(q) || phone.includes(q) || church.includes(q);
+    });
+  }
+
+  const isCardView = st.view === "card" || st.view === "cards";
+
+  return `
+    <section class="panel glass-panel mb-4">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <div>
+          <h3 class="panel-title mb-1"><i class="bi bi-award-fill me-2 text-warning"></i>${L("alecScores") || "Pauta ALEC & Notas"}</h3>
+          <p class="text-secondary mb-0">Pauta acadêmica integrada com o Cadastro ALEC para lançamento de notas, médias de fase e certificação.</p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap align-items-center">
+          <div class="view-toggle light-surface" role="group" aria-label="Modo de Visualização">
+            <button type="button" class="view-toggle-btn ${!isCardView ? "active" : ""}" data-alec-score-view-mode="table">
+              <i class="bi bi-table"></i>
+              <span>${cleanDisplayText(L("tableView") || "Tabela")}</span>
+            </button>
+            <button type="button" class="view-toggle-btn ${isCardView ? "active" : ""}" data-alec-score-view-mode="card">
+              <i class="bi bi-grid-fill"></i>
+              <span>${cleanDisplayText(lang === "pt" ? "Modo Card" : "Card View")}</span>
+            </button>
+          </div>
+          <button type="button" class="btn btn-ce-gold btn-touch" data-open-form="alecScore"><i class="bi bi-plus-lg me-1"></i>${L("add") || "Lançar Nota"}</button>
+          <button type="button" class="btn btn-outline-cyan btn-touch" data-action="export" data-type="alecScore" data-id="alecScore"><i class="bi bi-download me-1"></i>${L("export") || "Exportar"}</button>
+        </div>
+      </div>
+
+      <!-- KPI Summary Cards -->
+      <div class="row g-3 summary-cards-row mb-4">
+        ${metric("bi-people", "Total Alunos na Pauta", scores.length, "Inscritos")}
+        ${metric("bi-award", L("alecCompleted") || "Concluídos", scores.filter((item) => item.terminou).length, L("certificateIssued") || "Certificados")}
+        ${metric("bi-hourglass-split", "Em Curso", scores.filter((item) => !item.terminou).length, "A decorrer")}
+        ${metric("bi-check2-circle", "Fase 1 Média > 70", scores.filter((item) => alecPhaseAverage(item, 1) >= 70).length, "Aprovados F1")}
+        ${metric("bi-check2-all", "Fase 2 Média > 70", scores.filter((item) => alecPhaseAverage(item, 2) >= 70).length, "Aprovados F2")}
+      </div>
+
+      <!-- Cascading Filters Toolbar -->
+      <form class="filter-toolbar filter-bar mb-4" data-alec-scores-filters>
+        <select class="form-select" name="churchId" data-alec-score-filter-field>
+          <option value="">Todas as Igrejas</option>
+          ${churchesList.map((ch) => `<option value="${ch.id}" ${String(st.churchId) === String(ch.id) ? "selected" : ""}>${ch.public_name || ch.church_name || ch.name || churchName(ch.id) || "Igreja"}</option>`).join("")}
+        </select>
+
+        <select class="form-select" name="cellGroupId" data-alec-score-filter-field>
+          <option value="">Todos os Grupos de Célula</option>
+          ${availableGroups.map((g) => `<option value="${g.id}" ${String(st.cellGroupId) === String(g.id) ? "selected" : ""}>${g.group_name || g.name || "Grupo"}</option>`).join("")}
+        </select>
+
+        <select class="form-select" name="cellId" data-alec-score-filter-field>
+          <option value="">Todas as Células Individuais</option>
+          ${availableCells.map((c) => `<option value="${c.id}" ${String(st.cellId) === String(c.id) ? "selected" : ""}>${c.cell_name || c.name || "Célula"}</option>`).join("")}
+        </select>
+
+        <select class="form-select" name="status" data-alec-score-filter-field>
+          <option value="">Todos os Estados</option>
+          ${alecScoreStatuses.map((s) => `<option value="${s}" ${st.status === s ? "selected" : ""}>${s}</option>`).join("")}
+        </select>
+
+        <input type="text" class="form-control" name="search" placeholder="Pesquisar aluno, contacto ou célula..." value="${st.search || ""}" data-alec-score-filter-field>
+        <button type="button" class="btn btn-outline-cyan btn-touch" data-alec-score-filter-reset><i class="bi bi-arrow-counterclockwise me-1"></i>Limpar</button>
+      </form>
+
+      <!-- Content Area -->
+      <div class="panel glass-panel">
+        ${isCardView ? (
+          filtered.length ? `<div class="row g-4">${filtered.map((item) => {
+            const cName = churchName(item.church_id || item.igreja);
+            const f1Avg = alecPhaseAverage(item, 1);
+            const f2Avg = alecPhaseAverage(item, 2);
+            const fAvg = alecFinalAverage(item);
+            return `
+              <div class="col-12 col-md-6 col-xl-4">
+                <article class="data-card record-card light-surface h-100 p-3">
+                  <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                      <span class="eyebrow d-block text-secondary small">${escapeAttr(cName)} · ${escapeAttr(item.celula || "—")}</span>
+                      <h4 class="data-card-title mb-0 fs-6 text-gold">${escapeAttr(item.nome_completo)}</h4>
+                    </div>
+                    <div class="d-flex flex-column align-items-end gap-1">
+                      ${badge(item.estado || "Em Formação")}
+                      ${item.terminou ? '<span class="badge bg-success-subtle text-success">Concluído</span>' : ""}
+                    </div>
+                  </div>
+                  <div class="row g-2 text-center my-2 p-2 rounded bg-dark-subtle">
+                    <div class="col-4"><small class="text-secondary d-block">Média F1</small><strong class="${f1Avg >= 70 ? "text-success" : "text-warning"}">${f1Avg || "—"}</strong></div>
+                    <div class="col-4"><small class="text-secondary d-block">Média F2</small><strong class="${f2Avg >= 70 ? "text-success" : "text-warning"}">${f2Avg || "—"}</strong></div>
+                    <div class="col-4"><small class="text-secondary d-block">Média Final</small><strong class="${fAvg >= 70 ? "text-success" : "text-info"}">${fAvg || "—"}</strong></div>
+                  </div>
+                  <div class="mb-3">
+                    <span class="small text-secondary d-block mb-1">Progresso Acadêmico:</span>
+                    ${alecProgress(item)}
+                  </div>
+                  <div class="data-card-actions pt-2 border-top border-secondary border-opacity-25">
+                    ${backendActions("alecScore", item.id)}
+                  </div>
+                </article>
+              </div>
+            `;
+          }).join("")}</div>` : `<div class="p-4 text-center text-secondary">Nenhum aluno encontrado na pauta.</div>`
+        ) : (
+          filtered.length ? dataTable([L("fullName") || "Nome do Aluno", L("church") || "Igreja", L("cell") || "Célula", L("phase1Average") || "Média Fase 1", L("phase2Average") || "Média Fase 2", L("finalAverage") || "Média Final", L("finished") || "Concluído", L("status") || "Estado", L("progress") || "Progresso", L("actions") || "Acções"], filtered.map((item) => [
+            `<strong>${item.nome_completo}</strong>`,
+            churchName(item.igreja || item.church_id),
+            item.celula || "—",
+            `<strong>${alecPhaseAverage(item, 1) || "—"}</strong>`,
+            `<strong>${alecPhaseAverage(item, 2) || "—"}</strong>`,
+            `<strong>${alecFinalAverage(item) || "—"}</strong>`,
+            yesNo(item.terminou),
+            badge(item.estado || "Em Formação"),
+            alecProgress(item),
+            backendActions("alecScore", item.id)
+          ])) : EmptyState({ compact: true, title: "Sem notas ALEC", description: "Nenhuma nota registada para os filtros seleccionados." })
+        )}
+      </div>
+    </section>
+  `;
+}
+
+function renderChurchReportSummaryCard(item) {
+  const cName = churchName(item.church_id || item.igreja);
+  const title = item.titulo_do_relatorio || item.nome || `${item.culto || "Culto"} (${item.data_do_culto || item.data_inicio || item.data || "—"})`;
+  const dateLabel = item.data_do_culto || item.data_inicio || item.data || "—";
+  const weekLabel = item.semana || "—";
+  const statusLabel = item.estado || item.status || "Submetido";
+  const cellsReported = item.total_cells_reported || 1;
+
+  const badges = [
+    badge(item.culto || "Domingo"),
+    badge(statusLabel),
+    `<span class="badge bg-secondary-subtle text-light border border-secondary">${cellsReported} célula(s)</span>`
+  ];
+
+  const pills = [
+    `<strong>ATT Total:</strong> ${item.att ?? 0}`,
+    `<strong>FT:</strong> ${item.ft ?? 0}`,
+    `<strong>NC:</strong> ${item.nc ?? 0}`,
+    `<strong>RS:</strong> ${item.rs ?? 0}`
+  ];
+
+  const meta = [
+    [L("church") || "Igreja", cName, "bi-building"],
+    [L("week") || "Semana", weekLabel, "bi-calendar-week"],
+    [L("serviceDate") || "Data do Culto", dateLabel, "bi-calendar-date"]
+  ];
+  if (item.comentarios || item.observacoes) {
+    meta.push([L("notes") || "Comentários", escapeAttr(item.comentarios || item.observacoes), "bi-chat-text"]);
+  }
+
+  const actions = actionButtons([["view", "churchReport", item.id, L("view")], ["edit", "churchReport", item.id, L("edit")], ["delete", "churchReport", item.id, L("delete")], ["export", "churchReport", item.id, L("export")]]);
+
+  if (typeof DataCard === "function") {
+    return DataCard({
+      title,
+      subtitle: `${cName} · ${weekLabel}`,
+      badges,
+      meta,
+      pills,
+      actions,
+      className: "church-report-card"
+    });
+  }
+
+  return `
+    <article class="data-card record-card light-surface church-report-card h-100">
+      <div class="data-card-head">
+        <div class="data-card-titles">
+          <span class="eyebrow">${escapeAttr(cName)} · ${escapeAttr(weekLabel)}</span>
+          <h3 class="data-card-title">${escapeAttr(title)}</h3>
+        </div>
+        <div class="data-card-badges">${badges.join("")}</div>
+      </div>
+      <div class="data-card-pills mb-2">${pills.map((p) => `<span class="badge bg-dark-subtle border border-secondary text-white">${p}</span>`).join(" ")}</div>
+      <div class="data-card-meta">
+        ${meta.map(([label, value, icon]) => `<div class="data-card-meta-row"><span class="chart-label">${icon ? `<i class="bi ${icon}"></i> ` : ""}${label}</span><strong>${value ?? "-"}</strong></div>`).join("")}
+      </div>
+      <div class="data-card-actions mt-3 pt-2 border-top border-secondary border-opacity-25">${actions}</div>
+    </article>
+  `;
+}
+
 function renderChurchReportsAnalyticalView() {
   autoConsolidateAllChurchReports();
   const leadership = state.cellLeadership || seedData.cellLeadership;
@@ -21355,204 +21917,6 @@ function renderChurchReportsAnalyticalView() {
   }));
 
   const servicesList = ["Domingo", "Quarta-feira", "Reunião de Célula", "Culto Especial"];
-
-  return `
-    <section class="panel glass-panel mb-4">
-      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-        <div>
-          <h3 class="panel-title mb-1"><i class="bi bi-diagram-3-fill me-2 text-info"></i>Relatórios de Igreja & Células</h3>
-          <p class="text-secondary mb-0">Consolidação de presenças, visitantes (FT) e novos convertidos (NC) de todas as células e cultos.</p>
-        </div>
-        <div class="d-flex gap-2 flex-wrap">
-          <button type="button" class="btn btn-ce-gold btn-touch" data-open-form="churchReport"><i class="bi bi-plus-lg me-1"></i>Adicionar Relatório Manual</button>
-          <button type="button" class="btn btn-outline-cyan btn-touch" data-export-church-reports><i class="bi bi-download me-1"></i>Exportar Relatórios</button>
-        </div>
-      </div>
-
-      <!-- Level Selector Tabs -->
-      <div class="btn-group w-100 mb-3" role="group" aria-label="Nível de Relatório">
-        <button type="button" class="btn ${st.level === "church" ? "btn-primary" : "btn-outline-primary"}" data-church-report-level="church"><i class="bi bi-building me-1"></i>Relatório Geral de Igreja</button>
-        <button type="button" class="btn ${st.level === "group" ? "btn-primary" : "btn-outline-primary"}" data-church-report-level="group"><i class="bi bi-collection me-1"></i>Por Grupo de Célula</button>
-        <button type="button" class="btn ${st.level === "cell" ? "btn-primary" : "btn-outline-primary"}" data-church-report-level="cell"><i class="bi bi-diagram-3 me-1"></i>Por Célula Individual</button>
-      </div>
-
-      <!-- Filters Toolbar -->
-      <form class="filter-toolbar filter-bar mb-4" data-church-report-filters>
-        <select class="form-select" name="churchId" data-church-filter-field>
-          <option value="">Todas as Igrejas</option>
-          ${churchesList.map((ch) => `<option value="${ch.id}" ${String(st.churchId) === String(ch.id) ? "selected" : ""}>${ch.public_name || ch.church_name || ch.name || churchName(ch.id) || "Igreja"}</option>`).join("")}
-        </select>
-
-        <select class="form-select" name="service" data-church-filter-field>
-          <option value="">Todos os Cultos</option>
-          ${servicesList.map((svc) => `<option value="${svc}" ${st.service === svc ? "selected" : ""}>${svc}</option>`).join("")}
-        </select>
-
-        <select class="form-select" name="period" data-church-filter-field>
-          <option value="week" ${st.period === "week" ? "selected" : ""}>Esta Semana (Últimos 7 dias)</option>
-          <option value="month" ${st.period === "month" ? "selected" : ""}>Este Mês</option>
-          <option value="quarter" ${st.period === "quarter" ? "selected" : ""}>Trimestre</option>
-          <option value="semester" ${st.period === "semester" ? "selected" : ""}>Semestre</option>
-          <option value="year" ${st.period === "year" ? "selected" : ""}>Este Ano</option>
-          <option value="custom" ${st.period === "custom" ? "selected" : ""}>Personalizado</option>
-        </select>
-
-        ${st.period === "custom" ? `
-          <input type="date" class="form-control" name="dateFrom" value="${st.dateFrom || ""}" data-church-filter-field title="Data Início">
-          <input type="date" class="form-control" name="dateTo" value="${st.dateTo || ""}" data-church-filter-field title="Data Fim">
-        ` : ""}
-
-        ${st.level !== "church" ? `
-          <select class="form-select" name="cellGroupId" data-church-filter-field>
-            <option value="">Todos os Grupos</option>
-            ${availableGroups.map((g) => `<option value="${g.id}" ${String(st.cellGroupId) === String(g.id) ? "selected" : ""}>${g.group_name || g.name || "Grupo"}</option>`).join("")}
-          </select>
-        ` : ""}
-
-        ${st.level === "cell" ? `
-          <select class="form-select" name="cellId" data-church-filter-field>
-            <option value="">Todas as Células</option>
-            ${availableCells.map((c) => `<option value="${c.id}" ${String(st.cellId) === String(c.id) ? "selected" : ""}>${c.cell_name || c.name || "Célula"}</option>`).join("")}
-          </select>
-        ` : ""}
-
-        <input type="text" class="form-control" name="search" placeholder="Pesquisar..." value="${st.search || ""}" data-church-filter-field>
-        <button type="button" class="btn btn-outline-cyan btn-touch" data-church-filter-reset><i class="bi bi-arrow-counterclockwise me-1"></i>Limpar</button>
-      </form>
-
-      <!-- KPI Summary Cards with Peaks & Lows -->
-      <div class="row g-3 summary-cards-row mb-4">
-        <div class="col-sm-6 col-xl-2">
-          <div class="kpi-card glass-panel text-center p-3">
-            <span class="text-secondary small d-block mb-1"><i class="bi bi-people me-1"></i>Total Presentes</span>
-            <h3 class="mb-0 text-info font-weight-bold">${totalAtt}</h3>
-          </div>
-        </div>
-        <div class="col-sm-6 col-xl-2">
-          <div class="kpi-card glass-panel text-center p-3">
-            <span class="text-secondary small d-block mb-1"><i class="bi bi-person-heart me-1"></i>Primeira Vez (FT)</span>
-            <h3 class="mb-0 text-warning font-weight-bold">${totalFt}</h3>
-          </div>
-        </div>
-        <div class="col-sm-6 col-xl-2">
-          <div class="kpi-card glass-panel text-center p-3">
-            <span class="text-secondary small d-block mb-1"><i class="bi bi-stars me-1"></i>Novos Convertidos</span>
-            <h3 class="mb-0 text-success font-weight-bold">${totalNc}</h3>
-          </div>
-        </div>
-        <div class="col-sm-6 col-xl-2">
-          <div class="kpi-card glass-panel text-center p-3">
-            <span class="text-secondary small d-block mb-1"><i class="bi bi-book me-1"></i>Rapsódia (RS)</span>
-            <h3 class="mb-0 text-primary font-weight-bold">${totalRs}</h3>
-          </div>
-        </div>
-        <div class="col-sm-6 col-xl-2">
-          <div class="kpi-card glass-panel text-center p-3" style="border-left: 3px solid #10b981;">
-            <span class="text-success small d-block mb-1"><i class="bi bi-arrow-up-circle-fill me-1"></i>Pico Máximo</span>
-            <h3 class="mb-0 text-success font-weight-bold">${peakPoint.val}</h3>
-            <small class="text-secondary d-block text-truncate" title="${peakPoint.date}">${peakPoint.date || "—"}</small>
-          </div>
-        </div>
-        <div class="col-sm-6 col-xl-2">
-          <div class="kpi-card glass-panel text-center p-3" style="border-left: 3px solid #ef4444;">
-            <span class="text-danger small d-block mb-1"><i class="bi bi-arrow-down-circle-fill me-1"></i>Baixa Mínima</span>
-            <h3 class="mb-0 text-danger font-weight-bold">${lowPoint.val}</h3>
-            <small class="text-secondary d-block text-truncate" title="${lowPoint.date}">${lowPoint.date || "—"}</small>
-          </div>
-        </div>
-      </div>
-
-      <!-- Two Analytical Charts: Trend with Peaks/Lows and Comparative Bars -->
-      <div class="row g-4 mb-4">
-        <div class="col-xl-7">
-          <article class="chart-card glass-panel light-surface h-100 p-3">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <h4 class="panel-title mb-0 fs-6"><i class="bi bi-graph-up-arrow me-2 text-info"></i>Tendência Temporal com Picos & Baixas</h4>
-              <span class="badge bg-dark-subtle text-info">${st.period.toUpperCase()}</span>
-            </div>
-            ${renderPeakLowChartSvg(chartDataPoints)}
-          </article>
-        </div>
-        <div class="col-xl-5">
-          <article class="chart-card glass-panel light-surface h-100 p-3">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <h4 class="panel-title mb-0 fs-6"><i class="bi bi-bar-chart-steps me-2 text-warning"></i>Composição (Presentes vs FT vs NC)</h4>
-              <span class="badge bg-dark-subtle text-warning">Últimos Cultos</span>
-            </div>
-            ${renderComparativeBarsSvg(comparativeSeries)}
-          </article>
-        </div>
-      </div>
-
-      <!-- Data Table -->
-      <div class="panel glass-panel">
-        ${st.level === "church" ? `
-          ${filteredChurch.length ? dataTable([L("week"), "Relatório de Culto", L("serviceDate"), L("worshipService"), L("church"), "Células Reportadas", "ATT Total", "FT", "NC", "RS", L("status"), L("actions")], filteredChurch.map((item) => [
-            item.semana || "—",
-            `<strong>${item.titulo_do_relatorio || item.nome || `${item.culto || "Culto"} (${item.data_do_culto || item.data_inicio || item.data || "—"})`}</strong>`,
-            item.data_do_culto || item.data_inicio || item.data || "—",
-            badge(item.culto || "Domingo"),
-            churchName(item.church_id || item.igreja),
-            `<span class="badge bg-secondary">${item.total_cells_reported || 1} célula(s)</span>`,
-            `<strong>${item.att || 0}</strong>`,
-            item.ft || 0,
-            item.nc || 0,
-            item.rs || 0,
-            badge(item.estado || item.status || "Submetido"),
-            actionButtons([["view", "churchReport", item.id, L("view")], ["edit", "churchReport", item.id, L("edit")], ["delete", "churchReport", item.id, L("delete")], ["export", "churchReport", item.id, L("export")]])
-          ])) : EmptyState({ compact: true, title: "Sem relatórios de igreja", description: "Os relatórios submetidos pelas células serão consolidados aqui automaticamente." })}
-        ` : st.level === "group" ? `
-          ${(() => {
-            const groupMap = new Map();
-            filteredCells.forEach((r) => {
-              const gid = r.cell_group_id || r.group_id || "outros";
-              const gname = r.cell_group_name || (groups.find((g) => g.id === gid)?.group_name) || "Grupo Geral";
-              if (!groupMap.has(gid)) {
-                groupMap.set(gid, { gid, gname, semana: r.semana, data: r.data_do_culto || r.data_inicio, culto: r.culto, att: 0, ft: 0, nc: 0, rs: 0, cellCount: 0 });
-              }
-              const gObj = groupMap.get(gid);
-              gObj.att += Number(r.att || r.members_present_count || 0);
-              gObj.ft += Number(r.ft || 0);
-              gObj.nc += Number(r.nc || 0);
-              gObj.rs += Number(r.rs || 0);
-              gObj.cellCount += 1;
-            });
-            const groupRows = Array.from(groupMap.values());
-            return groupRows.length ? dataTable(["Grupo de Célula", L("week"), L("serviceDate"), L("worshipService"), "Células Reportadas", "ATT Total", "FT Total", "NC Total", "RS Total", L("actions")], groupRows.map((g) => [
-              `<strong>${g.gname}</strong>`,
-              g.semana || "—",
-              g.data || "—",
-              badge(g.culto || "Domingo"),
-              `<span class="badge bg-secondary">${g.cellCount} célula(s)</span>`,
-              `<strong>${g.att}</strong>`,
-              g.ft,
-              g.nc,
-              g.rs,
-              `<button type="button" class="btn btn-sm btn-outline-cyan" data-church-report-filter-group="${g.gid}">Ver Células</button>`
-            ])) : EmptyState({ compact: true, title: "Sem dados por grupo", description: "Nenhum relatório de grupo disponível para os filtros seleccionados." });
-          })()}
-        ` : `
-          ${filteredCells.length ? dataTable([L("cell"), "Grupo", L("week"), L("serviceDate"), L("worshipService"), "Presentes", "FT", "NC", "RS", L("status"), L("actions")], filteredCells.map((item) => [
-            `<strong>${item.celula || "Célula"}</strong><small class="d-block text-secondary">${item.nome_do_lider || item.submetido_por || ""}</small>`,
-            item.cell_group_name || "—",
-            item.semana || "—",
-            item.data_do_culto || item.data_inicio || item.data || "—",
-            badge(item.culto || "Domingo"),
-            `<strong>${item.att || item.members_present_count || 0}</strong>`,
-            item.ft || 0,
-            item.nc || 0,
-            item.rs || 0,
-            badge(cellReportStatusLabel(item)),
-            actionButtons([["view", "cellReport", item.id, L("view")], ["edit", "cellReport", item.id, L("edit")], ["export", "cellReport", item.id, L("export")]])
-          ])) : EmptyState({ compact: true, title: "Sem relatórios de célula", description: "Nenhum relatório de célula submetido para este período." })}
-        `}
-      </div>
-    </section>
-  `;
-}
-
-function renderCellMinistry(activeTab = "alecOverview") {
-  const leadership = state.cellLeadership || seedData.cellLeadership;
   const registry = scopedNested(state.cellRegistry || []);
   const groups = scopedNested(state.cellGroups || []);
   const alecRegistrations = scopedNested(leadership.alecRegistrations);
@@ -21713,8 +22077,8 @@ function renderCellMinistry(activeTab = "alecOverview") {
       : `<div class="col-12 text-center p-4 text-secondary">${lang === "pt" ? "Nenhum relatório submetido." : "No submitted reports."}</div>`;
 
     const panels = {
-      alecRegistration: () => modulePanel("alecRegistration", L("alecRegistration"), "alecRegistration", [L("fullName"), L("contact"), L("church"), L("cell"), L("cellLeaderName"), L("didFoundation"), L("isLeader"), L("status"), L("actions")], alecRegistrations.map((item) => [item.nome_completo, item.contacto, churchName(item.igreja), item.celula, item.nome_do_lider_de_celula, yesNo(item.fez_escola_de_fundacao), yesNo(item.e_lider), badge(item.estado), backendActions("alecRegistration", item.id)]), true),
-      alecScores: () => modulePanel("alecScore", L("alecScores"), "alecScore", [L("fullName"), L("church"), L("cell"), L("phase1Average"), L("phase2Average"), L("finalAverage"), L("finished"), L("status"), L("progress"), L("actions")], alecScores.map((item) => [item.nome_completo, churchName(item.igreja), item.celula, alecPhaseAverage(item, 1), alecPhaseAverage(item, 2), alecFinalAverage(item), yesNo(item.terminou), badge(item.estado), alecProgress(item), backendActions("alecScore", item.id)]), true),
+      alecRegistration: () => renderAlecRegistrationAnalyticalView(),
+      alecScores: () => renderAlecScoresAnalyticalView(),
       churchReports: () => renderChurchReportsAnalyticalView(),
       receivedReports: () => modulePanel("cellReport", L("receivedReports"), null, cellReportHeaders(), cellReportRows(cellReports), true, false, { rowAttrs: cellReportRowAttrs(cellReports), view: cellReportsPageState.view, viewToggle: cellReportsViewToggle, cardsHtml: cellReportCardsHtml }),
       cellEvaluation: () => modulePanel("cellEvaluation", L("cellEvaluation"), "cellEvaluation", [L("reports"), L("evaluator"), L("evaluationDate"), L("classification"), L("needsFollowup"), L("recommendedAction"), L("status"), L("actions")], evaluations.map((item) => [item.report_id, item.avaliador, item.data_da_avaliacao, badge(item.classificacao), yesNo(item.precisa_followup), item.acao_recomendada, badge(item.estado), backendActions("cellEvaluation", item.id)]), true),
@@ -34449,180 +34813,353 @@ function renderDataHealthDashboard() {
 // 6. ALEC Member Autocomplete & Auto-Fill Controls
 function mountAlecMemberAutocompleteControls(formEl) {
   if (!formEl || !["alecRegistration", "alecScore"].includes(modalType)) return;
+
+  // --- 1. Autocomplete for Student Full Name (nome_completo) ---
   const nameInput = formEl.querySelector('[name="nome_completo"]');
-  if (!nameInput) return;
-
-  const inputCol = nameInput.closest(".col-md-6, .col-12");
-  if (!inputCol) return;
-
-  let suggestionsBox = inputCol.querySelector("#alecMemberSuggestions");
-  if (!suggestionsBox) {
-    inputCol.style.position = "relative";
-    suggestionsBox = document.createElement("div");
-    suggestionsBox.id = "alecMemberSuggestions";
-    suggestionsBox.className = "alec-member-suggestions list-group position-absolute d-none shadow-lg z-3";
-    inputCol.appendChild(suggestionsBox);
-  }
-
-  let badgeEl = inputCol.querySelector("#alecLinkedBadge");
-  if (!badgeEl) {
-    badgeEl = document.createElement("div");
-    badgeEl.id = "alecLinkedBadge";
-    badgeEl.className = "small text-success d-none mt-1 fw-semibold";
-    inputCol.appendChild(badgeEl);
-  }
-
-  nameInput.setAttribute("placeholder", "Digite o nome ou telefone do membro...");
-  nameInput.setAttribute("autocomplete", "off");
-
-  const hideSuggestions = () => {
-    suggestionsBox.classList.add("d-none");
-    suggestionsBox.innerHTML = "";
-  };
-
-  let searchTimer = null;
-  nameInput.addEventListener("input", () => {
-    const q = nameInput.value.trim();
-    if (q.length < 2) {
-      hideSuggestions();
-      badgeEl.classList.add("d-none");
-      if (searchTimer) clearTimeout(searchTimer);
-      return;
-    }
-
-    if (searchTimer) clearTimeout(searchTimer);
-    searchTimer = setTimeout(async () => {
-      let matches = [];
-      const isAlecScoped = ["alec_manager", "ALEC Coordinator", "ALEC Manager"].includes(activeUser?.role);
-      const targetChurchId = String(activeUser?.church_id || "a1111111-1111-4111-8111-111111111101");
-
-      if (usesSupabaseMembers()) {
-        try {
-          const client = window.CESupabase?.getRawClient?.() || window.supabase;
-          if (client && typeof client.rpc === "function") {
-            const { data, error } = await client.rpc("search_alec_candidate_members", { p_query: q });
-            if (!error && Array.isArray(data) && data.length) {
-              matches = data;
-            }
-          }
-        } catch (rpcErr) {
-          console.warn("[ALEC autocomplete] search_alec_candidate_members rpc error", rpcErr);
-        }
-
-        if (!matches.length && !isAlecScoped) {
-          const repo = getMembersRepoSafe();
-          if (repo?.listMembersPage) {
-            try {
-              const res = await repo.listMembersPage({ page: 1, pageSize: 20, search: q });
-              if (res?.ok && Array.isArray(res.data?.items)) {
-                matches = res.data.items;
-              }
-            } catch (e) {
-              console.warn("[ALEC autocomplete] server search fallback", e);
-            }
-          }
-        }
+  if (nameInput) {
+    const inputCol = nameInput.closest(".col-md-6, .col-12");
+    if (inputCol) {
+      let suggestionsBox = inputCol.querySelector("#alecMemberSuggestions");
+      if (!suggestionsBox) {
+        inputCol.style.position = "relative";
+        suggestionsBox = document.createElement("div");
+        suggestionsBox.id = "alecMemberSuggestions";
+        suggestionsBox.className = "alec-member-suggestions list-group position-absolute d-none shadow-lg z-3";
+        inputCol.appendChild(suggestionsBox);
       }
 
-      if (!matches.length) {
-        const localMembers = (state.members || []).filter((m) => {
-          if (!isAlecScoped) return true;
-          return String(m.church_id || "") === targetChurchId || m.igreja === "E.C. Maputo Central – Sede" || m.church_name === "E.C. Maputo Central – Sede";
-        });
-        matches = localMembers.filter((m) => {
-          const haystack = [
-            m.full_name,
-            m.first_name,
-            m.last_name,
-            m.phone,
-            m.primary_phone,
-            m.secondary_phone,
-            m.member_code,
-            m.cell_name,
-            m.celula
-          ].filter(Boolean).join(" ").toLowerCase();
-          return haystack.includes(q.toLowerCase());
-        }).slice(0, 10);
+      let badgeEl = inputCol.querySelector("#alecLinkedBadge");
+      if (!badgeEl) {
+        badgeEl = document.createElement("div");
+        badgeEl.id = "alecLinkedBadge";
+        badgeEl.className = "small text-success d-none mt-1 fw-semibold";
+        inputCol.appendChild(badgeEl);
       }
 
-      if (!matches.length) {
-        suggestionsBox.innerHTML = `<div class="list-group-item bg-dark text-white-50 p-2 small">${L("noSearchResults") || "Nenhum membro encontrado na base"}</div>`;
-        suggestionsBox.classList.remove("d-none");
-        return;
-      }
+      nameInput.setAttribute("placeholder", "Digite o nome ou telefone do membro...");
+      nameInput.setAttribute("autocomplete", "off");
 
-      suggestionsBox.innerHTML = matches.map((m) => `
-        <button type="button" class="list-group-item list-group-item-action bg-dark text-white border-secondary p-2 alec-member-suggestion-item" data-select-member-id="${m.id}">
-          <div class="d-flex w-100 justify-content-between align-items-center mb-1">
-            <strong class="text-gold">${m.full_name || `${m.first_name || ""} ${m.last_name || ""}`.trim()}</strong>
-            <span class="badge text-bg-secondary small">${m.member_code || m.cell_group_name || "Membro HQ"}</span>
-          </div>
-          <div class="small text-white-50 text-truncate">
-            ${[m.primary_phone || m.phone, churchName(m.church_id || targetChurchId), m.cell_name || m.celula].filter(Boolean).join(" · ")}
-          </div>
-        </button>
-      `).join("");
+      const hideSuggestions = () => {
+        suggestionsBox.classList.add("d-none");
+        suggestionsBox.innerHTML = "";
+      };
 
-      suggestionsBox.classList.remove("d-none");
-
-      suggestionsBox.querySelectorAll("[data-select-member-id]").forEach((btn) => {
-        btn.addEventListener("click", (e) => {
-          e.preventDefault();
-          const id = btn.dataset.selectMemberId;
-          const member = matches.find((item) => String(item.id) === String(id));
-          if (!member) return;
-
-          const fullName = member.full_name || `${member.first_name || ""} ${member.last_name || ""}`.trim();
-          nameInput.value = fullName;
-
-          const phoneInput = formEl.querySelector('[name="contacto"]');
-          if (phoneInput) phoneInput.value = member.primary_phone || member.phone || member.secondary_phone || "";
-
-          const churchSelect = formEl.querySelector('[name="church_id"]');
-          if (churchSelect) {
-            const selectedChurch = isAlecScoped ? targetChurchId : (member.church_id || targetChurchId);
-            churchSelect.value = selectedChurch;
-            churchSelect.dispatchEvent(new Event("change", { bubbles: true }));
-          }
-
-          const cellInput = formEl.querySelector('[name="celula"]');
-          if (cellInput) cellInput.value = member.cell_name || member.celula || "";
-
-          const leaderInput = formEl.querySelector('[name="nome_do_lider_de_celula"]');
-          if (leaderInput) leaderInput.value = member.cell_leader_name || member.lider || "";
-
-          const foundationCheck = formEl.querySelector('[name="fez_escola_de_fundacao"]');
-          if (foundationCheck) {
-            const isDone = ["Completed", "Graduated", "Yes", "Sim"].includes(member.legacy_foundation_status) || ["Completed", "Graduated"].includes(member.foundation_school_status);
-            foundationCheck.checked = isDone;
-          }
-
-          const isLeaderCheck = formEl.querySelector('[name="e_lider"]');
-          if (isLeaderCheck) {
-            const isLeader = ["Leader", "Assistant", "Líder", "Assistente"].includes(member.cell_role);
-            isLeaderCheck.checked = isLeader;
-          }
-
-          let memberIdInput = formEl.querySelector('[name="member_id"]');
-          if (!memberIdInput) {
-            memberIdInput = document.createElement("input");
-            memberIdInput.type = "hidden";
-            memberIdInput.name = "member_id";
-            formEl.appendChild(memberIdInput);
-          }
-          memberIdInput.value = member.id;
-
+      let searchTimer = null;
+      nameInput.addEventListener("input", () => {
+        const q = nameInput.value.trim();
+        if (q.length < 2) {
           hideSuggestions();
-          badgeEl.innerHTML = `<i class="bi bi-check-circle-fill me-1"></i> Membro Vinculado: ${fullName} (${churchName(member.church_id)})`;
-          badgeEl.classList.remove("d-none");
-        });
-      });
-    }, 200);
-  });
+          badgeEl.classList.add("d-none");
+          if (searchTimer) clearTimeout(searchTimer);
+          return;
+        }
 
-  document.addEventListener("click", (e) => {
-    if (!inputCol.contains(e.target)) hideSuggestions();
-  });
+        if (searchTimer) clearTimeout(searchTimer);
+        searchTimer = setTimeout(async () => {
+          let matches = [];
+          const isAlecScoped = ["alec_manager", "ALEC Coordinator", "ALEC Manager"].includes(activeUser?.role);
+          const targetChurchId = String(activeUser?.church_id || "a1111111-1111-4111-8111-111111111101");
+
+          if (usesSupabaseMembers()) {
+            try {
+              const client = window.CESupabase?.getRawClient?.() || window.supabase;
+              if (client && typeof client.rpc === "function") {
+                const { data, error } = await client.rpc("search_alec_candidate_members", { p_query: q });
+                if (!error && Array.isArray(data) && data.length) {
+                  matches = data;
+                }
+              }
+            } catch (rpcErr) {
+              console.warn("[ALEC autocomplete] search_alec_candidate_members rpc error", rpcErr);
+            }
+
+            if (!matches.length && !isAlecScoped) {
+              const repo = getMembersRepoSafe();
+              if (repo?.listMembersPage) {
+                try {
+                  const res = await repo.listMembersPage({ page: 1, pageSize: 20, search: q });
+                  if (res?.ok && Array.isArray(res.data?.items)) {
+                    matches = res.data.items;
+                  }
+                } catch (e) {
+                  console.warn("[ALEC autocomplete] server search fallback", e);
+                }
+              }
+            }
+          }
+
+          if (!matches.length) {
+            const localMembers = (state.members || []).filter((m) => {
+              if (!isAlecScoped) return true;
+              return String(m.church_id || "") === targetChurchId || m.igreja === "E.C. Maputo Central – Sede" || m.church_name === "E.C. Maputo Central – Sede";
+            });
+            matches = localMembers.filter((m) => {
+              const haystack = [
+                m.full_name,
+                m.first_name,
+                m.last_name,
+                m.phone,
+                m.primary_phone,
+                m.secondary_phone,
+                m.member_code,
+                m.cell_name,
+                m.celula
+              ].filter(Boolean).join(" ").toLowerCase();
+              return haystack.includes(q.toLowerCase());
+            }).slice(0, 10);
+          }
+
+          if (!matches.length) {
+            suggestionsBox.innerHTML = `<div class="list-group-item bg-dark text-white-50 p-2 small">${L("noSearchResults") || "Nenhum membro encontrado na base"}</div>`;
+            suggestionsBox.classList.remove("d-none");
+            return;
+          }
+
+          suggestionsBox.innerHTML = matches.map((m) => `
+            <button type="button" class="list-group-item list-group-item-action bg-dark text-white border-secondary p-2 alec-member-suggestion-item" data-select-member-id="${m.id}">
+              <div class="d-flex w-100 justify-content-between align-items-center mb-1">
+                <strong class="text-gold">${m.full_name || `${m.first_name || ""} ${m.last_name || ""}`.trim()}</strong>
+                <span class="badge text-bg-secondary small">${m.member_code || m.cell_group_name || "Membro HQ"}</span>
+              </div>
+              <div class="small text-white-50 text-truncate">
+                ${[m.primary_phone || m.phone, churchName(m.church_id || targetChurchId), m.cell_name || m.celula].filter(Boolean).join(" · ")}
+              </div>
+            </button>
+          `).join("");
+
+          suggestionsBox.classList.remove("d-none");
+
+          suggestionsBox.querySelectorAll("[data-select-member-id]").forEach((btn) => {
+            btn.addEventListener("click", (e) => {
+              e.preventDefault();
+              const id = btn.dataset.selectMemberId;
+              const member = matches.find((item) => String(item.id) === String(id));
+              if (!member) return;
+
+              const fullName = member.full_name || `${member.first_name || ""} ${member.last_name || ""}`.trim();
+              nameInput.value = fullName;
+
+              const phoneInput = formEl.querySelector('[name="contacto"]');
+              if (phoneInput) phoneInput.value = member.primary_phone || member.phone || member.secondary_phone || "";
+
+              const churchSelect = formEl.querySelector('[name="church_id"]');
+              if (churchSelect) {
+                const selectedChurch = isAlecScoped ? targetChurchId : (member.church_id || targetChurchId);
+                churchSelect.value = selectedChurch;
+                churchSelect.dispatchEvent(new Event("change", { bubbles: true }));
+              }
+
+              const cellInput = formEl.querySelector('[name="celula"]');
+              if (cellInput) cellInput.value = member.cell_name || member.celula || "";
+
+              const leaderInput = formEl.querySelector('[name="nome_do_lider_de_celula"]');
+              if (leaderInput) leaderInput.value = member.cell_leader_name || member.lider || "";
+
+              const foundationCheck = formEl.querySelector('[name="fez_escola_de_fundacao"]');
+              if (foundationCheck) {
+                const isDone = ["Completed", "Graduated", "Yes", "Sim"].includes(member.legacy_foundation_status) || ["Completed", "Graduated"].includes(member.foundation_school_status);
+                foundationCheck.checked = isDone;
+              }
+
+              const isLeaderCheck = formEl.querySelector('[name="e_lider"]');
+              if (isLeaderCheck) {
+                const isLeader = ["Leader", "Assistant", "Líder", "Assistente"].includes(member.cell_role);
+                isLeaderCheck.checked = isLeader;
+              }
+
+              let memberIdInput = formEl.querySelector('[name="member_id"]');
+              if (!memberIdInput) {
+                memberIdInput = document.createElement("input");
+                memberIdInput.type = "hidden";
+                memberIdInput.name = "member_id";
+                formEl.appendChild(memberIdInput);
+              }
+              memberIdInput.value = member.id;
+
+              hideSuggestions();
+              badgeEl.innerHTML = `<i class="bi bi-check-circle-fill me-1"></i> Membro Vinculado: ${fullName} (${churchName(member.church_id)})`;
+              badgeEl.classList.remove("d-none");
+            });
+          });
+        }, 200);
+      });
+
+      document.addEventListener("click", (e) => {
+        if (!inputCol.contains(e.target)) hideSuggestions();
+      });
+    }
+  }
+
+  // --- 2. Autocomplete for Cell Leader Name (nome_do_lider_de_celula) ---
+  const leaderInput = formEl.querySelector('[name="nome_do_lider_de_celula"]');
+  if (leaderInput) {
+    const leaderCol = leaderInput.closest(".col-md-6, .col-12");
+    if (leaderCol) {
+      let leaderSuggestionsBox = leaderCol.querySelector("#alecLeaderSuggestions");
+      if (!leaderSuggestionsBox) {
+        leaderCol.style.position = "relative";
+        leaderSuggestionsBox = document.createElement("div");
+        leaderSuggestionsBox.id = "alecLeaderSuggestions";
+        leaderSuggestionsBox.className = "alec-leader-suggestions list-group position-absolute d-none shadow-lg z-3";
+        leaderCol.appendChild(leaderSuggestionsBox);
+      }
+
+      let leaderBadgeEl = leaderCol.querySelector("#alecLeaderLinkedBadge");
+      if (!leaderBadgeEl) {
+        leaderBadgeEl = document.createElement("div");
+        leaderBadgeEl.id = "alecLeaderLinkedBadge";
+        leaderBadgeEl.className = "small text-info d-none mt-1 fw-semibold";
+        leaderCol.appendChild(leaderBadgeEl);
+      }
+
+      leaderInput.setAttribute("placeholder", "Digite o nome do líder ou célula...");
+      leaderInput.setAttribute("autocomplete", "off");
+
+      const hideLeaderSuggestions = () => {
+        leaderSuggestionsBox.classList.add("d-none");
+        leaderSuggestionsBox.innerHTML = "";
+      };
+
+      let leaderTimer = null;
+      leaderInput.addEventListener("input", () => {
+        const q = leaderInput.value.trim();
+        if (q.length < 2) {
+          hideLeaderSuggestions();
+          leaderBadgeEl.classList.add("d-none");
+          if (leaderTimer) clearTimeout(leaderTimer);
+          return;
+        }
+
+        if (leaderTimer) clearTimeout(leaderTimer);
+        leaderTimer = setTimeout(() => {
+          const qLow = q.toLowerCase();
+          const leadersList = state.cellLeadership?.leaders || [];
+          const cellsList = typeof getAllRegisteredCells === "function" ? getAllRegisteredCells() : (state.cellRegistry || state.cells || []);
+          const groupsList = typeof getAllRegisteredCellGroups === "function" ? getAllRegisteredCellGroups() : (state.cellGroups || []);
+          const membersList = state.members || [];
+
+          const matches = [];
+          const seenNames = new Set();
+
+          // 1. Check known cell leaders
+          leadersList.forEach((ldr) => {
+            const name = ldr.nome_completo || ldr.name || "";
+            if (!name || seenNames.has(name.toLowerCase())) return;
+            if (name.toLowerCase().includes(qLow) || String(ldr.celula || "").toLowerCase().includes(qLow)) {
+              seenNames.add(name.toLowerCase());
+              matches.push({
+                name,
+                cell: ldr.celula || "",
+                church_id: ldr.church_id || ldr.igreja || "",
+                source: "Líder de Célula"
+              });
+            }
+          });
+
+          // 2. Check cells registry
+          cellsList.forEach((cl) => {
+            const leaderName = cl.leader_name || cl.lider || "";
+            if (leaderName && !seenNames.has(leaderName.toLowerCase())) {
+              if (leaderName.toLowerCase().includes(qLow) || String(cl.cell_name || cl.name || "").toLowerCase().includes(qLow)) {
+                seenNames.add(leaderName.toLowerCase());
+                matches.push({
+                  name: leaderName,
+                  cell: cl.cell_name || cl.name || "",
+                  church_id: cl.church_id || cl.igreja || "",
+                  source: "Célula"
+                });
+              }
+            }
+          });
+
+          // 3. Check cell groups
+          groupsList.forEach((grp) => {
+            const leaderName = grp.leader_name || grp.lider || "";
+            if (leaderName && !seenNames.has(leaderName.toLowerCase())) {
+              if (leaderName.toLowerCase().includes(qLow) || String(grp.group_name || grp.name || "").toLowerCase().includes(qLow)) {
+                seenNames.add(leaderName.toLowerCase());
+                matches.push({
+                  name: leaderName,
+                  cell: grp.group_name || grp.name || "",
+                  church_id: grp.church_id || grp.igreja || "",
+                  source: "Grupo de Célula"
+                });
+              }
+            }
+          });
+
+          // 4. Check members with leader role
+          membersList.forEach((m) => {
+            const isLdr = m.e_lider || ["Leader", "Líder", "Assistant", "Assistente"].includes(m.cell_role);
+            if (isLdr) {
+              const name = m.full_name || `${m.first_name || ""} ${m.last_name || ""}`.trim();
+              if (name && !seenNames.has(name.toLowerCase()) && (name.toLowerCase().includes(qLow) || String(m.cell_name || m.celula || "").toLowerCase().includes(qLow))) {
+                seenNames.add(name.toLowerCase());
+                matches.push({
+                  name,
+                  cell: m.cell_name || m.celula || "",
+                  church_id: m.church_id || m.igreja || "",
+                  source: "Membro Líder"
+                });
+              }
+            }
+          });
+
+          const slicedMatches = matches.slice(0, 8);
+
+          if (!slicedMatches.length) {
+            leaderSuggestionsBox.innerHTML = `<div class="list-group-item bg-dark text-white-50 p-2 small">Nenhum líder encontrado para "${escapeAttr(q)}"</div>`;
+            leaderSuggestionsBox.classList.remove("d-none");
+            return;
+          }
+
+          leaderSuggestionsBox.innerHTML = slicedMatches.map((ldr, idx) => `
+            <button type="button" class="list-group-item list-group-item-action bg-dark text-white border-secondary p-2 alec-leader-suggestion-item" data-select-leader-idx="${idx}">
+              <div class="d-flex w-100 justify-content-between align-items-center mb-1">
+                <strong class="text-gold">${escapeAttr(ldr.name)}</strong>
+                <span class="badge text-bg-info small">${escapeAttr(ldr.source)}</span>
+              </div>
+              <div class="small text-white-50 text-truncate">
+                ${[ldr.cell ? `Célula: ${ldr.cell}` : "", churchName(ldr.church_id)].filter(Boolean).join(" · ")}
+              </div>
+            </button>
+          `).join("");
+
+          leaderSuggestionsBox.classList.remove("d-none");
+
+          leaderSuggestionsBox.querySelectorAll("[data-select-leader-idx]").forEach((btn) => {
+            btn.addEventListener("click", (e) => {
+              e.preventDefault();
+              const idx = Number(btn.dataset.selectLeaderIdx);
+              const selectedLeader = slicedMatches[idx];
+              if (!selectedLeader) return;
+
+              leaderInput.value = selectedLeader.name;
+
+              const cellInput = formEl.querySelector('[name="celula"]');
+              if (cellInput && (!cellInput.value || selectedLeader.cell)) {
+                cellInput.value = selectedLeader.cell;
+              }
+
+              const churchSelect = formEl.querySelector('[name="church_id"]');
+              if (churchSelect && selectedLeader.church_id && !churchSelect.value) {
+                churchSelect.value = selectedLeader.church_id;
+                churchSelect.dispatchEvent(new Event("change", { bubbles: true }));
+              }
+
+              hideLeaderSuggestions();
+              leaderBadgeEl.innerHTML = `<i class="bi bi-check-circle-fill me-1"></i> Líder Seleccionado: ${selectedLeader.name} (${selectedLeader.cell || "Célula"})`;
+              leaderBadgeEl.classList.remove("d-none");
+            });
+          });
+        }, 150);
+      });
+
+      document.addEventListener("click", (e) => {
+        if (!leaderCol.contains(e.target)) hideLeaderSuggestions();
+      });
+    }
+  }
 }
 
 // ============================================================================
@@ -36013,5 +36550,140 @@ document.addEventListener("input", (event) => {
   if (event.target.matches('[data-church-report-filters] [name="search"]')) {
     churchReportPageState.search = event.target.value;
     if (activeRoute === "cellChurchReports") renderCellMinistry("churchReports");
+  }
+});
+
+
+// ============================================================================
+// ALEC REGISTRATION & SCORES EVENT LISTENERS
+// ============================================================================
+
+document.addEventListener("click", (event) => {
+  // ALEC Registration View Mode Toggle (Table / Card)
+  const alecRegViewBtn = event.target.closest("[data-alec-view-mode]");
+  if (alecRegViewBtn) {
+    const view = alecRegViewBtn.dataset.alecViewMode;
+    alecRegistrationPageState.view = view;
+    localStorage.setItem("ce_alec_registration_view_mode", view);
+    if (activeRoute === "cellAlecRegistration") renderCellMinistry("alecRegistration");
+    return;
+  }
+
+  // ALEC Scores View Mode Toggle (Table / Card)
+  const alecScoreViewBtn = event.target.closest("[data-alec-score-view-mode]");
+  if (alecScoreViewBtn) {
+    const view = alecScoreViewBtn.dataset.alecScoreViewMode;
+    alecScoresPageState.view = view;
+    localStorage.setItem("ce_alec_scores_view_mode", view);
+    if (activeRoute === "cellAlecScores") renderCellMinistry("alecScores");
+    return;
+  }
+
+  // Church Reports View Mode Toggle (Table / Card)
+  const churchReportViewBtn = event.target.closest("[data-church-report-view-mode]");
+  if (churchReportViewBtn) {
+    const view = churchReportViewBtn.dataset.churchReportViewMode;
+    churchReportPageState.view = view;
+    localStorage.setItem("ce_church_reports_view_mode", view);
+    if (activeRoute === "cellChurchReports") renderCellMinistry("churchReports");
+    return;
+  }
+
+  // Reset ALEC Registration filters
+  if (event.target.closest("[data-alec-filter-reset]")) {
+    alecRegistrationPageState.churchId = "";
+    alecRegistrationPageState.cellGroupId = "";
+    alecRegistrationPageState.cellId = "";
+    alecRegistrationPageState.status = "";
+    alecRegistrationPageState.search = "";
+    if (activeRoute === "cellAlecRegistration") renderCellMinistry("alecRegistration");
+    return;
+  }
+
+  // Reset ALEC Scores filters
+  if (event.target.closest("[data-alec-score-filter-reset]")) {
+    alecScoresPageState.churchId = "";
+    alecScoresPageState.cellGroupId = "";
+    alecScoresPageState.cellId = "";
+    alecScoresPageState.status = "";
+    alecScoresPageState.search = "";
+    if (activeRoute === "cellAlecScores") renderCellMinistry("alecScores");
+    return;
+  }
+});
+
+// Dynamic change listener for ALEC Registration Cascading Filters
+document.addEventListener("change", (event) => {
+  if (event.target.closest("[data-alec-registration-filters]")) {
+    const form = event.target.closest("[data-alec-registration-filters]");
+    const changedName = event.target.name;
+    const oldChurchId = alecRegistrationPageState.churchId;
+    const oldGroupId = alecRegistrationPageState.cellGroupId;
+
+    alecRegistrationPageState.churchId = form.querySelector('[name="churchId"]')?.value || "";
+    alecRegistrationPageState.cellGroupId = form.querySelector('[name="cellGroupId"]')?.value || "";
+    alecRegistrationPageState.cellId = form.querySelector('[name="cellId"]')?.value || "";
+    alecRegistrationPageState.status = form.querySelector('[name="status"]')?.value || "";
+
+    if (changedName === "churchId" && alecRegistrationPageState.churchId !== oldChurchId) {
+      if (alecRegistrationPageState.churchId) {
+        const groups = typeof getAllRegisteredCellGroups === "function" ? getAllRegisteredCellGroups() : (state.cellGroups || []);
+        if (alecRegistrationPageState.cellGroupId) {
+          const grp = groups.find((g) => String(g.id) === String(alecRegistrationPageState.cellGroupId));
+          if (grp && !isRecordFromChurch(grp, alecRegistrationPageState.churchId)) {
+            alecRegistrationPageState.cellGroupId = "";
+          }
+        }
+        alecRegistrationPageState.cellId = "";
+      }
+    }
+
+    if (changedName === "cellGroupId" && alecRegistrationPageState.cellGroupId !== oldGroupId) {
+      alecRegistrationPageState.cellId = "";
+    }
+
+    if (activeRoute === "cellAlecRegistration") renderCellMinistry("alecRegistration");
+  }
+
+  if (event.target.closest("[data-alec-scores-filters]")) {
+    const form = event.target.closest("[data-alec-scores-filters]");
+    const changedName = event.target.name;
+    const oldChurchId = alecScoresPageState.churchId;
+    const oldGroupId = alecScoresPageState.cellGroupId;
+
+    alecScoresPageState.churchId = form.querySelector('[name="churchId"]')?.value || "";
+    alecScoresPageState.cellGroupId = form.querySelector('[name="cellGroupId"]')?.value || "";
+    alecScoresPageState.cellId = form.querySelector('[name="cellId"]')?.value || "";
+    alecScoresPageState.status = form.querySelector('[name="status"]')?.value || "";
+
+    if (changedName === "churchId" && alecScoresPageState.churchId !== oldChurchId) {
+      if (alecScoresPageState.churchId) {
+        const groups = typeof getAllRegisteredCellGroups === "function" ? getAllRegisteredCellGroups() : (state.cellGroups || []);
+        if (alecScoresPageState.cellGroupId) {
+          const grp = groups.find((g) => String(g.id) === String(alecScoresPageState.cellGroupId));
+          if (grp && !isRecordFromChurch(grp, alecScoresPageState.churchId)) {
+            alecScoresPageState.cellGroupId = "";
+          }
+        }
+        alecScoresPageState.cellId = "";
+      }
+    }
+
+    if (changedName === "cellGroupId" && alecScoresPageState.cellGroupId !== oldGroupId) {
+      alecScoresPageState.cellId = "";
+    }
+
+    if (activeRoute === "cellAlecScores") renderCellMinistry("alecScores");
+  }
+});
+
+document.addEventListener("input", (event) => {
+  if (event.target.matches('[data-alec-registration-filters] [name="search"]')) {
+    alecRegistrationPageState.search = event.target.value;
+    if (activeRoute === "cellAlecRegistration") renderCellMinistry("alecRegistration");
+  }
+  if (event.target.matches('[data-alec-scores-filters] [name="search"]')) {
+    alecScoresPageState.search = event.target.value;
+    if (activeRoute === "cellAlecScores") renderCellMinistry("alecScores");
   }
 });
