@@ -8,8 +8,10 @@
     cells: "ce-data-layer:cells",
     leaders: "ce-data-layer:cell-leaders",
     reports: "ce-data-layer:cell-reports",
+    evaluations: "ce-data-layer:cell-evaluations",
+    actionPlans: "ce-data-layer:cell-action-plans",
   };
-  var memory = { groups: null, cells: null, leaders: null, reports: null };
+  var memory = { groups: null, cells: null, leaders: null, reports: null, evaluations: null, actionPlans: null };
 
   function resolveDataSource() {
     try {
@@ -74,20 +76,35 @@
   function seedReports() {
     return (window.CESupabase && window.CESupabase.CELL_REPORTS_SEED) || [];
   }
+  function seedEvaluations() {
+    return (window.CESupabase && window.CESupabase.CELL_EVALUATIONS_SEED) || [
+      { id: "e1111111-1111-4111-8111-111111111101", church_id: "a1111111-1111-4111-8111-111111111101", report_id: "CR-2026-09-01", cell_id: "2b3a5652-b8be-4c76-8b64-b84200c8bcd4", cell_name: "Diplomatas Victory", avaliador: "Pastora Flavia", data_da_avaliacao: "2026-09-10", classificacao: "Excelente", pontos_fortes: "Excelente pontualidade e retenção de primeiros visitantes.", pontos_a_melhorar: "Aumentar número de encontros de oração.", acao_recomendada: "Preparar proposta para divisão da célula no próximo trimestre.", precisa_followup: false, estado: "Aprovado" },
+      { id: "e1111111-1111-4111-8111-111111111102", church_id: "a1111111-1111-4111-8111-111111111101", report_id: "CR-2026-09-02", cell_id: "17de71f5-1926-4b34-8cc6-4c690c3c0262", cell_name: "Pioneiros Change", avaliador: "Pastora Flavia", data_da_avaliacao: "2026-09-12", classificacao: "Precisa de Atenção", pontos_fortes: "Líder dedicado e membro fiel no ALEC.", pontos_a_melhorar: "Baixa frequência nos últimos 2 cultos celulares.", acao_recomendada: "Agendar reunião com a supervisora e reforçar visitas pastorais.", precisa_followup: true, estado: "Em Análise" }
+    ];
+  }
+  function seedActionPlans() {
+    return (window.CESupabase && window.CESupabase.CELL_ACTION_PLANS_SEED) || [
+      { id: "f1111111-1111-4111-8111-111111111101", church_id: "a1111111-1111-4111-8111-111111111101", cell_id: "17de71f5-1926-4b34-8cc6-4c690c3c0262", cell_name: "Pioneiros Change", leader_name: "Aminata Chivinda", action: "Acompanhamento semanal com supervisora e reforço de evangelismo.", owner: "Pastora Flavia", due_date: "2026-09-25", status: "Em Curso", notes: "Prioridade para conclusão do curso ALEC e visitas domiciliares." },
+      { id: "f1111111-1111-4111-8111-111111111102", church_id: "a1111111-1111-4111-8111-111111111101", cell_id: "2b3a5652-b8be-4c76-8b64-b84200c8bcd4", cell_name: "Diplomatas Victory", leader_name: "Mateus Nhantumbo", action: "Preparar divisão da célula e identificar líder auxiliar.", owner: "Pastora Flavia", due_date: "2026-10-05", status: "Planeado", notes: "Célula atingiu mais de 16 membros regulares." }
+    ];
+  }
+
+  function getSeeds(kind) {
+    if (kind === "groups") return seedGroups();
+    if (kind === "cells") return seedCells();
+    if (kind === "leaders") return seedLeaders();
+    if (kind === "reports") return seedReports();
+    if (kind === "evaluations") return seedEvaluations();
+    if (kind === "actionPlans") return seedActionPlans();
+    return [];
+  }
 
   function store(kind) {
     var source = resolveDataSource();
     var key = KEYS[kind];
     if (source === "local") {
       var rows = load(key);
-      var seeds =
-        kind === "groups"
-          ? seedGroups()
-          : kind === "cells"
-            ? seedCells()
-            : kind === "leaders"
-              ? seedLeaders()
-              : seedReports();
+      var seeds = getSeeds(kind);
       if (!rows.length) {
         rows = seeds.map(function (s) {
           return Object.assign({}, s);
@@ -112,14 +129,7 @@
       return { rows: rows, persist: true, source: "local" };
     }
     if (!memory[kind]) {
-      var seeds2 =
-        kind === "groups"
-          ? seedGroups()
-          : kind === "cells"
-            ? seedCells()
-            : kind === "leaders"
-              ? seedLeaders()
-              : seedReports();
+      var seeds2 = getSeeds(kind);
       memory[kind] = seeds2.map(function (s) {
         return Object.assign({}, s);
       });
@@ -231,6 +241,30 @@
         });
         return ok(rows.slice());
       },
+      listCellEvaluations: function () {
+        return list("evaluations");
+      },
+      createCellEvaluation: function (payload) {
+        return create("evaluations", "eval-", payload);
+      },
+      updateCellEvaluation: function (id, payload) {
+        return update("evaluations", id, payload);
+      },
+      deleteCellEvaluation: function (id) {
+        return remove("evaluations", id);
+      },
+      listCellActionPlans: function () {
+        return list("actionPlans");
+      },
+      createCellActionPlan: function (payload) {
+        return create("actionPlans", "ap-", payload);
+      },
+      updateCellActionPlan: function (id, payload) {
+        return update("actionPlans", id, payload);
+      },
+      deleteCellActionPlan: function (id) {
+        return remove("actionPlans", id);
+      },
       getInfo: function () {
         return {
           source: resolveDataSource(),
@@ -329,6 +363,30 @@
     },
     getCellsWithoutReport: function (week) {
       return call("getCellsWithoutReport", [week]);
+    },
+    listCellEvaluations: function () {
+      return call("listCellEvaluations", []);
+    },
+    createCellEvaluation: function (payload) {
+      return call("createCellEvaluation", [payload]);
+    },
+    updateCellEvaluation: function (id, payload) {
+      return call("updateCellEvaluation", [id, payload]);
+    },
+    deleteCellEvaluation: function (id) {
+      return call("deleteCellEvaluation", [id]);
+    },
+    listCellActionPlans: function () {
+      return call("listCellActionPlans", []);
+    },
+    createCellActionPlan: function (payload) {
+      return call("createCellActionPlan", [payload]);
+    },
+    updateCellActionPlan: function (id, payload) {
+      return call("updateCellActionPlan", [id, payload]);
+    },
+    deleteCellActionPlan: function (id) {
+      return call("deleteCellActionPlan", [id]);
     },
     listCellUserAssignments: function (filter) {
       return call("listCellUserAssignments", [filter]);

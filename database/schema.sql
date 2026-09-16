@@ -2893,3 +2893,105 @@ DO $$ BEGIN
     WITH CHECK (true);
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
+
+-- ---------------------------------------------------------------------------
+-- CELL MINISTRY: cell_evaluations & cell_action_plans
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.cell_evaluations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  church_id UUID REFERENCES public.churches(id),
+  report_id TEXT,
+  cell_id UUID,
+  cell_name TEXT,
+  avaliador TEXT NOT NULL,
+  data_da_avaliacao DATE NOT NULL DEFAULT CURRENT_DATE,
+  classificacao TEXT NOT NULL DEFAULT 'Bom',
+  pontos_fortes TEXT,
+  pontos_a_melhorar TEXT,
+  acao_recomendada TEXT,
+  precisa_followup BOOLEAN NOT NULL DEFAULT false,
+  estado TEXT NOT NULL DEFAULT 'Pendente',
+  metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  created_by UUID,
+  updated_by UUID
+);
+
+CREATE INDEX IF NOT EXISTS idx_cell_evaluations_church_id ON public.cell_evaluations(church_id);
+CREATE INDEX IF NOT EXISTS idx_cell_evaluations_cell_id ON public.cell_evaluations(cell_id);
+CREATE INDEX IF NOT EXISTS idx_cell_evaluations_classificacao ON public.cell_evaluations(classificacao);
+CREATE INDEX IF NOT EXISTS idx_cell_evaluations_estado ON public.cell_evaluations(estado);
+
+DROP TRIGGER IF EXISTS trg_cell_evaluations_updated_at ON public.cell_evaluations;
+CREATE TRIGGER trg_cell_evaluations_updated_at
+  BEFORE UPDATE ON public.cell_evaluations
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+ALTER TABLE public.cell_evaluations ENABLE ROW LEVEL SECURITY;
+
+DO $$ BEGIN
+  CREATE POLICY "Allow read access to cell_evaluations"
+    ON public.cell_evaluations FOR SELECT
+    TO authenticated, anon
+    USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Allow write access to cell_evaluations"
+    ON public.cell_evaluations FOR ALL
+    TO authenticated, anon
+    USING (true)
+    WITH CHECK (true);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+CREATE TABLE IF NOT EXISTS public.cell_action_plans (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  church_id UUID REFERENCES public.churches(id),
+  cell_id UUID,
+  cell_name TEXT,
+  leader_id UUID,
+  leader_name TEXT NOT NULL,
+  action TEXT NOT NULL,
+  owner TEXT NOT NULL,
+  due_date DATE,
+  status TEXT NOT NULL DEFAULT 'Planeado',
+  notes TEXT,
+  metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  created_by UUID,
+  updated_by UUID
+);
+
+CREATE INDEX IF NOT EXISTS idx_cell_action_plans_church_id ON public.cell_action_plans(church_id);
+CREATE INDEX IF NOT EXISTS idx_cell_action_plans_cell_id ON public.cell_action_plans(cell_id);
+CREATE INDEX IF NOT EXISTS idx_cell_action_plans_status ON public.cell_action_plans(status);
+CREATE INDEX IF NOT EXISTS idx_cell_action_plans_due_date ON public.cell_action_plans(due_date);
+
+DROP TRIGGER IF EXISTS trg_cell_action_plans_updated_at ON public.cell_action_plans;
+CREATE TRIGGER trg_cell_action_plans_updated_at
+  BEFORE UPDATE ON public.cell_action_plans
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+ALTER TABLE public.cell_action_plans ENABLE ROW LEVEL SECURITY;
+
+DO $$ BEGIN
+  CREATE POLICY "Allow read access to cell_action_plans"
+    ON public.cell_action_plans FOR SELECT
+    TO authenticated, anon
+    USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Allow write access to cell_action_plans"
+    ON public.cell_action_plans FOR ALL
+    TO authenticated, anon
+    USING (true)
+    WITH CHECK (true);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+

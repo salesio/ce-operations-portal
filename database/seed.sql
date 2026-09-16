@@ -56,3 +56,17 @@ WHERE r.name = 'super_admin'
     SELECT 1 FROM public.permissions p
     WHERE p.role_id = r.id AND p.module = m.module
   );
+
+-- Initial seeds for cell_evaluations and cell_action_plans
+INSERT INTO public.cell_evaluations (id, church_id, report_id, cell_id, cell_name, avaliador, data_da_avaliacao, classificacao, pontos_fortes, pontos_a_melhorar, acao_recomendada, precisa_followup, estado)
+VALUES
+  ('e1111111-1111-4111-8111-111111111101', 'a1111111-1111-4111-8111-111111111101', 'CR-2026-09-01', '2b3a5652-b8be-4c76-8b64-b84200c8bcd4', 'Diplomatas Victory', 'Pastora Flavia', '2026-09-10', 'Excelente', 'Excelente pontualidade e retenção de primeiros visitantes.', 'Aumentar número de encontros de oração.', 'Preparar proposta para divisão da célula no próximo trimestre.', false, 'Aprovado'),
+  ('e1111111-1111-4111-8111-111111111102', 'a1111111-1111-4111-8111-111111111101', 'CR-2026-09-02', '17de71f5-1926-4b34-8cc6-4c690c3c0262', 'Pioneiros Change', 'Pastora Flavia', '2026-09-12', 'Precisa de Atenção', 'Líder dedicado e membro fiel no ALEC.', 'Baixa frequência nos últimos 2 cultos celulares.', 'Agendar reunião com a supervisora e reforçar visitas pastorais.', true, 'Em Análise')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.cell_action_plans (id, church_id, cell_id, cell_name, leader_id, leader_name, action, owner, due_date, status, notes)
+VALUES
+  ('f1111111-1111-4111-8111-111111111101', 'a1111111-1111-4111-8111-111111111101', '17de71f5-1926-4b34-8cc6-4c690c3c0262', 'Pioneiros Change', NULL, 'Aminata Chivinda', 'Acompanhamento semanal com supervisora e reforço de evangelismo.', 'Pastora Flavia', '2026-09-25', 'Em Curso', 'Prioridade para conclusão do curso ALEC e visitas domiciliares.'),
+  ('f1111111-1111-4111-8111-111111111102', 'a1111111-1111-4111-8111-111111111101', '2b3a5652-b8be-4c76-8b64-b84200c8bcd4', 'Diplomatas Victory', NULL, 'Mateus Nhantumbo', 'Preparar divisão da célula e identificar líder auxiliar.', 'Pastora Flavia', '2026-10-05', 'Planeado', 'Célula atingiu mais de 16 membros regulares.')
+ON CONFLICT (id) DO NOTHING;
+

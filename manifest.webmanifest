@@ -8,7 +8,7 @@
   "theme_color": "#1b1238",
   "icons": [
     {
-      "src": "https://embaixada-de-cristo.obiuba.com/assets/web/logo-ce.png",
+      "src": "assets/logo-ce.png",
       "sizes": "420x225",
       "type": "image/png"
     }

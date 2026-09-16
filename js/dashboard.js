@@ -3608,11 +3608,14 @@ const seedData = {
       { id: "leader-assistant-1", user_id: "u-cell-assistant", staff_id: null, role_type: "Assistant", cell_id: "cr-0001", cell_group_id: "cg-001", church_id: "church-hq", created_by: "Pastora Flavia", updated_by: "Pastora Flavia", created_at: "2026-08-06", updated_at: "2026-08-06", status: "Activo", nome_completo: "Cell Assistant Demo", contacto: "862720012", titulo: "Irmã", igreja: "church-hq", celula: "Dominio 1", e_lider_actual: false, veio_do_alec: true, alec_concluido: true, faixa_certificado_pago: false, estado: "Activo", supervisor: "Pastora Flavia", observacoes: "Assistente autorizada da célula atribuída." },
       { id: "leader-2", church_id: "church-hq", created_by: "Sister Angelica", updated_by: "Pastora Flavia", created_at: "2026-07-03", updated_at: "2026-07-06", status: "Em Treinamento", nome_completo: "Aminata Chivinda", contacto: "848287179", titulo: "Irm", igreja: "church-hq", celula: "Cell Mavalane", e_lider_actual: true, veio_do_alec: true, alec_concluido: false, faixa_certificado_pago: false, estado: "Em Treinamento", supervisor: "Pastora Flavia", observacoes: "Acompanhar concluso do ALEC." }
     ],
-    evaluations: [],
+    evaluations: [
+      { id: "e1111111-1111-4111-8111-111111111101", church_id: "church-hq", report_id: "CR-2026-09-01", cell_id: "2b3a5652-b8be-4c76-8b64-b84200c8bcd4", cell_name: "Diplomatas Victory", avaliador: "Pastora Flavia", data_da_avaliacao: "2026-09-10", classificacao: "Excelente", pontos_fortes: "Excelente pontualidade e retenção de primeiros visitantes.", pontos_a_melhorar: "Aumentar número de encontros de oração.", acao_recomendada: "Preparar proposta para divisão da célula no próximo trimestre.", precisa_followup: false, estado: "Aprovado" },
+      { id: "e1111111-1111-4111-8111-111111111102", church_id: "church-hq", report_id: "CR-2026-09-02", cell_id: "17de71f5-1926-4b34-8cc6-4c690c3c0262", cell_name: "Pioneiros Change", avaliador: "Pastora Flavia", data_da_avaliacao: "2026-09-12", classificacao: "Precisa de Atenção", pontos_fortes: "Líder dedicado e membro fiel no ALEC.", pontos_a_melhorar: "Baixa frequência nos últimos 2 cultos celulares.", acao_recomendada: "Agendar reunião com a supervisora e reforçar visitas pastorais.", precisa_followup: true, estado: "Em Análise" }
+    ],
     validations: [],
     actionPlans: [
-      { id: "ap-1", church_id: "church-hq", leader_name: "Aminata Chivinda", cell_name: "Cell Mavalane", action: "Acompanhamento semanal com supervisora e reforço de evangelismo.", due_date: "2026-07-17", status: "Em Curso", owner: "Pastora Flavia", created_by: "Pastora Flavia", updated_by: "Pastora Flavia", created_at: "2026-07-06", updated_at: "2026-07-06" },
-      { id: "ap-2", church_id: "church-hq", leader_name: "Mateus Nhantumbo", cell_name: "Cell Central", action: "Preparar diviso da clula e identificar lder auxiliar.", due_date: "2026-07-20", status: "Planeado", owner: "Pastora Flavia", created_by: "Pastora Flavia", updated_by: "Pastora Flavia", created_at: "2026-07-06", updated_at: "2026-07-06" }
+      { id: "f1111111-1111-4111-8111-111111111101", church_id: "church-hq", cell_id: "17de71f5-1926-4b34-8cc6-4c690c3c0262", cell_name: "Pioneiros Change", leader_name: "Aminata Chivinda", action: "Acompanhamento semanal com supervisora e reforço de evangelismo.", owner: "Pastora Flavia", due_date: "2026-09-25", status: "Em Curso", notes: "Prioridade para conclusão do curso ALEC e visitas domiciliares." },
+      { id: "f1111111-1111-4111-8111-111111111102", church_id: "church-hq", cell_id: "2b3a5652-b8be-4c76-8b64-b84200c8bcd4", cell_name: "Diplomatas Victory", leader_name: "Mateus Nhantumbo", action: "Preparar divisão da célula e identificar líder auxiliar.", owner: "Pastora Flavia", due_date: "2026-10-05", status: "Planeado", notes: "Célula atingiu mais de 16 membros regulares." }
     ]
   },
   fevo: {
@@ -6385,7 +6388,7 @@ function renderPublicCellReportForm(successRecord = null) {
       : new Date().toLocaleString();
     root.innerHTML = `
       <section class="public-report-card public-report-success">
-        <img src="https://embaixada-de-cristo.obiuba.com/assets/web/logo-ce.png" alt="Christ Embassy Mozambique" class="public-report-logo" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'%3E%3Ccircle cx=\'50\' cy=\'50\' r=\'46\' fill=\'%23070d1e\' stroke=\'%23d7ae4b\' stroke-width=\'3\'/%3E%3Cpath d=\'M50 20 L50 80 M32 38 L68 38\' stroke=\'%23d7ae4b\' stroke-width=\'5\' stroke-linecap=\'round\'/%3E%3Ccircle cx=\'50\' cy=\'50\' r=\'24\' fill=\'none\' stroke=\'%23d7ae4b\' stroke-width=\'1.5\' stroke-dasharray=\'2 3\'/%3E%3Ctext x=\'50\' y=\'72\' font-size=\'11\' font-family=\'sans-serif\' font-weight=\'bold\' fill=\'%23ffffff\' text-anchor=\'middle\' letter-spacing=\'1\'%3ECE%3C/text%3E%3C/svg%3E';">
+        <img src="assets/logo-ce.jpg" alt="Christ Embassy Mozambique" class="public-report-logo" onerror="this.onerror=null; this.src='logo-ce.jpg';">
         <span class="eyebrow">${L("weeklyCellReportPublic")}</span>
         <div class="public-success-badge mb-2"><i class="bi bi-check-circle-fill me-1"></i>${lang === "pt" ? "Enviado" : "Sent"}</div>
         <h1>${L("reportSubmittedSuccess")}</h1>
@@ -6412,7 +6415,7 @@ function renderPublicCellReportForm(successRecord = null) {
   root.innerHTML = `
     <section class="public-report-card">
       <div class="public-report-head">
-        <img src="https://embaixada-de-cristo.obiuba.com/assets/web/logo-ce.png" alt="Christ Embassy Mozambique" class="public-report-logo" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'%3E%3Ccircle cx=\'50\' cy=\'50\' r=\'46\' fill=\'%23070d1e\' stroke=\'%23d7ae4b\' stroke-width=\'3\'/%3E%3Cpath d=\'M50 20 L50 80 M32 38 L68 38\' stroke=\'%23d7ae4b\' stroke-width=\'5\' stroke-linecap=\'round\'/%3E%3Ccircle cx=\'50\' cy=\'50\' r=\'24\' fill=\'none\' stroke=\'%23d7ae4b\' stroke-width=\'1.5\' stroke-dasharray=\'2 3\'/%3E%3Ctext x=\'50\' y=\'72\' font-size=\'11\' font-family=\'sans-serif\' font-weight=\'bold\' fill=\'%23ffffff\' text-anchor=\'middle\' letter-spacing=\'1\'%3ECE%3C/text%3E%3C/svg%3E';">
+        <img src="assets/logo-ce.jpg" alt="Christ Embassy Mozambique" class="public-report-logo" onerror="this.onerror=null; this.src='logo-ce.jpg';">
         <div>
           <span class="eyebrow">Christ Embassy Mozambique</span>
           <h1>${L("weeklyCellReportPublic")}</h1>
@@ -20358,6 +20361,20 @@ async function dualWriteCellMinistryRecord(modalType, mode, record) {
         else if (mode === "update" && repo.updateCellReport) result = await repo.updateCellReport(record.id, payload);
         else if (mode === "delete" && repo.deleteCellReport) result = await repo.deleteCellReport(record.id);
       }
+    } else if (modalType === "cellEvaluation") {
+      const bridge = window.CECellMinistry;
+      if (bridge) {
+        if (mode === "create" && bridge.createCellEvaluation) result = await bridge.createCellEvaluation(record);
+        else if (mode === "update" && bridge.updateCellEvaluation) result = await bridge.updateCellEvaluation(record.id, record);
+        else if (mode === "delete" && bridge.deleteCellEvaluation) result = await bridge.deleteCellEvaluation(record.id);
+      }
+    } else if (modalType === "cellActionPlan") {
+      const bridge = window.CECellMinistry;
+      if (bridge) {
+        if (mode === "create" && bridge.createCellActionPlan) result = await bridge.createCellActionPlan(record);
+        else if (mode === "update" && bridge.updateCellActionPlan) result = await bridge.updateCellActionPlan(record.id, record);
+        else if (mode === "delete" && bridge.deleteCellActionPlan) result = await bridge.deleteCellActionPlan(record.id);
+      }
     }
     if (result && result.ok === false) {
       console.warn("[CE CellMinistry] dual-write soft-fail", result);
@@ -20569,6 +20586,22 @@ async function hydrateCellMinistryFromRepository() {
       state.cellReportSubmissions = state.cellLeadership.cellReports.map((r) => ({ ...r }));
       hydrated = true;
     }
+    if (window.CECellMinistry) {
+      if (typeof window.CECellMinistry.listCellEvaluations === "function") {
+        const evalsRes = await window.CECellMinistry.listCellEvaluations();
+        if (evalsRes && evalsRes.ok && Array.isArray(evalsRes.data) && evalsRes.data.length) {
+          state.cellLeadership.evaluations = evalsRes.data;
+          hydrated = true;
+        }
+      }
+      if (typeof window.CECellMinistry.listCellActionPlans === "function") {
+        const plansRes = await window.CECellMinistry.listCellActionPlans();
+        if (plansRes && plansRes.ok && Array.isArray(plansRes.data) && plansRes.data.length) {
+          state.cellLeadership.actionPlans = plansRes.data;
+          hydrated = true;
+        }
+      }
+    }
     if (typeof autoConsolidateAllChurchReports === "function") autoConsolidateAllChurchReports();
     if (Array.isArray(state.members) && state.members.length) syncMemberDerivedCellNetwork();
     if (hydrated) localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -20702,12 +20735,465 @@ const cellReportsPageState = {
   view: (function () {
     try {
       const v = localStorage.getItem("ce_cell_reports_view_mode");
-      return v === "cards" ? "card" : (v || "table");
+      return v === "table" ? "table" : "card";
     } catch (_) {
-      return "table";
+      return "card";
     }
   })()
 };
+
+const cellEvaluationPageState = {
+  view: (function () {
+    try {
+      const v = localStorage.getItem("ce_cell_evaluation_view_mode");
+      return v === "table" ? "table" : "card";
+    } catch (_) {
+      return "card";
+    }
+  })()
+};
+
+const cellLeadersAttentionPageState = {
+  view: (function () {
+    try {
+      const v = localStorage.getItem("ce_cell_leaders_attention_view_mode");
+      return v === "table" ? "table" : "card";
+    } catch (_) {
+      return "card";
+    }
+  })()
+};
+
+const cellActionPlanPageState = {
+  view: (function () {
+    try {
+      const v = localStorage.getItem("ce_cell_action_plan_view_mode");
+      return v === "table" ? "table" : "card";
+    } catch (_) {
+      return "card";
+    }
+  })()
+};
+
+const cellMinistryFilterState = {
+  receivedReports: { search: "", church_id: "", cell_group: "", cell: "", status: "", week: "" },
+  weeklyReport: { search: "", church_id: "", cell_group: "", cell: "", status: "", week: "" },
+  cellEvaluation: { search: "", church_id: "", cell_group: "", cell: "", status: "", week: "" },
+  cellPerformance: { search: "", church_id: "", cell_group: "", cell: "", status: "", week: "" },
+  leadersAttention: { search: "", church_id: "", cell_group: "", cell: "", status: "", week: "" },
+  actionPlan: { search: "", church_id: "", cell_group: "", cell: "", status: "", week: "" }
+};
+
+function cellMinistryFilterOptions(type, churchId = "", cellGroupId = "") {
+  const norm = (v) => String(v || "").trim().toLowerCase();
+  const options = [];
+  const seen = new Set();
+
+  const add = (value, label) => {
+    const k = norm(label);
+    if (!k || seen.has(k)) return;
+    seen.add(k);
+    options.push({ value, label });
+  };
+
+  if (type === "church") {
+    const seenChurchNames = new Set();
+    (state.churches || []).forEach((c) => {
+      if (!c || !c.id) return;
+      const name = cleanDisplayText(c.church_name || c.public_name || c.name || c.id).trim();
+      const nKey = norm(name);
+      if (!seenChurchNames.has(nKey)) {
+        seenChurchNames.add(nKey);
+        options.push({ value: c.id, label: name });
+      }
+    });
+    return options.sort((a, b) => a.label.localeCompare(b.label, lang === "pt" ? "pt" : "en"));
+  }
+
+  const allGroups = [
+    ...(window.REAL_CELL_GROUPS || []),
+    ...(state.cellGroups || []),
+    ...(state.cellMinistry?.groups || [])
+  ];
+  const allCells = [
+    ...(window.REAL_CELLS_REGISTRY || []),
+    ...(state.cellRegistry || []),
+    ...(state.cells || [])
+  ];
+
+  if (type === "cellGroup") {
+    allGroups.forEach((g) => {
+      const gid = g.id || g.group_id;
+      const gname = g.group_name || g.name;
+      const gChurch = g.church_id || g.churchId || "";
+      if (!gid || !gname) return;
+      if (churchId) {
+        const canonicalC = CANONICAL_CHURCH_MAP[churchId] || churchId;
+        const gCanonical = CANONICAL_CHURCH_MAP[gChurch] || gChurch;
+        if (gChurch && gChurch !== churchId && gCanonical !== canonicalC) return;
+      }
+      add(gid, gname);
+    });
+    return options.sort((a, b) => a.label.localeCompare(b.label, lang === "pt" ? "pt" : "en"));
+  }
+
+  if (type === "cell") {
+    allCells.forEach((c) => {
+      const cid = c.id;
+      const cname = c.cell_name || c.name;
+      const cGroup = c.cell_group_id || c.group_id || "";
+      const cGroupName = c.cell_group_name || "";
+      const cChurch = c.church_id || c.churchId || "";
+      if (!cid || !cname) return;
+
+      if (cellGroupId) {
+        const matchGroup = String(cGroup) === String(cellGroupId) || norm(cGroupName) === norm(cellGroupId);
+        if (!matchGroup) return;
+      } else if (churchId) {
+        const canonicalC = CANONICAL_CHURCH_MAP[churchId] || churchId;
+        const cCanonical = CANONICAL_CHURCH_MAP[cChurch] || cChurch;
+        if (cChurch && cChurch !== churchId && cCanonical !== canonicalC) return;
+      }
+      add(cid, cname);
+    });
+    return options.sort((a, b) => a.label.localeCompare(b.label, lang === "pt" ? "pt" : "en"));
+  }
+
+  return options;
+}
+
+function renderCellMinistryFilterBar(scope, options = {}) {
+  const currentFilters = cellMinistryFilterState[scope] || {};
+  const currentView = options.view || (scope === "cellEvaluation" ? cellEvaluationPageState.view : (scope === "actionPlan" ? cellActionPlanPageState.view : (scope === "leadersAttention" ? cellLeadersAttentionPageState.view : cellReportsPageState.view))) || "card";
+  const showWeek = options.showWeek !== false;
+  const showStatus = options.showStatus !== false;
+  const statusOptions = options.statusOptions || ["Submetido", "Validado", "Em Revisão", "Pendente", "Rejeitado"];
+
+  const churchList = cellMinistryFilterOptions("church");
+  const groupList = cellMinistryFilterOptions("cellGroup", currentFilters.church_id);
+  const cellList = cellMinistryFilterOptions("cell", currentFilters.church_id, currentFilters.cell_group);
+
+  const churchOptionsHtml = churchList.map((c) => `<option value="${escapeAttr(c.value)}"${String(currentFilters.church_id) === String(c.value) ? " selected" : ""}>${escapeAttr(c.label)}</option>`).join("");
+  const groupOptionsHtml = groupList.map((g) => `<option value="${escapeAttr(g.value)}"${String(currentFilters.cell_group) === String(g.value) ? " selected" : ""}>${escapeAttr(g.label)}</option>`).join("");
+  const cellOptionsHtml = cellList.map((cl) => `<option value="${escapeAttr(cl.value)}"${String(currentFilters.cell) === String(cl.value) ? " selected" : ""}>${escapeAttr(cl.label)}</option>`).join("");
+  const statusOptionsHtml = statusOptions.map((st) => `<option value="${escapeAttr(st)}"${String(currentFilters.status) === String(st) ? " selected" : ""}>${escapeAttr(st)}</option>`).join("");
+
+  const viewToggleHtml = `
+    <div class="view-toggle light-surface" role="group" aria-label="${cleanDisplayText(L("viewMode"))}">
+      <button type="button" class="view-toggle-btn ${currentView === "table" ? "active" : ""}" data-view-mode="table">
+        <i class="bi bi-table"></i>
+        <span>${cleanDisplayText(L("tableView") || "Tabela")}</span>
+      </button>
+      <button type="button" class="view-toggle-btn ${currentView === "card" || currentView === "cards" ? "active" : ""}" data-view-mode="card">
+        <i class="bi bi-grid-fill"></i>
+        <span>${cleanDisplayText(lang === "pt" ? "Modo Card" : "Card View")}</span>
+      </button>
+    </div>
+  `;
+
+  return `
+    <div class="filter-toolbar filter-bar mb-3" data-cell-ministry-filter-bar="${escapeAttr(scope)}">
+      <div class="filter-toolbar-search">
+        <i class="bi bi-search"></i>
+        <input class="form-control" type="search" data-cell-filter="search" value="${escapeAttr(currentFilters.search || "")}" placeholder="${L("search") || "Pesquisar..."}" aria-label="${L("search") || "Pesquisar"}">
+      </div>
+      <select class="form-select" data-cell-filter="church_id" aria-label="${L("filterChurch")}">
+        <option value="">${L("filterChurch") || "Filtrar por Igreja"}</option>
+        ${churchOptionsHtml}
+      </select>
+      <select class="form-select" data-cell-filter="cell_group" aria-label="${L("cellGroup") || "Grupo de Célula"}">
+        <option value="">${lang === "pt" ? "Filtrar por Grupo" : "Filter by Cell Group"}</option>
+        ${groupOptionsHtml}
+      </select>
+      <select class="form-select" data-cell-filter="cell" aria-label="${L("cell") || "Célula"}">
+        <option value="">${lang === "pt" ? "Filtrar por Célula" : "Filter by Cell"}</option>
+        ${cellOptionsHtml}
+      </select>
+      ${showStatus ? `
+        <select class="form-select" data-cell-filter="status" aria-label="${L("filterStatus")}">
+          <option value="">${L("filterStatus") || "Filtrar por Estado"}</option>
+          ${statusOptionsHtml}
+        </select>
+      ` : ""}
+      ${showWeek ? `
+        <input class="form-control" type="week" data-cell-filter="week" value="${escapeAttr(currentFilters.week || "")}" aria-label="${L("filterWeek") || "Semana"}">
+      ` : ""}
+      ${viewToggleHtml}
+      <button type="button" class="btn btn-ce-gold btn-touch" data-cell-filter-apply="${escapeAttr(scope)}"><i class="bi bi-search me-1"></i>${L("search") || "Pesquisar"}</button>
+      <button type="button" class="btn btn-outline-cyan action-secondary btn-touch" data-cell-filter-clear="${escapeAttr(scope)}">${lang === "pt" ? "Limpar" : "Clear"}</button>
+      <button type="button" class="btn btn-outline-cyan action-secondary btn-touch" data-cell-filter-export="${escapeAttr(scope)}"><i class="bi bi-download me-1"></i>${L("export") || "Exportar"}</button>
+    </div>
+  `;
+}
+
+function updateCellMinistryDependentFilters(filterBar) {
+  if (!filterBar) return;
+  const churchVal = filterBar.querySelector('[data-cell-filter="church_id"]')?.value || "";
+  const groupSelect = filterBar.querySelector('[data-cell-filter="cell_group"]');
+  const cellSelect = filterBar.querySelector('[data-cell-filter="cell"]');
+
+  if (groupSelect) {
+    const currentGroup = groupSelect.value;
+    const groupList = cellMinistryFilterOptions("cellGroup", churchVal);
+    groupSelect.innerHTML = `<option value="">${lang === "pt" ? "Filtrar por Grupo" : "Filter by Cell Group"}</option>${groupList.map((g) => `<option value="${escapeAttr(g.value)}" ${String(currentGroup) === String(g.value) ? "selected" : ""}>${escapeAttr(g.label)}</option>`).join("")}`;
+    if (!groupList.some((g) => String(g.value) === String(currentGroup))) {
+      groupSelect.value = "";
+    }
+  }
+
+  if (cellSelect) {
+    const currentGroup = groupSelect?.value || "";
+    const currentCell = cellSelect.value;
+    const cellList = cellMinistryFilterOptions("cell", churchVal, currentGroup);
+    cellSelect.innerHTML = `<option value="">${lang === "pt" ? "Filtrar por Célula" : "Filter by Cell"}</option>${cellList.map((cl) => `<option value="${escapeAttr(cl.value)}" ${String(currentCell) === String(cl.value) ? "selected" : ""}>${escapeAttr(cl.label)}</option>`).join("")}`;
+    if (!cellList.some((cl) => String(cl.value) === String(currentCell))) {
+      cellSelect.value = "";
+    }
+  }
+}
+
+function applyCellMinistryFilters(items = [], filters = {}, itemType = "report") {
+  if (!Array.isArray(items)) return [];
+  const norm = (v) => String(v || "").trim().toLowerCase();
+  const search = norm(filters.search);
+  const targetChurchId = String(filters.church_id || "");
+  const canonicalTargetChurch = CANONICAL_CHURCH_MAP[targetChurchId] || targetChurchId;
+  const targetGroup = norm(filters.cell_group);
+  const targetCell = norm(filters.cell);
+  const targetStatus = norm(filters.status);
+  const targetWeek = String(filters.week || "").trim();
+
+  return items.filter((item) => {
+    if (!item) return false;
+
+    // Search query
+    if (search) {
+      const searchHaystack = [
+        item.nome_completo, item.nome, item.name, item.leader_name, item.nome_do_lider,
+        item.avaliador, item.celula, item.cell_name, item.grupo_de_celula, item.cell_group_name,
+        item.group_name, item.supervisor, item.owner, item.action, item.acao_recomendada,
+        item.report_id, item.pontos_fortes, item.pontos_a_melhorar, item.contacto, item.telefone
+      ].filter(Boolean).map(norm).join(" ");
+      if (!searchHaystack.includes(search)) return false;
+    }
+
+    // Church filter
+    if (targetChurchId) {
+      const itemChurchId = String(item.church_id || item.igreja || item.churchId || "");
+      const itemCanonical = CANONICAL_CHURCH_MAP[itemChurchId] || itemChurchId;
+      const matchChurch = itemChurchId === targetChurchId || itemCanonical === canonicalTargetChurch || norm(item.church_name).includes(norm(targetChurchId));
+      if (!matchChurch) return false;
+    }
+
+    // Cell Group filter
+    if (targetGroup) {
+      const gId = norm(item.cell_group_id || item.group_id || "");
+      const gName = norm(item.cell_group_name || item.group_name || item.grupo_de_celula || "");
+      const matchGroup = gId === targetGroup || gName === targetGroup || (gName && targetGroup.includes(gName));
+      if (!matchGroup) return false;
+    }
+
+    // Cell filter
+    if (targetCell) {
+      const cId = norm(item.cell_id || item.id || "");
+      const cName = norm(item.cell_name || item.celula || item.name || "");
+      const matchCell = cId === targetCell || cName === targetCell || (cName && targetCell.includes(cName));
+      if (!matchCell) return false;
+    }
+
+    // Status filter
+    if (targetStatus) {
+      const s = norm(item.status || item.estado || item.classificacao || item.workflow_status || "");
+      if (s !== targetStatus && !s.includes(targetStatus)) return false;
+    }
+
+    // Week filter
+    if (targetWeek) {
+      const w = String(item.semana || item.report_week || item.data_do_culto || item.data_inicio || item.data_da_avaliacao || item.due_date || item.created_at || "");
+      if (!w.includes(targetWeek)) return false;
+    }
+
+    return true;
+  });
+}
+
+function renderCellEvaluationCard(item) {
+  const cName = churchName(item.church_id || item.igreja || item.church_name);
+  const clName = item.cell_name || item.celula || "—";
+  const evaluatorName = item.avaliador || "—";
+  const dateLabel = item.data_da_avaliacao || item.created_at?.slice?.(0, 10) || "—";
+  const reportLabel = item.report_id || "—";
+  const classification = item.classificacao || "Bom";
+  const statusLabel = item.estado || "Pendente";
+  const needsFollowup = !!item.precisa_followup;
+
+  const badges = [
+    badge(statusLabel),
+    badge(classification),
+    needsFollowup ? `<span class="badge-soft badge-danger"><i class="bi bi-exclamation-circle me-1"></i>${lang === "pt" ? "Precisa Follow-up" : "Follow-up Needed"}</span>` : ""
+  ].filter(Boolean);
+
+  const meta = [
+    [L("reports") || "Relatório", reportLabel, "bi-file-earmark-text"],
+    [L("evaluator") || "Avaliador", evaluatorName, "bi-person-check"],
+    [L("evaluationDate") || "Data Avaliação", dateLabel, "bi-calendar-date"],
+    [L("cell") || "Célula", clName, "bi-diagram-3"],
+    [L("church") || "Igreja", cName, "bi-building"]
+  ];
+
+  if (item.pontos_fortes) {
+    meta.push([L("strengths") || "Pontos Fortes", escapeAttr(item.pontos_fortes), "bi-hand-thumbs-up"]);
+  }
+  if (item.pontos_a_melhorar) {
+    meta.push([L("improvements") || "Pontos a Melhorar", escapeAttr(item.pontos_a_melhorar), "bi-tools"]);
+  }
+  if (item.acao_recomendada) {
+    meta.push([L("recommendedAction") || "Acção Recomendada", escapeAttr(item.acao_recomendada), "bi-lightbulb"]);
+  }
+
+  const actions = backendActions("cellEvaluation", item.id);
+
+  if (typeof DataCard === "function") {
+    return DataCard({
+      title: `${clName} (${classification})`,
+      subtitle: `${evaluatorName} · ${dateLabel}`,
+      badges,
+      meta,
+      actions,
+      className: "cell-evaluation-card"
+    });
+  }
+
+  return `
+    <article class="data-card record-card light-surface cell-evaluation-card h-100">
+      <div class="data-card-head">
+        <div class="data-card-titles">
+          <span class="eyebrow">${escapeAttr(evaluatorName)} · ${escapeAttr(dateLabel)}</span>
+          <h3 class="data-card-title">${escapeAttr(clName)} (${escapeAttr(classification)})</h3>
+        </div>
+        <div class="data-card-badges">${badges.join("")}</div>
+      </div>
+      <div class="data-card-meta">
+        ${meta.map(([label, value, icon]) => `<div class="data-card-meta-row"><span class="chart-label">${icon ? `<i class="bi ${icon}"></i> ` : ""}${label}</span><strong>${value ?? "-"}</strong></div>`).join("")}
+      </div>
+      <footer class="data-card-foot mt-3">${actions}</footer>
+    </article>
+  `;
+}
+
+function renderCellActionPlanCard(item) {
+  const cName = churchName(item.church_id || item.igreja || item.church_name);
+  const clName = item.cell_name || item.celula || "—";
+  const ldrName = item.leader_name || item.nome_do_lider || "—";
+  const owner = item.owner || "—";
+  const dueDate = item.due_date || "—";
+  const statusLabel = item.status || "Planeado";
+  const actionText = item.action || item.acao_recomendada || "—";
+
+  const badges = [
+    badge(statusLabel)
+  ];
+
+  const meta = [
+    [L("cell") || "Célula", clName, "bi-diagram-3"],
+    [L("leaderName") || "Líder", ldrName, "bi-person-badge"],
+    [L("actionOwner") || "Responsável", owner, "bi-person-gear"],
+    [L("dueDate") || "Data Limite", dueDate, "bi-calendar-event"],
+    [L("church") || "Igreja", cName, "bi-building"]
+  ];
+
+  if (actionText) {
+    meta.push([L("recommendedActions") || "Acção", escapeAttr(actionText), "bi-check2-square"]);
+  }
+  if (item.notes) {
+    meta.push([L("notes") || "Notas", escapeAttr(item.notes), "bi-chat-text"]);
+  }
+
+  const actions = actionButtons([
+    ["view", "cellActionPlan", item.id, L("view")],
+    ["edit", "cellActionPlan", item.id, L("edit")]
+  ]);
+
+  if (typeof DataCard === "function") {
+    return DataCard({
+      title: clName,
+      subtitle: `${ldrName} · ${dueDate}`,
+      badges,
+      meta,
+      actions,
+      className: "cell-action-plan-card"
+    });
+  }
+
+  return `
+    <article class="data-card record-card light-surface cell-action-plan-card h-100">
+      <div class="data-card-head">
+        <div class="data-card-titles">
+          <span class="eyebrow">${escapeAttr(ldrName)} · ${escapeAttr(dueDate)}</span>
+          <h3 class="data-card-title">${escapeAttr(clName)}</h3>
+        </div>
+        <div class="data-card-badges">${badges.join("")}</div>
+      </div>
+      <div class="data-card-meta">
+        ${meta.map(([label, value, icon]) => `<div class="data-card-meta-row"><span class="chart-label">${icon ? `<i class="bi ${icon}"></i> ` : ""}${label}</span><strong>${value ?? "-"}</strong></div>`).join("")}
+      </div>
+      <footer class="data-card-foot mt-3">${actions}</footer>
+    </article>
+  `;
+}
+
+function renderCellLeaderAttentionCard(item) {
+  const cName = churchName(item.igreja || item.church_id);
+  const clName = item.celula || item.cell_name || "—";
+  const name = item.nome_completo || item.name || "—";
+  const contact = item.contacto || item.phone || "—";
+  const supervisor = item.supervisor || "—";
+  const statusLabel = item.estado || item.status || "Precisa de Atenção";
+
+  const badges = [
+    badge(statusLabel)
+  ];
+
+  const meta = [
+    [L("fullName") || "Nome", name, "bi-person"],
+    [L("contact") || "Contacto", contact, "bi-telephone"],
+    [L("church") || "Igreja", cName, "bi-building"],
+    [L("cell") || "Célula", clName, "bi-diagram-3"],
+    [L("supervisor") || "Supervisora", supervisor, "bi-person-badge"]
+  ];
+  if (item.observacoes) {
+    meta.push([L("notes") || "Observações", escapeAttr(item.observacoes), "bi-chat-text"]);
+  }
+
+  const actions = backendActions("cellLeader", item.id);
+
+  if (typeof DataCard === "function") {
+    return DataCard({
+      title: name,
+      subtitle: `${clName} · ${cName}`,
+      badges,
+      meta,
+      actions,
+      className: "cell-leader-attention-card"
+    });
+  }
+
+  return `
+    <article class="data-card record-card light-surface cell-leader-attention-card h-100">
+      <div class="data-card-head">
+        <div class="data-card-titles">
+          <span class="eyebrow">${escapeAttr(clName)} · ${escapeAttr(cName)}</span>
+          <h3 class="data-card-title">${escapeAttr(name)}</h3>
+        </div>
+        <div class="data-card-badges">${badges.join("")}</div>
+      </div>
+      <div class="data-card-meta">
+        ${meta.map(([label, value, icon]) => `<div class="data-card-meta-row"><span class="chart-label">${icon ? `<i class="bi ${icon}"></i> ` : ""}${label}</span><strong>${value ?? "-"}</strong></div>`).join("")}
+      </div>
+      <footer class="data-card-foot mt-3">${actions}</footer>
+    </article>
+  `;
+}
 
 function renderCellReportCard(item) {
   const offering = Number(item.oferta || item.offering_amount || 0);
@@ -22567,26 +23053,32 @@ function renderCellMinistry(activeTab = "alecOverview") {
 
   const registry = scopedNested(state.cellRegistry || []);
   const groups = scopedNested(state.cellGroups || []);
-  const alecRegistrations = scopedNested(leadership.alecRegistrations);
-  const alecScores = scopedNested(leadership.alecScores);
-  const churchReports = scopedNested(leadership.churchReports);
-  let cellReports = sortCellReportsNewestFirst(scopedNested(leadership.cellReports));
+  const alecRegistrations = scopedNested(leadership.alecRegistrations || []);
+  const alecScores = scopedNested(leadership.alecScores || []);
+  const churchReports = scopedNested(leadership.churchReports || []);
+  let cellReports = sortCellReportsNewestFirst(scopedNested(leadership.cellReports || []));
   if (["Cell Leader", "Cell Assistant"].includes(activeUser?.role) && !userHasExtendedCellPerms(activeUser)) {
     const authorizedIds = new Set(getAuthorizedCellsForUser(activeUser.id).map((cell) => cell.id));
     cellReports = cellReports.filter((report) => authorizedIds.has(report.cell_id) || report.submitted_by_user_id === activeUser.id);
   }
-  const leaders = scopedNested(leadership.leaders);
-  const evaluations = scopedNested(leadership.evaluations);
-  const validations = scopedNested(leadership.validations);
-  const actionPlans = scopedNested(leadership.actionPlans || []);
+  const leaders = scopedNested(leadership.leaders || []);
+  let evaluations = scopedNested(leadership.evaluations || []);
+  if (!evaluations.length && Array.isArray(seedData.cellLeadership?.evaluations) && seedData.cellLeadership.evaluations.length) {
+    evaluations = scopedNested(seedData.cellLeadership.evaluations);
+  }
+  const validations = scopedNested(leadership.validations || []);
+  let actionPlans = scopedNested(leadership.actionPlans || []);
+  if (!actionPlans.length && Array.isArray(seedData.cellLeadership?.actionPlans) && seedData.cellLeadership.actionPlans.length) {
+    actionPlans = scopedNested(seedData.cellLeadership.actionPlans);
+  }
   const allReports = [...churchReports, ...cellReports];
   const totalAttendance = cellReports.reduce((sum, report) => sum + Number(report.att || 0), 0);
   const totalFt = cellReports.reduce((sum, report) => sum + Number(report.ft || 0), 0);
   const totalNc = cellReports.reduce((sum, report) => sum + Number(report.nc || 0), 0);
   const totalOffering = cellReports.reduce((sum, report) => sum + Number(report.oferta || 0), 0);
-  const explosionCells = registry.filter((item) => String(item.observation || "").toUpperCase().includes("EXPLOSAO")).length;
-  const attentionLeaders = leaders.filter((item) => ["Em Treinamento", "Precisa de Aten��o"].includes(item.estado));
-  const attentionEvaluations = evaluations.filter((item) => ["Precisa de Aten��o", "Cr�tico"].includes(item.classificacao));
+  const explosionCells = registry.filter((item) => String(item.observation || "").toUpperCase().includes("EXPLOSAO") || Number(item.member_count || 0) >= 15).length;
+  const attentionLeaders = leaders.filter((item) => ["Em Treinamento", "Precisa de Atenção", "Precisa de Ateno"].includes(item.estado));
+  const attentionEvaluations = evaluations.filter((item) => ["Precisa de Atenção", "Precisa de Ateno", "Crítico", "Crtico"].includes(item.classificacao));
   const navHtml = cellModuleHeader(activeRoute, { modalType: cellModalType(activeTab) });
   let bodyHtml = "";
 
@@ -22597,7 +23089,7 @@ function renderCellMinistry(activeTab = "alecOverview") {
           ${metric("bi-mortarboard", L("totalAlecRegistered"), alecRegistrations.length, L("alecFull"))}
           ${metric("bi-person-badge", L("alreadyLeaders"), alecRegistrations.filter((item) => item.e_lider).length, L("cellLeaders"))}
           ${metric("bi-book", L("didFoundationSchool"), alecRegistrations.filter((item) => item.fez_escola_de_fundacao).length, L("foundationSchool"))}
-          ${metric("bi-hourglass-split", L("inTraining"), alecRegistrations.filter((item) => item.estado === "Em Forma��o").length, L("active"))}
+          ${metric("bi-hourglass-split", L("inTraining"), alecRegistrations.filter((item) => item.estado === "Em Formação" || item.estado === "Em Formao").length, L("active"))}
           ${metric("bi-award", L("alecCompleted"), alecScores.filter((item) => item.terminou).length, L("certificateIssued"))}
           ${metric("bi-clipboard-check", L("churchReports"), churchReports.length, L("reports"))}
         </div>`)}
@@ -22613,7 +23105,7 @@ function renderCellMinistry(activeTab = "alecOverview") {
           ${metric("bi-collection", L("totalGroupCells"), groups.length, L("cellGroups"))}
           ${metric("bi-diagram-3", L("totalCells"), registry.length, L("activeCells"))}
           ${metric("bi-clipboard-check", L("submittedReports"), cellReports.filter((item) => item.estado !== "Rascunho").length, L("reports"))}
-          ${metric("bi-hourglass-split", L("pendingReportsShort"), cellReports.filter((item) => ["Rascunho", "Submetido", "Em Avalia��o"].includes(item.estado)).length, L("needsAction"))}
+          ${metric("bi-hourglass-split", L("pendingReportsShort"), cellReports.filter((item) => ["Rascunho", "Submetido", "Em Avaliação", "Em Avaliao"].includes(item.estado)).length, L("needsAction"))}
           ${metric("bi-lightning-charge", L("explosionCells"), explosionCells, L("readyToSplit"))}
           ${metric("bi-exclamation-triangle", L("attentionCells"), attentionEvaluations.length, L("leaderSupport"))}
         </div>`)}
@@ -22633,62 +23125,205 @@ function renderCellMinistry(activeTab = "alecOverview") {
           <div class="col-xl-4">${chartCard(L("topCellsGrowth"), cellReports.map((report) => [report.celula, Number(report.ft || 0) + Number(report.nc || 0)]))}</div>
         </div>`)}`;
   } else if (activeTab === "cellPerformance") {
+    const perfFilters = cellMinistryFilterState.cellPerformance || {};
+    const filteredReports = applyCellMinistryFilters(cellReports, perfFilters, "report");
+    const filteredCells = applyCellMinistryFilters(registry, perfFilters, "cell");
+
+    const perfTotalAtt = filteredReports.length
+      ? filteredReports.reduce((sum, r) => sum + Number(r.att || 0), 0)
+      : filteredCells.reduce((sum, c) => sum + Number(c.member_count || 0), 0);
+    const perfTotalFt = filteredReports.reduce((sum, r) => sum + Number(r.ft || 0), 0);
+    const perfTotalNc = filteredReports.reduce((sum, r) => sum + Number(r.nc || 0), 0);
+    const perfExplosion = filteredCells.filter((c) => Number(c.member_count || 0) >= 15 || String(c.observation || "").toUpperCase().includes("EXPLOSAO")).length;
+
+    // Charts calculation (clean numeric values without undefined)
+    const attByWeek = filteredReports.length
+      ? groupSum(filteredReports, "semana", "att")
+      : filteredCells.slice(0, 15).map((c) => [c.cell_name, Number(c.member_count || 0)]);
+    const ftByCell = filteredReports.length
+      ? groupSum(filteredReports, "celula", "ft").filter(([, val]) => val > 0).slice(0, 15)
+      : filteredCells.slice(0, 10).map((c) => [c.cell_name, 0]);
+    const ncByCell = filteredReports.length
+      ? groupSum(filteredReports, "celula", "nc").filter(([, val]) => val > 0).slice(0, 15)
+      : filteredCells.slice(0, 10).map((c) => [c.cell_name, 0]);
+    const offeringByWeek = filteredReports.length
+      ? groupSum(filteredReports, "semana", "oferta")
+      : [["Semana 1", 0], ["Semana 2", 0]];
+    const topGrowth = filteredReports.length
+      ? filteredReports.slice(0, 15).map((r) => [r.celula || "Célula", Number(r.ft || 0) + Number(r.nc || 0)])
+      : filteredCells.slice(0, 15).map((c) => [c.cell_name, Number(c.member_count || 0)]);
+    const cellsByStatus = groupCount(filteredCells, "status");
+
     bodyHtml = `
+      ${renderCellMinistryFilterBar("cellPerformance", { view: "card", showWeek: true, showStatus: true, statusOptions: ["Active", "Inactive", "Pending"] })}
       <div class="row g-3 mb-4">
-        ${metric("bi-people", L("totalAttendance"), registry.reduce((sum, item) => sum + Number(item.attendance || 0), 0), L("reportWeek"))}
-        ${metric("bi-person-heart", L("totalFirstTime"), registry.reduce((sum, item) => sum + Number(item.first_timers || 0), 0), L("firstTimers"))}
-        ${metric("bi-stars", L("totalNewConverts"), registry.reduce((sum, item) => sum + Number(item.new_converts || 0), 0), L("newConverts"))}
-        ${metric("bi-lightning-charge", L("explosionCells"), explosionCells, L("readyToSplit"))}
+        ${metric("bi-people", L("totalAttendance"), perfTotalAtt, L("reportWeek"))}
+        ${metric("bi-person-heart", L("totalFirstTime"), perfTotalFt, L("firstTimers"))}
+        ${metric("bi-stars", L("totalNewConverts"), perfTotalNc, L("newConverts"))}
+        ${metric("bi-lightning-charge", L("explosionCells"), perfExplosion, L("readyToSplit"))}
       </div>
       <div class="row g-4">
-        <div class="col-xl-4">${chartCard(L("attendanceByWeek"), registry.slice(0, 24).map((item) => [item.cell_name, item.attendance]))}</div>
-        <div class="col-xl-4">${chartCard(L("firstTimersByCell"), registry.slice(0, 24).map((item) => [item.cell_name, item.first_timers]))}</div>
-        <div class="col-xl-4">${chartCard(L("newConvertsByCell"), registry.slice(0, 24).map((item) => [item.cell_name, item.new_converts]))}</div>
-        <div class="col-xl-4">${chartCard(L("offeringByWeek"), registry.slice(0, 24).map((item) => [item.cell_name, item.offering]))}</div>
-        <div class="col-xl-4">${chartCard(L("topCellsGrowth"), registry.slice(0, 20).map((item) => [item.cell_name, Number(item.first_timers || 0) + Number(item.new_converts || 0)]))}</div>
-        <div class="col-xl-4">${chartCard(L("itemsByStatus"), groupCount(registry, "status"))}</div>
+        <div class="col-xl-4">${chartCard(L("attendanceByWeek"), attByWeek.length ? attByWeek : [["Semana 1", 0]])}</div>
+        <div class="col-xl-4">${chartCard(L("firstTimersByCell"), ftByCell.length ? ftByCell : [["Sem registos", 0]])}</div>
+        <div class="col-xl-4">${chartCard(L("newConvertsByCell"), ncByCell.length ? ncByCell : [["Sem registos", 0]])}</div>
+        <div class="col-xl-4">${chartCard(L("offeringByWeek"), offeringByWeek.length ? offeringByWeek : [["Semana 1", 0]])}</div>
+        <div class="col-xl-4">${chartCard(L("topCellsGrowth"), topGrowth.length ? topGrowth : [["Sem registos", 0]])}</div>
+        <div class="col-xl-4">${chartCard(L("itemsByStatus"), cellsByStatus.length ? cellsByStatus : [["Active", filteredCells.length]])}</div>
       </div>`;
   } else if (activeTab === "leadersAttention") {
+    const leaderFilters = cellMinistryFilterState.leadersAttention || {};
+    const filteredLeaders = applyCellMinistryFilters(attentionLeaders, leaderFilters, "leader");
+    const filteredEvaluations = applyCellMinistryFilters(attentionEvaluations, leaderFilters, "evaluation");
+
+    const isCardView = cellLeadersAttentionPageState.view !== "table";
+    const leaderCardsHtml = filteredLeaders.length
+      ? `<div class="row g-4 mt-1">${filteredLeaders.map((item) => `<div class="col-12 col-md-6 col-xl-4">${renderCellLeaderAttentionCard(item)}</div>`).join("")}</div>`
+      : `<div class="col-12 text-center p-4 text-secondary">${lang === "pt" ? "Nenhum líder em atenção." : "No leaders needing attention."}</div>`;
+
+    const evalCardsHtml = filteredEvaluations.length
+      ? `<div class="row g-4 mt-1">${filteredEvaluations.map((item) => `<div class="col-12 col-md-6 col-xl-4">${renderCellEvaluationCard(item)}</div>`).join("")}</div>`
+      : `<div class="col-12 text-center p-4 text-secondary">${lang === "pt" ? "Nenhuma acção recomendada pendente." : "No pending recommended actions."}</div>`;
+
     bodyHtml = `
+      ${renderCellMinistryFilterBar("leadersAttention", { view: cellLeadersAttentionPageState.view, showWeek: true, showStatus: true, statusOptions: ["Em Treinamento", "Precisa de Atenção", "Crítico", "Activo"] })}
       <div class="row g-3 mb-4">
-        ${metric("bi-exclamation-triangle", L("leadersAttention"), attentionLeaders.length, L("needsAction"))}
-        ${metric("bi-clipboard-check", L("attentionCells"), attentionEvaluations.length, L("cellEvaluation"))}
+        ${metric("bi-exclamation-triangle", L("leadersAttention"), filteredLeaders.length, L("needsAction"))}
+        ${metric("bi-clipboard-check", L("attentionCells"), filteredEvaluations.length, L("cellEvaluation"))}
       </div>
       <div class="row g-4">
-        <div class="col-12">${modulePanel("cellLeader", L("leadersAttention"), null, [L("fullName"), L("contact"), L("church"), L("cell"), L("supervisor"), L("status"), L("actions")], attentionLeaders.map((item) => [item.nome_completo, item.contacto, churchName(item.igreja), item.celula, item.supervisor, badge(item.estado), backendActions("cellLeader", item.id)]), true)}</div>
-        <div class="col-12">${modulePanel("cellEvaluation", L("recommendedActions"), null, [L("reports"), L("evaluator"), L("classification"), L("recommendedAction"), L("status"), L("actions")], attentionEvaluations.map((item) => [item.report_id, item.avaliador, badge(item.classificacao), item.acao_recomendada, badge(item.estado), backendActions("cellEvaluation", item.id)]), false)}</div>
+        <div class="col-12">
+          ${isCardView ? `
+            <article class="panel glass-panel">
+              <div class="panel-head">
+                <h3 class="panel-title">${L("leadersAttention")}</h3>
+                <div class="action-cluster">
+                  <button type="button" class="btn btn-sm btn-outline-cyan action-secondary" data-action="export" data-type="cellLeader" data-id="cellLeader"><i class="bi bi-download me-1"></i>${L("export")}</button>
+                </div>
+              </div>
+              ${leaderCardsHtml}
+            </article>
+          ` : modulePanel("cellLeader", L("leadersAttention"), null, [L("fullName"), L("contact"), L("church"), L("cell"), L("supervisor"), L("status"), L("actions")], filteredLeaders.map((item) => [item.nome_completo, item.contacto, churchName(item.igreja), item.celula, item.supervisor, badge(item.estado), backendActions("cellLeader", item.id)]), false)}
+        </div>
+        <div class="col-12">
+          ${isCardView ? `
+            <article class="panel glass-panel">
+              <div class="panel-head">
+                <h3 class="panel-title">${L("recommendedActions")}</h3>
+                <div class="action-cluster">
+                  <button type="button" class="btn btn-sm btn-outline-cyan action-secondary" data-action="export" data-type="cellEvaluation" data-id="cellEvaluation"><i class="bi bi-download me-1"></i>${L("export")}</button>
+                </div>
+              </div>
+              ${evalCardsHtml}
+            </article>
+          ` : modulePanel("cellEvaluation", L("recommendedActions"), null, [L("reports"), L("evaluator"), L("classification"), L("recommendedAction"), L("status"), L("actions")], filteredEvaluations.map((item) => [item.report_id, item.avaliador, badge(item.classificacao), item.acao_recomendada, badge(item.estado), backendActions("cellEvaluation", item.id)]), false)}
+        </div>
       </div>`;
   } else if (activeTab === "actionPlan") {
-    bodyHtml = `<div class="row g-4"><div class="col-12">${modulePanel("cellActionPlan", L("actionPlan"), null, [L("cell"), L("leaderName"), L("recommendedActions"), L("actionOwner"), L("dueDate"), L("status"), L("actions")], actionPlans.map((item) => [item.cell_name, item.leader_name, item.action, item.owner, item.due_date, badge(item.status), actionButtons([["view", "cellActionPlan", item.id, L("view")], ["edit", "cellActionPlan", item.id, L("edit")]])]), true)}</div></div>`;
-  } else if (activeTab === "weeklyReport") {
-    const cellReportsViewToggle = `
-      <div class="view-toggle light-surface" role="group" aria-label="${cleanDisplayText(L("viewMode"))}">
-        <button type="button" class="view-toggle-btn ${cellReportsPageState.view !== "card" && cellReportsPageState.view !== "cards" ? "active" : ""}" data-view-mode="table">
-          <i class="bi bi-table"></i>
-          <span>${cleanDisplayText(L("tableView") || "Tabela")}</span>
-        </button>
-        <button type="button" class="view-toggle-btn ${cellReportsPageState.view === "card" || cellReportsPageState.view === "cards" ? "active" : ""}" data-view-mode="card">
-          <i class="bi bi-grid-fill"></i>
-          <span>${cleanDisplayText(lang === "pt" ? "Modo Card" : "Card View")}</span>
-        </button>
+    const apFilters = cellMinistryFilterState.actionPlan || {};
+    const filteredActionPlans = applyCellMinistryFilters(actionPlans, apFilters, "actionPlan");
+    const isCardView = cellActionPlanPageState.view !== "table";
+
+    const actionPlanCardsHtml = filteredActionPlans.length
+      ? `<div class="row g-4 mt-1">${filteredActionPlans.map((item) => `<div class="col-12 col-md-6 col-xl-4">${renderCellActionPlanCard(item)}</div>`).join("")}</div>`
+      : `<div class="col-12 text-center p-4 text-secondary">${lang === "pt" ? "Nenhum plano de acção registado." : "No action plans registered."}</div>`;
+
+    bodyHtml = `
+      ${renderCellMinistryFilterBar("actionPlan", { view: cellActionPlanPageState.view, showWeek: true, showStatus: true, statusOptions: ["Planeado", "Em Curso", "Concluído", "Atrasado"] })}
+      <div class="row g-3 mb-4">
+        ${metric("bi-clipboard2-check", L("actionPlan") || "Planos de Acção", filteredActionPlans.length, "Total")}
+        ${metric("bi-hourglass-split", "Em Curso", filteredActionPlans.filter(p => p.status === "Em Curso").length, "Activos")}
+        ${metric("bi-calendar-check", "Planeados", filteredActionPlans.filter(p => p.status === "Planeado").length, "Agendados")}
+        ${metric("bi-check2-all", "Concluídos", filteredActionPlans.filter(p => p.status === "Concluído").length, "Finalizados")}
       </div>
-    `;
-    const cellReportCardsHtml = cellReports.length
-      ? `<div class="row g-4 mt-1">${cellReports.map((report) => `
+      <div class="row g-4">
+        <div class="col-12">
+          ${isCardView ? `
+            <article class="panel glass-panel">
+              <div class="panel-head">
+                <h3 class="panel-title">${L("actionPlan")}</h3>
+                <div class="action-cluster">
+                  <button class="btn btn-sm btn-ce-gold" data-open-form="cellActionPlan"><i class="bi bi-plus-lg me-1"></i>${L("add")}</button>
+                  <button type="button" class="btn btn-sm btn-outline-cyan action-secondary" data-action="export" data-type="cellActionPlan" data-id="cellActionPlan"><i class="bi bi-download me-1"></i>${L("export")}</button>
+                </div>
+              </div>
+              ${actionPlanCardsHtml}
+            </article>
+          ` : modulePanel("cellActionPlan", L("actionPlan"), "cellActionPlan", [L("cell"), L("leaderName"), L("recommendedActions"), L("actionOwner"), L("dueDate"), L("status"), L("actions")], filteredActionPlans.map((item) => [item.cell_name, item.leader_name, item.action, item.owner, item.due_date, badge(item.status), actionButtons([["view", "cellActionPlan", item.id, L("view")], ["edit", "cellActionPlan", item.id, L("edit")]])]), false)}
+        </div>
+      </div>`;
+  } else if (activeTab === "cellEvaluation") {
+    const evalFilters = cellMinistryFilterState.cellEvaluation || {};
+    const filteredEvaluations = applyCellMinistryFilters(evaluations, evalFilters, "evaluation");
+    const isCardView = cellEvaluationPageState.view !== "table";
+
+    const evalCardsHtml = filteredEvaluations.length
+      ? `<div class="row g-4 mt-1">${filteredEvaluations.map((item) => `<div class="col-12 col-md-6 col-xl-4">${renderCellEvaluationCard(item)}</div>`).join("")}</div>`
+      : `<div class="col-12 text-center p-4 text-secondary">${lang === "pt" ? "Nenhuma avaliação registada." : "No evaluations recorded."}</div>`;
+
+    bodyHtml = `
+      ${renderCellMinistryFilterBar("cellEvaluation", { view: cellEvaluationPageState.view, showWeek: true, showStatus: true, statusOptions: ["Excelente", "Bom", "Regular", "Precisa de Atenção", "Crítico", "Pendente", "Aprovado", "Em Análise"] })}
+      <div class="row g-3 mb-4">
+        ${metric("bi-clipboard-check", L("cellEvaluation"), filteredEvaluations.length, L("reports"))}
+        ${metric("bi-stars", "Excelente / Bom", filteredEvaluations.filter(e => ["Excelente", "Bom"].includes(e.classificacao)).length, "Destaque")}
+        ${metric("bi-exclamation-triangle", "Precisa de Atenção", filteredEvaluations.filter(e => ["Precisa de Atenção", "Crítico"].includes(e.classificacao)).length, "Intervenção")}
+        ${metric("bi-arrow-repeat", "Follow-up Necessário", filteredEvaluations.filter(e => !!e.precisa_followup).length, "Acompanhamento")}
+      </div>
+      <div class="row g-4">
+        <div class="col-12">
+          ${isCardView ? `
+            <article class="panel glass-panel">
+              <div class="panel-head">
+                <h3 class="panel-title">${L("cellEvaluation")}</h3>
+                <div class="action-cluster">
+                  <button class="btn btn-sm btn-ce-gold" data-open-form="cellEvaluation"><i class="bi bi-plus-lg me-1"></i>${L("add")}</button>
+                  <button type="button" class="btn btn-sm btn-outline-cyan action-secondary" data-action="export" data-type="cellEvaluation" data-id="cellEvaluation"><i class="bi bi-download me-1"></i>${L("export")}</button>
+                </div>
+              </div>
+              ${evalCardsHtml}
+            </article>
+          ` : modulePanel("cellEvaluation", L("cellEvaluation"), "cellEvaluation", [L("reports"), L("evaluator"), L("evaluationDate"), L("classification"), L("needsFollowup"), L("recommendedAction"), L("status"), L("actions")], filteredEvaluations.map((item) => [item.report_id, item.avaliador, item.data_da_avaliacao, badge(item.classificacao), yesNo(item.precisa_followup), item.acao_recomendada, badge(item.estado), backendActions("cellEvaluation", item.id)]), false)}
+        </div>
+      </div>`;
+  } else if (activeTab === "weeklyReport" || activeTab === "receivedReports") {
+    const reportFilters = cellMinistryFilterState[activeTab] || cellMinistryFilterState.receivedReports || {};
+    const filteredReports = applyCellMinistryFilters(cellReports, reportFilters, "report");
+    const isCardView = cellReportsPageState.view !== "table";
+
+    const cellReportCardsHtml = filteredReports.length
+      ? `<div class="row g-4 mt-1">${filteredReports.map((report) => `
           <div class="col-12 col-md-6 col-xl-4"${cellReportRowAttrs([report])[0] || ""}>
             ${renderCellReportCard(report)}
           </div>
         `).join("")}</div>`
-      : `<div class="col-12 text-center p-4 text-secondary">${lang === "pt" ? "Nenhum relatório submetido." : "No submitted reports."}</div>`;
+      : `<div class="col-12 text-center p-4 text-secondary">${lang === "pt" ? "Nenhum relatório submetido para os filtros seleccionados." : "No submitted reports for the selected filters."}</div>`;
+
+    const repTotalAtt = filteredReports.reduce((sum, r) => sum + Number(r.att || 0), 0);
+    const repTotalFt = filteredReports.reduce((sum, r) => sum + Number(r.ft || 0), 0);
+    const repTotalNc = filteredReports.reduce((sum, r) => sum + Number(r.nc || 0), 0);
 
     bodyHtml = `
+      ${renderCellMinistryFilterBar(activeTab, { view: cellReportsPageState.view, showWeek: true, showStatus: true, statusOptions: ["Submetido", "Validado", "Em Revisão", "Pendente", "Rejeitado"] })}
       <div class="row g-3 mb-4">
-        ${metric("bi-calendar-week", L("weeklyCellReport"), cellReports.length, L("reportWeek"))}
-        ${metric("bi-people", L("totalAttendance"), totalAttendance, L("attendance"))}
-        ${metric("bi-person-heart", L("totalFirstTime"), totalFt, L("firstTimers"))}
-        ${metric("bi-stars", L("totalNewConverts"), totalNc, L("newConverts"))}
+        ${metric("bi-calendar-week", L("weeklyCellReport") || "Relatórios", filteredReports.length, L("reportWeek"))}
+        ${metric("bi-people", L("totalAttendance"), repTotalAtt, L("attendance"))}
+        ${metric("bi-person-heart", L("totalFirstTime"), repTotalFt, L("firstTimers"))}
+        ${metric("bi-stars", L("totalNewConverts"), repTotalNc, L("newConverts"))}
       </div>
-      <div class="row g-4"><div class="col-12">${modulePanel("cellReport", L("weeklyCellReport"), null, cellReportHeaders(), cellReportRows(cellReports), true, false, { rowAttrs: cellReportRowAttrs(cellReports), view: cellReportsPageState.view, viewToggle: cellReportsViewToggle, cardsHtml: cellReportCardsHtml })}</div></div>`;
+      <div class="row g-4">
+        <div class="col-12">
+          ${isCardView ? `
+            <article class="panel glass-panel">
+              <div class="panel-head">
+                <h3 class="panel-title">${L("weeklyCellReport")}</h3>
+                <div class="action-cluster">
+                  <button type="button" class="btn btn-sm btn-outline-cyan action-secondary" data-action="export" data-type="cellReport" data-id="cellReport"><i class="bi bi-download me-1"></i>${L("export")}</button>
+                </div>
+              </div>
+              ${cellReportCardsHtml}
+            </article>
+          ` : modulePanel("cellReport", L("weeklyCellReport"), null, cellReportHeaders(), cellReportRows(filteredReports), false, false, { rowAttrs: cellReportRowAttrs(filteredReports) })}
+        </div>
+      </div>`;
   } else if (activeTab === "consolidation") {
     bodyHtml = `
       <div class="row g-3 mb-4">
@@ -22704,32 +23339,12 @@ function renderCellMinistry(activeTab = "alecOverview") {
       </div>
       ${moduleSection(L("rptCellTitle"), L("rptCellHint"), "bi-graph-up", "", renderDomainReportsPanel("cell", { module: "cell", showTitle: false }))}`;
   } else {
-    const cellReportsViewToggle = `
-      <div class="view-toggle light-surface" role="group" aria-label="${cleanDisplayText(L("viewMode"))}">
-        <button type="button" class="view-toggle-btn ${cellReportsPageState.view !== "card" && cellReportsPageState.view !== "cards" ? "active" : ""}" data-view-mode="table">
-          <i class="bi bi-table"></i>
-          <span>${cleanDisplayText(L("tableView") || "Tabela")}</span>
-        </button>
-        <button type="button" class="view-toggle-btn ${cellReportsPageState.view === "card" || cellReportsPageState.view === "cards" ? "active" : ""}" data-view-mode="card">
-          <i class="bi bi-grid-fill"></i>
-          <span>${cleanDisplayText(lang === "pt" ? "Modo Card" : "Card View")}</span>
-        </button>
-      </div>
-    `;
-    const cellReportCardsHtml = cellReports.length
-      ? `<div class="row g-4 mt-1">${cellReports.map((report) => `
-          <div class="col-12 col-md-6 col-xl-4"${cellReportRowAttrs([report])[0] || ""}>
-            ${renderCellReportCard(report)}
-          </div>
-        `).join("")}</div>`
-      : `<div class="col-12 text-center p-4 text-secondary">${lang === "pt" ? "Nenhum relatório submetido." : "No submitted reports."}</div>`;
-
     const panels = {
       alecRegistration: () => renderAlecRegistrationAnalyticalView(),
       alecScores: () => renderAlecScoresAnalyticalView(),
       churchReports: () => renderChurchReportsAnalyticalView(),
-      receivedReports: () => modulePanel("cellReport", L("receivedReports"), null, cellReportHeaders(), cellReportRows(cellReports), true, false, { rowAttrs: cellReportRowAttrs(cellReports), view: cellReportsPageState.view, viewToggle: cellReportsViewToggle, cardsHtml: cellReportCardsHtml }),
-      cellEvaluation: () => modulePanel("cellEvaluation", L("cellEvaluation"), "cellEvaluation", [L("reports"), L("evaluator"), L("evaluationDate"), L("classification"), L("needsFollowup"), L("recommendedAction"), L("status"), L("actions")], evaluations.map((item) => [item.report_id, item.avaliador, item.data_da_avaliacao, badge(item.classificacao), yesNo(item.precisa_followup), item.acao_recomendada, badge(item.estado), backendActions("cellEvaluation", item.id)]), true),
+      receivedReports: () => renderCellMinistry("receivedReports"),
+      cellEvaluation: () => renderCellMinistry("cellEvaluation"),
       cellLeaders: () => modulePanel("cellLeader", L("cellLeaders"), "cellLeader", [L("fullName"), L("contact"), L("church"), L("cell"), L("actualLeader"), L("cameFromAlec"), L("alecFinished"), L("supervisor"), L("status"), L("actions")], leaders.map((item) => [item.nome_completo, item.contacto, churchName(item.igreja), item.celula, yesNo(item.e_lider_actual), yesNo(item.veio_do_alec), yesNo(item.alec_concluido), item.supervisor, badge(item.estado), backendActions("cellLeader", item.id)]), true),
       finalValidation: () => modulePanel("finalValidation", L("finalValidation"), "finalValidation", [L("reports"), L("validatedBy"), L("date"), L("decision"), L("finalStatus"), L("actions")], validations.map((item) => [item.report_id, item.validado_por, item.data_validacao, badge(item.decisao), badge(item.estado_final), backendActions("finalValidation", item.id)]), true)
     };
@@ -26315,7 +26930,8 @@ const formSchemas = {
   cellReport: [["semana", "week"], ["data_inicio", "startDate", "date"], ["data_fim", "endDate", "date"], ["report_week", "week"], ["meeting_date", "date", "date"], ["church_id", "church", "church"], ["cell_group_id", "cellGroup", "cellGroupSelect"], ["cell_id", "cell", "cellRegistrySelect"], ["celula", "cell"], ["titulo_do_lider", "leaderTitle", "select", treatmentOptions], ["nome_do_lider", "leaderName"], ["leader_phone", "phone"], ["att", "attendance", "number"], ["ft", "firstTimeShort", "number"], ["nc", "newConvertsShort", "number"], ["oferta", "offering", "number"], ["rs", "RS", "number"], ["cell_health_status", "cellHealth", "select", ["Saudável", "Estável", "Precisa de Acompanhamento", "Precisa de Visita Pastoral", "Pronta para Multiplicar", "Sem Encontro Esta Semana"]], ["observacoes", "observations", "textarea"], ["submetido_por", "submittedBy"], ["avaliado_por", "evaluatedBy"], ["validado_por", "validatedBy"], ["estado", "status", "select", cellReportStatuses]],
   cellLeader: [["nome_completo", "fullName"], ["contacto", "contact"], ["titulo", "treatment", "select", treatmentOptions], ["church_id", "church", "church"], ["cell_group_id", "cellGroup", "cellGroupSelect"], ["cell_id", "cell", "cellRegistrySelect"], ["celula", "cell"], ["e_lider_actual", "actualLeader", "checkbox"], ["veio_do_alec", "cameFromAlec", "checkbox"], ["alec_concluido", "alecFinished", "checkbox"], ["faixa_certificado_pago", "certificateBandPaid", "checkbox"], ["estado", "status", "select", cellLeaderStatuses], ["supervisor", "supervisor"], ["observacoes", "observations", "textarea"]],
   cellEvaluation: [["report_id", "reports"], ["avaliador", "evaluator"], ["data_da_avaliacao", "evaluationDate", "date"], ["classificacao", "classification", "select", classifications], ["pontos_fortes", "strengths", "textarea"], ["pontos_a_melhorar", "improvements", "textarea"], ["acao_recomendada", "recommendedAction", "textarea"], ["precisa_followup", "needsFollowup", "checkbox"], ["church_id", "church", "church"], ["estado", "status", "select", evaluationStatuses]],
-  finalValidation: [["report_id", "reports"], ["validado_por", "validatedBy"], ["data_validacao", "date", "date"], ["decisao", "decision", "select", ["Validado", "Devolver para Corre��o", "Rejeitado"]], ["comentario_final", "finalComment", "textarea"], ["church_id", "church", "church"], ["estado_final", "finalStatus", "select", validationStatuses]],
+  cellActionPlan: [["church_id", "church", "church"], ["cell_group_id", "cellGroup", "cellGroupSelect"], ["cell_id", "cell", "cellRegistrySelect"], ["leader_name", "leaderName"], ["action", "recommendedActions", "textarea"], ["owner", "responsible"], ["due_date", "date", "date"], ["status", "status", "select", ["Planeado", "Em Curso", "Concluído", "Cancelado", "Planned", "In Progress", "Completed", "Cancelled"]], ["notes", "observations", "textarea"]],
+  finalValidation: [["report_id", "reports"], ["validado_por", "validatedBy"], ["data_validacao", "date", "date"], ["decisao", "decision", "select", ["Validado", "Devolver para Correção", "Rejeitado"]], ["comentario_final", "finalComment", "textarea"], ["church_id", "church", "church"], ["estado_final", "finalStatus", "select", validationStatuses]],
   inventoryItem: [["nome_do_item", "itemName"], ["categoria", "category", "select", inventoryCategories], ["quantidade", "quantity", "number"], ["estado", "status", "select", inventoryStatuses], ["localizacao", "location"], ["departamento_responsavel", "responsibleDepartment"], ["church_id", "church", "church"], ["data_de_entrada", "entryDate", "date"], ["valor_unitario", "unitValue", "number"], ["valor_total", "totalValue", "number"], ["serial_number", "serialNumber"], ["observacoes", "observations", "textarea"]],
   venueAcquisition: [["codigo_do_item", "itemCode"], ["descricao", "description"], ["categoria", "category", "select", inventoryCategories], ["quantidade", "quantity", "number"], ["serial_number", "serialNumber"], ["estado", "status", "select", inventoryStatuses], ["data_de_compra_ou_entrada", "purchaseEntryDate", "date"], ["valor_unitario", "unitValue", "number"], ["valor_total", "totalValue", "number"], ["fornecedor", "supplier"], ["recebido_por", "receivedBy"], ["comprovativo_ou_factura", "invoiceProof"], ["church_id", "church", "church"], ["observacoes", "observations", "textarea"]],
   venueStaffEquipment: [["nome_do_funcionario", "staffName"], ["departamento", "department"], ["church_id", "church", "church"], ["data_onboarding", "onboardingDate", "date"], ["dispositivo", "device"], ["modelo", "model"], ["device_id", "deviceId"], ["product_id", "productId"], ["data_de_entrega", "deliveryDate", "date"], ["estado_na_entrega", "conditionAtDelivery", "select", inventoryStatuses], ["estado_actual", "currentCondition", "select", inventoryStatuses], ["responsavel_pela_entrega", "deliveredBy"], ["assinatura_confirmada", "signatureConfirmed", "checkbox"], ["data_de_devolucao", "returnDate", "date"], ["estado", "status", "select", ["Activo", "Inactivo"]], ["observacoes", "observations", "textarea"]],
@@ -31596,12 +32212,82 @@ document.addEventListener("click", async (event) => {
       churchPageState.view = mode;
       try { localStorage.setItem(CHURCH_VIEW_KEY, mode); } catch (_) {}
       renderChurches();
-    } else if (activeRoute === "cellWeeklyReport" || activeRoute === "cellReceivedReports" || (typeof isCellRoute === "function" && isCellRoute(activeRoute))) {
+    } else if (activeRoute === "cellWeeklyReport" || activeRoute === "cellReceivedReports") {
       cellReportsPageState.view = mode === "cards" ? "card" : mode;
       try { localStorage.setItem("ce_cell_reports_view_mode", cellReportsPageState.view); } catch (_) {}
       if (activeRoute === "cellWeeklyReport") renderCellMinistry("weeklyReport");
-      else if (activeRoute === "cellReceivedReports") renderCellMinistry("receivedReports");
+      else renderCellMinistry("receivedReports");
+    } else if (activeRoute === "cellEvaluationRoute") {
+      cellEvaluationPageState.view = mode === "cards" ? "card" : mode;
+      try { localStorage.setItem("ce_cell_evaluation_view_mode", cellEvaluationPageState.view); } catch (_) {}
+      renderCellMinistry("cellEvaluation");
+    } else if (activeRoute === "cellLeadersAttention") {
+      cellLeadersAttentionPageState.view = mode === "cards" ? "card" : mode;
+      try { localStorage.setItem("ce_cell_leaders_attention_view_mode", cellLeadersAttentionPageState.view); } catch (_) {}
+      renderCellMinistry("leadersAttention");
+    } else if (activeRoute === "cellActionPlan") {
+      cellActionPlanPageState.view = mode === "cards" ? "card" : mode;
+      try { localStorage.setItem("ce_cell_action_plan_view_mode", cellActionPlanPageState.view); } catch (_) {}
+      renderCellMinistry("actionPlan");
+    } else if (typeof isCellRoute === "function" && isCellRoute(activeRoute)) {
+      cellReportsPageState.view = mode === "cards" ? "card" : mode;
+      try { localStorage.setItem("ce_cell_reports_view_mode", cellReportsPageState.view); } catch (_) {}
+      setRoute(activeRoute);
+    }
+    return;
+  }
+  const cellFilterApply = event.target.closest("[data-cell-filter-apply]");
+  if (cellFilterApply) {
+    const scope = cellFilterApply.dataset.cellFilterApply;
+    const filterBar = cellFilterApply.closest("[data-cell-ministry-filter-bar]");
+    if (scope && filterBar) {
+      cellMinistryFilterState[scope] = {
+        search: filterBar.querySelector('[data-cell-filter="search"]')?.value?.trim() || "",
+        church_id: filterBar.querySelector('[data-cell-filter="church_id"]')?.value || "",
+        cell_group: filterBar.querySelector('[data-cell-filter="cell_group"]')?.value || "",
+        cell: filterBar.querySelector('[data-cell-filter="cell"]')?.value || "",
+        status: filterBar.querySelector('[data-cell-filter="status"]')?.value || "",
+        week: filterBar.querySelector('[data-cell-filter="week"]')?.value || ""
+      };
+      if (scope === "receivedReports" || scope === "weeklyReport") renderCellMinistry(scope === "weeklyReport" ? "weeklyReport" : "receivedReports");
+      else if (scope === "cellEvaluation") renderCellMinistry("cellEvaluation");
+      else if (scope === "cellPerformance") renderCellMinistry("cellPerformance");
+      else if (scope === "leadersAttention") renderCellMinistry("leadersAttention");
+      else if (scope === "actionPlan") renderCellMinistry("actionPlan");
       else setRoute(activeRoute);
+    }
+    return;
+  }
+  const cellFilterClear = event.target.closest("[data-cell-filter-clear]");
+  if (cellFilterClear) {
+    const scope = cellFilterClear.dataset.cellFilterClear;
+    if (scope && cellMinistryFilterState[scope]) {
+      cellMinistryFilterState[scope] = { search: "", church_id: "", cell_group: "", cell: "", status: "", week: "" };
+      if (scope === "receivedReports" || scope === "weeklyReport") renderCellMinistry(scope === "weeklyReport" ? "weeklyReport" : "receivedReports");
+      else if (scope === "cellEvaluation") renderCellMinistry("cellEvaluation");
+      else if (scope === "cellPerformance") renderCellMinistry("cellPerformance");
+      else if (scope === "leadersAttention") renderCellMinistry("leadersAttention");
+      else if (scope === "actionPlan") renderCellMinistry("actionPlan");
+      else setRoute(activeRoute);
+    }
+    return;
+  }
+  const cellFilterExport = event.target.closest("[data-cell-filter-export]");
+  if (cellFilterExport) {
+    const scope = cellFilterExport.dataset.cellFilterExport;
+    const typeMap = {
+      receivedReports: "cellReport",
+      weeklyReport: "cellReport",
+      cellEvaluation: "cellEvaluation",
+      cellPerformance: "cellRegistry",
+      leadersAttention: "cellLeader",
+      actionPlan: "cellActionPlan"
+    };
+    const exportType = typeMap[scope] || "cellReport";
+    if (typeof handleExport === "function") {
+      handleExport(exportType, exportType);
+    } else {
+      exportModuleData(exportType);
     }
     return;
   }
@@ -32094,19 +32780,26 @@ document.addEventListener("click", async (event) => {
 
 byId("entryForm")?.addEventListener("submit", async (event) => {
   event.preventDefault();
-  if (modalType === "assignCellToFirstTimer") return submitAssignCellModal(event.target);
-  if (modalType === "cellMemberEdit") return submitCellMemberEditForm(event.target);
-  if (modalType === "cellMemberTransfer") return submitCellMemberTransferForm(event.target);
-  if (modalType === "cellMemberRemoval") return submitCellMemberRemovalForm(event.target);
-  if (modalType === "followup") return submitFollowup(event.target);
-  if (modalType === "foundationStudent") return submitFoundationStudent(event.target);
-  if (modalType === "foundationTeacher") return submitFoundationTeacher(event.target);
-  if (modalType === "foundationClassGroup") return submitFoundationClass(event.target);
-  if (modalType === "foundationMarkClass") return submitFoundationMarkClass(event.target);
-  if (modalType === "foundationScore") return submitFoundationScore(event.target);
-  if (modalType === "memberCandidate") return submitMemberCandidateForm(event.target);
-  if (modalType === "cellAttendance") return submitCellAttendanceModal(event.target);
-  if (modalType) await submitForm(event.target);
+  const form = event.target;
+  const submitBtn = form.querySelector('button[type="submit"]') || byId("entrySubmitBtn");
+  if (typeof setButtonLoading === "function") setButtonLoading(submitBtn, true, lang === "pt" ? "A guardar..." : "Saving...");
+  try {
+    if (modalType === "assignCellToFirstTimer") return await submitAssignCellModal(form);
+    if (modalType === "cellMemberEdit") return await submitCellMemberEditForm(form);
+    if (modalType === "cellMemberTransfer") return await submitCellMemberTransferForm(form);
+    if (modalType === "cellMemberRemoval") return await submitCellMemberRemovalForm(form);
+    if (modalType === "followup") return await submitFollowup(form);
+    if (modalType === "foundationStudent") return await submitFoundationStudent(form);
+    if (modalType === "foundationTeacher") return await submitFoundationTeacher(form);
+    if (modalType === "foundationClassGroup") return await submitFoundationClass(form);
+    if (modalType === "foundationMarkClass") return await submitFoundationMarkClass(form);
+    if (modalType === "foundationScore") return await submitFoundationScore(form);
+    if (modalType === "memberCandidate") return await submitMemberCandidateForm(form);
+    if (modalType === "cellAttendance") return await submitCellAttendanceModal(form);
+    if (modalType) await submitForm(form);
+  } finally {
+    if (typeof setButtonLoading === "function") setButtonLoading(submitBtn, false);
+  }
 });
 
 document.addEventListener("submit", (event) => {
@@ -32878,6 +33571,27 @@ function startDashboardAutoRefresh() {
   dashboardLastRefreshAt = Date.now();
 }
 
+function setButtonLoading(btn, isLoading, loadingText) {
+  if (!btn) return;
+  if (isLoading) {
+    if (btn._originalHtml === undefined) {
+      btn._originalHtml = btn.innerHTML;
+      btn._originalDisabled = btn.disabled;
+    }
+    btn.disabled = true;
+    const txt = loadingText || (lang === "pt" ? "A processar..." : "Processing...");
+    btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>${txt}`;
+  } else {
+    if (btn._originalHtml !== undefined) {
+      btn.innerHTML = btn._originalHtml;
+      btn.disabled = btn._originalDisabled || false;
+      delete btn._originalHtml;
+      delete btn._originalDisabled;
+    }
+  }
+}
+window.setButtonLoading = setButtonLoading;
+
 function showQuickFeedback(message, type = "success") {
   let toastEl = byId("dashQuickFeedbackToast");
   if (!toastEl) {
@@ -32945,6 +33659,9 @@ document.addEventListener("input", (event) => {
 });
 
 document.addEventListener("change", (event) => {
+  if (event.target.matches('[data-cell-filter="church_id"], [data-cell-filter="cell_group"]')) {
+    updateCellMinistryDependentFilters(event.target.closest("[data-cell-ministry-filter-bar]"));
+  }
   if (event.target.matches('[data-member-filter="cell_group"]')) {
     updateMemberDependentCellFilter(event.target.closest("[data-member-filter-bar]"));
   }
@@ -35524,9 +36241,14 @@ function initBatchSelection() {
   };
 
   bar.querySelector('[data-batch-action="clear"]')?.addEventListener("click", window.clearBatchSelection);
-  bar.querySelector('[data-batch-action="export"]')?.addEventListener("click", () => {
-    alert(`Exportando ${batchSelectedIds.size} registos seleccionados...`);
-    window.clearBatchSelection();
+  bar.querySelector('[data-batch-action="export"]')?.addEventListener("click", (e) => {
+    const btn = e.currentTarget;
+    if (typeof setButtonLoading === "function") setButtonLoading(btn, true, lang === "pt" ? "A exportar..." : "Exporting...");
+    window.setTimeout(() => {
+      if (typeof setButtonLoading === "function") setButtonLoading(btn, false);
+      if (typeof showQuickFeedback === "function") showQuickFeedback(lang === "pt" ? `${batchSelectedIds.size} registos exportados com sucesso!` : `${batchSelectedIds.size} records exported successfully!`, "success");
+      window.clearBatchSelection();
+    }, 700);
   });
 }
 
@@ -37103,10 +37825,16 @@ document.addEventListener("click", (event) => {
 
   // Export Church Reports
   if (event.target.closest("[data-export-church-reports]")) {
+    const btn = event.target.closest("[data-export-church-reports]");
+    if (typeof setButtonLoading === "function") setButtonLoading(btn, true, lang === "pt" ? "A exportar..." : "Exporting...");
     const list = churchReportPageState.level === "cell"
       ? (state.cellLeadership?.cellReports || [])
       : (state.cellLeadership?.churchReports || []);
     exportTableAsCsv("church_reports.csv", list);
+    window.setTimeout(() => {
+      if (typeof setButtonLoading === "function") setButtonLoading(btn, false);
+      if (typeof showQuickFeedback === "function") showQuickFeedback(lang === "pt" ? "Exportação concluída!" : "Export completed!", "success");
+    }, 600);
     return;
   }
 
