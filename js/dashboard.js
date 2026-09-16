@@ -6385,7 +6385,7 @@ function renderPublicCellReportForm(successRecord = null) {
       : new Date().toLocaleString();
     root.innerHTML = `
       <section class="public-report-card public-report-success">
-        <img src="https://embaixada-de-cristo.obiuba.com/assets/web/logo-ce.png" alt="Christ Embassy Mozambique" class="public-report-logo">
+        <img src="https://embaixada-de-cristo.obiuba.com/assets/web/logo-ce.png" alt="Christ Embassy Mozambique" class="public-report-logo" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'%3E%3Ccircle cx=\'50\' cy=\'50\' r=\'46\' fill=\'%23070d1e\' stroke=\'%23d7ae4b\' stroke-width=\'3\'/%3E%3Cpath d=\'M50 20 L50 80 M32 38 L68 38\' stroke=\'%23d7ae4b\' stroke-width=\'5\' stroke-linecap=\'round\'/%3E%3Ccircle cx=\'50\' cy=\'50\' r=\'24\' fill=\'none\' stroke=\'%23d7ae4b\' stroke-width=\'1.5\' stroke-dasharray=\'2 3\'/%3E%3Ctext x=\'50\' y=\'72\' font-size=\'11\' font-family=\'sans-serif\' font-weight=\'bold\' fill=\'%23ffffff\' text-anchor=\'middle\' letter-spacing=\'1\'%3ECE%3C/text%3E%3C/svg%3E';">
         <span class="eyebrow">${L("weeklyCellReportPublic")}</span>
         <div class="public-success-badge mb-2"><i class="bi bi-check-circle-fill me-1"></i>${lang === "pt" ? "Enviado" : "Sent"}</div>
         <h1>${L("reportSubmittedSuccess")}</h1>
@@ -6412,7 +6412,7 @@ function renderPublicCellReportForm(successRecord = null) {
   root.innerHTML = `
     <section class="public-report-card">
       <div class="public-report-head">
-        <img src="https://embaixada-de-cristo.obiuba.com/assets/web/logo-ce.png" alt="Christ Embassy Mozambique" class="public-report-logo">
+        <img src="https://embaixada-de-cristo.obiuba.com/assets/web/logo-ce.png" alt="Christ Embassy Mozambique" class="public-report-logo" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'%3E%3Ccircle cx=\'50\' cy=\'50\' r=\'46\' fill=\'%23070d1e\' stroke=\'%23d7ae4b\' stroke-width=\'3\'/%3E%3Cpath d=\'M50 20 L50 80 M32 38 L68 38\' stroke=\'%23d7ae4b\' stroke-width=\'5\' stroke-linecap=\'round\'/%3E%3Ccircle cx=\'50\' cy=\'50\' r=\'24\' fill=\'none\' stroke=\'%23d7ae4b\' stroke-width=\'1.5\' stroke-dasharray=\'2 3\'/%3E%3Ctext x=\'50\' y=\'72\' font-size=\'11\' font-family=\'sans-serif\' font-weight=\'bold\' fill=\'%23ffffff\' text-anchor=\'middle\' letter-spacing=\'1\'%3ECE%3C/text%3E%3C/svg%3E';">
         <div>
           <span class="eyebrow">Christ Embassy Mozambique</span>
           <h1>${L("weeklyCellReportPublic")}</h1>
@@ -21372,16 +21372,16 @@ function renderAlecRegistrationCard(item) {
         <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
           <div class="flex-grow-1 min-w-0">
             <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
-              <span class="badge bg-dark-subtle border border-secondary text-gold text-uppercase fw-semibold py-1 px-2 text-nowrap">
-                <i class="bi bi-diagram-3 me-1"></i>${escapeAttr(clName)}
+              <span class="badge bg-dark text-warning border border-secondary text-uppercase fw-semibold py-1 px-2 text-nowrap shadow-sm">
+                <i class="bi bi-diagram-3 me-1 text-warning"></i>${escapeAttr(clName)}
               </span>
               ${ldrName && ldrName !== "—" ? `
-                <span class="badge bg-secondary-subtle border border-secondary text-white text-nowrap py-1 px-2">
-                  <i class="bi bi-person-badge me-1 text-info"></i>Líder: <strong>${escapeAttr(ldrName)}</strong>
+                <span class="badge bg-dark text-light border border-secondary text-nowrap py-1 px-2 shadow-sm">
+                  <i class="bi bi-person-badge me-1 text-info"></i>Líder: <strong class="text-white">${escapeAttr(ldrName)}</strong>
                 </span>
               ` : ""}
             </div>
-            <h3 class="data-card-title mb-0 fs-5 fw-bold text-white text-truncate" title="${escapeAttr(cleanName)}">
+            <h3 class="data-card-title mb-0 fs-5 fw-bold text-truncate" title="${escapeAttr(cleanName)}">
               ${escapeAttr(cleanName)}
             </h3>
           </div>
@@ -21732,16 +21732,16 @@ function renderAlecScoresAnalyticalView() {
                     <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
                       <div class="flex-grow-1 min-w-0">
                         <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
-                          <span class="badge bg-dark-subtle border border-secondary text-gold text-uppercase fw-semibold py-1 px-2 text-nowrap">
-                            <i class="bi bi-diagram-3 me-1"></i>${escapeAttr(clName)}
+                          <span class="badge bg-dark text-warning border border-secondary text-uppercase fw-semibold py-1 px-2 text-nowrap shadow-sm">
+                            <i class="bi bi-diagram-3 me-1 text-warning"></i>${escapeAttr(clName)}
                           </span>
                           ${ldrName && ldrName !== "—" ? `
-                            <span class="badge bg-secondary-subtle border border-secondary text-white text-nowrap py-1 px-2">
-                              <i class="bi bi-person-badge me-1 text-info"></i>Líder: <strong>${escapeAttr(ldrName)}</strong>
+                            <span class="badge bg-dark text-light border border-secondary text-nowrap py-1 px-2 shadow-sm">
+                              <i class="bi bi-person-badge me-1 text-info"></i>Líder: <strong class="text-white">${escapeAttr(ldrName)}</strong>
                             </span>
                           ` : ""}
                         </div>
-                        <h4 class="data-card-title mb-0 fs-5 fw-bold text-white text-truncate" title="${escapeAttr(cleanName)}">
+                        <h4 class="data-card-title mb-0 fs-5 fw-bold text-truncate" title="${escapeAttr(cleanName)}">
                           ${escapeAttr(cleanName)}
                         </h4>
                       </div>
