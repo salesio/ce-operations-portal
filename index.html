@@ -28,7 +28,8 @@
       </div>
       <h1 data-i18n="login.title">Portal da Equipa</h1>
       <p class="login-lead" data-i18n="login.lead">Acesso interno para acompanhamento espiritual, igrejas, celulas, escola, financas e administracao.</p>
-      <form id="loginForm" class="d-grid gap-3 mt-4" novalidate>
+      <div id="loginModeBadge" class="mb-2"></div>
+      <form id="loginForm" class="d-grid gap-3 mt-4" novalidate onsubmit="event.preventDefault(); window.enterDashboard && window.enterDashboard(); return false;">
         <div>
           <label class="form-label fw-semibold" for="loginEmail">E-mail</label>
           <input id="loginEmail" class="form-control" type="email" placeholder="ex: seu.email@ce-mozambique.org" autocomplete="username" required>
