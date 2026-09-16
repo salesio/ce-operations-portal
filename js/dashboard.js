@@ -28729,6 +28729,7 @@ async function submitForm(form) {
         data[name] = formData.has(name);
       }
     });
+  }
   if (modalType === "alecScore") {
     data.terminou = formData.has("terminou");
     data.faixa_certificado_pago = formData.has("faixa_certificado_pago");
