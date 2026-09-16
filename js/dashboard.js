@@ -4497,19 +4497,51 @@ function cleanDisplayText(value) {
     [/c�lula/gi, "célula"], [/C�lula/g, "Célula"], [/c�lulas/gi, "células"], [/C�lulas/g, "Células"],
     [/fun�+o/gi, "função"], [/Fun�+o/g, "Função"], [/permiss�es/gi, "permissões"], [/notifica�+es/gi, "notificações"],
     [/autentica�+o/gi, "autenticação"], [/integra�+o/gi, "integração"], [/Funda�+o/g, "Fundação"], [/funda�+o/g, "fundação"],
-    [/finan�as/gi, "finanças"], [/Finan�as/g, "Finanças"], [/vis�o/gi, "visão"], [/Vis�o/g, "Visão"],
-    [/miss�o/gi, "missão"], [/Miss�o/g, "Missão"], [/ora�+o/gi, "oração"], [/Ora�+o/g, "Oração"],
-    [/visita�+o/gi, "visitação"], [/Visita�+o/g, "Visitação"], [/evangeliza�+o/gi, "evangelização"],
-    [/forma�+o/gi, "formação"], [/Forma�+o/g, "Formação"], [/pris�o/gi, "prisão"], [/Pris�o/g, "Prisão"],
-    [/espa�os/gi, "espaços"], [/Espa�os/g, "Espaços"], [/movimenta�+es/gi, "movimentações"],
-    [/aquisi�+es/gi, "aquisições"], [/Aquisi�+es/g, "Aquisições"], [/aten�+o/gi, "atenção"], [/Aten�+o/g, "Atenção"],
-    [/descri�+o/gi, "descrição"], [/Descri�+o/g, "Descrição"], [/observa�+o/gi, "observação"], [/classifica�+o/gi, "classificação"],
-    [/corre�+o/gi, "correcção"], [/Corre�+o/g, "Correcção"], [/devolu�+o/gi, "devolução"], [/evolu�+o/gi, "evolução"],
-    [/sal�rios/gi, "salários"], [/sa�das/gi, "saídas"], [/�ltima/gi, "última"], [/�rea/gi, "área"], [/�mbito/gi, "âmbito"]
+    [/(\uFFFD|\?){2}es/g, "ções"], [/(\uFFFD|\?){2}o/g, "ção"], [/(\uFFFD|\?){2}a/g, "ça"],
+    [/Neg[óo]+cios/gi, "Negócios"], [/Lideran[çc]+a/gi, "Liderança"],
+    [/Sess[õo]+es/gi, "Sessões"], [/Sess[ãa]+o/gi, "Sessão"],
+    [/Compar[êe]+ncia/gi, "Comparência"], [/Quest[ãa]+o/gi, "Questão"],
+    [/Decis[ãa]+o/gi, "Decisão"], [/Orienta[çc]+[ãa]+o/gi, "Orientação"],
+    [/Resolu[çc]+[ãa]+o/gi, "Resolução"],
+    [/Manuten[\uFFFD\?]+o/gi, "Manutenção"], [/Repara[\uFFFD\?]+es/gi, "Reparações"], [/Invent[\uFFFD\?]rio/gi, "Inventário"],
+    [/requisi[\uFFFD\?]+es/gi, "requisições"], [/Requisi[\uFFFD\?]+es/g, "Requisições"], [/Requisi[\uFFFD\?]+o/g, "Requisição"],
+    [/submiss[\uFFFD\?]o/gi, "submissão"], [/Submiss[\uFFFD\?]o/g, "Submissão"], [/contribui[\uFFFD\?]+o/gi, "contribuição"],
+    [/verifica[\uFFFD\?]+o/gi, "verificação"], [/Verifica[\uFFFD\?]+o/g, "Verificação"], [/libera[\uFFFD\?]+o/gi, "liberação"],
+    [/ac[\uFFFD\?]+o/gi, "acção"], [/Ac[\uFFFD\?]+o/g, "Acção"], [/ac[\uFFFD\?]+es/gi, "acções"], [/Ac[\uFFFD\?]+es/g, "Acções"],
+    [/avalia[\uFFFD\?]+o/gi, "avaliação"], [/Avalia[\uFFFD\?]+o/g, "Avaliação"], [/avalia[\uFFFD\?]+es/gi, "avaliações"],
+    [/dedica[\uFFFD\?]+o/gi, "dedicação"], [/Dedica[\uFFFD\?]+o/g, "Dedicação"], [/beb[\uFFFD\?]s/gi, "bebés"], [/Beb[\uFFFD\?]s/g, "Bebés"],
+    [/fam[\uFFFD\?]lia/gi, "família"], [/Fam[\uFFFD\?]lia/g, "Família"], [/t[\uFFFD\?]cnico/gi, "técnico"], [/T[\uFFFD\?]cnico/g, "Técnico"],
+    [/m[\uFFFD\?]dia/gi, "mídia"], [/M[\uFFFD\?]dia/g, "Mídia"], [/m[\uFFFD\?]todo/gi, "método"], [/M[\uFFFD\?]todo/g, "Método"],
+    [/m[\uFFFD\?]dulo/gi, "módulo"], [/Mdulo/g, "Módulo"], [/\bm[\uFFFD\?]s\b/gi, "mês"], [/\bMs\b/g, "Mês"],
+    [/\bm[\uFFFD\?]e\b/gi, "mãe"], [/\bMe\b/g, "Mãe"], [/m[\uFFFD\?]trica/gi, "métrica"], [/M[\uFFFD\?]trica/g, "Métrica"],
+    [/\bn[\uFFFD\?]o\b/gi, "não"], [/\bN[\uFFFD\?]o\b/g, "Não"], [/\bj[\uFFFD\?]\b/gi, "já"], [/\bJ[\uFFFD\?]\b/g, "Já"], [/\bat[\uFFFD\?]\b/gi, "até"], [/\bAt[\uFFFD\?]\b/g, "Até"],
+    [/pr[\uFFFD\?]ximo/gi, "próximo"], [/Pr[\uFFFD\?]ximo/g, "Próximo"], [/pr[\uFFFD\?]xima/gi, "próxima"], [/Pr[\uFFFD\?]xima/g, "Próxima"],
+    [/hist[\uFFFD\?]rico/gi, "histórico"], [/Hist[\uFFFD\?]rico/g, "Histórico"], [/prot[\uFFFD\?]tipo/gi, "protótipo"], [/Prot[\uFFFD\?]tipo/g, "Protótipo"],
+    [/c[\uFFFD\?]lula/gi, "célula"], [/C[\uFFFD\?]lula/g, "Célula"], [/c[\uFFFD\?]lulas/gi, "células"], [/C[\uFFFD\?]lulas/g, "Células"],
+    [/fun[\uFFFD\?]+o/gi, "função"], [/Fun[\uFFFD\?]+o/g, "Função"], [/permiss[\uFFFD\?]es/gi, "permissões"], [/notifica[\uFFFD\?]+es/gi, "notificações"],
+    [/autentica[\uFFFD\?]+o/gi, "autenticação"], [/integra[\uFFFD\?]+o/gi, "integração"], [/Funda[\uFFFD\?]+o/g, "Fundação"], [/funda[\uFFFD\?]+o/g, "fundação"],
+    [/finan[\uFFFD\?]as/gi, "finanças"], [/Finan[\uFFFD\?]as/g, "Finanças"], [/vis[\uFFFD\?]o/gi, "visão"], [/Vis[\uFFFD\?]o/g, "Visão"],
+    [/miss[\uFFFD\?]o/gi, "missão"], [/Miss[\uFFFD\?]o/g, "Missão"], [/ora[\uFFFD\?]+o/gi, "oração"], [/Ora[\uFFFD\?]+o/g, "Oração"],
+    [/visita[\uFFFD\?]+o/gi, "visitação"], [/Visita[\uFFFD\?]+o/g, "Visitação"], [/evangeliza[\uFFFD\?]+o/gi, "evangelização"],
+    [/forma[\uFFFD\?]+o/gi, "formação"], [/Forma[\uFFFD\?]+o/g, "Formação"], [/pris[\uFFFD\?]o/gi, "prisão"], [/Pris[\uFFFD\?]o/g, "Prisão"],
+    [/espa[\uFFFD\?]os/gi, "espaços"], [/Espa[\uFFFD\?]os/g, "Espaços"], [/movimenta[\uFFFD\?]+es/gi, "movimentações"],
+    [/aquisi[\uFFFD\?]+es/gi, "aquisições"], [/Aquisi[\uFFFD\?]+es/g, "Aquisições"], [/aten[\uFFFD\?]+o/gi, "atenção"], [/Aten[\uFFFD\?]+o/g, "Atenção"],
+    [/descri[\uFFFD\?]+o/gi, "descrição"], [/Descri[\uFFFD\?]+o/g, "Descrição"], [/observa[\uFFFD\?]+o/gi, "observação"], [/classifica[\uFFFD\?]+o/gi, "classificação"],
+    [/corre[\uFFFD\?]+o/gi, "correcção"], [/Corre[\uFFFD\?]+o/g, "Correcção"], [/devolu[\uFFFD\?]+o/gi, "devolução"], [/evolu[\uFFFD\?]+o/gi, "evolução"],
+    [/sal[\uFFFD\?]rios/gi, "salários"], [/sa[\uFFFD\?]das/gi, "saídas"], [/\b[\uFFFD\?]?ltima\b/gi, "última"], [/\b[\uFFFD\?]?rea\b/gi, "área"], [/\b[\uFFFD\?]?mbito\b/gi, "âmbito"],
+    [/CONCLU[ÍI\uFFFD\?]*DO/g, "CONCLUÍDO"], [/Conclu[íi\uFFFD\?]*do/g, "Concluído"], [/conclu[íi\uFFFD\?]*do/g, "concluído"], [/CR[ÍI\uFFFD\?]*TICO/g, "CRÍTICO"], [/Cr[íi\uFFFD\?]*tico/g, "Crítico"], [/cr[íi\uFFFD\?]*tico/g, "crítico"]
   ];
   replacements.forEach(([pattern, replacement]) => {
     text = text.replace(pattern, replacement);
   });
+  return text;
+}
+
+function formatCleanPersonName(name) {
+  let text = cleanDisplayText(name).trim();
+  if (!text) return "";
+  // Deduplicate redundant titles/honorifics like "Irmão Irmão", "Irmã Irmã", "Pastor Pastor"
+  text = text.replace(/\b(Irm[ãa]o|Irm[ãa]|Pastor|Pastora|Di[áa]cono|Diaconisa|Bispo|Ap[óo]stolo)\s+\1\b/gi, "$1");
   return text;
 }
 
@@ -4528,6 +4560,7 @@ function escapeHtml(value) {
 if (typeof window !== "undefined") {
   window.escapeAttr = escapeAttr;
   window.escapeHtml = escapeHtml;
+  window.formatCleanPersonName = formatCleanPersonName;
 }
 
 function cleanRenderedText(root = document) {
@@ -21306,16 +21339,22 @@ function renderAlecRegistrationCard(item) {
   const ldrName = item.nome_do_lider_de_celula || "—";
   const contact = item.contacto || "—";
   const stLabel = item.estado || item.status || "Em Formação";
+  const cleanName = formatCleanPersonName(item.nome_completo || "Aluno ALEC");
 
-  const badges = [badge(stLabel)];
-  if (item.fez_escola_de_fundacao) badges.push('<span class="badge bg-info-subtle text-info border border-info-subtle"><i class="bi bi-book me-1"></i>Escola de Fundação</span>');
-  if (item.e_lider) badges.push('<span class="badge bg-warning-subtle text-warning border border-warning-subtle"><i class="bi bi-person-badge me-1"></i>Líder de Célula</span>');
+  const badges = [];
+  badges.push(badge(stLabel));
+  if (item.fez_escola_de_fundacao) {
+    badges.push('<span class="badge bg-info-subtle text-info border border-info-subtle text-nowrap"><i class="bi bi-book me-1"></i>Escola de Fundação</span>');
+  }
+  if (item.e_lider) {
+    badges.push('<span class="badge bg-warning-subtle text-warning border border-warning-subtle text-nowrap"><i class="bi bi-person-badge me-1"></i>Líder de Célula</span>');
+  }
 
   const meta = [
     [L("church") || "Igreja", cName, "bi-building"],
-    [L("contact") || "Contacto", contact, "bi-telephone"],
+    [L("contact") || "Contacto", contact !== "—" ? `<a href="tel:${escapeAttr(contact)}" class="text-decoration-none text-info font-monospace">${escapeAttr(contact)}</a>` : "—", "bi-telephone"],
     [L("cell") || "Célula", clName, "bi-diagram-3"],
-    [L("cellLeaderName") || "Líder de Célula", ldrName, "bi-person-badge"]
+    [L("cellLeaderName") || "Nome do Líder de Célula", ldrName, "bi-person-badge"]
   ];
 
   if (item.motivo_de_fazer_alec) {
@@ -21327,30 +21366,43 @@ function renderAlecRegistrationCard(item) {
 
   const actions = backendActions("alecRegistration", item.id);
 
-  if (typeof DataCard === "function") {
-    return DataCard({
-      title: item.nome_completo || "Aluno ALEC",
-      subtitle: `${clName} · Líder: ${ldrName}`,
-      badges,
-      meta,
-      actions,
-      className: "alec-registration-card"
-    });
-  }
-
   return `
-    <article class="data-card record-card light-surface alec-registration-card h-100">
-      <div class="data-card-head">
-        <div class="data-card-titles">
-          <span class="eyebrow">${escapeAttr(cName)} · ${escapeAttr(clName)}</span>
-          <h3 class="data-card-title">${escapeAttr(item.nome_completo || "Aluno ALEC")}</h3>
+    <article class="data-card record-card light-surface alec-registration-card h-100 d-flex flex-column justify-content-between p-3">
+      <div>
+        <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+          <div class="flex-grow-1 min-w-0">
+            <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+              <span class="badge bg-dark-subtle border border-secondary text-gold text-uppercase fw-semibold py-1 px-2 text-nowrap">
+                <i class="bi bi-diagram-3 me-1"></i>${escapeAttr(clName)}
+              </span>
+              ${ldrName && ldrName !== "—" ? `
+                <span class="badge bg-secondary-subtle border border-secondary text-white text-nowrap py-1 px-2">
+                  <i class="bi bi-person-badge me-1 text-info"></i>Líder: <strong>${escapeAttr(ldrName)}</strong>
+                </span>
+              ` : ""}
+            </div>
+            <h3 class="data-card-title mb-0 fs-5 fw-bold text-white text-truncate" title="${escapeAttr(cleanName)}">
+              ${escapeAttr(cleanName)}
+            </h3>
+          </div>
+          <div class="d-flex flex-column align-items-end gap-1 flex-shrink-0">
+            ${badges.join("")}
+          </div>
         </div>
-        <div class="data-card-badges">${badges.join("")}</div>
+
+        <div class="data-card-meta mt-3">
+          ${meta.map(([label, value, icon]) => `
+            <div class="data-card-meta-row d-flex justify-content-between align-items-center py-1 border-bottom border-secondary border-opacity-10">
+              <span class="chart-label text-secondary small"><i class="bi ${icon || "bi-dot"} me-1 text-info"></i>${label}</span>
+              <strong class="small text-end">${value ?? "-"}</strong>
+            </div>
+          `).join("")}
+        </div>
       </div>
-      <div class="data-card-meta">
-        ${meta.map(([label, value, icon]) => `<div class="data-card-meta-row"><span class="chart-label">${icon ? `<i class="bi ${icon}"></i> ` : ""}${label}</span><strong>${value ?? "-"}</strong></div>`).join("")}
+
+      <div class="data-card-actions mt-3 pt-2 border-top border-secondary border-opacity-25 d-flex gap-2 flex-wrap">
+        ${actions}
       </div>
-      <div class="data-card-actions mt-3 pt-2 border-top border-secondary border-opacity-25">${actions}</div>
     </article>
   `;
 }
@@ -21667,32 +21719,51 @@ function renderAlecScoresAnalyticalView() {
         ${isCardView ? (
           filtered.length ? `<div class="row g-4">${filtered.map((item) => {
             const cName = churchName(item.church_id || item.igreja);
+            const clName = item.celula || "—";
+            const ldrName = item.nome_do_lider_de_celula || "—";
+            const cleanName = formatCleanPersonName(item.nome_completo || "Aluno ALEC");
             const f1Avg = alecPhaseAverage(item, 1);
             const f2Avg = alecPhaseAverage(item, 2);
             const fAvg = alecFinalAverage(item);
             return `
               <div class="col-12 col-md-6 col-xl-4">
-                <article class="data-card record-card light-surface h-100 p-3">
-                  <div class="d-flex justify-content-between align-items-start mb-2">
-                    <div>
-                      <span class="eyebrow d-block text-secondary small">${escapeAttr(cName)} · ${escapeAttr(item.celula || "—")}</span>
-                      <h4 class="data-card-title mb-0 fs-6 text-gold">${escapeAttr(item.nome_completo)}</h4>
+                <article class="data-card record-card light-surface h-100 d-flex flex-column justify-content-between p-3">
+                  <div>
+                    <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                      <div class="flex-grow-1 min-w-0">
+                        <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                          <span class="badge bg-dark-subtle border border-secondary text-gold text-uppercase fw-semibold py-1 px-2 text-nowrap">
+                            <i class="bi bi-diagram-3 me-1"></i>${escapeAttr(clName)}
+                          </span>
+                          ${ldrName && ldrName !== "—" ? `
+                            <span class="badge bg-secondary-subtle border border-secondary text-white text-nowrap py-1 px-2">
+                              <i class="bi bi-person-badge me-1 text-info"></i>Líder: <strong>${escapeAttr(ldrName)}</strong>
+                            </span>
+                          ` : ""}
+                        </div>
+                        <h4 class="data-card-title mb-0 fs-5 fw-bold text-white text-truncate" title="${escapeAttr(cleanName)}">
+                          ${escapeAttr(cleanName)}
+                        </h4>
+                      </div>
+                      <div class="d-flex flex-column align-items-end gap-1 flex-shrink-0">
+                        ${badge(item.estado || "Em Formação")}
+                        ${item.terminou ? '<span class="badge bg-success-subtle text-success border border-success-subtle text-nowrap"><i class="bi bi-patch-check me-1"></i>Concluído</span>' : ""}
+                      </div>
                     </div>
-                    <div class="d-flex flex-column align-items-end gap-1">
-                      ${badge(item.estado || "Em Formação")}
-                      ${item.terminou ? '<span class="badge bg-success-subtle text-success">Concluído</span>' : ""}
+                    <div class="row g-2 text-center my-3 p-2 rounded bg-dark-subtle border border-secondary border-opacity-10">
+                      <div class="col-4"><small class="text-secondary d-block">Média F1</small><strong class="${f1Avg >= 70 ? "text-success" : "text-warning"}">${f1Avg || "—"}</strong></div>
+                      <div class="col-4"><small class="text-secondary d-block">Média F2</small><strong class="${f2Avg >= 70 ? "text-success" : "text-warning"}">${f2Avg || "—"}</strong></div>
+                      <div class="col-4"><small class="text-secondary d-block">Média Final</small><strong class="${fAvg >= 70 ? "text-success" : "text-info"}">${fAvg || "—"}</strong></div>
+                    </div>
+                    <div class="mb-3">
+                      <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="small text-secondary">Progresso Acadêmico</span>
+                        <span class="small text-secondary">${escapeAttr(cName)}</span>
+                      </div>
+                      ${alecProgress(item)}
                     </div>
                   </div>
-                  <div class="row g-2 text-center my-2 p-2 rounded bg-dark-subtle">
-                    <div class="col-4"><small class="text-secondary d-block">Média F1</small><strong class="${f1Avg >= 70 ? "text-success" : "text-warning"}">${f1Avg || "—"}</strong></div>
-                    <div class="col-4"><small class="text-secondary d-block">Média F2</small><strong class="${f2Avg >= 70 ? "text-success" : "text-warning"}">${f2Avg || "—"}</strong></div>
-                    <div class="col-4"><small class="text-secondary d-block">Média Final</small><strong class="${fAvg >= 70 ? "text-success" : "text-info"}">${fAvg || "—"}</strong></div>
-                  </div>
-                  <div class="mb-3">
-                    <span class="small text-secondary d-block mb-1">Progresso Acadêmico:</span>
-                    ${alecProgress(item)}
-                  </div>
-                  <div class="data-card-actions pt-2 border-top border-secondary border-opacity-25">
+                  <div class="data-card-actions pt-2 border-top border-secondary border-opacity-25 d-flex gap-2 flex-wrap">
                     ${backendActions("alecScore", item.id)}
                   </div>
                 </article>
