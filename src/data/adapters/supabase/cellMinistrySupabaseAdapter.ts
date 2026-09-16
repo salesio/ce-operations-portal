@@ -247,10 +247,19 @@ async function create(t: Table, x: CellMinistryRecord) {
 }
 
 async function update(t: Table, id: EntityId, x: CellMinistryRecord) {
+  const isUuid = isValidUuid(String(id));
+  if (!isUuid) {
+    return create(t, x);
+  }
   const p = payload(t, x);
   delete p.id;
   delete p.created_at;
   const r = await updateRow(TABLES[t], String(id), p);
+  if (!r.ok) {
+    // If the record didn't exist in Supabase yet, create it
+    const createRes = await create(t, x);
+    if (createRes.ok) return createRes;
+  }
   return r.ok ? ok(aliases(t, r.data)) : cast<CellMinistryRecord>(r);
 }
 

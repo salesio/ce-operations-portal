@@ -20169,6 +20169,28 @@ async function dualWriteCellMinistryRecord(modalType, mode, record) {
           if (result?.ok && result.data) {
             Object.assign(record, result.data);
             saveState(`Persisted alecRegistration to Supabase`);
+            // Auto-create initial alecScore in Supabase
+            if (typeof cellSb.createAlecScore === "function") {
+              void cellSb.createAlecScore({
+                church_id: record.church_id || record.igreja,
+                registration_id: record.id,
+                member_id: record.member_id || null,
+                nome_completo: record.nome_completo,
+                contacto: record.contacto || "",
+                celula: record.celula || "",
+                fase_1_aula_1: 0,
+                fase_1_aula_2: 0,
+                fase_1_aula_3: 0,
+                fase_1_aula_4: 0,
+                fase_2_aula_1: 0,
+                fase_2_aula_2: 0,
+                fase_2_aula_3: 0,
+                terminou: ["Concluído", "Graduado"].includes(record.estado),
+                faixa_certificado_pago: false,
+                certificado_emitido: false,
+                estado: record.estado || "Em Formação"
+              });
+            }
             if (activeRoute === "cellAlecRegistration") setRoute(activeRoute);
           }
         } else if (mode === "update") {
@@ -20178,24 +20200,23 @@ async function dualWriteCellMinistryRecord(modalType, mode, record) {
             saveState(`Updated alecRegistration in Supabase`);
             if (activeRoute === "cellAlecRegistration") setRoute(activeRoute);
           }
+        } else if (mode === "delete") {
+          result = await cellSb.deleteAlecRegistration(record.id);
         }
       }
     } else if (modalType === "alecScore") {
       if (cellSb) {
         if (mode === "create") {
           result = await cellSb.createAlecScore(record);
-          if (result?.ok && result.data) {
-            Object.assign(record, result.data);
-            saveState(`Persisted alecScore to Supabase`);
-            if (activeRoute === "cellAlecScores") setRoute(activeRoute);
-          }
         } else if (mode === "update") {
           result = await cellSb.updateAlecScore(record.id, record);
-          if (result?.ok && result.data) {
-            Object.assign(record, result.data);
-            saveState(`Updated alecScore in Supabase`);
-            if (activeRoute === "cellAlecScores") setRoute(activeRoute);
-          }
+        } else if (mode === "delete") {
+          result = await cellSb.deleteAlecScore(record.id);
+        }
+        if (result?.ok && result.data) {
+          Object.assign(record, result.data);
+          saveState(`${mode === "create" ? "Persisted" : "Updated"} alecScore in Supabase`);
+          if (activeRoute === "cellAlecScores") setRoute(activeRoute);
         }
       }
     } else if (modalType === "cellGroup") {
@@ -21558,7 +21579,7 @@ function renderAlecRegistrationAnalyticalView() {
           `).join("")}</div>` : `<div class="p-4 text-center text-secondary">${L("noResultsFound") || "Nenhum aluno encontrado com os filtros actuais."}</div>`
         ) : (
           filtered.length ? dataTable([L("fullName") || "Nome Completo", L("contact") || "Contacto", L("church") || "Igreja", L("cell") || "Célula", L("cellLeaderName") || "Líder de Célula", L("didFoundation") || "Escola de Fundação", L("isLeader") || "É Líder", L("status") || "Estado", L("actions") || "Acções"], filtered.map((item) => [
-            `<strong>${item.nome_completo || "—"}</strong>`,
+            `<strong>${escapeAttr(formatCleanPersonName(item.nome_completo || "—"))}</strong>`,
             item.contacto || "—",
             churchName(item.igreja || item.church_id),
             item.celula || "—",
@@ -21772,7 +21793,7 @@ function renderAlecScoresAnalyticalView() {
           }).join("")}</div>` : `<div class="p-4 text-center text-secondary">Nenhum aluno encontrado na pauta.</div>`
         ) : (
           filtered.length ? dataTable([L("fullName") || "Nome do Aluno", L("church") || "Igreja", L("cell") || "Célula", L("phase1Average") || "Média Fase 1", L("phase2Average") || "Média Fase 2", L("finalAverage") || "Média Final", L("finished") || "Concluído", L("status") || "Estado", L("progress") || "Progresso", L("actions") || "Acções"], filtered.map((item) => [
-            `<strong>${item.nome_completo}</strong>`,
+            `<strong>${escapeAttr(formatCleanPersonName(item.nome_completo || "Aluno ALEC"))}</strong>`,
             churchName(item.igreja || item.church_id),
             item.celula || "—",
             `<strong>${alecPhaseAverage(item, 1) || "—"}</strong>`,
