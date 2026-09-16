@@ -202,11 +202,26 @@ function payload(t: Table, x: CellMinistryRecord): SupabaseRow {
     if (x.cellLeaderName && !row.nome_do_lider_de_celula) row.nome_do_lider_de_celula = String(x.cellLeaderName);
     if (x.status && !row.estado) row.estado = String(x.status);
     if (x.observations && !row.observacoes) row.observacoes = String(x.observations);
+    if (x.fez_escola_de_fundacao !== undefined) row.fez_escola_de_fundacao = Boolean(x.fez_escola_de_fundacao);
+    if (x.e_lider !== undefined) row.e_lider = Boolean(x.e_lider);
   } else if (t === "alecScores") {
     if (x.fullName && !row.nome_completo) row.nome_completo = String(x.fullName);
     if (x.contact && !row.contacto) row.contacto = String(x.contact);
     if (x.cell && !row.celula) row.celula = String(x.cell);
     if (x.status && !row.estado) row.estado = String(x.status);
+    if (x.registration_id && isValidUuid(String(x.registration_id))) row.registration_id = String(x.registration_id);
+    const numKeys = ["fase_1_aula_1", "fase_1_aula_2", "fase_1_aula_3", "fase_1_aula_4", "fase_2_aula_1", "fase_2_aula_2", "fase_2_aula_3"];
+    for (const k of numKeys) {
+      if (x[k] !== undefined && x[k] !== null && x[k] !== "") {
+        const n = Number(x[k]);
+        row[k] = isNaN(n) ? null : n;
+      } else {
+        row[k] = null;
+      }
+    }
+    if (x.terminou !== undefined) row.terminou = Boolean(x.terminou);
+    if (x.faixa_certificado_pago !== undefined) row.faixa_certificado_pago = Boolean(x.faixa_certificado_pago);
+    if (x.certificado_emitido !== undefined) row.certificado_emitido = Boolean(x.certificado_emitido);
   } else if (t === "cellReports") {
     if (x.report_week && !row.semana) row.semana = String(x.report_week);
     if (x.cell_name && !row.celula) row.celula = String(x.cell_name);

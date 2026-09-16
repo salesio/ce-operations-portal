@@ -20890,11 +20890,13 @@ const alecRegistrationPageState = {
 
 const alecScoresPageState = {
   view: localStorage.getItem("ce_alec_scores_view_mode") || "table", // "table" | "card"
+  tab: localStorage.getItem("ce_alec_scores_subtab") || "pauta", // "pauta" | "churchReport" | "cellReport"
   churchId: "",
   cellGroupId: "",
   cellId: "",
   status: "",
-  search: ""
+  search: "",
+  cellReportChurchId: ""
 };
 
 const churchReportPageState = {
@@ -21595,6 +21597,262 @@ function renderAlecRegistrationAnalyticalView() {
   `;
 }
 
+function renderAlecExcelPautaTable(filtered) {
+  if (!filtered.length) {
+    return EmptyState({ compact: true, title: "Sem notas ALEC", description: "Nenhuma nota registada para os filtros seleccionados." });
+  }
+
+  const scoreColorClass = (val) => {
+    if (val === "—" || val == null || val === "") return "text-secondary";
+    const num = Number(val);
+    if (num >= 17) return "alec-score-high";
+    if (num >= 10) return "alec-score-mid";
+    return "alec-score-low";
+  };
+
+  const rowsHtml = filtered.map((item) => {
+    const cleanName = formatCleanPersonName(item.nome_completo || "Aluno ALEC");
+    const contact = item.contacto || "—";
+    const cName = churchName(item.church_id || item.igreja);
+    const cell = item.celula || "—";
+
+    const f1_1 = item.fase_1_aula_1 != null ? item.fase_1_aula_1 : "—";
+    const f1_2 = item.fase_1_aula_2 != null ? item.fase_1_aula_2 : "—";
+    const f1_3 = item.fase_1_aula_3 != null ? item.fase_1_aula_3 : "—";
+    const f1_4 = item.fase_1_aula_4 != null ? item.fase_1_aula_4 : "—";
+    const f1Avg = alecPhaseAverage(item, 1);
+
+    const f2_1 = item.fase_2_aula_1 != null ? item.fase_2_aula_1 : "—";
+    const f2_2 = item.fase_2_aula_2 != null ? item.fase_2_aula_2 : "—";
+    const f2_3 = item.fase_2_aula_3 != null ? item.fase_2_aula_3 : "—";
+    const f2Avg = alecPhaseAverage(item, 2);
+
+    const fAvg = alecFinalAverage(item);
+
+    return `
+      <tr>
+        <td class="fw-bold text-light">${escapeAttr(cleanName)}</td>
+        <td class="text-nowrap text-secondary">${escapeAttr(contact)}</td>
+        <td class="text-nowrap">${escapeAttr(cName)}</td>
+        <td class="text-nowrap fw-semibold text-warning border-end border-secondary border-opacity-25">${escapeAttr(cell)}</td>
+        <td class="alec-score-cell"><span class="alec-score-val ${scoreColorClass(f1_1)}">${f1_1}</span></td>
+        <td class="alec-score-cell"><span class="alec-score-val ${scoreColorClass(f1_2)}">${f1_2}</span></td>
+        <td class="alec-score-cell"><span class="alec-score-val ${scoreColorClass(f1_3)}">${f1_3}</span></td>
+        <td class="alec-score-cell"><span class="alec-score-val ${scoreColorClass(f1_4)}">${f1_4}</span></td>
+        <td class="alec-score-cell fw-bold text-info border-end border-secondary border-opacity-25">${f1Avg || "—"}</td>
+        <td class="alec-score-cell"><span class="alec-score-val ${scoreColorClass(f2_1)}">${f2_1}</span></td>
+        <td class="alec-score-cell"><span class="alec-score-val ${scoreColorClass(f2_2)}">${f2_2}</span></td>
+        <td class="alec-score-cell"><span class="alec-score-val ${scoreColorClass(f2_3)}">${f2_3}</span></td>
+        <td class="alec-score-cell fw-bold text-success border-end border-secondary border-opacity-25">${f2Avg || "—"}</td>
+        <td class="alec-score-cell fw-bold text-gold border-end border-secondary border-opacity-25">${fAvg || "—"}</td>
+        <td class="text-center">${item.terminou ? '<span class="alec-badge-sim">SIM</span>' : '<span class="alec-badge-nao">NÃO</span>'}</td>
+        <td class="text-center border-end border-secondary border-opacity-25">${item.faixa_certificado_pago ? '<span class="alec-badge-sim">SIM</span>' : '<span class="alec-badge-nao">NÃO</span>'}</td>
+        <td class="text-center">${badge(item.estado || "Em Curso")}</td>
+        <td class="text-end text-nowrap">${backendActions("alecScore", item.id)}</td>
+      </tr>
+    `;
+  }).join("");
+
+  return `
+    <div class="alec-excel-table-wrap">
+      <table class="alec-excel-table">
+        <thead>
+          <tr class="super-header text-center">
+            <th colspan="4" class="alec-th-aluno text-start"><i class="bi bi-person-fill me-1"></i> Dados do Aluno</th>
+            <th colspan="5" class="alec-th-phase1"><i class="bi bi-journal-bookmark me-1"></i> Fase 1</th>
+            <th colspan="4" class="alec-th-phase2"><i class="bi bi-mortarboard me-1"></i> Fase 2</th>
+            <th colspan="1" class="alec-th-media"><i class="bi bi-calculator me-1"></i> Final</th>
+            <th colspan="1" class="alec-th-terminou">Terminou</th>
+            <th colspan="1" class="alec-th-faixa">Faixa & Certificado</th>
+            <th colspan="2" class="alec-th-actions">Estado & Acções</th>
+          </tr>
+          <tr class="sub-header text-center">
+            <th class="text-start">Nome Completo</th>
+            <th>Contacto</th>
+            <th>Igreja</th>
+            <th class="border-end border-secondary border-opacity-25">Célula</th>
+            <th>Aula 1</th>
+            <th>Aula 2</th>
+            <th>Aula 3</th>
+            <th>Aula 4</th>
+            <th class="border-end border-secondary border-opacity-25 text-info">Média F1</th>
+            <th>Aula 1</th>
+            <th>Aula 2</th>
+            <th>Aula 3</th>
+            <th class="border-end border-secondary border-opacity-25 text-success">Média F2</th>
+            <th class="border-end border-secondary border-opacity-25 text-gold">Média Final</th>
+            <th>Sim/Não</th>
+            <th class="border-end border-secondary border-opacity-25">Sim/Não</th>
+            <th>Estado</th>
+            <th class="text-end pe-2">Acções</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rowsHtml}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function renderAlecChurchReportTable(scores, churchesList) {
+  const churchMap = new Map();
+  churchesList.forEach((ch) => {
+    churchMap.set(String(ch.id), {
+      id: ch.id,
+      name: ch.public_name || ch.church_name || ch.name || churchName(ch.id),
+      activos: 0,
+      terminaram: 0,
+      faixasPagos: 0
+    });
+  });
+
+  scores.forEach((s) => {
+    const chId = String(s.church_id || s.igreja || "");
+    let entry = churchMap.get(chId);
+    if (!entry) {
+      const name = churchName(chId) || "Outra Igreja";
+      entry = { id: chId, name, activos: 0, terminaram: 0, faixasPagos: 0 };
+      churchMap.set(chId, entry);
+    }
+    entry.activos += 1;
+    if (s.terminou) entry.terminaram += 1;
+    if (s.faixa_certificado_pago) entry.faixasPagos += 1;
+  });
+
+  const reportRows = Array.from(churchMap.values())
+    .filter((r) => r.name)
+    .sort((a, b) => b.activos - a.activos || a.name.localeCompare(b.name));
+
+  const totalActivos = reportRows.reduce((sum, r) => sum + r.activos, 0);
+  const totalTerminaram = reportRows.reduce((sum, r) => sum + r.terminaram, 0);
+  const totalFaixasPagos = reportRows.reduce((sum, r) => sum + r.faixasPagos, 0);
+
+  return `
+    <div class="alec-report-table-wrap mb-4">
+      <table class="alec-report-table">
+        <thead>
+          <tr>
+            <th style="width: 60px;" class="text-center">#</th>
+            <th>IGREJA</th>
+            <th class="text-center" style="width: 160px;">Activos</th>
+            <th class="text-center" style="width: 180px;">Que terminaram</th>
+            <th class="text-center" style="width: 240px;">Faixas e Certificados Pagos</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${reportRows.map((row, idx) => `
+            <tr>
+              <td class="text-center text-secondary fw-semibold">${idx + 1}</td>
+              <td class="fw-bold text-light">${escapeAttr(row.name.toUpperCase())}</td>
+              <td class="text-center fw-bold ${row.activos > 0 ? "text-white" : "text-secondary"}">${row.activos}</td>
+              <td class="text-center fw-bold ${row.terminaram > 0 ? "text-success" : "text-secondary"}">${row.terminaram}</td>
+              <td class="text-center fw-bold ${row.faixasPagos > 0 ? "text-warning" : "text-secondary"}">${row.faixasPagos}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="2" class="fw-bold text-uppercase ps-3">TOTAL GERAL</td>
+            <td class="alec-report-total-cell text-center text-white">${totalActivos}</td>
+            <td class="alec-report-total-cell text-center text-success">${totalTerminaram}</td>
+            <td class="alec-report-total-cell text-center text-warning">${totalFaixasPagos}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  `;
+}
+
+function renderAlecCellReportTable(scores, cellsList, selectedChurchId, churchesList) {
+  const activeChurchId = selectedChurchId || churchesList[0]?.id || "";
+  const churchScores = activeChurchId ? scores.filter((s) => isRecordFromChurch(s, activeChurchId)) : scores;
+  const currentChurchObj = churchesList.find((ch) => String(ch.id) === String(activeChurchId));
+  const currentChurchName = currentChurchObj?.public_name || currentChurchObj?.church_name || currentChurchObj?.name || (activeChurchId ? churchName(activeChurchId) : "Todas as Igrejas");
+
+  const cellMap = new Map();
+  cellsList.filter((c) => !activeChurchId || isRecordFromChurch(c, activeChurchId)).forEach((c) => {
+    const cName = c.cell_name || c.name || "";
+    if (cName) {
+      cellMap.set(cName.toLowerCase(), {
+        name: cName,
+        inscritos: 0,
+        terminaram: 0,
+        faixasPagos: 0
+      });
+    }
+  });
+
+  churchScores.forEach((s) => {
+    const rawCell = String(s.celula || "").trim();
+    if (!rawCell) return;
+    const k = rawCell.toLowerCase();
+    let entry = cellMap.get(k);
+    if (!entry) {
+      entry = { name: rawCell, inscritos: 0, terminaram: 0, faixasPagos: 0 };
+      cellMap.set(k, entry);
+    }
+    entry.inscritos += 1;
+    if (s.terminou) entry.terminaram += 1;
+    if (s.faixa_certificado_pago) entry.faixasPagos += 1;
+  });
+
+  const cellRows = Array.from(cellMap.values())
+    .sort((a, b) => b.inscritos - a.inscritos || a.name.localeCompare(b.name));
+
+  const totalInscritos = cellRows.reduce((sum, r) => sum + r.inscritos, 0);
+  const totalTerminaram = cellRows.reduce((sum, r) => sum + r.terminaram, 0);
+  const totalFaixasPagos = cellRows.reduce((sum, r) => sum + r.faixasPagos, 0);
+
+  return `
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+      <div class="d-flex align-items-center gap-2">
+        <label class="form-label mb-0 text-secondary small fw-bold text-uppercase">Filtrar por Igreja:</label>
+        <select class="form-select form-select-sm" style="min-width: 220px;" data-alec-cell-report-church-select>
+          <option value="">Todas as Igrejas</option>
+          ${churchesList.map((ch) => `<option value="${ch.id}" ${String(activeChurchId) === String(ch.id) ? "selected" : ""}>${ch.public_name || ch.church_name || ch.name || churchName(ch.id)}</option>`).join("")}
+        </select>
+      </div>
+      <div class="badge bg-dark text-warning border border-secondary p-2">
+        <i class="bi bi-building me-1"></i> ${escapeAttr(currentChurchName)} (${cellRows.length} Células)
+      </div>
+    </div>
+
+    <div class="alec-report-table-wrap mb-4">
+      <table class="alec-report-table">
+        <thead>
+          <tr>
+            <th style="width: 60px;" class="text-center">#</th>
+            <th>IGREJA ${escapeAttr(currentChurchName.toUpperCase())} — CÉLULAS</th>
+            <th class="text-center" style="width: 220px;">Alunos Inscritos</th>
+            <th class="text-center" style="width: 180px;">Que terminaram</th>
+            <th class="text-center" style="width: 240px;">Faixas e Certificados Pagos</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${cellRows.map((row, idx) => `
+            <tr>
+              <td class="text-center text-secondary fw-semibold">${idx + 1}</td>
+              <td class="fw-bold text-light">${escapeAttr(row.name)}</td>
+              <td class="text-center fw-bold ${row.inscritos > 0 ? "text-white" : "text-secondary"}">${row.inscritos}</td>
+              <td class="text-center fw-bold ${row.terminaram > 0 ? "text-success" : "text-secondary"}">${row.terminaram}</td>
+              <td class="text-center fw-bold ${row.faixasPagos > 0 ? "text-warning" : "text-secondary"}">${row.faixasPagos}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="2" class="fw-bold text-uppercase ps-3">TOTAL GERAL</td>
+            <td class="alec-report-total-cell text-center text-white">${totalInscritos}</td>
+            <td class="alec-report-total-cell text-center text-success">${totalTerminaram}</td>
+            <td class="alec-report-total-cell text-center text-warning">${totalFaixasPagos}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  `;
+}
+
 function renderAlecScoresAnalyticalView() {
   syncAlecRegistrationsWithScores();
   const leadership = state.cellLeadership || seedData.cellLeadership;
@@ -21604,6 +21862,7 @@ function renderAlecScoresAnalyticalView() {
   const cells = typeof getAllRegisteredCells === "function" ? getAllRegisteredCells() : (state.cellRegistry || state.cells || []);
 
   const st = alecScoresPageState;
+  const activeTab = st.tab || "pauta";
 
   // Cascading groups based on chosen church
   const availableGroups = groups.filter((g) => {
@@ -21685,16 +21944,18 @@ function renderAlecScoresAnalyticalView() {
           <p class="text-secondary mb-0">Pauta acadêmica integrada com o Cadastro ALEC para lançamento de notas, médias de fase e certificação.</p>
         </div>
         <div class="d-flex gap-2 flex-wrap align-items-center">
-          <div class="view-toggle light-surface" role="group" aria-label="Modo de Visualização">
-            <button type="button" class="view-toggle-btn ${!isCardView ? "active" : ""}" data-alec-score-view-mode="table">
-              <i class="bi bi-table"></i>
-              <span>${cleanDisplayText(L("tableView") || "Tabela")}</span>
-            </button>
-            <button type="button" class="view-toggle-btn ${isCardView ? "active" : ""}" data-alec-score-view-mode="card">
-              <i class="bi bi-grid-fill"></i>
-              <span>${cleanDisplayText(lang === "pt" ? "Modo Card" : "Card View")}</span>
-            </button>
-          </div>
+          ${activeTab === "pauta" ? `
+            <div class="view-toggle light-surface" role="group" aria-label="Modo de Visualização">
+              <button type="button" class="view-toggle-btn ${!isCardView ? "active" : ""}" data-alec-score-view-mode="table">
+                <i class="bi bi-table"></i>
+                <span>${cleanDisplayText(L("tableView") || "Tabela Excel")}</span>
+              </button>
+              <button type="button" class="view-toggle-btn ${isCardView ? "active" : ""}" data-alec-score-view-mode="card">
+                <i class="bi bi-grid-fill"></i>
+                <span>${cleanDisplayText(lang === "pt" ? "Modo Card" : "Card View")}</span>
+              </button>
+            </div>
+          ` : ""}
           <button type="button" class="btn btn-ce-gold btn-touch" data-open-form="alecScore"><i class="bi bi-plus-lg me-1"></i>${L("add") || "Lançar Nota"}</button>
           <button type="button" class="btn btn-outline-cyan btn-touch" data-action="export" data-type="alecScore" data-id="alecScore"><i class="bi bi-download me-1"></i>${L("export") || "Exportar"}</button>
         </div>
@@ -21705,107 +21966,138 @@ function renderAlecScoresAnalyticalView() {
         ${metric("bi-people", "Total Alunos na Pauta", scores.length, "Inscritos")}
         ${metric("bi-award", L("alecCompleted") || "Concluídos", scores.filter((item) => item.terminou).length, L("certificateIssued") || "Certificados")}
         ${metric("bi-hourglass-split", "Em Curso", scores.filter((item) => !item.terminou).length, "A decorrer")}
+        ${metric("bi-cash-coin", "Faixas & Cert. Pagos", scores.filter((item) => item.faixa_certificado_pago).length, "Pagamentos confirmados")}
         ${metric("bi-check2-circle", "Fase 1 Média > 70", scores.filter((item) => alecPhaseAverage(item, 1) >= 70).length, "Aprovados F1")}
         ${metric("bi-check2-all", "Fase 2 Média > 70", scores.filter((item) => alecPhaseAverage(item, 2) >= 70).length, "Aprovados F2")}
       </div>
 
-      <!-- Cascading Filters Toolbar -->
-      <form class="filter-toolbar filter-bar mb-4" data-alec-scores-filters>
-        <select class="form-select" name="churchId" data-alec-score-filter-field>
-          <option value="">Todas as Igrejas</option>
-          ${churchesList.map((ch) => `<option value="${ch.id}" ${String(st.churchId) === String(ch.id) ? "selected" : ""}>${ch.public_name || ch.church_name || ch.name || churchName(ch.id) || "Igreja"}</option>`).join("")}
-        </select>
-
-        <select class="form-select" name="cellGroupId" data-alec-score-filter-field>
-          <option value="">Todos os Grupos de Célula</option>
-          ${availableGroups.map((g) => `<option value="${g.id}" ${String(st.cellGroupId) === String(g.id) ? "selected" : ""}>${g.group_name || g.name || "Grupo"}</option>`).join("")}
-        </select>
-
-        <select class="form-select" name="cellId" data-alec-score-filter-field>
-          <option value="">Todas as Células Individuais</option>
-          ${availableCells.map((c) => `<option value="${c.id}" ${String(st.cellId) === String(c.id) ? "selected" : ""}>${c.cell_name || c.name || "Célula"}</option>`).join("")}
-        </select>
-
-        <select class="form-select" name="status" data-alec-score-filter-field>
-          <option value="">Todos os Estados</option>
-          ${alecScoreStatuses.map((s) => `<option value="${s}" ${st.status === s ? "selected" : ""}>${s}</option>`).join("")}
-        </select>
-
-        <input type="text" class="form-control" name="search" placeholder="Pesquisar aluno, contacto ou célula..." value="${st.search || ""}" data-alec-score-filter-field>
-        <button type="button" class="btn btn-outline-cyan btn-touch" data-alec-score-filter-reset><i class="bi bi-arrow-counterclockwise me-1"></i>Limpar</button>
-      </form>
-
-      <!-- Content Area -->
-      <div class="panel glass-panel">
-        ${isCardView ? (
-          filtered.length ? `<div class="row g-4">${filtered.map((item) => {
-            const cName = churchName(item.church_id || item.igreja);
-            const clName = item.celula || "—";
-            const ldrName = item.nome_do_lider_de_celula || "—";
-            const cleanName = formatCleanPersonName(item.nome_completo || "Aluno ALEC");
-            const f1Avg = alecPhaseAverage(item, 1);
-            const f2Avg = alecPhaseAverage(item, 2);
-            const fAvg = alecFinalAverage(item);
-            return `
-              <div class="col-12 col-md-6 col-xl-4">
-                <article class="data-card record-card light-surface h-100 d-flex flex-column justify-content-between p-3">
-                  <div>
-                    <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
-                      <div class="flex-grow-1 min-w-0">
-                        <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
-                          <span class="badge bg-dark text-warning border border-secondary text-uppercase fw-semibold py-1 px-2 text-nowrap shadow-sm">
-                            <i class="bi bi-diagram-3 me-1 text-warning"></i>${escapeAttr(clName)}
-                          </span>
-                          ${ldrName && ldrName !== "—" ? `
-                            <span class="badge bg-dark text-light border border-secondary text-nowrap py-1 px-2 shadow-sm">
-                              <i class="bi bi-person-badge me-1 text-info"></i>Líder: <strong class="text-white">${escapeAttr(ldrName)}</strong>
-                            </span>
-                          ` : ""}
-                        </div>
-                        <h4 class="data-card-title mb-0 fs-5 fw-bold text-truncate" title="${escapeAttr(cleanName)}">
-                          ${escapeAttr(cleanName)}
-                        </h4>
-                      </div>
-                      <div class="d-flex flex-column align-items-end gap-1 flex-shrink-0">
-                        ${badge(item.estado || "Em Formação")}
-                        ${item.terminou ? '<span class="badge bg-success-subtle text-success border border-success-subtle text-nowrap"><i class="bi bi-patch-check me-1"></i>Concluído</span>' : ""}
-                      </div>
-                    </div>
-                    <div class="row g-2 text-center my-3 p-2 rounded bg-dark-subtle border border-secondary border-opacity-10">
-                      <div class="col-4"><small class="text-secondary d-block">Média F1</small><strong class="${f1Avg >= 70 ? "text-success" : "text-warning"}">${f1Avg || "—"}</strong></div>
-                      <div class="col-4"><small class="text-secondary d-block">Média F2</small><strong class="${f2Avg >= 70 ? "text-success" : "text-warning"}">${f2Avg || "—"}</strong></div>
-                      <div class="col-4"><small class="text-secondary d-block">Média Final</small><strong class="${fAvg >= 70 ? "text-success" : "text-info"}">${fAvg || "—"}</strong></div>
-                    </div>
-                    <div class="mb-3">
-                      <div class="d-flex justify-content-between align-items-center mb-1">
-                        <span class="small text-secondary">Progresso Acadêmico</span>
-                        <span class="small text-secondary">${escapeAttr(cName)}</span>
-                      </div>
-                      ${alecProgress(item)}
-                    </div>
-                  </div>
-                  <div class="data-card-actions pt-2 border-top border-secondary border-opacity-25 d-flex gap-2 flex-wrap">
-                    ${backendActions("alecScore", item.id)}
-                  </div>
-                </article>
-              </div>
-            `;
-          }).join("")}</div>` : `<div class="p-4 text-center text-secondary">Nenhum aluno encontrado na pauta.</div>`
-        ) : (
-          filtered.length ? dataTable([L("fullName") || "Nome do Aluno", L("church") || "Igreja", L("cell") || "Célula", L("phase1Average") || "Média Fase 1", L("phase2Average") || "Média Fase 2", L("finalAverage") || "Média Final", L("finished") || "Concluído", L("status") || "Estado", L("progress") || "Progresso", L("actions") || "Acções"], filtered.map((item) => [
-            `<strong>${escapeAttr(formatCleanPersonName(item.nome_completo || "Aluno ALEC"))}</strong>`,
-            churchName(item.igreja || item.church_id),
-            item.celula || "—",
-            `<strong>${alecPhaseAverage(item, 1) || "—"}</strong>`,
-            `<strong>${alecPhaseAverage(item, 2) || "—"}</strong>`,
-            `<strong>${alecFinalAverage(item) || "—"}</strong>`,
-            yesNo(item.terminou),
-            badge(item.estado || "Em Formação"),
-            alecProgress(item),
-            backendActions("alecScore", item.id)
-          ])) : EmptyState({ compact: true, title: "Sem notas ALEC", description: "Nenhuma nota registada para os filtros seleccionados." })
-        )}
+      <!-- Sub-Tab Navigation Bar -->
+      <div class="alec-nav-pills mb-4">
+        <button type="button" class="alec-nav-btn ${activeTab === "pauta" ? "active" : ""}" data-alec-score-subtab="pauta">
+          <i class="bi bi-table"></i>
+          <span>Pauta Geral de Notas (${scores.length})</span>
+        </button>
+        <button type="button" class="alec-nav-btn ${activeTab === "churchReport" ? "active" : ""}" data-alec-score-subtab="churchReport">
+          <i class="bi bi-building"></i>
+          <span>Relatório por Igreja</span>
+        </button>
+        <button type="button" class="alec-nav-btn ${activeTab === "cellReport" ? "active" : ""}" data-alec-score-subtab="cellReport">
+          <i class="bi bi-diagram-3"></i>
+          <span>Relatório por Célula</span>
+        </button>
       </div>
+
+      ${activeTab === "pauta" ? `
+        <!-- Cascading Filters Toolbar -->
+        <form class="filter-toolbar filter-bar mb-4" data-alec-scores-filters>
+          <select class="form-select" name="churchId" data-alec-score-filter-field>
+            <option value="">Todas as Igrejas</option>
+            ${churchesList.map((ch) => `<option value="${ch.id}" ${String(st.churchId) === String(ch.id) ? "selected" : ""}>${ch.public_name || ch.church_name || ch.name || churchName(ch.id) || "Igreja"}</option>`).join("")}
+          </select>
+
+          <select class="form-select" name="cellGroupId" data-alec-score-filter-field>
+            <option value="">Todos os Grupos de Célula</option>
+            ${availableGroups.map((g) => `<option value="${g.id}" ${String(st.cellGroupId) === String(g.id) ? "selected" : ""}>${g.group_name || g.name || "Grupo"}</option>`).join("")}
+          </select>
+
+          <select class="form-select" name="cellId" data-alec-score-filter-field>
+            <option value="">Todas as Células Individuais</option>
+            ${availableCells.map((c) => `<option value="${c.id}" ${String(st.cellId) === String(c.id) ? "selected" : ""}>${c.cell_name || c.name || "Célula"}</option>`).join("")}
+          </select>
+
+          <select class="form-select" name="status" data-alec-score-filter-field>
+            <option value="">Todos os Estados</option>
+            ${alecScoreStatuses.map((s) => `<option value="${s}" ${st.status === s ? "selected" : ""}>${s}</option>`).join("")}
+          </select>
+
+          <input type="text" class="form-control" name="search" placeholder="Pesquisar aluno, contacto ou célula..." value="${st.search || ""}" data-alec-score-filter-field>
+          <button type="button" class="btn btn-outline-cyan btn-touch" data-alec-score-filter-reset><i class="bi bi-arrow-counterclockwise me-1"></i>Limpar</button>
+        </form>
+
+        <!-- Content Area: Pauta Table or Card View -->
+        <div class="panel glass-panel">
+          ${isCardView ? (
+            filtered.length ? `<div class="row g-4">${filtered.map((item) => {
+              const cName = churchName(item.church_id || item.igreja);
+              const clName = item.celula || "—";
+              const ldrName = item.nome_do_lider_de_celula || "—";
+              const cleanName = formatCleanPersonName(item.nome_completo || "Aluno ALEC");
+              const f1Avg = alecPhaseAverage(item, 1);
+              const f2Avg = alecPhaseAverage(item, 2);
+              const fAvg = alecFinalAverage(item);
+              return `
+                <div class="col-12 col-md-6 col-xl-4">
+                  <article class="data-card record-card light-surface h-100 d-flex flex-column justify-content-between p-3">
+                    <div>
+                      <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                        <div class="flex-grow-1 min-w-0">
+                          <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                            <span class="badge bg-dark text-warning border border-secondary text-uppercase fw-semibold py-1 px-2 text-nowrap shadow-sm">
+                              <i class="bi bi-diagram-3 me-1 text-warning"></i>${escapeAttr(clName)}
+                            </span>
+                            ${ldrName && ldrName !== "—" ? `
+                              <span class="badge bg-dark text-light border border-secondary text-nowrap py-1 px-2 shadow-sm">
+                                <i class="bi bi-person-badge me-1 text-info"></i>Líder: <strong class="text-white">${escapeAttr(ldrName)}</strong>
+                              </span>
+                            ` : ""}
+                          </div>
+                          <h4 class="data-card-title mb-0 fs-5 fw-bold text-truncate" title="${escapeAttr(cleanName)}">
+                            ${escapeAttr(cleanName)}
+                          </h4>
+                        </div>
+                        <div class="d-flex flex-column align-items-end gap-1 flex-shrink-0">
+                          ${badge(item.estado || "Em Formação")}
+                          ${item.terminou ? '<span class="badge bg-success-subtle text-success border border-success-subtle text-nowrap"><i class="bi bi-patch-check me-1"></i>Concluído</span>' : ""}
+                          ${item.faixa_certificado_pago ? '<span class="badge bg-warning-subtle text-warning border border-warning-subtle text-nowrap"><i class="bi bi-cash-coin me-1"></i>Faixa Paga</span>' : ""}
+                        </div>
+                      </div>
+                      <div class="row g-2 text-center my-3 p-2 rounded bg-dark-subtle border border-secondary border-opacity-10">
+                        <div class="col-4"><small class="text-secondary d-block">Média F1</small><strong class="${f1Avg >= 70 ? "text-success" : "text-warning"}">${f1Avg || "—"}</strong></div>
+                        <div class="col-4"><small class="text-secondary d-block">Média F2</small><strong class="${f2Avg >= 70 ? "text-success" : "text-warning"}">${f2Avg || "—"}</strong></div>
+                        <div class="col-4"><small class="text-secondary d-block">Média Final</small><strong class="${fAvg >= 70 ? "text-success" : "text-info"}">${fAvg || "—"}</strong></div>
+                      </div>
+                      <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                          <span class="small text-secondary">Progresso Acadêmico</span>
+                          <span class="small text-secondary">${escapeAttr(cName)}</span>
+                        </div>
+                        ${alecProgress(item)}
+                      </div>
+                    </div>
+                    <div class="data-card-actions pt-2 border-top border-secondary border-opacity-25 d-flex gap-2 flex-wrap">
+                      ${backendActions("alecScore", item.id)}
+                    </div>
+                  </article>
+                </div>
+              `;
+            }).join("")}</div>` : `<div class="p-4 text-center text-secondary">Nenhum aluno encontrado na pauta.</div>`
+          ) : (
+            renderAlecExcelPautaTable(filtered)
+          )}
+        </div>
+      ` : activeTab === "churchReport" ? `
+        <!-- Content Area: Relatório por Igreja -->
+        <div class="panel glass-panel">
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+            <div>
+              <h4 class="fs-5 fw-bold text-gold mb-1"><i class="bi bi-building me-2"></i>Relatório Geral ALEC por Igrejas</h4>
+              <p class="text-secondary small mb-0">Visão consolidada de alunos activos, concluintes e pagamentos de faixas/certificados por igreja.</p>
+            </div>
+          </div>
+          ${renderAlecChurchReportTable(scores, churchesList)}
+        </div>
+      ` : `
+        <!-- Content Area: Relatório por Célula -->
+        <div class="panel glass-panel">
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+            <div>
+              <h4 class="fs-5 fw-bold text-gold mb-1"><i class="bi bi-diagram-3 me-2"></i>Relatório Geral ALEC por Células</h4>
+              <p class="text-secondary small mb-0">Desempenho e inscrições dos alunos distribuídos por cada célula da igreja seleccionada.</p>
+            </div>
+          </div>
+          ${renderAlecCellReportTable(scores, cells, st.cellReportChurchId, churchesList)}
+        </div>
+      `}
     </section>
   `;
 }
@@ -26127,6 +26419,146 @@ function getCollection(type) {
 }
 
 
+function renderAlecScoreForm(record = {}, modalMode = "create") {
+  const churchesList = typeof relationalChurches === "function" ? relationalChurches() : (state.churches || []);
+  const selectedChurchId = record.church_id || record.igreja || activeUser?.church_id || "";
+  const name = record.nome_completo || record.fullName || "";
+  const contact = record.contacto || record.contact || "";
+  const cell = record.celula || record.cell || "";
+
+  // Phase 1 lessons
+  const f1_1 = record.fase_1_aula_1 ?? "";
+  const f1_2 = record.fase_1_aula_2 ?? "";
+  const f1_3 = record.fase_1_aula_3 ?? "";
+  const f1_4 = record.fase_1_aula_4 ?? "";
+
+  // Phase 2 lessons
+  const f2_1 = record.fase_2_aula_1 ?? "";
+  const f2_2 = record.fase_2_aula_2 ?? "";
+  const f2_3 = record.fase_2_aula_3 ?? "";
+
+  const terminou = Boolean(record.terminou);
+  const faixaPago = Boolean(record.faixa_certificado_pago);
+  const certificadoEmitido = Boolean(record.certificado_emitido);
+  const estado = record.estado || record.status || "Em Curso";
+
+  return `
+    <div class="alec-score-form-container">
+      <!-- Section 1: Dados do Aluno -->
+      <div class="mb-3 pb-2 border-bottom border-secondary border-opacity-25 d-flex align-items-center gap-2">
+        <i class="bi bi-person-lines-fill text-gold fs-5"></i>
+        <span class="fw-bold text-light">Dados do Aluno</span>
+      </div>
+      <div class="row g-3 mb-4">
+        <div class="col-12 col-md-6">
+          <label class="form-label fw-semibold text-light small mb-1">Nome Completo <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" name="nome_completo" value="${escapeAttr(name)}" required placeholder="Ex: Micaela Micas Honwana">
+        </div>
+        <div class="col-12 col-md-6">
+          <label class="form-label fw-semibold text-light small mb-1">Contacto Telefónico</label>
+          <input type="text" class="form-control" name="contacto" value="${escapeAttr(contact)}" placeholder="+258 84 000 0000">
+        </div>
+        <div class="col-12 col-md-6">
+          <label class="form-label fw-semibold text-light small mb-1">Igreja <span class="text-danger">*</span></label>
+          <select class="form-select" name="church_id" required>
+            <option value="">Seleccionar Igreja</option>
+            ${churchesList.map((ch) => `<option value="${ch.id}" ${String(selectedChurchId) === String(ch.id) ? "selected" : ""}>${ch.public_name || ch.church_name || ch.name || churchName(ch.id)}</option>`).join("")}
+          </select>
+        </div>
+        <div class="col-12 col-md-6">
+          <label class="form-label fw-semibold text-light small mb-1">Célula</label>
+          <input type="text" class="form-control" name="celula" value="${escapeAttr(cell)}" placeholder="Ex: AGATHOS, Ambassadors...">
+        </div>
+      </div>
+
+      <!-- Section 2: Notas Fase 1 -->
+      <div class="mb-3 pb-2 border-bottom border-secondary border-opacity-25 d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-journal-bookmark-fill text-info fs-5"></i>
+          <span class="fw-bold text-light">FASE 1 (4 Aulas)</span>
+        </div>
+        <span class="badge bg-info-subtle text-info border border-info-subtle">Notas de 0 a 20</span>
+      </div>
+      <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+          <label class="form-label fw-semibold text-light small mb-1">Aula 1</label>
+          <input type="number" min="0" max="20" step="0.5" class="form-control" name="fase_1_aula_1" value="${f1_1}" placeholder="0 - 20">
+        </div>
+        <div class="col-6 col-md-3">
+          <label class="form-label fw-semibold text-light small mb-1">Aula 2</label>
+          <input type="number" min="0" max="20" step="0.5" class="form-control" name="fase_1_aula_2" value="${f1_2}" placeholder="0 - 20">
+        </div>
+        <div class="col-6 col-md-3">
+          <label class="form-label fw-semibold text-light small mb-1">Aula 3</label>
+          <input type="number" min="0" max="20" step="0.5" class="form-control" name="fase_1_aula_3" value="${f1_3}" placeholder="0 - 20">
+        </div>
+        <div class="col-6 col-md-3">
+          <label class="form-label fw-semibold text-light small mb-1">Aula 4</label>
+          <input type="number" min="0" max="20" step="0.5" class="form-control" name="fase_1_aula_4" value="${f1_4}" placeholder="0 - 20">
+        </div>
+      </div>
+
+      <!-- Section 3: Notas Fase 2 -->
+      <div class="mb-3 pb-2 border-bottom border-secondary border-opacity-25 d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-mortarboard-fill text-success fs-5"></i>
+          <span class="fw-bold text-light">FASE 2 (3 Aulas)</span>
+        </div>
+        <span class="badge bg-success-subtle text-success border border-success-subtle">Notas de 0 a 20</span>
+      </div>
+      <div class="row g-3 mb-4">
+        <div class="col-4">
+          <label class="form-label fw-semibold text-light small mb-1">Aula 1</label>
+          <input type="number" min="0" max="20" step="0.5" class="form-control" name="fase_2_aula_1" value="${f2_1}" placeholder="0 - 20">
+        </div>
+        <div class="col-4">
+          <label class="form-label fw-semibold text-light small mb-1">Aula 2</label>
+          <input type="number" min="0" max="20" step="0.5" class="form-control" name="fase_2_aula_2" value="${f2_2}" placeholder="0 - 20">
+        </div>
+        <div class="col-4">
+          <label class="form-label fw-semibold text-light small mb-1">Aula 3</label>
+          <input type="number" min="0" max="20" step="0.5" class="form-control" name="fase_2_aula_3" value="${f2_3}" placeholder="0 - 20">
+        </div>
+      </div>
+
+      <!-- Section 4: Conclusão, Faixa & Certificação -->
+      <div class="mb-3 pb-2 border-bottom border-secondary border-opacity-25 d-flex align-items-center gap-2">
+        <i class="bi bi-award-fill text-warning fs-5"></i>
+        <span class="fw-bold text-light">Conclusão, Faixa & Certificação</span>
+      </div>
+      <div class="row g-3 align-items-center mb-3">
+        <div class="col-12 col-md-4">
+          <div class="form-check form-switch p-2 rounded bg-dark-subtle border border-secondary border-opacity-25">
+            <input class="form-check-input ms-0 me-2" type="checkbox" name="terminou" id="field_terminou" ${terminou ? "checked" : ""}>
+            <label class="form-check-label fw-semibold text-light" for="field_terminou">Terminou o Curso</label>
+          </div>
+        </div>
+        <div class="col-12 col-md-4">
+          <div class="form-check form-switch p-2 rounded bg-dark-subtle border border-secondary border-opacity-25">
+            <input class="form-check-input ms-0 me-2" type="checkbox" name="faixa_certificado_pago" id="field_faixa_pago" ${faixaPago ? "checked" : ""}>
+            <label class="form-check-label fw-semibold text-light" for="field_faixa_pago">Faixa & Certificado Pago</label>
+          </div>
+        </div>
+        <div class="col-12 col-md-4">
+          <div class="form-check form-switch p-2 rounded bg-dark-subtle border border-secondary border-opacity-25">
+            <input class="form-check-input ms-0 me-2" type="checkbox" name="certificado_emitido" id="field_cert_emitido" ${certificadoEmitido ? "checked" : ""}>
+            <label class="form-check-label fw-semibold text-light" for="field_cert_emitido">Certificado Emitido</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-12">
+          <label class="form-label fw-semibold text-light small mb-1">Estado do Aluno</label>
+          <select class="form-select" name="estado">
+            ${alecScoreStatuses.map((s) => `<option value="${s}" ${estado === s ? "selected" : ""}>${s}</option>`).join("")}
+          </select>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 function renderUserForm(record = {}, modalMode = "create") {
   const isEdit = modalMode === "edit";
   const name = record.name || record.full_name || "";
@@ -27480,6 +27912,8 @@ function openForm(type, id = null, options = {}) {
       byId("modalFields").innerHTML = renderMediaScheduleForm(record || {});
     } else if (type === "user") {
       byId("modalFields").innerHTML = renderUserForm(record || {}, modalMode);
+    } else if (type === "alecScore") {
+      byId("modalFields").innerHTML = renderAlecScoreForm(record || {}, modalMode);
     } else {
       const schema = type === "finance" ? getFinanceSchema("create") : formSchemas[type];
       byId("modalFields").innerHTML = schema.map((field) => fieldControl(field, record)).join("");
@@ -27679,6 +28113,20 @@ async function submitForm(form) {
         data[name] = formData.has(name);
       }
     });
+  if (modalType === "alecScore") {
+    data.terminou = formData.has("terminou");
+    data.faixa_certificado_pago = formData.has("faixa_certificado_pago");
+    data.certificado_emitido = formData.has("certificado_emitido");
+    const numKeys = ["fase_1_aula_1", "fase_1_aula_2", "fase_1_aula_3", "fase_1_aula_4", "fase_2_aula_1", "fase_2_aula_2", "fase_2_aula_3"];
+    for (const k of numKeys) {
+      const val = formData.get(k) ?? data[k];
+      if (val !== undefined && val !== null && String(val).trim() !== "") {
+        const n = Number(val);
+        data[k] = isNaN(n) ? null : n;
+      } else {
+        data[k] = null;
+      }
+    }
   }
   if (modalType === "member") {
     const existingMember = modalRecordId ? findMemberRecord(modalRecordId) : null;
@@ -36938,6 +37386,16 @@ document.addEventListener("click", (event) => {
     return;
   }
 
+  // ALEC Scores Sub-Tab Toggle (pauta / churchReport / cellReport)
+  const alecSubtabBtn = event.target.closest("[data-alec-score-subtab]");
+  if (alecSubtabBtn) {
+    const subtab = alecSubtabBtn.dataset.alecScoreSubtab;
+    alecScoresPageState.tab = subtab;
+    localStorage.setItem("ce_alec_scores_subtab", subtab);
+    if (activeRoute === "cellAlecScores") renderCellMinistry("alecScores");
+    return;
+  }
+
   // ALEC Scores View Mode Toggle (Table / Card)
   const alecScoreViewBtn = event.target.closest("[data-alec-score-view-mode]");
   if (alecScoreViewBtn) {
@@ -37043,6 +37501,12 @@ document.addEventListener("change", (event) => {
     }
 
     if (activeRoute === "cellAlecScores") renderCellMinistry("alecScores");
+  }
+
+  if (event.target.matches("[data-alec-cell-report-church-select]")) {
+    alecScoresPageState.cellReportChurchId = event.target.value;
+    if (activeRoute === "cellAlecScores") renderCellMinistry("alecScores");
+    else if (activeRoute === "cellAlecOverview") renderCellMinistry("alecOverview");
   }
 });
 
