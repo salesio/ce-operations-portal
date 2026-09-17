@@ -3008,28 +3008,35 @@ tr[data-public-cell-report="1"] td:last-child {
   display: inline-flex;
   gap: 0.35rem;
   padding: 0.28rem;
-  border: 1px solid rgba(32, 215, 255, 0.2);
+  border: 1px solid rgba(32, 215, 255, 0.25);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(15, 23, 42, 0.75);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .churches-view-toggle button {
   border: 0;
   border-radius: 999px;
   padding: 0.48rem 0.82rem;
-  color: rgba(248, 251, 255, 0.72);
+  color: #cbd5e1;
   background: transparent;
   font-family: var(--font-ui);
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.05em;
   text-transform: uppercase;
+  transition: all 0.18s ease;
 }
 
-.churches-view-toggle button.active,
-.churches-view-toggle button:hover {
+.churches-view-toggle button.active {
   color: #06101f;
   background: linear-gradient(135deg, var(--gold-soft), var(--gold));
+  box-shadow: 0 4px 12px rgba(245, 199, 85, 0.3);
+}
+
+.churches-view-toggle button:hover:not(.active) {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .churches-filter-grid {
@@ -4849,33 +4856,38 @@ tr[data-public-cell-report="1"] td:last-child {
   display: inline-flex;
   gap: 0.3rem;
   padding: 0.22rem;
-  border: 1px solid rgba(32, 215, 255, 0.2);
+  border: 1px solid rgba(32, 215, 255, 0.25);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.65);
+  background: rgba(15, 23, 42, 0.75);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .view-toggle-btn {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  min-height: 2.75rem;
+  min-height: 2.5rem;
   padding: 0.45rem 0.85rem;
   border: 0;
   border-radius: 999px;
-  color: var(--muted);
+  color: #cbd5e1;
   background: transparent;
   font-size: 0.72rem;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
 }
 
-.view-toggle-btn.active,
-.view-toggle-btn:hover {
-  color: var(--navy-950);
+.view-toggle-btn.active {
+  color: #06101f;
   background: linear-gradient(135deg, var(--gold-soft), var(--gold));
-  box-shadow: 0 8px 20px rgba(215, 174, 75, 0.22);
+  box-shadow: 0 4px 14px rgba(215, 174, 75, 0.3);
+}
+
+.view-toggle-btn:hover:not(.active) {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .glass-panel {
@@ -5957,19 +5969,30 @@ section.ops-hero {
   }
 }
 
-/* View toggle on light toolbar */
-.view-toggle {
-  background: rgba(255, 255, 255, 0.85);
-  border-color: rgba(34, 211, 238, 0.22);
+/* View toggle on light toolbar / light surface */
+.light-surface .view-toggle,
+.view-toggle.light-surface {
+  background: rgba(241, 245, 249, 0.95);
+  border-color: rgba(203, 213, 225, 0.8);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.view-toggle-btn {
-  color: var(--text-dark-muted);
+.light-surface .view-toggle-btn,
+.view-toggle.light-surface .view-toggle-btn {
+  color: #334155;
 }
 
-.view-toggle-btn.active,
-.view-toggle-btn:hover {
-  color: var(--text-dark);
+.light-surface .view-toggle-btn.active,
+.view-toggle.light-surface .view-toggle-btn.active {
+  color: #0f172a;
+  background: linear-gradient(135deg, var(--gold-soft), var(--gold));
+  box-shadow: 0 4px 12px rgba(215, 174, 75, 0.3);
+}
+
+.light-surface .view-toggle-btn:hover:not(.active),
+.view-toggle.light-surface .view-toggle-btn:hover:not(.active) {
+  color: #0f172a;
+  background: rgba(226, 232, 240, 0.8);
 }
 
 /* ============================================================
