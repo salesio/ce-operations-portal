@@ -92,6 +92,24 @@ const mockState = {
       department_permissions: [],
       created_at: "2026-04-01T00:00:00.000Z",
       updated_at: "2026-09-01T08:00:00.000Z"
+    },
+    {
+      id: "u-5",
+      name: "Irmã Angélica Macuacua",
+      email: "alec@embaixadadecristo.org",
+      role: "ALEC Manager",
+      additional_roles: ["Cell Leader", "Foundation Teacher"],
+      auth_user_id: "auth-uuid-5",
+      status: "Active",
+      church_id: "church-hq",
+      cell_id: "cr-001",
+      cell_name: "Diamantes Main",
+      cell_group_id: "cg-001",
+      cell_group_name: "Grupo Central",
+      phone: "+258840000005",
+      department_permissions: ["alec"],
+      created_at: "2026-05-01T00:00:00.000Z",
+      updated_at: "2026-09-18T08:00:00.000Z"
     }
   ]
 };
@@ -125,23 +143,28 @@ console.log("--- 1. Multi-Dimensional Filter Verification ---");
 
 // Test: All users (no filters)
 const allUsers = CEUserExport.filterUsersList(mockState.users, {});
-assert.equal(allUsers.length, 4, "Should return all 4 users when no filters applied");
-console.log("✅ All users filter passed: 4 users found");
+assert.equal(allUsers.length, 5, "Should return all 5 users when no filters applied");
+console.log("✅ All users filter passed: 5 users found");
 
 // Test: Filter by Church
 const hqUsers = CEUserExport.filterUsersList(mockState.users, { church_id: "church-hq" });
-assert.equal(hqUsers.length, 3, "Should return 3 users for Maputo Central (including super admin with all churches access)");
-console.log("✅ Church filter passed: 3 HQ users found");
+assert.equal(hqUsers.length, 4, "Should return 4 users for Maputo Central (including super admin with all churches access)");
+console.log("✅ Church filter passed: 4 HQ users found");
 
 const matolaUsers = CEUserExport.filterUsersList(mockState.users, { church_id: "church-matola" });
 // u-1 (Super Admin with can_view_all_churches) + u-4 (Matola)
 assert.equal(matolaUsers.length, 2, "Should return 2 users for Matola (including super admin)");
 console.log("✅ Church filter with global permissions passed");
 
-// Test: Filter by Role
+// Test: Filter by Role (Primary or Additional Roles)
 const cellLeaders = CEUserExport.filterUsersList(mockState.users, { role: "Cell Leader" });
-assert.equal(cellLeaders.length, 2, "Should return 2 cell leaders (Lider de Célula & Cell Leader)");
-console.log("✅ Role taxonomy filter passed: 2 Cell Leaders found");
+assert.equal(cellLeaders.length, 3, "Should return 3 cell leaders (Filipe, Mateus, and Angélica via additional_roles)");
+console.log("✅ Role taxonomy & multiple roles filter passed: 3 Cell Leaders found");
+
+const alecManagers = CEUserExport.filterUsersList(mockState.users, { role: "ALEC Manager" });
+assert.equal(alecManagers.length, 1, "Should return 1 ALEC Manager");
+assert.equal(alecManagers[0].name, "Irmã Angélica Macuacua");
+console.log("✅ ALEC Manager filter passed");
 
 const superAdmins = CEUserExport.filterUsersList(mockState.users, { role: "Super Admin" });
 assert.equal(superAdmins.length, 1, "Should return 1 Super Admin");
@@ -150,20 +173,18 @@ console.log("✅ Super Admin filter passed");
 
 // Test: Filter by Cell Group
 const groupCentralUsers = CEUserExport.filterUsersList(mockState.users, { cell_group_id: "cg-001" });
-assert.equal(groupCentralUsers.length, 1, "Should return 1 user in Grupo Central");
-assert.equal(groupCentralUsers[0].name, "Filipe Chamango");
-console.log("✅ Cell Group filter passed");
+assert.equal(groupCentralUsers.length, 2, "Should return 2 users in Grupo Central");
+console.log("✅ Cell Group filter passed: 2 users found");
 
 // Test: Filter by Individual Cell
 const cellDiamantes = CEUserExport.filterUsersList(mockState.users, { cell_id: "cr-001" });
-assert.equal(cellDiamantes.length, 1, "Should return 1 user in Diamantes Main");
-assert.equal(cellDiamantes[0].name, "Filipe Chamango");
+assert.equal(cellDiamantes.length, 2, "Should return 2 users in Diamantes Main");
 console.log("✅ Individual Cell filter passed");
 
 // Test: Filter by Auth Link (Linked vs Pending)
 const linkedUsers = CEUserExport.filterUsersList(mockState.users, { auth_link: "linked" });
-assert.equal(linkedUsers.length, 3, "Should return 3 users with auth_user_id linked");
-console.log("✅ Auth Link 'linked' filter passed: 3 users");
+assert.equal(linkedUsers.length, 4, "Should return 4 users with auth_user_id linked");
+console.log("✅ Auth Link 'linked' filter passed: 4 users");
 
 const pendingUsers = CEUserExport.filterUsersList(mockState.users, { auth_link: "pending" });
 assert.equal(pendingUsers.length, 1, "Should return 1 user pending auth");
@@ -172,8 +193,8 @@ console.log("✅ Auth Link 'pending' filter passed: 1 user");
 
 // Test: Filter by Status (Active vs Inactive)
 const activeUsers = CEUserExport.filterUsersList(mockState.users, { status: "active" });
-assert.equal(activeUsers.length, 3, "Should return 3 active users");
-console.log("✅ Status 'active' filter passed: 3 users");
+assert.equal(activeUsers.length, 4, "Should return 4 active users");
+console.log("✅ Status 'active' filter passed: 4 users");
 
 const inactiveUsers = CEUserExport.filterUsersList(mockState.users, { status: "inactive" });
 assert.equal(inactiveUsers.length, 1, "Should return 1 inactive user");
@@ -197,6 +218,7 @@ const colIds = CEUserExport.EXPORT_COLUMNS.map((c) => c.id);
 assert.ok(colIds.includes("name"), "Must include name column");
 assert.ok(colIds.includes("email"), "Must include email column");
 assert.ok(colIds.includes("role"), "Must include role column");
+assert.ok(colIds.includes("additional_roles"), "Must include additional_roles column");
 assert.ok(colIds.includes("church"), "Must include church column");
 assert.ok(colIds.includes("cell_group"), "Must include cell_group column");
 assert.ok(colIds.includes("cell_name"), "Must include cell_name column");
@@ -211,6 +233,8 @@ assert.ok(roleKeys.includes("Super Admin"), "Should include Super Admin");
 assert.ok(roleKeys.includes("Cell Leader"), "Should include Cell Leader");
 assert.ok(roleKeys.includes("Cell Group Leader"), "Should include Cell Group Leader");
 assert.ok(roleKeys.includes("Pastoral Care Rector"), "Should include Pastoral Care Rector");
+assert.ok(roleKeys.includes("ALEC Manager"), "Should include ALEC Manager");
+assert.ok(roleKeys.includes("Department Head"), "Should include Department Head");
 console.log("✅ Role taxonomy includes all key Christ Embassy roles");
 
 // --- 5. Data Resolution Verification ---
@@ -229,7 +253,7 @@ assert.equal(cells.length, 3, "Should resolve 3 cells");
 console.log("✅ getCells() successfully loaded cells from state");
 
 const users = CEUserExport.getResolvedUsers();
-assert.equal(users.length, 4, "Should resolve 4 users");
+assert.equal(users.length, 5, "Should resolve 5 users");
 console.log("✅ getResolvedUsers() successfully loaded users from state");
 
 console.log("\n🎉 ALL USER EXPORT SUITE TESTS PASSED SUCCESSFULLY!");

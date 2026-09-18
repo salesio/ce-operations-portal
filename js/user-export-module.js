@@ -1,8 +1,9 @@
 /**
  * Unified User Export Module — Christ Embassy Mozambique Operations
  * Supports multi-dimensional filtering (Church, Cell Group, Cell, Role, Auth Link, Status),
- * dynamic cascading dropdowns, real-time live preview, customizable columns,
- * and multi-format exports (Excel .xlsx, PDF/Print, CSV, Clipboard).
+ * multiple/secondary roles, dynamic cascading dropdowns, real-time live preview,
+ * customizable columns, and multi-format exports (Excel .xlsx with auto-filters & freeze panes,
+ * seamless non-blocking PDF/Print via hidden iframe, standard CSV, and Clipboard).
  */
 (function () {
   "use strict";
@@ -14,26 +15,41 @@
     { key: "Church Pastor", label: "Church Pastor", labelPt: "Pastor da Igreja" },
     { key: "Church Admin", label: "Church Admin", labelPt: "Administrador da Igreja" },
     { key: "Pastoral Care Rector", label: "Pastoral Care Rector", labelPt: "Reitor de Cuidados Pastorais" },
+    { key: "Department Head", label: "Department Head", labelPt: "Chefe de Departamento" },
     { key: "ALEC Manager", label: "ALEC Manager", labelPt: "Gestor ALEC" },
     { key: "ALEC Coordinator", label: "ALEC Coordinator", labelPt: "Coordenador ALEC" },
     { key: "Cell Ministry Head", label: "Cell Ministry Head", labelPt: "Responsável de Células" },
     { key: "Cell Group Leader", label: "Cell Group Leader", labelPt: "Líder de Grupo de Células" },
     { key: "Cell Leader", label: "Cell Leader", labelPt: "Líder de Célula" },
-    { key: "Cell Assistant", label: "Cell Assistant", labelPt: "Assistente de Célula" },
+    { key: "Cell Assistant", label: "Assistant Cell Leader", labelPt: "Assistente de Célula" },
+    { key: "Assistant Cell Leader", label: "Assistant Cell Leader", labelPt: "Assistente de Célula" },
+    { key: "Cell Ministry Reviewer", label: "Cell Ministry Reviewer", labelPt: "Revisor de Células" },
     { key: "Venue Manager", label: "Venue Manager", labelPt: "Gestor de Património" },
+    { key: "Inventory Manager", label: "Inventory Manager", labelPt: "Gestor de Inventário" },
     { key: "Finance Head", label: "Finance Head", labelPt: "Responsável de Finanças" },
     { key: "Finance Officer", label: "Finance Officer", labelPt: "Oficial de Finanças" },
+    { key: "HR Manager", label: "HR Manager", labelPt: "Gestor de RH" },
+    { key: "Requisition Officer", label: "Requisition Officer", labelPt: "Oficial de Requisições" },
+    { key: "Counseling Head", label: "Counseling Head", labelPt: "Responsável de Aconselhamento" },
     { key: "Counselor", label: "Counselor", labelPt: "Conselheiro Pastoral" },
     { key: "FEVO Coordinator", label: "F.E.V.O Coordinator", labelPt: "Coordenador F.E.V.O" },
     { key: "Follow-Up Coordinator", label: "Follow-Up Coordinator", labelPt: "Coordenador Follow-Up" },
     { key: "Foundation Rector", label: "Foundation Rector", labelPt: "Reitor Escola de Fundação" },
-    { key: "Foundation Teacher", label: "Foundation Teacher", labelPt: "Professor Escola de Fundação" }
+    { key: "Foundation Coordinator", label: "Foundation Coordinator", labelPt: "Coordenador Escola de Fundação" },
+    { key: "Foundation Teacher", label: "Foundation Teacher", labelPt: "Professor Escola de Fundação" },
+    { key: "Partnership Coordinator", label: "Partnership Coordinator", labelPt: "Coordenador de Parcerias" },
+    { key: "Media Director", label: "Media Director", labelPt: "Director de Mídia" },
+    { key: "Media Supervisor", label: "Media Supervisor", labelPt: "Supervisor de Mídia" },
+    { key: "Media Team Member", label: "Media Team Member", labelPt: "Membro de Mídia" },
+    { key: "Staff Member", label: "Staff Member", labelPt: "Membro do Staff" },
+    { key: "Viewer", label: "Viewer", labelPt: "Visualizador" }
   ];
 
   const EXPORT_COLUMNS = [
     { id: "name", label: "Nome Completo", labelEn: "Full Name", default: true },
     { id: "email", label: "Email", labelEn: "Email", default: true },
-    { id: "role", label: "Função / Role", labelEn: "Role", default: true },
+    { id: "role", label: "Função Principal", labelEn: "Primary Role", default: true },
+    { id: "additional_roles", label: "Outras Funções", labelEn: "Additional Roles", default: true },
     { id: "auth_status", label: "Estado Auth", labelEn: "Auth Link", default: true },
     { id: "status", label: "Estado da Conta", labelEn: "Account Status", default: true },
     { id: "church", label: "Igreja", labelEn: "Church", default: true },
@@ -41,6 +57,7 @@
     { id: "cell_name", label: "Célula", labelEn: "Cell", default: true },
     { id: "phone", label: "Contacto / Tel", labelEn: "Phone", default: false },
     { id: "department_permissions", label: "Permissões de Depto", labelEn: "Dept Permissions", default: false },
+    { id: "all_roles", label: "Todas as Funções (Unificadas)", labelEn: "All Roles (Unified)", default: false },
     { id: "created_at", label: "Data de Registo", labelEn: "Registered Date", default: false },
     { id: "updated_at", label: "Última Actualização", labelEn: "Last Updated", default: false }
   ];
@@ -210,7 +227,7 @@
     return Array.from(keys);
   }
 
-  function matchRole(userRole, filterRole) {
+  function matchSingleRole(userRole, filterRole) {
     if (!filterRole) return true;
     const filterNorm = normalizeRoleString(filterRole);
     const userNorm = normalizeRoleString(userRole);
@@ -220,6 +237,35 @@
     const filterCanonical = getCanonicalRoleKeys(filterRole);
     const userCanonical = getCanonicalRoleKeys(userRole);
     return filterCanonical.some((k) => userCanonical.includes(k));
+  }
+
+  function getUserAllRoles(u) {
+    const roles = new Set();
+    if (u.role) roles.add(String(u.role).trim());
+    if (u.role_name) roles.add(String(u.role_name).trim());
+    if (Array.isArray(u.roles)) {
+      u.roles.forEach((r) => r && roles.add(String(r).trim()));
+    }
+    if (Array.isArray(u.additional_roles)) {
+      u.additional_roles.forEach((r) => r && roles.add(String(r).trim()));
+    }
+    if (Array.isArray(u.secondary_roles)) {
+      u.secondary_roles.forEach((r) => r && roles.add(String(r).trim()));
+    }
+    if (Array.isArray(u.assigned_roles)) {
+      u.assigned_roles.forEach((r) => r && roles.add(String(r).trim()));
+    }
+    if (Array.isArray(u.department_roles)) {
+      u.department_roles.forEach((r) => r && roles.add(String(r).trim()));
+    }
+    return Array.from(roles).filter(Boolean);
+  }
+
+  function matchUserRoles(u, filterRole) {
+    if (!filterRole) return true;
+    const allRoles = getUserAllRoles(u);
+    if (!allRoles.length) return false;
+    return allRoles.some((r) => matchSingleRole(r, filterRole));
   }
 
   function resolveRoleLabel(role) {
@@ -330,10 +376,9 @@
         if (!matchesCell) return false;
       }
 
-      // 4. Role filter
+      // 4. Role filter (supports primary and multiple additional roles)
       if (fRole) {
-        const rawRole = String(u.role || u.role_name || "");
-        if (!matchRole(rawRole, fRole)) return false;
+        if (!matchUserRoles(u, fRole)) return false;
       }
 
       // 5. Account Status filter
@@ -353,6 +398,7 @@
 
       // 7. Search query
       if (fSearch) {
+        const allRolesStr = getUserAllRoles(u).join(" ");
         const targetStr = [
           u.name,
           u.full_name,
@@ -360,7 +406,7 @@
           u.phone,
           u.contacto,
           u.kingschat_username,
-          u.role,
+          allRolesStr,
           u.cell_name,
           u.cell_group_name
         ].filter(Boolean).join(" ").toLowerCase();
@@ -405,10 +451,18 @@
     const createdAt = u.created_at ? String(u.created_at).slice(0, 10) : "—";
     const updatedAt = u.updated_at ? String(u.updated_at).slice(0, 10) : "—";
 
+    // Roles handling
+    const allUserRoles = getUserAllRoles(u);
+    const primaryRole = u.role || u.role_name || (allUserRoles[0] || "—");
+    const additionalRoles = allUserRoles.filter((r) => r !== primaryRole).map(resolveRoleLabel);
+    const allRolesFormatted = allUserRoles.map(resolveRoleLabel).join(", ") || resolveRoleLabel(primaryRole);
+
     return {
       name: u.name || u.full_name || "—",
       email: u.email || "—",
-      role: resolveRoleLabel(u.role || u.role_name),
+      role: resolveRoleLabel(primaryRole),
+      additional_roles: additionalRoles.length ? additionalRoles.join(", ") : "—",
+      all_roles: allRolesFormatted,
       auth_status: authLabel,
       status: statusLabel,
       church: cName,
@@ -440,10 +494,16 @@
 
   function exportToCsv(filteredUsers, filename) {
     const { headers, rows } = getExportRows(filteredUsers);
-    const escapeCell = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    const escapeCell = (v) => {
+      const s = String(v ?? "");
+      if (s.includes(",") || s.includes('"') || s.includes("\n") || s.includes(";")) {
+        return `"${s.replace(/"/g, '""')}"`;
+      }
+      return s;
+    };
     const csvContent = "\uFEFF" + [
-      headers.map(escapeCell).join(";"),
-      ...rows.map((r) => r.map(escapeCell).join(";"))
+      headers.map(escapeCell).join(","),
+      ...rows.map((r) => r.map(escapeCell).join(","))
     ].join("\r\n");
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -474,14 +534,27 @@
     // 1. SheetJS real .xlsx file
     if (typeof window !== "undefined" && window.XLSX && typeof window.XLSX.utils?.json_to_sheet === "function") {
       const ws = window.XLSX.utils.json_to_sheet(tableData);
+
+      // Auto-size columns
       const colWidths = activeCols.map((col) => {
         const maxLen = Math.max(
           col.label.length,
           ...tableData.map((r) => String(r[col.label] || "").length)
         );
-        return { wch: Math.min(Math.max(maxLen + 3, 12), 40) };
+        return { wch: Math.min(Math.max(maxLen + 4, 14), 45) };
       });
       ws["!cols"] = colWidths;
+
+      // Auto-filter on all data columns
+      if (tableData.length > 0) {
+        const numCols = activeCols.length - 1;
+        const numRows = tableData.length;
+        const endColLetter = window.XLSX.utils.encode_col(numCols);
+        ws["!autofilter"] = { ref: `A1:${endColLetter}${numRows + 1}` };
+      }
+
+      // Freeze header row
+      ws["!freeze"] = { ySplit: 1 };
 
       const wb = window.XLSX.utils.book_new();
       window.XLSX.utils.book_append_sheet(wb, ws, isPt ? "Utilizadores" : "Users");
@@ -515,41 +588,36 @@
     const printDate = new Date().toLocaleString(isPt ? "pt-MZ" : "en-US");
     const adminName = (typeof window !== "undefined" && window.activeUser?.name) || "Admin";
 
-    const win = window.open("", "_blank", "noopener,noreferrer,width=1024,height=768");
-    if (!win) {
-      alert(isPt ? "Permita pop-ups no navegador para gerar o relatório PDF/Impressão." : "Please allow pop-ups to generate PDF/Print report.");
-      return;
-    }
-
     const html = `<!DOCTYPE html>
 <html lang="${isPt ? "pt" : "en"}">
 <head>
   <meta charset="utf-8">
   <title>${isPt ? "Relatório de Utilizadores & Acessos" : "Users & Access Report"} — Christ Embassy</title>
   <style>
-    @page { size: A4 landscape; margin: 12mm 10mm; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; color: #1e293b; background: #fff; margin: 0; padding: 1.5rem; font-size: 11px; line-height: 1.4; }
-    .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #002d62; padding-bottom: 1rem; margin-bottom: 1.2rem; }
+    @page { size: A4 landscape; margin: 10mm; }
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; color: #0f172a; background: #fff; margin: 0; padding: 1.2rem; font-size: 10.5px; line-height: 1.4; }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #002d62; padding-bottom: 0.8rem; margin-bottom: 1rem; }
     .brand h1 { margin: 0 0 2px 0; color: #002d62; font-size: 18px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px; }
-    .brand p { margin: 0; color: #d4af37; font-size: 11px; font-weight: 700; text-transform: uppercase; }
-    .meta-box { text-align: right; color: #64748b; font-size: 10px; }
+    .brand p { margin: 0; color: #b45309; font-size: 10.5px; font-weight: 700; text-transform: uppercase; }
+    .meta-box { text-align: right; color: #475569; font-size: 10px; }
     .meta-box strong { color: #0f172a; }
-    .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1.2rem; }
-    .summary-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 12px; }
-    .summary-card .label { font-size: 9px; text-transform: uppercase; color: #64748b; font-weight: 700; display: block; margin-bottom: 2px; }
-    .summary-card .val { font-size: 15px; font-weight: 800; color: #002d62; }
-    .filter-tags { margin-bottom: 1rem; padding: 6px 10px; background: #f1f5f9; border-radius: 4px; font-size: 10px; color: #475569; }
+    .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 1rem; }
+    .summary-card { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 10px; }
+    .summary-card .label { font-size: 8.5px; text-transform: uppercase; color: #64748b; font-weight: 700; display: block; margin-bottom: 2px; }
+    .summary-card .val { font-size: 14px; font-weight: 800; color: #002d62; }
+    .filter-tags { margin-bottom: 0.8rem; padding: 6px 10px; background: #f1f5f9; border-radius: 4px; font-size: 9.5px; color: #334155; border: 1px solid #e2e8f0; }
     .filter-tags strong { color: #0f172a; }
-    table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
-    th { background: #002d62; color: #ffffff; text-align: left; padding: 7px 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; border: 1px solid #002d62; }
-    td { padding: 6px 8px; border: 1px solid #e2e8f0; font-size: 10.5px; color: #334155; }
-    tr:nth-child(even) td { background: #f8fafc; }
-    .footer { margin-top: 1.5rem; padding-top: 0.8rem; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; font-size: 9px; color: #94a3b8; }
+    table { width: 100%; border-collapse: collapse; margin-top: 0.4rem; font-size: 10px; }
+    th { background: #002d62 !important; color: #ffffff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; text-align: left; padding: 6px 8px; font-size: 9.5px; font-weight: 700; text-transform: uppercase; border: 1px solid #002d62; }
+    td { padding: 5px 8px; border: 1px solid #cbd5e1; color: #1e293b; font-size: 10px; }
+    tr:nth-child(even) td { background: #f8fafc !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 8.5px; font-weight: 700; }
+    .footer { margin-top: 1.2rem; padding-top: 0.6rem; border-top: 1px solid #cbd5e1; display: flex; justify-content: space-between; font-size: 9px; color: #64748b; }
     @media print {
       body { padding: 0; }
-      .no-print { display: none; }
-      th { background: #002d62 !important; color: #fff !important; -webkit-print-color-adjust: exact; }
-      tr:nth-child(even) td { background: #f8fafc !important; -webkit-print-color-adjust: exact; }
+      th { background: #002d62 !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      tr:nth-child(even) td { background: #f8fafc !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     }
   </style>
 </head>
@@ -612,12 +680,49 @@
 </body>
 </html>`;
 
-    win.document.write(html);
-    win.document.close();
-    win.focus();
-    setTimeout(() => {
-      win.print();
-    }, 450);
+    // Trigger Print cleanly using a hidden iframe (bypasses browser popup blockers entirely)
+    const existing = document.getElementById("ceExportPdfPrintIframe");
+    if (existing) existing.remove();
+
+    const iframe = document.createElement("iframe");
+    iframe.id = "ceExportPdfPrintIframe";
+    iframe.style.position = "fixed";
+    iframe.style.right = "0";
+    iframe.style.bottom = "0";
+    iframe.style.width = "0";
+    iframe.style.height = "0";
+    iframe.style.border = "0";
+    iframe.style.opacity = "0";
+    iframe.style.zIndex = "-999";
+    document.body.appendChild(iframe);
+
+    try {
+      const doc = iframe.contentWindow?.document || iframe.contentDocument;
+      if (doc) {
+        doc.open();
+        doc.write(html);
+        doc.close();
+        setTimeout(() => {
+          iframe.contentWindow?.focus();
+          iframe.contentWindow?.print();
+        }, 350);
+        return;
+      }
+    } catch (err) {
+      console.warn("[CE Export] iframe print failed, falling back to Blob window", err);
+    }
+
+    // Fallback Blob window if iframe write fails
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const win = window.open(url, "_blank");
+    if (win) {
+      win.onload = () => {
+        win.focus();
+        win.print();
+        URL.revokeObjectURL(url);
+      };
+    }
   }
 
   function copyTableToClipboard(filteredUsers) {
@@ -852,6 +957,13 @@
         }
         if (col.id === "role") {
           return `<td class="text-nowrap"><span class="badge bg-primary bg-opacity-75 text-white border border-primary">${val}</span></td>`;
+        }
+        if (col.id === "additional_roles") {
+          if (!val || val === "—") return `<td class="text-nowrap text-white-50">—</td>`;
+          return `<td class="text-nowrap">${val.split(", ").map((r) => `<span class="badge bg-info bg-opacity-25 text-info border border-info border-opacity-50 me-1">${r}</span>`).join("")}</td>`;
+        }
+        if (col.id === "all_roles") {
+          return `<td class="text-nowrap"><span class="text-light">${val}</span></td>`;
         }
         if (col.id === "auth_status") {
           const isLinked = /link|ligad/i.test(val);
@@ -1124,6 +1236,7 @@
     getCellGroups,
     getCells,
     getResolvedUsers,
+    getUserAllRoles,
     ROLE_TAXONOMY,
     EXPORT_COLUMNS
   };
