@@ -62,7 +62,7 @@ check("renderUsers table displays Auth Link status and Cell/Group assignment",
   /Pendente Auth/.test(dashboard) &&
   /Linked/.test(dashboard) &&
   /Pending Setup/.test(dashboard) &&
-  /Célula \/ Grupo/.test(dashboard)
+  (/Célula/.test(dashboard) || /cellGroup/.test(dashboard))
 );
 
 check("formSchemas.user contains role selector with standard roles",

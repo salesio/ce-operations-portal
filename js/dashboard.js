@@ -25492,11 +25492,12 @@ function renderUsers() {
         </div>
       </div>
       ${dataTable(
-        [L("name"), L("email"), L("Role"), "Auth Link", L("status"), L("church"), "Célula / Grupo", L("actions")],
+        [L("name"), L("email"), L("Role"), "Auth Link", L("status"), L("church"), L("cellGroup") || (lang === "pt" ? "Grupo de Célula" : "Cell Group"), L("cell") || (lang === "pt" ? "Célula" : "Cell"), L("actions")],
         users.map((u) => {
           const linkedCell = (state.cellRegistry || state.cells || window.REAL_CELLS_REGISTRY || []).find((c) => String(c.id) === String(u.cell_id) || c.cell_name === u.cell_id || c.name === u.cell_id);
-          const linkedGroup = (state.cellGroups || window.REAL_CELL_GROUPS || []).find((g) => String(g.id) === String(u.cell_group_id) || g.group_name === u.cell_group_id || g.name === u.cell_group_id);
-          const cellScope = u.cell_name || (linkedCell ? (linkedCell.cell_name || linkedCell.nome_da_celula || linkedCell.name) : (u.cell_group_name ? `Grupo: ${u.cell_group_name}` : (linkedGroup ? `Grupo: ${linkedGroup.group_name || linkedGroup.name}` : (u.assigned_cells?.length ? `${u.assigned_cells.length} célula(s)` : "—"))));
+          const linkedGroup = (state.cellGroups || window.REAL_CELL_GROUPS || []).find((g) => String(g.id) === String(u.cell_group_id) || g.group_name === u.cell_group_id || g.name === u.cell_group_id || (linkedCell && String(g.id) === String(linkedCell.group_id)));
+          const cellGroupNameStr = u.cell_group_name || (linkedGroup ? (linkedGroup.group_name || linkedGroup.name) : (linkedCell?.group_name ? linkedCell.group_name : (u.assigned_cell_groups?.length ? `${u.assigned_cell_groups.length} grupo(s)` : "—")));
+          const cellNameStr = u.cell_name || (linkedCell ? (linkedCell.cell_name || linkedCell.nome_da_celula || linkedCell.name) : (u.assigned_cells?.length ? `${u.assigned_cells.length} célula(s)` : "—"));
           const authBadge = u.auth_user_id ? `<span class="badge bg-success"><i class="bi bi-link me-1"></i>Linked</span>` : `<span class="badge bg-warning text-dark"><i class="bi bi-clock me-1"></i>Pending Setup</span>`;
           const rawRole = u.role || u.role_name || "Cell Leader";
           const displayRole = roleLabels[rawRole] || rawRole;
@@ -25507,7 +25508,8 @@ function renderUsers() {
             authBadge,
             badge(u.status || "Active"),
             churchName(u.church_id),
-            cellScope,
+            cellGroupNameStr,
+            cellNameStr,
             actionButtons([["view", "user", u.id, L("view")], ["edit", "user", u.id, L("edit")], ["delete", "user", u.id, L("delete")]]),
           ];
         }),
