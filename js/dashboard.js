@@ -14188,17 +14188,158 @@ function candidateStatusLabel(status) {
 
 function candidateFullName(candidate) { return String(candidate?.full_name || "").trim(); }
 
-function candidateDuplicates(candidate) {
-  const norm = (value) => String(value || "").trim().toLowerCase();
-  const digits = (value) => String(value || "").replace(/\D/g, "");
-  const name = norm(candidate.full_name), phone = digits(candidate.primary_phone), email = norm(candidate.email), dob = String(candidate.date_of_birth || "");
-  return (state.members || []).map((member) => {
-    const memberName = norm(fullName(member)), memberPhone = digits(member.primary_phone || member.phone || member.telefone), memberEmail = norm(member.email), memberDob = String(member.date_of_birth || member.data_de_nascimento || "");
-    const likely = (phone && phone === memberPhone) || (email && email === memberEmail) || (name && dob && name === memberName && dob === memberDob);
-    const possible = !likely && name && candidate.church_id === member.church_id && norm(candidate.neighborhood) && norm(candidate.neighborhood) === norm(member.neighborhood) && name === memberName;
-    return likely || possible ? { member, confidence: likely ? "Likely" : "Possible" } : null;
-  }).filter(Boolean);
+function nameSimilarityScore(str1, str2) {
+  if (!str1 || !str2) return 0;
+  const s1 = String(str1).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+  const s2 = String(str2).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+  if (s1 === s2) return 1.0;
+  
+  const tokens1 = s1.split(/\s+/).filter(Boolean);
+  const tokens2 = s2.split(/\s+/).filter(Boolean);
+  if (!tokens1.length || !tokens2.length) return 0;
+  
+  let matches = 0;
+  tokens1.forEach((t1) => {
+    if (tokens2.some((t2) => t2 === t1 || (t1.length > 2 && t2.startsWith(t1)) || (t2.length > 2 && t1.startsWith(t2)))) {
+      matches++;
+    }
+  });
+  
+  return matches / Math.max(tokens1.length, tokens2.length);
 }
+
+function candidateDuplicates(candidate) {
+  const norm = (value) => String(value || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+  const digits = (value) => String(value || "").replace(/\D/g, "");
+  
+  const name = norm(candidate.full_name || candidate.name);
+  const phone = digits(candidate.primary_phone || candidate.phone || candidate.contacto || candidate.telefone);
+  const email = norm(candidate.email);
+  const dob = String(candidate.date_of_birth || candidate.data_de_nascimento || "");
+  
+  return (state.members || []).map((member) => {
+    const memberName = norm(fullName(member) || member.full_name || member.nome);
+    const memberPhone = digits(member.primary_phone || member.phone || member.telefone);
+    const memberEmail = norm(member.email);
+    const memberDob = String(member.date_of_birth || member.data_de_nascimento || "");
+    
+    const samePhone = phone && memberPhone && phone.length >= 7 && (phone === memberPhone || phone.slice(-7) === memberPhone.slice(-7));
+    const sameEmail = email && memberEmail && email === memberEmail;
+    const sameExactName = name && name === memberName;
+    const simScore = nameSimilarityScore(name, memberName);
+    const nameLikely = simScore >= 0.75;
+
+    let confidence = null;
+    let matchReason = [];
+
+    if (samePhone) matchReason.push("Mesmo telefone");
+    if (sameEmail) matchReason.push("Mesmo e-mail");
+    if (sameExactName) matchReason.push("Nome idêntico");
+    else if (nameLikely) matchReason.push(`Nome semelhante (${Math.round(simScore * 100)}%)`);
+
+    if (samePhone || sameEmail || (sameExactName && dob && dob === memberDob)) {
+      confidence = "Likely";
+    } else if (sameExactName || (nameLikely && (candidate.church_id === member.church_id || samePhone))) {
+      confidence = "Likely";
+    } else if (nameLikely || (sameExactName && candidate.church_id === member.church_id)) {
+      confidence = "Possible";
+    }
+
+    if (confidence) {
+      return {
+        member,
+        confidence,
+        score: Math.round((samePhone ? 40 : 0) + (sameEmail ? 40 : 0) + (simScore * 50)),
+        reason: matchReason.join(" · ") || "Coincidência aproximada"
+      };
+    }
+    return null;
+  }).filter(Boolean).sort((a, b) => b.score - a.score);
+}
+
+function registerPendingMemberFromExternalRole(payload = {}) {
+  const norm = (v) => String(v || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+  const digits = (v) => String(v || "").replace(/\D/g, "");
+
+  const name = String(payload.name || payload.full_name || payload.nome_completo || "").trim();
+  if (!name) return null;
+
+  const phone = digits(payload.phone || payload.primary_phone || payload.contacto || payload.telefone);
+  const email = norm(payload.email);
+  const churchId = payload.church_id || activeUser?.church_id || "church-1";
+  const cellGroupId = payload.cell_group_id || null;
+  const cellId = payload.cell_id || null;
+  const roleTitle = payload.role_title || payload.funcao || payload.cargo || "Líder / Staff";
+  const origin = payload.origin || "Auto-ExternalRole";
+
+  // 1. Check if already exists in official state.members
+  const existingMember = (state.members || []).find((m) => {
+    const mName = norm(fullName(m) || m.full_name);
+    const mPhone = digits(m.primary_phone || m.phone || m.telefone);
+    const mEmail = norm(m.email);
+    return (mName && mName === norm(name)) || (phone && mPhone && phone.length >= 7 && phone.slice(-7) === mPhone.slice(-7)) || (email && mEmail && email === mEmail);
+  });
+
+  if (existingMember) {
+    return { status: "existing_member", member_id: existingMember.id, member: existingMember };
+  }
+
+  // 2. Check if already in state.memberRegistrationCandidates
+  state.memberRegistrationCandidates = Array.isArray(state.memberRegistrationCandidates) ? state.memberRegistrationCandidates : [];
+  const existingCandidate = state.memberRegistrationCandidates.find((c) => {
+    const cName = norm(c.full_name);
+    const cPhone = digits(c.primary_phone);
+    const cEmail = norm(c.email);
+    return (cName && cName === norm(name)) || (phone && cPhone && phone.length >= 7 && phone.slice(-7) === cPhone.slice(-7)) || (email && cEmail && email === cEmail);
+  });
+
+  if (existingCandidate) {
+    existingCandidate.origin_role = roleTitle;
+    existingCandidate.origin = origin;
+    if (cellId && !existingCandidate.cell_id) existingCandidate.cell_id = cellId;
+    if (cellGroupId && !existingCandidate.cell_group_id) existingCandidate.cell_group_id = cellGroupId;
+    void persistMemberCandidateViaRepository("update", existingCandidate);
+    return { status: "existing_candidate", candidate_id: existingCandidate.id, candidate: existingCandidate };
+  }
+
+  // 3. Create a new Pending Candidate entry
+  const newCandidate = {
+    id: `cand-auto-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`,
+    candidate_number: typeof generateUniqueCandidateNumber === "function" ? generateUniqueCandidateNumber() : `MC-${Date.now()}`,
+    full_name: name,
+    primary_phone: payload.phone || payload.primary_phone || payload.contacto || "",
+    email: payload.email || "",
+    church_id: churchId,
+    church_name: typeof churchName === "function" ? churchName(churchId) : (payload.church_name || "Igreja"),
+    cell_group_id: cellGroupId,
+    cell_group_name: payload.cell_group_name || null,
+    cell_id: cellId,
+    cell_name: payload.cell_name || payload.celula || null,
+    approval_status: "Submitted",
+    origin: origin,
+    origin_role: roleTitle,
+    registered_by_user_id: activeUser?.id || "system",
+    registered_by_name: activeUser?.name || "Sistema (Auto-Registo)",
+    auto_created_from_external: true,
+    entity_type: payload.entity_type || null,
+    entity_id: payload.entity_id || null,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
+
+  state.memberRegistrationCandidates.push(newCandidate);
+  void persistMemberCandidateViaRepository("create", newCandidate);
+
+  if (typeof showToast === "function") {
+    showToast(`💡 ${name} foi adicionado(a) à Lista de Espera por aprovação nos Membros (${roleTitle}).`);
+  }
+
+  recordCandidateAudit("auto_registered_external_role", newCandidate);
+  saveState(`Auto-registered candidate ${name} from external role (${roleTitle})`);
+
+  return { status: "created_candidate", candidate_id: newCandidate.id, candidate: newCandidate };
+}
+if (typeof window !== "undefined") window.registerPendingMemberFromExternalRole = registerPendingMemberFromExternalRole;
 
 function recordCandidateAudit(action, candidate) {
   state.auditLogs = Array.isArray(state.auditLogs) ? state.auditLogs : [];
@@ -14257,7 +14398,11 @@ function candidatePortalActions(candidate) {
 function candidateAdminActions(candidate) {
   const id = escapeAttr(candidate.id);
   const view = `<button class="action-btn" data-candidate-action="view" data-candidate-id="${id}">Ver</button>`;
-  const mergeBtn = `<button class="action-btn text-warning" data-candidate-action="merge" data-candidate-id="${id}" title="Fundir com membro existente na base de dados"><i class="bi bi-arrows-collapse me-1"></i>Fundir</button>`;
+  const dups = candidateDuplicates(candidate);
+  const topDup = dups[0];
+  const mergeBtn = topDup
+    ? `<button class="action-btn text-warning fw-bold" onclick="openMergeMemberModal('${id}', '${topDup.member.id}')" title="Fundir com ${escapeAttr(fullName(topDup.member))} (${topDup.reason})"><i class="bi bi-arrows-collapse me-1"></i>Fundir (${topDup.score}%)</button>`
+    : `<button class="action-btn text-warning" data-candidate-action="merge" data-candidate-id="${id}" title="Fundir com membro existente na base de dados"><i class="bi bi-arrows-collapse me-1"></i>Fundir</button>`;
   const deleteBtn = `<button class="action-btn text-danger" data-candidate-action="delete" data-candidate-id="${id}" title="Eliminar registo de candidato"><i class="bi bi-trash me-1"></i>Eliminar</button>`;
   if (candidate.approval_status === "Submitted") return `${view} <button class="action-btn text-success fw-bold" data-candidate-action="approve" data-candidate-id="${id}"><i class="bi bi-check-lg me-1"></i>Aprovar como membro</button> ${mergeBtn} <button class="action-btn" data-candidate-action="startReview" data-candidate-id="${id}">Iniciar revisão</button><button class="action-btn" data-candidate-action="correction" data-candidate-id="${id}">Devolver para correcção</button><button class="action-btn text-danger" data-candidate-action="reject" data-candidate-id="${id}">Rejeitar</button> ${deleteBtn}`;
   if (candidate.approval_status === "UnderReview") return `${view} <button class="action-btn text-success fw-bold" data-candidate-action="approve" data-candidate-id="${id}"><i class="bi bi-check-lg me-1"></i>Aprovar como membro</button> ${mergeBtn} <button class="action-btn" data-candidate-action="createNew" data-candidate-id="${id}">Criar novo membro</button><button class="action-btn" data-candidate-action="link" data-candidate-id="${id}">Ligar existente</button><button class="action-btn" data-candidate-action="correction" data-candidate-id="${id}">Devolver para correcção</button><button class="action-btn text-danger" data-candidate-action="reject" data-candidate-id="${id}">Rejeitar</button> ${deleteBtn}`;
@@ -15329,16 +15474,27 @@ function renderMembers() {
   ]);
   const officialRowAttrs = filtered.map((m) => ` data-filter-row data-filter-church-values="${churchFilterTokens(m)}" data-filter-status-values="${statusKey(m.estado)} ${m.estado || ""}"`);
 
-  const candidateTableRows = matchingCandidates.map((c) => [
-    `<div class="d-flex align-items-center gap-2"><strong class="text-warning">${escapeAttr(candidateFullName(c))}</strong> <span class="badge text-bg-warning text-dark small">Candidato</span></div>`,
-    c.primary_phone || "Não informado",
-    c.church_name || churchName(c.church_id) || "—",
-    c.cell_group_name || "—",
-    c.cell_name || "—",
-    "—",
-    badge(candidateStatusLabel(c.approval_status)),
-    candidateAdminActions(c)
-  ]);
+  const candidateTableRows = matchingCandidates.map((c) => {
+    const dups = candidateDuplicates(c);
+    const topDup = dups[0];
+    const dupPill = topDup
+      ? `<br><small class="text-warning"><i class="bi bi-magic me-1"></i>Duplicado: ${escapeAttr(fullName(topDup.member))} (${topDup.reason})</small>`
+      : "";
+    const originLabel = c.origin_role || c.origin
+      ? `<span class="badge text-bg-info text-dark small me-1"><i class="bi bi-tag-fill me-1"></i>${escapeAttr(c.origin_role || c.origin)}</span>`
+      : "";
+
+    return [
+      `<div class="d-flex flex-column"><div class="d-flex align-items-center gap-2"><strong class="text-warning">${escapeAttr(candidateFullName(c))}</strong> <span class="badge text-bg-warning text-dark small">Lista de Espera</span></div><div>${originLabel}${dupPill}</div></div>`,
+      c.primary_phone || "Não informado",
+      c.church_name || churchName(c.church_id) || "—",
+      c.cell_group_name || "—",
+      c.cell_name || "—",
+      c.origin_role || "—",
+      badge(candidateStatusLabel(c.approval_status)),
+      candidateAdminActions(c)
+    ];
+  });
   const candidateRowAttrs = matchingCandidates.map((c) => ` class="table-warning bg-opacity-10 border-start border-3 border-warning" data-filter-row`);
 
   if (activeMainTab === "candidates") {
@@ -15361,6 +15517,8 @@ function renderMembers() {
   const cursorPos = isSearchFocused ? activeSearchEl.selectionStart : null;
   const currentVal = isSearchFocused ? activeSearchEl.value : null;
 
+  const candidateDupsCount = pendingCandidates.filter((c) => candidateDuplicates(c).length > 0).length;
+
   setPageContent(`
     ${sectionHeader(L("members"), L("membersSubtitle"), "member", "bi-people", { actions: `<button type="button" class="btn btn-outline-cyan btn-touch" data-hq-members-dry-run><i class="bi bi-eye me-2"></i>${lang === "pt" ? "Pré-visualizar histórico" : "Preview legacy import"}</button><input id="hq-members-import-file" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden><label class="btn btn-outline-success btn-touch mb-0"><i class="bi bi-file-earmark-excel me-2"></i>${lang === "pt" ? "Importar Excel (.xlsx / .csv)" : "Import Excel"}<input id="members-import-file-input" type="file" accept=".xlsx,.xls,.csv" data-members-import hidden></label>` })}
     <div class="row g-3 mb-4 summary-cards-row">
@@ -15369,8 +15527,9 @@ function renderMembers() {
       ${sm("bi-hourglass", L("inProgress"), "—", "members", { scrollTo: "members-results", filterPayload: { status: "inProgress" } })}
       ${sm("bi-arrow-left-right", L("transferred"), "—", "members", { scrollTo: "members-results", filterPayload: { status: "transferred" } })}
       ${sm("bi-building", L("membersByChurch"), churchDisplay, "members", { scrollTo: "members-results", filterPayload: {} })}
-      ${canReviewMemberCandidates() ? sm("bi-person-exclamation", "Pedidos por aprovar", reviewQueue.length, "members", { scrollTo: "member-candidate-queue" }) : ""}
+      ${canReviewMemberCandidates() ? sm("bi-person-exclamation", "Lista de Espera", reviewQueue.length, "members", { scrollTo: "member-candidate-queue" }) : ""}
     </div>
+    ${candidateDupsCount > 0 ? `<div class="alert alert-warning border-start border-4 border-warning d-flex align-items-center justify-content-between mb-3 py-2"><div><i class="bi bi-magic me-2 fs-5"></i><strong>${candidateDupsCount} registo(s) na Lista de Espera possuem possíveis duplicados na Base de Membros.</strong><span class="small d-block text-secondary">O sistema detetou coincidências por nome, e-mail ou telefone. Clique em "Fundir" para unificar registos.</span></div><button type="button" class="btn btn-sm btn-warning fw-bold" onclick="modulePageState.members.activeTab = 'candidates'; renderMembers();">Ver Lista de Espera</button></div>` : ""}
     ${summaryFilterChips("members")}
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
       <div class="btn-group" role="group" aria-label="Member view tabs">
@@ -15381,7 +15540,7 @@ function renderMembers() {
           <i class="bi bi-person-check me-1"></i>${lang === "pt" ? "Membros Oficiais" : "Official Members"} <span class="badge text-bg-secondary ms-1">${pageState.totalCount || list.length}</span>
         </button>
         <button type="button" class="btn btn-sm ${activeMainTab === 'candidates' ? 'btn-ce-gold' : 'btn-outline-cyan'}" data-members-main-tab="candidates">
-          <i class="bi bi-person-exclamation me-1"></i>${lang === "pt" ? "Candidatos / Pedidos de Adesão" : "Candidate Requests"} ${pendingCandidates.length ? `<span class="badge text-bg-warning text-dark ms-1">${pendingCandidates.length}</span>` : `<span class="badge text-bg-secondary ms-1">0</span>`}
+          <i class="bi bi-person-exclamation me-1"></i>${lang === "pt" ? "Lista de Espera / Pendentes" : "Waiting List / Pending"} ${pendingCandidates.length ? `<span class="badge text-bg-warning text-dark ms-1">${pendingCandidates.length}</span>` : `<span class="badge text-bg-secondary ms-1">0</span>`}
         </button>
       </div>
       <div>
@@ -15406,7 +15565,26 @@ function renderMembers() {
       </div>
       <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-3 pt-3 border-top" data-members-pagination><span class="text-secondary small">${pageState.loaded ? `${pageState.totalCount} ${lang === "pt" ? "membros oficiais" : "official members"} · ${pendingCandidates.length} ${lang === "pt" ? "candidatos pendentes" : "pending candidates"} · ${lang === "pt" ? "Página" : "Page"} ${pageState.page} / ${pageState.totalPages}` : ""}</span><div class="d-flex align-items-center gap-2"><select class="form-select form-select-sm" data-members-page-size aria-label="Members per page">${[25,50,100].map((size) => `<option value="${size}"${pageState.pageSize === size ? " selected" : ""}>${size}</option>`).join("")}</select><button class="action-btn" data-members-page="prev" ${pageState.page <= 1 || pageState.loading ? "disabled" : ""}>${lang === "pt" ? "Anterior" : "Previous"}</button><button class="action-btn" data-members-page="next" ${pageState.page >= pageState.totalPages || pageState.loading ? "disabled" : ""}>${lang === "pt" ? "Próximo" : "Next"}</button></div></div>
     </article>
-    ${canReviewMemberCandidates() ? `<article id="member-candidate-queue" class="panel glass-panel mb-4"><div class="d-flex justify-content-between align-items-center mb-3"><div><h3 class="h5 mb-1">Pedidos de Adesão / Registos por Aprovar</h3><p class="mb-0 text-secondary">Rascunhos ficam separados: apenas pedidos submetidos entram na fila de aprovação.</p></div><span class="badge text-bg-warning">${reviewQueue.length} em fila</span></div><div class="d-flex flex-wrap gap-2 mb-3">${candidateTabs.map(([key,label,statuses]) => `<button type="button" class="action-btn ${candidateTab === key ? "active" : ""}" data-member-candidate-tab="${key}">${label} <span class="badge text-bg-secondary">${candidates.filter((item) => statuses.includes(item.approval_status)).length}</span></button>`).join("")}</div>${candidateRows.length ? dataTable(["Candidato", "Igreja / célula", "Registado por", "Telefone", "Duplicado", "Estado", "Acções"], candidateRows.map((c) => [candidateFullName(c), `${c.church_name || "—"}<br><small>${c.cell_name || "—"}</small>`, c.registered_by_name || "—", c.primary_phone || "Não informado", c.duplicate_confidence || "—", badge(candidateStatusLabel(c.approval_status)), candidateAdminActions(c)])) : `<div class="p-3 text-center text-secondary small">${lang === "pt" ? "Não há pedidos de adesão nesta categoria." : "No membership requests in this category."}</div>`}</article>` : ""}
+    ${canReviewMemberCandidates() ? `<article id="member-candidate-queue" class="panel glass-panel mb-4"><div class="d-flex justify-content-between align-items-center mb-3"><div><h3 class="h5 mb-1">Lista de Espera / Registos por Aprovar</h3><p class="mb-0 text-secondary">Apenas registos submetidos entram na fila de aprovação de membros da Igreja.</p></div><span class="badge text-bg-warning">${reviewQueue.length} em fila</span></div><div class="d-flex flex-wrap gap-2 mb-3">${candidateTabs.map(([key,label,statuses]) => `<button type="button" class="action-btn ${candidateTab === key ? "active" : ""}" data-member-candidate-tab="${key}">${label} <span class="badge text-bg-secondary">${candidates.filter((item) => statuses.includes(item.approval_status)).length}</span></button>`).join("")}</div>${candidateRows.length ? dataTable(["Candidato", "Igreja / célula", "Origem / Função", "Telefone", "Deteção de Duplicados", "Estado", "Acções"], candidateRows.map((c) => {
+      const dups = candidateDuplicates(c);
+      const topDup = dups[0];
+      const dupBadge = topDup
+        ? `<button type="button" class="btn btn-xs btn-outline-warning text-dark fw-bold" onclick="openMergeMemberModal('${c.id}', '${topDup.member.id}')" title="${topDup.reason}"><i class="bi bi-arrows-collapse me-1"></i>Fundir c/ ${escapeAttr(fullName(topDup.member))} (${topDup.reason})</button>`
+        : `<span class="text-muted small">Sem duplicados</span>`;
+      const originBadge = c.origin_role || c.origin
+        ? `<span class="badge text-bg-secondary small">${escapeAttr(c.origin_role || c.origin)}</span>`
+        : `<span class="text-muted small">${c.registered_by_name || "—"}</span>`;
+
+      return [
+        `<strong>${escapeAttr(candidateFullName(c))}</strong>`,
+        `${c.church_name || "—"}<br><small class="text-secondary">${c.cell_name || "—"}</small>`,
+        originBadge,
+        c.primary_phone || "Não informado",
+        dupBadge,
+        badge(candidateStatusLabel(c.approval_status)),
+        candidateAdminActions(c)
+      ];
+    })) : `<div class="p-3 text-center text-secondary small">${lang === "pt" ? "Não há pedidos de adesão nesta categoria." : "No membership requests in this category."}</div>`}</article>` : ""}
     ${renderHqMembersDryRunPreview()}
   `);
 
@@ -20311,10 +20489,18 @@ async function dualWriteCellMinistryRecord(modalType, mode, record) {
         } else if (mode === "delete") {
           result = await cellSb.deleteCellGroup(record.id);
         }
-      } else if (repo) {
-        if (mode === "create" && repo.createCellGroup) result = await repo.createCellGroup(payload);
-        else if (mode === "update" && repo.updateCellGroup) result = await repo.updateCellGroup(record.id, payload);
-        else if (mode === "delete" && repo.deleteCellGroup) result = await repo.deleteCellGroup(record.id);
+      if (payload.leader_name && mode !== "delete") {
+        registerPendingMemberFromExternalRole({
+          name: payload.leader_name,
+          phone: payload.leader_phone,
+          church_id: payload.church_id,
+          cell_group_id: payload.id || record.id,
+          cell_group_name: payload.group_name,
+          role_title: `Líder de Grupo de Células (${payload.group_name || 'Grupo'})`,
+          origin: "Auto-CellGroupLeader",
+          entity_type: "cellGroup",
+          entity_id: record.id
+        });
       }
     } else if (modalType === "cellRegistry" || modalType === "cell") {
       const payload = {
@@ -20370,6 +20556,20 @@ async function dualWriteCellMinistryRecord(modalType, mode, record) {
         else if (mode === "update" && repo.updateCell) result = await repo.updateCell(record.id, payload);
         else if (mode === "delete" && repo.deleteCell) result = await repo.deleteCell(record.id);
       }
+      if (payload.leader_name && mode !== "delete") {
+        registerPendingMemberFromExternalRole({
+          name: payload.leader_name,
+          phone: payload.leader_phone,
+          church_id: payload.church_id,
+          cell_group_id: payload.cell_group_id,
+          cell_id: record.id,
+          cell_name: payload.cell_name,
+          role_title: `Líder de Célula (${payload.cell_name || 'Célula'})`,
+          origin: "Auto-CellLeader",
+          entity_type: "cell",
+          entity_id: record.id
+        });
+      }
     } else if (modalType === "cellLeader") {
       const payload = {
         ...record,
@@ -20379,7 +20579,22 @@ async function dualWriteCellMinistryRecord(modalType, mode, record) {
       };
       if (mode === "create" && repo?.createCellLeader) result = await repo.createCellLeader(payload);
       else if (mode === "update" && repo?.updateCellLeader) result = await repo.updateCellLeader(record.id, payload);
-    } else if (modalType === "cellReport") {
+      
+      if (payload.full_name) {
+        registerPendingMemberFromExternalRole({
+          name: payload.full_name,
+          phone: payload.phone || payload.primary_phone,
+          email: payload.email,
+          church_id: payload.church_id,
+          cell_group_id: payload.cell_group_id,
+          cell_id: payload.cell_id || record.id,
+          cell_name: payload.cell_name,
+          role_title: `Líder de Célula (${payload.cell_name || 'Célula'})`,
+          origin: "Auto-CellLeader",
+          entity_type: "cellLeader",
+          entity_id: record.id
+        });
+      } else if (modalType === "cellReport") {
       if (cellSb) {
         if (mode === "create") {
           result = await cellSb.createCellReport(record);
@@ -29125,6 +29340,20 @@ async function submitForm(form) {
       state.users.push(newUser);
       saveState(`Created user ${email}`);
       dualWriteUserRecord("create", newUser);
+      if (newUser.name) {
+        registerPendingMemberFromExternalRole({
+          name: newUser.name,
+          phone: newUser.phone,
+          email: newUser.email,
+          church_id: newUser.church_id,
+          cell_group_id: newUser.cell_group_id,
+          cell_id: newUser.cell_id,
+          role_title: `Função / Perfil (${newUser.role || 'Líder/Staff'})`,
+          origin: "Auto-UserRole",
+          entity_type: "user",
+          entity_id: newUser.id
+        });
+      }
       void saveUserToSupabase(newUser).then(() => {
         saveState(`Synced created user ${email} with Supabase`);
         if (activeRoute === "users") renderUsers();
@@ -29288,6 +29517,18 @@ async function submitForm(form) {
       });
       state.staffProfiles.push(created);
       dualWriteStaffHrRecord("staffProfile", "create", created);
+      if (created.full_name || created.name) {
+        registerPendingMemberFromExternalRole({
+          name: created.full_name || created.name,
+          phone: created.primary_phone || created.phone || created.contacto,
+          email: created.email,
+          church_id: created.church_id,
+          role_title: `Staff / Colaborador (${created.role || created.department_name || 'Departamento'})`,
+          origin: "Auto-Staff",
+          entity_type: "staffProfile",
+          entity_id: created.id
+        });
+      }
     }
     saveState(`${modalMode} staffProfile`);
     bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide();
