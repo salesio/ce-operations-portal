@@ -1,7 +1,8 @@
 /**
  * Unified User Export Module — Christ Embassy Mozambique Operations
  * Supports multi-dimensional filtering (Church, Cell Group, Cell, Role, Auth Link, Status),
- * customizable column selection, live preview, and multi-format exports (Excel .xlsx, PDF/Print, CSV, Clipboard).
+ * dynamic cascading dropdowns, real-time live preview, customizable columns,
+ * and multi-format exports (Excel .xlsx, PDF/Print, CSV, Clipboard).
  */
 (function () {
   "use strict";
@@ -44,6 +45,8 @@
     { id: "updated_at", label: "Última Actualização", labelEn: "Last Updated", default: false }
   ];
 
+  let injectedState = null;
+
   let currentFilterState = {
     church_id: "",
     cell_group_id: "",
@@ -57,7 +60,127 @@
   let selectedColumnIds = new Set(EXPORT_COLUMNS.filter((c) => c.default).map((c) => c.id));
 
   function getLang() {
-    return (typeof lang !== "undefined" && lang) || "pt";
+    if (typeof window !== "undefined") {
+      if (typeof window.getLang === "function") return window.getLang();
+      if (typeof window.lang === "string") return window.lang;
+    }
+    if (typeof lang !== "undefined" && lang) return lang;
+    try {
+      return localStorage.getItem("ce-dashboard-lang") || "pt";
+    } catch (_) {
+      return "pt";
+    }
+  }
+
+  function getState() {
+    if (injectedState && typeof injectedState === "object") return injectedState;
+    if (typeof window !== "undefined") {
+      if (window.state && typeof window.state === "object") return window.state;
+      if (typeof window.getState === "function") {
+        const s = window.getState();
+        if (s && typeof s === "object") return s;
+      }
+      try {
+        const key = window.STORAGE_KEY || "ce-ops-dashboard-v3";
+        const raw = localStorage.getItem(key);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed === "object") return parsed;
+        }
+      } catch (_) {}
+    }
+    return {};
+  }
+
+  function getChurches() {
+    const s = getState();
+    const list = [
+      ...(Array.isArray(s.churches) ? s.churches : []),
+      ...(typeof window !== "undefined" && Array.isArray(window.REAL_CHURCHES) ? window.REAL_CHURCHES : [])
+    ];
+    const seen = new Set();
+    const result = [];
+    list.forEach((c) => {
+      if (!c) return;
+      const id = String(c.id || c.church_id || "");
+      const name = String(c.church_name || c.public_name || c.name || id).trim();
+      if (!id && !name) return;
+      const key = (id || name).toLowerCase();
+      if (!seen.has(key)) {
+        seen.add(key);
+        result.push({
+          id: id || name,
+          church_name: name,
+          public_name: name,
+          name: name
+        });
+      }
+    });
+    return result;
+  }
+
+  function getCellGroups() {
+    const s = getState();
+    const list = [
+      ...(typeof window !== "undefined" && typeof window.getAllRegisteredCellGroups === "function" ? window.getAllRegisteredCellGroups() : []),
+      ...(Array.isArray(s.cellGroups) ? s.cellGroups : []),
+      ...(s.cellMinistry?.groups && Array.isArray(s.cellMinistry.groups) ? s.cellMinistry.groups : []),
+      ...(typeof window !== "undefined" && Array.isArray(window.REAL_CELL_GROUPS) ? window.REAL_CELL_GROUPS : [])
+    ];
+    const seen = new Set();
+    const result = [];
+    list.forEach((g) => {
+      if (!g) return;
+      const id = String(g.id || g.group_id || g.name || g.group_name || "");
+      const name = String(g.group_name || g.name || id).trim();
+      const churchId = String(g.church_id || g.igreja || "").trim();
+      if (!id && !name) return;
+      const key = (id || name).toLowerCase();
+      if (!seen.has(key)) {
+        seen.add(key);
+        result.push({
+          id: id || name,
+          group_name: name,
+          name: name,
+          church_id: churchId
+        });
+      }
+    });
+    return result;
+  }
+
+  function getCells() {
+    const s = getState();
+    const list = [
+      ...(typeof window !== "undefined" && typeof window.getAllRegisteredCells === "function" ? window.getAllRegisteredCells() : []),
+      ...(Array.isArray(s.cellRegistry) ? s.cellRegistry : []),
+      ...(Array.isArray(s.cells) ? s.cells : []),
+      ...(typeof window !== "undefined" && Array.isArray(window.REAL_CELLS_REGISTRY) ? window.REAL_CELLS_REGISTRY : [])
+    ];
+    const seen = new Set();
+    const result = [];
+    list.forEach((c) => {
+      if (!c) return;
+      const id = String(c.id || c.cell_id || c.name || c.cell_name || "");
+      const name = String(c.cell_name || c.nome_da_celula || c.name || id).trim();
+      const churchId = String(c.church_id || c.igreja || "").trim();
+      const groupId = String(c.group_id || c.cell_group_id || "").trim();
+      const groupName = String(c.group_name || c.cell_group_name || "").trim();
+      if (!id && !name) return;
+      const key = (id || name).toLowerCase();
+      if (!seen.has(key)) {
+        seen.add(key);
+        result.push({
+          id: id || name,
+          cell_name: name,
+          name: name,
+          church_id: churchId,
+          group_id: groupId,
+          group_name: groupName
+        });
+      }
+    });
+    return result;
   }
 
   function normalizeRoleString(str) {
@@ -65,6 +188,7 @@
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
       .toLowerCase()
+      .replace(/[\s_-]+/g, " ")
       .trim();
   }
 
@@ -112,8 +236,10 @@
   }
 
   function getResolvedUsers() {
-    const rawUsers = (window.state?.users || []).filter((u) => {
+    const s = getState();
+    const rawUsers = (s.users || []).filter((u) => {
       if (!u || !u.id) return false;
+      if (typeof window !== "undefined" && typeof window.isUserDeleted === "function" && window.isUserDeleted(u)) return false;
       if (typeof isUserDeleted === "function" && isUserDeleted(u)) return false;
       return true;
     });
@@ -135,34 +261,73 @@
     return cleanUsers;
   }
 
-  function filterUsersList(users, filters) {
+  function filterUsersList(users, filters = {}) {
     const fChurch = String(filters.church_id || "").trim();
     const fGroup = String(filters.cell_group_id || "").trim();
     const fCell = String(filters.cell_id || "").trim();
-    const fRole = String(filters.role || "").trim().toLowerCase();
+    const fRole = String(filters.role || "").trim();
     const fStatus = String(filters.status || "").trim().toLowerCase();
     const fAuth = String(filters.auth_link || "").trim().toLowerCase();
     const fSearch = String(filters.search || "").trim().toLowerCase();
+
+    const allGroups = getCellGroups();
+    const allCells = getCells();
+    const allChurches = getChurches();
+
+    const targetChurch = fChurch ? allChurches.find((c) => String(c.id) === fChurch || c.church_name === fChurch || c.name === fChurch) : null;
+    const targetGroup = fGroup ? allGroups.find((g) => String(g.id) === fGroup || g.group_name === fGroup || g.name === fGroup) : null;
+    const targetGroupName = targetGroup ? (targetGroup.group_name || targetGroup.name) : fGroup;
+    const targetCell = fCell ? allCells.find((c) => String(c.id) === fCell || c.cell_name === fCell || c.name === fCell) : null;
+    const targetCellName = targetCell ? (targetCell.cell_name || targetCell.name) : fCell;
 
     return (users || []).filter((u) => {
       // 1. Church filter
       if (fChurch) {
         const uChurch = String(u.church_id || u.igreja || "").trim();
-        if (uChurch !== fChurch && !u.can_view_all_churches) return false;
+        const uChurchName = String(u.church_name || (typeof window !== "undefined" && typeof window.churchName === "function" ? window.churchName(uChurch) : (typeof churchName === "function" ? churchName(uChurch) : ""))).trim();
+        const matchesId = uChurch === fChurch || (targetChurch && (uChurch === targetChurch.id || uChurch === targetChurch.church_name));
+        const matchesName = targetChurch && (uChurchName.toLowerCase() === targetChurch.church_name.toLowerCase() || uChurchName.toLowerCase() === targetChurch.id.toLowerCase());
+        const hasAllAccess = Boolean(u.can_view_all_churches);
+
+        if (!matchesId && !matchesName && !hasAllAccess) return false;
       }
 
       // 2. Cell Group filter
       if (fGroup) {
-        const uGroup = String(u.cell_group_id || u.cell_group_name || "").trim();
-        const hasAssignedGroup = Array.isArray(u.assigned_cell_groups) && u.assigned_cell_groups.some((g) => String(g) === fGroup);
-        if (uGroup !== fGroup && !hasAssignedGroup) return false;
+        const uGroupId = String(u.cell_group_id || "").trim();
+        const uGroupName = String(u.cell_group_name || "").trim();
+        const assignedGroups = Array.isArray(u.assigned_cell_groups) ? u.assigned_cell_groups : [];
+
+        const matchesGroup =
+          uGroupId === fGroup ||
+          (targetGroup && uGroupId === targetGroup.id) ||
+          uGroupName.toLowerCase() === targetGroupName.toLowerCase() ||
+          assignedGroups.some((g) => String(g) === fGroup || String(g).toLowerCase() === targetGroupName.toLowerCase());
+
+        let cellBelongsToGroup = false;
+        if (!matchesGroup && (u.cell_id || u.cell_name)) {
+          const userCell = allCells.find((c) => String(c.id) === String(u.cell_id) || c.cell_name === u.cell_name || c.name === u.cell_name);
+          if (userCell && (String(userCell.group_id) === fGroup || (targetGroup && String(userCell.group_id) === targetGroup.id) || String(userCell.group_name || "").toLowerCase() === targetGroupName.toLowerCase())) {
+            cellBelongsToGroup = true;
+          }
+        }
+
+        if (!matchesGroup && !cellBelongsToGroup) return false;
       }
 
       // 3. Cell filter
       if (fCell) {
-        const uCell = String(u.cell_id || u.cell_name || "").trim();
-        const hasAssignedCell = Array.isArray(u.assigned_cells) && u.assigned_cells.some((c) => String(c) === fCell);
-        if (uCell !== fCell && !hasAssignedCell) return false;
+        const uCellId = String(u.cell_id || "").trim();
+        const uCellName = String(u.cell_name || u.celula || "").trim();
+        const assignedCells = Array.isArray(u.assigned_cells) ? u.assigned_cells : [];
+
+        const matchesCell =
+          uCellId === fCell ||
+          (targetCell && uCellId === targetCell.id) ||
+          uCellName.toLowerCase() === targetCellName.toLowerCase() ||
+          assignedCells.some((c) => String(c) === fCell || String(c).toLowerCase() === targetCellName.toLowerCase());
+
+        if (!matchesCell) return false;
       }
 
       // 4. Role filter
@@ -206,16 +371,31 @@
     });
   }
 
+  function resolveChurchDisplayName(churchId) {
+    if (!churchId) return "—";
+    if (typeof window !== "undefined" && typeof window.churchName === "function") {
+      return window.churchName(churchId);
+    }
+    if (typeof churchName === "function") {
+      return churchName(churchId);
+    }
+    const c = getChurches().find((item) => String(item.id) === String(churchId));
+    return c ? (c.church_name || c.public_name || c.name) : churchId;
+  }
+
   function mapUserToExportRow(u) {
     const isPt = getLang() === "pt";
-    const linkedCell = (window.state?.cellRegistry || window.state?.cells || window.REAL_CELLS_REGISTRY || []).find(
+    const allCells = getCells();
+    const allGroups = getCellGroups();
+
+    const linkedCell = allCells.find(
       (c) => String(c.id) === String(u.cell_id) || c.cell_name === u.cell_id || c.name === u.cell_id
     );
-    const linkedGroup = (window.state?.cellGroups || window.REAL_CELL_GROUPS || []).find(
+    const linkedGroup = allGroups.find(
       (g) => String(g.id) === String(u.cell_group_id) || g.group_name === u.cell_group_id || g.name === u.cell_group_id
     );
 
-    const cName = typeof churchName === "function" ? churchName(u.church_id) : (u.church_name || u.church_id || "—");
+    const cName = resolveChurchDisplayName(u.church_id);
     const cellNameStr = u.cell_name || (linkedCell ? (linkedCell.cell_name || linkedCell.nome_da_celula || linkedCell.name) : (u.assigned_cells?.length ? `${u.assigned_cells.length} célula(s)` : "—"));
     const cellGroupNameStr = u.cell_group_name || (linkedGroup ? (linkedGroup.group_name || linkedGroup.name) : "—");
     const authLabel = u.auth_user_id ? (isPt ? "Ligado (Linked)" : "Linked") : (isPt ? "Pendente (Pending Setup)" : "Pending Setup");
@@ -291,10 +471,9 @@
 
     const fileBase = filename || `utilizadores-ce-${new Date().toISOString().slice(0, 10)}.xlsx`;
 
-    // 1. If SheetJS (XLSX) is loaded in window, generate real .xlsx file
-    if (window.XLSX && typeof window.XLSX.utils?.json_to_sheet === "function") {
+    // 1. SheetJS real .xlsx file
+    if (typeof window !== "undefined" && window.XLSX && typeof window.XLSX.utils?.json_to_sheet === "function") {
       const ws = window.XLSX.utils.json_to_sheet(tableData);
-      // Auto-size columns
       const colWidths = activeCols.map((col) => {
         const maxLen = Math.max(
           col.label.length,
@@ -310,7 +489,7 @@
       return;
     }
 
-    // 2. Fallback XML / HTML table Excel format
+    // 2. Fallback XML / HTML table format
     const headerHtml = activeCols.map((c) => `<th>${c.label}</th>`).join("");
     const bodyHtml = mapped.map((m) => `<tr>${activeCols.map((c) => `<td>${m[c.id] ?? ""}</td>`).join("")}</tr>`).join("");
     const html = `<html><head><meta charset="utf-8"></head><body><table border="1"><caption>Christ Embassy Mozambique — ${isPt ? "Relatório de Utilizadores" : "Users Report"}</caption><thead><tr>${headerHtml}</tr></thead><tbody>${bodyHtml}</tbody></table></body></html>`;
@@ -328,13 +507,13 @@
   function exportToPdf(filteredUsers, filters) {
     const isPt = getLang() === "pt";
     const { headers, rows } = getExportRows(filteredUsers);
-    const churchLabel = filters.church_id ? (typeof churchName === "function" ? churchName(filters.church_id) : filters.church_id) : (isPt ? "Todas as Igrejas" : "All Churches");
+    const churchLabel = filters.church_id ? resolveChurchDisplayName(filters.church_id) : (isPt ? "Todas as Igrejas" : "All Churches");
     const roleLabel = filters.role ? resolveRoleLabel(filters.role) : (isPt ? "Todas as Funções" : "All Roles");
     const activeCount = filteredUsers.filter((u) => !/lock|bloque|suspend|inactiv|inativ/i.test(String(u.status || "Active")) && u.isActive !== false).length;
     const linkedCount = filteredUsers.filter((u) => Boolean(u.auth_user_id)).length;
     const pendingCount = filteredUsers.filter((u) => !u.auth_user_id).length;
     const printDate = new Date().toLocaleString(isPt ? "pt-MZ" : "en-US");
-    const adminName = window.activeUser?.name || "Admin";
+    const adminName = (typeof window !== "undefined" && window.activeUser?.name) || "Admin";
 
     const win = window.open("", "_blank", "noopener,noreferrer,width=1024,height=768");
     if (!win) {
@@ -365,9 +544,6 @@
     th { background: #002d62; color: #ffffff; text-align: left; padding: 7px 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; border: 1px solid #002d62; }
     td { padding: 6px 8px; border: 1px solid #e2e8f0; font-size: 10.5px; color: #334155; }
     tr:nth-child(even) td { background: #f8fafc; }
-    .badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 700; }
-    .badge-success { background: #dcfce7; color: #15803d; }
-    .badge-warning { background: #fef3c7; color: #b45309; }
     .footer { margin-top: 1.5rem; padding-top: 0.8rem; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; font-size: 9px; color: #94a3b8; }
     @media print {
       body { padding: 0; }
@@ -452,22 +628,26 @@
       ...rows.map((r) => r.join("\t"))
     ].join("\n");
 
-    navigator.clipboard.writeText(tsvContent).then(() => {
-      if (typeof showToast === "function") {
-        showToast(isPt ? "Dados copiados para a área de transferência!" : "User data copied to clipboard!");
-      } else {
-        alert(isPt ? "Dados copiados para a área de transferência!" : "User data copied to clipboard!");
-      }
-    }).catch((err) => {
-      console.warn("[CE Export] clipboard copy failed", err);
-    });
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(tsvContent).then(() => {
+        if (typeof showToast === "function") {
+          showToast(isPt ? "Dados copiados para a área de transferência!" : "User data copied to clipboard!");
+        } else if (typeof window.showToast === "function") {
+          window.showToast(isPt ? "Dados copiados para a área de transferência!" : "User data copied to clipboard!");
+        } else {
+          alert(isPt ? "Dados copiados para a área de transferência!" : "User data copied to clipboard!");
+        }
+      }).catch((err) => {
+        console.warn("[CE Export] clipboard copy failed", err);
+      });
+    }
   }
 
   function buildUserExportModalHtml() {
     const isPt = getLang() === "pt";
-    const churches = (window.state?.churches || []);
-    const cellGroups = (window.state?.cellGroups || window.REAL_CELL_GROUPS || []);
-    const cells = (window.state?.cellRegistry || window.state?.cells || window.REAL_CELLS_REGISTRY || []);
+    const churches = getChurches();
+    const cellGroups = getCellGroups();
+    const cells = getCells();
 
     return `
     <div class="modal fade user-export-modal" id="userExportModal" tabindex="-1" aria-labelledby="userExportModalTitle" aria-hidden="true">
@@ -663,11 +843,54 @@
     tbodyEl.innerHTML = previewRows.map((r) => `<tr>${r.map((c) => `<td class="text-nowrap">${c ?? "—"}</td>`).join("")}</tr>`).join("");
   }
 
+  function repopulateDropdowns() {
+    const isPt = getLang() === "pt";
+    const churchSelect = document.getElementById("ueFilterChurch");
+    const groupSelect = document.getElementById("ueFilterCellGroup");
+    const cellSelect = document.getElementById("ueFilterCell");
+
+    const selectedChurchId = churchSelect?.value || currentFilterState.church_id || "";
+    const selectedGroupId = groupSelect?.value || currentFilterState.cell_group_id || "";
+    const selectedCellId = cellSelect?.value || currentFilterState.cell_id || "";
+
+    const allChurches = getChurches();
+    const allGroups = getCellGroups();
+    const allCells = getCells();
+
+    // 1. Churches
+    if (churchSelect) {
+      const cur = churchSelect.value;
+      churchSelect.innerHTML = `<option value="">${isPt ? "Todas as Igrejas" : "All Churches"}</option>` +
+        allChurches.map((c) => `<option value="${c.id}" ${c.id === cur ? "selected" : ""}>${c.church_name || c.public_name || c.name}</option>`).join("");
+    }
+
+    // 2. Cell Groups (filter by selected church if any)
+    if (groupSelect) {
+      const filteredGroups = selectedChurchId
+        ? allGroups.filter((g) => !g.church_id || String(g.church_id) === selectedChurchId)
+        : allGroups;
+      groupSelect.innerHTML = `<option value="">${isPt ? "Todos os Grupos de Célula" : "All Cell Groups"}</option>` +
+        filteredGroups.map((g) => `<option value="${g.id || g.name}" ${g.id === selectedGroupId || g.name === selectedGroupId ? "selected" : ""}>${g.group_name || g.name}</option>`).join("");
+    }
+
+    // 3. Cells (filter by selected group and church if any)
+    if (cellSelect) {
+      let filteredCells = allCells;
+      if (selectedChurchId) {
+        filteredCells = filteredCells.filter((c) => !c.church_id || String(c.church_id) === selectedChurchId);
+      }
+      if (selectedGroupId) {
+        filteredCells = filteredCells.filter((c) => String(c.group_id) === selectedGroupId || c.group_name === selectedGroupId || String(c.cell_group_id) === selectedGroupId);
+      }
+      cellSelect.innerHTML = `<option value="">${isPt ? "Todas as Células" : "All Individual Cells"}</option>` +
+        filteredCells.map((c) => `<option value="${c.id || c.name}" ${c.id === selectedCellId || c.name === selectedCellId ? "selected" : ""}>${c.cell_name || c.nome_da_celula || c.name}</option>`).join("");
+    }
+  }
+
   function mountExportModalEvents() {
     const modalEl = document.getElementById("userExportModal");
     if (!modalEl) return;
 
-    // 1. Filter input events
     const churchSelect = document.getElementById("ueFilterChurch");
     const groupSelect = document.getElementById("ueFilterCellGroup");
     const cellSelect = document.getElementById("ueFilterCell");
@@ -687,37 +910,17 @@
       updatePreviewAndCounts();
     }
 
-    // Cascading Church selection -> filter cell groups and cells
+    // Cascading Church selection
     churchSelect?.addEventListener("change", () => {
-      const selectedChurchId = churchSelect.value;
-      const allGroups = window.state?.cellGroups || window.REAL_CELL_GROUPS || [];
-      const allCells = window.state?.cellRegistry || window.state?.cells || window.REAL_CELLS_REGISTRY || [];
-
-      if (groupSelect) {
-        const filteredGroups = selectedChurchId ? allGroups.filter((g) => String(g.church_id || g.igreja) === selectedChurchId) : allGroups;
-        groupSelect.innerHTML = `<option value="">${getLang() === "pt" ? "Todos os Grupos de Célula" : "All Cell Groups"}</option>` +
-          filteredGroups.map((g) => `<option value="${g.id || g.name}">${g.group_name || g.name}</option>`).join("");
-      }
-
-      if (cellSelect) {
-        const filteredCells = selectedChurchId ? allCells.filter((c) => String(c.church_id || c.igreja) === selectedChurchId) : allCells;
-        cellSelect.innerHTML = `<option value="">${getLang() === "pt" ? "Todas as Células" : "All Individual Cells"}</option>` +
-          filteredCells.map((c) => `<option value="${c.id || c.name}">${c.cell_name || c.nome_da_celula || c.name}</option>`).join("");
-      }
-
+      currentFilterState.church_id = churchSelect.value;
+      repopulateDropdowns();
       onFilterChange();
     });
 
-    // Cascading Cell Group selection -> filter cells
+    // Cascading Cell Group selection
     groupSelect?.addEventListener("change", () => {
-      const selectedGroupId = groupSelect.value;
-      const allCells = window.state?.cellRegistry || window.state?.cells || window.REAL_CELLS_REGISTRY || [];
-
-      if (cellSelect && selectedGroupId) {
-        const filteredCells = allCells.filter((c) => String(c.group_id || c.cell_group_id) === selectedGroupId || c.group_name === selectedGroupId);
-        cellSelect.innerHTML = `<option value="">${getLang() === "pt" ? "Todas as Células do Grupo" : "All Cells in Group"}</option>` +
-          filteredCells.map((c) => `<option value="${c.id || c.name}">${c.cell_name || c.nome_da_celula || c.name}</option>`).join("");
-      }
+      currentFilterState.cell_group_id = groupSelect.value;
+      repopulateDropdowns();
       onFilterChange();
     });
 
@@ -726,9 +929,19 @@
     statusSelect?.addEventListener("change", onFilterChange);
     authSelect?.addEventListener("change", onFilterChange);
     searchInput?.addEventListener("input", onFilterChange);
+    searchInput?.addEventListener("keyup", onFilterChange);
 
     // Reset filters button
     document.getElementById("btnResetUserExportFilters")?.addEventListener("click", () => {
+      currentFilterState = {
+        church_id: "",
+        cell_group_id: "",
+        cell_id: "",
+        role: "",
+        status: "",
+        auth_link: "",
+        search: ""
+      };
       if (churchSelect) churchSelect.value = "";
       if (groupSelect) groupSelect.value = "";
       if (cellSelect) cellSelect.value = "";
@@ -736,7 +949,8 @@
       if (statusSelect) statusSelect.value = "";
       if (authSelect) authSelect.value = "";
       if (searchInput) searchInput.value = "";
-      onFilterChange();
+      repopulateDropdowns();
+      updatePreviewAndCounts();
     });
 
     // Column selector pill events
@@ -820,15 +1034,19 @@
     });
   }
 
-  function openUserExportModal(initialFilters = {}) {
+  function openUserExportModal(initialOptions = {}) {
+    if (initialOptions && initialOptions.state) {
+      injectedState = initialOptions.state;
+    }
+
     currentFilterState = {
-      church_id: initialFilters.church_id || "",
-      cell_group_id: initialFilters.cell_group_id || "",
-      cell_id: initialFilters.cell_id || "",
-      role: initialFilters.role || "",
-      status: initialFilters.status || "",
-      auth_link: initialFilters.auth_link || "",
-      search: initialFilters.search || ""
+      church_id: initialOptions.church_id || "",
+      cell_group_id: initialOptions.cell_group_id || "",
+      cell_id: initialOptions.cell_id || "",
+      role: initialOptions.role || "",
+      status: initialOptions.status || "",
+      auth_link: initialOptions.auth_link || "",
+      search: initialOptions.search || ""
     };
 
     let modalEl = document.getElementById("userExportModal");
@@ -838,6 +1056,25 @@
 
     const modalHtml = buildUserExportModalHtml();
     document.body.insertAdjacentHTML("beforeend", modalHtml);
+
+    repopulateDropdowns();
+
+    // Set initial values if provided
+    const churchSelect = document.getElementById("ueFilterChurch");
+    const groupSelect = document.getElementById("ueFilterCellGroup");
+    const cellSelect = document.getElementById("ueFilterCell");
+    const roleSelect = document.getElementById("ueFilterRole");
+    const statusSelect = document.getElementById("ueFilterStatus");
+    const authSelect = document.getElementById("ueFilterAuth");
+    const searchInput = document.getElementById("ueFilterSearch");
+
+    if (churchSelect && currentFilterState.church_id) churchSelect.value = currentFilterState.church_id;
+    if (groupSelect && currentFilterState.cell_group_id) groupSelect.value = currentFilterState.cell_group_id;
+    if (cellSelect && currentFilterState.cell_id) cellSelect.value = currentFilterState.cell_id;
+    if (roleSelect && currentFilterState.role) roleSelect.value = currentFilterState.role;
+    if (statusSelect && currentFilterState.status) statusSelect.value = currentFilterState.status;
+    if (authSelect && currentFilterState.auth_link) authSelect.value = currentFilterState.auth_link;
+    if (searchInput && currentFilterState.search) searchInput.value = currentFilterState.search;
 
     mountExportModalEvents();
     updatePreviewAndCounts();
@@ -856,6 +1093,10 @@
     exportToPdf,
     exportToCsv,
     copyTableToClipboard,
+    getChurches,
+    getCellGroups,
+    getCells,
+    getResolvedUsers,
     ROLE_TAXONOMY,
     EXPORT_COLUMNS
   };

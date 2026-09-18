@@ -213,4 +213,23 @@ assert.ok(roleKeys.includes("Cell Group Leader"), "Should include Cell Group Lea
 assert.ok(roleKeys.includes("Pastoral Care Rector"), "Should include Pastoral Care Rector");
 console.log("✅ Role taxonomy includes all key Christ Embassy roles");
 
+// --- 5. Data Resolution Verification ---
+console.log("\n--- 4. Data Resolution Functions Verification ---");
+const churches = CEUserExport.getChurches();
+assert.equal(churches.length, 2, "Should resolve 2 churches");
+assert.equal(churches[0].church_name, "E.C. Maputo Central - Sede");
+console.log("✅ getChurches() successfully loaded churches from state");
+
+const groups = CEUserExport.getCellGroups();
+assert.equal(groups.length, 2, "Should resolve 2 cell groups");
+console.log("✅ getCellGroups() successfully loaded cell groups from state");
+
+const cells = CEUserExport.getCells();
+assert.equal(cells.length, 3, "Should resolve 3 cells");
+console.log("✅ getCells() successfully loaded cells from state");
+
+const users = CEUserExport.getResolvedUsers();
+assert.equal(users.length, 4, "Should resolve 4 users");
+console.log("✅ getResolvedUsers() successfully loaded users from state");
+
 console.log("\n🎉 ALL USER EXPORT SUITE TESTS PASSED SUCCESSFULLY!");

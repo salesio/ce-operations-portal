@@ -3809,6 +3809,11 @@ function normalizeServiceLabelsInTree(value, seen = new WeakSet()) {
 
 let lang = localStorage.getItem(LANG_KEY) || "pt";
 let state = loadState();
+if (typeof window !== "undefined") {
+  window.state = state;
+  window.getState = () => state;
+  window.getLang = () => lang;
+}
 // Older builds cached an entire Supabase members table in the browser. Preserve
 // only local write fallbacks; the live directory is now exclusively paginated.
 if (String(window.__CE_ENV__?.VITE_DATA_SOURCE || "").toLowerCase() === "supabase" && Array.isArray(state.members) && state.members.length > 100) {
@@ -4635,6 +4640,9 @@ function registerDeletedUser(user) {
 }
 
 function isUserDeleted(user, checkState = (typeof state !== "undefined" ? state : null)) {
+if (typeof window !== "undefined") {
+  window.isUserDeleted = isUserDeleted;
+}
   if (!user) return false;
   let persistentIds = [];
   let persistentEmails = [];
@@ -5244,6 +5252,11 @@ function getAllRegisteredCells() {
   memoizedAllCells = Array.from(cellsById.values());
   memoizedAllCellsVersion = version;
   return memoizedAllCells;
+}
+
+if (typeof window !== "undefined") {
+  window.getAllRegisteredCellGroups = getAllRegisteredCellGroups;
+  window.getAllRegisteredCells = getAllRegisteredCells;
 }
 
 function cellGroupName(idOrName) {
@@ -8006,6 +8019,10 @@ function churchNameFromList(id, churches = []) {
 
 function churchName(id) {
   return churchNameFromList(id, state.churches || []);
+}
+if (typeof window !== "undefined") {
+  window.churchName = churchName;
+  window.churchNameFromList = churchNameFromList;
 }
 
 function churchFilterAliases(value = "", selectedText = "") {
