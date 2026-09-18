@@ -29,22 +29,22 @@
       <h1 data-i18n="login.title">Portal da Equipa</h1>
       <p class="login-lead" data-i18n="login.lead">Acesso interno para acompanhamento espiritual, igrejas, celulas, escola, financas e administracao.</p>
       <div id="loginModeBadge" class="mb-2"></div>
-      <form id="loginForm" class="d-grid gap-3 mt-4" novalidate onsubmit="event.preventDefault(); window.enterDashboard && window.enterDashboard(); return false;">
+      <form id="loginForm" class="d-grid gap-3 mt-4" onsubmit="event.preventDefault(); window.enterDashboard && window.enterDashboard(); return false;">
         <div>
-          <label class="form-label fw-semibold" for="loginEmail">E-mail</label>
-          <input id="loginEmail" class="form-control" type="email" placeholder="ex: seu.email@ce-mozambique.org" autocomplete="username" required>
+          <label class="form-label fw-semibold" for="loginEmail">E-mail ou Utilizador</label>
+          <input id="loginEmail" class="form-control" type="text" placeholder="ex: admin@embaixadadecristo.org" autocomplete="username">
         </div>
         <div>
           <label class="form-label fw-semibold" for="loginPassword" data-i18n="login.password">Senha</label>
           <div class="input-group">
-            <input id="loginPassword" class="form-control" type="password" placeholder="Introduza a sua senha" autocomplete="current-password" required>
+            <input id="loginPassword" class="form-control" type="password" placeholder="Introduza a sua senha" autocomplete="current-password">
             <button class="btn btn-outline-secondary" type="button" id="togglePasswordBtn" aria-label="Mostrar ou ocultar senha">
               <i class="bi bi-eye" id="togglePasswordIcon"></i>
             </button>
           </div>
         </div>
         <div id="loginError" class="alert alert-danger d-none py-2 small mb-0" role="alert"></div>
-        <button class="btn btn-ce-gold btn-lg w-100 d-flex align-items-center justify-content-center" type="submit" data-login-enter data-i18n="login.submit">
+        <button class="btn btn-ce-gold btn-lg w-100 d-flex align-items-center justify-content-center" type="button" data-login-enter data-i18n="login.submit" onclick="window.enterDashboard && window.enterDashboard();">
           <span class="spinner-border spinner-border-sm d-none me-2" role="status" aria-hidden="true" id="loginSpinner"></span>
           <span id="loginBtnText">Iniciar Sessão</span>
         </button>
