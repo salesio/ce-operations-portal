@@ -8062,44 +8062,111 @@ nav.module-tabs {
   backdrop-filter: blur(20px);
 }
 
+.user-export-modal .modal-content {
+  background: #0d1527 !important;
+  border: 1px solid rgba(212, 175, 55, 0.3) !important;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8) !important;
+}
+
 .user-export-modal .form-label {
   font-weight: 600;
   letter-spacing: 0.03em;
+  color: #cbd5e1 !important;
 }
 
 .user-export-modal .form-select,
 .user-export-modal .form-control {
-  background: rgba(15, 23, 42, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #ffffff;
+  background: #1e293b !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  color: #f8fafc !important;
   border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.user-export-modal .form-select option {
+  background: #0f172a;
+  color: #f8fafc;
 }
 
 .user-export-modal .form-select:focus,
 .user-export-modal .form-control:focus {
-  background: rgba(15, 23, 42, 0.9);
-  border-color: var(--ce-gold, #f5c755);
-  color: #ffffff;
-  box-shadow: 0 0 0 0.25rem rgba(245, 199, 85, 0.2);
+  background: #1e293b !important;
+  border-color: var(--ce-gold, #f5c755) !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 0 0.25rem rgba(245, 199, 85, 0.25) !important;
 }
 
-.user-export-modal .ue-col-checkbox + i {
-  font-size: 0.9rem;
+.user-export-modal .ue-preview-wrapper {
+  background: #060b14 !important;
+  border: 1px solid rgba(212, 175, 55, 0.25) !important;
+  border-radius: 8px;
+  max-height: 290px;
+  overflow: auto;
+}
+
+.user-export-modal #uePreviewTable {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-bottom: 0;
+  font-size: 0.82rem;
+  background-color: #060b14 !important;
 }
 
 .user-export-modal #uePreviewTable th {
-  background: #0a192f;
-  color: var(--ce-gold, #f5c755);
-  font-size: 0.75rem;
-  letter-spacing: 0.05em;
+  background: #0f1d36 !important;
+  color: #ffd700 !important; /* Vivid Gold */
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  border-bottom: 2px solid rgba(245, 199, 85, 0.3);
+  padding: 10px 14px !important;
+  border-bottom: 2px solid #d4af37 !important;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  white-space: nowrap;
+}
+
+.user-export-modal #uePreviewTable tbody tr {
+  background-color: #091120 !important;
+  transition: background-color 0.15s ease;
+}
+
+.user-export-modal #uePreviewTable tbody tr:nth-child(even) {
+  background-color: #0f1a30 !important;
+}
+
+.user-export-modal #uePreviewTable tbody tr:hover {
+  background-color: rgba(212, 175, 55, 0.18) !important;
 }
 
 .user-export-modal #uePreviewTable td {
-  border-color: rgba(255, 255, 255, 0.08);
-  font-size: 0.8rem;
+  padding: 8px 14px !important;
+  color: #f8fafc !important; /* Ultra-crisp bright white/silver */
+  font-size: 0.82rem !important;
+  font-weight: 500;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  vertical-align: middle;
+  white-space: nowrap;
 }
+
+.user-export-modal #uePreviewTable td .user-name-cell {
+  color: #ffffff !important;
+  font-weight: 700;
+}
+
+.user-export-modal #uePreviewTable td .user-email-cell {
+  color: #38bdf8 !important; /* Bright Sky Blue */
+}
+
+.user-export-modal #uePreviewTable td .badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
 
 
 

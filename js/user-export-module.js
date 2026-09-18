@@ -783,9 +783,9 @@
             </div>
 
             <!-- Live Table Preview -->
-            <div class="table-responsive bg-dark bg-opacity-75 border border-secondary border-opacity-25 rounded-3" style="max-height: 240px;">
-              <table class="table table-dark table-striped table-hover table-sm mb-0 align-middle small" id="uePreviewTable">
-                <thead class="sticky-top bg-dark">
+            <div class="ue-preview-wrapper mb-2">
+              <table class="table table-hover table-sm mb-0 align-middle" id="uePreviewTable">
+                <thead>
                   <tr id="uePreviewThead"></tr>
                 </thead>
                 <tbody id="uePreviewTbody"></tbody>
@@ -831,16 +831,43 @@
     const tbodyEl = document.getElementById("uePreviewTbody");
     if (!theadEl || !tbodyEl) return;
 
-    const { headers, rows } = getExportRows(filtered);
-    theadEl.innerHTML = headers.map((h) => `<th class="text-nowrap">${h}</th>`).join("");
+    const activeCols = getActiveExportColumns();
+    const mapped = filtered.slice(0, 30).map(mapUserToExportRow);
 
-    if (!rows.length) {
-      tbodyEl.innerHTML = `<tr><td colspan="${headers.length || 1}" class="text-center py-4 text-white-50">${isPt ? "Nenhum utilizador corresponde aos filtros seleccionados." : "No users match selected filters."}</td></tr>`;
+    theadEl.innerHTML = activeCols.map((c) => `<th class="text-nowrap">${c.label}</th>`).join("");
+
+    if (!mapped.length) {
+      tbodyEl.innerHTML = `<tr><td colspan="${activeCols.length || 1}" class="text-center py-4 text-white-50">${isPt ? "Nenhum utilizador corresponde aos filtros seleccionados." : "No users match selected filters."}</td></tr>`;
       return;
     }
 
-    const previewRows = rows.slice(0, 15);
-    tbodyEl.innerHTML = previewRows.map((r) => `<tr>${r.map((c) => `<td class="text-nowrap">${c ?? "—"}</td>`).join("")}</tr>`).join("");
+    tbodyEl.innerHTML = mapped.map((m) => {
+      const tdCells = activeCols.map((col) => {
+        const val = m[col.id] ?? "—";
+        if (col.id === "name") {
+          return `<td class="text-nowrap"><span class="user-name-cell">${val}</span></td>`;
+        }
+        if (col.id === "email") {
+          return `<td class="text-nowrap"><span class="user-email-cell">${val}</span></td>`;
+        }
+        if (col.id === "role") {
+          return `<td class="text-nowrap"><span class="badge bg-primary bg-opacity-75 text-white border border-primary">${val}</span></td>`;
+        }
+        if (col.id === "auth_status") {
+          const isLinked = /link|ligad/i.test(val);
+          return `<td class="text-nowrap">${isLinked ? '<span class="badge bg-success text-white"><i class="bi bi-link-45deg me-1"></i>Linked</span>' : '<span class="badge bg-warning text-dark"><i class="bi bi-clock me-1"></i>Pending</span>'}</td>`;
+        }
+        if (col.id === "status") {
+          const isActive = /act/i.test(val);
+          return `<td class="text-nowrap">${isActive ? '<span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50">Active</span>' : '<span class="badge bg-secondary text-white">Inactive</span>'}</td>`;
+        }
+        if (col.id === "church") {
+          return `<td class="text-nowrap"><span class="text-white">${val}</span></td>`;
+        }
+        return `<td class="text-nowrap" style="color: #f1f5f9;">${val}</td>`;
+      });
+      return `<tr>${tdCells.join("")}</tr>`;
+    }).join("");
   }
 
   function repopulateDropdowns() {
