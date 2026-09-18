@@ -4572,7 +4572,7 @@ if (typeof window !== "undefined") {
 }
 
 function cleanRenderedText(root = document) {
-  if (!root) return;
+  if (!root || typeof NodeFilter === "undefined" || !document?.createTreeWalker) return;
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
     acceptNode(node) {
       const tag = node.parentElement?.tagName;
@@ -20489,6 +20489,7 @@ async function dualWriteCellMinistryRecord(modalType, mode, record) {
         } else if (mode === "delete") {
           result = await cellSb.deleteCellGroup(record.id);
         }
+      }
       if (payload.leader_name && mode !== "delete") {
         registerPendingMemberFromExternalRole({
           name: payload.leader_name,
@@ -20594,7 +20595,8 @@ async function dualWriteCellMinistryRecord(modalType, mode, record) {
           entity_type: "cellLeader",
           entity_id: record.id
         });
-      } else if (modalType === "cellReport") {
+      }
+    } else if (modalType === "cellReport") {
       if (cellSb) {
         if (mode === "create") {
           result = await cellSb.createCellReport(record);
