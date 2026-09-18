@@ -4895,9 +4895,45 @@ function normalizeState(saved) {
     ...structuredClone(seedData.cellLeadership),
     ...(saved.cellLeadership || {})
   };
+  if (saved.cellLeadership && Array.isArray(saved.cellLeadership.evaluations) && saved.cellLeadership.evaluations.length) {
+    merged.cellLeadership.evaluations = structuredClone(saved.cellLeadership.evaluations);
+  }
+  if (saved.cellLeadership && Array.isArray(saved.cellLeadership.actionPlans) && saved.cellLeadership.actionPlans.length) {
+    merged.cellLeadership.actionPlans = structuredClone(saved.cellLeadership.actionPlans);
+  }
   if (!Array.isArray(merged.cellLeadership.actionPlans)) {
     merged.cellLeadership.actionPlans = structuredClone(seedData.cellLeadership.actionPlans || []);
   }
+  try {
+    const rawLocalEvals = typeof localStorage !== "undefined" ? localStorage.getItem("ce-data-layer:cell-evaluations") : null;
+    if (rawLocalEvals) {
+      const parsedEvals = JSON.parse(rawLocalEvals);
+      if (Array.isArray(parsedEvals) && parsedEvals.length) {
+        const evalMap = new Map((merged.cellLeadership.evaluations || []).map((e) => [String(e.id), e]));
+        parsedEvals.forEach((pe) => {
+          if (pe && pe.id) {
+            const existing = evalMap.get(String(pe.id)) || {};
+            evalMap.set(String(pe.id), { ...existing, ...pe });
+          }
+        });
+        merged.cellLeadership.evaluations = [...evalMap.values()];
+      }
+    }
+    const rawLocalPlans = typeof localStorage !== "undefined" ? localStorage.getItem("ce-data-layer:cell-action-plans") : null;
+    if (rawLocalPlans) {
+      const parsedPlans = JSON.parse(rawLocalPlans);
+      if (Array.isArray(parsedPlans) && parsedPlans.length) {
+        const planMap = new Map((merged.cellLeadership.actionPlans || []).map((p) => [String(p.id), p]));
+        parsedPlans.forEach((pp) => {
+          if (pp && pp.id) {
+            const existing = planMap.get(String(pp.id)) || {};
+            planMap.set(String(pp.id), { ...existing, ...pp });
+          }
+        });
+        merged.cellLeadership.actionPlans = [...planMap.values()];
+      }
+    }
+  } catch (_) {}
   merged.cellReportSubmissions = Array.isArray(merged.cellReportSubmissions) ? merged.cellReportSubmissions : [];
   merged.memberRegistrationCandidates = Array.isArray(merged.memberRegistrationCandidates) ? merged.memberRegistrationCandidates : [];
   merged.financeDisbursements = (saved.financeDisbursements || []).filter(r => !isLegacyMockRecord(r, 'disb-req-'));
@@ -20635,13 +20671,13 @@ async function hydrateCellMinistryFromRepository() {
 
     if (evalsRes && evalsRes.ok && Array.isArray(evalsRes.data) && (evalsRes.data.length || usingSupabase)) {
       state.cellLeadership = state.cellLeadership || {};
-      const prev = new Map((state.cellLeadership.evaluations || []).map((e) => [e.id, e]));
+      const prev = new Map((state.cellLeadership.evaluations || []).map((e) => [String(e.id), e]));
       const byId = new Map();
       evalsRes.data.forEach((row) => {
-        const previous = prev.get(row.id) || {};
-        byId.set(row.id, {
-          ...(usingSupabase ? previous : row),
-          ...(usingSupabase ? row : previous),
+        const previous = prev.get(String(row.id)) || {};
+        const mergedEval = {
+          ...previous,
+          ...row,
           id: row.id,
           report_id: row.report_id || previous.report_id,
           cell_id: row.cell_id || previous.cell_id,
@@ -20649,18 +20685,18 @@ async function hydrateCellMinistryFromRepository() {
           avaliador: row.avaliador || previous.avaliador || row.evaluator,
           data_da_avaliacao: row.data_da_avaliacao || previous.data_da_avaliacao || row.evaluation_date,
           classificacao: row.classificacao || previous.classificacao || row.classification,
-          pontos_fortes: row.pontos_fortes || previous.pontos_fortes || "",
-          pontos_a_melhorar: row.pontos_a_melhorar || previous.pontos_a_melhorar || "",
-          acao_recomendada: row.acao_recomendada || previous.acao_recomendada || row.recommended_action || "",
+          pontos_fortes: row.pontos_fortes !== undefined && row.pontos_fortes !== "" ? row.pontos_fortes : (previous.pontos_fortes || ""),
+          pontos_a_melhorar: row.pontos_a_melhorar !== undefined && row.pontos_a_melhorar !== "" ? row.pontos_a_melhorar : (previous.pontos_a_melhorar || ""),
+          acao_recomendada: row.acao_recomendada !== undefined && row.acao_recomendada !== "" ? row.acao_recomendada : (previous.acao_recomendada || row.recommended_action || ""),
           precisa_followup: row.precisa_followup ?? previous.precisa_followup ?? false,
-          estado: row.estado || previous.estado || row.status || "Pendente"
-        });
+          estado: row.estado || previous.estado || row.status || "Pendente",
+          status: row.estado || previous.estado || row.status || "Pendente"
+        };
+        byId.set(String(row.id), mergedEval);
       });
-      if (!usingSupabase) {
-        prev.forEach((localRow, id) => {
-          if (!byId.has(id)) byId.set(id, localRow);
-        });
-      }
+      prev.forEach((localRow, id) => {
+        if (!byId.has(String(id))) byId.set(String(id), localRow);
+      });
       state.cellLeadership.evaluations = [...byId.values()];
       hydrated = true;
     }
@@ -20672,13 +20708,13 @@ async function hydrateCellMinistryFromRepository() {
 
     if (plansRes && plansRes.ok && Array.isArray(plansRes.data) && (plansRes.data.length || usingSupabase)) {
       state.cellLeadership = state.cellLeadership || {};
-      const prev = new Map((state.cellLeadership.actionPlans || []).map((p) => [p.id, p]));
+      const prev = new Map((state.cellLeadership.actionPlans || []).map((p) => [String(p.id), p]));
       const byId = new Map();
       plansRes.data.forEach((row) => {
-        const previous = prev.get(row.id) || {};
-        byId.set(row.id, {
-          ...(usingSupabase ? previous : row),
-          ...(usingSupabase ? row : previous),
+        const previous = prev.get(String(row.id)) || {};
+        const mergedPlan = {
+          ...previous,
+          ...row,
           id: row.id,
           church_id: row.church_id || previous.church_id,
           cell_id: row.cell_id || previous.cell_id,
@@ -20689,14 +20725,14 @@ async function hydrateCellMinistryFromRepository() {
           owner: row.owner || previous.owner || row.responsible_person,
           due_date: row.due_date || previous.due_date || row.target_date,
           status: row.status || previous.status || row.estado || "Planeado",
-          notes: row.notes || previous.notes || ""
-        });
+          estado: row.status || previous.status || row.estado || "Planeado",
+          notes: row.notes !== undefined && row.notes !== "" ? row.notes : (previous.notes || "")
+        };
+        byId.set(String(row.id), mergedPlan);
       });
-      if (!usingSupabase) {
-        prev.forEach((localRow, id) => {
-          if (!byId.has(id)) byId.set(id, localRow);
-        });
-      }
+      prev.forEach((localRow, id) => {
+        if (!byId.has(String(id))) byId.set(String(id), localRow);
+      });
       state.cellLeadership.actionPlans = [...byId.values()];
       hydrated = true;
     }
@@ -25418,34 +25454,48 @@ function renderUsers() {
   const lockedCount = users.filter((u) => /lock|bloque|suspend|inactiv|inativ/i.test(String(u.status || ""))).length;
   const linkedCount = users.filter((u) => Boolean(u.auth_user_id)).length;
   const pendingAuthCount = users.filter((u) => !u.auth_user_id).length;
-  setPageContent(`${sectionHeader(L("usersRoles"), L("accessControl"), "user", "bi-person-lock")}
+  const exportBtnHtml = `<button type="button" class="btn btn-outline-cyan btn-touch me-2" id="btnOpenUserExportModal" data-action="export-users"><i class="bi bi-file-earmark-arrow-down me-1"></i>${lang === "pt" ? "Exportar" : "Export"}</button>`;
+  setPageContent(`${sectionHeader(L("usersRoles"), L("accessControl"), "user", "bi-person-lock", { actions: exportBtnHtml })}
     <div class="row g-3 mb-4">
       ${sm("bi-people", "Total", users.length, "users", {})}
       ${sm("bi-person-check", "Activos", activeCount, "users", {})}
       ${sm("bi-shield-check", "Auth Ligado", linkedCount, "users", {})}
       ${sm("bi-hourglass-split", "Pendente Auth", pendingAuthCount, "users", {})}
     </div>
-    <article class="panel glass-panel">${dataTable(
-      [L("name"), L("email"), L("Role"), "Auth Link", L("status"), L("church"), "Célula / Grupo", L("actions")],
-      users.map((u) => {
-        const linkedCell = (state.cellRegistry || state.cells || window.REAL_CELLS_REGISTRY || []).find((c) => String(c.id) === String(u.cell_id) || c.cell_name === u.cell_id || c.name === u.cell_id);
-        const linkedGroup = (state.cellGroups || window.REAL_CELL_GROUPS || []).find((g) => String(g.id) === String(u.cell_group_id) || g.group_name === u.cell_group_id || g.name === u.cell_group_id);
-        const cellScope = u.cell_name || (linkedCell ? (linkedCell.cell_name || linkedCell.nome_da_celula || linkedCell.name) : (u.cell_group_name ? `Grupo: ${u.cell_group_name}` : (linkedGroup ? `Grupo: ${linkedGroup.group_name || linkedGroup.name}` : (u.assigned_cells?.length ? `${u.assigned_cells.length} célula(s)` : "—"))));
-        const authBadge = u.auth_user_id ? `<span class="badge bg-success"><i class="bi bi-link me-1"></i>Linked</span>` : `<span class="badge bg-warning text-dark"><i class="bi bi-clock me-1"></i>Pending Setup</span>`;
-        const rawRole = u.role || u.role_name || "Cell Leader";
-        const displayRole = roleLabels[rawRole] || rawRole;
-        return [
-          u.name || u.full_name,
-          u.email,
-          displayRole,
-          authBadge,
-          badge(u.status || "Active"),
-          churchName(u.church_id),
-          cellScope,
-          actionButtons([["view", "user", u.id, L("view")], ["edit", "user", u.id, L("edit")], ["delete", "user", u.id, L("delete")]]),
-        ];
-      }),
-    )}</article>`);
+    <article class="panel glass-panel">
+      <div class="panel-head mb-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div class="d-flex align-items-center gap-2">
+          <h3 class="panel-title mb-0"><i class="bi bi-people me-2"></i>${L("usersRoles")}</h3>
+          <span class="badge bg-ce-blue">${users.length} ${lang === "pt" ? "utilizadores" : "users"}</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <button type="button" class="btn btn-sm btn-outline-cyan" data-action="export-users">
+            <i class="bi bi-download me-1"></i>${lang === "pt" ? "Exportar Suite" : "Export Suite"}
+          </button>
+        </div>
+      </div>
+      ${dataTable(
+        [L("name"), L("email"), L("Role"), "Auth Link", L("status"), L("church"), "Célula / Grupo", L("actions")],
+        users.map((u) => {
+          const linkedCell = (state.cellRegistry || state.cells || window.REAL_CELLS_REGISTRY || []).find((c) => String(c.id) === String(u.cell_id) || c.cell_name === u.cell_id || c.name === u.cell_id);
+          const linkedGroup = (state.cellGroups || window.REAL_CELL_GROUPS || []).find((g) => String(g.id) === String(u.cell_group_id) || g.group_name === u.cell_group_id || g.name === u.cell_group_id);
+          const cellScope = u.cell_name || (linkedCell ? (linkedCell.cell_name || linkedCell.nome_da_celula || linkedCell.name) : (u.cell_group_name ? `Grupo: ${u.cell_group_name}` : (linkedGroup ? `Grupo: ${linkedGroup.group_name || linkedGroup.name}` : (u.assigned_cells?.length ? `${u.assigned_cells.length} célula(s)` : "—"))));
+          const authBadge = u.auth_user_id ? `<span class="badge bg-success"><i class="bi bi-link me-1"></i>Linked</span>` : `<span class="badge bg-warning text-dark"><i class="bi bi-clock me-1"></i>Pending Setup</span>`;
+          const rawRole = u.role || u.role_name || "Cell Leader";
+          const displayRole = roleLabels[rawRole] || rawRole;
+          return [
+            u.name || u.full_name,
+            u.email,
+            displayRole,
+            authBadge,
+            badge(u.status || "Active"),
+            churchName(u.church_id),
+            cellScope,
+            actionButtons([["view", "user", u.id, L("view")], ["edit", "user", u.id, L("edit")], ["delete", "user", u.id, L("delete")]]),
+          ];
+        }),
+      )}
+    </article>`);
 }
 
 function renderAccess() {
@@ -28660,21 +28710,7 @@ function openForm(type, id = null, options = {}) {
     Promise.resolve(refreshChurchesFromRepositoryForForms())
       .catch((error) => console.warn("[CE Forms] church refresh skipped", error));
   }
-      if (type === "foundationTeacher") {
-      const previous = collection[index];
-      const idx = state.foundationTeachers.findIndex((item) => String(item.id) === String(id));
-      if (idx >= 0) state.foundationTeachers.splice(idx, 1);
-      foundationAudit("teacher_deleted", "foundationTeacher", id, JSON.stringify(previous), "", activeUser?.name || "Admin Principal");
-      saveState(`Deleted Foundation School teacher ${previous?.full_name || id}`);
-      if (typeof showToast === "function") showToast(lang === "pt" ? "Professor eliminado com sucesso!" : "Teacher deleted successfully!");
-      if (activeRoute === "foundation") renderFoundation();
-      else setRoute(activeRoute);
-      void Promise.resolve(persistFoundationTeacherViaRepository("delete", previous || id)).catch((error) => {
-        console.warn("[CE Foundation] delete teacher sync error", error);
-      });
-      return;
-    }
-    if (type === "member") {
+  if (type === "member") {
     if (id && usesSupabaseMembers()) {
       Promise.resolve(fetchMemberDetailFromRepository(id))
         .then((fresh) => {
@@ -29463,7 +29499,21 @@ async function submitForm(form) {
 
   const collection = getCollection(modalType);
   if (modalMode === "edit") {
-    const index = collection.findIndex((item) => item.id === modalRecordId);
+    let index = collection.findIndex((item) => item && (String(item.id) === String(modalRecordId) || item.id === modalRecordId));
+    if (index < 0 && modalRecordId) {
+      if (modalType === "cellEvaluation" && Array.isArray(state.cellLeadership?.evaluations)) {
+        index = state.cellLeadership.evaluations.findIndex((item) => item && (String(item.id) === String(modalRecordId) || item.id === modalRecordId));
+      } else if (modalType === "cellActionPlan" && Array.isArray(state.cellLeadership?.actionPlans)) {
+        index = state.cellLeadership.actionPlans.findIndex((item) => item && (String(item.id) === String(modalRecordId) || item.id === modalRecordId));
+      }
+    }
+    if (index < 0) {
+      console.warn(`[CE submitForm] Record ${modalRecordId} not found in collection ${modalType}`);
+      bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide();
+      form.reset();
+      setRoute(activeRoute);
+      return;
+    }
     const previousRecord = { ...collection[index] };
     collection[index] = { ...collection[index], ...data, updated_by: activeUser.name, updated_at: new Date().toISOString().slice(0, 10), status: data.estado || data.status || collection[index].status };
     if (modalType === "cellGroup") {
@@ -29477,6 +29527,38 @@ async function submitForm(form) {
       collection[index].cell_group_id = collection[index].cell_group_id || collection[index].group_id;
       collection[index].group_name = group.group_name || group.name || collection[index].group_name;
       collection[index].cell_name = collection[index].cell_name || collection[index].nome_da_celula;
+    }
+    if (modalType === "cellEvaluation") {
+      collection[index].report_id = data.report_id || collection[index].report_id;
+      collection[index].avaliador = data.avaliador || collection[index].avaliador || collection[index].evaluator;
+      collection[index].evaluator = collection[index].avaliador;
+      collection[index].data_da_avaliacao = data.data_da_avaliacao || collection[index].data_da_avaliacao || collection[index].evaluation_date;
+      collection[index].evaluation_date = collection[index].data_da_avaliacao;
+      collection[index].classificacao = data.classificacao || collection[index].classificacao || collection[index].classification;
+      collection[index].classification = collection[index].classificacao;
+      collection[index].pontos_fortes = data.pontos_fortes !== undefined ? data.pontos_fortes : (collection[index].pontos_fortes || "");
+      collection[index].pontos_a_melhorar = data.pontos_a_melhorar !== undefined ? data.pontos_a_melhorar : (collection[index].pontos_a_melhorar || "");
+      collection[index].acao_recomendada = data.acao_recomendada !== undefined ? data.acao_recomendada : (collection[index].acao_recomendada || collection[index].recommended_action || "");
+      collection[index].recommended_action = collection[index].acao_recomendada;
+      collection[index].precisa_followup = Boolean(data.precisa_followup);
+      collection[index].needs_followup = collection[index].precisa_followup;
+      collection[index].estado = data.estado || data.status || collection[index].estado || "Pendente";
+      collection[index].status = collection[index].estado;
+      collection[index].church_id = data.church_id || collection[index].church_id;
+    }
+    if (modalType === "cellActionPlan") {
+      collection[index].church_id = data.church_id || collection[index].church_id;
+      collection[index].cell_id = data.cell_id || collection[index].cell_id;
+      collection[index].cell_group_id = data.cell_group_id || collection[index].cell_group_id;
+      collection[index].leader_name = data.leader_name || collection[index].leader_name;
+      collection[index].action = data.action || collection[index].action;
+      collection[index].owner = data.owner || collection[index].owner || collection[index].responsible_person;
+      collection[index].responsible_person = collection[index].owner;
+      collection[index].due_date = data.due_date || collection[index].due_date || collection[index].target_date;
+      collection[index].target_date = collection[index].due_date;
+      collection[index].status = data.status || data.estado || collection[index].status || "Planeado";
+      collection[index].estado = collection[index].status;
+      collection[index].notes = data.notes !== undefined ? data.notes : (collection[index].notes || "");
     }
     saveState(`Updated ${modalType}`);
     void dualWriteCellMinistryRecord(modalType, "update", collection[index]);
@@ -31730,18 +31812,35 @@ async function quickAction(action, type, id) {
   if (action === "edit") return openForm(type, id);
   if (action === "followup") return openFollowup(id);
   if (action === "submit" || action === "approve") {
-    const record = getCollection(type).find((item) => item.id === id);
+    const record = getCollection(type).find((item) => item && (String(item.id) === String(id) || item.id === id));
     if (!record) return;
     record.status = action === "submit" ? "Submetido" : "Aprovado";
     record.estado = record.status;
     record.updated_by = activeUser.name;
     record.updated_at = new Date().toISOString().slice(0, 10);
     saveState(`${action} ${type}`);
+    if (["churchReport", "alecRegistration", "alecScore", "cellReport", "cellEvaluation", "cellActionPlan", "cellLeader", "cellGroup", "cellRegistry"].includes(type)) {
+      void dualWriteCellMinistryRecord(type, "update", record);
+    } else if (type === "finance") {
+      void dualWriteFinanceRecord("update", record);
+    } else if (type.startsWith("venue") || type === "inventoryItem") {
+      void dualWriteVenueInventoryRecord(type, "update", record);
+    } else if (type.startsWith("media")) {
+      void dualWriteMediaRecord(type, "update", record);
+    } else if (type.startsWith("counseling")) {
+      void dualWriteCounselingRecord(type, "update", record);
+    } else if (["baptism", "marriage", "baby"].includes(type)) {
+      void dualWriteSacramentsRecord(type, "update", record);
+    } else if (type.startsWith("fevo")) {
+      void dualWriteFevoRecord(type, "update", record);
+    } else if (type.startsWith("material") || type.startsWith("prison") || type === "program") {
+      void persistDopRecord(type, "update", record);
+    }
     return setRoute(activeRoute);
   }
   if (action === "verify" || action === "reject") {
     if (type === "finance") return openFinanceDrawer(action, id);
-    const record = getCollection(type).find((item) => item.id === id);
+    const record = getCollection(type).find((item) => item && (String(item.id) === String(id) || item.id === id));
     if (!record) return;
     if (type === "materialSale") {
       record.estado = action === "verify" ? "Confirmado" : "Rejeitado";
@@ -31750,9 +31849,21 @@ async function quickAction(action, type, id) {
     } else if (type.startsWith("fevo")) {
       record.status = action === "verify" ? "Aprovado" : "Rejeitado";
       record.estado = record.status;
+      void dualWriteFevoRecord(type, "update", record);
     } else {
       record.estado = action === "verify" ? FINANCE_STATUS_VERIFIED : FINANCE_STATUS_REJECTED;
       record.status = record.estado;
+      if (["churchReport", "alecRegistration", "alecScore", "cellReport", "cellEvaluation", "cellActionPlan", "cellLeader", "cellGroup", "cellRegistry"].includes(type)) {
+        void dualWriteCellMinistryRecord(type, "update", record);
+      } else if (type.startsWith("venue") || type === "inventoryItem") {
+        void dualWriteVenueInventoryRecord(type, "update", record);
+      } else if (type.startsWith("media")) {
+        void dualWriteMediaRecord(type, "update", record);
+      } else if (type.startsWith("counseling")) {
+        void dualWriteCounselingRecord(type, "update", record);
+      } else if (["baptism", "marriage", "baby"].includes(type)) {
+        void dualWriteSacramentsRecord(type, "update", record);
+      }
     }
     record.updated_by = activeUser.name;
     record.updated_at = new Date().toISOString().slice(0, 10);
@@ -31761,7 +31872,7 @@ async function quickAction(action, type, id) {
   }
   if (action === "graduate") {
     const collection = getCollection(type);
-    const index = collection.findIndex((item) => item.id === id);
+    const index = collection.findIndex((item) => item && (String(item.id) === String(id) || item.id === id));
     if (index < 0) return;
     collection[index] = applyFoundationCalculations({
       ...collection[index],
@@ -31769,9 +31880,24 @@ async function quickAction(action, type, id) {
       updated_at: new Date().toISOString().slice(0, 10)
     }, true);
     saveState("Graduated student");
+    if (type === "foundationStudent" && typeof persistFoundationStudentViaRepository === "function") {
+      void persistFoundationStudentViaRepository("update", collection[index]);
+    }
     return setRoute(activeRoute);
   }
-  if (action === "export") return alert(`${L("export")}: ${id}`);
+  if (action === "export") {
+    if (type === "user" && window.CEUserExport?.openUserExportModal) {
+      window.CEUserExport.openUserExportModal();
+      return;
+    }
+    return alert(`${L("export")}: ${id}`);
+  }
+  if (action === "export-users") {
+    if (window.CEUserExport?.openUserExportModal) {
+      window.CEUserExport.openUserExportModal();
+    }
+    return;
+  }
 }
 
 function exportFollowUpCsv() {
@@ -32008,6 +32134,13 @@ function enrollFirstTimer(id) {
 }
 
 document.addEventListener("click", async (event) => {
+  const exportUsersBtn = event.target.closest('[data-action="export-users"], #btnOpenUserExportModal, #btnTableExportUsers');
+  if (exportUsersBtn) {
+    if (window.CEUserExport?.openUserExportModal) {
+      window.CEUserExport.openUserExportModal();
+    }
+    return;
+  }
   const venuePageBtn = event.target.closest("[data-venue-page]");
   if (venuePageBtn) {
     const page = Number(venuePageBtn.dataset.venuePage);

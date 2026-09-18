@@ -66,6 +66,7 @@
     "test:performance": "node scripts/smoke-performance.mjs",
     "test:auth-real": "node scripts/test-auth-real.mjs",
     "test:users-roles": "node scripts/test-users-roles.mjs",
+    "test:user-export": "node scripts/test-user-export-suite.mjs",
     "test:cell-access": "node scripts/test-cell-access.mjs",
     "test:cell-member-reconciliation": "node scripts/test-cell-member-reconciliation.mjs",
     "test:cell-transfer": "node scripts/test-cell-transfer.mjs",

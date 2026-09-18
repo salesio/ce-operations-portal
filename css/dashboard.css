@@ -8052,4 +8052,54 @@ nav.module-tabs {
   color: #bae6fd;
 }
 
+/* ==========================================================================
+   User Export Suite Styling
+   ========================================================================== */
+.user-export-modal .modal-content {
+  background: linear-gradient(135deg, rgba(8, 20, 44, 0.96) 0%, rgba(13, 33, 68, 0.98) 100%);
+  border: 1px solid rgba(245, 199, 85, 0.3) !important;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(20px);
+}
+
+.user-export-modal .form-label {
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.user-export-modal .form-select,
+.user-export-modal .form-control {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border-radius: 6px;
+}
+
+.user-export-modal .form-select:focus,
+.user-export-modal .form-control:focus {
+  background: rgba(15, 23, 42, 0.9);
+  border-color: var(--ce-gold, #f5c755);
+  color: #ffffff;
+  box-shadow: 0 0 0 0.25rem rgba(245, 199, 85, 0.2);
+}
+
+.user-export-modal .ue-col-checkbox + i {
+  font-size: 0.9rem;
+}
+
+.user-export-modal #uePreviewTable th {
+  background: #0a192f;
+  color: var(--ce-gold, #f5c755);
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-bottom: 2px solid rgba(245, 199, 85, 0.3);
+}
+
+.user-export-modal #uePreviewTable td {
+  border-color: rgba(255, 255, 255, 0.08);
+  font-size: 0.8rem;
+}
+
+
 
