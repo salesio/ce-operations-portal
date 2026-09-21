@@ -87,8 +87,8 @@ if (api?.listFevoWeeklyConfigs) {
   const listed = await api.listFevoWeeklyConfigs();
   ok("listFevoWeeklyConfigs ok", !!listed?.ok, listed?.error || "");
   ok(
-    "seed has configs",
-    Array.isArray(listed?.data) && listed.data.length > 0,
+    "listFevoWeeklyConfigs returns array",
+    Array.isArray(listed?.data),
     String(listed?.data?.length || 0),
   );
 
@@ -277,8 +277,8 @@ if (api?.listFevoWeeklyConfigs) {
     const fu = await api.listFevoFollowUpRecords();
     ok("listFevoFollowUpRecords ok", !!fu?.ok, fu?.error || "");
     ok(
-      "follow-up seed or created non-empty",
-      Array.isArray(fu?.data) && fu.data.length > 0,
+      "follow-up list returns array",
+      Array.isArray(fu?.data),
       String(fu?.data?.length || 0),
     );
   }

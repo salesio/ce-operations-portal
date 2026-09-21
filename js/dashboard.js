@@ -3171,11 +3171,24 @@ const CELL_ROUTE_ALIASES = {
 
 let cellRegistryFilter = { groupId: null, search: "", churchId: "", status: "" };
 
-const FEVO_TAB_ROUTES = new Set([
-  "fevo", "fevoConfigRoute", "fevoFollowUpRoute", "fevoEvangelismRoute",
-  "fevoVisitationRoute", "fevoPrayerRoute", "fevoNoReportsRoute",
-  "fevoWeeklyReportsRoute", "fevoAnalysisRoute"
-]);
+const FEVO_NAV = {
+  parentKey: "fevoHeader",
+  label: "F.E.V.O",
+  icon: "bi-compass",
+  routes: [
+    ["fevo", "bi-grid-1x2", "cellOverview"],
+    ["fevoConfigRoute", "bi-gear", "weeklyConfiguration"],
+    ["fevoFollowUpRoute", "bi-person-lines-fill", "followUp"],
+    ["fevoEvangelismRoute", "bi-megaphone", "evangelism"],
+    ["fevoVisitationRoute", "bi-house-heart", "visitation"],
+    ["fevoPrayerRoute", "bi-calendar-heart", "prayer"],
+    ["fevoNoReportsRoute", "bi-exclamation-triangle", "groupsWithoutReport"],
+    ["fevoWeeklyReportsRoute", "bi-journal-text", "weeklyReports"],
+    ["fevoAnalysisRoute", "bi-bar-chart-line", "analysis"]
+  ]
+};
+
+const FEVO_TAB_ROUTES = new Set(FEVO_NAV.routes.map(([route]) => route));
 
 const VENUE_TAB_ROUTES = new Set([
   "venueInventory", "venueInventoryGeneral", "venueInventoryAcquisitions",
@@ -3230,26 +3243,15 @@ function tabParallaxWrap(bodyHtml, route) {
   const family = tabParallaxFamily(route);
   if (!family) return bodyHtml;
   const direction = tabParallaxDirection(route);
-  return `
-    <div class="tab-parallax-stage" data-parallax-dir="${direction}">
-      <div class="tab-parallax-bg" aria-hidden="true">
-        <span class="tab-parallax-orb tab-parallax-orb-a"></span>
-        <span class="tab-parallax-orb tab-parallax-orb-b"></span>
-      </div>
-      <div class="tab-parallax-layer is-entering">${bodyHtml}</div>
-    </div>`;
+  const dirClass = direction === "forward" ? "is-forward" : direction === "back" ? "is-back" : "";
+  return `<div class="tab-parallax-shell ${dirClass}">${bodyHtml}</div>`;
 }
 
 function triggerTabParallax() {
-  const layer = byId("content")?.querySelector(".tab-parallax-layer.is-entering");
-  if (!layer) return;
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    layer.classList.remove("is-entering");
-    return;
-  }
+  const shell = document.querySelector(".tab-parallax-shell");
+  if (!shell) return;
   requestAnimationFrame(() => {
-    layer.classList.add("is-animating");
-    layer.addEventListener("animationend", () => layer.classList.remove("is-entering", "is-animating"), { once: true });
+    shell.classList.add("is-active");
   });
 }
 
@@ -3274,8 +3276,8 @@ function isModuleTabRoute(route) {
 const NAV_GROUPS = [
   { key: "main", items: [["dashboard", "bi-speedometer2", "dashboard"], ["churches", "bi-building", "churches"], ["members", "bi-people", "members"], ["reports", "bi-bar-chart-line", "reports"]] },
   { key: "pastoralCare", items: [["firstTimers", "bi-person-heart", "firstTimers"], ["followUp", "bi-telephone-outbound", "followUp"], ["foundation", "bi-mortarboard", "foundationSchool"], ["sacraments", "bi-droplet", "sacraments"], ["counseling", "bi-chat-heart", "counseling"]] },
-  // Order: Células (subnav) → F.E.V.O → Finanças → Parcerias → Mídia → Requisições → Inventário → Programas & Extensão (subnav)
-  { key: "departments", items: [["fevo", "bi-compass", "fevo"], ["finance", "bi-cash-coin", "finance"], ["partnership", "bi-stars", "partnership"], ["media", "bi-camera-reels", "media"], ["requisitions", "bi-clipboard-check", "requisitions"], ["venueInventory", "bi-box-seam", "venueInventoryShort"]] },
+  // Order: Células (subnav) → F.E.V.O (subnav) → Finanças → Parcerias → Mídia → Requisições → Inventário → Programas & Extensão (subnav)
+  { key: "departments", items: [["finance", "bi-cash-coin", "finance"], ["partnership", "bi-stars", "partnership"], ["media", "bi-camera-reels", "media"], ["requisitions", "bi-clipboard-check", "requisitions"], ["venueInventory", "bi-box-seam", "venueInventoryShort"]] },
   { key: "admin", items: [["staffHr", "bi-people-fill", "staffHr"], ["users", "bi-person-lock", "usersRoles"], ["access", "bi-shield-lock", "accessControl"], ["settings", "bi-gear", "settings"], ["audit", "bi-journal-check", "auditLogs"]] }
 ];
 
@@ -3615,23 +3617,10 @@ const seedData = {
     ]
   },
   fevo: {
-    weeklyConfigurations: [
-      { id: "fevo-cfg-1", church_id: "church-hq", semana_inicio: "2026-05-04", semana_fim: "2026-05-10", team_a_activity: "Acompanhamento", team_b_activity: "Ora��o", team_c_activity: "Evangeliza��o", team_d_activity: "Visita��o", preparado_por: "Sister Cassandra", observacoes: "Rota��o semanal conforme plano F.E.V.O.", estado: "Fechado", status: "Fechado", created_by: "Sister Cassandra", updated_by: "Sister Cassandra", created_at: "2026-05-03", updated_at: "2026-05-10" },
-      { id: "fevo-cfg-2", church_id: "church-hq", semana_inicio: "2026-05-25", semana_fim: "2026-05-31", team_a_activity: "Visita��o", team_b_activity: "Acompanhamento", team_c_activity: "Ora��o", team_d_activity: "Evangeliza��o", preparado_por: "Sister Cassandra", observacoes: "Configura��o activa de exemplo.", estado: "Activo", status: "Activo", created_by: "Sister Cassandra", updated_by: "Sister Cassandra", created_at: "2026-05-24", updated_at: "2026-05-25" }
-    ],
-    reports: [
-      { id: "fevo-rpt-1", church_id: "church-hq", semana_inicio: "2026-05-25", semana_fim: "2026-05-31", team: "Team A", activity_type: "Visita��o", group_id: "group-1", cell_id: "cell-1", leader_id: "leader-1", group_name: "Group Central", leader_name: "Mateus Nhantumbo", number_of_cells: 2, number_of_members: 26, leaders_present: 3, members_present: 18, ft_in_church: 4, submitted_report: true, submitted_by: "F.E.V.O Team Leader", submitted_at: "2026-05-31", status: "Submetido", notes: "Visita��o com bom testemunho.", souls_visited: 12, family_members_reached: 7, new_converts: 2, visit_location: "Mavalane", visit_result: "Fam�lias abertas para c�lula.", created_by: "F.E.V.O Team Leader", updated_by: "Sister Cassandra", created_at: "2026-05-31", updated_at: "2026-05-31" },
-      { id: "fevo-rpt-2", church_id: "church-hq", semana_inicio: "2026-05-25", semana_fim: "2026-05-31", team: "Team B", activity_type: "Acompanhamento", group_id: "group-1", cell_id: "cell-2", leader_id: "leader-2", group_name: "Group Mavalane", leader_name: "Aminata Chivinda", number_of_cells: 1, number_of_members: 12, leaders_present: 2, members_present: 8, ft_in_church: 3, submitted_report: true, submitted_by: "Aminata Chivinda", submitted_at: "2026-05-31", status: "Em Revis�o", notes: "Acompanhamento de primeira vez.", souls_contacted: 21, feedback_count: 14, followup_result: "8 confirmaram presen�a no culto.", next_action: "Adicionar ao grupo WhatsApp.", created_by: "Aminata Chivinda", updated_by: "Sister Cassandra", created_at: "2026-05-31", updated_at: "2026-05-31" },
-      { id: "fevo-rpt-3", church_id: "church-hq", semana_inicio: "2026-05-25", semana_fim: "2026-05-31", team: "Team C", activity_type: "Ora��o", group_id: "group-1", cell_id: "", leader_id: "", group_name: "Grupo de Ora��o", leader_name: "Sister Cassandra", number_of_cells: 3, number_of_members: 31, leaders_present: 4, members_present: 22, ft_in_church: 2, submitted_report: true, submitted_by: "Sister Cassandra", submitted_at: "2026-05-31", status: "Aprovado", notes: "Ora��o por novos convertidos.", average_members_present: 18, days_of_prayer: 5, prayer_focus: "Reten��o de almas e crescimento celular.", prayer_testimonies: "Testemunhos de restaura��o familiar.", created_by: "Sister Cassandra", updated_by: "Sister Cassandra", created_at: "2026-05-31", updated_at: "2026-05-31" },
-      { id: "fevo-rpt-4", church_id: "church-hq", semana_inicio: "2026-05-25", semana_fim: "2026-05-31", team: "Team D", activity_type: "Evangeliza��o", group_id: "group-1", cell_id: "cell-1", leader_id: "leader-1", group_name: "Grupo Evangelismo", leader_name: "Mateus Nhantumbo", number_of_cells: 2, number_of_members: 19, leaders_present: 3, members_present: 15, ft_in_church: 6, submitted_report: true, submitted_by: "Mateus Nhantumbo", submitted_at: "2026-05-31", status: "Submetido", notes: "Evangeliza��o em equipa.", souls_evangelized: 42, new_converts: 9, evangelism_location: "Baixa da Cidade", materials_distributed: 60, created_by: "Mateus Nhantumbo", updated_by: "Sister Cassandra", created_at: "2026-05-31", updated_at: "2026-05-31" }
-    ],
-    noReports: [
-      { id: "fevo-nr-1", church_id: "church-hq", semana_inicio: "2026-05-25", semana_fim: "2026-05-31", team: "Team A", activity_type: "Visita��o", group_name: "Grupo Matola", leader_name: "Irm� Celeste", reason_not_submitted: "L�der sem internet no domingo.", followup_action: "Contactar e recolher relat�rio por chamada.", contacted: true, contacted_by: "Sister Cassandra", status: "Contactado", created_by: "Sister Cassandra", updated_by: "Sister Cassandra", created_at: "2026-05-31", updated_at: "2026-06-01" },
-      { id: "fevo-nr-2", church_id: "church-hq", semana_inicio: "2026-05-25", semana_fim: "2026-05-31", team: "Team B", activity_type: "Acompanhamento", group_name: "Grupo Choupal", leader_name: "Irm�o Paulo", reason_not_submitted: "Sem resposta.", followup_action: "Escalar para supervisora.", contacted: false, contacted_by: "", status: "Reincidente", created_by: "Sister Cassandra", updated_by: "Sister Cassandra", created_at: "2026-05-31", updated_at: "2026-06-01" }
-    ],
-    weeklyReports: [
-      { id: "fevo-week-1", church_id: "church-hq", title: "RELATÓRIO F.E.V.O", semana_inicio: "2026-05-25", semana_fim: "2026-05-31", status: "Submetido", created_by: "Sister Cassandra", updated_by: "Sister Cassandra", created_at: "2026-05-31", updated_at: "2026-05-31" }
-    ]
+    weeklyConfigurations: [],
+    reports: [],
+    noReports: [],
+    weeklyReports: []
   },
   venueInventory: {
     inventory: [],
@@ -10580,6 +10569,36 @@ function renderOutreachSidebarNav() {
     </div>`;
 }
 
+function renderFevoSidebarNav() {
+  const workspaceRoutes = roleWorkspaceRoutes();
+  const parentExpanded = isSidebarGroupExpanded(FEVO_NAV.parentKey);
+  const parentActive = FEVO_TAB_ROUTES.has(activeRoute);
+  const visibleRoutes = FEVO_NAV.routes.filter(([route]) => {
+    if (workspaceRoutes && !workspaceRoutes.includes(route)) return false;
+    const nav = resolveRouteAccess(route);
+    return nav.visible && !nav.locked;
+  });
+  if (!visibleRoutes.length) return "";
+  return `
+    <div class="nav-cell-branch nav-fevo-branch ${parentExpanded ? "is-expanded" : ""} ${parentActive ? "has-active" : ""}" data-nav-group="${FEVO_NAV.parentKey}">
+      <button type="button" class="nav-cell-parent nav-fevo-parent" aria-expanded="${parentExpanded}" aria-label="${L("navGroupToggle")}: F.E.V.O">
+        <i class="bi ${FEVO_NAV.icon}" aria-hidden="true"></i>
+        <span>F.E.V.O</span>
+        <i class="bi bi-chevron-down nav-cell-chevron" aria-hidden="true"></i>
+      </button>
+      <div class="nav-cell-body">
+        <div class="nav-cell-body-inner">
+          ${visibleRoutes.map(([route, icon, label]) => `
+            <button type="button" class="nav-cell-item nav-fevo-item ${activeRoute === route ? "active" : ""}" data-route="${route}" onclick="window.setRoute && window.setRoute('${route}'); return false;" title="${L(label)}">
+              <i class="bi ${sidebarIcon(icon, route)} me-2" aria-hidden="true"></i>
+              <span>${L(label)}</span>
+            </button>
+          `).join("")}
+        </div>
+      </div>
+    </div>`;
+}
+
 function cellModuleHeader(route, { modalType = null } = {}) {
   return moduleNavShell("cellLeadership", {
     title: cellRouteLabel(route),
@@ -10627,13 +10646,14 @@ function renderShell() {
     const items = group.items.map(([route, icon, label]) => ({ route, icon: sidebarIcon(icon, route), label, nav: resolveRouteAccess(route) }))
       .filter((item) => (!workspaceRoutes || workspaceRoutes.includes(item.route)) && item.nav.visible && !item.nav.locked && (item.route !== "venueInventory" || canViewVenueModule()));
     const cellNav = group.key === "departments" && (!workspaceRoutes || workspaceRoutes.some((r) => r.startsWith("cell") || r === "cellPortal")) ? renderCellSidebarNav() : "";
+    const fevoNav = group.key === "departments" && (!workspaceRoutes || workspaceRoutes.some((r) => FEVO_TAB_ROUTES.has(r))) ? renderFevoSidebarNav() : "";
     const outreachNav = group.key === "departments" && (!workspaceRoutes || workspaceRoutes.some((r) => OUTREACH_TAB_ROUTES.has(r))) ? renderOutreachSidebarNav() : "";
     const navItems = items.map(({ route, icon, label }) => `
       <button type="button" class="nav-item-btn" data-route="${route}" onclick="window.setRoute && window.setRoute('${route}'); return false;" title="${L(label)}">
         <i class="bi ${sidebarIcon(icon, route)}"></i><span>${L(label)}</span>
       </button>
     `).join("");
-    if (!navItems && !cellNav && !outreachNav) return "";
+    if (!navItems && !cellNav && !fevoNav && !outreachNav) return "";
     const expanded = isSidebarGroupExpanded(group.key) || (group.key === "departments" && String(activeUser?.role || "").toLowerCase().includes("venue"));
     return `
     <div class="nav-group ${expanded ? "is-expanded" : ""}" data-nav-group="${group.key}">
@@ -10644,6 +10664,7 @@ function renderShell() {
       <div class="nav-group-body">
         <div class="nav-group-body-inner">
           ${cellNav}
+          ${fevoNav}
           ${navItems}
           ${outreachNav}
         </div>
@@ -25372,21 +25393,7 @@ function renderFevo(activeTab = "overview") {
     prayerDays: reports.reduce((sum, item) => sum + Number(item.days_of_prayer || 0), 0),
     firstTimers: reports.reduce((sum, item) => sum + Number(item.ft_in_church || 0), 0)
   };
-  const navHtml = moduleNavShell("fevo", { title: L("fevo"), subtitle: L("fevoSubtitle"), modalType: "fevoReport", icon: "bi-compass" },
-    moduleTabsNav([
-      ["cellOverview", "fevo", "overview"],
-      ["weeklyConfiguration", "fevoConfigRoute", "config"],
-      ["followUp", "fevoFollowUpRoute", "followup"],
-      ["evangelism", "fevoEvangelismRoute", "evangelism"],
-      ["visitation", "fevoVisitationRoute", "visitation"],
-      ["prayer", "fevoPrayerRoute", "prayer"],
-      ["groupsWithoutReport", "fevoNoReportsRoute", "noReports"],
-      ["weeklyReports", "fevoWeeklyReportsRoute", "weeklyReports"],
-      ["analysis", "fevoAnalysisRoute", "analysis"]
-    ].map(([key, route, tab]) =>
-      moduleTabButton(L(key), { active: activeTab === tab, attrs: `data-route="${route}"` })
-    ).join(""), "department-tabs fevo-module-tabs")
-  );
+  const navHtml = sectionHeader(L("fevo"), L("fevoSubtitle"), "fevoReport", "bi-compass");
   const overviewSection = show("analysis") ? moduleSection(L("fevoOverviewSection"), L("fevoOverviewHint"), "bi-compass", "fevo", `
     <div class="row g-3 summary-cards-row">
       ${sm("bi-collection", L("totalGroups"), groups.size, "fevo", { route: "fevoWeeklyReportsRoute" })}

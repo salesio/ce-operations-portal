@@ -77,16 +77,6 @@
   }
 
   function seedFor(kind) {
-    var S = window.CESupabase || {};
-    if (kind === "configs") return S.FEVO_WEEKLY_CONFIGS_SEED || [];
-    if (kind === "teams") return S.FEVO_TEAMS_SEED || [];
-    if (kind === "activities") return S.FEVO_ACTIVITIES_SEED || [];
-    if (kind === "reports") return S.FEVO_REPORTS_SEED || [];
-    if (kind === "missing") return S.FEVO_MISSING_REPORTS_SEED || [];
-    if (kind === "followUp") return S.FEVO_FOLLOW_UP_RECORDS_SEED || [];
-    if (kind === "evangelism") return S.FEVO_EVANGELISM_RECORDS_SEED || [];
-    if (kind === "visitation") return S.FEVO_VISITATION_RECORDS_SEED || [];
-    if (kind === "prayer") return S.FEVO_PRAYER_RECORDS_SEED || [];
     return [];
   }
 
