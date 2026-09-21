@@ -21163,7 +21163,7 @@ const cellCellsListPageState = {
     }
   })(),
   page: 1,
-  pageSize: 10
+  pageSize: 12
 };
 
 const cellMembersPageState = {
@@ -21176,7 +21176,7 @@ const cellMembersPageState = {
     }
   })(),
   page: 1,
-  pageSize: 10
+  pageSize: 12
 };
 
 const cellMinistryFilterState = {
@@ -24340,7 +24340,7 @@ function renderCellMembers() {
 
   // Pagination calculation
   const totalCount = allRows.length;
-  const pageSize = cellMembersPageState.pageSize || 50;
+  const pageSize = cellMembersPageState.pageSize || 12;
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   if (cellMembersPageState.page > totalPages) cellMembersPageState.page = totalPages;
   if (cellMembersPageState.page < 1) cellMembersPageState.page = 1;
@@ -24377,7 +24377,7 @@ function renderCellMembers() {
       </span>
       <div class="d-flex align-items-center gap-2">
         <select class="form-select form-select-sm" data-cell-members-page-size aria-label="Page size">
-          ${[10, 25, 50, 100].map((size) => `<option value="${size}"${pageSize === size ? " selected" : ""}>${size}</option>`).join("")}
+          ${[12, 24, 48, 96].map((size) => `<option value="${size}"${pageSize === size ? " selected" : ""}>${size}</option>`).join("")}
         </select>
         <button class="action-btn" data-cell-members-page="prev" ${currentPage <= 1 ? "disabled" : ""}>${lang === "pt" ? "Anterior" : "Previous"}</button>
         <button class="action-btn" data-cell-members-page="next" ${currentPage >= totalPages ? "disabled" : ""}>${lang === "pt" ? "Próximo" : "Next"}</button>
@@ -24540,7 +24540,7 @@ function renderCellCellsList() {
 
   // Pagination calculation
   const totalCount = cells.length;
-  const pageSize = cellCellsListPageState.pageSize || 10;
+  const pageSize = cellCellsListPageState.pageSize || 12;
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   if (cellCellsListPageState.page > totalPages) cellCellsListPageState.page = totalPages;
   if (cellCellsListPageState.page < 1) cellCellsListPageState.page = 1;
@@ -24564,7 +24564,7 @@ function renderCellCellsList() {
       </span>
       <div class="d-flex align-items-center gap-2">
         <select class="form-select form-select-sm" data-cell-cells-list-page-size aria-label="Page size">
-          ${[10, 25, 50, 100].map((size) => `<option value="${size}"${pageSize === size ? " selected" : ""}>${size}</option>`).join("")}
+          ${[12, 24, 48, 96].map((size) => `<option value="${size}"${pageSize === size ? " selected" : ""}>${size}</option>`).join("")}
         </select>
         <button class="action-btn" data-cell-cells-list-page="prev" ${currentPage <= 1 ? "disabled" : ""}>${lang === "pt" ? "Anterior" : "Previous"}</button>
         <button class="action-btn" data-cell-cells-list-page="next" ${currentPage >= totalPages ? "disabled" : ""}>${lang === "pt" ? "Próximo" : "Next"}</button>
@@ -35094,13 +35094,13 @@ document.addEventListener("change", (event) => {
     return;
   }
   if (event.target.matches("[data-cell-members-page-size]")) {
-    cellMembersPageState.pageSize = Number(event.target.value) || 10;
+    cellMembersPageState.pageSize = Number(event.target.value) || 12;
     cellMembersPageState.page = 1;
     renderCellMembers();
     return;
   }
   if (event.target.matches("[data-cell-cells-list-page-size]")) {
-    cellCellsListPageState.pageSize = Number(event.target.value) || 10;
+    cellCellsListPageState.pageSize = Number(event.target.value) || 12;
     cellCellsListPageState.page = 1;
     renderCellCellsList();
     return;
