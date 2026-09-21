@@ -14,6 +14,8 @@ const TABLES = {
   cellReports: "cell_reports",
   cellEvaluations: "cell_evaluations",
   cellActionPlans: "cell_action_plans",
+  cellLeaders: "cell_leaders",
+  cellValidations: "cell_validations",
 } as const;
 
 const COLUMNS: Record<Table, string[]> = {
@@ -25,6 +27,8 @@ const COLUMNS: Record<Table, string[]> = {
   cellReports: ["id", "church_id", "church_name", "cell_group_id", "cell_id", "celula", "semana", "meeting_date", "titulo_do_lider", "nome_do_lider", "leader_phone", "att", "ft", "nc", "oferta", "rs", "cell_health_status", "observacoes", "submetido_por", "submetido_por_id", "avaliado_por", "validado_por", "estado", "metadata", "created_at", "updated_at"],
   cellEvaluations: ["id", "church_id", "report_id", "cell_id", "cell_name", "avaliador", "data_da_avaliacao", "classificacao", "pontos_fortes", "pontos_a_melhorar", "acao_recomendada", "precisa_followup", "estado", "metadata", "created_at", "updated_at"],
   cellActionPlans: ["id", "church_id", "cell_id", "cell_name", "leader_id", "leader_name", "action", "owner", "due_date", "status", "notes", "metadata", "created_at", "updated_at"],
+  cellLeaders: ["id", "church_id", "church_name", "cell_group_id", "cell_id", "celula", "cell_name", "nome_completo", "full_name", "contacto", "phone", "titulo", "treatment", "e_lider_actual", "veio_do_alec", "alec_concluido", "faixa_certificado_pago", "estado", "status", "supervisor", "observacoes", "metadata", "created_at", "updated_at"],
+  cellValidations: ["id", "church_id", "church_name", "report_id", "validado_por", "data_validacao", "decisao", "comentario_final", "estado_final", "metadata", "created_at", "updated_at"],
 };
 
 const ok = <T>(data: T): DataResult<T> => ({ ok: true, data });
@@ -137,6 +141,27 @@ function aliases(t: Table, x: CellMinistryRecord) {
       estado: r.status,
       responsible_person: r.owner,
       target_date: r.due_date,
+    });
+  }
+  if (t === "cellLeaders") {
+    Object.assign(r, {
+      igreja: r.church_id,
+      fullName: r.nome_completo,
+      contact: r.contacto,
+      phone: r.contacto || r.phone,
+      cell: r.celula || r.cell_name,
+      status: r.estado || r.status,
+      treatment: r.titulo || r.treatment,
+    });
+  }
+  if (t === "cellValidations") {
+    Object.assign(r, {
+      igreja: r.church_id,
+      validated_by: r.validado_por,
+      date: r.data_validacao,
+      decision: r.decisao,
+      final_comment: r.comentario_final,
+      final_status: r.estado_final,
     });
   }
   return r;
@@ -395,4 +420,21 @@ export const createCellActionPlan = (p: CellMinistryRecord) => create("cellActio
 export const updateCellActionPlan = (id: EntityId, p: CellMinistryRecord) => update("cellActionPlans", id, p);
 export const deleteCellActionPlan = (id: EntityId) => remove("cellActionPlans", id);
 export const getCellActionPlansByChurch = (churchId: EntityId) => list("cellActionPlans", { church_id: String(churchId) });
+
+// Cell Leaders
+export const listCellLeaders = (filters: Record<string, string | number | boolean | null> = {}) => list("cellLeaders", filters, "nome_completo");
+export const getCellLeaderById = (id: EntityId) => get("cellLeaders", id);
+export const createCellLeader = (p: CellMinistryRecord) => create("cellLeaders", p);
+export const updateCellLeader = (id: EntityId, p: CellMinistryRecord) => update("cellLeaders", id, p);
+export const deleteCellLeader = (id: EntityId) => remove("cellLeaders", id);
+export const getCellLeadersByChurch = (churchId: EntityId) => list("cellLeaders", { church_id: String(churchId) });
+
+// Cell Validations
+export const listCellValidations = (filters: Record<string, string | number | boolean | null> = {}) => list("cellValidations", filters, "data_validacao");
+export const getCellValidationById = (id: EntityId) => get("cellValidations", id);
+export const createCellValidation = (p: CellMinistryRecord) => create("cellValidations", p);
+export const updateCellValidation = (id: EntityId, p: CellMinistryRecord) => update("cellValidations", id, p);
+export const deleteCellValidation = (id: EntityId) => remove("cellValidations", id);
+export const getCellValidationsByChurch = (churchId: EntityId) => list("cellValidations", { church_id: String(churchId) });
+
 
