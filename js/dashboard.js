@@ -15547,6 +15547,8 @@ function renderMembers() {
 
   const candidateDupsCount = pendingCandidates.filter((c) => candidateDuplicates(c).length > 0).length;
 
+  const memberPaginationBar = `<div class="p-3 border-top d-flex justify-content-between align-items-center flex-wrap gap-2" data-members-pagination><span class="text-secondary small">${pageState.loaded ? `${pageState.totalCount} ${lang === "pt" ? "membros" : "members"} · ${lang === "pt" ? "Página" : "Page"} ${pageState.page} / ${pageState.totalPages}` : ""}</span><div class="d-flex align-items-center gap-2"><select class="form-select form-select-sm" data-members-page-size aria-label="Members per page">${[25,50,100].map((size) => `<option value="${size}"${pageState.pageSize === size ? " selected" : ""}>${size}</option>`).join("")}</select><button class="action-btn" data-members-page="prev" ${pageState.page <= 1 || pageState.loading ? "disabled" : ""}>${lang === "pt" ? "Anterior" : "Previous"}</button><button class="action-btn" data-members-page="next" ${pageState.page >= pageState.totalPages || pageState.loading ? "disabled" : ""}>${lang === "pt" ? "Próximo" : "Next"}</button></div></div>`;
+
   setPageContent(`
     ${sectionHeader(L("members"), L("membersSubtitle"), "member", "bi-people", { actions: `<button type="button" class="btn btn-outline-cyan btn-touch" data-hq-members-dry-run><i class="bi bi-eye me-2"></i>${lang === "pt" ? "Pré-visualizar histórico" : "Preview legacy import"}</button><input id="hq-members-import-file" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden><label class="btn btn-outline-success btn-touch mb-0"><i class="bi bi-file-earmark-excel me-2"></i>${lang === "pt" ? "Importar Excel (.xlsx / .csv)" : "Import Excel"}<input id="members-import-file-input" type="file" accept=".xlsx,.xls,.csv" data-members-import hidden></label>` })}
     <div class="row g-3 mb-4 summary-cards-row">
@@ -21152,7 +21154,9 @@ const cellLeadersAttentionPageState = {
     } catch (_) {
       return "card";
     }
-  })()
+  })(),
+  page: 1,
+  pageSize: 12
 };
 
 const cellActionPlanPageState = {
@@ -24026,8 +24030,35 @@ function renderCellMinistry(activeTab = "alecOverview") {
     const filteredEvaluations = applyCellMinistryFilters(attentionEvaluations, leaderFilters, "evaluation");
 
     const isCardView = cellLeadersAttentionPageState.view !== "table";
-    const leaderCardsHtml = filteredLeaders.length
-      ? `<div class="row g-4 mt-1">${filteredLeaders.map((item) => `<div class="col-12 col-md-6 col-xl-4">${renderCellLeaderAttentionCard(item)}</div>`).join("")}</div>`
+
+    // Pagination calculation
+    const totalCount = filteredLeaders.length;
+    const pageSize = cellLeadersAttentionPageState.pageSize || 12;
+    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+    if (cellLeadersAttentionPageState.page > totalPages) cellLeadersAttentionPageState.page = totalPages;
+    if (cellLeadersAttentionPageState.page < 1) cellLeadersAttentionPageState.page = 1;
+    const currentPage = cellLeadersAttentionPageState.page;
+    const startIdx = (currentPage - 1) * pageSize;
+    const endIdx = Math.min(startIdx + pageSize, totalCount);
+    const pagedLeaders = filteredLeaders.slice(startIdx, endIdx);
+
+    const paginationBar = `
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-3 pt-3 border-top" data-cell-leaders-pagination>
+        <span class="text-secondary small">
+          ${totalCount > 0 ? (lang === "pt" ? `A mostrar ${startIdx + 1} a ${endIdx} de ${totalCount} líderes · Página ${currentPage} de ${totalPages}` : `Showing ${startIdx + 1} to ${endIdx} of ${totalCount} leaders · Page ${currentPage} of ${totalPages}`) : (lang === "pt" ? "0 líderes" : "0 leaders")}
+        </span>
+        <div class="d-flex align-items-center gap-2">
+          <select class="form-select form-select-sm" data-cell-leaders-page-size aria-label="Page size">
+            ${[12, 24, 48, 96].map((size) => `<option value="${size}"${pageSize === size ? " selected" : ""}>${size}</option>`).join("")}
+          </select>
+          <button class="action-btn" data-cell-leaders-page="prev" ${currentPage <= 1 ? "disabled" : ""}>${lang === "pt" ? "Anterior" : "Previous"}</button>
+          <button class="action-btn" data-cell-leaders-page="next" ${currentPage >= totalPages ? "disabled" : ""}>${lang === "pt" ? "Próximo" : "Next"}</button>
+        </div>
+      </div>
+    `;
+
+    const leaderCardsHtml = pagedLeaders.length
+      ? `<div class="row g-4 mt-1">${pagedLeaders.map((item) => `<div class="col-12 col-md-6 col-xl-4">${renderCellLeaderAttentionCard(item)}</div>`).join("")}</div>`
       : `<div class="col-12 text-center p-4 text-secondary">${lang === "pt" ? "Nenhum líder em atenção." : "No leaders needing attention."}</div>`;
 
     const evalCardsHtml = filteredEvaluations.length
@@ -24050,9 +24081,23 @@ function renderCellMinistry(activeTab = "alecOverview") {
                   <button type="button" class="btn btn-sm btn-outline-cyan action-secondary" data-action="export" data-type="cellLeader" data-id="cellLeader"><i class="bi bi-download me-1"></i>${L("export")}</button>
                 </div>
               </div>
+              ${paginationBar}
               ${leaderCardsHtml}
+              ${paginationBar}
             </article>
-          ` : modulePanel("cellLeader", L("leadersAttention"), null, [L("fullName"), L("contact"), L("church"), L("cell"), L("supervisor"), L("status"), L("actions")], filteredLeaders.map((item) => [item.nome_completo, item.contacto, churchName(item.igreja), item.celula, item.supervisor, badge(item.estado), backendActions("cellLeader", item.id)]), false)}
+          ` : `
+            <article class="panel glass-panel">
+              <div class="panel-head">
+                <h3 class="panel-title">${L("leadersAttention")}</h3>
+                <div class="action-cluster">
+                  <button type="button" class="btn btn-sm btn-outline-cyan action-secondary" data-action="export" data-type="cellLeader" data-id="cellLeader"><i class="bi bi-download me-1"></i>${L("export")}</button>
+                </div>
+              </div>
+              ${paginationBar}
+              ${dataTable([L("fullName"), L("contact"), L("church"), L("cell"), L("supervisor"), L("status"), L("actions")], pagedLeaders.map((item) => [item.nome_completo, item.contacto, churchName(item.igreja), item.celula, item.supervisor, badge(item.estado), backendActions("cellLeader", item.id)]))}
+              ${paginationBar}
+            </article>
+          `}
         </div>
         <div class="col-12">
           ${isCardView ? `
@@ -24201,6 +24246,32 @@ function renderCellMinistry(activeTab = "alecOverview") {
     const isCardView = cellLeadersAttentionPageState.view !== "table";
     const statusOptions = ["Activo", "Candidato a Líder", "Em Treinamento", "Precisa de Atenção", "Inactivo"];
 
+    // Pagination calculation
+    const totalCount = filteredLeaders.length;
+    const pageSize = cellLeadersAttentionPageState.pageSize || 12;
+    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+    if (cellLeadersAttentionPageState.page > totalPages) cellLeadersAttentionPageState.page = totalPages;
+    if (cellLeadersAttentionPageState.page < 1) cellLeadersAttentionPageState.page = 1;
+    const currentPage = cellLeadersAttentionPageState.page;
+    const startIdx = (currentPage - 1) * pageSize;
+    const endIdx = Math.min(startIdx + pageSize, totalCount);
+    const pagedLeaders = filteredLeaders.slice(startIdx, endIdx);
+
+    const paginationBar = `
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-3 pt-3 border-top" data-cell-leaders-pagination>
+        <span class="text-secondary small">
+          ${totalCount > 0 ? (lang === "pt" ? `A mostrar ${startIdx + 1} a ${endIdx} de ${totalCount} líderes · Página ${currentPage} de ${totalPages}` : `Showing ${startIdx + 1} to ${endIdx} of ${totalCount} leaders · Page ${currentPage} of ${totalPages}`) : (lang === "pt" ? "0 líderes" : "0 leaders")}
+        </span>
+        <div class="d-flex align-items-center gap-2">
+          <select class="form-select form-select-sm" data-cell-leaders-page-size aria-label="Page size">
+            ${[12, 24, 48, 96].map((size) => `<option value="${size}"${pageSize === size ? " selected" : ""}>${size}</option>`).join("")}
+          </select>
+          <button class="action-btn" data-cell-leaders-page="prev" ${currentPage <= 1 ? "disabled" : ""}>${lang === "pt" ? "Anterior" : "Previous"}</button>
+          <button class="action-btn" data-cell-leaders-page="next" ${currentPage >= totalPages ? "disabled" : ""}>${lang === "pt" ? "Próximo" : "Next"}</button>
+        </div>
+      </div>
+    `;
+
     bodyHtml = `
       ${renderCellMinistryFilterBar("cellLeaders", { view: cellLeadersAttentionPageState.view, showWeek: false, showStatus: true, statusOptions })}
       <div class="row g-3 mb-4">
@@ -24220,9 +24291,24 @@ function renderCellMinistry(activeTab = "alecOverview") {
                   <button type="button" class="btn btn-sm btn-outline-cyan action-secondary" data-action="export" data-type="cellLeader" data-id="cellLeader"><i class="bi bi-download me-1"></i>${L("export")}</button>
                 </div>
               </div>
-              ${filteredLeaders.length ? `<div class="row g-4 mt-1">${filteredLeaders.map((item) => `<div class="col-12 col-md-6 col-xl-4">${renderCellLeaderAttentionCard(item)}</div>`).join("")}</div>` : `<div class="col-12 text-center p-4 text-secondary">${lang === "pt" ? "Nenhum líder encontrado para os filtros seleccionados." : "No leaders found for selected filters."}</div>`}
+              ${paginationBar}
+              ${pagedLeaders.length ? `<div class="row g-4 mt-1">${pagedLeaders.map((item) => `<div class="col-12 col-md-6 col-xl-4">${renderCellLeaderAttentionCard(item)}</div>`).join("")}</div>` : `<div class="col-12 text-center p-4 text-secondary">${lang === "pt" ? "Nenhum líder encontrado para os filtros seleccionados." : "No leaders found for selected filters."}</div>`}
+              ${paginationBar}
             </article>
-          ` : modulePanel("cellLeader", L("cellLeaders"), "cellLeader", [L("fullName"), L("contact"), L("church"), L("cell"), L("actualLeader"), L("cameFromAlec"), L("alecFinished"), L("supervisor"), L("status"), L("actions")], filteredLeaders.map((item) => [item.nome_completo, item.contacto, churchName(item.igreja), item.celula, yesNo(item.e_lider_actual), yesNo(item.veio_do_alec), yesNo(item.alec_concluido), item.supervisor, badge(item.estado), backendActions("cellLeader", item.id)]), false)}
+          ` : `
+            <article class="panel glass-panel">
+              <div class="panel-head">
+                <h3 class="panel-title">${L("cellLeaders")}</h3>
+                <div class="action-cluster">
+                  <button type="button" class="btn btn-sm btn-ce-gold" data-open-form="cellLeader"><i class="bi bi-plus-lg me-1"></i>${L("add")}</button>
+                  <button type="button" class="btn btn-sm btn-outline-cyan action-secondary" data-action="export" data-type="cellLeader" data-id="cellLeader"><i class="bi bi-download me-1"></i>${L("export")}</button>
+                </div>
+              </div>
+              ${paginationBar}
+              ${dataTable([L("fullName"), L("contact"), L("church"), L("cell"), L("actualLeader"), L("cameFromAlec"), L("alecFinished"), L("supervisor"), L("status"), L("actions")], pagedLeaders.map((item) => [item.nome_completo, item.contacto, churchName(item.igreja), item.celula, yesNo(item.e_lider_actual), yesNo(item.veio_do_alec), yesNo(item.alec_concluido), item.supervisor, badge(item.estado), backendActions("cellLeader", item.id)]))}
+              ${paginationBar}
+            </article>
+          `}
         </div>
       </div>`;
   } else if (activeTab === "finalValidation") {
@@ -33676,6 +33762,15 @@ document.addEventListener("click", async (event) => {
     scrollContentTo('[data-cell-ministry-filter-bar="cellCellsList"]', { behavior: "smooth" });
     return;
   }
+  const cellLeadersPageButton = event.target.closest("[data-cell-leaders-page]");
+  if (cellLeadersPageButton) {
+    const dir = cellLeadersPageButton.dataset.cellLeadersPage;
+    if (dir === "next") cellLeadersAttentionPageState.page = (cellLeadersAttentionPageState.page || 1) + 1;
+    else cellLeadersAttentionPageState.page = Math.max(1, (cellLeadersAttentionPageState.page || 1) - 1);
+    renderCellMinistry(activeRoute === "cellLeadersAttention" ? "leadersAttention" : "cellLeaders");
+    scrollContentTo('[data-cell-ministry-filter-bar]', { behavior: "smooth" });
+    return;
+  }
   const cellPortalPageButton = event.target.closest("[data-cell-portal-member-page]");
   if (cellPortalPageButton) {
     const pageState = cellPortalMembersState;
@@ -35169,6 +35264,13 @@ document.addEventListener("change", (event) => {
     cellCellsListPageState.page = 1;
     renderCellCellsList();
     scrollContentTo('[data-cell-ministry-filter-bar="cellCellsList"]', { behavior: "smooth" });
+    return;
+  }
+  if (event.target.matches("[data-cell-leaders-page-size]")) {
+    cellLeadersAttentionPageState.pageSize = Number(event.target.value) || 12;
+    cellLeadersAttentionPageState.page = 1;
+    renderCellMinistry(activeRoute === "cellLeadersAttention" ? "leadersAttention" : "cellLeaders");
+    scrollContentTo('[data-cell-ministry-filter-bar]', { behavior: "smooth" });
     return;
   }
 

@@ -24,7 +24,7 @@ import { CELL_GROUP_DEFINITIONS } from "../../seeds/cellGroupsSeed";
 
 const TABLE = "members";
 const MEMBER_PAGE_DEFAULT_SIZE = 50;
-const MEMBER_PAGE_MAX_SIZE = 100;
+const MEMBER_PAGE_MAX_SIZE = 1000;
 // Keep the paginated query compact, but include every field used by the Member
 // profile and edit form. Otherwise a page reload can turn saved values into
 // "Unknown" simply because the list projection omitted them.
@@ -260,11 +260,33 @@ export function mapMemberToRow(member: Partial<Member>, forUpdate = false): Supa
 }
 
 export async function listMembers(): Promise<DataResult<Member[]>> {
-  // Compatibility-only API. Never iterate through the entire remote table here:
-  // directory consumers must use listMembersPage() with explicit pagination.
-  const page = await listMembersPage({ page: 1, pageSize: MEMBER_PAGE_MAX_SIZE });
-  if (!page.ok) return fail(page.error, page.code);
-  return ok(page.data.items);
+  const client = getSupabaseFoundationClient();
+  if (!client) {
+    const mapped = mapSupabaseError("Supabase not configured");
+    return fail(mapped.error, mapped.code);
+  }
+  try {
+    let allItems: Member[] = [];
+    let pageNum = 1;
+    const batchSize = 1000;
+    while (true) {
+      const pageRes = await listMembersPage({ page: pageNum, pageSize: batchSize });
+      if (!pageRes.ok) {
+        if (allItems.length > 0) return ok(allItems);
+        return fail(pageRes.error, pageRes.code);
+      }
+      const items = pageRes.data.items || [];
+      allItems = allItems.concat(items);
+      if (!pageRes.data.hasNext || items.length < batchSize || allItems.length >= pageRes.data.totalCount) {
+        break;
+      }
+      pageNum++;
+    }
+    return ok(allItems);
+  } catch (error) {
+    const mapped = mapSupabaseError(error instanceof Error ? error.message : "listMembers failed");
+    return fail(mapped.error, mapped.code);
+  }
 }
 
 /**
