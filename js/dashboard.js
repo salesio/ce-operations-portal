@@ -31505,6 +31505,8 @@ function openMemberProfileView(id) {
       })
       .catch((error) => console.warn("[CE Members] profile refresh skipped", error));
   }
+}
+
 function openGroupCellsModal(groupId) {
   const groups = scopedNested(state.cellGroups || []);
   const registry = scopedNested(state.cellRegistry || []);
@@ -33604,6 +33606,14 @@ document.addEventListener("click", async (event) => {
     renderCellMembers();
     return;
   }
+  const cellCellsListPageButton = event.target.closest("[data-cell-cells-list-page]");
+  if (cellCellsListPageButton) {
+    const dir = cellCellsListPageButton.dataset.cellCellsListPage;
+    if (dir === "next") cellCellsListPageState.page = (cellCellsListPageState.page || 1) + 1;
+    else cellCellsListPageState.page = Math.max(1, (cellCellsListPageState.page || 1) - 1);
+    renderCellCellsList();
+    return;
+  }
   const cellPortalPageButton = event.target.closest("[data-cell-portal-member-page]");
   if (cellPortalPageButton) {
     const pageState = cellPortalMembersState;
@@ -35084,9 +35094,15 @@ document.addEventListener("change", (event) => {
     return;
   }
   if (event.target.matches("[data-cell-members-page-size]")) {
-    cellMembersPageState.pageSize = Number(event.target.value) || 50;
+    cellMembersPageState.pageSize = Number(event.target.value) || 10;
     cellMembersPageState.page = 1;
     renderCellMembers();
+    return;
+  }
+  if (event.target.matches("[data-cell-cells-list-page-size]")) {
+    cellCellsListPageState.pageSize = Number(event.target.value) || 10;
+    cellCellsListPageState.page = 1;
+    renderCellCellsList();
     return;
   }
 
