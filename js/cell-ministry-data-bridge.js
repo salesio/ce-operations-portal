@@ -298,6 +298,15 @@
     }
     try {
       var res = await fn.apply(resolved.api, args || []);
+      if (!res || res.ok === false) {
+        if (!resolved.fallback && fallback[method]) {
+          try {
+            return await fallback[method].apply(fallback, args || []);
+          } catch (e2) {
+            return fail(e2 && e2.message, "FALLBACK_ERROR");
+          }
+        }
+      }
       if (res && res.ok !== false && (method.indexOf("create") === 0 || method.indexOf("update") === 0 || method.indexOf("delete") === 0)) {
         try {
           if (fallback[method] && fn !== fallback[method]) {

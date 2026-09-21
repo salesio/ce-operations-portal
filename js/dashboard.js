@@ -4766,9 +4766,6 @@ function mergeCellRecordWithPriority(base, update, defaultStatus = "Pendente") {
   const statusA = base.estado || base.status;
   const statusB = update.estado || update.status;
 
-  const isApproved = (s) => /^aprovad/i.test(String(s || ""));
-  const isPendingOrSeed = (s) => !s || /em an[áa]lise|pendente|pending/i.test(String(s || ""));
-
   const timeBase = base.updated_at ? new Date(base.updated_at).getTime() : 0;
   const timeUpdate = update.updated_at ? new Date(update.updated_at).getTime() : 0;
 
@@ -4776,16 +4773,8 @@ function mergeCellRecordWithPriority(base, update, defaultStatus = "Pendente") {
     merged.estado = statusB || statusA || defaultStatus;
   } else if (timeBase > timeUpdate) {
     merged.estado = statusA || statusB || defaultStatus;
-  } else if (isApproved(statusA)) {
-    merged.estado = statusA;
-  } else if (isApproved(statusB)) {
-    merged.estado = statusB;
-  } else if (statusA && !isPendingOrSeed(statusA)) {
-    merged.estado = statusA;
-  } else if (statusB && !isPendingOrSeed(statusB)) {
-    merged.estado = statusB;
   } else {
-    merged.estado = statusA || statusB || defaultStatus;
+    merged.estado = statusB || statusA || defaultStatus;
   }
 
   merged.status = merged.estado;
@@ -28104,16 +28093,16 @@ function getCollection(type) {
   if (type === "materialStock") return state.ministryMaterials.weeklyStock;
   if (type === "materialFund") return state.ministryMaterials.freeFunds;
   if (type === "materialReport") return state.ministryMaterials.reports;
-  if (type === "alecRegistration") return state.cellLeadership.alecRegistrations;
-  if (type === "alecScore") return state.cellLeadership.alecScores;
-  if (type === "churchReport") return state.cellLeadership.churchReports;
-  if (type === "cellReport") return state.cellLeadership.cellReports;
-  if (type === "cellLeader") return state.cellLeadership.leaders;
-  if (type === "cellEvaluation") return state.cellLeadership.evaluations;
-  if (type === "finalValidation") return state.cellLeadership.validations;
-  if (type === "cellActionPlan") return state.cellLeadership.actionPlans || [];
-  if (type === "cellGroup") return state.cellGroups || [];
-  if (type === "cellRegistry") return state.cellRegistry || [];
+  if (type === "alecRegistration") { state.cellLeadership = state.cellLeadership || {}; state.cellLeadership.alecRegistrations = state.cellLeadership.alecRegistrations || []; return state.cellLeadership.alecRegistrations; }
+  if (type === "alecScore") { state.cellLeadership = state.cellLeadership || {}; state.cellLeadership.alecScores = state.cellLeadership.alecScores || []; return state.cellLeadership.alecScores; }
+  if (type === "churchReport") { state.cellLeadership = state.cellLeadership || {}; state.cellLeadership.churchReports = state.cellLeadership.churchReports || []; return state.cellLeadership.churchReports; }
+  if (type === "cellReport") { state.cellLeadership = state.cellLeadership || {}; state.cellLeadership.cellReports = state.cellLeadership.cellReports || []; return state.cellLeadership.cellReports; }
+  if (type === "cellLeader") { state.cellLeadership = state.cellLeadership || {}; state.cellLeadership.leaders = state.cellLeadership.leaders || []; return state.cellLeadership.leaders; }
+  if (type === "cellEvaluation") { state.cellLeadership = state.cellLeadership || {}; state.cellLeadership.evaluations = state.cellLeadership.evaluations || []; return state.cellLeadership.evaluations; }
+  if (type === "finalValidation") { state.cellLeadership = state.cellLeadership || {}; state.cellLeadership.validations = state.cellLeadership.validations || []; return state.cellLeadership.validations; }
+  if (type === "cellActionPlan") { state.cellLeadership = state.cellLeadership || {}; state.cellLeadership.actionPlans = state.cellLeadership.actionPlans || []; return state.cellLeadership.actionPlans; }
+  if (type === "cellGroup") { state.cellGroups = state.cellGroups || []; return state.cellGroups; }
+  if (type === "cellRegistry") { state.cellRegistry = state.cellRegistry || []; return state.cellRegistry; }
   if (type === "inventoryItem") return state.venueInventory.inventory;
   if (type === "venueAcquisition") return state.venueInventory.acquisitions;
   if (type === "venueStaffEquipment") return state.venueInventory.staffEquipment;
@@ -30495,7 +30484,7 @@ async function submitForm(form) {
       return;
     }
     const previousRecord = { ...collection[index] };
-    collection[index] = { ...collection[index], ...data, updated_by: activeUser.name, updated_at: new Date().toISOString().slice(0, 10), status: data.estado || data.status || collection[index].status };
+    collection[index] = { ...collection[index], ...data, updated_by: activeUser.name, updated_at: new Date().toISOString(), status: data.estado || data.status || collection[index].status, estado: data.estado || data.status || collection[index].estado };
     if (modalType === "cellGroup") {
       collection[index].group_name = collection[index].group_name || collection[index].name;
       collection[index].name = collection[index].name || collection[index].group_name;
@@ -30507,6 +30496,32 @@ async function submitForm(form) {
       collection[index].cell_group_id = collection[index].cell_group_id || collection[index].group_id;
       collection[index].group_name = group.group_name || group.name || collection[index].group_name;
       collection[index].cell_name = collection[index].cell_name || collection[index].nome_da_celula;
+    }
+    if (modalType === "cellLeader") {
+      collection[index].nome_completo = data.nome_completo || collection[index].nome_completo;
+      collection[index].full_name = collection[index].nome_completo;
+      collection[index].contacto = data.contacto || collection[index].contacto || data.phone || collection[index].phone;
+      collection[index].phone = collection[index].contacto;
+      collection[index].estado = data.estado || data.status || collection[index].estado || "Activo";
+      collection[index].status = collection[index].estado;
+      collection[index].supervisor = data.supervisor || collection[index].supervisor;
+      collection[index].observacoes = data.observacoes !== undefined ? data.observacoes : (collection[index].observacoes || "");
+    }
+    if (modalType === "cellReport") {
+      collection[index].estado = data.estado || data.status || collection[index].estado;
+      collection[index].status = collection[index].estado;
+      collection[index].cell_health_status = data.cell_health_status || collection[index].cell_health_status;
+      collection[index].att = Number(data.att ?? collection[index].att ?? 0);
+      collection[index].attendance_count = collection[index].att;
+      collection[index].ft = Number(data.ft ?? collection[index].ft ?? 0);
+      collection[index].first_timers_count = collection[index].ft;
+      collection[index].nc = Number(data.nc ?? collection[index].nc ?? 0);
+      collection[index].new_converts_count = collection[index].nc;
+      collection[index].oferta = Number(data.oferta ?? collection[index].oferta ?? 0);
+      collection[index].offering_amount = collection[index].oferta;
+      collection[index].rs = Number(data.rs ?? collection[index].rs ?? 0);
+      collection[index].souls_won_count = collection[index].rs;
+      collection[index].observacoes = data.observacoes !== undefined ? data.observacoes : (collection[index].observacoes || "");
     }
     if (modalType === "cellEvaluation") {
       collection[index].report_id = data.report_id || collection[index].report_id;
