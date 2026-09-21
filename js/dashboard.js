@@ -3603,11 +3603,7 @@ const seedData = {
       { id: "church-report-1", church_id: "church-hq", created_by: "Sister Angelica", updated_by: "Sister Angelica", created_at: "2026-06-07", updated_at: "2026-06-07", status: "Submetido", semana: "2026 Junho Semana 1", data_inicio: "2026-06-01", data_fim: "2026-06-07", culto: "Domingo", celula: "Cell Central", titulo_do_lider: "Pastor", nome_do_lider: "Kene Ume", att: 112, ft: 14, nc: 9, rs: 8, total_ft_reached: 12, comentarios: "Bom crescimento no culto de domingo.", submetido_por: "Sister Angelica", estado: "Submetido" }
     ],
     cellReports: [],
-    leaders: [
-      { id: "leader-1", user_id: "u-7", staff_id: "staff-8", role_type: "Leader", cell_id: "cr-0001", cell_group_id: "cg-001", church_id: "church-hq", created_by: "Sister Angelica", updated_by: "Pastora Flavia", created_at: "2026-07-03", updated_at: "2026-08-06", status: "Activo", nome_completo: "Cell Leader Demo", contacto: "862720011", titulo: "Irmo", igreja: "church-hq", celula: "Dominio 1", e_lider_actual: true, veio_do_alec: true, alec_concluido: true, faixa_certificado_pago: true, estado: "Activo", supervisor: "Pastora Flavia", observacoes: "Pode submeter relatórios apenas da célula atribuída." },
-      { id: "leader-assistant-1", user_id: "u-cell-assistant", staff_id: null, role_type: "Assistant", cell_id: "cr-0001", cell_group_id: "cg-001", church_id: "church-hq", created_by: "Pastora Flavia", updated_by: "Pastora Flavia", created_at: "2026-08-06", updated_at: "2026-08-06", status: "Activo", nome_completo: "Cell Assistant Demo", contacto: "862720012", titulo: "Irmã", igreja: "church-hq", celula: "Dominio 1", e_lider_actual: false, veio_do_alec: true, alec_concluido: true, faixa_certificado_pago: false, estado: "Activo", supervisor: "Pastora Flavia", observacoes: "Assistente autorizada da célula atribuída." },
-      { id: "leader-2", church_id: "church-hq", created_by: "Sister Angelica", updated_by: "Pastora Flavia", created_at: "2026-07-03", updated_at: "2026-07-06", status: "Em Treinamento", nome_completo: "Aminata Chivinda", contacto: "848287179", titulo: "Irm", igreja: "church-hq", celula: "Cell Mavalane", e_lider_actual: true, veio_do_alec: true, alec_concluido: false, faixa_certificado_pago: false, estado: "Em Treinamento", supervisor: "Pastora Flavia", observacoes: "Acompanhar concluso do ALEC." }
-    ],
+    leaders: [],
     evaluations: [
       { id: "e1111111-1111-4111-8111-111111111101", church_id: "church-hq", report_id: "CR-2026-09-01", cell_id: "2b3a5652-b8be-4c76-8b64-b84200c8bcd4", cell_name: "Diplomatas Victory", avaliador: "Pastora Flavia", data_da_avaliacao: "2026-09-10", classificacao: "Excelente", pontos_fortes: "Excelente pontualidade e retenção de primeiros visitantes.", pontos_a_melhorar: "Aumentar número de encontros de oração.", acao_recomendada: "Preparar proposta para divisão da célula no próximo trimestre.", precisa_followup: false, estado: "Aprovado" },
       { id: "e1111111-1111-4111-8111-111111111102", church_id: "church-hq", report_id: "CR-2026-09-02", cell_id: "17de71f5-1926-4b34-8cc6-4c690c3c0262", cell_name: "Pioneiros Change", avaliador: "Pastora Flavia", data_da_avaliacao: "2026-09-12", classificacao: "Precisa de Atenção", pontos_fortes: "Líder dedicado e membro fiel no ALEC.", pontos_a_melhorar: "Baixa frequência nos últimos 2 cultos celulares.", acao_recomendada: "Agendar reunião com a supervisora e reforçar visitas pastorais.", precisa_followup: true, estado: "Em Análise" }
@@ -4981,6 +4977,9 @@ function normalizeState(saved) {
   });
   if (merged.cellLeadership && Array.isArray(merged.cellLeadership.cellReports)) {
     merged.cellLeadership.cellReports = merged.cellLeadership.cellReports.filter((r) => r && r.id !== "cell-report-1" && r.id !== "cell-report-2");
+  }
+  if (merged.cellLeadership && Array.isArray(merged.cellLeadership.leaders)) {
+    merged.cellLeadership.leaders = merged.cellLeadership.leaders.filter((l) => l && l.id !== "leader-1" && l.id !== "leader-assistant-1" && l.id !== "leader-2");
   }
   if (Array.isArray(merged.cellReportSubmissions)) {
     merged.cellReportSubmissions = merged.cellReportSubmissions.filter((r) => r && r.id !== "cell-report-1" && r.id !== "cell-report-2");
@@ -20490,6 +20489,12 @@ async function dualWriteCellMinistryRecord(modalType, mode, record) {
           result = await cellSb.deleteCellGroup(record.id);
         }
       }
+      if (!result || result.ok === false) {
+        if (mode === "create" && repo?.createCellGroup) result = await repo.createCellGroup(payload);
+        else if (mode === "update" && repo?.updateCellGroup) result = await repo.updateCellGroup(record.id, payload);
+        else if (mode === "delete" && repo?.deleteCellGroup) result = await repo.deleteCellGroup(record.id);
+      }
+      if (typeof syncCellLeadersFromNetwork === "function") syncCellLeadersFromNetwork();
       if (payload.leader_name && mode !== "delete") {
         registerPendingMemberFromExternalRole({
           name: payload.leader_name,
@@ -20552,11 +20557,13 @@ async function dualWriteCellMinistryRecord(modalType, mode, record) {
         } else if (mode === "delete") {
           result = await cellSb.deleteCell(record.id);
         }
-      } else if (repo) {
-        if (mode === "create" && repo.createCell) result = await repo.createCell(payload);
-        else if (mode === "update" && repo.updateCell) result = await repo.updateCell(record.id, payload);
-        else if (mode === "delete" && repo.deleteCell) result = await repo.deleteCell(record.id);
       }
+      if (!result || result.ok === false) {
+        if (mode === "create" && repo?.createCell) result = await repo.createCell(payload);
+        else if (mode === "update" && repo?.updateCell) result = await repo.updateCell(record.id, payload);
+        else if (mode === "delete" && repo?.deleteCell) result = await repo.deleteCell(record.id);
+      }
+      if (typeof syncCellLeadersFromNetwork === "function") syncCellLeadersFromNetwork();
       if (payload.leader_name && mode !== "delete") {
         registerPendingMemberFromExternalRole({
           name: payload.leader_name,
@@ -21143,6 +21150,41 @@ const cellActionPlanPageState = {
   })()
 };
 
+const cellGroupsPageState = {
+  view: (function () {
+    try {
+      const v = localStorage.getItem("ce_cell_groups_view_mode");
+      return v === "card" || v === "cards" ? "card" : "table";
+    } catch (_) {
+      return "table";
+    }
+  })()
+};
+
+const cellCellsListPageState = {
+  view: (function () {
+    try {
+      const v = localStorage.getItem("ce_cell_cells_list_view_mode");
+      return v === "card" || v === "cards" ? "card" : "table";
+    } catch (_) {
+      return "table";
+    }
+  })()
+};
+
+const cellMembersPageState = {
+  view: (function () {
+    try {
+      const v = localStorage.getItem("ce_cell_members_view_mode");
+      return v === "card" || v === "cards" ? "card" : "table";
+    } catch (_) {
+      return "table";
+    }
+  })(),
+  page: 1,
+  pageSize: 50
+};
+
 const cellMinistryFilterState = {
   receivedReports: { search: "", church_id: "", cell_group: "", cell: "", status: "", week: "" },
   weeklyReport: { search: "", church_id: "", cell_group: "", cell: "", status: "", week: "" },
@@ -21569,10 +21611,17 @@ function renderCellLeaderAttentionCard(item) {
   const contact = item.contacto || item.phone || "—";
   const supervisor = item.supervisor || "—";
   const statusLabel = item.estado || item.status || "Precisa de Atenção";
+  const isCandidate = item.estado === "Candidato a Líder" || item.titulo === "Candidato a Líder" || item.e_lider_actual === false;
 
   const badges = [
     badge(statusLabel)
   ];
+  if (isCandidate) {
+    badges.push(`<span class="badge text-bg-warning text-dark"><i class="bi bi-mortarboard me-1"></i>${lang === "pt" ? "Candidato a Líder" : "Leader Candidate"}</span>`);
+  }
+  if (item.alec_concluido) {
+    badges.push(`<span class="badge text-bg-success"><i class="bi bi-award me-1"></i>ALEC Concluído</span>`);
+  }
 
   const meta = [
     [L("fullName") || "Nome", name, "bi-person"],
@@ -21613,6 +21662,362 @@ function renderCellLeaderAttentionCard(item) {
       <footer class="data-card-foot mt-3">${actions}</footer>
     </article>
   `;
+}
+
+function renderCellGroupCard(group, cells = [], memberRows = []) {
+  const cName = churchName(group.church_id);
+  const gName = group.group_name || group.name || "—";
+  const ldrName = group.leader_name || "—";
+  const ldrPhone = group.leader_phone || "—";
+  const statusLabel = group.status || "Active";
+  const supervisor = group.supervisor || "Pastora Flavia";
+  const totalAtt = cells.reduce((sum, cell) => sum + Number(cell.attendance || 0), 0);
+  const totalFt = cells.reduce((sum, cell) => sum + Number(cell.first_timers || 0), 0);
+  const totalNc = cells.reduce((sum, cell) => sum + Number(cell.new_converts || 0), 0);
+  const totalOffering = cells.reduce((sum, cell) => sum + Number(cell.offering || 0), 0);
+
+  const badges = [
+    badge(statusLabel),
+    `<span class="badge-soft badge-cyan"><i class="bi bi-diagram-3 me-1"></i>${cells.length} ${L("cellCellsList")}</span>`,
+    `<span class="badge-soft badge-gold"><i class="bi bi-people me-1"></i>${memberRows.length} ${L("members")}</span>`
+  ];
+  if (group.needs_review) badges.push(`<span class="status-pill status-amber">${L("needsReview")}</span>`);
+
+  const pills = [
+    `<strong>${L("attendance")}:</strong> ${totalAtt}`,
+    `<strong>FT:</strong> ${totalFt}`,
+    `<strong>NC:</strong> ${totalNc}`,
+    `<strong>${L("offering")}:</strong> ${money(totalOffering)}`
+  ];
+
+  const meta = [
+    [L("church") || "Igreja", cName, "bi-building"],
+    [L("leaderName") || "Líder de Grupo", ldrName, "bi-person-badge"],
+    [L("contact") || "Contacto", ldrPhone, "bi-telephone"],
+    [L("supervisor") || "Supervisora", supervisor, "bi-person-check"]
+  ];
+  if (group.notes || group.observacoes) {
+    meta.push([L("notes") || "Observações", escapeAttr(group.notes || group.observacoes), "bi-chat-text"]);
+  }
+
+  const actions = actionButtons([
+    ["view", "cellGroup", group.id, L("view")],
+    ["edit", "cellGroup", group.id, L("edit")],
+    ["viewGroupCells", "cellGroup", group.id, L("cellCellsList")],
+    ["delete", "cellGroup", group.id, L("delete")]
+  ]);
+
+  if (typeof DataCard === "function") {
+    return DataCard({
+      title: gName,
+      subtitle: `${cName} · ${ldrName}`,
+      badges,
+      pills,
+      meta,
+      actions,
+      className: "cell-group-card"
+    });
+  }
+
+  return `
+    <article class="data-card record-card light-surface cell-group-card h-100">
+      <div class="data-card-head">
+        <div class="data-card-titles">
+          <span class="eyebrow">${escapeAttr(cName)} · ${escapeAttr(ldrName)}</span>
+          <h3 class="data-card-title">${escapeAttr(gName)}</h3>
+        </div>
+        <div class="data-card-badges">${badges.join("")}</div>
+      </div>
+      <div class="data-card-pills mt-2 d-flex flex-wrap gap-2">${pills.map((p) => `<span class="badge bg-light text-dark border">${p}</span>`).join("")}</div>
+      <div class="data-card-meta mt-3">
+        ${meta.map(([label, value, icon]) => `<div class="data-card-meta-row"><span class="chart-label">${icon ? `<i class="bi ${icon}"></i> ` : ""}${label}</span><strong>${value ?? "-"}</strong></div>`).join("")}
+      </div>
+      <footer class="data-card-foot mt-3">${actions}</footer>
+    </article>
+  `;
+}
+
+function renderCellCard(cell, memberCount = 0, group = null) {
+  const cName = churchName(cell.church_id || group?.church_id);
+  const clName = cell.cell_name || cell.name || "—";
+  const gName = group?.group_name || cell.group_name || cell.cell_group_name || "—";
+  const ldrTitle = cell.leader_title || "Líder";
+  const ldrName = cell.leader_name || "—";
+  const ldrPhone = cell.leader_phone || "—";
+  const statusLabel = cell.status || "Active";
+  const meetingInfo = [cell.meeting_day, cell.meeting_time].filter(Boolean).join(" às ") || cell.meeting_type || "—";
+  const isExplosion = Number(cell.member_count || memberCount || 0) >= 15 || String(cell.observation || "").toUpperCase().includes("EXPLOSAO");
+
+  const badges = [
+    badge(statusLabel),
+    `<span class="badge-soft badge-gold"><i class="bi bi-people me-1"></i>${memberCount} ${L("members")}</span>`
+  ];
+  if (isExplosion) {
+    badges.push(`<span class="badge text-bg-danger"><i class="bi bi-lightning-charge me-1"></i>Explosão / Divisão</span>`);
+  }
+
+  const pills = [
+    `<strong>ATT:</strong> ${cell.attendance || 0}`,
+    `<strong>FT:</strong> ${cell.first_timers || 0}`,
+    `<strong>NC:</strong> ${cell.new_converts || 0}`,
+    `<strong>${L("offering")}:</strong> ${money(cell.offering || 0)}`
+  ];
+
+  const meta = [
+    [L("cellGroup") || "Grupo", gName, "bi-collection"],
+    [L("church") || "Igreja", cName, "bi-building"],
+    [`${ldrTitle}`, ldrName, "bi-person-badge"],
+    [L("contact") || "Contacto", ldrPhone, "bi-telephone"],
+    [lang === "pt" ? "Encontro" : "Meeting", meetingInfo, "bi-calendar-event"]
+  ];
+  if (cell.assistant_leader_name || cell.assistant_name) {
+    meta.push([lang === "pt" ? "Assistente" : "Assistant", `${cell.assistant_leader_name || cell.assistant_name}${cell.assistant_phone ? ` (${cell.assistant_phone})` : ""}`, "bi-person-plus"]);
+  }
+  if (cell.meeting_location || cell.area) {
+    meta.push([L("location") || "Local", escapeAttr(cell.meeting_location || cell.area), "bi-geo-alt"]);
+  }
+  if (cell.observation || cell.notes) {
+    meta.push([L("observation") || "Observação", escapeAttr(cell.observation || cell.notes), "bi-chat-text"]);
+  }
+
+  const actions = actionButtons([
+    ["view", "cellRegistry", cell.id, L("view")],
+    ["edit", "cellRegistry", cell.id, L("edit")],
+    ["updateReport", "cellRegistry", cell.id, L("updateCellReport")],
+    ["delete", "cellRegistry", cell.id, L("delete")]
+  ]);
+
+  if (typeof DataCard === "function") {
+    return DataCard({
+      title: clName,
+      subtitle: `${gName} · ${ldrName}`,
+      badges,
+      pills,
+      meta,
+      actions,
+      className: "cell-item-card"
+    });
+  }
+
+  return `
+    <article class="data-card record-card light-surface cell-item-card h-100">
+      <div class="data-card-head">
+        <div class="data-card-titles">
+          <span class="eyebrow">${escapeAttr(gName)} · ${escapeAttr(ldrName)}</span>
+          <h3 class="data-card-title">${escapeAttr(clName)}</h3>
+        </div>
+        <div class="data-card-badges">${badges.join("")}</div>
+      </div>
+      <div class="data-card-pills mt-2 d-flex flex-wrap gap-2">${pills.map((p) => `<span class="badge bg-light text-dark border">${p}</span>`).join("")}</div>
+      <div class="data-card-meta mt-3">
+        ${meta.map(([label, value, icon]) => `<div class="data-card-meta-row"><span class="chart-label">${icon ? `<i class="bi ${icon}"></i> ` : ""}${label}</span><strong>${value ?? "-"}</strong></div>`).join("")}
+      </div>
+      <footer class="data-card-foot mt-3">${actions}</footer>
+    </article>
+  `;
+}
+
+function renderCellMemberCard(row) {
+  const m = row.member;
+  const name = fullName(m) || "—";
+  const phone = m.primary_phone || m.telefone || m.phone || "—";
+  const cName = churchName(m.church_id) || m.church_name || m.igreja || "—";
+  const gName = row.group?.group_name || m.cell_group_name || m.grupo_de_celula || "—";
+  const clName = row.cell?.cell_name || m.cell_name || m.celula || "—";
+  const cellRole = m.cell_role || "Member";
+  const isAssigned = !!row.cell;
+
+  const assignmentStatusPill = isAssigned
+    ? `<span class="status-pill status-green"><i class="bi bi-check-circle me-1"></i>${lang === "pt" ? "Atribuído" : "Assigned"}</span>`
+    : `<span class="status-pill status-amber"><i class="bi bi-hourglass-split me-1"></i>${lang === "pt" ? "Aguarda atribuição" : "Awaiting"}</span>`;
+
+  const badges = [
+    `<span class="badge-soft badge-primary">${escapeAttr(cellRole)}</span>`,
+    assignmentStatusPill
+  ];
+
+  const meta = [
+    [L("phone") || "Telefone", phone, "bi-telephone"],
+    [L("church") || "Igreja", cName, "bi-building"],
+    [L("cellGroup") || "Grupo", gName, "bi-collection"],
+    [L("cell") || "Célula", clName, "bi-diagram-3"]
+  ];
+  if (m.departamento) {
+    meta.push([L("department") || "Departamento", escapeAttr(m.departamento), "bi-people"]);
+  }
+
+  const actions = actionButtons([
+    ["view", "member", m.id, L("view")],
+    ["edit", "member", m.id, lang === "pt" ? "Atribuir / editar" : "Assign / edit"]
+  ]);
+
+  if (typeof DataCard === "function") {
+    return DataCard({
+      title: name,
+      subtitle: `${clName} · ${cName}`,
+      badges,
+      meta,
+      actions,
+      className: "cell-member-card"
+    });
+  }
+
+  return `
+    <article class="data-card record-card light-surface cell-member-card h-100">
+      <div class="data-card-head">
+        <div class="data-card-titles">
+          <span class="eyebrow">${escapeAttr(clName)} · ${escapeAttr(cName)}</span>
+          <h3 class="data-card-title">${escapeAttr(name)}</h3>
+        </div>
+        <div class="data-card-badges">${badges.join("")}</div>
+      </div>
+      <div class="data-card-meta mt-3">
+        ${meta.map(([label, value, icon]) => `<div class="data-card-meta-row"><span class="chart-label">${icon ? `<i class="bi ${icon}"></i> ` : ""}${label}</span><strong>${value ?? "-"}</strong></div>`).join("")}
+      </div>
+      <footer class="data-card-foot mt-3">${actions}</footer>
+    </article>
+  `;
+}
+
+function syncCellLeadersFromNetwork() {
+  state.cellLeadership = state.cellLeadership || {};
+  const existingLeaders = Array.isArray(state.cellLeadership.leaders) ? state.cellLeadership.leaders : [];
+  const mockLeaderIds = new Set(["leader-1", "leader-assistant-1", "leader-2"]);
+  const cleanExisting = existingLeaders.filter((l) => l && !mockLeaderIds.has(String(l.id)));
+
+  const norm = (v) => String(v || "").trim().toLowerCase();
+  const leaderMap = new Map();
+
+  const addLeader = (key, leaderObj) => {
+    if (!key) return;
+    if (leaderMap.has(key)) {
+      const prev = leaderMap.get(key);
+      leaderMap.set(key, { ...prev, ...leaderObj });
+    } else {
+      leaderMap.set(key, leaderObj);
+    }
+  };
+
+  // 1. Existing clean persisted leaders
+  cleanExisting.forEach((ldr) => {
+    const key = norm(ldr.nome_completo || ldr.full_name || ldr.id);
+    if (key) addLeader(key, ldr);
+  });
+
+  // 2. Groups Leaders
+  const groups = Array.isArray(state.cellGroups) ? state.cellGroups : [];
+  groups.forEach((g) => {
+    if (!g.leader_name) return;
+    const key = norm(g.leader_name);
+    addLeader(key, {
+      id: g.leader_id || `lead-g-${g.id}`,
+      cell_group_id: g.id,
+      church_id: g.church_id,
+      nome_completo: g.leader_name,
+      contacto: g.leader_phone || "—",
+      titulo: g.leader_title || (lang === "pt" ? "Líder de Grupo" : "Group Leader"),
+      igreja: g.church_id,
+      celula: `${g.group_name || g.name || "Grupo"} (Grupo)`,
+      e_lider_actual: true,
+      veio_do_alec: Boolean(g.came_from_alec),
+      alec_concluido: Boolean(g.alec_completed),
+      estado: g.status === "Inactive" ? "Inactivo" : "Activo",
+      supervisor: g.supervisor || "Pastora Flavia",
+      observacoes: g.notes || ""
+    });
+  });
+
+  // 3. Cells Leaders & Assistant Leaders
+  const cells = Array.isArray(state.cellRegistry) ? state.cellRegistry : [];
+  cells.forEach((c) => {
+    if (c.leader_name) {
+      const key = norm(c.leader_name);
+      addLeader(key, {
+        id: c.leader_id || `lead-c-${c.id}`,
+        cell_id: c.id,
+        cell_group_id: c.cell_group_id || c.group_id,
+        church_id: c.church_id,
+        nome_completo: c.leader_name,
+        contacto: c.leader_phone || "—",
+        titulo: c.leader_title || (lang === "pt" ? "Líder de Célula" : "Cell Leader"),
+        igreja: c.church_id,
+        celula: c.cell_name || c.name,
+        e_lider_actual: true,
+        veio_do_alec: true,
+        alec_concluido: true,
+        estado: c.status === "Inactive" ? "Inactivo" : "Activo",
+        supervisor: c.supervisor || "Pastora Flavia",
+        observacoes: c.observation || ""
+      });
+    }
+    if (c.assistant_leader_name || c.assistant_name) {
+      const asstName = c.assistant_leader_name || c.assistant_name;
+      const key = norm(asstName);
+      addLeader(key, {
+        id: `lead-asst-${c.id}`,
+        cell_id: c.id,
+        cell_group_id: c.cell_group_id || c.group_id,
+        church_id: c.church_id,
+        nome_completo: asstName,
+        contacto: c.assistant_phone || "—",
+        titulo: lang === "pt" ? "Assistente de Célula" : "Cell Assistant",
+        igreja: c.church_id,
+        celula: c.cell_name || c.name,
+        e_lider_actual: false,
+        veio_do_alec: true,
+        alec_concluido: true,
+        estado: c.status === "Inactive" ? "Inactivo" : "Activo",
+        supervisor: c.supervisor || "Pastora Flavia",
+        observacoes: "Assistente de célula"
+      });
+    }
+  });
+
+  // 4. ALEC Graduates: If not leading a specific cell, mark as "Candidato a Líder"
+  const alecScores = Array.isArray(state.cellLeadership?.alecScores) ? state.cellLeadership.alecScores : [];
+  const alecRegs = Array.isArray(state.cellLeadership?.alecRegistrations) ? state.cellLeadership.alecRegistrations : [];
+
+  const alecGraduates = [
+    ...alecScores.filter((s) => s.terminou || String(s.estado || "").toLowerCase().includes("termin") || String(s.estado || "").toLowerCase().includes("conclu")),
+    ...alecRegs.filter((r) => r.alec_concluido || String(r.estado || "").toLowerCase().includes("conclu") || String(r.estado || "").toLowerCase().includes("gradu"))
+  ];
+
+  alecGraduates.forEach((grad) => {
+    const name = grad.nome_completo || grad.name;
+    if (!name) return;
+    const key = norm(name);
+    if (leaderMap.has(key)) {
+      const current = leaderMap.get(key);
+      leaderMap.set(key, {
+        ...current,
+        veio_do_alec: true,
+        alec_concluido: true,
+        faixa_certificado_pago: grad.faixa_certificado_pago ?? current.faixa_certificado_pago ?? true,
+        certificado_emitido: grad.certificado_emitido ?? current.certificado_emitido ?? true
+      });
+    } else {
+      addLeader(key, {
+        id: `lead-cand-${grad.id || Date.now()}`,
+        church_id: grad.church_id || grad.igreja,
+        nome_completo: name,
+        contacto: grad.contacto || grad.phone || "—",
+        titulo: lang === "pt" ? "Candidato a Líder" : "Leader Candidate",
+        igreja: grad.church_id || grad.igreja,
+        celula: lang === "pt" ? "— (Candidato a Líder)" : "— (Leader Candidate)",
+        e_lider_actual: false,
+        veio_do_alec: true,
+        alec_concluido: true,
+        faixa_certificado_pago: grad.faixa_certificado_pago ?? true,
+        certificado_emitido: grad.certificado_emitido ?? false,
+        estado: lang === "pt" ? "Candidato a Líder" : "Leader Candidate",
+        supervisor: "Pastora Flavia",
+        observacoes: lang === "pt" ? "Graduado do ALEC apto para assumir liderança de célula." : "ALEC graduate eligible to lead a cell."
+      });
+    }
+  });
+
+  state.cellLeadership.leaders = [...leaderMap.values()];
+  return state.cellLeadership.leaders;
 }
 
 function renderCellReportCard(item) {
@@ -23469,6 +23874,7 @@ function renderChurchReportsAnalyticalView() {
 }
 
 function renderCellMinistry(activeTab = "alecOverview") {
+  if (typeof syncCellLeadersFromNetwork === "function") syncCellLeadersFromNetwork();
   const leadership = state.cellLeadership || seedData.cellLeadership;
 
   const registry = scopedNested(state.cellRegistry || []);
@@ -23769,15 +24175,15 @@ function renderCellMinistry(activeTab = "alecOverview") {
     const leaderFilters = cellMinistryFilterState.cellLeaders || {};
     const filteredLeaders = applyCellMinistryFilters(leaders, leaderFilters, "leader");
     const isCardView = cellLeadersAttentionPageState.view !== "table";
-    const statusOptions = ["Activo", "Em Treinamento", "Precisa de Atenção", "Inactivo"];
+    const statusOptions = ["Activo", "Candidato a Líder", "Em Treinamento", "Precisa de Atenção", "Inactivo"];
 
     bodyHtml = `
       ${renderCellMinistryFilterBar("cellLeaders", { view: cellLeadersAttentionPageState.view, showWeek: false, showStatus: true, statusOptions })}
       <div class="row g-3 mb-4">
-        ${metric("bi-person-badge", L("cellLeaders"), filteredLeaders.length, L("active"))}
-        ${metric("bi-mortarboard", "Graduados ALEC", filteredLeaders.filter(l => l.alec_concluido).length, "Certificados")}
+        ${metric("bi-person-badge", L("cellLeaders"), filteredLeaders.length, L("all"))}
         ${metric("bi-person-check", "Líderes Actuais", filteredLeaders.filter(l => l.e_lider_actual).length, "Activos")}
-        ${metric("bi-hourglass-split", "Em Treinamento", filteredLeaders.filter(l => l.estado === "Em Treinamento").length, "Formação")}
+        ${metric("bi-mortarboard", "Candidatos a Líder", filteredLeaders.filter(l => !l.e_lider_actual || l.estado === "Candidato a Líder").length, "Elegíveis")}
+        ${metric("bi-award", "Graduados ALEC", filteredLeaders.filter(l => l.alec_concluido).length, "Certificados")}
       </div>
       <div class="row g-4">
         <div class="col-12">
@@ -23881,19 +24287,57 @@ function renderCellMembers() {
   const assignmentStatus = (row) => row.cell
     ? `<span class="status-pill status-green">${lang === "pt" ? "Atribuído à célula" : "Assigned to cell"}</span>`
     : `<span class="status-pill status-amber">${lang === "pt" ? "Aguarda atribuição" : "Awaiting assignment"}</span>`;
-  const rows = [...membership.awaitingAssignment, ...membership.assigned]
-    .sort((a, b) => fullName(a.member).localeCompare(fullName(b.member), lang))
-    .map((row) => [
-      fullName(row.member) || "—",
-      row.member.primary_phone || row.member.telefone || row.member.phone || "—",
-      churchName(row.member.church_id) || row.member.church_name || row.member.igreja || "—",
-      groupName(row),
-      cellNameValue(row),
-      row.member.cell_role || "Member",
-      assignmentStatus(row),
-      actionButtons([["edit", "member", row.member.id, lang === "pt" ? "Atribuir / editar" : "Assign / edit"]])
-    ]);
+
+  const allRows = [...membership.awaitingAssignment, ...membership.assigned]
+    .sort((a, b) => fullName(a.member).localeCompare(fullName(b.member), lang));
+
+  // Pagination calculation
+  const totalCount = allRows.length;
+  const pageSize = cellMembersPageState.pageSize || 50;
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  if (cellMembersPageState.page > totalPages) cellMembersPageState.page = totalPages;
+  if (cellMembersPageState.page < 1) cellMembersPageState.page = 1;
+  const currentPage = cellMembersPageState.page;
+  const startIdx = (currentPage - 1) * pageSize;
+  const endIdx = Math.min(startIdx + pageSize, totalCount);
+  const pagedRows = allRows.slice(startIdx, endIdx);
+
+  const isCardView = cellMembersPageState.view !== "table";
+
+  const tableRows = pagedRows.map((row) => [
+    fullName(row.member) || "—",
+    row.member.primary_phone || row.member.telefone || row.member.phone || "—",
+    churchName(row.member.church_id) || row.member.church_name || row.member.igreja || "—",
+    groupName(row),
+    cellNameValue(row),
+    row.member.cell_role || "Member",
+    assignmentStatus(row),
+    actionButtons([
+      ["view", "member", row.member.id, L("view")],
+      ["edit", "member", row.member.id, lang === "pt" ? "Atribuir / editar" : "Assign / edit"]
+    ])
+  ]);
+
+  const cardsHtml = pagedRows.length
+    ? `<div class="row g-4 mt-1">${pagedRows.map((row) => `<div class="col-12 col-md-6 col-xl-4">${renderCellMemberCard(row)}</div>`).join("")}</div>`
+    : `<div class="col-12 text-center p-4 text-secondary">${lang === "pt" ? "Nenhum membro encontrado." : "No members found."}</div>`;
+
   const navHtml = cellModuleHeader("cellMembers");
+  const paginationBar = `
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-3 pt-3 border-top" data-cell-members-pagination>
+      <span class="text-secondary small">
+        ${totalCount > 0 ? (lang === "pt" ? `A mostrar ${startIdx + 1} a ${endIdx} de ${totalCount} registos · Página ${currentPage} de ${totalPages}` : `Showing ${startIdx + 1} to ${endIdx} of ${totalCount} records · Page ${currentPage} of ${totalPages}`) : (lang === "pt" ? "0 registos" : "0 records")}
+      </span>
+      <div class="d-flex align-items-center gap-2">
+        <select class="form-select form-select-sm" data-cell-members-page-size aria-label="Page size">
+          ${[10, 25, 50, 100].map((size) => `<option value="${size}"${pageSize === size ? " selected" : ""}>${size}</option>`).join("")}
+        </select>
+        <button class="action-btn" data-cell-members-page="prev" ${currentPage <= 1 ? "disabled" : ""}>${lang === "pt" ? "Anterior" : "Previous"}</button>
+        <button class="action-btn" data-cell-members-page="next" ${currentPage >= totalPages ? "disabled" : ""}>${lang === "pt" ? "Próximo" : "Next"}</button>
+      </div>
+    </div>
+  `;
+
   const bodyHtml = `
     <article class="panel glass-panel mb-4">
       <div class="panel-head"><div><h3 class="panel-title">${lang === "pt" ? "Membros nas células" : "Members in cells"}</h3><p class="mb-0 text-secondary">${lang === "pt" ? "A lista usa os membros carregados pelo data source activo. Filtre dinamicamente por igreja, grupo ou célula." : "This list uses members loaded by the active data source. Dynamically filter by church, group, or cell."}</p></div></div>
@@ -23905,8 +24349,9 @@ function renderCellMembers() {
       </div>
     </article>
     <article class="panel glass-panel">
-      ${renderCellMinistryFilterBar("cellMembers", { showWeek: false, showStatus: true, statusOptions: [{ value: "assigned", label: lang === "pt" ? "Atribuído à célula" : "Assigned" }, { value: "awaiting", label: lang === "pt" ? "Aguarda atribuição" : "Awaiting" }], showViewToggle: false })}
-      ${dataTable([L("name"), L("phone"), L("church"), L("groupName"), L("cell"), lang === "pt" ? "Função" : "Role", lang === "pt" ? "Atribuição" : "Assignment", L("actions")], rows)}
+      ${renderCellMinistryFilterBar("cellMembers", { view: cellMembersPageState.view, showWeek: false, showStatus: true, statusOptions: [{ value: "assigned", label: lang === "pt" ? "Atribuído à célula" : "Assigned" }, { value: "awaiting", label: lang === "pt" ? "Aguarda atribuição" : "Awaiting" }], showViewToggle: true })}
+      ${isCardView ? cardsHtml : dataTable([L("name"), L("phone"), L("church"), L("groupName"), L("cell"), lang === "pt" ? "Função" : "Role", lang === "pt" ? "Atribuição" : "Assignment", L("actions")], tableRows)}
+      ${paginationBar}
     </article>`;
   setPageContent(navHtml + tabParallaxWrap(bodyHtml, activeRoute));
   triggerTabParallax();
@@ -23920,13 +24365,30 @@ function renderCellGroups() {
   const filteredRegistry = applyCellMinistryFilters(registry, filters, "cell");
   const membership = cellMembershipSummary(scoped(state.members || []), filteredRegistry, filteredGroups);
   const statusOptions = [...new Set(registry.map((item) => item.status).filter(Boolean))].sort();
+  const isCardView = cellGroupsPageState.view !== "table";
+
+  const cellsByGroup = new Map();
+  filteredRegistry.forEach((cell) => {
+    const key = cell.group_id || cell.cell_group_id || cell.group_cell_id || "";
+    if (!cellsByGroup.has(key)) cellsByGroup.set(key, []);
+    cellsByGroup.get(key).push(cell);
+  });
+
+  const cardsHtml = filteredGroups.length
+    ? `<div class="row g-4 mt-1">${filteredGroups.map((group) => {
+        const cells = cellsByGroup.get(group.id) || [];
+        const memberRows = membership.byGroup.get(group.id) || [];
+        return `<div class="col-12 col-md-6 col-xl-4">${renderCellGroupCard(group, cells, memberRows)}</div>`;
+      }).join("")}</div>`
+    : `<div class="col-12 text-center p-4 text-secondary">${lang === "pt" ? "Nenhum grupo de células encontrado." : "No cell groups found."}</div>`;
+
   const navHtml = cellModuleHeader("cellGroups", { modalType: "cellGroup" });
   const bodyHtml = `
     <div class="foundation-action-bar d-flex flex-wrap gap-2 mb-3">
       <button type="button" class="btn btn-ce-gold btn-touch" data-open-form="cellGroup"><i class="bi bi-plus-lg me-1"></i>${lang === "pt" ? "Novo grupo de células" : "New cell group"}</button>
       <button type="button" class="btn btn-outline-cyan btn-touch" data-open-form="cellRegistry"><i class="bi bi-diagram-3 me-1"></i>${lang === "pt" ? "Nova célula" : "New cell"}</button>
     </div>
-    ${renderCellMinistryFilterBar("cellGroups", { showWeek: false, showStatus: true, statusOptions, showViewToggle: false, showCell: false })}
+    ${renderCellMinistryFilterBar("cellGroups", { view: cellGroupsPageState.view, showWeek: false, showStatus: true, statusOptions, showViewToggle: true, showCell: false })}
     <div class="row g-3 mb-4">
       ${metric("bi-collection", L("totalGroupCells"), filteredGroups.length, L("cellGroups"))}
       ${metric("bi-diagram-3", L("totalCells"), filteredRegistry.length, L("activeCells"))}
@@ -23934,14 +24396,26 @@ function renderCellGroups() {
       ${metric("bi-person-plus", lang === "pt" ? "Aguardam atribuição" : "Awaiting assignment", membership.awaitingAssignment.length, lang === "pt" ? "Fila de membros" : "Member queue")}
       ${metric("bi-flag", L("needsReview"), filteredGroups.filter((item) => item.needs_review).length, L("importReview"))}
     </div>
-    <div class="cell-accordion-toolbar">
-      <div class="cell-accordion-search"><i class="bi bi-search"></i><input class="form-control" type="search" data-cell-accordion-search placeholder="${L("search")}"></div>
-      <div class="cell-accordion-actions">
-        <button type="button" class="btn btn-sm btn-outline-cyan" data-action="expandCellGroups">${L("expandAll")}</button>
-        <button type="button" class="btn btn-sm btn-outline-cyan" data-action="collapseCellGroups">${L("collapseAll")}</button>
+    ${isCardView ? `
+      <article class="panel glass-panel">
+        <div class="panel-head">
+          <h3 class="panel-title">${L("cellGroups")}</h3>
+          <div class="action-cluster">
+            <button type="button" class="btn btn-sm btn-outline-cyan action-secondary" data-action="export" data-type="cellGroup" data-id="cellGroup"><i class="bi bi-download me-1"></i>${L("export")}</button>
+          </div>
+        </div>
+        ${cardsHtml}
+      </article>
+    ` : `
+      <div class="cell-accordion-toolbar">
+        <div class="cell-accordion-search"><i class="bi bi-search"></i><input class="form-control" type="search" data-cell-accordion-search placeholder="${L("search")}"></div>
+        <div class="cell-accordion-actions">
+          <button type="button" class="btn btn-sm btn-outline-cyan" data-action="expandCellGroups">${L("expandAll")}</button>
+          <button type="button" class="btn btn-sm btn-outline-cyan" data-action="collapseCellGroups">${L("collapseAll")}</button>
+        </div>
       </div>
-    </div>
-    ${renderCellGroupAccordion(filteredGroups, filteredRegistry, { showMetrics: true, showActions: true, membership })}`;
+      ${renderCellGroupAccordion(filteredGroups, filteredRegistry, { showMetrics: true, showActions: true, membership })}
+    `}`;
   setPageContent(navHtml + tabParallaxWrap(bodyHtml, activeRoute));
   triggerTabParallax();
 }
@@ -23968,6 +24442,11 @@ function renderCellGroupAccordion(groups, registry, { showMetrics = true, showAc
               ${group.leader_name ? `<span>${group.leader_name}</span>` : ""}
               ${badge(group.status)}
               ${group.needs_review ? `<span class="status-pill status-amber">${L("needsReview")}</span>` : ""}
+              <div class="ms-auto d-flex align-items-center gap-1" onclick="event.stopPropagation()">
+                <button type="button" class="action-btn" data-action="view" data-type="cellGroup" data-id="${group.id}" title="${L("view")}"><i class="bi bi-eye"></i></button>
+                <button type="button" class="action-btn" data-action="edit" data-type="cellGroup" data-id="${group.id}" title="${L("edit")}"><i class="bi bi-pencil"></i></button>
+                <button type="button" class="action-btn action-btn--danger text-danger" data-action="delete" data-type="cellGroup" data-id="${group.id}" title="${L("delete")}"><i class="bi bi-trash3"></i></button>
+              </div>
             </div>
           </summary>
           <div class="cell-group-inner">
@@ -23988,13 +24467,19 @@ function renderCellGroupAccordion(groups, registry, { showMetrics = true, showAc
               money(cell.offering || 0),
               badge(cell.status),
               cell.observation || "-",
-              showActions ? actionButtons([["view", "cellRegistry", cell.id, L("view")], ["edit", "cellRegistry", cell.id, L("edit")], ["updateReport", "cellRegistry", cell.id, L("updateCellReport")]]) : "-"
+              showActions ? actionButtons([
+                ["view", "cellRegistry", cell.id, L("view")],
+                ["edit", "cellRegistry", cell.id, L("edit")],
+                ["updateReport", "cellRegistry", cell.id, L("updateCellReport")],
+                ["delete", "cellRegistry", cell.id, L("delete")]
+              ]) : "-"
             ]))}
           </div>
         </details>`;
     }).join("")}
   </div>`;
 }
+
 function renderCellCellsList() {
   const groups = scopedNested(state.cellGroups || []);
   const rawCells = scopedNested(state.cellRegistry || []);
@@ -24002,14 +24487,26 @@ function renderCellCellsList() {
   const cells = applyCellMinistryFilters(rawCells, filters, "cell");
   const membership = cellMembershipSummary(scoped(state.members || []), cells, groups);
   const statusOptions = [...new Set(rawCells.map((item) => item.status).filter(Boolean))].sort();
+  const isCardView = cellCellsListPageState.view !== "table";
+
+  const groupMap = new Map(groups.map((g) => [g.id, g]));
+
+  const cardsHtml = cells.length
+    ? `<div class="row g-4 mt-1">${cells.map((cell) => {
+        const memCount = (membership.byCell.get(cell.id) || []).length;
+        const parentGroup = groupMap.get(cell.cell_group_id || cell.group_id) || null;
+        return `<div class="col-12 col-md-6 col-xl-4">${renderCellCard(cell, memCount, parentGroup)}</div>`;
+      }).join("")}</div>`
+    : `<div class="col-12 text-center p-4 text-secondary">${lang === "pt" ? "Nenhuma célula encontrada." : "No cells found."}</div>`;
 
   const navHtml = cellModuleHeader("cellCellsList", { modalType: "cellRegistry" });
   const bodyHtml = `
     ${renderCellMinistryFilterBar("cellCellsList", {
+      view: cellCellsListPageState.view,
       showWeek: false,
       showStatus: true,
       statusOptions,
-      showViewToggle: false
+      showViewToggle: true
     })}
     <div class="row g-3 mb-4">
       ${metric("bi-diagram-3", L("totalCells"), cells.length, L("all"))}
@@ -24019,24 +24516,38 @@ function renderCellCellsList() {
       ${metric("bi-stars", L("totalNewConverts"), cells.reduce((sum, item) => sum + Number(item.new_converts || 0), 0), L("newConverts"))}
     </div>
     <div class="row g-4">
-      <div class="col-12">${modulePanel("cellRegistry", L("cellCellsList"), "cellRegistry", [L("cellName"), L("members"), L("groupName"), L("leaderTitle"), L("leaderName"), L("attendance"), L("firstTimeShort"), L("newConvertsShort"), L("offering"), L("observation"), L("status"), L("actions")], cells.map((item) => [
-        item.cell_name,
-        (membership.byCell.get(item.id) || []).length,
-        item.group_name,
-        item.leader_title,
-        item.leader_name,
-        item.attendance,
-        item.first_timers,
-        item.new_converts,
-        money(item.offering),
-        item.observation || "-",
-        badge(item.status),
-        actionButtons([
-          ["view", "cellRegistry", item.id, L("view")],
-          ["edit", "cellRegistry", item.id, L("edit")],
-          ["updateReport", "cellRegistry", item.id, L("updateCellReport")]
-        ])
-      ]), true)}</div>
+      <div class="col-12">
+        ${isCardView ? `
+          <article class="panel glass-panel">
+            <div class="panel-head">
+              <h3 class="panel-title">${L("cellCellsList")}</h3>
+              <div class="action-cluster">
+                <button class="btn btn-sm btn-ce-gold" data-open-form="cellRegistry"><i class="bi bi-plus-lg me-1"></i>${L("add")}</button>
+                <button type="button" class="btn btn-sm btn-outline-cyan action-secondary" data-action="export" data-type="cellRegistry" data-id="cellRegistry"><i class="bi bi-download me-1"></i>${L("export")}</button>
+              </div>
+            </div>
+            ${cardsHtml}
+          </article>
+        ` : modulePanel("cellRegistry", L("cellCellsList"), "cellRegistry", [L("cellName"), L("members"), L("groupName"), L("leaderTitle"), L("leaderName"), L("attendance"), L("firstTimeShort"), L("newConvertsShort"), L("offering"), L("observation"), L("status"), L("actions")], cells.map((item) => [
+          item.cell_name,
+          (membership.byCell.get(item.id) || []).length,
+          item.group_name,
+          item.leader_title,
+          item.leader_name,
+          item.attendance,
+          item.first_timers,
+          item.new_converts,
+          money(item.offering),
+          item.observation || "-",
+          badge(item.status),
+          actionButtons([
+            ["view", "cellRegistry", item.id, L("view")],
+            ["edit", "cellRegistry", item.id, L("edit")],
+            ["updateReport", "cellRegistry", item.id, L("updateCellReport")],
+            ["delete", "cellRegistry", item.id, L("delete")]
+          ])
+        ]), true)}
+      </div>
     </div>`;
   setPageContent(navHtml + tabParallaxWrap(bodyHtml, activeRoute));
   triggerTabParallax();
@@ -32811,6 +33322,22 @@ document.addEventListener("click", async (event) => {
       cellActionPlanPageState.view = mode === "cards" ? "card" : mode;
       try { localStorage.setItem("ce_cell_action_plan_view_mode", cellActionPlanPageState.view); } catch (_) {}
       renderCellMinistry("actionPlan");
+    } else if (activeRoute === "cellGroups") {
+      cellGroupsPageState.view = mode === "cards" ? "card" : mode;
+      try { localStorage.setItem("ce_cell_groups_view_mode", cellGroupsPageState.view); } catch (_) {}
+      renderCellGroups();
+    } else if (activeRoute === "cellCellsList") {
+      cellCellsListPageState.view = mode === "cards" ? "card" : mode;
+      try { localStorage.setItem("ce_cell_cells_list_view_mode", cellCellsListPageState.view); } catch (_) {}
+      renderCellCellsList();
+    } else if (activeRoute === "cellMembers") {
+      cellMembersPageState.view = mode === "cards" ? "card" : mode;
+      try { localStorage.setItem("ce_cell_members_view_mode", cellMembersPageState.view); } catch (_) {}
+      renderCellMembers();
+    } else if (activeRoute === "cellLeadersRoute" || activeRoute === "cellLeaders") {
+      cellLeadersAttentionPageState.view = mode === "cards" ? "card" : mode;
+      try { localStorage.setItem("ce_cell_leaders_attention_view_mode", cellLeadersAttentionPageState.view); } catch (_) {}
+      renderCellMinistry("cellLeaders");
     } else if (typeof isCellRoute === "function" && isCellRoute(activeRoute)) {
       cellReportsPageState.view = mode === "cards" ? "card" : mode;
       try { localStorage.setItem("ce_cell_reports_view_mode", cellReportsPageState.view); } catch (_) {}
@@ -32918,6 +33445,14 @@ document.addEventListener("click", async (event) => {
     const pageState = modulePageState.members;
     pageState.page = memberPageButton.dataset.membersPage === "next" ? Math.min(pageState.totalPages, pageState.page + 1) : Math.max(1, pageState.page - 1);
     void loadMembersPage({ force: true });
+    return;
+  }
+  const cellMemberPageButton = event.target.closest("[data-cell-members-page]");
+  if (cellMemberPageButton) {
+    const dir = cellMemberPageButton.dataset.cellMembersPage;
+    if (dir === "next") cellMembersPageState.page = (cellMembersPageState.page || 1) + 1;
+    else cellMembersPageState.page = Math.max(1, (cellMembersPageState.page || 1) - 1);
+    renderCellMembers();
     return;
   }
   const cellPortalPageButton = event.target.closest("[data-cell-portal-member-page]");
@@ -34397,6 +34932,12 @@ document.addEventListener("change", (event) => {
     modulePageState.members.pageSize = Number(event.target.value) || 50;
     modulePageState.members.page = 1;
     void loadMembersPage({ force: true });
+    return;
+  }
+  if (event.target.matches("[data-cell-members-page-size]")) {
+    cellMembersPageState.pageSize = Number(event.target.value) || 50;
+    cellMembersPageState.page = 1;
+    renderCellMembers();
     return;
   }
 

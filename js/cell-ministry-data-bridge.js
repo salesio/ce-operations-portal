@@ -330,6 +330,9 @@
     updateCellGroup: function (id, payload) {
       return call("updateCellGroup", [id, payload]);
     },
+    deleteCellGroup: function (id) {
+      return call("deleteCellGroup", [id]);
+    },
     listCells: function () {
       return call("listCells", []);
     },
@@ -338,6 +341,9 @@
     },
     updateCell: function (id, payload) {
       return call("updateCell", [id, payload]);
+    },
+    deleteCell: function (id) {
+      return call("deleteCell", [id]);
     },
     listCellLeaders: function () {
       return call("listCellLeaders", []);
@@ -348,6 +354,9 @@
     updateCellLeader: function (id, payload) {
       return call("updateCellLeader", [id, payload]);
     },
+    deleteCellLeader: function (id) {
+      return call("deleteCellLeader", [id]);
+    },
     listCellReports: function () {
       return call("listCellReports", []);
     },
@@ -356,6 +365,9 @@
     },
     updateCellReport: function (id, payload) {
       return call("updateCellReport", [id, payload]);
+    },
+    deleteCellReport: function (id) {
+      return call("deleteCellReport", [id]);
     },
     getCellsByGroup: function (groupId) {
       return call("getCellsByGroup", [groupId]);
