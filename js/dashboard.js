@@ -4917,7 +4917,7 @@ function normalizeState(saved) {
         parsedEvals.forEach((pe) => {
           if (pe && pe.id) {
             const existing = evalMap.get(String(pe.id)) || {};
-            evalMap.set(String(pe.id), { ...existing, ...pe });
+            evalMap.set(String(pe.id), { ...pe, ...existing });
           }
         });
         merged.cellLeadership.evaluations = [...evalMap.values()];
@@ -4931,7 +4931,7 @@ function normalizeState(saved) {
         parsedPlans.forEach((pp) => {
           if (pp && pp.id) {
             const existing = planMap.get(String(pp.id)) || {};
-            planMap.set(String(pp.id), { ...existing, ...pp });
+            planMap.set(String(pp.id), { ...pp, ...existing });
           }
         });
         merged.cellLeadership.actionPlans = [...planMap.values()];
@@ -20642,18 +20642,10 @@ async function dualWriteCellMinistryRecord(modalType, mode, record) {
       if (cellSb) {
         if (mode === "create" && cellSb.createCellEvaluation) {
           result = await cellSb.createCellEvaluation(record);
-          if (result?.ok && result.data) {
-            Object.assign(record, result.data);
-            saveState("Persisted cellEvaluation to Supabase");
-            if (activeRoute === "cellEvaluationRoute") renderCellMinistry("cellEvaluation");
-          }
+          if (result?.ok && result.data) Object.assign(record, result.data);
         } else if (mode === "update" && cellSb.updateCellEvaluation) {
           result = await cellSb.updateCellEvaluation(record.id, record);
-          if (result?.ok && result.data) {
-            Object.assign(record, result.data);
-            saveState("Updated cellEvaluation in Supabase");
-            if (activeRoute === "cellEvaluationRoute") renderCellMinistry("cellEvaluation");
-          }
+          if (result?.ok && result.data) Object.assign(record, result.data);
         } else if (mode === "delete" && cellSb.deleteCellEvaluation) {
           result = await cellSb.deleteCellEvaluation(record.id);
         }
@@ -20666,22 +20658,18 @@ async function dualWriteCellMinistryRecord(modalType, mode, record) {
           else if (mode === "delete" && bridge.deleteCellEvaluation) result = await bridge.deleteCellEvaluation(record.id);
         }
       }
+      saveState(`${mode === "create" ? "Created" : mode === "update" ? "Updated" : "Deleted"} cellEvaluation`);
+      if (activeRoute === "cellEvaluationRoute" || activeRoute === "cellAttentionRoute" || activeRoute === "cellMinistry") {
+        renderCellMinistry(activeRoute === "cellAttentionRoute" ? "attention" : "cellEvaluation");
+      }
     } else if (modalType === "cellActionPlan") {
       if (cellSb) {
         if (mode === "create" && cellSb.createCellActionPlan) {
           result = await cellSb.createCellActionPlan(record);
-          if (result?.ok && result.data) {
-            Object.assign(record, result.data);
-            saveState("Persisted cellActionPlan to Supabase");
-            if (activeRoute === "cellActionPlan") renderCellMinistry("actionPlan");
-          }
+          if (result?.ok && result.data) Object.assign(record, result.data);
         } else if (mode === "update" && cellSb.updateCellActionPlan) {
           result = await cellSb.updateCellActionPlan(record.id, record);
-          if (result?.ok && result.data) {
-            Object.assign(record, result.data);
-            saveState("Updated cellActionPlan in Supabase");
-            if (activeRoute === "cellActionPlan") renderCellMinistry("actionPlan");
-          }
+          if (result?.ok && result.data) Object.assign(record, result.data);
         } else if (mode === "delete" && cellSb.deleteCellActionPlan) {
           result = await cellSb.deleteCellActionPlan(record.id);
         }
@@ -20693,6 +20681,10 @@ async function dualWriteCellMinistryRecord(modalType, mode, record) {
           else if (mode === "update" && bridge.updateCellActionPlan) result = await bridge.updateCellActionPlan(record.id, record);
           else if (mode === "delete" && bridge.deleteCellActionPlan) result = await bridge.deleteCellActionPlan(record.id);
         }
+      }
+      saveState(`${mode === "create" ? "Created" : mode === "update" ? "Updated" : "Deleted"} cellActionPlan`);
+      if (activeRoute === "cellActionPlan" || activeRoute === "cellAttentionRoute" || activeRoute === "cellMinistry") {
+        renderCellMinistry(activeRoute === "cellAttentionRoute" ? "attention" : "actionPlan");
       }
     }
     if (result && result.ok === false) {
@@ -20917,21 +20909,21 @@ async function hydrateCellMinistryFromRepository() {
       evalsRes.data.forEach((row) => {
         const previous = prev.get(String(row.id)) || {};
         const mergedEval = {
-          ...previous,
           ...row,
+          ...previous,
           id: row.id,
-          report_id: row.report_id || previous.report_id,
-          cell_id: row.cell_id || previous.cell_id,
-          cell_name: row.cell_name || previous.cell_name,
-          avaliador: row.avaliador || previous.avaliador || row.evaluator,
-          data_da_avaliacao: row.data_da_avaliacao || previous.data_da_avaliacao || row.evaluation_date,
-          classificacao: row.classificacao || previous.classificacao || row.classification,
-          pontos_fortes: row.pontos_fortes !== undefined && row.pontos_fortes !== "" ? row.pontos_fortes : (previous.pontos_fortes || ""),
-          pontos_a_melhorar: row.pontos_a_melhorar !== undefined && row.pontos_a_melhorar !== "" ? row.pontos_a_melhorar : (previous.pontos_a_melhorar || ""),
-          acao_recomendada: row.acao_recomendada !== undefined && row.acao_recomendada !== "" ? row.acao_recomendada : (previous.acao_recomendada || row.recommended_action || ""),
-          precisa_followup: row.precisa_followup ?? previous.precisa_followup ?? false,
-          estado: row.estado || previous.estado || row.status || "Pendente",
-          status: row.estado || previous.estado || row.status || "Pendente"
+          report_id: previous.report_id || row.report_id,
+          cell_id: previous.cell_id || row.cell_id,
+          cell_name: previous.cell_name || row.cell_name,
+          avaliador: previous.avaliador || row.avaliador || row.evaluator,
+          data_da_avaliacao: previous.data_da_avaliacao || row.data_da_avaliacao || row.evaluation_date,
+          classificacao: previous.classificacao || row.classificacao || row.classification,
+          pontos_fortes: previous.pontos_fortes !== undefined && previous.pontos_fortes !== "" ? previous.pontos_fortes : (row.pontos_fortes || ""),
+          pontos_a_melhorar: previous.pontos_a_melhorar !== undefined && previous.pontos_a_melhorar !== "" ? previous.pontos_a_melhorar : (row.pontos_a_melhorar || ""),
+          acao_recomendada: previous.acao_recomendada !== undefined && previous.acao_recomendada !== "" ? previous.acao_recomendada : (row.acao_recomendada || row.recommended_action || ""),
+          precisa_followup: previous.precisa_followup ?? row.precisa_followup ?? false,
+          estado: previous.estado || previous.status || row.estado || row.status || "Pendente",
+          status: previous.status || previous.estado || row.status || row.estado || "Pendente"
         };
         byId.set(String(row.id), mergedEval);
       });
@@ -20954,20 +20946,20 @@ async function hydrateCellMinistryFromRepository() {
       plansRes.data.forEach((row) => {
         const previous = prev.get(String(row.id)) || {};
         const mergedPlan = {
-          ...previous,
           ...row,
+          ...previous,
           id: row.id,
-          church_id: row.church_id || previous.church_id,
-          cell_id: row.cell_id || previous.cell_id,
-          cell_name: row.cell_name || previous.cell_name,
-          leader_id: row.leader_id || previous.leader_id,
-          leader_name: row.leader_name || previous.leader_name,
-          action: row.action || previous.action,
-          owner: row.owner || previous.owner || row.responsible_person,
-          due_date: row.due_date || previous.due_date || row.target_date,
-          status: row.status || previous.status || row.estado || "Planeado",
-          estado: row.status || previous.status || row.estado || "Planeado",
-          notes: row.notes !== undefined && row.notes !== "" ? row.notes : (previous.notes || "")
+          church_id: previous.church_id || row.church_id,
+          cell_id: previous.cell_id || row.cell_id,
+          cell_name: previous.cell_name || row.cell_name,
+          leader_id: previous.leader_id || row.leader_id,
+          leader_name: previous.leader_name || row.leader_name,
+          action: previous.action || row.action,
+          owner: previous.owner || row.owner || row.responsible_person,
+          due_date: previous.due_date || row.due_date || row.target_date,
+          status: previous.status || previous.estado || row.status || row.estado || "Planeado",
+          estado: previous.estado || previous.status || row.estado || row.status || "Planeado",
+          notes: previous.notes !== undefined && previous.notes !== "" ? previous.notes : (row.notes || "")
         };
         byId.set(String(row.id), mergedPlan);
       });
@@ -21169,7 +21161,9 @@ const cellCellsListPageState = {
     } catch (_) {
       return "table";
     }
-  })()
+  })(),
+  page: 1,
+  pageSize: 10
 };
 
 const cellMembersPageState = {
@@ -21182,7 +21176,7 @@ const cellMembersPageState = {
     }
   })(),
   page: 1,
-  pageSize: 50
+  pageSize: 10
 };
 
 const cellMinistryFilterState = {
@@ -21521,7 +21515,7 @@ function renderCellEvaluationCard(item) {
   if (typeof DataCard === "function") {
     return DataCard({
       title: `${clName} (${classification})`,
-      subtitle: `${evaluatorName} · ${dateLabel}`,
+      subtitle: `${reportLabel !== "—" ? reportLabel : cName} · ${dateLabel}`,
       badges,
       meta,
       actions,
@@ -21533,7 +21527,7 @@ function renderCellEvaluationCard(item) {
     <article class="data-card record-card light-surface cell-evaluation-card h-100">
       <div class="data-card-head">
         <div class="data-card-titles">
-          <span class="eyebrow">${escapeAttr(evaluatorName)} · ${escapeAttr(dateLabel)}</span>
+          <span class="eyebrow">${escapeAttr(reportLabel !== "—" ? reportLabel : cName)} · ${escapeAttr(dateLabel)}</span>
           <h3 class="data-card-title">${escapeAttr(clName)} (${escapeAttr(classification)})</h3>
         </div>
         <div class="data-card-badges">${badges.join("")}</div>
@@ -21579,7 +21573,7 @@ function renderCellActionPlanCard(item) {
   if (typeof DataCard === "function") {
     return DataCard({
       title: clName,
-      subtitle: `${ldrName} · ${dueDate}`,
+      subtitle: `${cName} · ${dueDate}`,
       badges,
       meta,
       actions,
@@ -21591,7 +21585,7 @@ function renderCellActionPlanCard(item) {
     <article class="data-card record-card light-surface cell-action-plan-card h-100">
       <div class="data-card-head">
         <div class="data-card-titles">
-          <span class="eyebrow">${escapeAttr(ldrName)} · ${escapeAttr(dueDate)}</span>
+          <span class="eyebrow">${escapeAttr(cName)} · ${escapeAttr(dueDate)}</span>
           <h3 class="data-card-title">${escapeAttr(clName)}</h3>
         </div>
         <div class="data-card-badges">${badges.join("")}</div>
@@ -24241,22 +24235,75 @@ function renderCellMinistry(activeTab = "alecOverview") {
 
 function cellMembershipSummary(members = [], registry = [], groups = []) {
   const textKey = (value) => String(value || "").trim().toLocaleLowerCase();
-  const cellsById = new Map(registry.map((cell) => [String(cell.id), cell]));
-  const cellsByName = new Map(registry.filter((cell) => cell.cell_name).map((cell) => [textKey(cell.cell_name), cell]));
-  const groupsById = new Map(groups.map((group) => [String(group.id), group]));
-  const groupsByName = new Map(groups.filter((group) => group.group_name).map((group) => [textKey(group.group_name), group]));
+  const cellsById = new Map();
+  const cellsByName = new Map();
+
+  registry.forEach((cell) => {
+    if (!cell) return;
+    if (cell.id) cellsById.set(String(cell.id), cell);
+    const names = [cell.cell_name, cell.name, cell.raw_name, cell.raw_cell_name].filter(Boolean);
+    names.forEach((n) => {
+      const k = textKey(n);
+      if (k && !cellsByName.has(k)) cellsByName.set(k, cell);
+    });
+  });
+
+  const groupsById = new Map();
+  const groupsByName = new Map();
+
+  groups.forEach((group) => {
+    if (!group) return;
+    if (group.id) groupsById.set(String(group.id), group);
+    const names = [group.group_name, group.name, group.raw_name].filter(Boolean);
+    names.forEach((n) => {
+      const k = textKey(n);
+      if (k && !groupsByName.has(k)) groupsByName.set(k, group);
+    });
+  });
+
   const byCell = new Map();
   const byGroup = new Map();
   const assigned = [];
   const awaitingAssignment = [];
 
-  members.forEach((member) => {
+  // Combine provided members with registration candidates for comprehensive count matching
+  const allMembers = [...members];
+  if (Array.isArray(state.memberRegistrationCandidates)) {
+    const existingMemberIds = new Set(members.map((m) => String(m.id || "")));
+    state.memberRegistrationCandidates.forEach((c) => {
+      if (!c || c.approval_status === "Withdrawn" || c.approval_status === "Rejected") return;
+      if (c.approval_status === "Approved" && c.approved_member_id && existingMemberIds.has(String(c.approved_member_id))) return;
+      if (!existingMemberIds.has(String(c.id))) {
+        allMembers.push({
+          id: c.id,
+          full_name: typeof candidateFullName === "function" ? candidateFullName(c) : c.full_name,
+          primary_phone: c.primary_phone || c.secondary_phone,
+          church_id: c.church_id,
+          cell_id: c.cell_id,
+          cell_name: c.cell_name,
+          celula: c.cell_name,
+          cell_group_name: c.cell_group_name,
+          cell_role: c.cell_role || "Membro",
+          approval_status: c.approval_status
+        });
+      }
+    });
+  }
+
+  allMembers.forEach((member) => {
+    if (!member) return;
     const rawCellId = String(member.cell_id || "");
-    const rawCellName = member.cell_name || member.celula || "";
-    const cell = cellsById.get(rawCellId) || cellsByName.get(textKey(rawCellName));
+    const rawCellName = member.cell_name || member.celula || member.raw_cell_name || member.cell || "";
+    let cell = cellsById.get(rawCellId) || cellsByName.get(textKey(rawCellName));
+    
+    if (!cell && typeof portalMemberBelongsToCell === "function") {
+      cell = registry.find((c) => portalMemberBelongsToCell(member, c)) || null;
+    }
+
     const rawGroupId = String(member.cell_group_id || member.group_id || "");
     const rawGroupName = member.cell_group_name || member.grupo_de_celula || "";
     const group = groupsById.get(rawGroupId) || groupsByName.get(textKey(rawGroupName)) || (cell ? groupsById.get(String(cell.group_id || cell.cell_group_id || cell.group_cell_id || "")) : null);
+    
     const row = { member, cell: cell || null, group: group || null };
     if (!cell) {
       awaitingAssignment.push(row);
@@ -24491,13 +24538,39 @@ function renderCellCellsList() {
 
   const groupMap = new Map(groups.map((g) => [g.id, g]));
 
-  const cardsHtml = cells.length
-    ? `<div class="row g-4 mt-1">${cells.map((cell) => {
+  // Pagination calculation
+  const totalCount = cells.length;
+  const pageSize = cellCellsListPageState.pageSize || 10;
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  if (cellCellsListPageState.page > totalPages) cellCellsListPageState.page = totalPages;
+  if (cellCellsListPageState.page < 1) cellCellsListPageState.page = 1;
+  const currentPage = cellCellsListPageState.page;
+  const startIdx = (currentPage - 1) * pageSize;
+  const endIdx = Math.min(startIdx + pageSize, totalCount);
+  const pagedCells = cells.slice(startIdx, endIdx);
+
+  const cardsHtml = pagedCells.length
+    ? `<div class="row g-4 mt-1">${pagedCells.map((cell) => {
         const memCount = (membership.byCell.get(cell.id) || []).length;
         const parentGroup = groupMap.get(cell.cell_group_id || cell.group_id) || null;
         return `<div class="col-12 col-md-6 col-xl-4">${renderCellCard(cell, memCount, parentGroup)}</div>`;
       }).join("")}</div>`
     : `<div class="col-12 text-center p-4 text-secondary">${lang === "pt" ? "Nenhuma célula encontrada." : "No cells found."}</div>`;
+
+  const paginationBar = `
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-3 pt-3 border-top" data-cell-cells-list-pagination>
+      <span class="text-secondary small">
+        ${totalCount > 0 ? (lang === "pt" ? `A mostrar ${startIdx + 1} a ${endIdx} de ${totalCount} células · Página ${currentPage} de ${totalPages}` : `Showing ${startIdx + 1} to ${endIdx} of ${totalCount} cells · Page ${currentPage} of ${totalPages}`) : (lang === "pt" ? "0 células" : "0 cells")}
+      </span>
+      <div class="d-flex align-items-center gap-2">
+        <select class="form-select form-select-sm" data-cell-cells-list-page-size aria-label="Page size">
+          ${[10, 25, 50, 100].map((size) => `<option value="${size}"${pageSize === size ? " selected" : ""}>${size}</option>`).join("")}
+        </select>
+        <button class="action-btn" data-cell-cells-list-page="prev" ${currentPage <= 1 ? "disabled" : ""}>${lang === "pt" ? "Anterior" : "Previous"}</button>
+        <button class="action-btn" data-cell-cells-list-page="next" ${currentPage >= totalPages ? "disabled" : ""}>${lang === "pt" ? "Próximo" : "Next"}</button>
+      </div>
+    </div>
+  `;
 
   const navHtml = cellModuleHeader("cellCellsList", { modalType: "cellRegistry" });
   const bodyHtml = `
@@ -24517,36 +24590,35 @@ function renderCellCellsList() {
     </div>
     <div class="row g-4">
       <div class="col-12">
-        ${isCardView ? `
-          <article class="panel glass-panel">
-            <div class="panel-head">
-              <h3 class="panel-title">${L("cellCellsList")}</h3>
-              <div class="action-cluster">
-                <button class="btn btn-sm btn-ce-gold" data-open-form="cellRegistry"><i class="bi bi-plus-lg me-1"></i>${L("add")}</button>
-                <button type="button" class="btn btn-sm btn-outline-cyan action-secondary" data-action="export" data-type="cellRegistry" data-id="cellRegistry"><i class="bi bi-download me-1"></i>${L("export")}</button>
-              </div>
+        <article class="panel glass-panel">
+          <div class="panel-head">
+            <h3 class="panel-title">${L("cellCellsList")}</h3>
+            <div class="action-cluster">
+              <button class="btn btn-sm btn-ce-gold" data-open-form="cellRegistry"><i class="bi bi-plus-lg me-1"></i>${L("add")}</button>
+              <button type="button" class="btn btn-sm btn-outline-cyan action-secondary" data-action="export" data-type="cellRegistry" data-id="cellRegistry"><i class="bi bi-download me-1"></i>${L("export")}</button>
             </div>
-            ${cardsHtml}
-          </article>
-        ` : modulePanel("cellRegistry", L("cellCellsList"), "cellRegistry", [L("cellName"), L("members"), L("groupName"), L("leaderTitle"), L("leaderName"), L("attendance"), L("firstTimeShort"), L("newConvertsShort"), L("offering"), L("observation"), L("status"), L("actions")], cells.map((item) => [
-          item.cell_name,
-          (membership.byCell.get(item.id) || []).length,
-          item.group_name,
-          item.leader_title,
-          item.leader_name,
-          item.attendance,
-          item.first_timers,
-          item.new_converts,
-          money(item.offering),
-          item.observation || "-",
-          badge(item.status),
-          actionButtons([
-            ["view", "cellRegistry", item.id, L("view")],
-            ["edit", "cellRegistry", item.id, L("edit")],
-            ["updateReport", "cellRegistry", item.id, L("updateCellReport")],
-            ["delete", "cellRegistry", item.id, L("delete")]
-          ])
-        ]), true)}
+          </div>
+          ${isCardView ? cardsHtml : dataTable([L("cellName"), L("members"), L("groupName"), L("leaderTitle"), L("leaderName"), L("attendance"), L("firstTimeShort"), L("newConvertsShort"), L("offering"), L("observation"), L("status"), L("actions")], pagedCells.map((item) => [
+            item.cell_name || item.name || "-",
+            (membership.byCell.get(item.id) || []).length,
+            item.group_name || groupMap.get(item.cell_group_id || item.group_id)?.group_name || "-",
+            item.leader_title || "-",
+            item.leader_name || item.leader || "-",
+            item.attendance || 0,
+            item.first_timers || 0,
+            item.new_converts || 0,
+            money(item.offering || 0),
+            item.observation || "-",
+            badge(item.status),
+            actionButtons([
+              ["view", "cellRegistry", item.id, L("view")],
+              ["edit", "cellRegistry", item.id, L("edit")],
+              ["updateReport", "cellRegistry", item.id, L("updateCellReport")],
+              ["delete", "cellRegistry", item.id, L("delete")]
+            ])
+          ]), true)}
+          ${paginationBar}
+        </article>
       </div>
     </div>`;
   setPageContent(navHtml + tabParallaxWrap(bodyHtml, activeRoute));
@@ -31433,6 +31505,84 @@ function openMemberProfileView(id) {
       })
       .catch((error) => console.warn("[CE Members] profile refresh skipped", error));
   }
+function openGroupCellsModal(groupId) {
+  const groups = scopedNested(state.cellGroups || []);
+  const registry = scopedNested(state.cellRegistry || []);
+  const group = groups.find((g) => String(g.id) === String(groupId)) || (state.cellGroups || []).find((g) => String(g.id) === String(groupId));
+  
+  if (!group) {
+    if (typeof cellRegistryFilter !== "undefined") cellRegistryFilter.groupId = groupId;
+    return setRoute("cellCellsList");
+  }
+
+  const groupName = group.group_name || "Grupo de Células";
+  const cells = registry.filter((c) => 
+    String(c.cell_group_id || c.group_id) === String(groupId) ||
+    (c.group_name && portalNormalizeName(c.group_name) === portalNormalizeName(groupName)) ||
+    (c.cell_group_name && portalNormalizeName(c.cell_group_name) === portalNormalizeName(groupName))
+  );
+  const membership = cellMembershipSummary(scoped(state.members || []), cells, [group]);
+
+  byId("modalEyebrow").textContent = churchName(group.church_id) || "Igreja";
+  byId("modalTitle").textContent = `${lang === "pt" ? "Células no Grupo" : "Cells in Group"}: ${groupName}`;
+
+  const cardsHtml = cells.length ? `
+    <div class="row g-3 overflow-y-auto" style="max-height: 60vh;">
+      ${cells.map((cell) => {
+        const memCount = (membership.byCell.get(cell.id) || []).length;
+        return `<div class="col-12 col-md-6">${renderCellCard(cell, memCount, group)}</div>`;
+      }).join("")}
+    </div>
+  ` : `
+    <div class="text-center p-4 text-secondary">
+      <i class="bi bi-inbox display-6 d-block mb-2"></i>
+      ${lang === "pt" ? "Nenhuma célula cadastrada neste grupo." : "No cells registered in this group."}
+    </div>
+  `;
+
+  byId("modalFields").innerHTML = `
+    <div class="col-12 mb-2">
+      <div class="d-flex flex-wrap align-items-center justify-content-between p-3 rounded light-surface border mb-3">
+        <div>
+          <h5 class="mb-1 fw-bold text-ce-gold">${escapeAttr(groupName)}</h5>
+          <span class="text-secondary small"><i class="bi bi-person-badge me-1"></i>${escapeAttr(group.leader_name || group.leader || "Sem líder definido")}</span>
+        </div>
+        <div class="d-flex gap-2">
+          <span class="badge bg-primary-subtle text-primary border"><i class="bi bi-diagram-3 me-1"></i>${cells.length} ${L("cellCellsList")}</span>
+          <span class="badge bg-success-subtle text-success border"><i class="bi bi-people me-1"></i>${cells.reduce((sum, item) => sum + (membership.byCell.get(item.id) || []).length, 0)} ${L("members")}</span>
+        </div>
+      </div>
+      ${cardsHtml}
+    </div>
+  `;
+
+  const entryForm = byId("entryForm");
+  const footer = entryForm?.querySelector(".ops-modal-footer");
+  if (footer) {
+    footer.innerHTML = `
+      <button type="button" class="btn btn-outline-cyan btn-sm" id="btnViewGroupCellsFullList">
+        <i class="bi bi-arrow-right-circle me-1"></i>${lang === "pt" ? "Ver na Lista Completa" : "View in Full List"}
+      </button>
+      <button type="button" class="btn btn-outline-glass btn-sm" data-bs-dismiss="modal">${lang === "pt" ? "Fechar" : "Close"}</button>
+    `;
+    const fullListBtn = byId("btnViewGroupCellsFullList");
+    if (fullListBtn) {
+      fullListBtn.onclick = () => {
+        const modalEl = byId("entryModal");
+        const inst = bootstrap.Modal.getInstance(modalEl);
+        if (inst) inst.hide();
+        if (cellMinistryFilterState?.cellCellsList) {
+          cellMinistryFilterState.cellCellsList.cell_group = groupName;
+        }
+        setRoute("cellCellsList");
+      };
+    }
+  }
+
+  modalType = null;
+  const modalInst = bootstrap.Modal.getOrCreateInstance(byId("entryModal"));
+  modalInst.show();
+  requestAnimationFrame(() => cleanRenderedText(byId("entryModal")));
 }
 
 function openView(type, id) {
@@ -32224,8 +32374,7 @@ async function quickAction(action, type, id) {
     return;
   }
   if (action === "viewGroupCells") {
-    cellRegistryFilter.groupId = id;
-    return setRoute("cellCellsList");
+    return openGroupCellsModal(id);
   }
   if (action === "clearCellFilter") {
     cellRegistryFilter.groupId = null;
