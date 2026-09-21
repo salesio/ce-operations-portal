@@ -3605,8 +3605,8 @@ const seedData = {
     cellReports: [],
     leaders: [],
     evaluations: [
-      { id: "e1111111-1111-4111-8111-111111111101", church_id: "church-hq", report_id: "CR-2026-09-01", cell_id: "2b3a5652-b8be-4c76-8b64-b84200c8bcd4", cell_name: "Diplomatas Victory", avaliador: "Pastora Flavia", data_da_avaliacao: "2026-09-10", classificacao: "Excelente", pontos_fortes: "Excelente pontualidade e retenção de primeiros visitantes.", pontos_a_melhorar: "Aumentar número de encontros de oração.", acao_recomendada: "Preparar proposta para divisão da célula no próximo trimestre.", precisa_followup: false, estado: "Aprovado" },
-      { id: "e1111111-1111-4111-8111-111111111102", church_id: "church-hq", report_id: "CR-2026-09-02", cell_id: "17de71f5-1926-4b34-8cc6-4c690c3c0262", cell_name: "Pioneiros Change", avaliador: "Pastora Flavia", data_da_avaliacao: "2026-09-12", classificacao: "Precisa de Atenção", pontos_fortes: "Líder dedicado e membro fiel no ALEC.", pontos_a_melhorar: "Baixa frequência nos últimos 2 cultos celulares.", acao_recomendada: "Agendar reunião com a supervisora e reforçar visitas pastorais.", precisa_followup: true, estado: "Em Análise" }
+      { id: "e1111111-1111-4111-8111-111111111101", church_id: "church-hq", report_id: "CR-2026-09-01", cell_id: "2b3a5652-b8be-4c76-8b64-b84200c8bcd4", cell_name: "Diplomatas Victory", avaliador: "Pastora Flavia", data_da_avaliacao: "2026-09-10", classificacao: "Excelente", pontos_fortes: "Excelente pontualidade e retenção de primeiros visitantes.", pontos_a_melhorar: "Aumentar número de encontros de oração.", acao_recomendada: "Preparar proposta para divisão da célula no próximo trimestre.", precisa_followup: false, estado: "Aprovado", status: "Aprovado" },
+      { id: "e1111111-1111-4111-8111-111111111102", church_id: "church-hq", report_id: "CR-2026-09-02", cell_id: "17de71f5-1926-4b34-8cc6-4c690c3c0262", cell_name: "Pioneiros Change", avaliador: "Pastora Flavia", data_da_avaliacao: "2026-09-12", classificacao: "Precisa de Atenção", pontos_fortes: "Líder dedicado e membro fiel no ALEC.", pontos_a_melhorar: "Baixa frequência nos últimos 2 cultos celulares.", acao_recomendada: "Agendar reunião com a supervisora e reforçar visitas pastorais.", precisa_followup: true, estado: "Aprovado", status: "Aprovado" }
     ],
     validations: [],
     actionPlans: [
@@ -20939,9 +20939,11 @@ async function hydrateCellMinistryFromRepository() {
       hydrated = true;
     }
     // 8. Evaluations
-    const evalsRes = cellSb?.listCellEvaluations
-      ? await cellSb.listCellEvaluations()
-      : (typeof repo?.listCellEvaluations === "function" ? await repo.listCellEvaluations() : (window.CECellMinistry?.listCellEvaluations ? await window.CECellMinistry.listCellEvaluations() : null));
+    let evalsRes = cellSb?.listCellEvaluations ? await cellSb.listCellEvaluations() : null;
+    if (!evalsRes || !evalsRes.ok) {
+      if (typeof repo?.listCellEvaluations === "function") evalsRes = await repo.listCellEvaluations();
+      else if (window.CECellMinistry?.listCellEvaluations) evalsRes = await window.CECellMinistry.listCellEvaluations();
+    }
 
     if (evalsRes && evalsRes.ok && Array.isArray(evalsRes.data) && (evalsRes.data.length || usingSupabase)) {
       state.cellLeadership = state.cellLeadership || {};
@@ -20971,9 +20973,11 @@ async function hydrateCellMinistryFromRepository() {
     }
 
     // 9. Action Plans
-    const plansRes = cellSb?.listCellActionPlans
-      ? await cellSb.listCellActionPlans()
-      : (typeof repo?.listCellActionPlans === "function" ? await repo.listCellActionPlans() : (window.CECellMinistry?.listCellActionPlans ? await window.CECellMinistry.listCellActionPlans() : null));
+    let plansRes = cellSb?.listCellActionPlans ? await cellSb.listCellActionPlans() : null;
+    if (!plansRes || !plansRes.ok) {
+      if (typeof repo?.listCellActionPlans === "function") plansRes = await repo.listCellActionPlans();
+      else if (window.CECellMinistry?.listCellActionPlans) plansRes = await window.CECellMinistry.listCellActionPlans();
+    }
 
     if (plansRes && plansRes.ok && Array.isArray(plansRes.data) && (plansRes.data.length || usingSupabase)) {
       state.cellLeadership = state.cellLeadership || {};
@@ -21917,7 +21921,13 @@ function syncCellLeadersFromNetwork() {
     if (!key) return;
     if (leaderMap.has(key)) {
       const prev = leaderMap.get(key);
-      leaderMap.set(key, { ...prev, ...leaderObj });
+      leaderMap.set(key, {
+        ...leaderObj,
+        ...prev,
+        id: prev.id || leaderObj.id,
+        estado: prev.estado || prev.status || leaderObj.estado,
+        status: prev.status || prev.estado || leaderObj.status
+      });
     } else {
       leaderMap.set(key, leaderObj);
     }
