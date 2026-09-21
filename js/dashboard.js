@@ -12969,6 +12969,7 @@ function renderCellLeaderPortal() {
             </button>
           </div>` : ""}
         </div>
+        ${usesSupabaseMembers() && !cellMembersLoading ? `<div class="cell-portal-pagination-footer d-flex justify-content-between align-items-center gap-2 mb-3"><div class="d-flex align-items-center gap-2"><small class="text-secondary">${cellPortalMembersState.totalCount} membro(s) · Página ${cellPortalMembersState.page} / ${cellPortalMembersState.totalPages}</small><label class="d-flex align-items-center gap-1 text-secondary small ms-2">${lang === "pt" ? "Por página:" : "Per page:"}<select class="form-select form-select-sm" data-cell-portal-page-size style="width: auto; display: inline-block;">${[25, 50, 100].map((sz) => `<option value="${sz}" ${cellPortalMembersState.pageSize === sz ? "selected" : ""}>${sz}</option>`).join("")}</select></label></div><div class="d-flex gap-2"><button class="action-btn" data-cell-portal-member-page="prev" ${cellPortalMembersState.page <= 1 ? "disabled" : ""}>Anterior</button><button class="action-btn" data-cell-portal-member-page="next" ${cellPortalMembersState.page >= cellPortalMembersState.totalPages ? "disabled" : ""}>Próximo</button></div></div>` : ""}
         <div class="panel glass-panel cell-portal-table-wrap">
           <table class="table cell-portal-table">
             <thead>
@@ -15445,10 +15446,10 @@ function renderMembersResultsOnly() {
           ? DataCardsGrid(filtered.map((m) => renderMemberCard(m)).join(""))
           : dataTable([L("name"), L("phone"), L("church"), "Grupo de Célula", L("cell"), L("department"), L("status"), L("actions")], tableRows, { rowAttrs });
 
-  const paginationEl = document.querySelector("[data-members-pagination]");
-  if (paginationEl) {
+  const paginationEls = document.querySelectorAll("[data-members-pagination]");
+  paginationEls.forEach((paginationEl) => {
     paginationEl.innerHTML = `<span class="text-secondary small">${pageState.loaded ? `${pageState.totalCount} ${lang === "pt" ? "membros" : "members"} · ${lang === "pt" ? "Página" : "Page"} ${pageState.page} / ${pageState.totalPages}` : ""}</span><div class="d-flex align-items-center gap-2"><select class="form-select form-select-sm" data-members-page-size aria-label="Members per page">${[25,50,100].map((size) => `<option value="${size}"${pageState.pageSize === size ? " selected" : ""}>${size}</option>`).join("")}</select><button class="action-btn" data-members-page="prev" ${pageState.page <= 1 || pageState.loading ? "disabled" : ""}>${lang === "pt" ? "Anterior" : "Previous"}</button><button class="action-btn" data-members-page="next" ${pageState.page >= pageState.totalPages || pageState.loading ? "disabled" : ""}>${lang === "pt" ? "Próximo" : "Next"}</button></div>`;
-  }
+  });
   return true;
 }
 
@@ -15587,6 +15588,7 @@ function renderMembers() {
     </div>
     <article class="panel glass-panel mb-4">
       ${renderMembersFilterBar(list, modulePageState.members.filter || {}, view)}
+      ${memberPaginationBar}
       <div id="members-results">
         ${pageState.loading
           ? `<div class="p-5 text-center text-secondary"><div class="spinner-border text-warning mb-2" role="status"></div><div>${lang === "pt" ? "A carregar membros do Supabase…" : "Loading members from Supabase…"}</div></div>`
@@ -15601,7 +15603,7 @@ function renderMembers() {
                 ? DataCardsGrid(filtered.map((m) => renderMemberCard(m)).join(""))
                 : dataTable([L("name"), L("phone"), L("church"), "Grupo de Célula", L("cell"), L("department"), L("status"), L("actions")], tableRows, { rowAttrs })}
       </div>
-      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-3 pt-3 border-top" data-members-pagination><span class="text-secondary small">${pageState.loaded ? `${pageState.totalCount} ${lang === "pt" ? "membros oficiais" : "official members"} · ${pendingCandidates.length} ${lang === "pt" ? "candidatos pendentes" : "pending candidates"} · ${lang === "pt" ? "Página" : "Page"} ${pageState.page} / ${pageState.totalPages}` : ""}</span><div class="d-flex align-items-center gap-2"><select class="form-select form-select-sm" data-members-page-size aria-label="Members per page">${[25,50,100].map((size) => `<option value="${size}"${pageState.pageSize === size ? " selected" : ""}>${size}</option>`).join("")}</select><button class="action-btn" data-members-page="prev" ${pageState.page <= 1 || pageState.loading ? "disabled" : ""}>${lang === "pt" ? "Anterior" : "Previous"}</button><button class="action-btn" data-members-page="next" ${pageState.page >= pageState.totalPages || pageState.loading ? "disabled" : ""}>${lang === "pt" ? "Próximo" : "Next"}</button></div></div>
+      ${memberPaginationBar}
     </article>
     ${canReviewMemberCandidates() ? `<article id="member-candidate-queue" class="panel glass-panel mb-4"><div class="d-flex justify-content-between align-items-center mb-3"><div><h3 class="h5 mb-1">Lista de Espera / Registos por Aprovar</h3><p class="mb-0 text-secondary">Apenas registos submetidos entram na fila de aprovação de membros da Igreja.</p></div><span class="badge text-bg-warning">${reviewQueue.length} em fila</span></div><div class="d-flex flex-wrap gap-2 mb-3">${candidateTabs.map(([key,label,statuses]) => `<button type="button" class="action-btn ${candidateTab === key ? "active" : ""}" data-member-candidate-tab="${key}">${label} <span class="badge text-bg-secondary">${candidates.filter((item) => statuses.includes(item.approval_status)).length}</span></button>`).join("")}</div>${candidateRows.length ? dataTable(["Candidato", "Igreja / célula", "Origem / Função", "Telefone", "Deteção de Duplicados", "Estado", "Acções"], candidateRows.map((c) => {
       const dups = candidateDuplicates(c);
@@ -24426,6 +24428,7 @@ function renderCellMembers() {
     </article>
     <article class="panel glass-panel">
       ${renderCellMinistryFilterBar("cellMembers", { view: cellMembersPageState.view, showWeek: false, showStatus: true, statusOptions: [{ value: "assigned", label: lang === "pt" ? "Atribuído à célula" : "Assigned" }, { value: "awaiting", label: lang === "pt" ? "Aguarda atribuição" : "Awaiting" }], showViewToggle: true })}
+      ${paginationBar}
       ${isCardView ? cardsHtml : dataTable([L("name"), L("phone"), L("church"), L("groupName"), L("cell"), lang === "pt" ? "Função" : "Role", lang === "pt" ? "Atribuição" : "Assignment", L("actions")], tableRows)}
       ${paginationBar}
     </article>`;
@@ -24627,6 +24630,7 @@ function renderCellCellsList() {
               <button type="button" class="btn btn-sm btn-outline-cyan action-secondary" data-action="export" data-type="cellRegistry" data-id="cellRegistry"><i class="bi bi-download me-1"></i>${L("export")}</button>
             </div>
           </div>
+          ${paginationBar}
           ${isCardView ? cardsHtml : dataTable([L("cellName"), L("members"), L("groupName"), L("leaderTitle"), L("leaderName"), L("attendance"), L("firstTimeShort"), L("newConvertsShort"), L("offering"), L("observation"), L("status"), L("actions")], pagedCells.map((item) => [
             item.cell_name || item.name || "-",
             (membership.byCell.get(item.id) || []).length,
@@ -24983,6 +24987,7 @@ function venueModulePanel(type, title, modalType, headers, rows, { showFilters =
         </div>
       </div>
       ${showFilters ? venueFilterBar(activeTab) : ""}
+      ${paginationHtml}
       ${contentHtml}
       ${paginationHtml}
     </article>
