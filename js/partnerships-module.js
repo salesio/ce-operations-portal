@@ -70,6 +70,36 @@
     );
   }
 
+  function compressImage(dataUrl, maxWidth = 256, maxHeight = 256, quality = 0.85, callback) {
+    if (!dataUrl || typeof dataUrl !== "string" || !dataUrl.startsWith("data:image/")) {
+      if (typeof callback === "function") callback(dataUrl);
+      return;
+    }
+    const img = new Image();
+    img.onerror = () => { if (typeof callback === "function") callback(dataUrl); };
+    img.onload = () => {
+      let width = img.width;
+      let height = img.height;
+      if (width > maxWidth || height > maxHeight) {
+        if (width > height) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        } else {
+          width = Math.round((width * maxHeight) / height);
+          height = maxHeight;
+        }
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, width, height);
+      const compressed = canvas.toDataURL("image/png");
+      if (typeof callback === "function") callback(compressed);
+    };
+    img.src = dataUrl;
+  }
+
   function getArms() {
     let stored = null;
     if (typeof state !== "undefined" && Array.isArray(state.partnershipArms) && state.partnershipArms.length) {
@@ -87,30 +117,30 @@
       stored = PARTNERSHIP_ARMS_SEED;
     }
     return stored.map((arm) => ({
-      logo_url: "",
       monthly_goal: 10000,
       status: "Active",
       is_active: true,
       icon: "bi-stars",
       created_at: "2026-01-01",
       updated_at: "2026-07-01",
-      ...arm
+      ...arm,
+      logo_url: arm.logo_url ?? ""
     }));
   }
 
   function persistArmsState(arms) {
-    if (typeof state !== "undefined") {
-      state.partnershipArms = arms;
-      try {
+    try {
+      if (typeof state !== "undefined") {
+        state.partnershipArms = arms;
         const primaryKey = (typeof window !== "undefined" && window.STORAGE_KEY) ? window.STORAGE_KEY : "ce-ops-dashboard-v3";
         localStorage.setItem(primaryKey, JSON.stringify(state));
-        localStorage.setItem("ce_partnership_arms_backup", JSON.stringify(arms));
-        if (typeof saveState === "function") {
-          saveState("Updated partnership arms");
-        }
-      } catch (err) {
-        console.warn("[Partnerships] Could not persist to localStorage:", err);
       }
+      localStorage.setItem("ce_partnership_arms_backup", JSON.stringify(arms));
+      if (typeof saveState === "function") {
+        saveState("Updated partnership arms");
+      }
+    } catch (err) {
+      console.warn("[Partnerships] Could not persist to localStorage:", err);
     }
   }
 
@@ -124,32 +154,79 @@
         .order("created_at", { ascending: true });
 
       if (error) {
-        // Table may not have been created yet in Supabase SQL editor
         console.info("[Partnerships] Supabase table 'partnership_arms' not available yet (using localStorage):", error.message);
         return;
       }
 
+      const currentArms = getArms();
+
       if (Array.isArray(data) && data.length > 0) {
-        const currentArms = (typeof state !== "undefined" && Array.isArray(state.partnershipArms)) ? state.partnershipArms : [];
-        const remoteIds = new Set(data.map((d) => d.id));
-        const merged = [...data];
-        // Preserve any newly created local arms not yet in remote
-        currentArms.forEach((ca) => {
-          if (!remoteIds.has(ca.id)) {
-            merged.push(ca);
-            void savePartnershipArmToSupabase(ca);
+        const remoteMap = new Map(data.map((d) => [d.id, d]));
+        const localMap = new Map(currentArms.map((c) => [c.id, c]));
+        const allIds = new Set([...remoteMap.keys(), ...localMap.keys()]);
+        const mergedMap = new Map();
+        const needsRemoteSync = [];
+
+        for (const id of allIds) {
+          const remote = remoteMap.get(id);
+          const local = localMap.get(id);
+
+          if (remote && local) {
+            // Smart non-destructive merge: preserve local logo_url if remote logo is empty
+            const localLogo = (local.logo_url || "").trim();
+            const remoteLogo = (remote.logo_url || "").trim();
+            const logo_url = localLogo || remoteLogo;
+
+            const mergedArm = {
+              ...remote,
+              ...local,
+              id,
+              name: local.name || remote.name || "Braço de Parceria",
+              description: local.description || remote.description || "",
+              icon: local.icon || remote.icon || "bi-stars",
+              logo_url,
+              monthly_goal: local.monthly_goal ?? remote.monthly_goal ?? 10000,
+              status: local.status || remote.status || "Active",
+              is_active: local.is_active !== undefined ? local.is_active : (remote.is_active !== false),
+              updated_at: new Date().toISOString()
+            };
+
+            mergedMap.set(id, mergedArm);
+
+            // Queue for remote sync if local had a logo that remote lacked
+            if (localLogo && !remoteLogo) {
+              needsRemoteSync.push(mergedArm);
+            }
+          } else if (local) {
+            mergedMap.set(id, local);
+            needsRemoteSync.push(local);
+          } else if (remote) {
+            mergedMap.set(id, {
+              logo_url: "",
+              monthly_goal: 10000,
+              status: "Active",
+              is_active: true,
+              icon: "bi-stars",
+              ...remote
+            });
           }
-        });
+        }
+
+        const merged = Array.from(mergedMap.values());
         persistArmsState(merged);
+
         if (typeof activeRoute !== "undefined" && activeRoute === "partnership") {
           renderPartnerships();
         }
+
+        for (const armToSync of needsRemoteSync) {
+          void savePartnershipArmToSupabase(armToSync);
+        }
       } else if (Array.isArray(data) && data.length === 0) {
-        // Table exists in Supabase but is empty -> seed initial arms
-        const current = getArms();
-        const toSeed = current.map((arm) => ({
+        // Table exists in Supabase but is empty -> seed initial arms with local state
+        const toSeed = currentArms.map((arm) => ({
           ...arm,
-          created_at: new Date().toISOString(),
+          created_at: arm.created_at || new Date().toISOString(),
           updated_at: new Date().toISOString()
         }));
         await client.from("partnership_arms").upsert(toSeed);
@@ -488,16 +565,18 @@
   }
 
   function armLogoHtml(arm) {
-    if (arm.logo_url) {
-      return `<img src="${arm.logo_url}" alt="${arm.name}" class="partnership-arm-logo" style="width: 3.5rem; height: 3.5rem; border-radius: 1rem; object-fit: cover; border: 1px solid rgba(215, 174, 75, 0.3);">`;
-    }
     const initials = String(arm.name || "?")
       .split(/\s+/)
       .slice(0, 2)
       .map((w) => w[0] || "")
       .join("")
       .toUpperCase();
-    return `<div class="partnership-arm-placeholder" title="${isPt() ? "Ícone padrão" : "Default icon"}"><i class="bi ${arm.icon || "bi-stars"}"></i><span>${initials}</span></div>`;
+    const fallbackHtml = `<div class="partnership-arm-placeholder" title="${isPt() ? "Ícone padrão" : "Default icon"}"><i class="bi ${arm.icon || "bi-stars"}"></i><span>${initials}</span></div>`;
+
+    if (arm.logo_url && arm.logo_url.trim()) {
+      return `<img src="${arm.logo_url}" alt="${arm.name}" class="partnership-arm-logo" style="width: 3.5rem; height: 3.5rem; border-radius: 1rem; object-fit: cover; border: 1px solid rgba(215, 174, 75, 0.3); flex-shrink: 0;" onerror="this.onerror=null; this.outerHTML='${fallbackHtml.replace(/'/g, "\\'")}';">`;
+    }
+    return fallbackHtml;
   }
 
   function summaryCardsHtml(arms, partners) {
@@ -1038,8 +1117,10 @@
         reader.onload = (evt) => {
           const result = evt.target?.result;
           if (result && typeof result === "string") {
-            urlInput.value = result;
-            updatePreview();
+            compressImage(result, 256, 256, 0.85, (compressedUrl) => {
+              urlInput.value = compressedUrl;
+              updatePreview();
+            });
           }
         };
         reader.readAsDataURL(file);

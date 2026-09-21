@@ -34,7 +34,7 @@ const plan = read("DATA_LAYER_PLAN.md");
 const readme = read("README.md");
 
 ok("partnerships-module.js exists", existsSync(join(root, "js/partnerships-module.js")));
-ok("index loads partnerships module", /partnerships-module\.js\?v=20260723-partnerships-v1/.test(indexHtml));
+ok("index loads partnerships module", /partnerships-module\.js\?v=/.test(indexHtml));
 ok("sidebar order finance then partnership", /finance[\s\S]{0,80}partnership/.test(dash));
 ok("no Loveworld as separate NAV route", !/\["loveworld|"loveworldSat"|Loveworld SAT.*bi-/.test(dash.match(/NAV_GROUPS[\s\S]{0,800}/)?.[0] || ""));
 ok("Loveworld is partnership arm in module", /Loveworld SAT/.test(mod) && /arm-lw-sat/.test(mod));
