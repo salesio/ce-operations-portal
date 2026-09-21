@@ -564,6 +564,15 @@
     return `<span class="badge ${tone}">${label}</span>`;
   }
 
+  function handleArmLogoError(imgEl, icon, initials) {
+    if (!imgEl || !imgEl.parentNode) return;
+    const div = document.createElement("div");
+    div.className = "partnership-arm-placeholder";
+    div.title = isPt() ? "Ícone padrão" : "Default icon";
+    div.innerHTML = `<i class="bi ${icon || "bi-stars"}"></i><span>${initials || "?"}</span>`;
+    imgEl.parentNode.replaceChild(div, imgEl);
+  }
+
   function armLogoHtml(arm) {
     const initials = String(arm.name || "?")
       .split(/\s+/)
@@ -571,12 +580,13 @@
       .map((w) => w[0] || "")
       .join("")
       .toUpperCase();
-    const fallbackHtml = `<div class="partnership-arm-placeholder" title="${isPt() ? "Ícone padrão" : "Default icon"}"><i class="bi ${arm.icon || "bi-stars"}"></i><span>${initials}</span></div>`;
+    const icon = arm.icon || "bi-stars";
 
     if (arm.logo_url && arm.logo_url.trim()) {
-      return `<img src="${arm.logo_url}" alt="${arm.name}" class="partnership-arm-logo" style="width: 3.5rem; height: 3.5rem; border-radius: 1rem; object-fit: cover; border: 1px solid rgba(215, 174, 75, 0.3); flex-shrink: 0;" onerror="this.onerror=null; this.outerHTML='${fallbackHtml.replace(/'/g, "\\'")}';">`;
+      const safeUrl = arm.logo_url.replace(/"/g, "&quot;");
+      return `<img src="${safeUrl}" alt="${arm.name}" class="partnership-arm-logo" style="width: 3.5rem; height: 3.5rem; border-radius: 1rem; object-fit: cover; border: 1px solid rgba(215, 174, 75, 0.3); flex-shrink: 0;" onerror="handleArmLogoError(this, '${icon}', '${initials}');">`;
     }
-    return fallbackHtml;
+    return `<div class="partnership-arm-placeholder" title="${isPt() ? "Ícone padrão" : "Default icon"}"><i class="bi ${icon}"></i><span>${initials}</span></div>`;
   }
 
   function summaryCardsHtml(arms, partners) {
@@ -1103,7 +1113,8 @@
       const url = urlInput.value.trim();
       const selectedIcon = iconSelect.value || "bi-stars";
       if (url) {
-        previewBox.innerHTML = `<img src="${url}" id="armFormLogoImg" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem;" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\\'bi ${selectedIcon} fs-1 text-danger\\'></i>';">`;
+        const safeUrl = url.replace(/"/g, "&quot;");
+        previewBox.innerHTML = `<img src="${safeUrl}" id="armFormLogoImg" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem;" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=&quot;bi ${selectedIcon} fs-1 text-danger&quot;></i>';">`;
       } else {
         previewBox.innerHTML = `<i class="bi ${selectedIcon} fs-1 text-cyan" id="armFormLogoIcon"></i>`;
       }
@@ -1357,6 +1368,7 @@
   }
 
   global.PARTNERSHIP_ARMS_SEED = PARTNERSHIP_ARMS_SEED;
+  global.handleArmLogoError = handleArmLogoError;
   global.partnershipPageState = partnershipPageState;
   global.renderPartnerships = renderPartnerships;
   global.getPartnershipArmPromotionStatus = getPartnershipArmPromotionStatus;
