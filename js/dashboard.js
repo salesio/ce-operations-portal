@@ -4756,6 +4756,42 @@ function normalizeUserProfile(user = {}, churches = [], departments = []) {
 }
 
 
+function mergeCellRecordWithPriority(base, update, defaultStatus = "Pendente") {
+  if (!base && !update) return {};
+  if (!base) return { ...update, estado: update.estado || update.status || defaultStatus, status: update.status || update.estado || defaultStatus };
+  if (!update) return { ...base, estado: base.estado || base.status || defaultStatus, status: base.status || base.estado || defaultStatus };
+
+  const merged = { ...base, ...update };
+
+  const statusA = base.estado || base.status;
+  const statusB = update.estado || update.status;
+
+  const isApproved = (s) => /^aprovad/i.test(String(s || ""));
+  const isPendingOrSeed = (s) => !s || /em an[áa]lise|pendente|pending/i.test(String(s || ""));
+
+  const timeBase = base.updated_at ? new Date(base.updated_at).getTime() : 0;
+  const timeUpdate = update.updated_at ? new Date(update.updated_at).getTime() : 0;
+
+  if (timeUpdate > timeBase) {
+    merged.estado = statusB || statusA || defaultStatus;
+  } else if (timeBase > timeUpdate) {
+    merged.estado = statusA || statusB || defaultStatus;
+  } else if (isApproved(statusA)) {
+    merged.estado = statusA;
+  } else if (isApproved(statusB)) {
+    merged.estado = statusB;
+  } else if (statusA && !isPendingOrSeed(statusA)) {
+    merged.estado = statusA;
+  } else if (statusB && !isPendingOrSeed(statusB)) {
+    merged.estado = statusB;
+  } else {
+    merged.estado = statusA || statusB || defaultStatus;
+  }
+
+  merged.status = merged.estado;
+  return merged;
+}
+
 function isLegacyMockRecord(item, prefix) {
   if (!item) return false;
   const id = String(item.id || '');
@@ -4916,8 +4952,8 @@ function normalizeState(saved) {
         const evalMap = new Map((merged.cellLeadership.evaluations || []).map((e) => [String(e.id), e]));
         parsedEvals.forEach((pe) => {
           if (pe && pe.id) {
-            const existing = evalMap.get(String(pe.id)) || {};
-            evalMap.set(String(pe.id), { ...pe, ...existing });
+            const existing = evalMap.get(String(pe.id));
+            evalMap.set(String(pe.id), mergeCellRecordWithPriority(existing, pe, "Pendente"));
           }
         });
         merged.cellLeadership.evaluations = [...evalMap.values()];
@@ -4930,8 +4966,8 @@ function normalizeState(saved) {
         const planMap = new Map((merged.cellLeadership.actionPlans || []).map((p) => [String(p.id), p]));
         parsedPlans.forEach((pp) => {
           if (pp && pp.id) {
-            const existing = planMap.get(String(pp.id)) || {};
-            planMap.set(String(pp.id), { ...pp, ...existing });
+            const existing = planMap.get(String(pp.id));
+            planMap.set(String(pp.id), mergeCellRecordWithPriority(existing, pp, "Planeado"));
           }
         });
         merged.cellLeadership.actionPlans = [...planMap.values()];
@@ -10691,8 +10727,11 @@ function scrollContentTo(target, { behavior = "smooth" } = {}) {
     content.scrollTo({ top: 0, behavior });
     return;
   }
-  const element = typeof target === "string" ? byId(target) : target;
-  if (!element) return;
+  const element = typeof target === "string" ? (byId(target) || document.querySelector(target)) : target;
+  if (!element) {
+    content.scrollTo({ top: 0, behavior });
+    return;
+  }
   const stickyNav = content.querySelector(".module-nav-sticky");
   const offset = (stickyNav?.offsetHeight || 0) + 8;
   const top = element.getBoundingClientRect().top - content.getBoundingClientRect().top + content.scrollTop - offset;
@@ -20907,24 +20946,19 @@ async function hydrateCellMinistryFromRepository() {
       const prev = new Map((state.cellLeadership.evaluations || []).map((e) => [String(e.id), e]));
       const byId = new Map();
       evalsRes.data.forEach((row) => {
-        const previous = prev.get(String(row.id)) || {};
-        const mergedEval = {
-          ...row,
-          ...previous,
-          id: row.id,
-          report_id: previous.report_id || row.report_id,
-          cell_id: previous.cell_id || row.cell_id,
-          cell_name: previous.cell_name || row.cell_name,
-          avaliador: previous.avaliador || row.avaliador || row.evaluator,
-          data_da_avaliacao: previous.data_da_avaliacao || row.data_da_avaliacao || row.evaluation_date,
-          classificacao: previous.classificacao || row.classificacao || row.classification,
-          pontos_fortes: previous.pontos_fortes !== undefined && previous.pontos_fortes !== "" ? previous.pontos_fortes : (row.pontos_fortes || ""),
-          pontos_a_melhorar: previous.pontos_a_melhorar !== undefined && previous.pontos_a_melhorar !== "" ? previous.pontos_a_melhorar : (row.pontos_a_melhorar || ""),
-          acao_recomendada: previous.acao_recomendada !== undefined && previous.acao_recomendada !== "" ? previous.acao_recomendada : (row.acao_recomendada || row.recommended_action || ""),
-          precisa_followup: previous.precisa_followup ?? row.precisa_followup ?? false,
-          estado: previous.estado || previous.status || row.estado || row.status || "Pendente",
-          status: previous.status || previous.estado || row.status || row.estado || "Pendente"
-        };
+        const previous = prev.get(String(row.id));
+        const mergedEval = mergeCellRecordWithPriority(row, previous, "Pendente");
+        mergedEval.id = row.id;
+        mergedEval.report_id = previous?.report_id || row.report_id;
+        mergedEval.cell_id = previous?.cell_id || row.cell_id;
+        mergedEval.cell_name = previous?.cell_name || row.cell_name;
+        mergedEval.avaliador = previous?.avaliador || row.avaliador || row.evaluator;
+        mergedEval.data_da_avaliacao = previous?.data_da_avaliacao || row.data_da_avaliacao || row.evaluation_date;
+        mergedEval.classificacao = previous?.classificacao || row.classificacao || row.classification;
+        mergedEval.pontos_fortes = previous?.pontos_fortes !== undefined && previous?.pontos_fortes !== "" ? previous.pontos_fortes : (row.pontos_fortes || "");
+        mergedEval.pontos_a_melhorar = previous?.pontos_a_melhorar !== undefined && previous?.pontos_a_melhorar !== "" ? previous.pontos_a_melhorar : (row.pontos_a_melhorar || "");
+        mergedEval.acao_recomendada = previous?.acao_recomendada !== undefined && previous?.acao_recomendada !== "" ? previous.acao_recomendada : (row.acao_recomendada || row.recommended_action || "");
+        mergedEval.precisa_followup = previous?.precisa_followup ?? row.precisa_followup ?? false;
         byId.set(String(row.id), mergedEval);
       });
       prev.forEach((localRow, id) => {
@@ -20944,23 +20978,18 @@ async function hydrateCellMinistryFromRepository() {
       const prev = new Map((state.cellLeadership.actionPlans || []).map((p) => [String(p.id), p]));
       const byId = new Map();
       plansRes.data.forEach((row) => {
-        const previous = prev.get(String(row.id)) || {};
-        const mergedPlan = {
-          ...row,
-          ...previous,
-          id: row.id,
-          church_id: previous.church_id || row.church_id,
-          cell_id: previous.cell_id || row.cell_id,
-          cell_name: previous.cell_name || row.cell_name,
-          leader_id: previous.leader_id || row.leader_id,
-          leader_name: previous.leader_name || row.leader_name,
-          action: previous.action || row.action,
-          owner: previous.owner || row.owner || row.responsible_person,
-          due_date: previous.due_date || row.due_date || row.target_date,
-          status: previous.status || previous.estado || row.status || row.estado || "Planeado",
-          estado: previous.estado || previous.status || row.estado || row.status || "Planeado",
-          notes: previous.notes !== undefined && previous.notes !== "" ? previous.notes : (row.notes || "")
-        };
+        const previous = prev.get(String(row.id));
+        const mergedPlan = mergeCellRecordWithPriority(row, previous, "Planeado");
+        mergedPlan.id = row.id;
+        mergedPlan.church_id = previous?.church_id || row.church_id;
+        mergedPlan.cell_id = previous?.cell_id || row.cell_id;
+        mergedPlan.cell_name = previous?.cell_name || row.cell_name;
+        mergedPlan.leader_id = previous?.leader_id || row.leader_id;
+        mergedPlan.leader_name = previous?.leader_name || row.leader_name;
+        mergedPlan.action = previous?.action || row.action;
+        mergedPlan.owner = previous?.owner || row.owner || row.responsible_person;
+        mergedPlan.due_date = previous?.due_date || row.due_date || row.target_date;
+        mergedPlan.notes = previous?.notes !== undefined && previous?.notes !== "" ? previous.notes : (row.notes || "");
         byId.set(String(row.id), mergedPlan);
       });
       prev.forEach((localRow, id) => {
@@ -33596,6 +33625,7 @@ document.addEventListener("click", async (event) => {
     const pageState = modulePageState.members;
     pageState.page = memberPageButton.dataset.membersPage === "next" ? Math.min(pageState.totalPages, pageState.page + 1) : Math.max(1, pageState.page - 1);
     void loadMembersPage({ force: true });
+    scrollContentTo('[data-member-filter-bar]', { behavior: "smooth" });
     return;
   }
   const cellMemberPageButton = event.target.closest("[data-cell-members-page]");
@@ -33604,6 +33634,7 @@ document.addEventListener("click", async (event) => {
     if (dir === "next") cellMembersPageState.page = (cellMembersPageState.page || 1) + 1;
     else cellMembersPageState.page = Math.max(1, (cellMembersPageState.page || 1) - 1);
     renderCellMembers();
+    scrollContentTo('[data-cell-ministry-filter-bar="cellMembers"]', { behavior: "smooth" });
     return;
   }
   const cellCellsListPageButton = event.target.closest("[data-cell-cells-list-page]");
@@ -33612,6 +33643,7 @@ document.addEventListener("click", async (event) => {
     if (dir === "next") cellCellsListPageState.page = (cellCellsListPageState.page || 1) + 1;
     else cellCellsListPageState.page = Math.max(1, (cellCellsListPageState.page || 1) - 1);
     renderCellCellsList();
+    scrollContentTo('[data-cell-ministry-filter-bar="cellCellsList"]', { behavior: "smooth" });
     return;
   }
   const cellPortalPageButton = event.target.closest("[data-cell-portal-member-page]");
@@ -33619,6 +33651,7 @@ document.addEventListener("click", async (event) => {
     const pageState = cellPortalMembersState;
     pageState.page = cellPortalPageButton.dataset.cellPortalMemberPage === "next" ? Math.min(pageState.totalPages, pageState.page + 1) : Math.max(1, pageState.page - 1);
     void loadCellPortalMembers(cellPortalPageState.cellId, { force: true });
+    scrollContentTo('.cell-portal-nav', { behavior: "smooth" });
     return;
   }
   const followupViewBtn = event.target.closest("[data-followup-view]");
@@ -35091,18 +35124,21 @@ document.addEventListener("change", (event) => {
     modulePageState.members.pageSize = Number(event.target.value) || 50;
     modulePageState.members.page = 1;
     void loadMembersPage({ force: true });
+    scrollContentTo('[data-member-filter-bar]', { behavior: "smooth" });
     return;
   }
   if (event.target.matches("[data-cell-members-page-size]")) {
     cellMembersPageState.pageSize = Number(event.target.value) || 12;
     cellMembersPageState.page = 1;
     renderCellMembers();
+    scrollContentTo('[data-cell-ministry-filter-bar="cellMembers"]', { behavior: "smooth" });
     return;
   }
   if (event.target.matches("[data-cell-cells-list-page-size]")) {
     cellCellsListPageState.pageSize = Number(event.target.value) || 12;
     cellCellsListPageState.page = 1;
     renderCellCellsList();
+    scrollContentTo('[data-cell-ministry-filter-bar="cellCellsList"]', { behavior: "smooth" });
     return;
   }
 
