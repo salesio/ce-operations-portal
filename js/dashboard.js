@@ -7682,6 +7682,26 @@ function memberDepartmentOptions(record = {}, churchId = "") {
     if (!existing || (source === "portal" && existing.source !== "portal")) byName.set(key, { id, name, source });
   };
 
+  const defaultDepartments = [
+    "Mídia",
+    "Células & Liderança",
+    "F.E.V.O",
+    "Finanças",
+    "Parcerias",
+    "Requisições & Aprovações",
+    "Espaços & Inventário",
+    "Programas & Extensão",
+    "Ministério Prisional",
+    "Materiais do Ministério",
+    "Aconselhamento Pastoral",
+    "Sacramentos",
+    "Escola de Fundação",
+    "ALEC (Academia de Líderes)",
+    "Recursos Humanos & Staff",
+    "Administração"
+  ];
+
+  defaultDepartments.forEach((name) => add({ name }, "default"));
   (state.departments || []).forEach((department) => add(department, "portal"));
 
   if (selectedName && ![...byName.values()].some((option) => option.id === selectedId || optionKey(option.name) === optionKey(selectedName))) {
@@ -7693,7 +7713,7 @@ function memberDepartmentOptions(record = {}, churchId = "") {
 function departmentOptionsHtml(options, selectedName = "", selectedId = "") {
   const selectedNameKey = String(selectedName || "").trim().toLocaleLowerCase();
   const selectedIdKey = String(selectedId || "").trim();
-  const prompt = lang === "pt" ? "Sem departamento" : "No department";
+  const prompt = lang === "pt" ? "Seleccionar Departamento…" : "Select Department…";
   return [`<option value="" data-department-id="">${prompt}</option>`, ...options.map((option) => {
     const selected = (selectedIdKey && option.id === selectedIdKey) || (!selectedIdKey && option.name.toLocaleLowerCase() === selectedNameKey);
     return `<option value="${escapeAttr(option.name)}" data-department-id="${escapeAttr(option.id)}" ${selected ? "selected" : ""}>${escapeAttr(option.name)}</option>`;
@@ -7702,7 +7722,10 @@ function departmentOptionsHtml(options, selectedName = "", selectedId = "") {
 
 function departmentSelectField(name, label, record = {}, { colClass = "col-md-6" } = {}) {
   const departmentId = String(record.department_id || "").trim();
-  const departmentName = String(record[name] ?? record.department_name ?? "").trim();
+  let departmentName = String(record[name] ?? record.department_name ?? record.departamento ?? "").trim();
+  if (!departmentName && (typeof modalType !== "undefined" && modalType === "mediaTechnician")) {
+    departmentName = "Mídia";
+  }
   const options = memberDepartmentOptions(record);
   return `
     <div class="${colClass}">
@@ -27188,10 +27211,16 @@ function renderSimple(type, title, records) {
 }
 
 function getMediaState() {
-  const base = structuredClone(seedData.media || {});
-  const current = state.media;
-  if (!current || Array.isArray(current)) return base;
-  return { ...base, ...current };
+  state.media = state.media && typeof state.media === "object" && !Array.isArray(state.media) ? state.media : {};
+  const media = state.media;
+  media.technicians = Array.isArray(media.technicians) ? media.technicians : [];
+  media.roles = Array.isArray(media.roles) ? media.roles : [];
+  media.services = Array.isArray(media.services) ? media.services : [];
+  media.schedules = Array.isArray(media.schedules) ? media.schedules : [];
+  media.streamingChannels = Array.isArray(media.streamingChannels) ? media.streamingChannels : [];
+  media.performanceEvaluations = Array.isArray(media.performanceEvaluations) ? media.performanceEvaluations : [];
+  media.awards = Array.isArray(media.awards) ? media.awards : [];
+  return media;
 }
 
 function mediaVisibleTechnicians(technicians) {
@@ -27764,7 +27793,7 @@ function renderMedia(activeTab = "overview") {
       </article>`);
   }
 
-  const navHtml = sectionHeader(L("media"), L("mediaSubtitle"), "mediaTechnician", "bi-camera-reels");
+  const navHtml = sectionHeader(L("media"), L("mediaSubtitle"), null, "bi-camera-reels");
   const bodyHtml = `
     ${summaryFilterChips("media")}
     ${content}
@@ -28476,20 +28505,20 @@ const formSchemas = {
   finalValidation: [["report_id", "reports"], ["validado_por", "validatedBy"], ["data_validacao", "date", "date"], ["decisao", "decision", "select", ["Validado", "Devolver para Correção", "Rejeitado"]], ["comentario_final", "finalComment", "textarea"], ["church_id", "church", "church"], ["estado_final", "finalStatus", "select", validationStatuses]],
   inventoryItem: [["nome_do_item", "itemName"], ["categoria", "category", "select", inventoryCategories], ["quantidade", "quantity", "number"], ["estado", "status", "select", inventoryStatuses], ["localizacao", "location"], ["departamento_responsavel", "responsibleDepartment"], ["church_id", "church", "church"], ["data_de_entrada", "entryDate", "date"], ["valor_unitario", "unitValue", "number"], ["valor_total", "totalValue", "number"], ["serial_number", "serialNumber"], ["observacoes", "observations", "textarea"]],
   venueAcquisition: [["codigo_do_item", "itemCode"], ["descricao", "description"], ["categoria", "category", "select", inventoryCategories], ["quantidade", "quantity", "number"], ["serial_number", "serialNumber"], ["estado", "status", "select", inventoryStatuses], ["data_de_compra_ou_entrada", "purchaseEntryDate", "date"], ["valor_unitario", "unitValue", "number"], ["valor_total", "totalValue", "number"], ["fornecedor", "supplier"], ["recebido_por", "receivedBy"], ["comprovativo_ou_factura", "invoiceProof"], ["church_id", "church", "church"], ["observacoes", "observations", "textarea"]],
-  venueStaffEquipment: [["nome_do_funcionario", "staffName"], ["departamento", "department"], ["church_id", "church", "church"], ["data_onboarding", "onboardingDate", "date"], ["dispositivo", "device"], ["modelo", "model"], ["device_id", "deviceId"], ["product_id", "productId"], ["data_de_entrega", "deliveryDate", "date"], ["estado_na_entrega", "conditionAtDelivery", "select", inventoryStatuses], ["estado_actual", "currentCondition", "select", inventoryStatuses], ["responsavel_pela_entrega", "deliveredBy"], ["assinatura_confirmada", "signatureConfirmed", "checkbox"], ["data_de_devolucao", "returnDate", "date"], ["estado", "status", "select", ["Activo", "Inactivo"]], ["observacoes", "observations", "textarea"]],
+  venueStaffEquipment: [["nome_do_funcionario", "staffName"], ["departamento", "department", "departmentSelect"], ["church_id", "church", "church"], ["data_onboarding", "onboardingDate", "date"], ["dispositivo", "device"], ["modelo", "model"], ["device_id", "deviceId"], ["product_id", "productId"], ["data_de_entrega", "deliveryDate", "date"], ["estado_na_entrega", "conditionAtDelivery", "select", inventoryStatuses], ["estado_actual", "currentCondition", "select", inventoryStatuses], ["responsavel_pela_entrega", "deliveredBy"], ["assinatura_confirmada", "signatureConfirmed", "checkbox"], ["data_de_devolucao", "returnDate", "date"], ["estado", "status", "select", ["Activo", "Inactivo"]], ["observacoes", "observations", "textarea"]],
   venueMaintenance: [["item", "item"], ["categoria", "category", "select", inventoryCategories], ["quantidade", "quantity", "number"], ["problema_reportado", "reportedProblem", "textarea"], ["estado_antes", "conditionBefore", "select", inventoryStatuses], ["estado_depois", "conditionAfter", "select", inventoryStatuses], ["custo_da_reparacao", "repairCost", "number"], ["tecnico_ou_responsavel", "technicianResponsible"], ["data_de_envio", "sentDate", "date"], ["data_de_retorno", "returnedDate", "date"], ["church_id", "church", "church"], ["estado", "status", "select", repairStatuses], ["observacoes", "observations", "textarea"]],
   venueMovement: [["item", "item"], ["quantidade", "quantity", "number"], ["origem", "originPlace"], ["destino", "destination"], ["departamento_solicitante", "requestingDepartment"], ["pessoa_responsavel", "responsiblePerson"], ["data_de_saida", "exitDate", "date"], ["data_prevista_de_retorno", "expectedReturnDate", "date"], ["data_real_de_retorno", "actualReturnDate", "date"], ["estado_ao_sair", "conditionOut", "select", inventoryStatuses], ["estado_ao_voltar", "conditionBack", "select", inventoryStatuses], ["aprovado_por", "approvedBy"], ["church_id", "church", "church"], ["estado", "status", "select", movementStatuses], ["observacoes", "observations", "textarea"]],
   venueSpace: [["nome_do_espaco", "spaceName"], ["localizacao", "location"], ["church_id", "church", "church"], ["capacidade", "capacity", "number"], ["tipo", "spaceType", "select", venueTypes], ["equipamentos_fixos", "fixedEquipment", "textarea"], ["responsavel", "responsible"], ["estado", "status", "select", venueStatuses], ["observacoes", "observations", "textarea"]],
   venueChecklist: [["data_do_culto", "serviceDate", "date"], ["church_id", "church", "church"], ["espaco", "space"], ["tipo_de_culto_ou_evento", "serviceEventType"], ["som_verificado", "soundChecked", "checkbox"], ["luzes_verificadas", "lightsChecked", "checkbox"], ["ac_verificado", "acChecked", "checkbox"], ["projector_verificado", "projectorChecked", "checkbox"], ["cadeiras_organizadas", "chairsOrganized", "checkbox"], ["pulpito_pronto", "pulpitReady", "checkbox"], ["cameras_prontas", "camerasReady", "checkbox"], ["microfones_prontos", "microphonesReady", "checkbox"], ["limpeza_feita", "cleaningDone", "checkbox"], ["responsavel", "responsible"], ["estado", "status", "select", checklistStatuses], ["observacoes", "observations", "textarea"]],
-  mediaTechnician: [["full_name", "fullName"], ["title", "treatment", "select", treatmentOptions], ["roles_can_perform", "role", "mediaRoleSelect"], ["phone", "phone"], ["whatsapp", "whatsapp"], ["email", "email", "email"], ["church_id", "church", "church"], ["department_name", "reqDepartment"], ["skill_level", "skillLevel", "select", ["Iniciante", "Intermédio", "Avançado", "Supervisor"]], ["preferred_services", "mediaSchedules"], ["availability_notes", "notes", "textarea"], ["status", "status", "select", ["Activo", "Inactivo"]]],
+  mediaTechnician: [["full_name", "fullName"], ["title", "treatment", "select", treatmentOptions], ["roles_can_perform", "role", "mediaRoleSelect"], ["phone", "phone"], ["whatsapp", "whatsapp"], ["email", "email", "email"], ["church_id", "church", "church"], ["department_name", "department", "departmentSelect"], ["skill_level", "skillLevel", "select", ["Iniciante", "Intermédio", "Avançado", "Supervisor"]], ["preferred_services", "mediaSchedules"], ["availability_notes", "notes", "textarea"], ["status", "status", "select", ["Activo", "Inactivo"]]],
   mediaRole: [["name", "role"], ["description", "description", "textarea"]],
   mediaSchedule: [["date", "date", "date"], ["service_name", "service"], ["church_id", "church", "church"], ["start_time", "time", "time"], ["leader_responsible", "responsible"], ["status", "status", "select", ["Rascunho", "Publicada", "Incompleta", "Concluída"]], ["notes", "notes", "textarea"]],
   mediaService: [["name", "name"], ["day_of_week", "weekday"], ["time", "time", "time"], ["church_id", "church", "church"], ["category", "category"], ["status", "status", "select", ["Activo", "Inactivo"]], ["notes", "notes", "textarea"]],
   streamingChannel: [["name", "name"], ["platform", "platform"], ["channel_url", "url"], ["responsible_name", "responsible"], ["status", "status", "select", ["Activo", "Por Configurar", "Em Breve", "Inactivo"]], ["notes", "notes", "textarea"]],
   mediaEvaluation: [["technician_id", "staffFullName"], ["period", "evaluationPeriod"], ["role", "role"], ["score", "score", "number"], ["status", "status", "select", ["Pending Evaluation", "Evaluated", "Approved"]], ["notes", "notes", "textarea"]],
   mediaAward: [["category", "category"], ["technician_id", "staffFullName"], ["period", "evaluationPeriod"], ["reason", "description", "textarea"], ["status", "status", "select", ["Activo", "Publicado"]]],
-  requisition: [["title", "reqTitle"], ["requisition_type", "reqType", "select", (window.CERequisitions?.TYPES || [])], ["department_name", "reqDepartment"], ["church_id", "church", "church"], ["description", "reqDescription", "textarea"], ["justification", "reqJustification", "textarea"], ["estimated_amount", "reqEstimated", "number"], ["urgency", "reqUrgency", "select", (window.CERequisitions?.URGENCY || [])], ["needed_by_date", "reqNeededBy", "date"], ["supplier_or_vendor", "reqSupplier"], ["quotation_number", "reqQuotation"]],
-  staffProfile: [["full_name", "staffFullName"], ["title", "treatment", "select", treatmentOptions], ["gender", "gender", "select", ["Feminino", "Masculino"]], ["phone", "phone"], ["whatsapp", "whatsapp"], ["email", "email", "email"], ["church_id", "church", "church"], ["department_name", "reqDepartment"], ["role_title", "staffRoleTitle"], ["supervisor_name", "staffSupervisor"], ["start_date", "staffStartDate", "date"], ["employment_type", "staffEmploymentType", "select", (window.CEStaffHr?.EMPLOYMENT_TYPES || [])], ["salary_or_allowance", "staffSalary", "number"], ["payment_frequency", "staffPaymentFreq", "select", (window.CEStaffHr?.PAYMENT_FREQUENCIES || [])], ["payment_method", "method", "select", paymentMethods], ["status", "status", "select", (window.CEStaffHr?.STAFF_STATUSES || [])], ["notes", "notes", "textarea"]],
+  requisition: [["title", "reqTitle"], ["requisition_type", "reqType", "select", (window.CERequisitions?.TYPES || [])], ["department_name", "department", "departmentSelect"], ["church_id", "church", "church"], ["description", "reqDescription", "textarea"], ["justification", "reqJustification", "textarea"], ["estimated_amount", "reqEstimated", "number"], ["urgency", "reqUrgency", "select", (window.CERequisitions?.URGENCY || [])], ["needed_by_date", "reqNeededBy", "date"], ["supplier_or_vendor", "reqSupplier"], ["quotation_number", "reqQuotation"]],
+  staffProfile: [["full_name", "staffFullName"], ["title", "treatment", "select", treatmentOptions], ["gender", "gender", "select", ["Feminino", "Masculino"]], ["phone", "phone"], ["whatsapp", "whatsapp"], ["email", "email", "email"], ["church_id", "church", "church"], ["department_name", "department", "departmentSelect"], ["role_title", "staffRoleTitle"], ["supervisor_name", "staffSupervisor"], ["start_date", "staffStartDate", "date"], ["employment_type", "staffEmploymentType", "select", (window.CEStaffHr?.EMPLOYMENT_TYPES || [])], ["salary_or_allowance", "staffSalary", "number"], ["payment_frequency", "staffPaymentFreq", "select", (window.CEStaffHr?.PAYMENT_FREQUENCIES || [])], ["payment_method", "method", "select", paymentMethods], ["status", "status", "select", (window.CEStaffHr?.STAFF_STATUSES || [])], ["notes", "notes", "textarea"]],
   staffPerformance: [
     ["staff_id", "staffFullName", "staffSelect"],
     ["evaluation_period", "evaluationPeriod"],
