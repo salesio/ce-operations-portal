@@ -91,9 +91,22 @@ function payload(table: Table, raw: MediaRecord): SupabaseRow {
   return Object.fromEntries(Object.entries(row).filter(([key, value]) => COLUMNS[table].includes(key) && value !== undefined)) as SupabaseRow;
 }
 
+function isDemoMediaRow(row: MediaRecord): boolean {
+  if (!row) return false;
+  const idStr = String(row.id || "");
+  if (/^92[0-9a-f]{6}-/i.test(idStr)) return true;
+  const meta = row.metadata;
+  if (meta && typeof meta === "object" && (meta as Record<string, unknown>).demo === true) return true;
+  if (typeof row.full_name === "string" && row.full_name.toLowerCase().includes("demo")) return true;
+  if (typeof row.service_code === "string" && row.service_code.toLowerCase().includes("demo")) return true;
+  if (typeof row.name === "string" && row.name.toLowerCase().includes("demo")) return true;
+  if (typeof row.slug === "string" && ["camera-operator", "sound-technician", "streaming-operator", "photographer", "graphics-designer", "projection-operator"].includes(row.slug)) return true;
+  return false;
+}
+
 async function list(table: Table, filters: Record<string, string | number | boolean | null> = {}, orderBy = "created_at") {
   const result = await listRows(TABLES[table], { filters, orderBy, ascending: orderBy.endsWith("_date") });
-  return result.ok ? ok(result.data.map((row) => aliases(table, row))) : cast<MediaRecord[]>(result);
+  return result.ok ? ok(result.data.filter((row) => !isDemoMediaRow(row)).map((row) => aliases(table, row))) : cast<MediaRecord[]>(result);
 }
 async function get(table: Table, id: EntityId) {
   const result = await getRowById(TABLES[table], String(id));
