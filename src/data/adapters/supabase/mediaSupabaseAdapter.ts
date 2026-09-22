@@ -80,8 +80,21 @@ const UUID_COLUMNS: Record<Table, string[]> = {
   awards: ["team_member_id", "staff_id", "awarded_by", "created_by", "updated_by"],
 };
 
+const CANONICAL_CHURCH_UUID_MAP: Record<string, string> = {
+  "church-hq": "a1111111-1111-4111-8111-111111111101",
+  "church-1": "a1111111-1111-4111-8111-111111111101",
+  "church-matola": "a1111111-1111-4111-8111-111111111102",
+  "church-khongolote": "a1111111-1111-4111-8111-111111111103",
+  "church-beira": "a1111111-1111-4111-8111-111111111104",
+  "church-nampula": "a1111111-1111-4111-8111-111111111105",
+  "church-choupal": "a1111111-1111-4111-8111-111111111106",
+};
+
 function payload(table: Table, raw: MediaRecord): SupabaseRow {
   const row: MediaRecord = { ...raw };
+  if (row.church_id && CANONICAL_CHURCH_UUID_MAP[String(row.church_id)]) {
+    row.church_id = CANONICAL_CHURCH_UUID_MAP[String(row.church_id)];
+  }
   if (table === "roles") {
     const nameStr = String(row.name || row.role || row.key || "").trim();
     row.name = nameStr || String(row.name || "");
@@ -163,17 +176,35 @@ async function update(table: Table, id: EntityId, input: MediaRecord) {
   const row = payload(table, input); delete row.id; delete row.created_at;
   let targetId = String(id);
   if (!isValidUuid(targetId)) {
-    if (table === "roles" && row.slug) {
-      const existing = await listRows(TABLES[table], { filters: { slug: String(row.slug) } });
+    if (table === "roles") {
+      const slugVal = String(row.slug || input.key || input.name || "");
+      const nameVal = String(row.name || input.name || input.role || "");
+      const existing = await listRows(TABLES[table]);
       if (existing.ok && existing.data && existing.data.length > 0) {
-        targetId = String(existing.data[0].id);
+        const found = existing.data.find((r: any) =>
+          (slugVal && String(r.slug).toLowerCase() === slugVal.toLowerCase()) ||
+          (nameVal && String(r.name).toLowerCase() === nameVal.toLowerCase()) ||
+          String(r.id) === targetId
+        );
+        if (found) targetId = String(found.id);
+        else return create(table, input);
       } else {
         return create(table, input);
       }
-    } else if (table === "team" && row.full_name) {
-      const existing = await listRows(TABLES[table], { filters: { full_name: String(row.full_name) } });
+    } else if (table === "team") {
+      const nameVal = String(row.full_name || input.full_name || input.name || "").trim().toLowerCase();
+      const phoneVal = String(row.phone || input.phone || "").trim();
+      const emailVal = String(row.email || input.email || "").trim().toLowerCase();
+      const existing = await listRows(TABLES[table]);
       if (existing.ok && existing.data && existing.data.length > 0) {
-        targetId = String(existing.data[0].id);
+        const found = existing.data.find((r: any) =>
+          (nameVal && String(r.full_name || "").trim().toLowerCase() === nameVal) ||
+          (phoneVal && String(r.phone || "").trim() === phoneVal) ||
+          (emailVal && String(r.email || "").trim().toLowerCase() === emailVal) ||
+          String(r.id) === targetId
+        );
+        if (found) targetId = String(found.id);
+        else return create(table, input);
       } else {
         return create(table, input);
       }
@@ -190,13 +221,33 @@ async function remove(table: Table, id: EntityId) {
     if (table === "roles") {
       const existing = await listRows(TABLES[table]);
       if (existing.ok && existing.data) {
-        const found = existing.data.find((r: any) => String(r.id) === targetId || String(r.slug) === targetId || String(r.name).toLowerCase() === targetId.toLowerCase());
+        const found = existing.data.find((r: any) =>
+          String(r.id) === targetId ||
+          String(r.slug).toLowerCase() === targetId.toLowerCase() ||
+          String(r.name).toLowerCase() === targetId.toLowerCase()
+        );
         if (found) targetId = String(found.id);
       }
     } else if (table === "team") {
       const existing = await listRows(TABLES[table]);
       if (existing.ok && existing.data) {
-        const found = existing.data.find((r: any) => String(r.id) === targetId || String(r.full_name).toLowerCase() === targetId.toLowerCase());
+        const found = existing.data.find((r: any) =>
+          String(r.id) === targetId ||
+          String(r.full_name).toLowerCase() === targetId.toLowerCase() ||
+          (r.phone && String(r.phone) === targetId)
+        );
+        if (found) targetId = String(found.id);
+      }
+    } else if (table === "services") {
+      const existing = await listRows(TABLES[table]);
+      if (existing.ok && existing.data) {
+        const found = existing.data.find((r: any) => String(r.id) === targetId || String(r.service_name).toLowerCase() === targetId.toLowerCase() || String(r.service_code).toLowerCase() === targetId.toLowerCase());
+        if (found) targetId = String(found.id);
+      }
+    } else if (table === "channels") {
+      const existing = await listRows(TABLES[table]);
+      if (existing.ok && existing.data) {
+        const found = existing.data.find((r: any) => String(r.id) === targetId || String(r.channel_name).toLowerCase() === targetId.toLowerCase());
         if (found) targetId = String(found.id);
       }
     }

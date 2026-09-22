@@ -171,7 +171,7 @@
         staffHr: { can_view: false, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "church" },
         programs: { ...VIEW_ONLY, can_create: true, can_edit: true },
         partnership: { ...VIEW_ONLY },
-        media: { ...VIEW_ONLY },
+        media: { ...VIEW_ONLY, can_create: true, can_edit: true, can_delete: true },
         prisonMinistry: { ...VIEW_ONLY },
         ministryMaterials: { ...VIEW_ONLY },
         usersRoles: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "church" },
@@ -199,7 +199,7 @@
         staffHr: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "church" },
         programs: { ...VIEW_ONLY, can_create: true, can_edit: true },
         partnership: { ...VIEW_ONLY },
-        media: { ...VIEW_ONLY },
+        media: { ...VIEW_ONLY, can_create: true, can_edit: true, can_delete: true },
         prisonMinistry: { ...VIEW_ONLY },
         ministryMaterials: { ...VIEW_ONLY },
         usersRoles: { can_view: false, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "church" },
@@ -223,7 +223,7 @@
         programs: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: true, can_verify: true, can_export: true, scope: "church" },
         prisonMinistry: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: true, can_verify: true, can_export: true, scope: "church" },
         ministryMaterials: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: true, can_verify: true, can_export: true, scope: "church" },
-        media: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "church" },
+        media: { can_view: true, can_create: true, can_edit: true, can_delete: true, can_approve: false, can_verify: false, can_export: false, scope: "church" },
         counseling: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "church" },
         sacraments: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "church" },
         foundation: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "church" },
@@ -308,7 +308,7 @@
     "Media Director": {
       modules: {
         dashboard: { ...VIEW_ONLY, scope: "all" },
-        media: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: true, can_verify: true, can_export: true, scope: "all", can_view_media: true, can_create_media_schedule: true, can_edit_media_schedule: true, can_manage_media_team: true, can_evaluate_media_team: true, can_view_media_reports: true, can_manage_media_awards: true, can_export_media_reports: true },
+        media: { can_view: true, can_create: true, can_edit: true, can_delete: true, can_approve: true, can_verify: true, can_export: true, scope: "all", can_view_media: true, can_create_media_schedule: true, can_edit_media_schedule: true, can_manage_media_team: true, can_evaluate_media_team: true, can_view_media_reports: true, can_manage_media_awards: true, can_export_media_reports: true },
         reports: { ...VIEW_ONLY, scope: "all", can_export: true },
         venueInventory: { ...VIEW_ONLY, scope: "all" },
         programs: { ...VIEW_ONLY, scope: "all" }
@@ -317,7 +317,7 @@
     "Media Supervisor": {
       modules: {
         dashboard: { ...VIEW_ONLY, scope: "all" },
-        media: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: true, can_export: true, scope: "all", can_view_media: true, can_create_media_schedule: true, can_edit_media_schedule: true, can_manage_media_team: true, can_evaluate_media_team: true, can_view_media_reports: true, can_manage_media_awards: false, can_export_media_reports: true },
+        media: { can_view: true, can_create: true, can_edit: true, can_delete: true, can_approve: false, can_verify: true, can_export: true, scope: "all", can_view_media: true, can_create_media_schedule: true, can_edit_media_schedule: true, can_manage_media_team: true, can_evaluate_media_team: true, can_view_media_reports: true, can_manage_media_awards: false, can_export_media_reports: true },
         reports: { ...VIEW_ONLY, scope: "all", can_export: true },
         venueInventory: { ...VIEW_ONLY, scope: "all" }
       }
@@ -878,6 +878,11 @@
     };
     if (action === "sendToInventory") return Boolean(access.can_approve || access.can_verify || access.can_edit);
     if (action === "markClass" || action === "score") return Boolean(access.can_edit || access.can_approve);
+    if (module === "media" && action === "delete") {
+      if (access.can_delete || access.can_edit || access.can_create || access.can_manage_media_team) return true;
+      const r = String(user?.role || "").toLowerCase();
+      if (r.includes("admin") || r.includes("media") || r.includes("pastor") || r.includes("head") || r.includes("director") || r.includes("supervisor")) return true;
+    }
     const key = map[action] || "can_view";
     return Boolean(access[key]);
   }

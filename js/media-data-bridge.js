@@ -71,7 +71,7 @@
       var parsed = JSON.parse(raw);
       if (!Array.isArray(parsed)) return [];
       return parsed.filter(function (r) {
-        return r && r.id && !/^(mt|mr|ms|sch|mc|mev|maw)-[0-9]+/i.test(String(r.id));
+        return Boolean(r && r.id);
       });
     } catch (_) {
       return [];

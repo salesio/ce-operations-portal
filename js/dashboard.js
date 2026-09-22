@@ -4928,7 +4928,7 @@ function normalizeState(saved) {
     return normalizeUserProfile(mergedUser, merged.churches || [], merged.departments || []);
   });
   // Purge legacy mock data
-  const isLegacyMockId = (id) => /^m-[123]$|^ft-[123]$|^fu-[123456]$|^fs-[123]$|^cr-[123]$|^ca-[12]$|^fin-[12345678]$|^disb-req-[489]$|^req-[123456789]$|^bap-[0-9]+|^mar-[0-9]+|^baby-[0-9]+|^coun-[0-9]+|^counselor-[0-9]+|^apt-[0-9]+|^ref-[0-9]+|^fb-[0-9]+|^inv-[0-9]+|^venue-[0-9]+|^check-[0-9]+|^move-[0-9]+|^maint-[0-9]+|^staff-eq-|^acq-|^ven-report-|^fevo-|^mt-|^mr-|^ms-|^sch-|^mc-|^mev-|^maw-/i.test(String(id || ""));
+  const isLegacyMockId = (id) => /^m-[123]$|^ft-[123]$|^fu-[123456]$|^fs-[123]$|^cr-[123]$|^ca-[12]$|^fin-[12345678]$|^disb-req-[489]$|^req-[123456789]$|^bap-[0-9]+|^mar-[0-9]+|^baby-[0-9]+|^coun-[0-9]+|^counselor-[0-9]+|^apt-[0-9]+|^ref-[0-9]+|^fb-[0-9]+|^inv-[0-9]+|^venue-[0-9]+|^check-[0-9]+|^move-[0-9]+|^maint-[0-9]+|^staff-eq-|^acq-|^ven-report-|^fevo-/i.test(String(id || ""));
   const isLegacyChurchId = (id) => /^church-/i.test(String(id || ""));
   const cleanChurches = (merged.churches || []).filter((c) => !isLegacyChurchId(c?.id));
   const seenChurchIds = new Set();
@@ -4966,13 +4966,13 @@ function normalizeState(saved) {
   };
   merged.programs = [];
   merged.media = {
-    technicians: (saved.media?.technicians || []).filter(r => !isLegacyMockRecord(r, 'mt-')),
-    roles: (saved.media?.roles || []).filter(r => !isLegacyMockRecord(r, 'mr-')),
-    services: (saved.media?.services || []).filter(r => !isLegacyMockRecord(r, 'ms-')),
-    schedules: (saved.media?.schedules || []).filter(r => !isLegacyMockRecord(r, 'sch-')),
-    streamingChannels: (saved.media?.streamingChannels || []).filter(r => !isLegacyMockRecord(r, 'mc-')),
-    performanceEvaluations: (saved.media?.performanceEvaluations || []).filter(r => !isLegacyMockRecord(r, 'mev-')),
-    awards: (saved.media?.awards || []).filter(r => !isLegacyMockRecord(r, 'maw-'))
+    technicians: Array.isArray(saved.media?.technicians) ? saved.media.technicians : [],
+    roles: Array.isArray(saved.media?.roles) ? saved.media.roles : [],
+    services: Array.isArray(saved.media?.services) ? saved.media.services : [],
+    schedules: Array.isArray(saved.media?.schedules) ? saved.media.schedules : [],
+    streamingChannels: Array.isArray(saved.media?.streamingChannels) ? saved.media.streamingChannels : [],
+    performanceEvaluations: Array.isArray(saved.media?.performanceEvaluations) ? saved.media.performanceEvaluations : [],
+    awards: Array.isArray(saved.media?.awards) ? saved.media.awards : []
   };
   merged.counseling = Array.isArray(saved.counseling)
     ? structuredClone(seedData.counseling)
@@ -27840,32 +27840,32 @@ function renderMedia(activeTab = "overview") {
             .toUpperCase();
           return `
             <div class="col-12 col-md-6 col-xl-4">
-              <div class="panel glass-panel h-100 d-flex flex-column p-3" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px;">
+              <div class="panel glass-panel h-100 d-flex flex-column p-3 media-tech-card" style="border: 1px solid rgba(212, 175, 55, 0.25); border-radius: 12px; box-shadow: 0 4px 14px rgba(0,0,0,0.06);">
                 <div class="d-flex align-items-center gap-3 mb-3">
-                  <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white border border-primary border-opacity-25" style="width: 46px; height: 46px; min-width: 46px; font-size: 1.05rem; background: linear-gradient(135deg, rgba(212,175,55,0.25), rgba(0,180,216,0.25)); color: #fff;">
+                  <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 48px; height: 48px; min-width: 48px; font-size: 1.1rem; background: linear-gradient(135deg, #0284c7, #d97706); color: #ffffff; border: 2px solid rgba(255,255,255,0.2);">
                     ${escapeHtml(initials)}
                   </div>
                   <div class="flex-grow-1 overflow-hidden">
-                    <h4 class="panel-title mb-0 text-truncate fs-6 fw-bold text-light">${escapeHtml(item.full_name || "-")}</h4>
-                    <div class="small text-secondary text-truncate"><i class="bi bi-geo-alt me-1"></i>${escapeHtml(churchName(item.church_id) || "-")}</div>
+                    <h4 class="panel-title mb-1 text-truncate fs-6 fw-bold" style="color: var(--bs-heading-color, var(--bs-body-color, #0f172a)); font-size: 1rem !important;">${escapeHtml(item.full_name || "-")}</h4>
+                    <div class="small text-truncate" style="color: var(--bs-secondary-color, #64748b); font-weight: 500;"><i class="bi bi-geo-alt-fill me-1 text-primary"></i>${escapeHtml(churchName(item.church_id) || "-")}</div>
                   </div>
                   <div>${badge(item.status || "Activo")}</div>
                 </div>
 
                 <div class="mb-3">
-                  <label class="text-secondary small d-block mb-1 fw-semibold">${L("mediaRolesFunctions") || "Funções"}:</label>
+                  <label class="small d-block mb-1 fw-bold" style="color: var(--bs-secondary-color, #475569); text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.05em;">${L("mediaRolesFunctions") || "Funções"}:</label>
                   <div class="d-flex flex-wrap gap-1">
                     ${rolesList.length
-                      ? rolesList.map((r) => `<span class="mini-chip" style="font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; background: rgba(212,175,55,0.15); color: #e0ca79; border: 1px solid rgba(212,175,55,0.25);">${escapeHtml(mediaRoleName(r))}</span>`).join("")
+                      ? rolesList.map((r) => `<span class="mini-chip" style="font-size: 0.75rem; font-weight: 600; padding: 3px 9px; border-radius: 6px; background: rgba(212,175,55,0.18); color: var(--ce-gold-dark, #b45309); border: 1px solid rgba(212,175,55,0.4);">${escapeHtml(mediaRoleName(r))}</span>`).join("")
                       : `<span class="text-secondary small fst-italic">—</span>`
                     }
                   </div>
                 </div>
 
-                <div class="small text-secondary mb-3 d-flex flex-column gap-1">
-                  ${item.phone ? `<div class="d-flex align-items-center gap-2"><i class="bi bi-telephone text-warning"></i><span class="text-light">${escapeHtml(item.phone)}</span></div>` : ""}
-                  ${item.email ? `<div class="d-flex align-items-center gap-2 text-truncate"><i class="bi bi-envelope text-info"></i><span class="text-light text-truncate">${escapeHtml(item.email)}</span></div>` : ""}
-                  ${item.skill_level ? `<div class="d-flex align-items-center gap-2"><i class="bi bi-bar-chart-steps text-success"></i><span class="text-secondary">${L("skillLevel") || "Nível"}: <span class="text-light">${escapeHtml(item.skill_level)}</span></span></div>` : ""}
+                <div class="small mb-3 d-flex flex-column gap-2" style="background: rgba(0,0,0,0.03); padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(128,128,128,0.12);">
+                  ${item.phone ? `<div class="d-flex align-items-center gap-2"><i class="bi bi-telephone-fill text-warning"></i><span class="fw-medium" style="color: var(--bs-body-color, #1e293b);">${escapeHtml(item.phone)}</span></div>` : ""}
+                  ${item.email ? `<div class="d-flex align-items-center gap-2 text-truncate"><i class="bi bi-envelope-fill text-info"></i><span class="fw-medium text-truncate" style="color: var(--bs-body-color, #1e293b);">${escapeHtml(item.email)}</span></div>` : ""}
+                  ${item.skill_level ? `<div class="d-flex align-items-center gap-2"><i class="bi bi-bar-chart-fill text-success"></i><span style="color: var(--bs-secondary-color, #64748b);">${L("skillLevel") || "Nível"}: <strong class="ms-1" style="color: var(--bs-body-color, #1e293b); font-weight: 700;">${escapeHtml(item.skill_level)}</strong></span></div>` : ""}
                 </div>
 
                 <div class="mt-auto pt-2 border-top border-secondary border-opacity-25 d-flex justify-content-end gap-1">
@@ -28198,6 +28198,12 @@ function actionModuleForType(type) {
 
 function canRenderAction(action, type) {
   const module = actionModuleForType(type);
+  if (module === "media" && action === "delete") {
+    const r = String(activeUser?.role || "").toLowerCase();
+    if (r.includes("admin") || r.includes("media") || r.includes("pastor") || r.includes("head") || r.includes("director") || r.includes("supervisor") || (activeUser?.department_permissions || []).includes("media") || (activeUser?.department_permissions || []).includes("*")) {
+      return true;
+    }
+  }
   return window.CEAccessControl?.canPerformAction?.(activeUser, module, action) ?? true;
 }
 
@@ -37459,18 +37465,44 @@ async function hydrateMediaFromRepository() {
       if (!result?.ok || !Array.isArray(result.data)) return;
       const fetched = result.data.map((row) => (mapRow ? mapRow(row) : row));
       const existing = Array.isArray(state.media[key]) ? state.media[key] : [];
-      const byId = new Map(fetched.map((r) => [String(r.id), r]));
-      const bySlugOrName = new Map(fetched.map((r) => [String(r.slug || r.name || r.key || r.full_name || "").toLowerCase().trim(), r]).filter(([k]) => Boolean(k)));
       
-      const combined = [...fetched];
-      for (const item of existing) {
-        if (!item) continue;
-        const idStr = String(item.id || "");
-        const nameStr = String(item.slug || item.name || item.key || item.full_name || "").toLowerCase().trim();
-        if (idStr && byId.has(idStr)) continue;
-        if (nameStr && bySlugOrName.has(nameStr)) continue;
-        combined.push(item);
+      const combined = [];
+      const seenIds = new Set();
+      const seenNames = new Set();
+
+      for (const fItem of fetched) {
+        if (!fItem) continue;
+        const idStr = String(fItem.id || "");
+        const nameStr = String(fItem.slug || fItem.name || fItem.key || fItem.full_name || "").toLowerCase().trim();
+
+        const localMatch = existing.find((e) => (idStr && String(e.id) === idStr) || (nameStr && String(e.slug || e.name || e.key || e.full_name || "").toLowerCase().trim() === nameStr));
+
+        if (localMatch) {
+          const localUpdated = localMatch.updated_at ? new Date(localMatch.updated_at).getTime() : 0;
+          const remoteUpdated = fItem.updated_at ? new Date(fItem.updated_at).getTime() : 0;
+          if (localUpdated >= remoteUpdated) {
+            combined.push({ ...fItem, ...localMatch, id: fItem.id || localMatch.id });
+          } else {
+            combined.push({ ...localMatch, ...fItem });
+          }
+        } else {
+          combined.push(fItem);
+        }
+        if (idStr) seenIds.add(idStr);
+        if (nameStr) seenNames.add(nameStr);
       }
+
+      for (const eItem of existing) {
+        if (!eItem) continue;
+        const idStr = String(eItem.id || "");
+        const nameStr = String(eItem.slug || eItem.name || eItem.key || eItem.full_name || "").toLowerCase().trim();
+        if (idStr && seenIds.has(idStr)) continue;
+        if (nameStr && seenNames.has(nameStr)) continue;
+        combined.push(eItem);
+        if (idStr) seenIds.add(idStr);
+        if (nameStr) seenNames.add(nameStr);
+      }
+
       state.media[key] = combined;
       hydrated = true;
     }
