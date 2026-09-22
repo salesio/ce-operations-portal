@@ -27204,13 +27204,56 @@ function mediaVisibleTechnicians(technicians) {
 }
 
 function mediaRoleName(roleKey) {
-  const role = (getMediaState().roles || []).find((item) => item.id === roleKey || item.name === roleKey);
-  if (role) return L(mediaRoleKey(role)) !== mediaRoleKey(role) ? L(mediaRoleKey(role)) : role.name;
+  if (!roleKey) return "-";
+  const role = (getMediaState().roles || []).find((item) => item.id === roleKey || item.name === roleKey || item.key === roleKey || item.role_key === roleKey);
+  if (role) return role.name || (L(mediaRoleKey(role)) !== mediaRoleKey(role) ? L(mediaRoleKey(role)) : role.name || role.key);
   return L(roleKey) !== roleKey ? L(roleKey) : roleKey;
 }
 
 function mediaRoleKey(role = {}) {
-  return role.role_key || role.key || role.id || "";
+  return role.name || role.role_key || role.key || role.id || "";
+}
+
+function getMediaRoleOptions() {
+  const media = getMediaState();
+  const definedRoles = (media.roles || []).map((r) => {
+    const val = r.name || r.key || r.role_key || r.role || r.id;
+    return { value: val, label: val };
+  }).filter((r) => Boolean(r.value));
+
+  const standardRoles = [
+    "Operador de Câmera",
+    "Técnico de Som",
+    "Operador de Mixer de Vídeo",
+    "Técnico de Streaming / Transmissão",
+    "Operador de Projecção / Slides",
+    "Operador de Escrituras",
+    "Fotógrafo",
+    "Operador de Iluminação",
+    "Supervisor de Mídia",
+    "Assistente Técnico"
+  ];
+
+  const seen = new Set();
+  const options = [];
+
+  for (const r of definedRoles) {
+    const k = String(r.value).trim().toLowerCase();
+    if (k && !seen.has(k)) {
+      seen.add(k);
+      options.push(r);
+    }
+  }
+
+  for (const s of standardRoles) {
+    const k = s.trim().toLowerCase();
+    if (k && !seen.has(k)) {
+      seen.add(k);
+      options.push({ value: s, label: s });
+    }
+  }
+
+  return options;
 }
 
 function mediaChannelUrl(channel = {}) {
@@ -27645,11 +27688,9 @@ function renderMedia(activeTab = "overview") {
       mediaActionButtons("mediaTechnician", item.id)
     ]), true);
   } else if (active === "roles") {
-    content = modulePanel("mediaRole", L("mediaRolesFunctions"), "mediaRole", [L("role"), L("description"), L("minimumTeam"), L("status"), L("actions")], roles.map((item) => [
+    content = modulePanel("mediaRole", L("mediaRolesFunctions"), "mediaRole", [L("role"), L("description"), L("actions")], roles.map((item) => [
       mediaRoleName(mediaRoleKey(item)),
       item.description || item.notes || "-",
-      item.required_per_service || 1,
-      badge(item.status || "Activo"),
       mediaActionButtons("mediaRole", item.id)
     ]), false);
   } else if (active === "schedules") {
@@ -28440,8 +28481,8 @@ const formSchemas = {
   venueMovement: [["item", "item"], ["quantidade", "quantity", "number"], ["origem", "originPlace"], ["destino", "destination"], ["departamento_solicitante", "requestingDepartment"], ["pessoa_responsavel", "responsiblePerson"], ["data_de_saida", "exitDate", "date"], ["data_prevista_de_retorno", "expectedReturnDate", "date"], ["data_real_de_retorno", "actualReturnDate", "date"], ["estado_ao_sair", "conditionOut", "select", inventoryStatuses], ["estado_ao_voltar", "conditionBack", "select", inventoryStatuses], ["aprovado_por", "approvedBy"], ["church_id", "church", "church"], ["estado", "status", "select", movementStatuses], ["observacoes", "observations", "textarea"]],
   venueSpace: [["nome_do_espaco", "spaceName"], ["localizacao", "location"], ["church_id", "church", "church"], ["capacidade", "capacity", "number"], ["tipo", "spaceType", "select", venueTypes], ["equipamentos_fixos", "fixedEquipment", "textarea"], ["responsavel", "responsible"], ["estado", "status", "select", venueStatuses], ["observacoes", "observations", "textarea"]],
   venueChecklist: [["data_do_culto", "serviceDate", "date"], ["church_id", "church", "church"], ["espaco", "space"], ["tipo_de_culto_ou_evento", "serviceEventType"], ["som_verificado", "soundChecked", "checkbox"], ["luzes_verificadas", "lightsChecked", "checkbox"], ["ac_verificado", "acChecked", "checkbox"], ["projector_verificado", "projectorChecked", "checkbox"], ["cadeiras_organizadas", "chairsOrganized", "checkbox"], ["pulpito_pronto", "pulpitReady", "checkbox"], ["cameras_prontas", "camerasReady", "checkbox"], ["microfones_prontos", "microphonesReady", "checkbox"], ["limpeza_feita", "cleaningDone", "checkbox"], ["responsavel", "responsible"], ["estado", "status", "select", checklistStatuses], ["observacoes", "observations", "textarea"]],
-  mediaTechnician: [["full_name", "fullName"], ["title", "treatment", "select", treatmentOptions], ["phone", "phone"], ["whatsapp", "whatsapp"], ["email", "email", "email"], ["church_id", "church", "church"], ["department_name", "reqDepartment"], ["skill_level", "skillLevel", "select", ["Iniciante", "Intermédio", "Avançado", "Supervisor"]], ["roles_can_perform", "mediaRolesFunctions"], ["preferred_services", "mediaSchedules"], ["availability_notes", "notes", "textarea"], ["status", "status", "select", ["Activo", "Inactivo"]]],
-  mediaRole: [["key", "role"], ["description", "description", "textarea"], ["category", "category"], ["required_skill_level", "skillLevel", "select", ["Iniciante", "Intermédio", "Avançado", "Supervisor"]], ["required_per_service", "minimumTeam", "number"], ["is_required_for_service", "required", "checkbox"], ["allow_multiple", "allowMultiple", "checkbox"], ["status", "status", "select", ["Activo", "Inactivo"]]],
+  mediaTechnician: [["full_name", "fullName"], ["title", "treatment", "select", treatmentOptions], ["roles_can_perform", "role", "mediaRoleSelect"], ["phone", "phone"], ["whatsapp", "whatsapp"], ["email", "email", "email"], ["church_id", "church", "church"], ["department_name", "reqDepartment"], ["skill_level", "skillLevel", "select", ["Iniciante", "Intermédio", "Avançado", "Supervisor"]], ["preferred_services", "mediaSchedules"], ["availability_notes", "notes", "textarea"], ["status", "status", "select", ["Activo", "Inactivo"]]],
+  mediaRole: [["name", "role"], ["description", "description", "textarea"]],
   mediaSchedule: [["date", "date", "date"], ["service_name", "service"], ["church_id", "church", "church"], ["start_time", "time", "time"], ["leader_responsible", "responsible"], ["status", "status", "select", ["Rascunho", "Publicada", "Incompleta", "Concluída"]], ["notes", "notes", "textarea"]],
   mediaService: [["name", "name"], ["day_of_week", "weekday"], ["time", "time", "time"], ["church_id", "church", "church"], ["category", "category"], ["status", "status", "select", ["Activo", "Inactivo"]], ["notes", "notes", "textarea"]],
   streamingChannel: [["name", "name"], ["platform", "platform"], ["channel_url", "url"], ["responsible_name", "responsible"], ["status", "status", "select", ["Activo", "Por Configurar", "Em Breve", "Inactivo"]], ["notes", "notes", "textarea"]],
@@ -30164,6 +30205,18 @@ function fieldControl([name, labelKey, inputType = "text", options = []], record
     const staffList = staffLib?.scopeFilterStaff(state.staffProfiles || [], activeUser, access) || state.staffProfiles || [];
     return `<div class="col-md-6"><label class="form-label">${label}</label><select name="${name}" class="form-select">${staffList.map((staff) => `<option value="${staff.id}" ${value === staff.id ? "selected" : ""}>${staff.full_name}</option>`).join("")}</select></div>`;
   }
+  if (inputType === "mediaRoleSelect") {
+    const roleOptions = getMediaRoleOptions();
+    const currentVal = Array.isArray(value) ? (value[0] || "") : String(value || "");
+    return `
+      <div class="col-md-6">
+        <label class="form-label">${label}</label>
+        <select name="${name}" class="form-select">
+          <option value="">${lang === "pt" ? "Seleccionar Papel / Função…" : "Select Role…"}</option>
+          ${roleOptions.map((opt) => `<option value="${escapeAttr(opt.value)}" ${currentVal === opt.value ? "selected" : ""}>${escapeAttr(opt.label)}</option>`).join("")}
+        </select>
+      </div>`;
+  }
   if (inputType === "section") {
     return `<div class="col-12 member-form-section"><h5>${label}</h5></div>`;
   }
@@ -31124,6 +31177,23 @@ async function submitForm(form) {
         rec.estado = rec.status;
       }
       await dualWriteVenueInventoryRecord(modalType, "update", collection[index]);
+      if (modalType === "mediaRole") {
+        const rec = collection[index];
+        rec.name = data.name || data.key || data.role || rec.name || "";
+        rec.key = rec.name;
+        rec.role = rec.name;
+        rec.description = data.description !== undefined ? data.description : (rec.description || "");
+        rec.status = rec.status || "Activo";
+      }
+      if (modalType === "mediaTechnician") {
+        const rec = collection[index];
+        if (typeof rec.roles_can_perform === "string") {
+          rec.roles_can_perform = rec.roles_can_perform ? [rec.roles_can_perform] : [];
+        } else if (!Array.isArray(rec.roles_can_perform)) {
+          rec.roles_can_perform = [];
+        }
+        rec.primary_role = rec.roles_can_perform[0] || rec.role || "";
+      }
     }
     if (
       [
@@ -31519,6 +31589,21 @@ async function submitForm(form) {
         "mediaAward",
       ].includes(modalType)
     ) {
+      if (modalType === "mediaRole") {
+        record.name = record.name || record.key || record.role || "";
+        record.key = record.name;
+        record.role = record.name;
+        record.description = record.description || "";
+        record.status = record.status || "Activo";
+      }
+      if (modalType === "mediaTechnician") {
+        if (typeof record.roles_can_perform === "string") {
+          record.roles_can_perform = record.roles_can_perform ? [record.roles_can_perform] : [];
+        } else if (!Array.isArray(record.roles_can_perform)) {
+          record.roles_can_perform = [];
+        }
+        record.primary_role = record.roles_can_perform[0] || record.role || "";
+      }
       if (modalType === "mediaEvaluation") {
         const scoreFields = [
           "punctuality_score",
