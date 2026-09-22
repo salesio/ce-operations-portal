@@ -64,10 +64,15 @@
 
   function load(key) {
     try {
+      var source = resolveDataSource();
+      if (source === "supabase" || source === "api") return [];
       var raw = localStorage.getItem(key);
       if (!raw) return [];
       var parsed = JSON.parse(raw);
-      return Array.isArray(parsed) ? parsed : [];
+      if (!Array.isArray(parsed)) return [];
+      return parsed.filter(function (r) {
+        return r && r.id && !/^(mt|mr|ms|sch|mc|mev|maw)-[0-9]+/i.test(String(r.id));
+      });
     } catch (_) {
       return [];
     }
@@ -180,6 +185,9 @@
       updateMediaRole: function (id, p) {
         return update("roles", id, p);
       },
+      deleteMediaRole: function (id) {
+        return remove("roles", id);
+      },
       listMediaServices: function () {
         return list("services");
       },
@@ -189,6 +197,9 @@
       updateMediaService: function (id, p) {
         return update("services", id, p);
       },
+      deleteMediaService: function (id) {
+        return remove("services", id);
+      },
       listMediaSchedules: function () {
         return list("schedules");
       },
@@ -197,6 +208,9 @@
       },
       updateMediaSchedule: function (id, p) {
         return update("schedules", id, p);
+      },
+      deleteMediaSchedule: function (id) {
+        return remove("schedules", id);
       },
       confirmScheduleAssignment: function (id, payload) {
         return update("schedules", id, { status: "Confirmed" });
@@ -241,6 +255,9 @@
       updateMediaChannel: function (id, p) {
         return update("channels", id, p);
       },
+      deleteMediaChannel: function (id) {
+        return remove("channels", id);
+      },
       listMediaPerformanceReviews: function () {
         return list("performance");
       },
@@ -272,6 +289,9 @@
       updateMediaPerformanceReview: function (id, p) {
         return update("performance", id, p);
       },
+      deleteMediaPerformanceReview: function (id) {
+        return remove("performance", id);
+      },
       getPendingMediaPerformanceReviews: function () {
         return ok(
           store("performance").rows.filter(function (r) {
@@ -287,6 +307,9 @@
       },
       updateMediaAward: function (id, p) {
         return update("awards", id, p);
+      },
+      deleteMediaAward: function (id) {
+        return remove("awards", id);
       },
       calculateAwardCandidates: function (year) {
         return ok([]);
@@ -333,12 +356,15 @@
     "listMediaRoles",
     "createMediaRole",
     "updateMediaRole",
+    "deleteMediaRole",
     "listMediaServices",
     "createMediaService",
     "updateMediaService",
+    "deleteMediaService",
     "listMediaSchedules",
     "createMediaSchedule",
     "updateMediaSchedule",
+    "deleteMediaSchedule",
     "confirmScheduleAssignment",
     "markCheckIn",
     "markCheckOut",
@@ -348,13 +374,16 @@
     "listMediaChannels",
     "createMediaChannel",
     "updateMediaChannel",
+    "deleteMediaChannel",
     "listMediaPerformanceReviews",
     "createMediaPerformanceReview",
     "updateMediaPerformanceReview",
+    "deleteMediaPerformanceReview",
     "getPendingMediaPerformanceReviews",
     "listMediaAwards",
     "createMediaAward",
     "updateMediaAward",
+    "deleteMediaAward",
     "calculateAwardCandidates",
     "getMediaOverviewStats",
     "getInfo",
@@ -364,21 +393,23 @@
     dualWriteRecord: function (kind, mode, record) {
       if (!record) return Promise.resolve({ ok: true, skipped: true });
       var map = {
-        mediaTechnician: { create: "createMediaTeamMember", update: "updateMediaTeamMember" },
-        mediaRole: { create: "createMediaRole", update: "updateMediaRole" },
-        mediaService: { create: "createMediaService", update: "updateMediaService" },
-        mediaSchedule: { create: "createMediaSchedule", update: "updateMediaSchedule" },
-        streamingChannel: { create: "createMediaChannel", update: "updateMediaChannel" },
+        mediaTechnician: { create: "createMediaTeamMember", update: "updateMediaTeamMember", delete: "deleteMediaTeamMember" },
+        mediaRole: { create: "createMediaRole", update: "updateMediaRole", delete: "deleteMediaRole" },
+        mediaService: { create: "createMediaService", update: "updateMediaService", delete: "deleteMediaService" },
+        mediaSchedule: { create: "createMediaSchedule", update: "updateMediaSchedule", delete: "deleteMediaSchedule" },
+        streamingChannel: { create: "createMediaChannel", update: "updateMediaChannel", delete: "deleteMediaChannel" },
         mediaEvaluation: {
           create: "createMediaPerformanceReview",
           update: "updateMediaPerformanceReview",
+          delete: "deleteMediaPerformanceReview",
         },
-        mediaAward: { create: "createMediaAward", update: "updateMediaAward" },
+        mediaAward: { create: "createMediaAward", update: "updateMediaAward", delete: "deleteMediaAward" },
       };
       var entry = map[kind];
       if (!entry) return Promise.resolve({ ok: true, skipped: true });
       if (mode === "create") return call(entry.create, [record]);
       if (mode === "update") return call(entry.update, [record.id, record]);
+      if (mode === "delete") return call(entry.delete, [record.id]);
       return Promise.resolve({ ok: true, skipped: true });
     },
   };

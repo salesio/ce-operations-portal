@@ -3209,10 +3209,30 @@ const OUTREACH_NAV = {
 
 const OUTREACH_TAB_ROUTES = new Set(OUTREACH_NAV.routes.map(([route]) => route));
 
+const MEDIA_NAV = {
+  parentKey: "mediaHeader",
+  label: "media",
+  icon: "bi-camera-reels",
+  routes: [
+    ["media", "bi-grid-1x2", "mediaOverview"],
+    ["mediaTeamRoute", "bi-people", "mediaTechnicalTeam"],
+    ["mediaRolesRoute", "bi-sliders", "mediaRolesFunctions"],
+    ["mediaSchedulesRoute", "bi-calendar-week", "mediaSchedules"],
+    ["mediaServicesRoute", "bi-broadcast", "mediaServicesPrograms"],
+    ["mediaChannelsRoute", "bi-cast", "mediaStreamingChannels"],
+    ["mediaPerformanceRoute", "bi-clipboard2-pulse", "mediaPerformanceEvaluation"],
+    ["mediaReportsRoute", "bi-graph-up", "mediaReports"],
+    ["mediaAwardsRoute", "bi-award", "mediaAwards"]
+  ]
+};
+
+const MEDIA_TAB_ROUTES = new Set(MEDIA_NAV.routes.map(([route]) => route));
+
 const TAB_PARALLAX_ORDER = {
   cell: CELL_NAV.areas.flatMap((area) => area.routes.map(([route]) => route)),
   fevo: ["fevo", "fevoConfigRoute", "fevoFollowUpRoute", "fevoEvangelismRoute", "fevoVisitationRoute", "fevoPrayerRoute", "fevoNoReportsRoute", "fevoWeeklyReportsRoute", "fevoAnalysisRoute"],
   venue: ["venueInventory", "venueInventoryGeneral", "venueInventoryAcquisitions", "venueInventoryStaff", "venueInventoryMaintenance", "venueInventoryMovements", "venueInventorySpaces", "venueInventoryChecklist", "venueInventoryReports"],
+  media: ["media", "mediaTeamRoute", "mediaRolesRoute", "mediaSchedulesRoute", "mediaServicesRoute", "mediaChannelsRoute", "mediaPerformanceRoute", "mediaReportsRoute", "mediaAwardsRoute"],
   outreach: ["programs", "cellPrison", "cellMaterials"]
 };
 
@@ -3222,6 +3242,7 @@ function tabParallaxFamily(route) {
   if (CELL_TAB_ROUTES.has(route)) return "cell";
   if (FEVO_TAB_ROUTES.has(route)) return "fevo";
   if (VENUE_TAB_ROUTES.has(route)) return "venue";
+  if (MEDIA_TAB_ROUTES.has(route)) return "media";
   if (OUTREACH_TAB_ROUTES.has(route)) return "outreach";
   return null;
 }
@@ -3270,14 +3291,14 @@ function triggerScrollTabParallax(targetId) {
 }
 
 function isModuleTabRoute(route) {
-  return CELL_TAB_ROUTES.has(route) || FEVO_TAB_ROUTES.has(route) || VENUE_TAB_ROUTES.has(route) || OUTREACH_TAB_ROUTES.has(route);
+  return CELL_TAB_ROUTES.has(route) || FEVO_TAB_ROUTES.has(route) || VENUE_TAB_ROUTES.has(route) || OUTREACH_TAB_ROUTES.has(route) || MEDIA_TAB_ROUTES.has(route);
 }
 
 const NAV_GROUPS = [
   { key: "main", items: [["dashboard", "bi-speedometer2", "dashboard"], ["churches", "bi-building", "churches"], ["members", "bi-people", "members"], ["reports", "bi-bar-chart-line", "reports"]] },
   { key: "pastoralCare", items: [["firstTimers", "bi-person-heart", "firstTimers"], ["followUp", "bi-telephone-outbound", "followUp"], ["foundation", "bi-mortarboard", "foundationSchool"], ["sacraments", "bi-droplet", "sacraments"], ["counseling", "bi-chat-heart", "counseling"]] },
-  // Order: Células (subnav) → F.E.V.O (subnav) → Finanças → Parcerias → Mídia → Requisições → Inventário → Programas & Extensão (subnav)
-  { key: "departments", items: [["finance", "bi-cash-coin", "finance"], ["partnership", "bi-stars", "partnership"], ["media", "bi-camera-reels", "media"], ["requisitions", "bi-clipboard-check", "requisitions"], ["venueInventory", "bi-box-seam", "venueInventoryShort"]] },
+  // Order: Células (subnav) → F.E.V.O (subnav) → Finanças → Parcerias → Mídia (subnav) → Requisições → Inventário → Programas & Extensão (subnav)
+  { key: "departments", items: [["finance", "bi-cash-coin", "finance"], ["partnership", "bi-stars", "partnership"], ["requisitions", "bi-clipboard-check", "requisitions"], ["venueInventory", "bi-box-seam", "venueInventoryShort"]] },
   { key: "admin", items: [["staffHr", "bi-people-fill", "staffHr"], ["users", "bi-person-lock", "usersRoles"], ["access", "bi-shield-lock", "accessControl"], ["settings", "bi-gear", "settings"], ["audit", "bi-journal-check", "auditLogs"]] }
 ];
 
@@ -4857,7 +4878,7 @@ function normalizeState(saved) {
     return normalizeUserProfile(mergedUser, merged.churches || [], merged.departments || []);
   });
   // Purge legacy mock data
-  const isLegacyMockId = (id) => /^m-[123]$|^ft-[123]$|^fu-[123456]$|^fs-[123]$|^cr-[123]$|^ca-[12]$|^fin-[12345678]$|^disb-req-[489]$|^req-[123456789]$|^bap-[0-9]+|^mar-[0-9]+|^baby-[0-9]+|^coun-[0-9]+|^counselor-[0-9]+|^apt-[0-9]+|^ref-[0-9]+|^fb-[0-9]+|^inv-[0-9]+|^venue-[0-9]+|^check-[0-9]+|^move-[0-9]+|^maint-[0-9]+|^staff-eq-|^acq-|^ven-report-|^fevo-/i.test(String(id || ""));
+  const isLegacyMockId = (id) => /^m-[123]$|^ft-[123]$|^fu-[123456]$|^fs-[123]$|^cr-[123]$|^ca-[12]$|^fin-[12345678]$|^disb-req-[489]$|^req-[123456789]$|^bap-[0-9]+|^mar-[0-9]+|^baby-[0-9]+|^coun-[0-9]+|^counselor-[0-9]+|^apt-[0-9]+|^ref-[0-9]+|^fb-[0-9]+|^inv-[0-9]+|^venue-[0-9]+|^check-[0-9]+|^move-[0-9]+|^maint-[0-9]+|^staff-eq-|^acq-|^ven-report-|^fevo-|^mt-|^mr-|^ms-|^sch-|^mc-|^mev-|^maw-/i.test(String(id || ""));
   const isLegacyChurchId = (id) => /^church-/i.test(String(id || ""));
   const cleanChurches = (merged.churches || []).filter((c) => !isLegacyChurchId(c?.id));
   const seenChurchIds = new Set();
@@ -10608,6 +10629,36 @@ function renderFevoSidebarNav() {
     </div>`;
 }
 
+function renderMediaSidebarNav() {
+  const workspaceRoutes = roleWorkspaceRoutes();
+  const parentExpanded = isSidebarGroupExpanded(MEDIA_NAV.parentKey);
+  const parentActive = MEDIA_TAB_ROUTES.has(activeRoute);
+  const visibleRoutes = MEDIA_NAV.routes.filter(([route]) => {
+    if (workspaceRoutes && !workspaceRoutes.includes(route)) return false;
+    const nav = resolveRouteAccess(route);
+    return nav.visible && !nav.locked;
+  });
+  if (!visibleRoutes.length) return "";
+  return `
+    <div class="nav-cell-branch nav-media-branch ${parentExpanded ? "is-expanded" : ""} ${parentActive ? "has-active" : ""}" data-nav-group="${MEDIA_NAV.parentKey}">
+      <button type="button" class="nav-cell-parent nav-media-parent" aria-expanded="${parentExpanded}" aria-label="${L("navGroupToggle")}: ${L("media")}">
+        <i class="bi ${MEDIA_NAV.icon}" aria-hidden="true"></i>
+        <span>${L("media")}</span>
+        <i class="bi bi-chevron-down nav-cell-chevron" aria-hidden="true"></i>
+      </button>
+      <div class="nav-cell-body">
+        <div class="nav-cell-body-inner">
+          ${visibleRoutes.map(([route, icon, label]) => `
+            <button type="button" class="nav-cell-item nav-media-item ${activeRoute === route ? "active" : ""}" data-route="${route}" onclick="window.setRoute && window.setRoute('${route}'); return false;" title="${L(label)}">
+              <i class="bi ${sidebarIcon(icon, route)} me-2" aria-hidden="true"></i>
+              <span>${L(label)}</span>
+            </button>
+          `).join("")}
+        </div>
+      </div>
+    </div>`;
+}
+
 function cellModuleHeader(route, { modalType = null } = {}) {
   return moduleNavShell("cellLeadership", {
     title: cellRouteLabel(route),
@@ -10656,13 +10707,14 @@ function renderShell() {
       .filter((item) => (!workspaceRoutes || workspaceRoutes.includes(item.route)) && item.nav.visible && !item.nav.locked && (item.route !== "venueInventory" || canViewVenueModule()));
     const cellNav = group.key === "departments" && (!workspaceRoutes || workspaceRoutes.some((r) => r.startsWith("cell") || r === "cellPortal")) ? renderCellSidebarNav() : "";
     const fevoNav = group.key === "departments" && (!workspaceRoutes || workspaceRoutes.some((r) => FEVO_TAB_ROUTES.has(r))) ? renderFevoSidebarNav() : "";
+    const mediaNav = group.key === "departments" && (!workspaceRoutes || workspaceRoutes.some((r) => MEDIA_TAB_ROUTES.has(r))) ? renderMediaSidebarNav() : "";
     const outreachNav = group.key === "departments" && (!workspaceRoutes || workspaceRoutes.some((r) => OUTREACH_TAB_ROUTES.has(r))) ? renderOutreachSidebarNav() : "";
     const navItems = items.map(({ route, icon, label }) => `
       <button type="button" class="nav-item-btn" data-route="${route}" onclick="window.setRoute && window.setRoute('${route}'); return false;" title="${L(label)}">
         <i class="bi ${sidebarIcon(icon, route)}"></i><span>${L(label)}</span>
       </button>
     `).join("");
-    if (!navItems && !cellNav && !fevoNav && !outreachNav) return "";
+    if (!navItems && !cellNav && !fevoNav && !mediaNav && !outreachNav) return "";
     const expanded = isSidebarGroupExpanded(group.key) || (group.key === "departments" && String(activeUser?.role || "").toLowerCase().includes("venue"));
     return `
     <div class="nav-group ${expanded ? "is-expanded" : ""}" data-nav-group="${group.key}">
@@ -10675,6 +10727,7 @@ function renderShell() {
           ${cellNav}
           ${fevoNav}
           ${navItems}
+          ${mediaNav}
           ${outreachNav}
         </div>
       </div>
@@ -10933,7 +10986,15 @@ function setRoute(route) {
       if (typeof hydratePartnershipArms === "function") void hydratePartnershipArms();
       return typeof renderPartnerships === "function" ? renderPartnerships() : renderSimple("partnership", L("partnership"), state.partnership);
     },
-    media: renderMedia,
+    media: () => renderMedia("overview"),
+    mediaTeamRoute: () => renderMedia("team"),
+    mediaRolesRoute: () => renderMedia("roles"),
+    mediaSchedulesRoute: () => renderMedia("schedules"),
+    mediaServicesRoute: () => renderMedia("services"),
+    mediaChannelsRoute: () => renderMedia("channels"),
+    mediaPerformanceRoute: () => renderMedia("performance"),
+    mediaReportsRoute: () => renderMedia("reports"),
+    mediaAwardsRoute: () => renderMedia("awards"),
     requisitions: renderRequisitions,
     staffHr: renderStaffHr,
     users: renderUsers,
@@ -27311,9 +27372,10 @@ function renderMediaCardGrid(items, mapper) {
     </div>`;
 }
 
-function renderMedia() {
+function renderMedia(activeTab = "overview") {
   const media = getMediaState();
-  const active = mediaPageState.tab || "overview";
+  const active = activeTab || mediaPageState.tab || "overview";
+  mediaPageState.tab = active;
   const activeFilters = mediaPageState.filter || {};
   const technicians = mediaVisibleTechnicians(media.technicians || []);
   const schedules = scoped(media.schedules || [], "media");
@@ -27343,14 +27405,14 @@ function renderMedia() {
   if (active === "overview") {
     content = `
       <div class="row g-3 mb-4">
-        ${metric("bi-people", L("mediaTotalTechnicians"), technicians.length, L("mediaTechnicalTeam"), { isClickable: true, route: "media", targetTab: "team" })}
-        ${metric("bi-person-check", L("mediaActiveTechnicians"), technicians.filter((item) => /Activo|Active/i.test(item.status || "")).length, L("status"), { isClickable: true, route: "media", targetTab: "team" })}
-        ${metric("bi-calendar-week", L("mediaSchedulesThisWeek"), schedules.length, L("mediaSchedules"), { isClickable: true, route: "media", targetTab: "schedules", filterPayload: { current_week: true } })}
-        ${metric("bi-check2-circle", L("mediaCompleteTeams"), completeSchedules.length, L("mediaSchedules"), { isClickable: true, route: "media", targetTab: "schedules", filterPayload: { status: "complete" } })}
-        ${metric("bi-exclamation-triangle", L("mediaIncompleteTeams"), incompleteSchedules.length, L("needsAction"), { isClickable: true, route: "media", targetTab: "schedules", filterPayload: { status: "incomplete" } })}
-        ${metric("bi-broadcast", L("mediaNextService"), nextSchedule.service_name || "-", nextSchedule.date || "", { isClickable: true, route: "media", targetTab: "schedules" })}
-        ${metric("bi-clipboard2-pulse", L("mediaPendingEvaluations"), pendingEvaluations.length, L("mediaPerformanceEvaluation"), { isClickable: true, route: "media", targetTab: "performance", filterPayload: { status: "pending" } })}
-        ${metric("bi-award", L("mediaMonthlyHighlights"), awards[0]?.category || "-", mediaTechnicianName(awards[0]?.technician_id || awards[0]?.winner_id), { isClickable: true, route: "media", targetTab: "awards" })}
+        ${metric("bi-people", L("mediaTotalTechnicians"), technicians.length, L("mediaTechnicalTeam"), { isClickable: true, route: "mediaTeamRoute" })}
+        ${metric("bi-person-check", L("mediaActiveTechnicians"), technicians.filter((item) => /Activo|Active/i.test(item.status || "")).length, L("status"), { isClickable: true, route: "mediaTeamRoute" })}
+        ${metric("bi-calendar-week", L("mediaSchedulesThisWeek"), schedules.length, L("mediaSchedules"), { isClickable: true, route: "mediaSchedulesRoute", filterPayload: { current_week: true } })}
+        ${metric("bi-check2-circle", L("mediaCompleteTeams"), completeSchedules.length, L("mediaSchedules"), { isClickable: true, route: "mediaSchedulesRoute", filterPayload: { status: "complete" } })}
+        ${metric("bi-exclamation-triangle", L("mediaIncompleteTeams"), incompleteSchedules.length, L("needsAction"), { isClickable: true, route: "mediaSchedulesRoute", filterPayload: { status: "incomplete" } })}
+        ${metric("bi-broadcast", L("mediaNextService"), nextSchedule.service_name || "-", nextSchedule.date || "", { isClickable: true, route: "mediaSchedulesRoute" })}
+        ${metric("bi-clipboard2-pulse", L("mediaPendingEvaluations"), pendingEvaluations.length, L("mediaPerformanceEvaluation"), { isClickable: true, route: "mediaPerformanceRoute", filterPayload: { status: "pending" } })}
+        ${metric("bi-award", L("mediaMonthlyHighlights"), awards[0]?.category || "-", mediaTechnicianName(awards[0]?.technician_id || awards[0]?.winner_id), { isClickable: true, route: "mediaAwardsRoute" })}
       </div>
       <div class="row g-4">
         <div class="col-xl-6">${chartCard(L("mediaRolesFunctions"), roles.map((item) => [mediaRoleName(mediaRoleKey(item)), Number(item.required_per_service || 1)]))}</div>
@@ -27447,11 +27509,13 @@ function renderMedia() {
       </article>`);
   }
 
-  setPageContent(`
-    ${moduleNavShell("media", { title: L("media"), subtitle: L("mediaSubtitle"), modalType: active === "overview" ? "mediaTechnician" : null, icon: "bi-camera-reels" }, mediaTabsNav(active))}
+  const navHtml = sectionHeader(L("media"), L("mediaSubtitle"), "mediaTechnician", "bi-camera-reels");
+  const bodyHtml = `
     ${summaryFilterChips("media")}
     ${content}
-  `);
+  `;
+  setPageContent(navHtml + tabParallaxWrap(bodyHtml, activeRoute));
+  triggerTabParallax();
 }
 
 window.renderMedia = renderMedia;
