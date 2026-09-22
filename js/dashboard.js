@@ -10929,7 +10929,10 @@ function setRoute(route) {
     venueInventoryReports: () => renderVenueInventory("reports"),
     sacraments: renderSacraments,
     programs: renderPrograms,
-    partnership: () => (typeof renderPartnerships === "function" ? renderPartnerships() : renderSimple("partnership", L("partnership"), state.partnership)),
+    partnership: () => {
+      if (typeof hydratePartnershipArms === "function") void hydratePartnershipArms();
+      return typeof renderPartnerships === "function" ? renderPartnerships() : renderSimple("partnership", L("partnership"), state.partnership);
+    },
     media: renderMedia,
     requisitions: renderRequisitions,
     staffHr: renderStaffHr,

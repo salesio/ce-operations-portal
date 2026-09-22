@@ -4,12 +4,20 @@
  * Full CRUD for Partnership Arms with custom logo management & Supabase sync.
  */
 (function (global) {
+  const DEFAULT_ARM_LOGOS = {
+    "arm-healing": "assets/logos/arm-healing.png",
+    "arm-rhapsody": "assets/logos/arm-rhapsody.png",
+    "arm-lw-sat": "assets/logos/arm-lw-sat.png",
+    "arm-vision": "assets/logos/arm-vision.png",
+    "arm-interior": "assets/logos/arm-interior.png"
+  };
+
   const PARTNERSHIP_ARMS_SEED = [
-    { id: "arm-healing", name: "Escola de Cura", description: "Escola de Cura e ministério de cura.", icon: "bi-heart-pulse", logo_url: "", monthly_goal: 15000, status: "Active", is_active: true },
-    { id: "arm-rhapsody", name: "Rapsódia de Realidades", description: "Distribuição e parcerias de Rapsódia.", icon: "bi-book", logo_url: "", monthly_goal: 20000, status: "Active", is_active: true },
-    { id: "arm-lw-sat", name: "Loveworld SAT", description: "Parceria Loveworld SAT (não é departamento).", icon: "bi-broadcast", logo_url: "", monthly_goal: 12000, status: "Active", is_active: true },
-    { id: "arm-vision", name: "Construtores de Visão", description: "Apoio a projectos de visão e expansão.", icon: "bi-building", logo_url: "", monthly_goal: 25000, status: "Active", is_active: true },
-    { id: "arm-interior", name: "Missões de Cidades do Interior", description: "Missões e alcance no interior.", icon: "bi-geo-alt", logo_url: "", monthly_goal: 10000, status: "Active", is_active: true },
+    { id: "arm-healing", name: "Escola de Cura", description: "Escola de Cura e ministério de cura.", icon: "bi-heart-pulse", logo_url: "assets/logos/arm-healing.png", monthly_goal: 15000, status: "Active", is_active: true },
+    { id: "arm-rhapsody", name: "Rapsódia de Realidades", description: "Distribuição e parcerias de Rapsódia.", icon: "bi-book", logo_url: "assets/logos/arm-rhapsody.png", monthly_goal: 20000, status: "Active", is_active: true },
+    { id: "arm-lw-sat", name: "Loveworld SAT", description: "Parceria Loveworld SAT (não é departamento).", icon: "bi-broadcast", logo_url: "assets/logos/arm-lw-sat.png", monthly_goal: 12000, status: "Active", is_active: true },
+    { id: "arm-vision", name: "Construtores de Visão", description: "Apoio a projectos de visão e expansão.", icon: "bi-building", logo_url: "assets/logos/arm-vision.png", monthly_goal: 25000, status: "Active", is_active: true },
+    { id: "arm-interior", name: "Missões de Cidades do Interior", description: "Missões e alcance no interior.", icon: "bi-geo-alt", logo_url: "assets/logos/arm-interior.png", monthly_goal: 10000, status: "Active", is_active: true },
     { id: "arm-reach-mz", name: "Alcançar Moçambique", description: "Campanhas nacionais de alcance.", icon: "bi-flag", logo_url: "", monthly_goal: 18000, status: "Active", is_active: true },
     { id: "arm-church-project", name: "Projecto da Igreja", description: "Projectos locais da igreja.", icon: "bi-house-heart", logo_url: "", monthly_goal: 15000, status: "Active", is_active: true },
     { id: "arm-construction", name: "Projecto de Construção de Igreja", description: "Construção e infra-estrutura.", icon: "bi-bricks", logo_url: "", monthly_goal: 30000, status: "Active", is_active: true },
@@ -116,16 +124,20 @@
     if (!stored || !stored.length) {
       stored = PARTNERSHIP_ARMS_SEED;
     }
-    return stored.map((arm) => ({
-      monthly_goal: 10000,
-      status: "Active",
-      is_active: true,
-      icon: "bi-stars",
-      created_at: "2026-01-01",
-      updated_at: "2026-07-01",
-      ...arm,
-      logo_url: arm.logo_url ?? ""
-    }));
+    return stored.map((arm) => {
+      const defaultLogo = DEFAULT_ARM_LOGOS[arm.id] || "";
+      const logo_url = (arm.logo_url && arm.logo_url.trim()) ? arm.logo_url.trim() : defaultLogo;
+      return {
+        monthly_goal: 10000,
+        status: "Active",
+        is_active: true,
+        icon: "bi-stars",
+        created_at: "2026-01-01",
+        updated_at: "2026-07-01",
+        ...arm,
+        logo_url
+      };
+    });
   }
 
   function persistArmsState(arms) {
@@ -170,30 +182,30 @@
         for (const id of allIds) {
           const remote = remoteMap.get(id);
           const local = localMap.get(id);
+          const defaultLogo = DEFAULT_ARM_LOGOS[id] || "";
 
           if (remote && local) {
-            // Smart non-destructive merge: preserve local logo_url if remote logo is empty
-            const localLogo = (local.logo_url || "").trim();
+            // Smart merge: remote logo > local logo > default logo
             const remoteLogo = (remote.logo_url || "").trim();
-            const logo_url = localLogo || remoteLogo;
+            const localLogo = (local.logo_url || "").trim();
+            const logo_url = remoteLogo || localLogo || defaultLogo;
 
             const mergedArm = {
-              ...remote,
               ...local,
+              ...remote,
               id,
-              name: local.name || remote.name || "Braço de Parceria",
-              description: local.description || remote.description || "",
-              icon: local.icon || remote.icon || "bi-stars",
+              name: remote.name || local.name || "Braço de Parceria",
+              description: remote.description !== undefined ? remote.description : (local.description || ""),
+              icon: remote.icon || local.icon || "bi-stars",
               logo_url,
-              monthly_goal: local.monthly_goal ?? remote.monthly_goal ?? 10000,
-              status: local.status || remote.status || "Active",
-              is_active: local.is_active !== undefined ? local.is_active : (remote.is_active !== false),
-              updated_at: new Date().toISOString()
+              monthly_goal: remote.monthly_goal ?? local.monthly_goal ?? 10000,
+              status: remote.status || local.status || "Active",
+              is_active: remote.is_active !== undefined ? remote.is_active : (local.is_active !== false),
+              updated_at: remote.updated_at || new Date().toISOString()
             };
 
             mergedMap.set(id, mergedArm);
 
-            // Queue for remote sync if local had a logo that remote lacked
             if (localLogo && !remoteLogo) {
               needsRemoteSync.push(mergedArm);
             }
@@ -201,8 +213,9 @@
             mergedMap.set(id, local);
             needsRemoteSync.push(local);
           } else if (remote) {
+            const remoteLogo = (remote.logo_url || "").trim();
             mergedMap.set(id, {
-              logo_url: "",
+              logo_url: remoteLogo || defaultLogo,
               monthly_goal: 10000,
               status: "Active",
               is_active: true,
@@ -573,6 +586,10 @@
     imgEl.parentNode.replaceChild(div, imgEl);
   }
 
+  if (typeof window !== "undefined") {
+    window.handleArmLogoError = handleArmLogoError;
+  }
+
   function armLogoHtml(arm) {
     const initials = String(arm.name || "?")
       .split(/\s+/)
@@ -581,10 +598,12 @@
       .join("")
       .toUpperCase();
     const icon = arm.icon || "bi-stars";
+    const defaultLogo = DEFAULT_ARM_LOGOS[arm.id] || "";
+    const logoUrl = (arm.logo_url && arm.logo_url.trim()) ? arm.logo_url.trim() : defaultLogo;
 
-    if (arm.logo_url && arm.logo_url.trim()) {
-      const safeUrl = arm.logo_url.replace(/"/g, "&quot;");
-      return `<img src="${safeUrl}" alt="${arm.name}" class="partnership-arm-logo" style="width: 3.5rem; height: 3.5rem; border-radius: 1rem; object-fit: cover; border: 1px solid rgba(215, 174, 75, 0.3); flex-shrink: 0;" onerror="handleArmLogoError(this, '${icon}', '${initials}');">`;
+    if (logoUrl) {
+      const safeUrl = logoUrl.replace(/"/g, "&quot;");
+      return `<img src="${safeUrl}" alt="${arm.name}" class="partnership-arm-logo" style="width: 3.5rem; height: 3.5rem; border-radius: 1rem; object-fit: cover; border: 1px solid rgba(215, 174, 75, 0.3); flex-shrink: 0;" onerror="window.handleArmLogoError ? window.handleArmLogoError(this, '${icon}', '${initials}') : (this.style.display='none');">`;
     }
     return `<div class="partnership-arm-placeholder" title="${isPt() ? "Ícone padrão" : "Default icon"}"><i class="bi ${icon}"></i><span>${initials}</span></div>`;
   }
@@ -1217,6 +1236,10 @@
     if (tab) partnershipPageState.tab = tab;
     if (typeof canEnterRoute === "function" && !canEnterRoute("partnership")) {
       if (typeof renderAccessDenied === "function") return renderAccessDenied();
+    }
+    if (!partnershipPageState._hydratedThisSession) {
+      partnershipPageState._hydratedThisSession = true;
+      void hydratePartnershipArms();
     }
     const arms = computeArmAnalytics();
     const partners = computePartners();

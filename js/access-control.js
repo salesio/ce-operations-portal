@@ -83,6 +83,17 @@
     venueInventoryReports: "venueInventory"
   };
 
+  const MEDIA_ROUTE_MODULES = {
+    mediaTeamRoute: "media",
+    mediaRolesRoute: "media",
+    mediaSchedulesRoute: "media",
+    mediaServicesRoute: "media",
+    mediaChannelsRoute: "media",
+    mediaPerformanceRoute: "media",
+    mediaReportsRoute: "media",
+    mediaAwardsRoute: "media"
+  };
+
   const ALL_MODULES = [
     "dashboard", "churches", "members", "firstTimers", "followUp", "reports", "counseling",
     "foundation", "finance", "notifications", "fevo", "venueInventory", "sacraments", "prisonMinistry",
@@ -582,8 +593,10 @@
     if (CELL_ROUTE_MODULES[route]) return CELL_ROUTE_MODULES[route];
     if (FEVO_ROUTE_MODULES[route]) return FEVO_ROUTE_MODULES[route];
     if (VENUE_ROUTE_MODULES[route]) return VENUE_ROUTE_MODULES[route];
+    if (MEDIA_ROUTE_MODULES[route]) return MEDIA_ROUTE_MODULES[route];
     if (route.startsWith("venueInventory")) return "venueInventory";
     if (route.startsWith("fevo")) return "fevo";
+    if (route.startsWith("media")) return "media";
     if (route.startsWith("cell")) return "cell";
     return route;
   }
