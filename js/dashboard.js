@@ -3249,6 +3249,7 @@ const MEDIA_TAB_ROUTES = new Set(MEDIA_NAV.routes.map(([route]) => route));
 const TAB_PARALLAX_ORDER = {
   cell: CELL_NAV.areas.flatMap((area) => area.routes.map(([route]) => route)),
   fevo: ["fevo", "fevoConfigRoute", "fevoFollowUpRoute", "fevoEvangelismRoute", "fevoVisitationRoute", "fevoPrayerRoute", "fevoNoReportsRoute", "fevoWeeklyReportsRoute", "fevoAnalysisRoute"],
+  finance: ["finance", "financeEntriesRoute", "financePublicSubmissionsRoute", "financeVerificationRoute", "financeApprovedRequisitionsRoute", "financeReportsRoute", "financePartnersRoute", "financeExportsRoute"],
   venue: ["venueInventory", "venueInventoryGeneral", "venueInventoryAcquisitions", "venueInventoryStaff", "venueInventoryMaintenance", "venueInventoryMovements", "venueInventorySpaces", "venueInventoryChecklist", "venueInventoryReports"],
   media: ["media", "mediaTeamRoute", "mediaRolesRoute", "mediaSchedulesRoute", "mediaServicesRoute", "mediaChannelsRoute", "mediaPerformanceRoute", "mediaReportsRoute", "mediaAwardsRoute"],
   outreach: ["programs", "cellPrison", "cellMaterials"]
@@ -3259,6 +3260,7 @@ let tabParallaxState = { family: null, index: -1 };
 function tabParallaxFamily(route) {
   if (CELL_TAB_ROUTES.has(route)) return "cell";
   if (FEVO_TAB_ROUTES.has(route)) return "fevo";
+  if (FINANCE_TAB_ROUTES.has(route)) return "finance";
   if (VENUE_TAB_ROUTES.has(route)) return "venue";
   if (MEDIA_TAB_ROUTES.has(route)) return "media";
   if (OUTREACH_TAB_ROUTES.has(route)) return "outreach";
@@ -3315,8 +3317,8 @@ function isModuleTabRoute(route) {
 const NAV_GROUPS = [
   { key: "main", items: [["dashboard", "bi-speedometer2", "dashboard"], ["churches", "bi-building", "churches"], ["members", "bi-people", "members"], ["reports", "bi-bar-chart-line", "reports"]] },
   { key: "pastoralCare", items: [["firstTimers", "bi-person-heart", "firstTimers"], ["followUp", "bi-telephone-outbound", "followUp"], ["foundation", "bi-mortarboard", "foundationSchool"], ["sacraments", "bi-droplet", "sacraments"], ["counseling", "bi-chat-heart", "counseling"]] },
-  // Order: Células (subnav) → F.E.V.O (subnav) → Finanças → Parcerias → Mídia (subnav) → Requisições → Inventário → Programas & Extensão (subnav)
-  { key: "departments", items: [["finance", "bi-cash-coin", "finance"], ["partnership", "bi-stars", "partnership"], ["requisitions", "bi-clipboard-check", "requisitions"], ["venueInventory", "bi-box-seam", "venueInventoryShort"]] },
+  // Order: Células (subnav) → F.E.V.O (subnav) → Finanças (subnav) → Parcerias → Mídia (subnav) → Requisições → Inventário → Programas & Extensão (subnav)
+  { key: "departments", items: [["partnership", "bi-stars", "partnership"], ["requisitions", "bi-clipboard-check", "requisitions"], ["venueInventory", "bi-box-seam", "venueInventoryShort"]] },
   { key: "admin", items: [["staffHr", "bi-people-fill", "staffHr"], ["users", "bi-person-lock", "usersRoles"], ["access", "bi-shield-lock", "accessControl"], ["settings", "bi-gear", "settings"], ["audit", "bi-journal-check", "auditLogs"]] }
 ];
 
@@ -10778,6 +10780,7 @@ function renderShell() {
         <div class="nav-group-body-inner">
           ${cellNav}
           ${fevoNav}
+          ${financeNav}
           ${navItems}
           ${mediaNav}
           ${outreachNav}
@@ -19091,7 +19094,6 @@ function renderFinance() {
   setPageContent(`
     ${sectionHeader(L("finance"), L("financeSubtitle"), "finance", "bi-cash-coin")}
     <article class="panel glass-panel module-content-card mb-4">
-      ${financeModuleTabs()}
       <div class="tab-content-panel">${tabContent}</div>
     </article>
   `);
