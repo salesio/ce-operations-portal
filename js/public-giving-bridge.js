@@ -4,7 +4,7 @@
  */
 (function () {
   const PUBLIC_GIVING_QUEUE_KEY = "ce-public-giving-queue";
-  const FINANCE_STATUS_PENDING = "Pendente de Verifica��o";
+  const FINANCE_STATUS_PENDING = "Pendente de Verificação";
 
   function splitPublicFullName(fullName) {
     const parts = String(fullName || "").trim().split(/\s+/).filter(Boolean);

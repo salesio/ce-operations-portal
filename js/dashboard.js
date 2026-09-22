@@ -45,10 +45,10 @@ function generateUuid() {
 const TEXT = {
   pt: {
     loginTitle: "Portal da Equipa",
-    loginLead: "Acesso interno para acompanhamento espiritual, igrejas, c�lulas, escola, finan�as e administra��o.",
+    loginLead: "Acesso interno para acompanhamento espiritual, igrejas, células, escola, finanças e administração.",
     loginPassword: "Senha",
     loginSubmit: "Entrar no Painel",
-    loginNote: "Prot�tipo frontend-first. Autentica��o real e base de dados entram na pr�xima fase.",
+    loginNote: "Protótipo frontend-first. Autenticação real e base de dados entram na próxima fase.",
     viewSite: "Ver Site",
     logout: "Sair",
     add: "Adicionar",
@@ -66,7 +66,7 @@ const TEXT = {
     to: "Até",
     all: "Todos",
     yes: "Sim",
-    no: "N�o",
+    no: "Não",
     church: "Igreja",
     name: "Nome",
     surname: "Apelido",
@@ -82,7 +82,7 @@ const TEXT = {
     contributor: "Contribuinte",
     service: "Culto",
     bornAgain: "Nasceu de Novo",
-    foundation: "Funda��o",
+    foundation: "Fundação",
     counselor: "Conselheiro",
     cellInterest: "Interesse em Célula",
     practical: "Prática",
@@ -94,7 +94,7 @@ const TEXT = {
     filterMonth: "Filtrar por Mês",
     filterCell: "Filtrar por Célula",
     filterStatus: "Filtrar por Estado",
-    empty: "Ainda n�o existem registos para este m�dulo.",
+    empty: "Ainda não existem registos para este módulo.",
     main: "MAIN",
     pastoralCare: "CUIDADOS PASTORAIS",
     departments: "DEPARTAMENTOS",
@@ -106,7 +106,7 @@ const TEXT = {
     followUp: "Acompanhamento",
     reports: "Relatórios",
     counseling: "Aconselhamento",
-    foundationSchool: "Escola de Funda��o",
+    foundationSchool: "Escola de Fundação",
     finance: "Finanças",
     cellMinistry: "Ministério de Células",
     sacraments: "Sacramentos",
@@ -128,27 +128,27 @@ const TEXT = {
     settings: "Definições",
     auditLogs: "Registos de Auditoria",
     requisitions: "Requisições & Aprovações",
-    requisitionsSubtitle: "Fluxo de requisi��es departamentais � revis�o, aprova��o pastoral e libera��o de recursos.",
+    requisitionsSubtitle: "Fluxo de requisições departamentais — revisão, aprovação pastoral e liberação de recursos.",
     staffHr: "Staff & Recursos Humanos",
     staffHrSubtitle: "Registo de equipa, funções, salários, desempenho, presenças e equipamentos atribuídos.",
-    reqTabOverview: "Vis�o Geral",
-    reqTabNew: "Nova Requisi��o",
+    reqTabOverview: "Visão Geral",
+    reqTabNew: "Nova Requisição",
     reqTabReceived: "Requisições Recebidas",
-    reqTabReview: "Em Aprova��o Pastoral",
+    reqTabReview: "Em Aprovação Pastoral",
     reqTabPastoral: "Aguardando Pastor Principal",
     reqTabApproved: "Aprovadas",
     reqTabRejected: "Rejeitadas",
     reqTabReleased: "Recursos Liberados",
     reqTabHistory: "Histórico",
     reqPending: "Requisições Pendentes",
-    reqInReview: "Em Revis�o",
+    reqInReview: "Em Revisão",
     reqAwaitingPastor: "Aguardando Pastor Principal",
     reqApprovedMonth: "Aprovadas Este Mês",
     reqRejected: "Rejeitadas",
     reqReleased: "Recursos Liberados",
     reqApprovedValue: "Valor Total Aprovado",
     reqPendingValue: "Valor Pendente",
-    reqNumber: "N� Requisi��o",
+    reqNumber: "Nº Requisição",
     reqType: "Tipo",
     reqTitle: "Título",
     reqDepartment: "Departamento",
@@ -164,28 +164,28 @@ const TEXT = {
     reqMarkPurchased: "Marcar como Comprado",
     reqRegisterInventory: "Registar no Inventário",
     reqClose: "Fechar",
-    reqJustification: "Justifica��o",
-    reqDescription: "Descri��o",
+    reqJustification: "Justificação",
+    reqDescription: "Descrição",
     reqSupplier: "Fornecedor",
-    reqQuotation: "N� Cota��o",
-    reqReturnForCorrection: "Devolver para Corre��o",
+    reqQuotation: "Nº Cotação",
+    reqReturnForCorrection: "Devolver para Correção",
     reqPastoralComment: "Comentário Pastoral",
-    reqRejectionReason: "Motivo da Rejei��o",
+    reqRejectionReason: "Motivo da Rejeição",
     reqApprovedAmount: "Valor Aprovado",
-    reqApprovedAwaitingRelease: "Aprovado � Aguardando Libera��o de Recursos",
+    reqApprovedAwaitingRelease: "Aprovado — Aguardando Liberação de Recursos",
     reqResourcesReleased: "Recursos Liberados",
-    reqHistory: "Hist�rico da Requisi��o",
-    reqDetails: "Detalhes da Requisi��o",
-    reqSectionData: "Dados da Requisi��o",
-    reqSectionDescription: "Descri��o e Justificativa",
-    reqSectionInternalReview: "Revis�o Interna",
+    reqHistory: "Histórico da Requisição",
+    reqDetails: "Detalhes da Requisição",
+    reqSectionData: "Dados da Requisição",
+    reqSectionDescription: "Descrição e Justificativa",
+    reqSectionInternalReview: "Revisão Interna",
     reqSectionAttachments: "Anexos",
-    reqSectionPastoralDecision: "Decis�o Pastoral",
+    reqSectionPastoralDecision: "Decisão Pastoral",
     reqRequester: "Solicitante",
     reqCurrentStatus: "Estado Actual",
     reqReviewedBy: "Revisto por",
-    reqReviewDate: "Data da revis�o",
-    reqReviewNotes: "Notas da revis�o",
+    reqReviewDate: "Data da revisão",
+    reqReviewNotes: "Notas da revisão",
     reqSentToPastorBy: "Enviado ao Pastor Principal por",
     reqSentToPastorAt: "Data de envio",
     reqFinalPriority: "Prioridade Final",
@@ -193,10 +193,10 @@ const TEXT = {
     reqBudget: "Orçamento",
     reqProforma: "Factura proforma",
     reqNoAttachments: "Sem anexos",
-    reqApproveSuccess: "Requisi��o aprovada e enviada para Finan�as para libera��o de recursos.",
-    reqRejectSuccess: "Requisi��o rejeitada.",
-    reqReturnSuccess: "Requisi��o devolvida para corre��o.",
-    reqRejectionRequired: "Indique o motivo da rejei��o.",
+    reqApproveSuccess: "Requisição aprovada e enviada para Finanças para liberação de recursos.",
+    reqRejectSuccess: "Requisição rejeitada.",
+    reqReturnSuccess: "Requisição devolvida para correção.",
+    reqRejectionRequired: "Indique o motivo da rejeição.",
     reqReturnNotesRequired: "Indique o que deve ser corrigido.",
     reqTimelineCreated: "criada por",
     reqTimelineSubmitted: "Submetida em",
@@ -208,10 +208,10 @@ const TEXT = {
     reqTimelineResourcesReleased: "Recursos liberados por",
     reqTimelineClosed: "Fechada por",
     reqSentToPastor: "Enviado ao Pastor Principal",
-    reqReturnedForCorrection: "Devolvido para Corre��o",
+    reqReturnedForCorrection: "Devolvido para Correção",
     reqPurchasedExecuted: "Comprado / Executado",
     reqRegisteredInventory: "Registado no Inventário",
-    finAwaitingRelease: "Aguardando Libera��o",
+    finAwaitingRelease: "Aguardando Liberação",
     finResourcesReleased: "Recursos Liberados",
     finApprovedAmount: "Valor Aprovado",
     finReleasedAmount: "Valor Liberado",
@@ -227,18 +227,18 @@ const TEXT = {
     finPendingPayments: "Pagamentos Pendentes",
     finPartiallyPaid: "Requisições Parcialmente Pagas",
     finFinanceStatus: "Estado Financeiro",
-    finReleaseDate: "Data de Libera��o",
+    finReleaseDate: "Data de Liberação",
     finAmountToRelease: "Valor a Liberar",
     finPaymentReference: "Referência de Pagamento",
     finApprovedBy: "Aprovado por",
-    finApprovedAt: "Data de aprova��o",
-    finApprovedReqHint: "Requisi��es aprovadas pelo Pastor Principal � libera��o de recursos e pagamentos.",
+    finApprovedAt: "Data de aprovação",
+    finApprovedReqHint: "Requisições aprovadas pelo Pastor Principal — liberação de recursos e pagamentos.",
     finReleaseDrawerTitle: "Liberar Recursos",
-    finExceedsApproved: "O valor a liberar n�o pode exceder o valor aprovado.",
+    finExceedsApproved: "O valor a liberar não pode exceder o valor aprovado.",
     finPaymentMethodRequired: "Seleccione o método de pagamento.",
-    finReleaseDateRequired: "Indique a data de libera��o.",
+    finReleaseDateRequired: "Indique a data de liberação.",
     finReleaseSuccess: "Recursos liberados com sucesso.",
-    finMarkPaidSuccess: "Requisi��o marcada como paga.",
+    finMarkPaidSuccess: "Requisição marcada como paga.",
     finSentToInventory: "Enviar para Inventário",
     finSentToInventorySuccess: "Rascunho criado no Inventário.",
     reqSendToInventory: "Enviar para Inventário",
@@ -252,38 +252,38 @@ const TEXT = {
     reqReportByChurch: "Relatório por Igreja",
     reqReportByRequester: "Relatório por Solicitante",
     reqReportByType: "Requisições por Tipo",
-    reqReportMonthly: "Evolu��o Mensal",
-    reqAvgPerRequisition: "M�dia por Requisi��o",
+    reqReportMonthly: "Evolução Mensal",
+    reqAvgPerRequisition: "Mídia por Requisição",
     reqRemainingPending: "Valor Ainda Pendente",
     reqExportPdf: "Exportar PDF",
     reqExportExcel: "Exportar Excel",
     reqExportCsv: "Exportar CSV",
-    rptInventoryAwaiting: "Aguardando Libera��o",
+    rptInventoryAwaiting: "Aguardando Liberação",
     rptInventoryRegistered: "Registado",
     rptInventoryCompleted: "Concluído",
     rptInventoryItemId: "ID Inventário",
     dateFrom: "Data inicial",
     dateTo: "Data final",
     reqPrintReport: "Imprimir Relatório",
-    reqViewRelease: "Ver Libera��o",
-    reqRequisitionStatus: "Estado da Requisi��o",
+    reqViewRelease: "Ver Liberação",
+    reqRequisitionStatus: "Estado da Requisição",
     reqReleasedBy: "Liberado por",
-    reqHighestRequisition: "Maior Requisi��o",
-    reqLastApproved: "�ltima Aprova��o",
+    reqHighestRequisition: "Maior Requisição",
+    reqLastApproved: "Última Aprovação",
     reqPredominantStatus: "Estado Predominante",
     reqCompleted: "Concluídas",
     rptExecutiveTitle: "Relatórios Executivos",
-    rptExecutiveHint: "Vis�o consolidada por departamento � clique para ver detalhes e exportar.",
+    rptExecutiveHint: "Visão consolidada por departamento — clique para ver detalhes e exportar.",
     rptFinanceExpensesTitle: "Despesas & Liberações",
-    rptFinanceExpensesHint: "Sa�das financeiras por requisi��es aprovadas (n�o inclui receitas).",
+    rptFinanceExpensesHint: "Saídas financeiras por requisições aprovadas (não inclui receitas).",
     rptReqInventoryTitle: "Requisições → Inventário",
     rptReqInventoryHint: "Acompanhamento de aquisições liberadas e registo no inventário.",
     rptStaffTitle: "Relatórios de Staff & RH",
-    rptStaffHint: "Headcount, sal�rios pendentes, avalia��es e distribui��o por igreja.",
-    rptFoundationTitle: "Relat�rios Escola de Funda��o",
-    rptFoundationHint: "Funil de inscri��o, progresso, exames e gradua��es.",
+    rptStaffHint: "Headcount, salários pendentes, avaliações e distribuição por igreja.",
+    rptFoundationTitle: "Relatórios Escola de Fundação",
+    rptFoundationHint: "Funil de inscrição, progresso, exames e graduações.",
     rptFunnelTitle: "Funil de Acompanhamento",
-    rptFunnelHint: "Primeiros visitantes ? contacto ? c�lula ? funda��o ? membro.",
+    rptFunnelHint: "Primeiros visitantes ? contacto ? célula ? fundação ? membro.",
     rptCellTitle: "Relatórios de Células",
     rptCellHint: "Presenças, primeiros visitantes, novos convertidos e relatórios semanais.",
     rptFevoTitle: "Relatórios F.E.V.O",
@@ -291,9 +291,9 @@ const TEXT = {
     rptVenueTitle: "Relatórios de Inventário",
     rptVenueHint: "Activos, estado, valor e equipamentos por departamento.",
     rptSacramentsTitle: "Relatórios de Sacramentos",
-    rptSacramentsHint: "Batismos, casamentos e apresenta��o de beb�s.",
+    rptSacramentsHint: "Batismos, casamentos e apresentação de bebés.",
     rptPrisonTitle: "Relatórios Ministério Carcerário",
-    rptPrisonHint: "Servi�os, presen�as e forma��o na pris�o.",
+    rptPrisonHint: "Serviços, presenças e formação na prisão.",
     rptMaterialsTitle: "Relatórios Materiais Ministeriais",
     rptMaterialsHint: "Vendas, stock, distribuições e alertas de stock baixo.",
     rptExpenseDetail: "Detalhe de Despesas",
@@ -306,7 +306,7 @@ const TEXT = {
     rptStaffByChurch: "Staff por Igreja",
     rptStaffByEmployment: "Staff por Tipo de Emprego",
     rptStaffDetail: "Detalhe de Staff",
-    rptFoundationFunnel: "Funil da Escola de Funda��o",
+    rptFoundationFunnel: "Funil da Escola de Fundação",
     rptFoundationByChurch: "Alunos por Igreja",
     rptFoundationProgress: "Progresso por Aluno",
     rptFoundationDetail: "Detalhe de Alunos",
@@ -322,12 +322,12 @@ const TEXT = {
     rptSacramentsByChurch: "Sacramentos por Igreja",
     rptSacramentsDetail: "Detalhe de Sacramentos",
     rptPrisonServices: "Serviços por Estado",
-    rptPrisonByLocation: "Servi�os por Pris�o",
+    rptPrisonByLocation: "Serviços por Prisão",
     rptInmatesReached: "Presenças Alcançadas",
     rptPrisonDetail: "Detalhe de Serviços",
     rptMaterialsDetail: "Detalhe de Vendas",
     rptViewAll: "Ver Relatório Completo",
-    staffTabOverview: "Vis�o Geral",
+    staffTabOverview: "Visão Geral",
     staffTabStaff: "Staff",
     staffTabDepartments: "Departamentos",
     staffTabRoles: "Funções",
@@ -392,23 +392,23 @@ const TEXT = {
     staffWithSalary: "Staff com Salário/Subsídio",
     staffPendingEval: "Avaliações Pendentes",
     evaluate: "Avaliar",
-    evaluationPeriod: "Per�odo de Avalia��o",
+    evaluationPeriod: "Período de Avaliação",
     punctualityScore: "Pontualidade",
-    taskCompletionScore: "Conclus�o de Tarefas",
+    taskCompletionScore: "Conclusão de Tarefas",
     reportSubmissionScore: "Entrega de Relatórios",
     teamworkScore: "Trabalho em Equipa",
-    supervisorRating: "Avalia��o do Supervisor",
-    overallScore: "Pontua��o Geral",
+    supervisorRating: "Avaliação do Supervisor",
+    overallScore: "Pontuação Geral",
     strengths: "Pontos Fortes",
     areasToImprove: "Áreas a Melhorar",
-    actionPlan: "Plano de Ac��o",
+    actionPlan: "Plano de Acção",
     evaluatedBy: "Avaliado Por",
-    evaluatedAt: "Data da Avalia��o",
+    evaluatedAt: "Data da Avaliação",
     staffPendingPay: "Pagamentos Pendentes",
     staffAssignedEq: "Equipamentos Atribuídos",
     staffBirthdays: "Aniversariantes do Mês",
     staffFullName: "Nome Completo",
-    staffRoleTitle: "Fun��o",
+    staffRoleTitle: "Função",
     staffEmploymentType: "Tipo de Vínculo",
     staffStartDate: "Data de Início",
     staffSalary: "Salário/Subsídio",
@@ -418,14 +418,14 @@ const TEXT = {
     staffEvaluate: "Avaliar Desempenho",
     staffRegisterAttendance: "Registar Presença",
     staffViewEquipment: "Ver Equipamentos",
-    staffPrivacyBanner: "Informa��o salarial restrita. Apenas perfis autorizados podem ver valores.",
+    staffPrivacyBanner: "Informação salarial restrita. Apenas perfis autorizados podem ver valores.",
     staffSalaryHidden: "Valor confidencial",
     accessDeniedTitle: "Acesso Restrito",
-    accessDeniedText: "N�o tem permiss�o para aceder a esta �rea. Contacte o administrador se precisar de acesso.",
+    accessDeniedText: "Não tem permissão para aceder a esta Área. Contacte o administrador se precisar de acesso.",
     accessDeniedBack: "Voltar ao Painel",
-    navLockedTooltip: "Sem permiss�o para aceder a este m�dulo",
-    noPermission: "Sem permiss�o",
-    noPermissionArea: "N�o tem permiss�o para aceder a esta �rea.",
+    navLockedTooltip: "Sem permissão para aceder a este módulo",
+    noPermission: "Sem permissão",
+    noPermissionArea: "Não tem permissão para aceder a esta Área.",
     locked: "Bloqueado",
     availableForDepartment: "Disponível para o seu departamento",
     availableForChurch: "Disponível para a sua igreja",
@@ -434,8 +434,8 @@ const TEXT = {
     accessMatrixCreate: "Criar",
     accessMatrixEdit: "Editar",
     accessMatrixApprove: "Aprovar",
-    accessMatrixScope: "�mbito",
-    heroTitle: "Uma plataforma viva para cuidar da igreja, das almas e da vis�o.",
+    accessMatrixScope: "Âmbito",
+    heroTitle: "Uma plataforma viva para cuidar da igreja, das almas e da visão.",
     heroText: "Operações da Christ Embassy Mozambique com acompanhamento pastoral, crescimento celular, escola, finanças, sacramentos e relatórios por igreja.",
     pendingFollowups: "Acompanhamentos Pendentes",
     totalFirstTimers: "Total de Primeira Vez",
@@ -450,7 +450,7 @@ const TEXT = {
     givingByCategory: "Contribuições por Categoria",
     givingByChurch: "Contribuições por Igreja",
     sacramentsSummary: "Resumo de Sacramentos",
-    foundationProgress: "Progresso da Escola de Funda��o",
+    foundationProgress: "Progresso da Escola de Fundação",
     cellGrowth: "Crescimento de Células",
     visitorsCaptured: "Visitantes registados",
     bornAgainHint: "Nasceram de novo",
@@ -459,9 +459,9 @@ const TEXT = {
     needsAction: "Precisa de acção",
     activeNetwork: "Rede activa",
     registerFirstTimer: "Registar Primeira Vez",
-    dashboardOverview: "Vis�o Geral Operacional",
+    dashboardOverview: "Visão Geral Operacional",
     dashboardChurchGrowth: "Crescimento da Igreja",
-    dashboardChurchGrowthHint: "Primeira vez, convertidos e escola de funda��o.",
+    dashboardChurchGrowthHint: "Primeira vez, convertidos e escola de fundação.",
     dashboardPendingSection: "Acompanhamentos Pendentes",
     dashboardPendingHint: "Visitantes que precisam de contacto ou próximo passo.",
     dashboardFinanceSection: "Finanças do Mês",
@@ -472,13 +472,13 @@ const TEXT = {
     dashboardRecentHint: "Últimas acções e sacramentos registados.",
     viewAll: "Ver Tudo",
     financeOverviewSection: "Resumo Financeiro",
-    financeOverviewHint: "Totais do dia, do m�s e estado de verifica��o.",
+    financeOverviewHint: "Totais do dia, do mês e estado de verificação.",
     financeAnalyticsSection: "Análise de Contribuições",
-    financeAnalyticsHint: "Distribui��o por categoria, igreja e m�todo de pagamento.",
+    financeAnalyticsHint: "Distribuição por categoria, igreja e método de pagamento.",
     financeRecordsSection: "Registos de Contribuições",
-    financeRecordsHint: "Pesquisa, filtros e ac��es sobre cada contribui��o.",
-    cellAlecSection: "Forma��o ALEC",
-    cellAlecHint: "Inscri��es, progresso e certifica��o de l�deres.",
+    financeRecordsHint: "Pesquisa, filtros e acções sobre cada contribuição.",
+    cellAlecSection: "Formação ALEC",
+    cellAlecHint: "Inscrições, progresso e certificação de líderes.",
     cellNetworkSection: "Rede Celular",
     cellNetworkHint: "Grupos, células activas e indicadores da rede.",
     cellGrowthSection: "Crescimento e Desempenho",
@@ -486,7 +486,7 @@ const TEXT = {
     cellDataSection: "Dados Operacionais",
     cellDataHint: "Tabelas, relatórios e acções do módulo.",
     fevoOverviewSection: "Panorama F.E.V.O",
-    fevoOverviewHint: "M�tricas consolidadas de evangelismo, visita��o e ora��o.",
+    fevoOverviewHint: "Métricas consolidadas de evangelismo, visitação e oração.",
     fevoAnalyticsSection: "Análise por Equipa",
     fevoAnalyticsHint: "Actividades, contactos e grupos sem relatório.",
     fevoDataSection: "Registos da Semana",
@@ -497,11 +497,11 @@ const TEXT = {
     foundationSubtitle: "Inscrições pendentes, 7 aulas, notas, exame, prática e certificados.",
     financeSubtitle: "Envelope digital para dízimos, ofertas, parcerias e projectos.",
     churchesSubtitle: "Hierarquia de Sede Nacional, províncias, igrejas e igrejas virtuais.",
-    sacramentsSubtitle: "Baptismos, casamentos e dedica��o de beb�s.",
+    sacramentsSubtitle: "Baptismos, casamentos e dedicação de bebés.",
     reportsSubtitle: "Relatórios visuais com base nos dados actuais.",
     totalToday: "Total Hoje",
     totalThisMonth: "Total Este Mês",
-    pendingVerification: "Pendente de Verifica��o",
+    pendingVerification: "Pendente de Verificação",
     verified: "Verificado",
     byCategory: "Por Categoria",
     byChurch: "Por Igreja",
@@ -510,7 +510,7 @@ const TEXT = {
     enrolledStudents: "Alunos Inscritos",
     classesAttendance: "Aulas e Presenças",
     exams: "Exames",
-    graduation: "Gradua��o",
+    graduation: "Graduação",
     certificates: "Certificados",
     enrolStudent: "Inscrever Aluno",
     markClass: "Marcar Aula",
@@ -524,18 +524,18 @@ const TEXT = {
     verify: "Verificar",
     reject: "Rejeitar",
     addFinance: "Adicionar Finanças",
-    financeDetails: "Detalhes da Contribui��o",
-    verifyFinance: "Verificar Contribui��o",
-    rejectFinance: "Rejeitar Contribui��o",
+    financeDetails: "Detalhes da Contribuição",
+    verifyFinance: "Verificar Contribuição",
+    rejectFinance: "Rejeitar Contribuição",
     verifiedBy: "Verificado Por",
-    verificationComment: "Coment�rio de Verifica��o",
-    rejectionReason: "Motivo da Rejei��o",
-    verifiedAt: "Data de Verifica��o",
-    transactionReference: "Refer�ncia da Transac��o",
+    verificationComment: "Comentário de Verificação",
+    rejectionReason: "Motivo da Rejeição",
+    verifiedAt: "Data de Verificação",
+    transactionReference: "Referência da Transacção",
     envelopeImage: "Imagem do Envelope / POP",
     optional: "Opcional",
     createdAt: "Criado Em",
-    rejectionReasonRequired: "Indique o motivo da rejei��o.",
+    rejectionReasonRequired: "Indique o motivo da rejeição.",
     searchMemberContributor: "Pesquisar membro / contribuinte",
     searchMemberContributorPlaceholder: "Digite nome, apelido ou telefone...",
     linkedToProfile: "Ligado ao perfil existente",
@@ -545,7 +545,7 @@ const TEXT = {
     selectThisProfile: "Seleccionar este perfil",
     noSearchResults: "Nenhum resultado encontrado",
     contributorSection: "Contribuinte",
-    contributionSection: "Contribui��o",
+    contributionSection: "Contribuição",
     sourceMember: "Membro",
     sourceFirstTimer: "Primeira Vez",
     sourceContributor: "Contribuinte",
@@ -554,10 +554,10 @@ const TEXT = {
     sourcePublicWebsite: "Site Público",
     sourceDashboard: "Dashboard",
     sourceImported: "Importado",
-    financeTabOverview: "Vis�o Geral",
+    financeTabOverview: "Visão Geral",
     financeTabEntries: "Lançamentos",
     financeTabPublic: "Submissões Públicas",
-    financeTabVerification: "Verifica��o",
+    financeTabVerification: "Verificação",
     financeTabApprovedReq: "Requisições Aprovadas",
     financeTabReports: "Relatórios",
     financeTabPartners: "Parceiros em Destaque",
@@ -571,7 +571,7 @@ const TEXT = {
     financeTotalRejected: "Total Rejeitado",
     financeContributionCount: "Nº de Contribuições",
     financeUniqueContributors: "Contribuintes Únicos",
-    financeAverageContribution: "M�dia por Contribui��o",
+    financeAverageContribution: "Mídia por Contribuição",
     financeReportByCategory: "Relatório por Categoria",
     financeReportByPartnershipArm: "Relatório por Braço de Parceria",
     financeReportByIndividual: "Relatório por Indivíduo",
@@ -590,8 +590,8 @@ const TEXT = {
     financeExportCsv: "Exportar CSV",
     financeExportJson: "Exportar JSON",
     financeExportHint: "Exportar os dados filtrados do período seleccionado.",
-    financeVerificationQueue: "Fila de Verifica��o",
-    financeVerificationHint: "Contribui��es pendentes de verifica��o pela equipa de Finan�as.",
+    financeVerificationQueue: "Fila de Verificação",
+    financeVerificationHint: "Contribuições pendentes de verificação pela equipa de Finanças.",
     financePeriodToday: "Hoje",
     financePeriodWeek: "Esta Semana",
     financePeriodMonth: "Este Mês",
@@ -606,18 +606,18 @@ const TEXT = {
     financeAllStatuses: "Todos os Estados",
     financeAllSources: "Todas as Origens",
     financeContributorSearch: "Contribuinte / telefone",
-    financeContributionType: "Tipo de Contribui��o",
+    financeContributionType: "Tipo de Contribuição",
     financePartnershipArm: "Braço de Parceria",
     financeSelectContributor: "Seleccionar contribuinte",
     financeNoChartData: "Sem dados para o período seleccionado.",
     financeReportByChurch: "Relatório por Igreja",
-    financeMonthlyEvolution: "Evolu��o Mensal",
+    financeMonthlyEvolution: "Evolução Mensal",
     financeTopPartners: "Top Parceiros",
     financeChartLine: "Linha",
     financeTotalPeriod: "Total no Período",
     financeCategoriesContributed: "Categorias em que Contribuiu",
     financeContributionHistory: "Histórico de Contribuições",
-    financeLastContribution: "�ltima Contribui��o",
+    financeLastContribution: "Última Contribuição",
     financeFrequency: "Frequência",
     financeContributionState: "Estado das Contribuições",
     financeProof: "Comprovativo",
@@ -663,16 +663,16 @@ const TEXT = {
     financeAccessPastor: "Church Pastor",
     financeAccessAdmin: "National Admin",
     financeAccessViewer: "Viewer",
-    viewSubmission: "Ver Submiss�o",
+    viewSubmission: "Ver Submissão",
     viewProof: "Ver Comprovativo",
-    publicSubmission: "Submiss�o P�blica",
-    submissionGroup: "Grupo de Submiss�o",
+    publicSubmission: "Submissão Pública",
+    submissionGroup: "Grupo de Submissão",
     transferMessage: "Mensagem da Transferência",
     transferDate: "Data da Transferência",
     cellGroup: "Grupo de Célula",
     otherDescription: "Outras Doações",
     grandTotal: "Total Geral",
-    contributionLines: "Linhas de Contribui��o",
+    contributionLines: "Linhas de Contribuição",
     manual: "Manual",
     followupTimeline: "Histórico de Acompanhamento",
     contactDate: "Data do Contacto",
@@ -698,7 +698,7 @@ const TEXT = {
     Pastor: "Pastor",
     Leader: "Líder",
     "Cell growth": "Crescimento de Células",
-    Role: "Fun��o",
+    Role: "Função",
     Departments: "Departamentos",
     Age: "Idade",
     Local: "Local",
@@ -707,25 +707,25 @@ const TEXT = {
     Groom: "Noivo",
     Bride: "Noiva",
     Father: "Pai",
-    Mother: "M�e",
+    Mother: "Mãe",
     Passed: "Aprovado",
-    "Transaction reference": "Refer�ncia da Transac��o",
+    "Transaction reference": "Referência da Transacção",
     "Received by": "Recebido Por",
     "Verified by": "Verificado Por",
     "Envelope image": "Imagem do Envelope",
     "Souls won": "Almas Ganhas",
-    Split: "Divis�o",
+    Split: "Divisão",
     "church.operations": "Operações da Igreja",
-    Scope: "�mbito",
+    Scope: "Âmbito",
     Permissions: "Permissões",
     Actor: "Autor",
-    Action: "Ac��o",
+    Action: "Acção",
     "National HQ": "Sede Nacional",
     "Virtual Church": "Igreja Virtual",
     titleChurchOps: "Christ Embassy Operations",
     baptismTab: "Baptismos",
     marriageTab: "Casamentos",
-    babyTab: "Dedica��o de Beb�s",
+    babyTab: "Dedicação de Bebés",
     total: "Total",
     pending: "Pendente",
     contacted: "Contactado",
@@ -740,8 +740,8 @@ const TEXT = {
     inactive: "Inactivo",
     transferred: "Transferido",
     rejected: "Rejeitado",
-    viewMode: "Modo de visualiza��o",
-    moduleNavigation: "Navega��o do m�dulo",
+    viewMode: "Modo de visualização",
+    moduleNavigation: "Navegação do módulo",
     membersByChurch: "Por Igreja",
     wantFoundation: "Querem Escola de Fundação",
     visitScheduled: "Visita Marcada",
@@ -773,8 +773,8 @@ const TEXT = {
     approved: "Aprovado",
     graduated: "Graduado",
     studentData: "Dados do Aluno",
-    evaluation: "Avalia��o",
-    finalization: "Finaliza��o",
+    evaluation: "Avaliação",
+    finalization: "Finalização",
     examScore: "Nota do Exame",
     markClassTitle: "Marcar Aula",
     launchScoreTitle: "Lançar Nota",
@@ -1526,18 +1526,18 @@ Object.assign(TEXT.pt, {
   recentNotifications: "Recentes",
   markRead: "Marcar como lida",
   markAllRead: "Marcar todas como lidas",
-  unread: "N�o lidas",
+  unread: "Não lidas",
   urgentPlural: "Urgentes",
   actionRequiredPlural: "Acções necessárias",
   viewAll: "Ver todas",
   allNotifications: "Todas",
   read: "Lida",
-  unreadState: "N�o lida",
+  unreadState: "Não lida",
   notificationType: "Tipo",
   priority: "Prioridade",
   module: "Módulo",
-  actionRequired: "Ac��o necess�ria",
-  approvalRequired: "Aprova��o necess�ria",
+  actionRequired: "Acção necessária",
+  approvalRequired: "Aprovação necessária",
   reminder: "Lembrete",
   info: "Informativa",
   success: "Sucesso",
@@ -1546,20 +1546,20 @@ Object.assign(TEXT.pt, {
   low: "Baixa",
   normal: "Normal",
   high: "Alta",
-  notificationInboxSubtitle: "Notifica��es internas filtradas por utilizador, fun��o, departamento, igreja e permiss�es.",
-  newRequisitionSubmitted: "Nova requisi��o submetida",
-  requisitionPastoralApproval: "Requisi��o aguarda aprova��o pastoral",
-  requisitionApproved: "Requisi��o aprovada",
-  requisitionRejected: "Requisi��o rejeitada",
-  requisitionReturned: "Requisi��o devolvida para corre��o",
+  notificationInboxSubtitle: "Notificações internas filtradas por utilizador, função, departamento, igreja e permissões.",
+  newRequisitionSubmitted: "Nova requisição submetida",
+  requisitionPastoralApproval: "Requisição aguarda aprovação pastoral",
+  requisitionApproved: "Requisição aprovada",
+  requisitionRejected: "Requisição rejeitada",
+  requisitionReturned: "Requisição devolvida para correção",
   resourcesReleased: "Recursos liberados",
-  publicGivingSubmission: "Nova submiss�o p�blica de contribui��o",
-  verifySubmission: "Verificar Submiss�o",
+  publicGivingSubmission: "Nova submissão pública de contribuição",
+  verifySubmission: "Verificar Submissão",
   releaseResources: "Liberar Recursos",
   approveReject: "Aprovar ou Rejeitar",
-  reviewRequisition: "Rever Requisi��o",
-  correctRequisition: "Corrigir Requisi��o",
-  viewRelease: "Ver Libera��o",
+  reviewRequisition: "Rever Requisição",
+  correctRequisition: "Corrigir Requisição",
+  viewRelease: "Ver Liberação",
   viewDetails: "Ver Detalhes"
 });
 
@@ -1606,14 +1606,14 @@ Object.assign(TEXT.en, {
 });
 
 Object.assign(TEXT.pt, {
-  mediaSubtitle: "Gest�o da equipa t�cnica, transmiss�es, escalas por culto, canais, avalia��es e premia��es.",
-  mediaOverview: "Vis�o Geral",
+  mediaSubtitle: "Gestáo da equipa técnica, transmissões, escalas por culto, canais, avaliações e premiações.",
+  mediaOverview: "Visão Geral",
   mediaTechnicalTeam: "Equipa Técnica",
   mediaRolesFunctions: "Papéis & Funções",
   mediaSchedules: "Escalas",
   mediaServicesPrograms: "Cultos & Programas",
-  mediaStreamingChannels: "Canais de Transmiss�o",
-  mediaPerformanceEvaluation: "Avalia��o de Performance",
+  mediaStreamingChannels: "Canais de Transmissão",
+  mediaPerformanceEvaluation: "Avaliação de Performance",
   mediaReports: "Relatórios",
   mediaAwards: "Premiações",
   mediaTotalTechnicians: "Total de Técnicos",
@@ -1629,12 +1629,12 @@ Object.assign(TEXT.pt, {
   mediaNominate: "Nomear",
   mediaAssignAward: "Atribuir Prémio",
   mediaExportCertificate: "Exportar Certificado",
-  mediaInventoryPlaceholder: "Equipamentos de m�dia ser�o ligados ao m�dulo Espa�os & Invent�rio.",
-  cameraOperator: "Operador de C�mara",
+  mediaInventoryPlaceholder: "Equipamentos de mídia serão ligados ao módulo Espaços & Inventário.",
+  cameraOperator: "Operador de Câmara",
   photographer: "Fotógrafo",
   soundTechnician: "Técnico de Som",
   videoMixerOperator: "Operador de Video Mixer",
-  streamingTechnician: "T�cnico de Transmiss�o",
+  streamingTechnician: "Técnico de Transmissão",
   scriptureOperator: "Lançador de Escrituras",
   mediaSupervisor: "Supervisor de Mídia",
   mediaDirector: "Director de Mídia",
@@ -1646,11 +1646,11 @@ Object.assign(TEXT.pt, {
   specialProgram: "Programa Especial",
   technicianScheduled: "Técnico escalado",
   schedulePublished: "Escala publicada",
-  pendingEvaluation: "Avalia��o pendente",
+  pendingEvaluation: "Avaliação pendente",
   technicianOfYear: "Técnico do Ano",
   mostPunctual: "Mais Pontual",
   bestTeamSpirit: "Melhor Espírito de Equipa",
-  breakthroughOfYear: "Revela��o do Ano",
+  breakthroughOfYear: "Revelação do Ano",
   mostImproved: "Mais Melhorado",
   selectCellGroup: "Seleccione o grupo de célula",
   selectCell: "Seleccione a célula",
@@ -1658,7 +1658,7 @@ Object.assign(TEXT.pt, {
   viewCells: "Ver Células",
   expandAll: "Expandir Tudo",
   collapseAll: "Recolher Tudo",
-  needsReview: "Precisa de Revis�o",
+  needsReview: "Precisa de Revisão",
   totalCells: "Total de Células",
   period: "Período",
   thisWeek: "Esta Semana",
@@ -1670,7 +1670,7 @@ Object.assign(TEXT.pt, {
   custom: "Personalizado",
   now: "Agora",
   currentReport: "Relatório Actual",
-  dashboardRoleScope: "Vis�o personalizada",
+  dashboardRoleScope: "Visão personalizada",
   nationalScope: "Escopo nacional",
   activeEnrolments: "Inscrições activas",
   completedGraduations: "Graduações concluídas",
@@ -1678,7 +1678,7 @@ Object.assign(TEXT.pt, {
   approvedRequisitions: "Requisições Aprovadas",
   publicSubmissions: "Submissões públicas",
   hrPendingHero: "Aniversários e avaliações pendentes",
-  reqForReview: "Requisi��es para revis�o",
+  reqForReview: "Requisições para revisão",
   myPendingNotifications: "Minhas notificações pendentes",
   submittedRequisitions: "Requisições Submetidas",
   departmentRequisitions: "Requisições do Departamento",
@@ -1882,7 +1882,7 @@ const STATUS_KEYS = {
   "In Progress": "inProgress",
   "Em Curso": "inProgress",
   "Pending Verification": "pendingVerification",
-  "Pendente de Verifica��o": "pendingVerification",
+  "Pendente de Verificação": "pendingVerification",
   Verified: "verified",
   Verificado: "verified",
   Rejected: "rejected",
@@ -1900,7 +1900,7 @@ const STATUS_KEYS = {
   "Relatório Submetido": "reportSubmitted",
   "Inscrito": "enrolled",
   "Exame": "exam",
-  "Em Prepara��o": "inPreparation",
+  "Em Preparação": "inPreparation",
   "Confirmado": "confirmed",
   "Concluído": "completed",
   "Disponível": "available",
@@ -1914,28 +1914,28 @@ const STATUS_KEYS = {
 };
 
 Object.assign(STATUS_KEYS, {
-  "Em Forma��o": "inTraining",
+  "Em Formação": "inTraining",
   "Terminou": "completed",
   "Pendente de Pagamento": "pendingVerification",
   "Rascunho": "draft",
   "Submetido": "submitted",
-  "Em Avalia��o": "underEvaluation",
+  "Em Avaliação": "underEvaluation",
   "Aprovado": "approved",
   "Validado": "validated",
-  "Devolver para Corre��o": "returned",
+  "Devolver para Correção": "returned",
   "Devolvido": "returned",
   "Crítico": "critical",
-  "Precisa de Aten��o": "needsAttention",
-  "Encaminhado para Valida��o": "forwardValidation",
+  "Precisa de Atenção": "needsAttention",
+  "Encaminhado para Validação": "forwardValidation",
   "Excelente": "excellent",
   "Bom": "good",
   "Fechado": "closed",
-  "Em Revis�o": "review",
+  "Em Revisão": "review",
   "Resolvido": "resolved",
   "Reincidente": "recurrent",
   "Em Crescimento": "growing",
   "Inactivo": "inactive",
-  "Em Revis�o": "review",
+  "Em Revisão": "review",
   "Por Confirmar": "toConfirm",
   "Incompleto": "incomplete",
   "Pending Enrolment": "enrolled",
@@ -1945,8 +1945,8 @@ Object.assign(STATUS_KEYS, {
   "Graduated": "graduated",
   "Pronto para Exame": "readyForExam",
   "Enviado ao Pastor Principal": "sentToPastor",
-  "Devolvido para Corre��o": "returnedForCorrection",
-  "Aprovado � Aguardando Libera��o de Recursos": "approvedAwaitingRelease",
+  "Devolvido para Correção": "returnedForCorrection",
+  "Aprovado — Aguardando Liberação de Recursos": "approvedAwaitingRelease",
   "Recursos Liberados": "resourcesReleased",
   "Comprado / Executado": "purchasedExecuted",
   "Registado no Inventário": "registeredInventory",
@@ -1955,8 +1955,8 @@ Object.assign(STATUS_KEYS, {
   Aprovado: "approved"
 });
 
-const CHURCH_TYPES = ["Sede Nacional", "Igreja Local", "Igreja Online", "Igreja Virtual", "Grupo / Miss�o"];
-const CHURCH_STATUSES = ["Activa", "Inactiva", "Em Prepara��o"];
+const CHURCH_TYPES = ["Sede Nacional", "Igreja Local", "Igreja Online", "Igreja Virtual", "Grupo / Missão"];
+const CHURCH_STATUSES = ["Activa", "Inactiva", "Em Preparação"];
 const CHURCH_INFO_STATUSES = ["Confirmado", "Por Confirmar", "Incompleto"];
 const CHURCH_VIEW_KEY = "ce-dashboard-church-view";
 const ONLINE_CHURCH_TYPES = new Set(["Igreja Online", "Igreja Virtual"]);
@@ -1966,7 +1966,7 @@ const CHURCH_TYPE_LABELS = {
   "Igreja Local": "churchTypeLocal",
   "Igreja Online": "churchTypeOnline",
   "Igreja Virtual": "churchTypeVirtual",
-  "Grupo / Miss�o": "churchTypeMission"
+  "Grupo / Missão": "churchTypeMission"
 };
 
 const DAYS_OF_WEEK = ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
@@ -2044,7 +2044,7 @@ function normalizeServiceTimeRecord(record, churchId, index) {
     service_name: record.service_name || "",
     time: /^\d{2}:\d{2}$/.test(record.time || "") ? record.time : "09:00",
     service_type: SERVICE_TYPES.includes(record.service_type) ? record.service_type : "Presencial",
-    is_active: !(isActive === false || isActive === "N�o" || isActive === "No"),
+    is_active: !(isActive === false || isActive === "Não" || isActive === "No"),
     notes: record.notes || ""
   };
 }
@@ -2128,40 +2128,40 @@ Object.assign(TEXT.pt, {
   readyToMultiply: "Pronta para Multiplicar",
   reportAlreadySubmittedWeek: "Já existe um relatório submetido para esta célula nesta semana",
   cellLeadership: "Células & Liderança",
-  cellOverview: "Vis�o Geral",
+  cellOverview: "Visão Geral",
   cellCells: "Células",
   cellLeaders: "Líderes",
   cellReports: "Relatórios de Células",
   alec: "ALEC",
   prisonMinistry: "Ministério Prisional",
   ministryMaterials: "Materiais do Ministério",
-  prisonMinistrySubtitle: "Servi�os prisionais, acompanhamento de internos e Escola de Funda��o dentro dos locais de miss�o.",
-  materialsSubtitle: "Cat�logo, vendas, distribui��o, stock semanal e fundos para distribui��o gratuita.",
+  prisonMinistrySubtitle: "Serviços prisionais, acompanhamento de internos e Escola de Fundação dentro dos locais de missão.",
+  materialsSubtitle: "Catálogo, vendas, distribuição, stock semanal e fundos para distribuição gratuita.",
   activePrisons: "Prisões Activas",
   activeStudents: "Alunos Activos",
   servicesThisWeek: "Serviços Esta Semana",
   inmatesReached: "Internos Alcançados",
   prisonNewConverts: "Novos Convertidos",
-  prisonFoundationStudents: "Alunos em Escola de Funda��o",
+  prisonFoundationStudents: "Alunos em Escola de Fundação",
   pendingReports: "Relatórios Pendentes",
   prisonsLocations: "Prisões / Locais",
   prisonServices: "Serviços Prisionais",
   weeklyAgenda: "Agenda Semanal",
   ministryReports: "Relatórios",
-  prisonName: "Nome da Pris�o",
+  prisonName: "Nome da Prisão",
   province: "Província",
   city: "Cidade",
   responsibleChurch: "Igreja Responsável",
-  prisonRepresentative: "Representante da Pris�o",
+  prisonRepresentative: "Representante da Prisão",
   representativeContact: "Contacto do Representante",
   observations: "Observações",
   weekday: "Dia da Semana",
-  prison: "Pris�o",
+  prison: "Prisão",
   responsibleLeader: "Líder Responsável",
   membersWent: "Membros que Foram",
   inmatesPresent: "Internos Presentes",
-  interestedFoundation: "Interessados na Escola de Funda��o",
-  foundationClassGiven: "Aula de Funda��o Dada",
+  interestedFoundation: "Interessados na Escola de Fundação",
+  foundationClassGiven: "Aula de Fundação Dada",
   topicMessage: "Tema ou Mensagem",
   participantName: "Nome do Participante",
   evangelismPractice: "Prática de Evangelismo",
@@ -2170,7 +2170,7 @@ Object.assign(TEXT.pt, {
   weekStart: "Início da Semana",
   weekEnd: "Fim da Semana",
   mondayAgenda: "Segunda: Preparar Relatórios e Agenda",
-  tuesdayPrayer: "Ter�a: Reuni�o de Ora��o",
+  tuesdayPrayer: "Terça: Reunião de Oração",
   wednesdayFollowup: "Quarta: Acompanhamento com Representante",
   thursdayService: "Quinta: Serviço Prisional",
   fridayService: "Sexta: Serviço Prisional",
@@ -2184,9 +2184,9 @@ Object.assign(TEXT.pt, {
   fundsRaised: "Fundos Levantados",
   catalogue: "Catálogo",
   sales: "Vendas",
-  churchDistribution: "Distribui��o para Igrejas",
+  churchDistribution: "Distribuição para Igrejas",
   weeklyStock: "Stock Semanal",
-  freeDistributionFunds: "Fundos para Distribui��o Gratuita",
+  freeDistributionFunds: "Fundos para Distribuição Gratuita",
   materialTitle: "Título do Material",
   materialType: "Tipo",
   authorOrigin: "Autor / Origem",
@@ -2205,7 +2205,7 @@ Object.assign(TEXT.pt, {
   noProof: "Sem POP",
   receivedBy: "Recebido Por",
   destinationChurch: "Igreja Destinatária",
-  distributionType: "Tipo de Distribui��o",
+  distributionType: "Tipo de Distribuição",
   sentBy: "Responsável pelo Envio",
   openingStock: "Stock Inicial",
   entries: "Entradas",
@@ -2224,7 +2224,7 @@ Object.assign(TEXT.pt, {
   planned: "Planeado",
   reportSubmitted: "Relatório Submetido",
   enrolled: "Inscrito",
-  inPreparation: "Em Prepara��o",
+  inPreparation: "Em Preparação",
   confirmed: "Confirmado",
   available: "Disponível",
   outOfStock: "Esgotado",
@@ -2256,12 +2256,12 @@ Object.assign(TEXT.pt, {
   alecScores: "Pauta ALEC",
   churchReports: "Relatórios de Igreja",
   cellReports: "Relatórios de Células",
-  cellEvaluation: "Avalia��o",
-  finalValidation: "Valida��o Final",
+  cellEvaluation: "Avaliação",
+  finalValidation: "Validação Final",
   totalAlecRegistered: "Total Inscritos ALEC",
-  alreadyLeaders: "J� s�o L�deres",
-  didFoundationSchool: "Fizeram Escola de Funda��o",
-  inTraining: "Em Forma��o",
+  alreadyLeaders: "Já são Líderes",
+  didFoundationSchool: "Fizeram Escola de Fundação",
+  inTraining: "Em Formação",
   alecCompleted: "ALEC Concluídos",
   submittedReports: "Relatórios Submetidos",
   pendingReportsShort: "Relatórios Pendentes",
@@ -2269,8 +2269,8 @@ Object.assign(TEXT.pt, {
   totalFirstTime: "Primeira Vez Total",
   totalNewConverts: "Novos Convertidos",
   totalOffering: "Oferta Total",
-  explosionCells: "C�lulas em Explos�o",
-  attentionCells: "C�lulas que Precisam de Aten��o",
+  explosionCells: "Células em Explosão",
+  attentionCells: "Células que Precisam de Atenção",
   attendanceByWeek: "Assistência por Semana",
   firstTimersByCell: "Primeira Vez por Célula",
   newConvertsByCell: "Novos Convertidos por Célula",
@@ -2281,7 +2281,7 @@ Object.assign(TEXT.pt, {
   fullName: "Nome Completo",
   contact: "Contacto",
   cellLeaderName: "Nome do Líder de Célula",
-  didFoundation: "Fez Escola de Funda��o",
+  didFoundation: "Fez Escola de Fundação",
   isLeader: "É Líder",
   alecReason: "Motivo de Fazer ALEC",
   phase1: "Fase 1",
@@ -2310,25 +2310,25 @@ Object.assign(TEXT.pt, {
   alecFinished: "ALEC Concluído",
   supervisor: "Supervisor",
   evaluator: "Avaliador",
-  evaluationDate: "Data da Avalia��o",
-  classification: "Classifica��o",
+  evaluationDate: "Data da Avaliação",
+  classification: "Classificação",
   strengths: "Pontos Fortes",
   improvements: "Pontos a Melhorar",
-  recommendedAction: "Ac��o Recomendada",
+  recommendedAction: "Acção Recomendada",
   needsFollowup: "Precisa de Acompanhamento",
-  decision: "Decis�o",
+  decision: "Decisão",
   finalComment: "Comentário Final",
   finalStatus: "Estado Final",
   excellent: "Excelente",
   good: "Bom",
-  needsAttention: "Precisa de Aten��o",
+  needsAttention: "Precisa de Atenção",
   critical: "Crítico",
   draft: "Rascunho",
   submitted: "Submetido",
-  underEvaluation: "Em Avalia��o",
+  underEvaluation: "Em Avaliação",
   validated: "Validado",
   returned: "Devolvido",
-  forwardValidation: "Encaminhado para Valida��o",
+  forwardValidation: "Encaminhado para Validação",
   noReport: "Sem relatório",
   readyToSplit: "Pronta para dividir",
   leaderSupport: "Líder precisa de apoio"
@@ -2350,12 +2350,12 @@ Object.assign(TEXT.pt, {
   sendToFinance: "Enviar para Finanças",
   requestCorrection: "Pedir Correção",
   fevo: "F.E.V.O",
-  fevoFull: "Acompanhamento, Evangelizao, Visitao e Orao",
+  fevoFull: "Acompanhamento, Evangelização, Visitação e Oração",
   fevoSubtitle: "Equipas semanais rotativas para acompanhamento, evangelização, visitação e oração.",
-  weeklyConfiguration: "Configurao Semanal",
-  evangelism: "Evangelizao",
-  visitation: "Visitao",
-  prayer: "Orao",
+  weeklyConfiguration: "Configuração Semanal",
+  evangelism: "Evangelização",
+  visitation: "Visitação",
+  prayer: "Oração",
   groupsWithoutReport: "Grupos sem Relatório",
   weeklyReports: "Relatórios Semanais",
   analysis: "Análise",
@@ -2381,20 +2381,20 @@ Object.assign(TEXT.pt, {
   soulsContacted: "Almas Contactadas",
   feedbackCount: "Quantidade de Feedback",
   followupResult: "Resultado do Acompanhamento",
-  nextAction: "Pr�xima Ac��o",
+  nextAction: "Próxima Acção",
   soulsEvangelized: "Almas Evangelizadas",
   materialsDistributed: "Materiais Distribuídos",
-  evangelismLocation: "Local de Evangeliza��o",
+  evangelismLocation: "Local de Evangelização",
   soulsVisited: "Almas Visitadas",
   familyMembersReached: "Familiares Alcançados",
-  visitLocation: "Local da Visita��o",
-  visitResult: "Resultado da Visita��o",
+  visitLocation: "Local da Visitação",
+  visitResult: "Resultado da Visitação",
   averageMembersPresent: "Média de Membros Presentes",
-  daysOfPrayer: "Dias de Ora��o",
-  prayerFocus: "Foco de Ora��o",
-  prayerTestimonies: "Testemunhos de Ora��o",
-  reasonNotSubmitted: "Motivo de N�o Submiss�o",
-  followupAction: "Ac��o de Acompanhamento",
+  daysOfPrayer: "Dias de Oração",
+  prayerFocus: "Foco de Oração",
+  prayerTestimonies: "Testemunhos de Oração",
+  reasonNotSubmitted: "Motivo de Não Submissão",
+  followupAction: "Acção de Acompanhamento",
   contactedBy: "Contactado Por",
   totalGroups: "Total de Grupos",
   totalCells: "Total de Células",
@@ -2405,38 +2405,38 @@ Object.assign(TEXT.pt, {
   activitiesByWeek: "Actividades por Semana",
   contactedByGroup: "Almas Contactadas por Grupo",
   evangelizedByGroup: "Almas Evangelizadas por Grupo",
-  visitedByGroup: "Visita��o por Grupo",
-  prayerDaysByTeam: "Dias de Ora��o por Equipa",
+  visitedByGroup: "Visitação por Grupo",
+  prayerDaysByTeam: "Dias de Oração por Equipa",
   noReportByWeek: "Grupos sem Relatório por Semana",
   firstTimersByWeek: "Primeira Vez por Semana",
   exportPdf: "Exportar PDF",
   exportExcel: "Exportar Excel",
   submit: "Submeter",
   approve: "Aprovar",
-  review: "Em Revis�o",
+  review: "Em Revisão",
   recurrent: "Reincidente",
   sidebarCollapse: "Recolher menu",
   sidebarExpand: "Expandir menu",
-  navGroupToggle: "Alternar sec��o",
+  navGroupToggle: "Alternar secção",
   moduleNavToggle: "Alternar menu do módulo",
   backToTop: "Voltar ao topo",
   cellAlecArea: "ALEC",
   cellMinistryArea: "Ministério de Células",
   cellReportsArea: "Relatórios de Células",
-  cellAlecOverview: "Vis�o Geral ALEC",
-  cellMinistryOverview: "Vis�o Geral",
+  cellAlecOverview: "Visão Geral ALEC",
+  cellMinistryOverview: "Visão Geral",
   receivedReports: "Submissões Semanais",
   cellPerformance: "Desempenho das Células",
-  leadersAttention: "L�deres em Aten��o",
-  actionPlan: "Plano de Ac��o",
+  leadersAttention: "Líderes em Atenção",
+  actionPlan: "Plano de Acção",
   weeklyCellReport: "Submissões Semanais",
   cellGroups: "Grupos de Células",
   cellCellsList: "Células",
-  consolidation: "Consolida��o",
+  consolidation: "Consolidação",
   totalGroupCells: "Total de Grupos de Células",
   viewCells: "Ver Células",
   updateCellReport: "Actualizar Relatório",
-  needsReview: "Revis�o Pendente",
+  needsReview: "Revisão Pendente",
   cellOffering: "Oferta da Célula",
   cellStatus: "Estado da Célula",
   cellLeader: "Líder de Célula",
@@ -2450,7 +2450,7 @@ Object.assign(TEXT.pt, {
   growing: "Em Crescimento",
   inactive: "Inactivo",
   cellName: "Nome da Célula",
-  observation: "Observa��o",
+  observation: "Observação",
   reportWeek: "Semana do Relatório",
   responsibleArea: "Área Responsável",
   clearFilter: "Limpar filtro",
@@ -2476,8 +2476,8 @@ Object.assign(TEXT.pt, {
   phonePrimary: "Telefone Principal",
   phoneSecondary: "Telefone Secundário",
   serviceTimes: "Horários de Culto",
-  parentChurch: "Igreja M�e",
-  informationStatus: "Estado da Informa��o",
+  parentChurch: "Igreja Mãe",
+  informationStatus: "Estado da Informação",
   socialNetworks: "Redes Sociais",
   cardsView: "Cartões",
   tableView: "Tabela",
@@ -2485,14 +2485,14 @@ Object.assign(TEXT.pt, {
   churchTypeLocal: "Igreja Local",
   churchTypeOnline: "Igreja Online",
   churchTypeVirtual: "Igreja Virtual",
-  churchTypeMission: "Grupo / Miss�o",
+  churchTypeMission: "Grupo / Missão",
   toConfirm: "Por Confirmar",
   incomplete: "Incompleto",
-  inPreparation: "Em Prepara��o",
+  inPreparation: "Em Preparação",
   filterProvince: "Filtrar por Província",
   filterCity: "Filtrar por Cidade",
   filterType: "Filtrar por Tipo",
-  filterInfoStatus: "Filtrar por Estado da Informa��o",
+  filterInfoStatus: "Filtrar por Estado da Informação",
   churchDetails: "Detalhes da Igreja",
   addChurch: "Adicionar Igreja",
   editChurch: "Editar Igreja",
@@ -2530,20 +2530,20 @@ Object.assign(TEXT.pt, {
   reportNeedsReview: "Precisa Revisão",
   sendToFinance: "Enviar para Finanças",
   requestCorrection: "Pedir Correção",
-  venueInventory: "Gest�o de Espa�os & Invent�rio",
+  venueInventory: "Gestáo de Espaços & Inventário",
   venueInventoryShort: "Espaços & Inventário",
-  venueInventorySubtitle: "Invent�rio, equipamentos do staff, manuten��o, movimenta��es, espa�os e checklists de culto sob responsabilidade de Marcelo Panguene.",
+  venueInventorySubtitle: "Inventário, equipamentos do staff, manutenção, movimentações, espaços e checklists de culto sob responsabilidade de Marcelo Panguene.",
   generalInventory: "Inventário Geral",
   newAcquisitions: "Novas Aquisições",
   staffEquipment: "Equipamentos do Staff",
-  maintenanceRepairs: "Manuten��o & Repara��es",
+  maintenanceRepairs: "Manutenção & Reparações",
   loansMovements: "Empréstimos / Movimentações",
   venuesRooms: "Espaços & Salas",
   serviceChecklist: "Checklist de Culto",
   totalItems: "Total de Itens",
   goodEquipment: "Equipamentos Bons",
   damagedEquipment: "Equipamentos Danificados",
-  inRepair: "Em Repara��o",
+  inRepair: "Em Reparação",
   assignedStaffEquipment: "Equipamentos Atribuídos ao Staff",
   acquisitions2026: "Novas Aquisições 2026",
   pendingMovements: "Movimentações Pendentes",
@@ -2556,14 +2556,14 @@ Object.assign(TEXT.pt, {
   acquisitionsByMonth: "Valor de Aquisições por Mês",
   itemName: "Nome do Item",
   quantity: "Quantidade",
-  location: "Localiza��o",
+  location: "Localização",
   responsibleDepartment: "Departamento Responsável",
   entryDate: "Data de Entrada",
   unitValue: "Valor Unitário",
   totalValue: "Valor Total",
   serialNumber: "Número de Série",
   itemCode: "Código do Item",
-  description: "Descri��o",
+  description: "Descrição",
   purchaseEntryDate: "Data de Compra ou Entrada",
   supplier: "Fornecedor",
   invoiceProof: "Comprovativo ou Factura",
@@ -2578,12 +2578,12 @@ Object.assign(TEXT.pt, {
   currentCondition: "Estado Actual",
   deliveredBy: "Responsável pela Entrega",
   signatureConfirmed: "Assinatura Confirmada",
-  returnDate: "Data de Devolu��o",
+  returnDate: "Data de Devolução",
   item: "Item",
   reportedProblem: "Problema Reportado",
   conditionBefore: "Estado Antes",
   conditionAfter: "Estado Depois",
-  repairCost: "Custo da Repara��o",
+  repairCost: "Custo da Reparação",
   technicianResponsible: "Técnico ou Responsável",
   sentDate: "Data de Envio",
   returnedDate: "Data de Retorno",
@@ -2609,7 +2609,7 @@ Object.assign(TEXT.pt, {
   projectorChecked: "Projector Verificado",
   chairsOrganized: "Cadeiras Organizadas",
   pulpitReady: "Púlpito Pronto",
-  camerasReady: "C�maras Prontas",
+  camerasReady: "Câmaras Prontas",
   microphonesReady: "Microfones Prontos",
   cleaningDone: "Limpeza Feita",
   inventoryByCategory: "Inventário por Categoria",
@@ -3322,7 +3322,7 @@ function sidebarIcon(icon, route = "") {
 
 const followupStatuses = ["Pending", "Contacted", "No Answer", "Interested", "Sent to Cell", "Enrolled in Foundation School", "Became Member", "Closed"];
 const memberStatuses = ["Active", "Inactive", "In Progress", "Transferred"];
-const FINANCE_STATUS_PENDING = "Pendente de Verifica��o";
+const FINANCE_STATUS_PENDING = "Pendente de Verificação";
 const FINANCE_STATUS_VERIFIED = "Verificado";
 const FINANCE_STATUS_REJECTED = "Rejeitado";
 const FINANCE_STATUS_INCLUDED = "Incluído no Relatório";
@@ -3338,10 +3338,10 @@ const FOUNDATION_STATUS_MAP = {
   "Certificate Issued": "Certificado Emitido"
 };
 const givingCategories = [
-  "D�zimo", "Ofertas", "Ac��o de Gra�as", "Prim�cias", "Semente de F�", "Ofertas Especiais", "Outros",
-  "Escola de Cura", "Raps�dia de Realidades", "Loveworld SAT", "Construtores de Vis�o",
+  "Dízimo", "Ofertas", "Acção de Graças", "Primícias", "Semente de Fé", "Ofertas Especiais", "Outros",
+  "Escola de Cura", "Rapsódia de Realidades", "Loveworld SAT", "Construtores de Visão",
   "Missões de Cidades do Interior", "Alcançar Moçambique", "Projecto da Igreja",
-  "Projecto de Constru��o de Igreja", "Raps�dias das Crian�as", "Mandato de C�lula", "Outros Bra�os"
+  "Projecto de Construção de Igreja", "Rapsódias das Crianças", "Mandato de Célula", "Outros Braços"
 ];
 const paymentMethods = ["Dinheiro", "Cheque", "M-Pesa", "E-Mola", "Banco"];
 const serviceOptions = ["Domingo 1º Culto", "Domingo 2º Culto", "Domingo Culto Único", "Quarta-Feira", "Sexta-Feira", "Programa Especial"];
@@ -3499,21 +3499,21 @@ const seedData = {
     { id: "dept-alec", church_id: "church-hq", name: "ALEC", lead_name: "Sister Angélica" }
   ],
   notifications: [
-    { id: "not-1", title: "Nova requisi��o submetida", message: "Uma nova requisi��o foi submetida e aguarda revis�o.", type: "action_required", module: "requisitions", entity_type: "requisition", entity_id: "req-1", priority: "high", recipient_user_id: "", recipient_role: "Requisition Officer", recipient_department_id: "", recipient_church_id: "church-hq", scope: "role", action_url: "requisitions", action_label: "Rever Requisi��o", is_read: false, read_at: "", created_at: "2026-07-14T08:20:00.000Z", expires_at: "", metadata: { request_number: "REQ-2026-0001" } },
-    { id: "not-2", title: "Requisi��o aguarda aprova��o pastoral", message: "A requisi��o REQ-2026-0005 foi revista e enviada para sua aprova��o.", type: "approval_required", module: "requisitions", entity_type: "requisition", entity_id: "req-5", priority: "urgent", recipient_user_id: "", recipient_role: "Main Pastor", recipient_department_id: "", recipient_church_id: "church-hq", scope: "role", action_url: "requisitions", action_label: "Aprovar ou Rejeitar", is_read: false, read_at: "", created_at: "2026-07-14T08:30:00.000Z", expires_at: "", metadata: { request_number: "REQ-2026-0005" } },
-    { id: "not-3", title: "Requisi��o aprovada aguardando libera��o", message: "A requisi��o REQ-2026-0008 foi aprovada e aguarda libera��o de recursos.", type: "action_required", module: "finance", entity_type: "requisition", entity_id: "req-8", priority: "high", recipient_user_id: "", recipient_role: "Finance Head", recipient_department_id: "dept-finance", recipient_church_id: "church-hq", scope: "role", action_url: "finance", action_label: "Liberar Recursos", is_read: false, read_at: "", created_at: "2026-07-14T08:40:00.000Z", expires_at: "", metadata: { request_number: "REQ-2026-0008" } },
-    { id: "not-4", title: "Requisi��o aprovada", message: "A sua requisi��o foi aprovada e enviada para Finan�as.", type: "success", module: "requisitions", entity_type: "requisition", entity_id: "req-8", priority: "normal", recipient_user_id: "u-12", recipient_role: "", recipient_department_id: "", recipient_church_id: "church-hq", scope: "user", action_url: "requisitions", action_label: "Ver Detalhes", is_read: false, read_at: "", created_at: "2026-07-14T08:41:00.000Z", expires_at: "", metadata: { request_number: "REQ-2026-0008" } },
-    { id: "not-5", title: "Nova submiss�o p�blica de contribui��o", message: "Foi recebido um novo relat�rio de oferta/d�zimo/parceria aguardando verifica��o.", type: "action_required", module: "finance", entity_type: "finance_record", entity_id: "fin-2", priority: "high", recipient_user_id: "", recipient_role: "Finance Officer", recipient_department_id: "dept-finance", recipient_church_id: "church-hq", scope: "role", action_url: "finance", action_label: "Verificar Submiss�o", is_read: false, read_at: "", created_at: "2026-07-14T09:00:00.000Z", expires_at: "", metadata: {} },
+    { id: "not-1", title: "Nova requisição submetida", message: "Uma nova requisição foi submetida e aguarda revisão.", type: "action_required", module: "requisitions", entity_type: "requisition", entity_id: "req-1", priority: "high", recipient_user_id: "", recipient_role: "Requisition Officer", recipient_department_id: "", recipient_church_id: "church-hq", scope: "role", action_url: "requisitions", action_label: "Rever Requisição", is_read: false, read_at: "", created_at: "2026-07-14T08:20:00.000Z", expires_at: "", metadata: { request_number: "REQ-2026-0001" } },
+    { id: "not-2", title: "Requisição aguarda aprovação pastoral", message: "A requisição REQ-2026-0005 foi revista e enviada para sua aprovação.", type: "approval_required", module: "requisitions", entity_type: "requisition", entity_id: "req-5", priority: "urgent", recipient_user_id: "", recipient_role: "Main Pastor", recipient_department_id: "", recipient_church_id: "church-hq", scope: "role", action_url: "requisitions", action_label: "Aprovar ou Rejeitar", is_read: false, read_at: "", created_at: "2026-07-14T08:30:00.000Z", expires_at: "", metadata: { request_number: "REQ-2026-0005" } },
+    { id: "not-3", title: "Requisição aprovada aguardando liberação", message: "A requisição REQ-2026-0008 foi aprovada e aguarda liberação de recursos.", type: "action_required", module: "finance", entity_type: "requisition", entity_id: "req-8", priority: "high", recipient_user_id: "", recipient_role: "Finance Head", recipient_department_id: "dept-finance", recipient_church_id: "church-hq", scope: "role", action_url: "finance", action_label: "Liberar Recursos", is_read: false, read_at: "", created_at: "2026-07-14T08:40:00.000Z", expires_at: "", metadata: { request_number: "REQ-2026-0008" } },
+    { id: "not-4", title: "Requisição aprovada", message: "A sua requisição foi aprovada e enviada para Finanças.", type: "success", module: "requisitions", entity_type: "requisition", entity_id: "req-8", priority: "normal", recipient_user_id: "u-12", recipient_role: "", recipient_department_id: "", recipient_church_id: "church-hq", scope: "user", action_url: "requisitions", action_label: "Ver Detalhes", is_read: false, read_at: "", created_at: "2026-07-14T08:41:00.000Z", expires_at: "", metadata: { request_number: "REQ-2026-0008" } },
+    { id: "not-5", title: "Nova submissão pública de contribuição", message: "Foi recebido um novo relatório de oferta/dízimo/parceria aguardando verificação.", type: "action_required", module: "finance", entity_type: "finance_record", entity_id: "fin-2", priority: "high", recipient_user_id: "", recipient_role: "Finance Officer", recipient_department_id: "dept-finance", recipient_church_id: "church-hq", scope: "role", action_url: "finance", action_label: "Verificar Submissão", is_read: false, read_at: "", created_at: "2026-07-14T09:00:00.000Z", expires_at: "", metadata: {} },
     { id: "not-6", title: "Grupo sem relatório", message: "Grupo Choupal está sem relatório F.E.V.O e precisa de acompanhamento.", type: "warning", module: "fevo", entity_type: "fevo_report", entity_id: "fevo-nr-2", priority: "high", recipient_user_id: "", recipient_role: "F.E.V.O Coordinator", recipient_department_id: "", recipient_church_id: "church-hq", scope: "role", action_url: "fevoNoReportsRoute", action_label: "Ver Pendentes", is_read: false, read_at: "", created_at: "2026-07-14T09:10:00.000Z", expires_at: "", metadata: {} },
-    { id: "not-7", title: "Relat�rio pendente de valida��o", message: "H� relat�rio de c�lula encaminhado para valida��o final.", type: "action_required", module: "cell_ministry", entity_type: "fevo_report", entity_id: "eval-1", priority: "high", recipient_user_id: "", recipient_role: "Final Coordinator", recipient_department_id: "dept-cell", recipient_church_id: "church-hq", scope: "role", action_url: "cellFinalValidation", action_label: "Ver Valida��o", is_read: false, read_at: "", created_at: "2026-07-14T09:20:00.000Z", expires_at: "", metadata: {} },
-    { id: "not-8", title: "Equipamento danificado reportado", message: "Microphone FM Wireless est� marcado como em repara��o.", type: "warning", module: "inventory", entity_type: "inventory_item", entity_id: "inv-3", priority: "normal", recipient_user_id: "", recipient_role: "Venue Manager", recipient_department_id: "dept-venue", recipient_church_id: "church-hq", scope: "role", action_url: "venueInventoryMaintenance", action_label: "Ver Repara��o", is_read: false, read_at: "", created_at: "2026-07-14T09:30:00.000Z", expires_at: "", metadata: {} },
-    { id: "not-9", title: "Certificado pendente", message: "Aluno pronto para emiss�o de certificado na Escola de Funda��o.", type: "reminder", module: "foundation_school", entity_type: "foundation_student", entity_id: "fs-1", priority: "normal", recipient_user_id: "", recipient_role: "Church Pastor", recipient_department_id: "", recipient_church_id: "church-hq", scope: "role", action_url: "foundation", action_label: "Ver Aluno", is_read: true, read_at: "2026-07-14T10:00:00.000Z", created_at: "2026-07-14T09:40:00.000Z", expires_at: "", metadata: {} },
-    { id: "not-10", title: "Avalia��o pendente", message: "Existe avalia��o de staff pendente para revis�o do departamento.", type: "reminder", module: "staff_hr", entity_type: "staff_member", entity_id: "staff-1", priority: "normal", recipient_user_id: "", recipient_role: "HR Manager", recipient_department_id: "", recipient_church_id: "church-hq", scope: "role", action_url: "staffHr", action_label: "Ver RH", is_read: false, read_at: "", created_at: "2026-07-14T09:50:00.000Z", expires_at: "", metadata: {} },
-    { id: "not-11", title: "Escala de M�dia publicada", message: "Voc� foi escalado para operar c�mara no 1� culto de domingo.", type: "reminder", module: "media", entity_type: "media_schedule", entity_id: "sch-1", priority: "normal", recipient_user_id: "u-22", recipient_role: "", recipient_department_id: "dept-media", recipient_church_id: "church-hq", scope: "user", action_url: "media", action_label: "Ver Escala", is_read: false, read_at: "", created_at: "2026-07-15T07:10:00.000Z", expires_at: "", metadata: {} },
+    { id: "not-7", title: "Relatório pendente de validação", message: "Há relatório de célula encaminhado para validação final.", type: "action_required", module: "cell_ministry", entity_type: "fevo_report", entity_id: "eval-1", priority: "high", recipient_user_id: "", recipient_role: "Final Coordinator", recipient_department_id: "dept-cell", recipient_church_id: "church-hq", scope: "role", action_url: "cellFinalValidation", action_label: "Ver Validação", is_read: false, read_at: "", created_at: "2026-07-14T09:20:00.000Z", expires_at: "", metadata: {} },
+    { id: "not-8", title: "Equipamento danificado reportado", message: "Microphone FM Wireless está marcado como em reparação.", type: "warning", module: "inventory", entity_type: "inventory_item", entity_id: "inv-3", priority: "normal", recipient_user_id: "", recipient_role: "Venue Manager", recipient_department_id: "dept-venue", recipient_church_id: "church-hq", scope: "role", action_url: "venueInventoryMaintenance", action_label: "Ver Reparação", is_read: false, read_at: "", created_at: "2026-07-14T09:30:00.000Z", expires_at: "", metadata: {} },
+    { id: "not-9", title: "Certificado pendente", message: "Aluno pronto para emissão de certificado na Escola de Fundação.", type: "reminder", module: "foundation_school", entity_type: "foundation_student", entity_id: "fs-1", priority: "normal", recipient_user_id: "", recipient_role: "Church Pastor", recipient_department_id: "", recipient_church_id: "church-hq", scope: "role", action_url: "foundation", action_label: "Ver Aluno", is_read: true, read_at: "2026-07-14T10:00:00.000Z", created_at: "2026-07-14T09:40:00.000Z", expires_at: "", metadata: {} },
+    { id: "not-10", title: "Avaliação pendente", message: "Existe avaliação de staff pendente para revisão do departamento.", type: "reminder", module: "staff_hr", entity_type: "staff_member", entity_id: "staff-1", priority: "normal", recipient_user_id: "", recipient_role: "HR Manager", recipient_department_id: "", recipient_church_id: "church-hq", scope: "role", action_url: "staffHr", action_label: "Ver RH", is_read: false, read_at: "", created_at: "2026-07-14T09:50:00.000Z", expires_at: "", metadata: {} },
+    { id: "not-11", title: "Escala de Mídia publicada", message: "Você foi escalado para operar câmara no 1º culto de domingo.", type: "reminder", module: "media", entity_type: "media_schedule", entity_id: "sch-1", priority: "normal", recipient_user_id: "u-22", recipient_role: "", recipient_department_id: "dept-media", recipient_church_id: "church-hq", scope: "user", action_url: "media", action_label: "Ver Escala", is_read: false, read_at: "", created_at: "2026-07-15T07:10:00.000Z", expires_at: "", metadata: {} },
     { id: "not-12", title: "Equipa de mídia incompleta", message: "A escala do culto de quarta-feira ainda precisa de operador de vídeo.", type: "action_required", module: "media", entity_type: "media_schedule", entity_id: "sch-2", priority: "high", recipient_user_id: "", recipient_role: "Media Supervisor", recipient_department_id: "dept-media", recipient_church_id: "church-hq", scope: "role", action_url: "media", action_label: "Actualizar Escala", is_read: false, read_at: "", created_at: "2026-07-15T07:20:00.000Z", expires_at: "", metadata: {} },
-    { id: "not-13", title: "Avalia��o t�cnica pendente", message: "H� t�cnicos de m�dia com avalia��o de desempenho por concluir.", type: "reminder", module: "media", entity_type: "media_evaluation", entity_id: "mev-1", priority: "normal", recipient_user_id: "", recipient_role: "Media Supervisor", recipient_department_id: "dept-media", recipient_church_id: "church-hq", scope: "role", action_url: "media", action_label: "Avaliar T�cnico", is_read: false, read_at: "", created_at: "2026-07-15T07:30:00.000Z", expires_at: "", metadata: {} },
-    { id: "not-14", title: "Programa especial requer m�dia", message: "Pray-a-thon precisa de confirma��o de transmiss�o e equipa t�cnica.", type: "approval_required", module: "media", entity_type: "media_service", entity_id: "ms-6", priority: "high", recipient_user_id: "", recipient_role: "Media Director", recipient_department_id: "dept-media", recipient_church_id: "church-hq", scope: "role", action_url: "media", action_label: "Confirmar Equipa", is_read: false, read_at: "", created_at: "2026-07-15T07:40:00.000Z", expires_at: "", metadata: {} },
-    { id: "not-15", title: "Substitui��o t�cnica necess�ria", message: "Um t�cnico informou indisponibilidade para o pr�ximo culto.", type: "warning", module: "media", entity_type: "media_schedule", entity_id: "sch-1", priority: "high", recipient_user_id: "", recipient_role: "Media Supervisor", recipient_department_id: "dept-media", recipient_church_id: "church-hq", scope: "role", action_url: "media", action_label: "Rever Escala", is_read: false, read_at: "", created_at: "2026-07-15T07:50:00.000Z", expires_at: "", metadata: {} },
+    { id: "not-13", title: "Avaliação técnica pendente", message: "Há técnicos de mídia com avaliação de desempenho por concluir.", type: "reminder", module: "media", entity_type: "media_evaluation", entity_id: "mev-1", priority: "normal", recipient_user_id: "", recipient_role: "Media Supervisor", recipient_department_id: "dept-media", recipient_church_id: "church-hq", scope: "role", action_url: "media", action_label: "Avaliar Técnico", is_read: false, read_at: "", created_at: "2026-07-15T07:30:00.000Z", expires_at: "", metadata: {} },
+    { id: "not-14", title: "Programa especial requer mídia", message: "Pray-a-thon precisa de confirmação de transmissão e equipa técnica.", type: "approval_required", module: "media", entity_type: "media_service", entity_id: "ms-6", priority: "high", recipient_user_id: "", recipient_role: "Media Director", recipient_department_id: "dept-media", recipient_church_id: "church-hq", scope: "role", action_url: "media", action_label: "Confirmar Equipa", is_read: false, read_at: "", created_at: "2026-07-15T07:40:00.000Z", expires_at: "", metadata: {} },
+    { id: "not-15", title: "Substituição técnica necessária", message: "Um técnico informou indisponibilidade para o próximo culto.", type: "warning", module: "media", entity_type: "media_schedule", entity_id: "sch-1", priority: "high", recipient_user_id: "", recipient_role: "Media Supervisor", recipient_department_id: "dept-media", recipient_church_id: "church-hq", scope: "role", action_url: "media", action_label: "Rever Escala", is_read: false, read_at: "", created_at: "2026-07-15T07:50:00.000Z", expires_at: "", metadata: {} },
     { id: "not-16", title: "Novo pedido de aconselhamento", message: "Existe um novo pedido de aconselhamento aguardando triagem.", type: "action_required", module: "counseling", entity_type: "counseling_request", entity_id: "cr-3", priority: "high", recipient_user_id: "", recipient_role: "Counseling Head", recipient_department_id: "", recipient_church_id: "church-hq", scope: "role", action_url: "counseling", action_label: "Ver Pedido", is_read: false, read_at: "", created_at: "2026-07-15T08:00:00.000Z", expires_at: "", metadata: {} },
     { id: "not-17", title: "Aconselhamento agendado", message: "Aminata Chivinda tem sessão de aconselhamento confirmada.", type: "reminder", module: "counseling", entity_type: "counseling_appointment", entity_id: "ca-1", priority: "normal", recipient_user_id: "u-2", recipient_role: "", recipient_department_id: "", recipient_church_id: "church-hq", scope: "user", action_url: "counseling", action_label: "Ver Agenda", is_read: false, read_at: "", created_at: "2026-07-15T08:10:00.000Z", expires_at: "", metadata: {} },
     { id: "not-18", title: "Acompanhamento necessário", message: "Um caso de aconselhamento precisa de acompanhamento pastoral.", type: "action_required", module: "counseling", entity_type: "counseling_feedback", entity_id: "cfb-1", priority: "high", recipient_user_id: "", recipient_role: "Follow-Up Coordinator", recipient_department_id: "", recipient_church_id: "church-hq", scope: "role", action_url: "counseling", action_label: "Criar Acompanhamento", is_read: false, read_at: "", created_at: "2026-07-15T08:20:00.000Z", expires_at: "", metadata: {} }
@@ -3522,27 +3522,27 @@ const seedData = {
   financeDisbursements: [],
   staffProfiles: [
     { id: "staff-1", user_id: "u-5", full_name: "Flavia Moneedi Tivane", title: "Pastora", gender: "Feminino", phone: "860000101", whatsapp: "860000101", email: "flavia@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", department_id: "dept-cell", department_name: "Ministério de Células", role_title: "Cell Ministry Head", supervisor_user_id: "u-17", supervisor_name: "Pastor Kene Ume", start_date: "2024-01-15", employment_type: "Full-time", salary_or_allowance: 45000, payment_frequency: "Mensal", payment_method: "Banco", bank_name: "BCI", bank_account_number: "****4521", bank_or_mobile_details: "BCI ****4521", marital_status: "Casado/a", address: "Maputo, KaMpfumo", contract_start_date: "2024-01-15", status: "Activo", date_of_birth: "1990-03-14", notes: "", created_at: "2024-01-15", updated_at: "2026-07-10" },
-    { id: "staff-2", user_id: "u-4", full_name: "Angelica Amilcar Macuacua", title: "Irm�", gender: "Feminino", phone: "860000102", whatsapp: "860000102", email: "angelica@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", department_id: "dept-cell", department_name: "Minist�rio de C�lulas", role_title: "ALEC Coordinator", supervisor_user_id: "u-5", supervisor_name: "Pastora Flavia", start_date: "2023-06-01", employment_type: "Full-time", salary_or_allowance: 38000, payment_frequency: "Mensal", payment_method: "M-Pesa", mobile_money_number: "860000102", bank_or_mobile_details: "86XXXXXXX", marital_status: "Solteiro/a", address: "Matola, Mo�ambique", status: "Activo", date_of_birth: "1992-07-22", notes: "", created_at: "2023-06-01", updated_at: "2026-07-10" },
-    { id: "staff-3", user_id: "u-11", full_name: "Marcelo Moises Panguene", title: "Irm�o", gender: "Masculino", phone: "860000103", whatsapp: "860000103", email: "marcelo.panguene@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", department_id: "dept-venue", department_name: "Venue Management", role_title: "Venue Manager", supervisor_user_id: "u-17", supervisor_name: "Pastor Kene Ume", start_date: "2022-11-01", employment_type: "Full-time", salary_or_allowance: 52000, payment_frequency: "Mensal", payment_method: "Banco", bank_name: "BCI", bank_account_number: "****8832", bank_or_mobile_details: "BCI ****8832", marital_status: "Casado/a", address: "Maputo, Mo�ambique", emergency_contact_name: "Maria Panguene", emergency_contact_phone: "860000203", status: "Activo", date_of_birth: "1988-11-05", notes: "", created_at: "2022-11-01", updated_at: "2026-07-10" },
-    { id: "staff-4", user_id: "", full_name: "Laiza Teresa Chirindza", title: "Irm�", gender: "Feminino", phone: "860000104", whatsapp: "860000104", email: "laiza@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", department_id: "dept-finance", department_name: "Finan�as", role_title: "Finance Officer", supervisor_user_id: "u-15", supervisor_name: "Finance Head Demo", start_date: "2024-03-01", employment_type: "Full-time", salary_or_allowance: 40000, payment_frequency: "Mensal", payment_method: "E-Mola", bank_or_mobile_details: "87XXXXXXX", status: "Activo", date_of_birth: "1995-01-18", notes: "", created_at: "2024-03-01", updated_at: "2026-07-10" },
-    { id: "staff-5", user_id: "u-6", full_name: "Eduarda Paula Mnganhela", title: "Irm�", gender: "Feminino", phone: "860000105", whatsapp: "860000105", email: "eduarda@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", department_id: "dept-cell", department_name: "Minist�rio de C�lulas", role_title: "Final Coordinator", supervisor_user_id: "u-5", supervisor_name: "Pastora Flavia", start_date: "2023-09-01", employment_type: "Part-time", salary_or_allowance: 25000, payment_frequency: "Mensal", payment_method: "M-Pesa", bank_or_mobile_details: "86XXXXXXX", bank_name: "M-Pesa", mobile_money_number: "860000105", marital_status: "Solteiro/a", address: "Maputo, Mo�ambique", emergency_contact_name: "Paula Mnganhela", emergency_contact_phone: "860000199", national_id_number: "BI-****5521", nuit: "NUIT-****882", contract_start_date: "2023-09-01", contract_end_date: "", probation_end_date: "2023-12-01", status: "Activo", date_of_birth: "1993-07-15", notes: "", created_at: "2023-09-01", updated_at: "2026-07-10" },
-    { id: "staff-6", user_id: "u-3", full_name: "Janet Baptista Ngoca", title: "Irm�", gender: "Feminino", phone: "860000106", whatsapp: "860000106", email: "janet.marquele@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", department_id: "dept-programs", department_name: "Programas", role_title: "Ministry Coordinator", supervisor_user_id: "u-17", supervisor_name: "Pastor Kene Ume", start_date: "2022-05-01", employment_type: "Full-time", salary_or_allowance: 42000, payment_frequency: "Mensal", payment_method: "Banco", bank_or_mobile_details: "", status: "Activo", date_of_birth: "1987-12-02", notes: "", created_at: "2022-05-01", updated_at: "2026-07-10" },
+    { id: "staff-2", user_id: "u-4", full_name: "Angelica Amilcar Macuacua", title: "Irmã", gender: "Feminino", phone: "860000102", whatsapp: "860000102", email: "angelica@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", department_id: "dept-cell", department_name: "Ministério de Células", role_title: "ALEC Coordinator", supervisor_user_id: "u-5", supervisor_name: "Pastora Flavia", start_date: "2023-06-01", employment_type: "Full-time", salary_or_allowance: 38000, payment_frequency: "Mensal", payment_method: "M-Pesa", mobile_money_number: "860000102", bank_or_mobile_details: "86XXXXXXX", marital_status: "Solteiro/a", address: "Matola, Moçambique", status: "Activo", date_of_birth: "1992-07-22", notes: "", created_at: "2023-06-01", updated_at: "2026-07-10" },
+    { id: "staff-3", user_id: "u-11", full_name: "Marcelo Moises Panguene", title: "Irmão", gender: "Masculino", phone: "860000103", whatsapp: "860000103", email: "marcelo.panguene@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", department_id: "dept-venue", department_name: "Venue Management", role_title: "Venue Manager", supervisor_user_id: "u-17", supervisor_name: "Pastor Kene Ume", start_date: "2022-11-01", employment_type: "Full-time", salary_or_allowance: 52000, payment_frequency: "Mensal", payment_method: "Banco", bank_name: "BCI", bank_account_number: "****8832", bank_or_mobile_details: "BCI ****8832", marital_status: "Casado/a", address: "Maputo, Moçambique", emergency_contact_name: "Maria Panguene", emergency_contact_phone: "860000203", status: "Activo", date_of_birth: "1988-11-05", notes: "", created_at: "2022-11-01", updated_at: "2026-07-10" },
+    { id: "staff-4", user_id: "", full_name: "Laiza Teresa Chirindza", title: "Irmã", gender: "Feminino", phone: "860000104", whatsapp: "860000104", email: "laiza@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", department_id: "dept-finance", department_name: "Finanças", role_title: "Finance Officer", supervisor_user_id: "u-15", supervisor_name: "Finance Head Demo", start_date: "2024-03-01", employment_type: "Full-time", salary_or_allowance: 40000, payment_frequency: "Mensal", payment_method: "E-Mola", bank_or_mobile_details: "87XXXXXXX", status: "Activo", date_of_birth: "1995-01-18", notes: "", created_at: "2024-03-01", updated_at: "2026-07-10" },
+    { id: "staff-5", user_id: "u-6", full_name: "Eduarda Paula Mnganhela", title: "Irmã", gender: "Feminino", phone: "860000105", whatsapp: "860000105", email: "eduarda@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", department_id: "dept-cell", department_name: "Ministério de Células", role_title: "Final Coordinator", supervisor_user_id: "u-5", supervisor_name: "Pastora Flavia", start_date: "2023-09-01", employment_type: "Part-time", salary_or_allowance: 25000, payment_frequency: "Mensal", payment_method: "M-Pesa", bank_or_mobile_details: "86XXXXXXX", bank_name: "M-Pesa", mobile_money_number: "860000105", marital_status: "Solteiro/a", address: "Maputo, Moçambique", emergency_contact_name: "Paula Mnganhela", emergency_contact_phone: "860000199", national_id_number: "BI-****5521", nuit: "NUIT-****882", contract_start_date: "2023-09-01", contract_end_date: "", probation_end_date: "2023-12-01", status: "Activo", date_of_birth: "1993-07-15", notes: "", created_at: "2023-09-01", updated_at: "2026-07-10" },
+    { id: "staff-6", user_id: "u-3", full_name: "Janet Baptista Ngoca", title: "Irmã", gender: "Feminino", phone: "860000106", whatsapp: "860000106", email: "janet.marquele@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", department_id: "dept-programs", department_name: "Programas", role_title: "Ministry Coordinator", supervisor_user_id: "u-17", supervisor_name: "Pastor Kene Ume", start_date: "2022-05-01", employment_type: "Full-time", salary_or_allowance: 42000, payment_frequency: "Mensal", payment_method: "Banco", bank_or_mobile_details: "", status: "Activo", date_of_birth: "1987-12-02", notes: "", created_at: "2022-05-01", updated_at: "2026-07-10" },
     { id: "staff-7", user_id: "u-18", full_name: "Pastora Responsável Requisições", title: "Pastora", gender: "Feminino", phone: "860000107", whatsapp: "860000107", email: "requisitions@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", department_id: "dept-programs", department_name: "Programas", role_title: "Requisition Officer", supervisor_user_id: "u-17", supervisor_name: "Pastor Kene Ume", start_date: "2024-06-01", employment_type: "Full-time", salary_or_allowance: 36000, payment_frequency: "Mensal", payment_method: "Banco", bank_or_mobile_details: "", status: "Activo", date_of_birth: "1991-05-20", notes: "Responsável por organizar requisições.", created_at: "2024-06-01", updated_at: "2026-07-10" },
-    { id: "staff-8", user_id: "u-7", full_name: "Cell Leader Demo", title: "Irm�o", gender: "Masculino", phone: "860000108", whatsapp: "860000108", email: "cellleader@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", department_id: "dept-cell", department_name: "Minist�rio de C�lulas", role_title: "Cell Leader", supervisor_user_id: "u-5", supervisor_name: "Pastora Flavia", start_date: "2025-01-01", employment_type: "Volunt�rio", salary_or_allowance: 0, payment_frequency: "Nenhum", payment_method: "Nenhum", bank_or_mobile_details: "", status: "Activo", date_of_birth: "1998-08-30", notes: "", created_at: "2025-01-01", updated_at: "2026-07-10" }
+    { id: "staff-8", user_id: "u-7", full_name: "Cell Leader Demo", title: "Irmão", gender: "Masculino", phone: "860000108", whatsapp: "860000108", email: "cellleader@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", department_id: "dept-cell", department_name: "Ministério de Células", role_title: "Cell Leader", supervisor_user_id: "u-5", supervisor_name: "Pastora Flavia", start_date: "2025-01-01", employment_type: "Voluntário", salary_or_allowance: 0, payment_frequency: "Nenhum", payment_method: "Nenhum", bank_or_mobile_details: "", status: "Activo", date_of_birth: "1998-08-30", notes: "", created_at: "2025-01-01", updated_at: "2026-07-10" }
   ],
   staffSalaries: [
     { id: "sal-1", staff_id: "staff-1", month: "2026-06", base_amount: 45000, bonus: 5000, deductions: 0, net_amount: 50000, payment_status: "Pago", approved_by: "Finance Head Demo", paid_by: "Finance Head Demo", paid_at: "2026-07-05", notes: "" },
-    { id: "sal-2", staff_id: "staff-3", month: "2026-07", base_amount: 52000, bonus: 0, deductions: 2000, net_amount: 50000, payment_status: "Pendente", approved_by: "", paid_by: "", paid_at: "", notes: "Aguardar aprova��o." },
+    { id: "sal-2", staff_id: "staff-3", month: "2026-07", base_amount: 52000, bonus: 0, deductions: 2000, net_amount: 50000, payment_status: "Pendente", approved_by: "", paid_by: "", paid_at: "", notes: "Aguardar aprovação." },
     { id: "sal-3", staff_id: "staff-4", month: "2026-07", base_amount: 40000, bonus: 0, deductions: 0, net_amount: 40000, payment_status: "Aprovado", approved_by: "Finance Head Demo", paid_by: "", paid_at: "", notes: "" }
   ],
   staffPerformance: [
-    { id: "perf-1", staff_id: "staff-1", evaluation_period: "2026-H1", punctuality_score: 9, task_completion_score: 9, report_submission_score: 8, teamwork_score: 9, supervisor_rating: 9, overall_score: 8.8, strengths: "Lideran�a e organiza��o.", areas_to_improve: "Delega��o de tarefas.", action_plan: "Forma��o de l�deres de �rea.", evaluated_by: "Pastor Kene Ume", evaluated_at: "2026-07-01" },
+    { id: "perf-1", staff_id: "staff-1", evaluation_period: "2026-H1", punctuality_score: 9, task_completion_score: 9, report_submission_score: 8, teamwork_score: 9, supervisor_rating: 9, overall_score: 8.8, strengths: "Liderança e organização.", areas_to_improve: "Delegação de tarefas.", action_plan: "Formação de líderes de Área.", evaluated_by: "Pastor Kene Ume", evaluated_at: "2026-07-01" },
     { id: "perf-2", staff_id: "staff-3", evaluation_period: "2026-H1", punctuality_score: 0, task_completion_score: 0, report_submission_score: 0, teamwork_score: 0, supervisor_rating: 0, overall_score: 0, strengths: "", areas_to_improve: "", action_plan: "", evaluated_by: "", evaluated_at: "" }
   ],
   staffAttendance: [
     { id: "att-1", staff_id: "staff-1", date: "2026-07-10", church_id: "church-hq", department_id: "dept-cell", attendance_status: "Presente", check_in_time: "08:45", check_out_time: "17:30", notes: "" },
     { id: "att-2", staff_id: "staff-4", date: "2026-07-10", church_id: "church-hq", department_id: "dept-finance", attendance_status: "Presente", check_in_time: "09:00", check_out_time: "18:00", notes: "" },
-    { id: "att-3", staff_id: "staff-3", date: "2026-07-10", church_id: "church-hq", department_id: "dept-venue", attendance_status: "Atrasado", check_in_time: "09:35", check_out_time: "17:00", notes: "Tr�nsito." }
+    { id: "att-3", staff_id: "staff-3", date: "2026-07-10", church_id: "church-hq", department_id: "dept-venue", attendance_status: "Atrasado", check_in_time: "09:35", check_out_time: "17:00", notes: "Trânsito." }
   ],
   staffDocuments: [],
   notifications: [],
@@ -3577,8 +3577,8 @@ const seedData = {
   publicGivingSubmissions: [],
   finance: [
     { id: "fin-1", source_type: "contributor", contributor_id: "contrib-fin-1", member_id: "", first_timer_id: "", partner_id: "", nome: "Ana", apelido: "Mabunda", telefone: "874520011", whatsapp: "874520011", email: "", endereco: "Maputo", celula: "Cell Central", grupo_de_celula: "Grupo Central", igreja: "E.C. Maputo Central - Sede", church_id: "church-hq", categoria_da_contribuicao: "Dízimo", metodo_de_pagamento: "M-Pesa", valor: 7500, referencia_da_transaccao: "MP463900298", data: "2026-07-05", imagem_envelope_ou_pop: "", imagem_do_envelope: "", observacoes: "", estado: FINANCE_STATUS_VERIFIED, recebido_por: "Admin Principal", verificado_por: "Admin Principal", verified_at: "2026-07-05T10:30:00.000Z", comentario_verificacao: "Pagamento confirmado no M-Pesa.", motivo_rejeicao: "", created_at: "2026-07-05T09:15:00.000Z", created_by: "Admin Principal", updated_by: "Admin Principal", updated_at: "2026-07-05" },
-    { id: "fin-2", source_type: "partner", contributor_id: "", member_id: "", first_timer_id: "", partner_id: "part-1", nome: "Carlos", apelido: "Muianga", telefone: "866877389", whatsapp: "866877389", email: "carlos@example.com", endereco: "Online", celula: "Virtual", igreja: "CE Mozambique Online Church", church_id: "church-virtual", categoria_da_contribuicao: "Loveworld SAT", metodo_de_pagamento: "Banco", valor: 4200, referencia_da_transaccao: "BCI-17596091110001", data: "2026-07-02", imagem_envelope_ou_pop: "", imagem_do_envelope: "", observacoes: "Aguardar confirma��o banc�ria.", estado: FINANCE_STATUS_PENDING, recebido_por: "Admin Principal", verificado_por: "", verified_at: "", comentario_verificacao: "", motivo_rejeicao: "", created_at: "2026-07-02T14:20:00.000Z", created_by: "Admin Principal", updated_by: "Admin Principal", updated_at: "2026-07-02" },
-    { id: "fin-3", source_type: "contributor", contributor_id: "contrib-fin-2", nome: "Jo�o", apelido: "Nhaca", telefone: "845551122", celula: "Cell Mavalane", grupo_de_celula: "Grupo Matola", church_id: "church-hq", categoria_da_contribuicao: "Ofertas", metodo_de_pagamento: "M-Pesa", valor: 2500, data: "2026-07-08", estado: FINANCE_STATUS_VERIFIED, verificado_por: "Admin Principal", verified_at: "2026-07-08T11:00:00.000Z", created_at: "2026-07-08T10:00:00.000Z", created_by: "Admin Principal", updated_by: "Admin Principal", updated_at: "2026-07-08" },
+    { id: "fin-2", source_type: "partner", contributor_id: "", member_id: "", first_timer_id: "", partner_id: "part-1", nome: "Carlos", apelido: "Muianga", telefone: "866877389", whatsapp: "866877389", email: "carlos@example.com", endereco: "Online", celula: "Virtual", igreja: "CE Mozambique Online Church", church_id: "church-virtual", categoria_da_contribuicao: "Loveworld SAT", metodo_de_pagamento: "Banco", valor: 4200, referencia_da_transaccao: "BCI-17596091110001", data: "2026-07-02", imagem_envelope_ou_pop: "", imagem_do_envelope: "", observacoes: "Aguardar confirmação bancária.", estado: FINANCE_STATUS_PENDING, recebido_por: "Admin Principal", verificado_por: "", verified_at: "", comentario_verificacao: "", motivo_rejeicao: "", created_at: "2026-07-02T14:20:00.000Z", created_by: "Admin Principal", updated_by: "Admin Principal", updated_at: "2026-07-02" },
+    { id: "fin-3", source_type: "contributor", contributor_id: "contrib-fin-2", nome: "João", apelido: "Nhaca", telefone: "845551122", celula: "Cell Mavalane", grupo_de_celula: "Grupo Matola", church_id: "church-hq", categoria_da_contribuicao: "Ofertas", metodo_de_pagamento: "M-Pesa", valor: 2500, data: "2026-07-08", estado: FINANCE_STATUS_VERIFIED, verificado_por: "Admin Principal", verified_at: "2026-07-08T11:00:00.000Z", created_at: "2026-07-08T10:00:00.000Z", created_by: "Admin Principal", updated_by: "Admin Principal", updated_at: "2026-07-08" },
     { id: "fin-4", source_type: "partner", partner_id: "part-2", nome: "Helena", apelido: "Cossa", telefone: "843332211", celula: "Cell Central", church_id: "church-hq", categoria_da_contribuicao: "Escola de Cura", contribution_group: "Parcerias", partnership_arm_id: "arm-healing", partnership_arm_name: "Escola de Cura", metodo_de_pagamento: "E-Mola", valor: 5000, data: "2026-07-09", estado: FINANCE_STATUS_VERIFIED, status: "Verified", transaction_type: "income", verificado_por: "Admin Principal", verified_at: "2026-07-09T12:00:00.000Z", created_at: "2026-07-09T09:00:00.000Z", created_by: "Admin Principal", updated_by: "Admin Principal", updated_at: "2026-07-09" },
     { id: "fin-5", source_type: "partner", partner_id: "part-3", nome: "Miguel", apelido: "Tembe", telefone: "861112233", celula: "Cell Central", church_id: "church-matola", categoria_da_contribuicao: "Rapsódia de Realidades", contribution_group: "Parcerias", partnership_arm_id: "arm-rhapsody", partnership_arm_name: "Rapsódia de Realidades", metodo_de_pagamento: "M-Pesa", valor: 3000, data: "2026-07-10", estado: FINANCE_STATUS_VERIFIED, status: "Verified", transaction_type: "income", verificado_por: "Admin Principal", verified_at: "2026-07-10T08:30:00.000Z", created_at: "2026-07-10T08:00:00.000Z", created_by: "Admin Principal", updated_by: "Admin Principal", updated_at: "2026-07-10" },
     { id: "fin-6", source_type: "contributor", nome: "Sofia", apelido: "Macuacua", telefone: "872223344", celula: "Cell Mavalane", church_id: "church-hq", categoria_da_contribuicao: "Primícias", metodo_de_pagamento: "Banco", valor: 1800, data: "2026-06-15", estado: FINANCE_STATUS_VERIFIED, verificado_por: "Admin Principal", verified_at: "2026-06-15T14:00:00.000Z", created_at: "2026-06-15T13:00:00.000Z", created_by: "Admin Principal", updated_by: "Admin Principal", updated_at: "2026-06-15" },
@@ -3594,8 +3594,8 @@ const seedData = {
   cellRegistry: __cellSeed.cellRegistry,
   cellLeadership: {
     alecRegistrations: [
-      { id: "alec-reg-1", church_id: "church-hq", created_by: "Sister Angelica", updated_by: "Sister Angelica", created_at: "2026-06-15", updated_at: "2026-07-03", status: "Em Forma��o", nome_completo: "Aminata Chivinda", contacto: "848287179", igreja: "church-hq", celula: "Cell Mavalane", nome_do_lider_de_celula: "Aminata Chivinda", fez_escola_de_fundacao: true, e_lider: false, motivo_de_fazer_alec: "Crescer em lideran�a e ganhar almas.", estado: "Em Forma��o", observacoes: "Cadastro 2025 importado para prot�tipo." },
-      { id: "alec-reg-2", church_id: "church-hq", created_by: "Sister Angelica", updated_by: "Sister Angelica", created_at: "2026-06-15", updated_at: "2026-07-03", status: "Activo", nome_completo: "Mateus Nhantumbo", contacto: "862720011", igreja: "church-hq", celula: "Cell Central", nome_do_lider_de_celula: "Pastor Kene Ume", fez_escola_de_fundacao: true, e_lider: true, motivo_de_fazer_alec: "Prepara��o para liderar c�lula.", estado: "Activo", observacoes: "" }
+      { id: "alec-reg-1", church_id: "church-hq", created_by: "Sister Angelica", updated_by: "Sister Angelica", created_at: "2026-06-15", updated_at: "2026-07-03", status: "Em Formação", nome_completo: "Aminata Chivinda", contacto: "848287179", igreja: "church-hq", celula: "Cell Mavalane", nome_do_lider_de_celula: "Aminata Chivinda", fez_escola_de_fundacao: true, e_lider: false, motivo_de_fazer_alec: "Crescer em liderança e ganhar almas.", estado: "Em Formação", observacoes: "Cadastro 2025 importado para protótipo." },
+      { id: "alec-reg-2", church_id: "church-hq", created_by: "Sister Angelica", updated_by: "Sister Angelica", created_at: "2026-06-15", updated_at: "2026-07-03", status: "Activo", nome_completo: "Mateus Nhantumbo", contacto: "862720011", igreja: "church-hq", celula: "Cell Central", nome_do_lider_de_celula: "Pastor Kene Ume", fez_escola_de_fundacao: true, e_lider: true, motivo_de_fazer_alec: "Preparação para liderar célula.", estado: "Activo", observacoes: "" }
     ],
     alecScores: [
       { id: "alec-score-1", church_id: "church-hq", created_by: "Sister Angelica", updated_by: "Sister Angelica", created_at: "2026-07-03", updated_at: "2026-07-03", status: "Em Curso", nome_completo: "Aminata Chivinda", contacto: "848287179", igreja: "church-hq", celula: "Cell Mavalane", fase_1_aula_1: 80, fase_1_aula_2: 77, fase_1_aula_3: 84, fase_1_aula_4: 75, fase_2_aula_1: 0, fase_2_aula_2: 0, fase_2_aula_3: 0, terminou: false, faixa_certificado_pago: false, certificado_emitido: false, estado: "Em Curso" },
@@ -3635,7 +3635,7 @@ const seedData = {
   prisonMinistry: {
     prisons: [
       { id: "prison-1", church_id: "church-hq", created_by: "Sister Janet Marquele", updated_by: "Sister Janet Marquele", created_at: "2026-06-22", updated_at: "2026-07-05", status: "Activo", nome_da_prisao: "Cadeia Civil de Maputo", provincia: "Maputo", cidade: "Maputo", igreja_responsavel: "church-hq", representante_da_prisao: "Sr. Mateus Cumbe", contacto_do_representante: "+258 84 000 1001", estado: "Activo", observacoes: "Serviços semanais confirmados para quinta e sexta." },
-      { id: "prison-2", church_id: "church-hq", created_by: "Sister Janet Marquele", updated_by: "Sister Janet Marquele", created_at: "2026-06-22", updated_at: "2026-07-05", status: "Activo", nome_da_prisao: "Centro de Recluso Feminino", provincia: "Maputo", cidade: "Matola", igreja_responsavel: "church-hq", representante_da_prisao: "Dra. Celeste Mabunda", contacto_do_representante: "+258 84 000 1002", estado: "Activo", observacoes: "Prioridade para Rapsdia e Escola de Fundao." }
+      { id: "prison-2", church_id: "church-hq", created_by: "Sister Janet Marquele", updated_by: "Sister Janet Marquele", created_at: "2026-06-22", updated_at: "2026-07-05", status: "Activo", nome_da_prisao: "Centro de Reclusão Feminino", provincia: "Maputo", cidade: "Matola", igreja_responsavel: "church-hq", representante_da_prisao: "Dra. Celeste Mabunda", contacto_do_representante: "+258 84 000 1002", estado: "Activo", observacoes: "Prioridade para Rapsódia e Escola de Fundação." }
     ],
     services: [
       { id: "ps-1", church_id: "church-hq", created_by: "Sister Janet Marquele", updated_by: "Sister Janet Marquele", created_at: "2026-07-02", updated_at: "2026-07-02", status: "Relatório Submetido", data: "2026-07-02", dia_da_semana: "Quinta", prisao: "prison-1", igreja_responsavel: "church-hq", lider_responsavel: "Sister Janet Marquele", membros_que_foram: "Janet Marquele, Equipa de Células", numero_de_internos_presentes: 46, novos_convertidos: 12, interessados_em_escola_de_fundacao: 9, aula_de_fundacao_dada: true, tema_ou_mensagem: "Nova Vida em Cristo", observacoes: "Relatório e lista entregues.", estado: "Relatório Submetido" }
@@ -3650,22 +3650,22 @@ const seedData = {
   },
   ministryMaterials: {
     catalogue: [
-      { id: "mat-1", church_id: "church-hq", created_by: "Sister Janet Marquele", updated_by: "Sister Janet Marquele", created_at: "2026-06-22", updated_at: "2026-07-05", status: "Dispon�vel", titulo_do_material: "Raps�dia de Realidades", tipo: "Raps�dia", autor_ou_origem: "LoveWorld", formato: "F�sico", preco: 120, stock_actual: 180, stock_minimo: 40, estado: "Dispon�vel", observacoes: "Distribui��o semanal." },
-      { id: "mat-2", church_id: "church-hq", created_by: "Sister Janet Marquele", updated_by: "Sister Janet Marquele", created_at: "2026-06-22", updated_at: "2026-07-05", status: "Dispon�vel", titulo_do_material: "Manual da Escola de Funda��o", tipo: "Manual", autor_ou_origem: "Christ Embassy", formato: "F�sico", preco: 250, stock_actual: 26, stock_minimo: 25, estado: "Dispon�vel", observacoes: "Aten��o ao stock m�nimo." }
+      { id: "mat-1", church_id: "church-hq", created_by: "Sister Janet Marquele", updated_by: "Sister Janet Marquele", created_at: "2026-06-22", updated_at: "2026-07-05", status: "Disponível", titulo_do_material: "Rapsódia de Realidades", tipo: "Rapsódia", autor_ou_origem: "LoveWorld", formato: "Físico", preco: 120, stock_actual: 180, stock_minimo: 40, estado: "Disponível", observacoes: "Distribuição semanal." },
+      { id: "mat-2", church_id: "church-hq", created_by: "Sister Janet Marquele", updated_by: "Sister Janet Marquele", created_at: "2026-06-22", updated_at: "2026-07-05", status: "Disponível", titulo_do_material: "Manual da Escola de Fundação", tipo: "Manual", autor_ou_origem: "Christ Embassy", formato: "Físico", preco: 250, stock_actual: 26, stock_minimo: 25, estado: "Disponível", observacoes: "Atenção ao stock mínimo." }
     ],
     sales: [
       { id: "sale-1", church_id: "church-hq", created_by: "Sister Janet Marquele", updated_by: "Sister Janet Marquele", created_at: "2026-06-28", updated_at: "2026-06-28", status: "Confirmado", data: "2026-06-28", semana_do_relatorio: "2026-06-22/2026-06-28", comprador: "Relatório Semanal", igreja: "church-hq", titulo_do_material: "Rapsódia de Realidades", quantidade: 18, valor: 3440, metodo_de_pagamento: "M-Pesa", pop_prova_de_pagamento: "POP-22-28JUN", recebido_por: "Sister Janet Marquele", estado: "Confirmado", observacoes: "Resumo baseado no relatório semanal." },
       { id: "sale-2", church_id: "church-hq", created_by: "Sister Janet Marquele", updated_by: "Sister Janet Marquele", created_at: "2026-07-05", updated_at: "2026-07-05", status: "Confirmado", data: "2026-07-05", semana_do_relatorio: "2026-06-29/2026-07-05", comprador: "Relatório Semanal", igreja: "church-hq", titulo_do_material: "Rapsódia de Realidades", quantidade: 17, valor: 6960, metodo_de_pagamento: "Banco", pop_prova_de_pagamento: "POP-29JUN-05JUL", recebido_por: "Sister Janet Marquele", estado: "Confirmado", observacoes: "Resumo baseado no relatório semanal." }
     ],
     distributions: [
-      { id: "dist-1", church_id: "church-hq", created_by: "Sister Janet Marquele", updated_by: "Sister Janet Marquele", created_at: "2026-07-05", updated_at: "2026-07-05", status: "Solicitado", data: "2026-07-08", igreja_destinataria: "church-virtual", titulo_do_material: "Raps�dia de Realidades", quantidade: 35, tipo_de_distribuicao: "Distribui��o Gratuita", responsavel_pelo_envio: "Sister Janet Marquele", recebido_por: "", estado: "Solicitado", observacoes: "Para evangelismo online e prisional." }
+      { id: "dist-1", church_id: "church-hq", created_by: "Sister Janet Marquele", updated_by: "Sister Janet Marquele", created_at: "2026-07-05", updated_at: "2026-07-05", status: "Solicitado", data: "2026-07-08", igreja_destinataria: "church-virtual", titulo_do_material: "Rapsódia de Realidades", quantidade: 35, tipo_de_distribuicao: "Distribuição Gratuita", responsavel_pelo_envio: "Sister Janet Marquele", recebido_por: "", estado: "Solicitado", observacoes: "Para evangelismo online e prisional." }
     ],
     weeklyStock: [
       { id: "stock-1", church_id: "church-hq", created_by: "Sister Janet Marquele", updated_by: "Sister Janet Marquele", created_at: "2026-06-28", updated_at: "2026-06-28", status: "Concluído", semana_inicio: "2026-06-22", semana_fim: "2026-06-28", titulo_do_material: "Rapsódia de Realidades", stock_inicial: 215, entradas: 0, saidas: 18, stock_final: 197, diferenca: 0, observacoes: "18 unidades, 3440 MTn." },
       { id: "stock-2", church_id: "church-hq", created_by: "Sister Janet Marquele", updated_by: "Sister Janet Marquele", created_at: "2026-07-05", updated_at: "2026-07-05", status: "Concluído", semana_inicio: "2026-06-29", semana_fim: "2026-07-05", titulo_do_material: "Rapsódia de Realidades", stock_inicial: 197, entradas: 0, saidas: 17, stock_final: 180, diferenca: 0, observacoes: "17 unidades, 6960 MTn." }
     ],
     freeFunds: [
-      { id: "fund-1", church_id: "church-hq", created_by: "Sister Janet Marquele", updated_by: "Sister Janet Marquele", created_at: "2026-07-01", updated_at: "2026-07-05", status: "Activa", campanha: "Raps�dia para Pris�es", valor_alvo: 25000, valor_levantado: 10400, materiais_a_distribuir: "Raps�dia de Realidades, Manuais de Funda��o", igrejas_beneficiadas: "National HQ, Igreja Online", estado: "Activa", observacoes: "Fundo para distribui��o gratuita em pris�es." }
+      { id: "fund-1", church_id: "church-hq", created_by: "Sister Janet Marquele", updated_by: "Sister Janet Marquele", created_at: "2026-07-01", updated_at: "2026-07-05", status: "Activa", campanha: "Rapsódia para Prisões", valor_alvo: 25000, valor_levantado: 10400, materiais_a_distribuir: "Rapsódia de Realidades, Manuais de Fundação", igrejas_beneficiadas: "National HQ, Igreja Online", estado: "Activa", observacoes: "Fundo para distribuição gratuita em prisões." }
     ],
     reports: [
       { id: "mat-report-1", church_id: "church-hq", created_by: "Sister Janet Marquele", updated_by: "Sister Janet Marquele", created_at: "2026-07-05", updated_at: "2026-07-05", status: "Concluído", name: "Relatório Semanal de Materiais", category: "22 Junho - 05 Julho 2026", quantity: 35, amount: 10400 }
@@ -3773,7 +3773,7 @@ function normalizeServiceLabelsInObject(record) {
   });
   if (record.name && /Turma Domingo/i.test(record.name)) {
     record.name = cleanDisplayText(record.name)
-      .replace(/Domingo Manh[ãa�]+/i, "Domingo 1º Culto")
+      .replace(/Domingo Manh[ãa]+/i, "Domingo 1º Culto")
       .replace(/Domingo Tarde/i, "Domingo 2º Culto");
   }
   return record;
@@ -4444,52 +4444,52 @@ function cleanDisplayText(value) {
     try {
       const bytes = Uint8Array.from([...text].map((char) => char.charCodeAt(0) & 255));
       const decoded = new TextDecoder("utf-8", { fatal: false }).decode(bytes);
-      if (decoded && !/�/.test(decoded.replace(/�/g, ""))) text = decoded;
+      if (decoded && !/\uFFFD/.test(decoded.replace(/\uFFFD/g, ""))) text = decoded;
       else if ((decoded.match(/[A-Za-zÀ-ÿ]/g) || []).length >= (text.match(/[A-Za-z]/g) || []).length * 0.7) text = decoded;
     } catch (error) {
       // Keep the original and continue with the replacement table below.
     }
   }
   text = text
-    .replace(/Irm�/g, "Irmã")
-    .replace(/Irm�o/g, "Irmão")
-    .replace(/Jo�o/g, "João")
-    .replace(/S�o/g, "São")
-    .replace(/Si�o/gi, "Sião")
-    .replace(/Mo�ambique/g, "Moçambique")
-    .replace(/Di�cono/g, "Diácono")
-    .replace(/D�zimo/g, "Dízimo")
-    .replace(/Manh�/g, "Manhã")
-    .replace(/L�der/g, "Líder")
-    .replace(/Portugu�s/g, "Português")
-    .replace(/Ter�a/g, "Terça")
-    .replace(/Fam�lia/g, "Família")
-    .replace(/sens�vel/g, "sensível")
-    .replace(/c�lula/gi, (match) => match[0] === "C" ? "Célula" : "célula");
+    .replace(/Irmã/g, "Irmã")
+    .replace(/Irmão/g, "Irmão")
+    .replace(/João/g, "João")
+    .replace(/São/g, "São")
+    .replace(/Sião/gi, "Sião")
+    .replace(/Moçambique/g, "Moçambique")
+    .replace(/Diácono/g, "Diácono")
+    .replace(/Dízimo/g, "Dízimo")
+    .replace(/Manhã/g, "Manhã")
+    .replace(/Líder/g, "Líder")
+    .replace(/Português/g, "Português")
+    .replace(/Terça/g, "Terça")
+    .replace(/Família/g, "Família")
+    .replace(/sensível/g, "sensível")
+    .replace(/célula/gi, (match) => match[0] === "C" ? "Célula" : "célula");
   const replacements = [
-    [/�{2}es/g, "ções"], [/�{2}o/g, "ção"], [/�{2}a/g, "ça"],
-    [/Neg[óo�]+cios/gi, "Negócios"], [/Lideran[çc�]+a/gi, "Liderança"],
-    [/Sess[õo�]+es/gi, "Sessões"], [/Sess[ãa�]+o/gi, "Sessão"],
-    [/Compar[êe�]+ncia/gi, "Comparência"], [/Quest[ãa�]+o/gi, "Questão"],
-    [/Decis[ãa�]+o/gi, "Decisão"], [/Orienta[çc�]+[ãa�]+o/gi, "Orientação"],
-    [/Resolu[çc�]+[ãa�]+o/gi, "Resolução"],
-    [/Manuten�+o/gi, "Manutenção"], [/Repara�+es/gi, "Reparações"], [/Invent�rio/gi, "Inventário"],
-    [/requisi�+es/gi, "requisições"], [/Requisi�+es/g, "Requisições"], [/Requisi�+o/g, "Requisição"],
-    [/submiss�o/gi, "submissão"], [/Submiss�o/g, "Submissão"], [/contribui�+o/gi, "contribuição"],
-    [/verifica�+o/gi, "verificação"], [/Verifica�+o/g, "Verificação"], [/libera�+o/gi, "liberação"],
-    [/ac�+o/gi, "acção"], [/Ac�+o/g, "Acção"], [/ac�+es/gi, "acções"], [/Ac�+es/g, "Acções"],
-    [/avalia�+o/gi, "avaliação"], [/Avalia�+o/g, "Avaliação"], [/avalia�+es/gi, "avaliações"],
-    [/dedica�+o/gi, "dedicação"], [/Dedica�+o/g, "Dedicação"], [/beb�s/gi, "bebés"], [/Beb�s/g, "Bebés"],
-    [/fam�lia/gi, "família"], [/Fam�lia/g, "Família"], [/t�cnico/gi, "técnico"], [/T�cnico/g, "Técnico"],
-    [/m�dia/gi, "mídia"], [/M�dia/g, "Mídia"], [/m�todo/gi, "método"], [/M�todo/g, "Método"],
-    [/m�dulo/gi, "módulo"], [/M�dulo/g, "Módulo"], [/m�s/gi, "mês"], [/M�s/g, "Mês"],
-    [/m�e/gi, "mãe"], [/M�e/g, "Mãe"], [/m�trica/gi, "métrica"], [/M�trica/g, "Métrica"],
-    [/n�o/gi, "não"], [/N�o/g, "Não"], [/j�/gi, "já"], [/J�/g, "Já"], [/at�/gi, "até"], [/At�/g, "Até"],
-    [/pr�ximo/gi, "próximo"], [/Pr�ximo/g, "Próximo"], [/pr�xima/gi, "próxima"], [/Pr�xima/g, "Próxima"],
-    [/hist�rico/gi, "histórico"], [/Hist�rico/g, "Histórico"], [/prot�tipo/gi, "protótipo"], [/Prot�tipo/g, "Protótipo"],
-    [/c�lula/gi, "célula"], [/C�lula/g, "Célula"], [/c�lulas/gi, "células"], [/C�lulas/g, "Células"],
-    [/fun�+o/gi, "função"], [/Fun�+o/g, "Função"], [/permiss�es/gi, "permissões"], [/notifica�+es/gi, "notificações"],
-    [/autentica�+o/gi, "autenticação"], [/integra�+o/gi, "integração"], [/Funda�+o/g, "Fundação"], [/funda�+o/g, "fundação"],
+    [/([\uFFFD\?]){2}es/g, "ções"], [/([\uFFFD\?]){2}o/g, "ção"], [/([\uFFFD\?]){2}a/g, "ça"],
+    [/Neg[óo]+cios/gi, "Negócios"], [/Lideran[çc]+a/gi, "Liderança"],
+    [/Sess[õo]+es/gi, "Sessões"], [/Sess[ãa]+o/gi, "Sessão"],
+    [/Compar[êe]+ncia/gi, "Comparência"], [/Quest[ãa]+o/gi, "Questão"],
+    [/Decis[ãa]+o/gi, "Decisão"], [/Orienta[çc]+[ãa]+o/gi, "Orientação"],
+    [/Resolu[çc]+[ãa]+o/gi, "Resolução"],
+    [/Manuten[\uFFFD\?]+o/gi, "Manutenção"], [/Repara[\uFFFD\?]+es/gi, "Reparações"], [/Inventário/gi, "Inventário"],
+    [/requisi[\uFFFD\?]+es/gi, "requisições"], [/Requisi[\uFFFD\?]+es/g, "Requisições"], [/Requisi[\uFFFD\?]+o/g, "Requisição"],
+    [/submissão/gi, "submissão"], [/Submissão/g, "Submissão"], [/contribui[\uFFFD\?]+o/gi, "contribuição"],
+    [/verifica[\uFFFD\?]+o/gi, "verificação"], [/Verifica[\uFFFD\?]+o/g, "Verificação"], [/libera[\uFFFD\?]+o/gi, "liberação"],
+    [/ac[\uFFFD\?]+o/gi, "acção"], [/Ac[\uFFFD\?]+o/g, "Acção"], [/ac[\uFFFD\?]+es/gi, "acções"], [/Ac[\uFFFD\?]+es/g, "Acções"],
+    [/avalia[\uFFFD\?]+o/gi, "avaliação"], [/Avalia[\uFFFD\?]+o/g, "Avaliação"], [/avalia[\uFFFD\?]+es/gi, "avaliações"],
+    [/dedica[\uFFFD\?]+o/gi, "dedicação"], [/Dedica[\uFFFD\?]+o/g, "Dedicação"], [/bebés/gi, "bebés"], [/Bebés/g, "Bebés"],
+    [/família/gi, "família"], [/Família/g, "Família"], [/técnico/gi, "técnico"], [/Técnico/g, "Técnico"],
+    [/mídia/gi, "mídia"], [/Mídia/g, "Mídia"], [/método/gi, "método"], [/Método/g, "Método"],
+    [/módulo/gi, "módulo"], [/Módulo/g, "Módulo"], [/mês/gi, "mês"], [/Mês/g, "Mês"],
+    [/mãe/gi, "mãe"], [/Mãe/g, "Mãe"], [/métrica/gi, "métrica"], [/Métrica/g, "Métrica"],
+    [/não/gi, "não"], [/Não/g, "Não"], [/já/gi, "já"], [/Já/g, "Já"], [/até/gi, "até"], [/Até/g, "Até"],
+    [/próximo/gi, "próximo"], [/Próximo/g, "Próximo"], [/próxima/gi, "próxima"], [/Próxima/g, "Próxima"],
+    [/histórico/gi, "histórico"], [/Histórico/g, "Histórico"], [/protótipo/gi, "protótipo"], [/Protótipo/g, "Protótipo"],
+    [/célula/gi, "célula"], [/Célula/g, "Célula"], [/células/gi, "células"], [/Células/g, "Células"],
+    [/fun[\uFFFD\?]+o/gi, "função"], [/Fun[\uFFFD\?]+o/g, "Função"], [/permissões/gi, "permissões"], [/notifica[\uFFFD\?]+es/gi, "notificações"],
+    [/autentica[\uFFFD\?]+o/gi, "autenticação"], [/integra[\uFFFD\?]+o/gi, "integração"], [/Funda[\uFFFD\?]+o/g, "Fundação"], [/funda[\uFFFD\?]+o/g, "fundação"],
     [/(\uFFFD|\?){2}es/g, "ções"], [/(\uFFFD|\?){2}o/g, "ção"], [/(\uFFFD|\?){2}a/g, "ça"],
     [/Neg[óo]+cios/gi, "Negócios"], [/Lideran[çc]+a/gi, "Liderança"],
     [/Sess[õo]+es/gi, "Sessões"], [/Sess[ãa]+o/gi, "Sessão"],
@@ -8565,7 +8565,7 @@ function financeModuleTabs() {
 function migrateRequisitionsFinanceState() {
   const disb = window.CEFinanceDisbursements;
   if (!disb) return;
-  const approvedStatuses = ["Aprovado � Aguardando Libera��o de Recursos", "Aprovado", "Recursos Liberados", "Comprado / Executado", "Registado no Invent�rio", "Fechado"];
+  const approvedStatuses = ["Aprovado — Aguardando Liberação de Recursos", "Aprovado", "Recursos Liberados", "Comprado / Executado", "Registado no Inventário", "Fechado"];
   (state.requisitions || []).forEach((r) => {
     disb.migrateRequisitionFinanceFields(r);
     if (approvedStatuses.includes(r.status) || r.finance_status) {
@@ -8578,7 +8578,7 @@ function financeApprovedReqBadge(financeStatus) {
   const disb = window.CEFinanceDisbursements;
   const cls = disb?.financeStatusBadgeClass?.(financeStatus) || "warn";
   const labels = {
-    "Aguardando Libera��o": "finAwaitingRelease",
+    "Aguardando Liberação": "finAwaitingRelease",
     "Recursos Liberados": "finResourcesReleased",
     "Pago": "finMarkPaid",
     "Parcialmente Pago": "finPartialPayment",
@@ -8614,7 +8614,7 @@ function financeApprovedReqFilterBar(filters) {
     <div class="col-md-3">
       <label class="form-label">${L("finFinanceStatus")}</label>
       <select name="finance_status" class="form-select"><option value="">${L("all")}</option>${Object.values(statuses).map((s) => {
-        const map = { "Aguardando Libera��o": "finAwaitingRelease", "Recursos Liberados": "finResourcesReleased", "Pago": "finMarkPaid", "Parcialmente Pago": "finPartialPayment", "Cancelado": "rejected" };
+        const map = { "Aguardando Liberação": "finAwaitingRelease", "Recursos Liberados": "finResourcesReleased", "Pago": "finMarkPaid", "Parcialmente Pago": "finPartialPayment", "Cancelado": "rejected" };
         return `<option value="${s}" ${filters.finance_status === s ? "selected" : ""}>${L(map[s] || "finFinanceStatus")}</option>`;
       }).join("")}</select>
     </div>
@@ -8644,9 +8644,9 @@ function financeApprovedReqFilterBar(filters) {
 function financeApprovedReqActions(record) {
   const disb = window.CEFinanceDisbursements;
   const canRelease = disb?.canReleaseResources?.(activeUser);
-  const finStatus = record.finance_status || "Aguardando Libera��o";
+  const finStatus = record.finance_status || "Aguardando Liberação";
   const buttons = [["view", "financeApprovedReq", record.id, L("view")]];
-  if (canRelease && finStatus === "Aguardando Libera��o") {
+  if (canRelease && finStatus === "Aguardando Liberação") {
     buttons.push(["releaseResources", "financeApprovedReq", record.id, L("reqReleaseResources")]);
   }
   if (canRelease && ["Recursos Liberados", "Parcialmente Pago"].includes(finStatus)) {
@@ -8655,7 +8655,7 @@ function financeApprovedReqActions(record) {
       buttons.push(["partialPayment", "financeApprovedReq", record.id, L("finPartialPayment")]);
     }
   }
-  const invTypes = new Set(["Nova Aquisi��o", "Equipamento", "Material de Minist�rio", "Repara��o"]);
+  const invTypes = new Set(["Nova Aquisição", "Equipamento", "Material de Ministério", "Reparação"]);
   if (canRelease && invTypes.has(record.requisition_type) && record.finance_status === "Recursos Liberados" && !record.inventory_item_id) {
     buttons.push(["sendToInventory", "financeApprovedReq", record.id, L("finSentToInventory")]);
   }
@@ -8814,7 +8814,7 @@ function requisitionReportTableRows(list) {
     money(r.approved_amount),
     money(r.released_amount),
     money(r.pending_amount),
-    financeApprovedReqBadge(r.finance_status || "Aguardando Libera��o"),
+    financeApprovedReqBadge(r.finance_status || "Aguardando Liberação"),
     r.released_by || r.resources_released_by || "-",
     formatDateTime(r.released_at || r.resources_released_at).split(",")[0] || "-",
     financeApprovedReqActions(r)
@@ -8912,7 +8912,7 @@ function renderRequisitionReportsPanel(options = {}) {
   const summaryCards = `
     <div class="row g-3 summary-cards-row requisition-report-cards mb-4">
       ${sm("bi-clipboard-check", L("finApprovedRequisitions"), stats.approvedCount || stats.total, moduleKey, { targetTab: options.targetTab || "approvedRequisitions", filterPayload: { card_filter: "approved" } })}
-      ${sm("bi-hourglass-split", L("finAwaitingRelease"), stats.awaiting, moduleKey, { targetTab: options.targetTab || "approvedRequisitions", filterPayload: { card_filter: "awaiting", finance_status: "Aguardando Libera��o" } })}
+      ${sm("bi-hourglass-split", L("finAwaitingRelease"), stats.awaiting, moduleKey, { targetTab: options.targetTab || "approvedRequisitions", filterPayload: { card_filter: "awaiting", finance_status: "Aguardando Liberação" } })}
       ${sm("bi-check-circle", L("finResourcesReleased"), stats.released, moduleKey, { targetTab: options.targetTab || "approvedRequisitions", filterPayload: { card_filter: "released", finance_status: "Recursos Liberados" } })}
       ${sm("bi-pie-chart", L("finPartialPayment"), stats.partial, moduleKey, { targetTab: options.targetTab || "approvedRequisitions", filterPayload: { card_filter: "partial", finance_status: "Parcialmente Pago" } })}
       ${sm("bi-cash-coin", L("reqApprovedValue"), money(stats.approvedTotal), moduleKey, { targetTab: options.targetTab || "approvedRequisitions" })}
@@ -11919,7 +11919,7 @@ function getDashboardCardsForUser(user = activeUser) {
     { roles: ["Super Admin", "Main Pastor", "National Admin", "Church Pastor", "Follow-Up Coordinator"], module: "followUp", icon: "bi-exclamation-triangle", title: lang === "pt" ? "Acompanhamentos Atrasados" : "Overdue Follow-Ups", value: getDashboardFollowUpsList().filter((r) => isFollowUpOverdue(r)).length, subtitle: L("needsAction"), periodLabel: L("now"), filterPayload: { overdue: true } },
     { roles: ["Super Admin", "Main Pastor", "National Admin", "Church Pastor", "Follow-Up Coordinator"], module: "followUp", icon: "bi-calendar-day", title: lang === "pt" ? "Acompanhamentos de Hoje" : "Today Follow-Ups", value: getDashboardFollowUpsList().filter((r) => isFollowUpToday(r)).length, subtitle: L("followUp"), periodLabel: L("now"), filterPayload: { today: true } },
     { roles: ["Super Admin", "Main Pastor", "National Admin", "Finance Head", "Requisition Officer"], module: "requisitions", icon: "bi-clipboard-check", title: L("approvedRequisitions"), value: reqs.filter((r) => r.approved_by && inDashboardRange(r, ["approved_at", "updated_at"], dashboardDateRange("month"))).length, subtitle: L("thisMonth"), periodLabel: L("thisMonth"), filterPayload: { status: "approved", period: "month" } },
-    { roles: ["Super Admin", "Main Pastor", "Finance Head"], module: "finance", targetTab: "approvedRequisitions", icon: "bi-hourglass-split", title: L("finAwaitingRelease"), value: reqs.filter((r) => /Aguardando Libera/.test(r.finance_status || r.status || "")).length, subtitle: L("needsAction"), periodLabel: L("now"), filterPayload: { finance_status: "Aguardando Libera��o" } },
+    { roles: ["Super Admin", "Main Pastor", "Finance Head"], module: "finance", targetTab: "approvedRequisitions", icon: "bi-hourglass-split", title: L("finAwaitingRelease"), value: reqs.filter((r) => /Aguardando Libera/.test(r.finance_status || r.status || "")).length, subtitle: L("needsAction"), periodLabel: L("now"), filterPayload: { finance_status: "Aguardando Liberação" } },
     { roles: ["Finance Head", "Finance Officer"], module: "finance", targetTab: "verification", icon: "bi-patch-question", title: L("pendingVerification"), value: finance.filter((f) => f.estado === FINANCE_STATUS_PENDING).length, subtitle: L("publicSubmissions"), periodLabel: L("now"), filterPayload: { status: FINANCE_STATUS_PENDING } },
     { roles: ["HR Manager", "Super Admin", "Main Pastor"], module: "staffHr", icon: "bi-people-fill", title: L("staffActive"), value: staff.filter((s) => statusKey(s.status) === "active" || /Activo|Active/.test(s.status || "")).length, subtitle: L("staffHr"), periodLabel: L("now"), filterPayload: { status: "Activo" } },
     { roles: ["HR Manager"], module: "staffHr", targetTab: "birthdays", icon: "bi-cake2", title: L("birthdaysThisMonth"), value: staff.filter((s) => String(s.date_of_birth || "").slice(5, 7) === String(dashboardToday().getMonth() + 1).padStart(2, "0")).length, subtitle: L("staffHr"), periodLabel: L("thisMonth"), filterPayload: { has_dob: true } },
@@ -11966,7 +11966,7 @@ function getDashboardCardsForUser(user = activeUser) {
     { id: "media-my-next", priority: 10, roles: ["Media Team Member"], module: "media", targetTab: "schedules", icon: "bi-calendar-check", title: L("mediaNextService"), value: myMediaAssignments[0]?.schedule?.service_name || "-", subtitle: myMediaAssignments[0] ? mediaRoleName(myMediaAssignments[0].role) : L("mediaSchedules"), periodLabel: L("now"), filterPayload: { tab: "schedules" } },
     { id: "media-my-role", priority: 12, roles: ["Media Team Member"], module: "media", targetTab: "team", icon: "bi-person-video3", title: L("role"), value: mediaTechnicians[0]?.roles_can_perform?.map(mediaRoleName).join(", ") || "-", subtitle: L("myScope"), periodLabel: L("now"), filterPayload: { tab: "team" } },
     { id: "media-my-evals", priority: 14, roles: ["Media Team Member"], module: "media", targetTab: "performance", icon: "bi-clipboard2-pulse", title: L("mediaPerformanceEvaluation"), value: mediaEvaluations.filter((item) => mediaTechnicianName(item.technician_id) === (user.assigned_staff_name || user.name)).length, subtitle: L("myScope"), periodLabel: L("now"), filterPayload: { tab: "performance" } },
-    { id: "req-review", priority: 12, roles: ["Requisition Officer"], module: "requisitions", targetTab: "review", icon: "bi-search", title: L("reqTabReview"), value: reqs.filter((r) => /Revis/.test(r.status || "")).length, subtitle: L("requisitions"), periodLabel: L("now"), filterPayload: { status: "Em Revis�o" } },
+    { id: "req-review", priority: 12, roles: ["Requisition Officer"], module: "requisitions", targetTab: "review", icon: "bi-search", title: L("reqTabReview"), value: reqs.filter((r) => /Revis/.test(r.status || "")).length, subtitle: L("requisitions"), periodLabel: L("now"), filterPayload: { status: "Em Revisão" } },
     { id: "req-pastoral", priority: 14, roles: ["Requisition Officer"], module: "requisitions", targetTab: "pastoral", icon: "bi-person-check", title: L("reqTabPastoral"), value: reqs.filter((r) => /Pastor Principal|Enviado ao Pastor/.test(r.status || "")).length, subtitle: L("needsAction"), periodLabel: L("now"), filterPayload: { status: "Enviado ao Pastor Principal" } },
     { id: "req-returned", priority: 16, roles: ["Requisition Officer"], module: "requisitions", targetTab: "received", icon: "bi-arrow-return-left", title: L("returned"), value: reqs.filter((r) => /Devolv/.test(r.status || "")).length, subtitle: L("reqReturnForCorrection"), periodLabel: L("now"), filterPayload: { status: "Devolvido" } },
     { id: "req-sent-finance", priority: 20, roles: ["Requisition Officer"], module: "requisitions", targetTab: "approved", icon: "bi-send-check", title: L("finSentToFinance"), value: reqs.filter((r) => r.sent_to_finance || r.sent_to_finance_at).length, subtitle: L("finance"), periodLabel: L("now"), filterPayload: { sent_to_finance: true } },
@@ -18801,7 +18801,7 @@ function renderFinance() {
         </div>
         <div class="row g-3 summary-cards-row mt-2">
           ${sm("bi-clipboard-check", L("finApprovedRequisitions"), approvedReqStats.total || 0, "finance", { targetTab: "approvedRequisitions" })}
-          ${sm("bi-hourglass-split", L("finAwaitingRelease"), approvedReqStats.awaiting || 0, "finance", { targetTab: "approvedRequisitions", filterPayload: { finance_status: "Aguardando Libera��o" } })}
+          ${sm("bi-hourglass-split", L("finAwaitingRelease"), approvedReqStats.awaiting || 0, "finance", { targetTab: "approvedRequisitions", filterPayload: { finance_status: "Aguardando Liberação" } })}
           ${sm("bi-cash-stack", L("finReleasedThisMonth"), approvedReqStats.releasedThisMonth || 0, "finance", { targetTab: "approvedRequisitions", filterPayload: { finance_status: "Recursos Liberados", period: "month" } })}
           ${sm("bi-graph-up", L("finTotalReleasedMonth"), money(approvedReqStats.releasedValueMonth || 0), "finance", { targetTab: "approvedRequisitions", filterPayload: { finance_status: "Recursos Liberados", period: "month" } })}
           ${sm("bi-clock-history", L("reqRemainingPending"), money(approvedReqStats.pendingTotal || 0), "finance", { targetTab: "reports", filterPayload: { card_filter: "awaiting" } })}
@@ -18830,11 +18830,11 @@ function renderFinance() {
       const reqStats = disbLib.computeStats(filteredApproved);
       tabContent = moduleSection(L("financeTabApprovedReq"), L("finApprovedReqHint"), "bi-clipboard-check", "", `
         <div class="row g-3 summary-cards-row mb-4">
-          ${sm("bi-hourglass-split", L("finAwaitingRelease"), reqStats.awaiting, "finance", { targetTab: "approvedRequisitions", filterPayload: { finance_status: "Aguardando Libera��o" } })}
+          ${sm("bi-hourglass-split", L("finAwaitingRelease"), reqStats.awaiting, "finance", { targetTab: "approvedRequisitions", filterPayload: { finance_status: "Aguardando Liberação" } })}
           ${sm("bi-check-circle", L("finResourcesReleased"), reqStats.released, "finance", { targetTab: "approvedRequisitions", filterPayload: { finance_status: "Recursos Liberados" } })}
           ${sm("bi-cash-coin", L("finApprovedAmount"), money(reqStats.approvedTotal), "finance", { targetTab: "approvedRequisitions" })}
           ${sm("bi-wallet2", L("finReleasedAmount"), money(reqStats.releasedTotal), "finance", { targetTab: "approvedRequisitions" })}
-          ${sm("bi-clock-history", L("finPendingPayments"), reqStats.pendingPayments, "finance", { targetTab: "approvedRequisitions", filterPayload: { finance_status: "Aguardando Libera��o" } })}
+          ${sm("bi-clock-history", L("finPendingPayments"), reqStats.pendingPayments, "finance", { targetTab: "approvedRequisitions", filterPayload: { finance_status: "Aguardando Liberação" } })}
           ${sm("bi-pie-chart", L("finPartiallyPaid"), reqStats.partial, "finance", { targetTab: "approvedRequisitions", filterPayload: { finance_status: "Parcialmente Pago" } })}
         </div>
         ${financeApprovedReqFilterBar(filters)}
@@ -18850,7 +18850,7 @@ function renderFinance() {
             r.approved_by || "-",
             money(r.approved_amount || r.estimated_amount),
             money(r.released_amount || r.amount_released || 0),
-            financeApprovedReqBadge(r.finance_status || "Aguardando Libera��o"),
+            financeApprovedReqBadge(r.finance_status || "Aguardando Liberação"),
             financeApprovedReqActions(r)
           ])
         ) : noResultsHtml()}`
@@ -25462,9 +25462,9 @@ function renderFevo(activeTab = "overview") {
     <div class="row g-4">
       ${show("config") ? `<div class="col-12">${modulePanel("fevoConfig", L("weeklyConfiguration"), "fevoConfig", [L("weekStart"), L("weekEnd"), L("teamAActivity"), L("teamBActivity"), L("teamCActivity"), L("teamDActivity"), L("preparedBy"), L("status"), L("actions")], configs.map((item) => [item.semana_inicio, item.semana_fim, item.team_a_activity, item.team_b_activity, item.team_c_activity, item.team_d_activity, item.preparado_por, badge(item.estado), backendActions("fevoConfig", item.id)]), true)}</div>` : ""}
       ${show("followup") ? `<div class="col-12">${fevoActivityPanel("fevoFollowUp", L("followUp"), reports.filter((item) => ["Acompanhamento", "Follow-Up"].includes(item.activity_type)))}</div>` : ""}
-      ${show("evangelism") ? `<div class="col-12">${fevoActivityPanel("fevoEvangelism", L("evangelism"), reports.filter((item) => item.activity_type === "Evangeliza��o"))}</div>` : ""}
-      ${show("visitation") ? `<div class="col-12">${fevoActivityPanel("fevoVisitation", L("visitation"), reports.filter((item) => item.activity_type === "Visita��o"))}</div>` : ""}
-      ${show("prayer") ? `<div class="col-12">${fevoActivityPanel("fevoPrayer", L("prayer"), reports.filter((item) => item.activity_type === "Ora��o"))}</div>` : ""}
+      ${show("evangelism") ? `<div class="col-12">${fevoActivityPanel("fevoEvangelism", L("evangelism"), reports.filter((item) => item.activity_type === "Evangelização"))}</div>` : ""}
+      ${show("visitation") ? `<div class="col-12">${fevoActivityPanel("fevoVisitation", L("visitation"), reports.filter((item) => item.activity_type === "Visitação"))}</div>` : ""}
+      ${show("prayer") ? `<div class="col-12">${fevoActivityPanel("fevoPrayer", L("prayer"), reports.filter((item) => item.activity_type === "Oração"))}</div>` : ""}
       ${show("weeklyReports") ? `<div class="col-12">${modulePanel("fevoReport", L("weeklyReports"), "fevoReport", [L("weekStart"), L("team"), L("activityType"), L("groupName"), L("leaderName"), L("leadersPresent"), L("membersPresent"), L("ftInChurch"), L("status"), L("actions")], reports.map((item) => [item.semana_inicio, item.team, item.activity_type, item.group_name, item.leader_name, item.leaders_present, item.members_present, item.ft_in_church, badge(item.status), actionButtons([["view", "fevoReport", item.id, L("view")], ["edit", "fevoReport", item.id, L("edit")], ["submit", "fevoReport", item.id, L("submit")], ["approve", "fevoReport", item.id, L("approve")], ["reject", "fevoReport", item.id, L("reject")], ["export", "fevoReport", item.id, L("export")]])]), true)}</div>` : ""}
       ${show("noReports") ? `<div class="col-12">${modulePanel("fevoNoReport", L("groupsWithoutReport"), "fevoNoReport", [L("weekStart"), L("team"), L("activityType"), L("groupName"), L("leaderName"), L("reasonNotSubmitted"), L("contacted"), L("status"), L("actions")], noReports.map((item) => [item.semana_inicio, item.team, item.activity_type, item.group_name, item.leader_name, item.reason_not_submitted, yesNo(item.contacted), badge(item.status), backendActions("fevoNoReport", item.id)]), true)}</div><div class="col-12">${summaryTiles(L("groupsWithoutReport"), [[L("groupsNoReportThisWeek"), noReports.length], [L("recurringGroups"), noReports.filter((item) => statusKey(item.status) === "recurrent").length], [L("contacted"), noReports.filter((item) => item.contacted).length], [L("resolved"), noReports.filter((item) => statusKey(item.status) === "resolved").length]])}</div>` : ""}
       ${show("weeklyReports") ? `<div class="col-12">${renderFevoWeeklyReport(weeklyReports[0], reports, noReports)}</div>` : ""}
@@ -25505,8 +25505,8 @@ function renderFevoWeeklyReport(report, reports, noReports) {
 function fevoActivityPanel(id, title, rows) {
   const activity = rows[0]?.activity_type || title;
   const activityMetric = ["Acompanhamento", "Follow-Up"].includes(activity) ? ["soulsContacted", "souls_contacted"] :
-    activity === "Evangeliza��o" ? ["soulsEvangelized", "souls_evangelized"] :
-    activity === "Visita��o" ? ["soulsVisited", "souls_visited"] :
+    activity === "Evangelização" ? ["soulsEvangelized", "souls_evangelized"] :
+    activity === "Visitação" ? ["soulsVisited", "souls_visited"] :
     ["daysOfPrayer", "days_of_prayer"];
   return `
     <article id="panel-${id}" class="panel h-100">
@@ -25708,10 +25708,10 @@ function requisitionTimelineHtml(record) {
 
 function requisitionFinanceSectionHtml(record) {
   const lib = window.CERequisitions;
-  const approvedStatuses = [lib?.STATUSES?.APPROVED_AWAITING_RELEASE, lib?.STATUSES?.APPROVED, lib?.STATUSES?.RESOURCES_RELEASED, lib?.STATUSES?.PURCHASED, "Aprovado", "Aprovado � Aguardando Libera��o de Recursos", "Recursos Liberados"];
+  const approvedStatuses = [lib?.STATUSES?.APPROVED_AWAITING_RELEASE, lib?.STATUSES?.APPROVED, lib?.STATUSES?.RESOURCES_RELEASED, lib?.STATUSES?.PURCHASED, "Aprovado", "Aprovado — Aguardando Liberação de Recursos", "Recursos Liberados"];
   if (!approvedStatuses.includes(record.status) && !record.finance_status && !record.sent_to_finance) return "";
-  const finStatus = record.finance_status || "Aguardando Libera��o";
-  const pendingBadge = finStatus === "Aguardando Libera��o"
+  const finStatus = record.finance_status || "Aguardando Liberação";
+  const pendingBadge = finStatus === "Aguardando Liberação"
     ? `<span class="status-pill status-warn ms-2"><i class="bi bi-circle-fill"></i>${L("finPendingInFinance")}</span>`
     : finStatus === "Recursos Liberados" || finStatus === "Pago"
       ? `<span class="status-pill status-good ms-2"><i class="bi bi-circle-fill"></i>${L("finResourcesReleased")}</span>`
@@ -33008,7 +33008,7 @@ async function quickAction(action, type, id) {
     return;
   }
   if (action === "generate" && type === "mediaSchedule") return openForm("mediaSchedule", null);
-  if (type && type.startsWith("media") && (action === "generate" || action === "open")) return alert(`${L("media")}: ${lang === "pt" ? "Prot�tipo frontend preparado para liga��o ao backend." : "Frontend prototype ready for backend connection."}`);
+  if (type && type.startsWith("media") && (action === "generate" || action === "open")) return alert(`${L("media")}: ${lang === "pt" ? "Protótipo frontend preparado para ligação ao backend." : "Frontend prototype ready for backend connection."}`);
   if ((type && type.startsWith("media")) || type === "streamingChannel") {
     if (action === "update" || action === "evaluate") return openForm(type, id === "new" ? null : id);
   }

@@ -2,18 +2,18 @@
  * Finance module — taxonomy, filters, reports, charts (frontend-first).
  */
 const FINANCE_GENERAL_CATEGORIES = [
-  "D�zimo", "Ofertas", "Ac��o de Gra�as", "Prim�cias", "Semente de F�", "Ofertas Especiais", "Outros"
+  "Dízimo", "Ofertas", "Acção de Graças", "Primícias", "Semente de Fé", "Ofertas Especiais", "Outros"
 ];
 
 const FINANCE_PARTNERSHIP_ARMS = [
   "Escola de Cura",
   "Rapsódia de Realidades",
   "Loveworld SAT",
-  "Construtores de Vis�o",
+  "Construtores de Visão",
   "Missões de Cidades do Interior",
   "Alcançar Moçambique",
   "Projecto da Igreja",
-  "Projecto de Constru��o de Igreja",
+  "Projecto de Construção de Igreja",
   "Rapsódias das Crianças",
   "Mandato de Célula",
   "Outros Braços"
@@ -32,7 +32,7 @@ const FINANCE_CATEGORY_ALIASES = {
 
 const FINANCE_REPORT_CATEGORY_BUCKETS = [
   { key: "tithe", labelKey: "financeReportTithe", match: ["Dízimo"] },
-  { key: "offerings", labelKey: "financeReportOfferings", match: ["Ofertas", "Ac��o de Gra�as", "Ofertas Especiais"] },
+  { key: "offerings", labelKey: "financeReportOfferings", match: ["Ofertas", "Acção de Graças", "Ofertas Especiais"] },
   { key: "partnerships", labelKey: "financeReportPartnerships", groups: ["Parceria", "Projecto", "Missões"] },
   { key: "firstfruits", labelKey: "financeReportFirstfruits", match: ["Primícias"] },
   { key: "seed", labelKey: "financeReportSeed", match: ["Semente de Fé"] },

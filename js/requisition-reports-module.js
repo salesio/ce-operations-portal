@@ -5,7 +5,7 @@
   "use strict";
 
   const FINANCE_STATUS = {
-    AWAITING: "Aguardando Libera��o",
+    AWAITING: "Aguardando Liberação",
     RELEASED: "Recursos Liberados",
     PAID: "Pago",
     PARTIAL: "Parcialmente Pago",
@@ -168,7 +168,7 @@
       map[s] = (map[s] || 0) + 1;
     });
     const labels = {
-      "Aguardando Libera��o": "finAwaitingRelease",
+      "Aguardando Liberação": "finAwaitingRelease",
       "Recursos Liberados": "finResourcesReleased",
       "Pago": "finMarkPaid",
       "Parcialmente Pago": "finPartialPayment",

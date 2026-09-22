@@ -7,10 +7,10 @@
   const STATUSES = {
     DRAFT: "Rascunho",
     SUBMITTED: "Submetido",
-    UNDER_REVIEW: "Em Revis�o",
+    UNDER_REVIEW: "Em Revisão",
     SENT_TO_PASTOR: "Enviado ao Pastor Principal",
-    RETURNED_FOR_CORRECTION: "Devolvido para Corre��o",
-    APPROVED_AWAITING_RELEASE: "Aprovado � Aguardando Libera��o de Recursos",
+    RETURNED_FOR_CORRECTION: "Devolvido para Correção",
+    APPROVED_AWAITING_RELEASE: "Aprovado — Aguardando Liberação de Recursos",
     APPROVED: "Aprovado",
     REJECTED: "Rejeitado",
     RESOURCES_RELEASED: "Recursos Liberados",
@@ -20,7 +20,7 @@
   };
 
   const TYPES = [
-    "Nova Aquisi��o", "Repara��o", "Material de Minist�rio", "Transporte",
+    "Nova Aquisição", "Reparação", "Material de Ministério", "Transporte",
     "Evento/Programa", "Equipamento", "Pagamento de Serviço", "Apoio Operacional", "Outro"
   ];
 
@@ -40,7 +40,7 @@
     history: [STATUSES.CLOSED]
   };
 
-  const INVENTORY_TYPES = new Set(["Nova Aquisi��o", "Equipamento", "Material de Minist�rio", "Repara��o"]);
+  const INVENTORY_TYPES = new Set(["Nova Aquisição", "Equipamento", "Material de Ministério", "Reparação"]);
 
   const PASTORAL_DECISION_ROLES = new Set(["Main Pastor", "Super Admin"]);
 
@@ -252,7 +252,7 @@
         if (window.CEFinanceDisbursements?.onRequisitionApproved) {
           window.CEFinanceDisbursements.onRequisitionApproved(state, record, user);
         } else {
-          record.finance_status = "Aguardando Libera��o";
+          record.finance_status = "Aguardando Liberação";
           record.sent_to_finance_at = now;
           record.sent_to_finance = true;
         }

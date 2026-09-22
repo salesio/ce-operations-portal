@@ -128,7 +128,7 @@ function TabButton(label, options = {}) {
 function ModuleTabs(buttonsHtml = "", options = {}) {
   const className = options.className || "";
   const surface = options.variant ? surfaceClass(options.variant) : "";
-  const aria = options.ariaLabel || uiT("moduleNavigation", "Navega��o do m�dulo");
+  const aria = options.ariaLabel || uiT("moduleNavigation", "Navegação do módulo");
   const classes = ["module-tabs", "tab-strip", "module-tab-strip", surface, className].filter(Boolean).join(" ");
   return `<nav class="${classes}" role="tablist" aria-label="${aria}">${buttonsHtml}</nav>`;
 }
@@ -137,7 +137,7 @@ function ViewToggle(activeView = "table", labels = {}) {
   const cardsLabel = labels.cards || uiT("cardsView", "Cartões");
   const tableLabel = labels.table || uiT("tableView", "Tabela");
   return `
-    <div class="view-toggle light-surface" role="group" aria-label="${uiT("viewMode", "Modo de visualiza��o")}">
+    <div class="view-toggle light-surface" role="group" aria-label="${uiT("viewMode", "Modo de visualização")}">
       <button type="button" class="view-toggle-btn ${activeView === "cards" ? "active" : ""}" data-view-mode="cards"><i class="bi bi-grid-3x3-gap"></i><span>${cardsLabel}</span></button>
       <button type="button" class="view-toggle-btn ${activeView === "table" ? "active" : ""}" data-view-mode="table"><i class="bi bi-table"></i><span>${tableLabel}</span></button>
     </div>`;
