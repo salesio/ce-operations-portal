@@ -4501,99 +4501,171 @@ Object.assign(TEXT.en, {
   partnershipContributions: "Contributions",
   partnershipHighlights: "Highlights",
   partnershipAnalytics: "Analytics",
-  needsPromotion: "Needs Promotion"
+  needsPromotion: "Needs Promotion",
+  mediaRolesFunctions: "Roles & Functions",
+  rolesCanPerform: "Roles & Functions",
+  rolesFunctions: "Roles & Functions",
+  skillLevel: "Skill Level",
+  skillLevel_iniciante: "Beginner",
+  skillLevel_intermedio: "Intermediate",
+  skillLevel_avancado: "Advanced",
+  skillLevel_supervisor: "Supervisor",
+  cameraOperator: "Camera Operator",
+  soundTechnician: "Sound Technician",
+  videoMixerOperator: "Video Mixer Operator",
+  streamingTechnician: "Streaming / Broadcast Technician",
+  slidesOperator: "Slides / Projection Operator",
+  scriptureOperator: "Scripture Operator",
+  photographer: "Photographer",
+  graphicsDesigner: "Graphics Designer",
+  lightingOperator: "Lighting Operator",
+  mediaSupervisor: "Media Supervisor",
+  mediaDirector: "Media Director",
+  technicalAssistant: "Technical Assistant",
+  videoEditor: "Video Editor",
+  socialMediaPublisher: "Social Media / Publisher"
 });
+
+Object.assign(TEXT.pt, {
+  mediaRolesFunctions: "Papéis & Funções",
+  rolesCanPerform: "Papéis & Funções",
+  rolesFunctions: "Papéis & Funções",
+  skillLevel: "Nível de Habilidade",
+  skillLevel_iniciante: "Iniciante",
+  skillLevel_intermedio: "Intermédio",
+  skillLevel_avancado: "Avançado",
+  skillLevel_supervisor: "Supervisor",
+  cameraOperator: "Operador de Câmera",
+  soundTechnician: "Técnico de Som",
+  videoMixerOperator: "Operador de Video Mixer",
+  streamingTechnician: "Técnico de Transmissão",
+  slidesOperator: "Operador de Slides",
+  scriptureOperator: "Lançador de Escrituras",
+  photographer: "Fotógrafo",
+  graphicsDesigner: "Designer Gráfico",
+  lightingOperator: "Iluminação",
+  mediaSupervisor: "Supervisor de Mídia",
+  mediaDirector: "Director de Mídia",
+  technicalAssistant: "Assistente Técnico",
+  videoEditor: "Edição de Vídeo",
+  socialMediaPublisher: "Social Media / Publicação"
+});
+
+function preserveCase(match, target) {
+  if (!match || !target) return target || "";
+  if (match === match.toUpperCase() && match.length > 1) return target.toUpperCase();
+  if (match[0] === match[0].toUpperCase()) {
+    return target.charAt(0).toUpperCase() + target.slice(1);
+  }
+  return target.charAt(0).toLowerCase() + target.slice(1);
+}
 
 function cleanDisplayText(value) {
   let text = String(value ?? "");
   if (!text) return text;
-  if (/[ÃÂâï¿½]/.test(text)) {
+  if (/[ÃÂâï¿½\uFFFD]/.test(text)) {
     try {
       const bytes = Uint8Array.from([...text].map((char) => char.charCodeAt(0) & 255));
       const decoded = new TextDecoder("utf-8", { fatal: false }).decode(bytes);
       if (decoded && !/\uFFFD/.test(decoded.replace(/\uFFFD/g, ""))) text = decoded;
       else if ((decoded.match(/[A-Za-zÀ-ÿ]/g) || []).length >= (text.match(/[A-Za-z]/g) || []).length * 0.7) text = decoded;
     } catch (error) {
-      // Keep the original and continue with the replacement table below.
+      // Keep original
     }
   }
-  text = text
-    .replace(/Irmã/g, "Irmã")
-    .replace(/Irmão/g, "Irmão")
-    .replace(/João/g, "João")
-    .replace(/São/g, "São")
-    .replace(/Sião/gi, "Sião")
-    .replace(/Moçambique/g, "Moçambique")
-    .replace(/Diácono/g, "Diácono")
-    .replace(/Dízimo/g, "Dízimo")
-    .replace(/Manhã/g, "Manhã")
-    .replace(/Líder/g, "Líder")
-    .replace(/Português/g, "Português")
-    .replace(/Terça/g, "Terça")
-    .replace(/Família/g, "Família")
-    .replace(/sensível/g, "sensível")
-    .replace(/célula/gi, (match) => match[0] === "C" ? "Célula" : "célula");
-  const replacements = [
-    [/([\uFFFD\?]){2}es/g, "ções"], [/([\uFFFD\?]){2}o/g, "ção"], [/([\uFFFD\?]){2}a/g, "ça"],
-    [/Neg[óo]+cios/gi, "Negócios"], [/Lideran[çc]+a/gi, "Liderança"],
-    [/Sess[õo]+es/gi, "Sessões"], [/Sess[ãa]+o/gi, "Sessão"],
-    [/Compar[êe]+ncia/gi, "Comparência"], [/Quest[ãa]+o/gi, "Questão"],
-    [/Decis[ãa]+o/gi, "Decisão"], [/Orienta[çc]+[ãa]+o/gi, "Orientação"],
-    [/Resolu[çc]+[ãa]+o/gi, "Resolução"],
-    [/Manuten[\uFFFD\?]+o/gi, "Manutenção"], [/Repara[\uFFFD\?]+es/gi, "Reparações"], [/Inventário/gi, "Inventário"],
-    [/requisi[\uFFFD\?]+es/gi, "requisições"], [/Requisi[\uFFFD\?]+es/g, "Requisições"], [/Requisi[\uFFFD\?]+o/g, "Requisição"],
-    [/submissão/gi, "submissão"], [/Submissão/g, "Submissão"], [/contribui[\uFFFD\?]+o/gi, "contribuição"],
-    [/verifica[\uFFFD\?]+o/gi, "verificação"], [/Verifica[\uFFFD\?]+o/g, "Verificação"], [/libera[\uFFFD\?]+o/gi, "liberação"],
-    [/ac[\uFFFD\?]+o/gi, "acção"], [/Ac[\uFFFD\?]+o/g, "Acção"], [/ac[\uFFFD\?]+es/gi, "acções"], [/Ac[\uFFFD\?]+es/g, "Acções"],
-    [/avalia[\uFFFD\?]+o/gi, "avaliação"], [/Avalia[\uFFFD\?]+o/g, "Avaliação"], [/avalia[\uFFFD\?]+es/gi, "avaliações"],
-    [/dedica[\uFFFD\?]+o/gi, "dedicação"], [/Dedica[\uFFFD\?]+o/g, "Dedicação"], [/bebés/gi, "bebés"], [/Bebés/g, "Bebés"],
-    [/família/gi, "família"], [/Família/g, "Família"], [/técnico/gi, "técnico"], [/Técnico/g, "Técnico"],
-    [/mídia/gi, "mídia"], [/Mídia/g, "Mídia"], [/método/gi, "método"], [/Método/g, "Método"],
-    [/módulo/gi, "módulo"], [/Módulo/g, "Módulo"], [/mês/gi, "mês"], [/Mês/g, "Mês"],
-    [/mãe/gi, "mãe"], [/Mãe/g, "Mãe"], [/métrica/gi, "métrica"], [/Métrica/g, "Métrica"],
-    [/não/gi, "não"], [/Não/g, "Não"], [/já/gi, "já"], [/Já/g, "Já"], [/até/gi, "até"], [/Até/g, "Até"],
-    [/próximo/gi, "próximo"], [/Próximo/g, "Próximo"], [/próxima/gi, "próxima"], [/Próxima/g, "Próxima"],
-    [/histórico/gi, "histórico"], [/Histórico/g, "Histórico"], [/protótipo/gi, "protótipo"], [/Protótipo/g, "Protótipo"],
-    [/célula/gi, "célula"], [/Célula/g, "Célula"], [/células/gi, "células"], [/Células/g, "Células"],
-    [/fun[\uFFFD\?]+o/gi, "função"], [/Fun[\uFFFD\?]+o/g, "Função"], [/permissões/gi, "permissões"], [/notifica[\uFFFD\?]+es/gi, "notificações"],
-    [/autentica[\uFFFD\?]+o/gi, "autenticação"], [/integra[\uFFFD\?]+o/gi, "integração"], [/Funda[\uFFFD\?]+o/g, "Fundação"], [/funda[\uFFFD\?]+o/g, "fundação"],
-    [/(\uFFFD|\?){2}es/g, "ções"], [/(\uFFFD|\?){2}o/g, "ção"], [/(\uFFFD|\?){2}a/g, "ça"],
-    [/Neg[óo]+cios/gi, "Negócios"], [/Lideran[çc]+a/gi, "Liderança"],
-    [/Sess[õo]+es/gi, "Sessões"], [/Sess[ãa]+o/gi, "Sessão"],
-    [/Compar[êe]+ncia/gi, "Comparência"], [/Quest[ãa]+o/gi, "Questão"],
-    [/Decis[ãa]+o/gi, "Decisão"], [/Orienta[çc]+[ãa]+o/gi, "Orientação"],
-    [/Resolu[çc]+[ãa]+o/gi, "Resolução"],
-    [/Manuten[\uFFFD\?]+o/gi, "Manutenção"], [/Repara[\uFFFD\?]+es/gi, "Reparações"], [/Invent[\uFFFD\?]rio/gi, "Inventário"],
-    [/requisi[\uFFFD\?]+es/gi, "requisições"], [/Requisi[\uFFFD\?]+es/g, "Requisições"], [/Requisi[\uFFFD\?]+o/g, "Requisição"],
-    [/submiss[\uFFFD\?]o/gi, "submissão"], [/Submiss[\uFFFD\?]o/g, "Submissão"], [/contribui[\uFFFD\?]+o/gi, "contribuição"],
-    [/verifica[\uFFFD\?]+o/gi, "verificação"], [/Verifica[\uFFFD\?]+o/g, "Verificação"], [/libera[\uFFFD\?]+o/gi, "liberação"],
-    [/ac[\uFFFD\?]+o/gi, "acção"], [/Ac[\uFFFD\?]+o/g, "Acção"], [/ac[\uFFFD\?]+es/gi, "acções"], [/Ac[\uFFFD\?]+es/g, "Acções"],
-    [/avalia[\uFFFD\?]+o/gi, "avaliação"], [/Avalia[\uFFFD\?]+o/g, "Avaliação"], [/avalia[\uFFFD\?]+es/gi, "avaliações"],
-    [/dedica[\uFFFD\?]+o/gi, "dedicação"], [/Dedica[\uFFFD\?]+o/g, "Dedicação"], [/beb[\uFFFD\?]s/gi, "bebés"], [/Beb[\uFFFD\?]s/g, "Bebés"],
-    [/fam[\uFFFD\?]lia/gi, "família"], [/Fam[\uFFFD\?]lia/g, "Família"], [/t[\uFFFD\?]cnico/gi, "técnico"], [/T[\uFFFD\?]cnico/g, "Técnico"],
-    [/m[\uFFFD\?]dia/gi, "mídia"], [/M[\uFFFD\?]dia/g, "Mídia"], [/m[\uFFFD\?]todo/gi, "método"], [/M[\uFFFD\?]todo/g, "Método"],
-    [/m[\uFFFD\?]dulo/gi, "módulo"], [/Mdulo/g, "Módulo"], [/\bm[\uFFFD\?]s\b/gi, "mês"], [/\bMs\b/g, "Mês"],
-    [/\bm[\uFFFD\?]e\b/gi, "mãe"], [/\bMe\b/g, "Mãe"], [/m[\uFFFD\?]trica/gi, "métrica"], [/M[\uFFFD\?]trica/g, "Métrica"],
-    [/\bn[\uFFFD\?]o\b/gi, "não"], [/\bN[\uFFFD\?]o\b/g, "Não"], [/\bj[\uFFFD\?]\b/gi, "já"], [/\bJ[\uFFFD\?]\b/g, "Já"], [/\bat[\uFFFD\?]\b/gi, "até"], [/\bAt[\uFFFD\?]\b/g, "Até"],
-    [/pr[\uFFFD\?]ximo/gi, "próximo"], [/Pr[\uFFFD\?]ximo/g, "Próximo"], [/pr[\uFFFD\?]xima/gi, "próxima"], [/Pr[\uFFFD\?]xima/g, "Próxima"],
-    [/hist[\uFFFD\?]rico/gi, "histórico"], [/Hist[\uFFFD\?]rico/g, "Histórico"], [/prot[\uFFFD\?]tipo/gi, "protótipo"], [/Prot[\uFFFD\?]tipo/g, "Protótipo"],
-    [/c[\uFFFD\?]lula/gi, "célula"], [/C[\uFFFD\?]lula/g, "Célula"], [/c[\uFFFD\?]lulas/gi, "células"], [/C[\uFFFD\?]lulas/g, "Células"],
-    [/fun[\uFFFD\?]+o/gi, "função"], [/Fun[\uFFFD\?]+o/g, "Função"], [/permiss[\uFFFD\?]es/gi, "permissões"], [/notifica[\uFFFD\?]+es/gi, "notificações"],
-    [/autentica[\uFFFD\?]+o/gi, "autenticação"], [/integra[\uFFFD\?]+o/gi, "integração"], [/Funda[\uFFFD\?]+o/g, "Fundação"], [/funda[\uFFFD\?]+o/g, "fundação"],
-    [/finan[\uFFFD\?]as/gi, "finanças"], [/Finan[\uFFFD\?]as/g, "Finanças"], [/vis[\uFFFD\?]o/gi, "visão"], [/Vis[\uFFFD\?]o/g, "Visão"],
-    [/miss[\uFFFD\?]o/gi, "missão"], [/Miss[\uFFFD\?]o/g, "Missão"], [/ora[\uFFFD\?]+o/gi, "oração"], [/Ora[\uFFFD\?]+o/g, "Oração"],
-    [/visita[\uFFFD\?]+o/gi, "visitação"], [/Visita[\uFFFD\?]+o/g, "Visitação"], [/evangeliza[\uFFFD\?]+o/gi, "evangelização"],
-    [/forma[\uFFFD\?]+o/gi, "formação"], [/Forma[\uFFFD\?]+o/g, "Formação"], [/pris[\uFFFD\?]o/gi, "prisão"], [/Pris[\uFFFD\?]o/g, "Prisão"],
-    [/espa[\uFFFD\?]os/gi, "espaços"], [/Espa[\uFFFD\?]os/g, "Espaços"], [/movimenta[\uFFFD\?]+es/gi, "movimentações"],
-    [/aquisi[\uFFFD\?]+es/gi, "aquisições"], [/Aquisi[\uFFFD\?]+es/g, "Aquisições"], [/aten[\uFFFD\?]+o/gi, "atenção"], [/Aten[\uFFFD\?]+o/g, "Atenção"],
-    [/descri[\uFFFD\?]+o/gi, "descrição"], [/Descri[\uFFFD\?]+o/g, "Descrição"], [/observa[\uFFFD\?]+o/gi, "observação"], [/classifica[\uFFFD\?]+o/gi, "classificação"],
-    [/corre[\uFFFD\?]+o/gi, "correcção"], [/Corre[\uFFFD\?]+o/g, "Correcção"], [/devolu[\uFFFD\?]+o/gi, "devolução"], [/evolu[\uFFFD\?]+o/gi, "evolução"],
-    [/sal[\uFFFD\?]rios/gi, "salários"], [/sa[\uFFFD\?]das/gi, "saídas"], [/\b[\uFFFD\?]?ltima\b/gi, "última"], [/\b[\uFFFD\?]?rea\b/gi, "área"], [/\b[\uFFFD\?]?mbito\b/gi, "âmbito"],
-    [/CONCLU[ÍI\uFFFD\?]*DO/g, "CONCLUÍDO"], [/Conclu[íi\uFFFD\?]*do/g, "Concluído"], [/conclu[íi\uFFFD\?]*do/g, "concluído"], [/CR[ÍI\uFFFD\?]*TICO/g, "CRÍTICO"], [/Cr[íi\uFFFD\?]*tico/g, "Crítico"], [/cr[íi\uFFFD\?]*tico/g, "crítico"]
+
+  const casePreservingRules = [
+    [/c[\uFFFD\?]?[\u00E2\u00E3a]mar[ao]s?/gi, (m) => preserveCase(m, /camera|câmera/i.test(m) ? "câmera" : "câmara")],
+    [/t[\uFFFD\?]?[\u00E9e]cnic[ao]s?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "técnicos" : "técnico")],
+    [/m[\uFFFD\?]?[\u00EDi]dias?/gi, (m) => preserveCase(m, "mídia")],
+    [/m[\uFFFD\?]?[\u00F3o]dulos?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "módulos" : "módulo")],
+    [/m[\uFFFD\?]?[\u00E9e]todos?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "métodos" : "método")],
+    [/m[\uFFFD\?]?[\u00E9e]tricas?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "métricas" : "métrica")],
+    [/\bm[\uFFFD\?]?[\u00EAs]s?\b/gi, (m) => preserveCase(m, "mês")],
+    [/\bm[\uFFFD\?]?[\u00E3a]es?\b/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "mães" : "mãe")],
+    [/\bn[\uFFFD\?]?[\u00E3a]o\b/gi, (m) => preserveCase(m, "não")],
+    [/\bj[\uFFFD\?]?[\u00E1a]\b/gi, (m) => preserveCase(m, "já")],
+    [/\bat[\uFFFD\?]?[\u00E9e]\b/gi, (m) => preserveCase(m, "até")],
+    [/pr[\uFFFD\?]?[\u00F3o]xim[ao]s?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("a") ? "próxima" : m.toLowerCase().endsWith("as") ? "próximas" : m.toLowerCase().endsWith("os") ? "próximos" : "próximo")],
+    [/hist[\uFFFD\?]?[\u00F3o]ric[ao]s?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "históricos" : "histórico")],
+    [/prot[\uFFFD\?]?[\u00F3o]tipos?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "protótipos" : "protótipo")],
+    [/c[\uFFFD\?]?[\u00E9e]lulas?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "células" : "célula")],
+    [/pap[\uFFFD\?]?[\u00E9e]is/gi, (m) => preserveCase(m, "papéis")],
+    [/fun[\uFFFD\?c\u00E7]+[\u00F5o\uFFFD\?]+es/gi, (m) => preserveCase(m, "funções")],
+    [/fun[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "função")],
+    [/permiss[\uFFFD\?o\u00F5]+es/gi, (m) => preserveCase(m, "permissões")],
+    [/notifica[\uFFFD\?c\u00E7]+[\u00F5o\uFFFD\?]+es/gi, (m) => preserveCase(m, "notificações")],
+    [/autentica[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "autenticação")],
+    [/integra[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "integração")],
+    [/funda[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "fundação")],
+    [/finan[\uFFFD\?c\u00E7]+as/gi, (m) => preserveCase(m, "finanças")],
+    [/vis[\uFFFD\?a\u00E3]+o/gi, (m) => preserveCase(m, "visão")],
+    [/miss[\uFFFD\?a\u00E3]+o/gi, (m) => preserveCase(m, "missão")],
+    [/ora[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "oração")],
+    [/visita[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "visitação")],
+    [/evangeliza[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "evangelização")],
+    [/forma[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "formação")],
+    [/pris[\uFFFD\?a\u00E3]+o/gi, (m) => preserveCase(m, "prisão")],
+    [/espa[\uFFFD\?c\u00E7]+os?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "espaços" : "espaço")],
+    [/movimenta[\uFFFD\?c\u00E7]+[\u00F5o\uFFFD\?]+es/gi, (m) => preserveCase(m, "movimentações")],
+    [/aquisi[\uFFFD\?c\u00E7]+[\u00F5o\uFFFD\?]+es/gi, (m) => preserveCase(m, "aquisições")],
+    [/aten[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "atenção")],
+    [/descri[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "descrição")],
+    [/observa[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "observação")],
+    [/classifica[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "classificação")],
+    [/corre[c\uFFFD\?]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "correcção")],
+    [/devolu[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "devolução")],
+    [/evolu[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "evolução")],
+    [/sal[\uFFFD\?a\u00E1]rios?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "salários" : "salário")],
+    [/sa[\uFFFD\?i\u00ED]das?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "saídas" : "saída")],
+    [/\b[\uFFFD\?]?ltim[ao]s?\b/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("a") ? "última" : m.toLowerCase().endsWith("as") ? "últimas" : "último")],
+    [/\b[\uFFFD\?]?reas?\b/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "áreas" : "área")],
+    [/\b[\uFFFD\?]?mbitos?\b/gi, (m) => preserveCase(m, "âmbito")],
+    [/relat[\uFFFD\?o\u00F3]rios?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "relatórios" : "relatório")],
+    [/neg[\uFFFD\?o\u00F3]cios?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "negócios" : "negócio")],
+    [/lideran[\uFFFD\?c\u00E7]+as?/gi, (m) => preserveCase(m, "liderança")],
+    [/sess[\uFFFD\?o\u00F5]+es/gi, (m) => preserveCase(m, "sessões")],
+    [/sess[\uFFFD\?a\u00E3]+o/gi, (m) => preserveCase(m, "sessão")],
+    [/compar[\uFFFD\?e\u00EA]ncias?/gi, (m) => preserveCase(m, "comparência")],
+    [/quest[\uFFFD\?a\u00E3]+o/gi, (m) => preserveCase(m, "questão")],
+    [/decis[\uFFFD\?a\u00E3]+o/gi, (m) => preserveCase(m, "decisão")],
+    [/orienta[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "orientação")],
+    [/resolu[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "resolução")],
+    [/manuten[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "manutenção")],
+    [/repara[\uFFFD\?c\u00E7]+[\u00F5o\uFFFD\?]+es/gi, (m) => preserveCase(m, "reparações")],
+    [/invent[\uFFFD\?a\u00E1]rios?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "inventários" : "inventário")],
+    [/requisi[\uFFFD\?c\u00E7]+[\u00F5o\uFFFD\?]+es/gi, (m) => preserveCase(m, "requisições")],
+    [/requisi[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "requisição")],
+    [/submiss[\uFFFD\?a\u00E3]+o/gi, (m) => preserveCase(m, "submissão")],
+    [/contribui[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "contribuição")],
+    [/verifica[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "verificação")],
+    [/libera[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "liberação")],
+    [/ac[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "acção")],
+    [/ac[\uFFFD\?c\u00E7]+[\u00F5o\uFFFD\?]+es/gi, (m) => preserveCase(m, "acções")],
+    [/avalia[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "avaliação")],
+    [/avalia[\uFFFD\?c\u00E7]+[\u00F5o\uFFFD\?]+es/gi, (m) => preserveCase(m, "avaliações")],
+    [/dedica[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "dedicação")],
+    [/beb[\uFFFD\?e\u00E9]s/gi, (m) => preserveCase(m, "bebés")],
+    [/fam[\uFFFD\?i\u00ED]lias?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "famílias" : "família")],
+    [/interm[\uFFFD\?e\u00E9]di[ao]s?/gi, (m) => preserveCase(m, "intermédio")],
+    [/avan[\uFFFD\?c\u00E7]ad[ao]s?/gi, (m) => preserveCase(m, "avançado")],
+    [/fot[\uFFFD\?o\u00F3]graf[ao]s?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "fotógrafos" : "fotógrafo")],
+    [/gr[\uFFFD\?a\u00E1]fic[ao]s?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "gráficos" : "gráfico")],
+    [/projec[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "projecção")],
+    [/ilumina[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "iluminação")],
+    [/transmiss[\uFFFD\?a\u00E3]+o/gi, (m) => preserveCase(m, "transmissão")],
+    [/publica[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "publicação")],
+    [/CONCLU[ÍI\uFFFD\?]*DO/g, () => "CONCLUÍDO"],
+    [/Conclu[íi\uFFFD\?]*do/g, () => "Concluído"],
+    [/conclu[íi\uFFFD\?]*do/g, () => "concluído"],
+    [/CR[ÍI\uFFFD\?]*TICO/g, () => "CRÍTICO"],
+    [/Cr[íi\uFFFD\?]*tico/g, () => "Crítico"],
+    [/cr[íi\uFFFD\?]*tico/g, () => "crítico"]
   ];
-  replacements.forEach(([pattern, replacement]) => {
-    text = text.replace(pattern, replacement);
-  });
+
+  for (const [regex, replacer] of casePreservingRules) {
+    text = text.replace(regex, replacer);
+  }
   return text;
 }
 
@@ -4603,6 +4675,16 @@ function formatCleanPersonName(name) {
   // Deduplicate redundant titles/honorifics like "Irmão Irmão", "Irmã Irmã", "Pastor Pastor"
   text = text.replace(/\b(Irm[ãa]o|Irm[ãa]|Pastor|Pastora|Di[áa]cono|Diaconisa|Bispo|Ap[óo]stolo)\s+\1\b/gi, "$1");
   return text;
+}
+
+function normalizeSkillLevelKey(val) {
+  const s = String(val || "").trim().toLowerCase();
+  if (!s) return "";
+  if (/inic|begin/.test(s)) return "iniciante";
+  if (/interm/.test(s)) return "intermedio";
+  if (/avan|advanc/.test(s)) return "avancado";
+  if (/superv/.test(s)) return "supervisor";
+  return s;
 }
 
 function escapeAttr(value) {
@@ -27226,14 +27308,32 @@ function getMediaState() {
   const media = state.media;
   media.technicians = Array.isArray(media.technicians) ? media.technicians : [];
   media.roles = Array.isArray(media.roles) ? media.roles : [];
-  if (!media.roles.length && Array.isArray(window.CESupabase?.MEDIA_ROLES_SEED) && window.CESupabase.MEDIA_ROLES_SEED.length) {
-    media.roles = structuredClone(window.CESupabase.MEDIA_ROLES_SEED);
-  }
   media.services = Array.isArray(media.services) ? media.services : [];
   media.schedules = Array.isArray(media.schedules) ? media.schedules : [];
   media.streamingChannels = Array.isArray(media.streamingChannels) ? media.streamingChannels : [];
   media.performanceEvaluations = Array.isArray(media.performanceEvaluations) ? media.performanceEvaluations : [];
   media.awards = Array.isArray(media.awards) ? media.awards : [];
+
+  if (!media.roles.length && typeof localStorage !== "undefined") {
+    try {
+      const cached = JSON.parse(localStorage.getItem("ce-data-layer:media-roles") || "[]");
+      if (Array.isArray(cached) && cached.length) media.roles = cached;
+    } catch (_) {}
+  }
+  if (!media.roles.length && Array.isArray(window.CESupabase?.MEDIA_ROLES_SEED) && window.CESupabase.MEDIA_ROLES_SEED.length) {
+    media.roles = structuredClone(window.CESupabase.MEDIA_ROLES_SEED);
+  }
+
+  if (!media.technicians.length && typeof localStorage !== "undefined") {
+    try {
+      const cached = JSON.parse(localStorage.getItem("ce-data-layer:media-team") || "[]");
+      if (Array.isArray(cached) && cached.length) media.technicians = cached;
+    } catch (_) {}
+  }
+  if (!media.technicians.length && Array.isArray(window.CESupabase?.MEDIA_TEAM_SEED) && window.CESupabase.MEDIA_TEAM_SEED.length) {
+    media.technicians = structuredClone(window.CESupabase.MEDIA_TEAM_SEED);
+  }
+
   return media;
 }
 
@@ -27246,6 +27346,81 @@ function mediaVisibleTechnicians(technicians) {
   return rows;
 }
 
+const STANDARD_MEDIA_ROLE_KEYS = {
+  "camera-operator": "cameraOperator",
+  "camera operator": "cameraOperator",
+  "camera_operator": "cameraOperator",
+  "operador de câmera": "cameraOperator",
+  "operador de camera": "cameraOperator",
+  "operador de cmera": "cameraOperator",
+  "operador de câmara": "cameraOperator",
+  "operador de camara": "cameraOperator",
+  "sound-technician": "soundTechnician",
+  "sound technician": "soundTechnician",
+  "sound_technician": "soundTechnician",
+  "técnico de som": "soundTechnician",
+  "tecnico de som": "soundTechnician",
+  "tcnico de som": "soundTechnician",
+  "streaming-operator": "streamingTechnician",
+  "streaming operator": "streamingTechnician",
+  "streaming_operator": "streamingTechnician",
+  "técnico de streaming / transmissão": "streamingTechnician",
+  "tecnico de streaming / transmissao": "streamingTechnician",
+  "técnico de transmissão": "streamingTechnician",
+  "tecnico de transmissao": "streamingTechnician",
+  "photographer": "photographer",
+  "fotógrafo": "photographer",
+  "fotografo": "photographer",
+  "graphics-designer": "graphicsDesigner",
+  "graphics designer": "graphicsDesigner",
+  "graphics_designer": "graphicsDesigner",
+  "designer gráfico": "graphicsDesigner",
+  "designer grafico": "graphicsDesigner",
+  "projection-operator": "slidesOperator",
+  "projection operator": "slidesOperator",
+  "projection_operator": "slidesOperator",
+  "operador de projecção / slides": "slidesOperator",
+  "operador de projeção / slides": "slidesOperator",
+  "operador de projeccao / slides": "slidesOperator",
+  "operador de slides": "slidesOperator",
+  "scriptures-operator": "scriptureOperator",
+  "scriptures operator": "scriptureOperator",
+  "operador de escrituras": "scriptureOperator",
+  "lançador de escrituras": "scriptureOperator",
+  "lancador de escrituras": "scriptureOperator",
+  "video-mixer-operator": "videoMixerOperator",
+  "video mixer operator": "videoMixerOperator",
+  "operador de mixer de vídeo": "videoMixerOperator",
+  "operador de mixer de video": "videoMixerOperator",
+  "operador de video mixer": "videoMixerOperator",
+  "lighting-operator": "lightingOperator",
+  "lighting operator": "lightingOperator",
+  "operador de iluminação": "lightingOperator",
+  "operador de iluminacao": "lightingOperator",
+  "iluminação": "lightingOperator",
+  "iluminacao": "lightingOperator",
+  "media-supervisor": "mediaSupervisor",
+  "media supervisor": "mediaSupervisor",
+  "supervisor de mídia": "mediaSupervisor",
+  "supervisor de midia": "mediaSupervisor",
+  "media-director": "mediaDirector",
+  "media director": "mediaDirector",
+  "director de mídia": "mediaDirector",
+  "diretor de midia": "mediaDirector",
+  "technical-assistant": "technicalAssistant",
+  "technical assistant": "technicalAssistant",
+  "assistente técnico": "technicalAssistant",
+  "assistente tecnico": "technicalAssistant",
+  "video-editor": "videoEditor",
+  "video editor": "videoEditor",
+  "edição de vídeo": "videoEditor",
+  "edicao de video": "videoEditor",
+  "social-media-publisher": "socialMediaPublisher",
+  "social media publisher": "socialMediaPublisher",
+  "social media / publicação": "socialMediaPublisher",
+  "social media / publicacao": "socialMediaPublisher"
+};
+
 const STANDARD_MEDIA_ROLE_MAP = {
   "camera-operator": "Operador de Câmera",
   "camera operator": "Operador de Câmera",
@@ -27253,17 +27428,18 @@ const STANDARD_MEDIA_ROLE_MAP = {
   "operador de câmera": "Operador de Câmera",
   "operador de camera": "Operador de Câmera",
   "operador de cmera": "Operador de Câmera",
+  "operador de câmara": "Operador de Câmera",
   "sound-technician": "Técnico de Som",
   "sound technician": "Técnico de Som",
   "sound_technician": "Técnico de Som",
   "técnico de som": "Técnico de Som",
   "tecnico de som": "Técnico de Som",
   "tcnico de som": "Técnico de Som",
-  "streaming-operator": "Técnico de Streaming / Transmissão",
-  "streaming operator": "Técnico de Streaming / Transmissão",
-  "streaming_operator": "Técnico de Streaming / Transmissão",
-  "técnico de streaming / transmissão": "Técnico de Streaming / Transmissão",
-  "tecnico de streaming / transmissao": "Técnico de Streaming / Transmissão",
+  "streaming-operator": "Técnico de Transmissão",
+  "streaming operator": "Técnico de Transmissão",
+  "streaming_operator": "Técnico de Transmissão",
+  "técnico de streaming / transmissão": "Técnico de Transmissão",
+  "tecnico de streaming / transmissao": "Técnico de Transmissão",
   "photographer": "Fotógrafo",
   "fotógrafo": "Fotógrafo",
   "fotografo": "Fotógrafo",
@@ -27272,43 +27448,56 @@ const STANDARD_MEDIA_ROLE_MAP = {
   "graphics_designer": "Designer Gráfico",
   "designer gráfico": "Designer Gráfico",
   "designer grafico": "Designer Gráfico",
-  "projection-operator": "Operador de Projecção / Slides",
-  "projection operator": "Operador de Projecção / Slides",
-  "projection_operator": "Operador de Projecção / Slides",
-  "operador de projecção / slides": "Operador de Projecção / Slides",
-  "operador de projeção / slides": "Operador de Projecção / Slides",
-  "operador de projeccao / slides": "Operador de Projecção / Slides",
-  "scriptures-operator": "Operador de Escrituras",
-  "scriptures operator": "Operador de Escrituras",
-  "operador de escrituras": "Operador de Escrituras",
-  "video-mixer-operator": "Operador de Mixer de Vídeo",
-  "video mixer operator": "Operador de Mixer de Vídeo",
-  "operador de mixer de vídeo": "Operador de Mixer de Vídeo",
-  "operador de mixer de video": "Operador de Mixer de Vídeo",
-  "lighting-operator": "Operador de Iluminação",
-  "lighting operator": "Operador de Iluminação",
-  "operador de iluminação": "Operador de Iluminação",
-  "operador de iluminacao": "Operador de Iluminação",
+  "projection-operator": "Operador de Slides",
+  "projection operator": "Operador de Slides",
+  "projection_operator": "Operador de Slides",
+  "operador de projecção / slides": "Operador de Slides",
+  "operador de projeção / slides": "Operador de Slides",
+  "operador de slides": "Operador de Slides",
+  "scriptures-operator": "Lançador de Escrituras",
+  "scriptures operator": "Lançador de Escrituras",
+  "operador de escrituras": "Lançador de Escrituras",
+  "lançador de escrituras": "Lançador de Escrituras",
+  "video-mixer-operator": "Operador de Video Mixer",
+  "video mixer operator": "Operador de Video Mixer",
+  "operador de mixer de vídeo": "Operador de Video Mixer",
+  "operador de video mixer": "Operador de Video Mixer",
+  "lighting-operator": "Iluminação",
+  "lighting operator": "Iluminação",
+  "operador de iluminação": "Iluminação",
+  "iluminação": "Iluminação",
   "media-supervisor": "Supervisor de Mídia",
   "media supervisor": "Supervisor de Mídia",
   "supervisor de mídia": "Supervisor de Mídia",
-  "supervisor de midia": "Supervisor de Mídia",
   "technical-assistant": "Assistente Técnico",
   "technical assistant": "Assistente Técnico",
-  "assistente técnico": "Assistente Técnico",
-  "assistente tecnico": "Assistente Técnico"
+  "assistente técnico": "Assistente Técnico"
 };
 
 function mediaRoleName(roleKey) {
   if (!roleKey) return "-";
-  const normKey = String(roleKey).trim().toLowerCase();
-  if (STANDARD_MEDIA_ROLE_MAP[normKey]) return STANDARD_MEDIA_ROLE_MAP[normKey];
-  const role = (getMediaState().roles || []).find((item) => item.id === roleKey || item.name === roleKey || item.key === roleKey || item.role_key === roleKey || item.slug === roleKey || item.role === roleKey);
-  if (role) {
-    const rKey = String(role.slug || role.name || role.key || "").trim().toLowerCase();
-    return STANDARD_MEDIA_ROLE_MAP[rKey] || role.name || (L(mediaRoleKey(role)) !== mediaRoleKey(role) ? L(mediaRoleKey(role)) : role.name || role.key);
+  const raw = String(roleKey).trim();
+  const normKey = raw.toLowerCase();
+  const transKey = STANDARD_MEDIA_ROLE_KEYS[normKey];
+  if (transKey && L(transKey) && L(transKey) !== transKey) {
+    return L(transKey);
   }
-  return L(roleKey) !== roleKey ? L(roleKey) : roleKey;
+  if (STANDARD_MEDIA_ROLE_MAP[normKey]) {
+    return lang === "en" && transKey && L(transKey) ? L(transKey) : STANDARD_MEDIA_ROLE_MAP[normKey];
+  }
+  const role = (getMediaState().roles || []).find((item) =>
+    item.id === roleKey || item.name === roleKey || item.key === roleKey || item.role_key === roleKey || item.slug === roleKey || item.role === roleKey
+  );
+  if (role) {
+    const rNorm = String(role.slug || role.name || role.key || "").trim().toLowerCase();
+    const rTransKey = STANDARD_MEDIA_ROLE_KEYS[rNorm];
+    if (rTransKey && L(rTransKey) && L(rTransKey) !== rTransKey) {
+      return L(rTransKey);
+    }
+    return cleanDisplayText(role.name || role.key || raw);
+  }
+  if (L(roleKey) !== roleKey) return L(roleKey);
+  return cleanDisplayText(raw);
 }
 
 function mediaRoleKey(role = {}) {
@@ -27317,43 +27506,48 @@ function mediaRoleKey(role = {}) {
 
 function getMediaRoleOptions() {
   const media = getMediaState();
-  const standardRoles = [
-    { value: "Operador de Câmera", label: "Operador de Câmera" },
-    { value: "Técnico de Som", label: "Técnico de Som" },
-    { value: "Operador de Mixer de Vídeo", label: "Operador de Mixer de Vídeo" },
-    { value: "Técnico de Streaming / Transmissão", label: "Técnico de Streaming / Transmissão" },
-    { value: "Operador de Projecção / Slides", label: "Operador de Projecção / Slides" },
-    { value: "Operador de Escrituras", label: "Operador de Escrituras" },
-    { value: "Fotógrafo", label: "Fotógrafo" },
-    { value: "Designer Gráfico", label: "Designer Gráfico" },
-    { value: "Operador de Iluminação", label: "Operador de Iluminação" },
-    { value: "Supervisor de Mídia", label: "Supervisor de Mídia" },
-    { value: "Assistente Técnico", label: "Assistente Técnico" }
-  ];
-
   const seen = new Set();
   const options = [];
 
   const definedRoles = (media.roles || []).map((r) => {
     const rawVal = r.name || r.key || r.role_key || r.role || r.id;
     const normKey = String(r.slug || rawVal || "").trim().toLowerCase();
-    const displayLabel = STANDARD_MEDIA_ROLE_MAP[normKey] || r.name || rawVal;
-    return { value: rawVal, label: displayLabel };
+    const transKey = STANDARD_MEDIA_ROLE_KEYS[normKey];
+    const displayLabel = (transKey && L(transKey) && L(transKey) !== transKey)
+      ? L(transKey)
+      : cleanDisplayText(r.name || rawVal);
+    return { value: r.name || rawVal, label: displayLabel };
   }).filter((r) => Boolean(r.value));
 
   for (const r of definedRoles) {
-    const k = String(r.label || r.value).trim().toLowerCase();
+    const k = String(r.value || r.label).trim().toLowerCase();
     if (k && !seen.has(k)) {
       seen.add(k);
       options.push(r);
     }
   }
 
-  for (const s of standardRoles) {
-    const k = s.label.trim().toLowerCase();
+  const standardRoleEntries = [
+    { key: "cameraOperator", fallback: "Operador de Câmera" },
+    { key: "soundTechnician", fallback: "Técnico de Som" },
+    { key: "videoMixerOperator", fallback: "Operador de Video Mixer" },
+    { key: "streamingTechnician", fallback: "Técnico de Transmissão" },
+    { key: "slidesOperator", fallback: "Operador de Slides" },
+    { key: "scriptureOperator", fallback: "Lançador de Escrituras" },
+    { key: "photographer", fallback: "Fotógrafo" },
+    { key: "graphicsDesigner", fallback: "Designer Gráfico" },
+    { key: "lightingOperator", fallback: "Iluminação" },
+    { key: "mediaSupervisor", fallback: "Supervisor de Mídia" },
+    { key: "technicalAssistant", fallback: "Assistente Técnico" }
+  ];
+
+  for (const s of standardRoleEntries) {
+    const val = s.fallback;
+    const label = L(s.key) && L(s.key) !== s.key ? L(s.key) : s.fallback;
+    const k = val.trim().toLowerCase();
     if (k && !seen.has(k)) {
       seen.add(k);
-      options.push(s);
+      options.push({ value: val, label });
     }
   }
 
@@ -27865,7 +28059,7 @@ function renderMedia(activeTab = "overview") {
                 <div class="small mb-3 d-flex flex-column gap-2" style="background: rgba(0,0,0,0.03); padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(128,128,128,0.12);">
                   ${item.phone ? `<div class="d-flex align-items-center gap-2"><i class="bi bi-telephone-fill text-warning"></i><span class="fw-medium" style="color: var(--bs-body-color, #1e293b);">${escapeHtml(item.phone)}</span></div>` : ""}
                   ${item.email ? `<div class="d-flex align-items-center gap-2 text-truncate"><i class="bi bi-envelope-fill text-info"></i><span class="fw-medium text-truncate" style="color: var(--bs-body-color, #1e293b);">${escapeHtml(item.email)}</span></div>` : ""}
-                  ${item.skill_level ? `<div class="d-flex align-items-center gap-2"><i class="bi bi-bar-chart-fill text-success"></i><span style="color: var(--bs-secondary-color, #64748b);">${L("skillLevel") || "Nível"}: <strong class="ms-1" style="color: var(--bs-body-color, #1e293b); font-weight: 700;">${escapeHtml(item.skill_level)}</strong></span></div>` : ""}
+                  ${item.skill_level ? `<div class="d-flex align-items-center gap-2"><i class="bi bi-bar-chart-fill text-success"></i><span style="color: var(--bs-secondary-color, #64748b);">${L("skillLevel") || "Nível"}: <strong class="ms-1" style="color: var(--bs-body-color, #1e293b); font-weight: 700;">${escapeHtml(L(`skillLevel_${normalizeSkillLevelKey(item.skill_level)}`) || item.skill_level)}</strong></span></div>` : ""}
                 </div>
 
                 <div class="mt-auto pt-2 border-top border-secondary border-opacity-25 d-flex justify-content-end gap-1">
@@ -27876,7 +28070,7 @@ function renderMedia(activeTab = "overview") {
         }).join("") : `<div class="col-12">${noResultsHtml()}</div>`}
       </div>`;
 
-    content = modulePanel("mediaTechnician", L("mediaTechnicalTeam"), "mediaTechnician", [L("name"), L("role"), L("phone"), L("email"), L("church"), L("status"), L("actions")], technicians.map((item) => [
+    content = modulePanel("mediaTechnician", L("mediaTechnicalTeam"), "mediaTechnician", [L("name"), L("rolesCanPerform") || L("role"), L("phone"), L("email"), L("church"), L("status"), L("actions")], technicians.map((item) => [
       item.full_name,
       (item.roles_can_perform || []).map((role) => `<span class="mini-chip">${mediaRoleName(role)}</span>`).join(" "),
       item.phone || "-",
@@ -30471,7 +30665,25 @@ function fieldControl([name, labelKey, inputType = "text", options = []], record
   if (inputType === "select") {
     const selectOptions = Array.isArray(options) ? options : [];
     const blankOption = name === "marital_status" ? `<option value="">${lang === "pt" ? "Seleccionar…" : "Select…"}</option>` : "";
-    return `<div class="col-md-6"><label class="form-label">${label}</label><select name="${name}" class="form-select">${blankOption}${selectOptions.map((o) => `<option value="${escapeAttr(o)}" ${selectedValue === o ? "selected" : ""}>${escapeAttr(memberSelectOptionLabel(name, o))}</option>`).join("")}</select></div>`;
+    const isSkillLevel = name === "skill_level" || name === "required_skill_level";
+    const isStatus = name === "status" || name === "estado";
+    const isMatch = (o) => {
+      if (selectedValue === o) return true;
+      if (isSkillLevel) {
+        const k1 = typeof normalizeSkillLevelKey === "function" ? normalizeSkillLevelKey(selectedValue) : String(selectedValue || "").toLowerCase();
+        const k2 = typeof normalizeSkillLevelKey === "function" ? normalizeSkillLevelKey(o) : String(o || "").toLowerCase();
+        return Boolean(k1 && k1 === k2);
+      }
+      if (isStatus) return statusKey(selectedValue) === statusKey(o);
+      return false;
+    };
+    return `<div class="col-md-6"><label class="form-label">${label}</label><select name="${name}" class="form-select">${blankOption}${selectOptions.map((o) => {
+      const normKey = typeof normalizeSkillLevelKey === "function" ? normalizeSkillLevelKey(o) : "";
+      const optLabel = isSkillLevel && normKey && L(`skillLevel_${normKey}`)
+        ? L(`skillLevel_${normKey}`)
+        : (typeof memberSelectOptionLabel === "function" ? memberSelectOptionLabel(name, o) : o);
+      return `<option value="${escapeAttr(o)}" ${isMatch(o) ? "selected" : ""}>${escapeAttr(cleanDisplayText(optLabel))}</option>`;
+    }).join("")}</select></div>`;
   }
   if (inputType === "checkbox") {
     const isChecked = Boolean(value) && value !== "false" && value !== "0" && value !== 0;
