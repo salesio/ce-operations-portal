@@ -36,7 +36,7 @@ ok("missing seed exists", existsSync(join(root, "src/data/seeds/fevoMissingRepor
 ok("fevo bridge exists", existsSync(join(root, "js/fevo-data-bridge.js")));
 ok(
   "index includes fevo bridge",
-  /fevo-data-bridge\.js\?v=20260723-fevo-data-v1/.test(read("index.html")),
+  /fevo-data-bridge\.js/.test(read("index.html")),
 );
 ok("docs pilot F.E.V.O", /Pilot migration: F\.E\.V\.O/.test(read("DATA_LAYER_PLAN.md")));
 ok("FEVO_MODULE_PLAN exists", existsSync(join(root, "FEVO_MODULE_PLAN.md")));

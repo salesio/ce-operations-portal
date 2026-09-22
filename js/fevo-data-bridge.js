@@ -59,10 +59,15 @@
 
   function load(key) {
     try {
+      var source = resolveDataSource();
+      if (source === "supabase" || source === "api") return [];
       var raw = localStorage.getItem(key);
       if (!raw) return [];
       var parsed = JSON.parse(raw);
-      return Array.isArray(parsed) ? parsed : [];
+      if (!Array.isArray(parsed)) return [];
+      return parsed.filter(function (r) {
+        return r && r.id && !/^fevo-[a-z]+-[0-9]+/i.test(String(r.id));
+      });
     } catch (_) {
       return [];
     }

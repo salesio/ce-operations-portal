@@ -77,6 +77,7 @@ function aliases(t: Table, x: CellMinistryRecord) {
     });
   }
   if (t === "churchReports") {
+    const meta = (x.metadata && typeof x.metadata === "object" ? x.metadata : {}) as Record<string, unknown>;
     Object.assign(r, {
       igreja: r.church_id,
       data_inicio: r.data_do_culto,
@@ -85,6 +86,9 @@ function aliases(t: Table, x: CellMinistryRecord) {
       status: r.estado,
       submitted_by: r.submetido_por,
       comments: r.comentarios,
+      att: r.att ?? meta.att ?? 0,
+      oferta: r.oferta ?? meta.oferta ?? 0,
+      total_cells_reported: r.total_cells_reported ?? meta.total_cells_reported ?? 1,
     });
   }
   if (t === "alecRegistrations") {

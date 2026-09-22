@@ -4857,7 +4857,7 @@ function normalizeState(saved) {
     return normalizeUserProfile(mergedUser, merged.churches || [], merged.departments || []);
   });
   // Purge legacy mock data
-  const isLegacyMockId = (id) => /^m-[123]$|^ft-[123]$|^fu-[123456]$|^fs-[123]$|^cr-[123]$|^ca-[12]$|^fin-[12345678]$|^disb-req-[489]$|^req-[123456789]$|^bap-[0-9]+|^mar-[0-9]+|^baby-[0-9]+|^coun-[0-9]+|^counselor-[0-9]+|^apt-[0-9]+|^ref-[0-9]+|^fb-[0-9]+|^inv-[0-9]+|^venue-[0-9]+|^check-[0-9]+|^move-[0-9]+|^maint-[0-9]+|^staff-eq-|^acq-|^ven-report-/i.test(String(id || ""));
+  const isLegacyMockId = (id) => /^m-[123]$|^ft-[123]$|^fu-[123456]$|^fs-[123]$|^cr-[123]$|^ca-[12]$|^fin-[12345678]$|^disb-req-[489]$|^req-[123456789]$|^bap-[0-9]+|^mar-[0-9]+|^baby-[0-9]+|^coun-[0-9]+|^counselor-[0-9]+|^apt-[0-9]+|^ref-[0-9]+|^fb-[0-9]+|^inv-[0-9]+|^venue-[0-9]+|^check-[0-9]+|^move-[0-9]+|^maint-[0-9]+|^staff-eq-|^acq-|^ven-report-|^fevo-/i.test(String(id || ""));
   const isLegacyChurchId = (id) => /^church-/i.test(String(id || ""));
   const cleanChurches = (merged.churches || []).filter((c) => !isLegacyChurchId(c?.id));
   const seenChurchIds = new Set();
@@ -5004,9 +5004,18 @@ function normalizeState(saved) {
   if (merged.cellLeadership && Array.isArray(merged.cellLeadership.validations)) {
     merged.cellLeadership.validations = merged.cellLeadership.validations.filter((v) => v && v.id !== "validation-1");
   }
+  const cleanFevoList = (list) => (Array.isArray(list) ? list.filter((r) => r && r.id && !isLegacyMockId(r.id) && !isLegacyMockRecord(r, 'fevo-')) : []);
   merged.fevo = {
-    ...structuredClone(seedData.fevo),
-    ...(saved.fevo || {})
+    weeklyConfigurations: cleanFevoList(saved.fevo?.weeklyConfigurations),
+    reports: cleanFevoList(saved.fevo?.reports),
+    noReports: cleanFevoList(saved.fevo?.noReports),
+    weeklyReports: cleanFevoList(saved.fevo?.weeklyReports),
+    teams: cleanFevoList(saved.fevo?.teams),
+    activities: cleanFevoList(saved.fevo?.activities),
+    followUp: cleanFevoList(saved.fevo?.followUp),
+    evangelism: cleanFevoList(saved.fevo?.evangelism),
+    visitation: cleanFevoList(saved.fevo?.visitation),
+    prayer: cleanFevoList(saved.fevo?.prayer)
   };
   merged.venueInventory = {
     inventory: (saved.venueInventory?.inventory || []).filter(r => !isLegacyMockRecord(r, 'inv-') && !isLegacyMockId(r?.id)),
@@ -25386,12 +25395,12 @@ function renderFevo(activeTab = "overview") {
     members: reports.reduce((sum, item) => sum + Number(item.number_of_members || 0), 0),
     leadersPresent: reports.reduce((sum, item) => sum + Number(item.leaders_present || 0), 0),
     membersPresent: reports.reduce((sum, item) => sum + Number(item.members_present || 0), 0),
-    soulsContacted: reports.reduce((sum, item) => sum + Number(item.souls_contacted || 0), 0),
-    soulsEvangelized: reports.reduce((sum, item) => sum + Number(item.souls_evangelized || 0), 0),
-    soulsVisited: reports.reduce((sum, item) => sum + Number(item.souls_visited || 0), 0),
-    newConverts: reports.reduce((sum, item) => sum + Number(item.new_converts || 0), 0),
+    soulsContacted: reports.reduce((sum, item) => sum + Number(item.souls_contacted ?? item.total_people_contacted ?? 0), 0),
+    soulsEvangelized: reports.reduce((sum, item) => sum + Number(item.souls_evangelized ?? item.people_reached ?? 0), 0),
+    soulsVisited: reports.reduce((sum, item) => sum + Number(item.souls_visited ?? item.people_visited ?? 0), 0),
+    newConverts: reports.reduce((sum, item) => sum + Number(item.new_converts ?? item.total_new_converts ?? 0), 0),
     prayerDays: reports.reduce((sum, item) => sum + Number(item.days_of_prayer || 0), 0),
-    firstTimers: reports.reduce((sum, item) => sum + Number(item.ft_in_church || 0), 0)
+    firstTimers: reports.reduce((sum, item) => sum + Number(item.ft_in_church ?? item.total_first_timers ?? 0), 0)
   };
   const navHtml = sectionHeader(L("fevo"), L("fevoSubtitle"), "fevoReport", "bi-compass");
   const overviewSection = show("analysis") ? moduleSection(L("fevoOverviewSection"), L("fevoOverviewHint"), "bi-compass", "fevo", `
@@ -36126,21 +36135,13 @@ async function hydrateFevoFromRepository() {
     async function merge(listFn, key, mapRow, filterFn) {
       if (typeof listFn !== "function") return;
       const result = await listFn();
-      if (!result?.ok || !Array.isArray(result.data) || !result.data.length) return;
+      if (!result?.ok || !Array.isArray(result.data)) {
+        state.fevo[key] = [];
+        return;
+      }
       let rows = result.data;
       if (filterFn) rows = rows.filter(filterFn);
-      if (!rows.length) return;
-      const prev = new Map((state.fevo[key] || []).map((r) => [r.id, r]));
-      const byId = new Map();
-      rows.forEach((row) => {
-        const previous = prev.get(row.id) || {};
-        const mapped = mapRow ? mapRow(row) : row;
-        byId.set(row.id, { ...mapped, ...previous, id: row.id });
-      });
-      prev.forEach((localRow, id) => {
-        if (!byId.has(id)) byId.set(id, localRow);
-      });
-      state.fevo[key] = [...byId.values()];
+      state.fevo[key] = rows.map((row) => (mapRow ? mapRow(row) : row));
       hydrated = true;
     }
 

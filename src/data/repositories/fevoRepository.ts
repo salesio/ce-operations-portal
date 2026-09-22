@@ -1445,17 +1445,17 @@ export async function getFevoOverviewStats(_filters: Record<string, unknown> = {
       /activ|activo/i.test(String(t.status || "")),
     ).length,
     soulsEvangelized:
-      evRows.reduce((s, x) => s + Number(x.souls_evangelized || 0), 0) ||
-      r.reduce((s, x) => s + Number(x.souls_evangelized || 0), 0),
+      evRows.reduce((s, x) => s + Number(x.souls_evangelized || x.people_reached || 0), 0) ||
+      r.reduce((s, x) => s + Number(x.souls_evangelized || x.people_reached || 0), 0),
     soulsVisited:
-      viRows.reduce((s, x) => s + Number(x.souls_visited || 0), 0) ||
-      r.reduce((s, x) => s + Number(x.souls_visited || 0), 0),
+      viRows.reduce((s, x) => s + Number(x.souls_visited || x.people_visited || 0), 0) ||
+      r.reduce((s, x) => s + Number(x.souls_visited || x.people_visited || 0), 0),
     soulsContacted:
       fuRows.reduce((s, x) => s + Number(x.souls_contacted || 0), 0) ||
-      r.reduce((s, x) => s + Number(x.souls_contacted || 0), 0),
+      r.reduce((s, x) => s + Number(x.souls_contacted || x.total_people_contacted || 0), 0),
     newConverts:
-      evRows.reduce((s, x) => s + Number(x.new_converts || 0), 0) ||
-      r.reduce((s, x) => s + Number(x.new_converts || 0), 0),
+      evRows.reduce((s, x) => s + Number(x.new_converts || x.souls_won || 0), 0) ||
+      r.reduce((s, x) => s + Number(x.new_converts || x.total_new_converts || 0), 0),
     followUpRecords: fuRows.length,
     evangelismRecords: evRows.length,
     visitationRecords: viRows.length,
