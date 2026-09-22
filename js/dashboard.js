@@ -3249,6 +3249,371 @@ const MEDIA_TAB_ROUTES = new Set(MEDIA_NAV.routes.map(([route]) => route));
 const TAB_PARALLAX_ORDER = {
   cell: CELL_NAV.areas.flatMap((area) => area.routes.map(([route]) => route)),
   fevo: ["fevo", "fevoConfigRoute", "fevoFollowUpRoute", "fevoEvangelismRoute", "fevoVisitationRoute", "fevoPrayerRoute", "fevoNoReportsRoute", "fevoWeeklyReportsRoute", "fevoAnalysisRoute"],
+  venue: ["venueInventory", "venueInventoryGeneral", "venueInventoryAcquisitions", "venueInventoryStaff", "venueInventoryMaintenance", "venueInventoryMovements", "venueInventorySpaces", "venueInventoryChecklist", "venueInventoryReports"],
+  media: ["media", "mediaTeamRoute", "mediaRolesRoute", "mediaSchedulesRoute", "mediaServicesRoute", "mediaChannelsRoute", "mediaPerformanceRoute", "mediaReportsRoute", "mediaAwardsRoute"],
+  outreach: ["programs", "cellPrison", "cellMaterials"]
+};
+
+let tabParallaxState = { family: null, index: -1 };
+
+function tabParallaxFamily(route) {
+  if (CELL_TAB_ROUTES.has(route)) return "cell";
+  if (FEVO_TAB_ROUTES.has(route)) return "fevo";
+  if (VENUE_TAB_ROUTES.has(route)) return "venue";
+  if (MEDIA_TAB_ROUTES.has(route)) return "media";
+  if (OUTREACH_TAB_ROUTES.has(route)) return "outreach";
+  return null;
+}
+
+function tabParallaxDirection(route) {
+  const family = tabParallaxFamily(route);
+  if (!family) return "none";
+  const order = TAB_PARALLAX_ORDER[family];
+  const index = order.indexOf(route);
+  if (index < 0) return "none";
+  const prevIndex = tabParallaxState.family === family ? tabParallaxState.index : index;
+  tabParallaxState = { family, index };
+  if (index > prevIndex) return "forward";
+  if (index < prevIndex) return "back";
+  return "none";
+}
+
+function tabParallaxWrap(bodyHtml, route) {
+  const family = tabParallaxFamily(route);
+  if (!family) return bodyHtml;
+  const direction = tabParallaxDirection(route);
+  const dirClass = direction === "forward" ? "is-forward" : direction === "back" ? "is-back" : "";
+  return `<div class="tab-parallax-shell ${dirClass}">${bodyHtml}</div>`;
+}
+
+function triggerTabParallax() {
+  const shell = document.querySelector(".tab-parallax-shell");
+  if (!shell) return;
+  requestAnimationFrame(() => {
+    shell.classList.add("is-active");
+  });
+}
+
+function triggerScrollTabParallax(targetId) {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const target = targetId === "content" ? byId("content") : byId(targetId);
+  if (!target) return;
+  const panel = targetId === "content"
+    ? target.querySelector(".tab-parallax-layer, .row")
+    : target.closest(".panel, .col-12, article") || target;
+  if (!panel) return;
+  panel.classList.remove("panel-parallax-enter");
+  void panel.offsetWidth;
+  panel.classList.add("panel-parallax-enter");
+  panel.addEventListener("animationend", () => panel.classList.remove("panel-parallax-enter"), { once: true });
+}
+
+function isModuleTabRoute(route) {
+  return CELL_TAB_ROUTES.has(route) || FEVO_TAB_ROUTES.has(route) || VENUE_TAB_ROUTES.has(route) || OUTREACH_TAB_ROUTES.has(route) || MEDIA_TAB_ROUTES.has(route);
+}
+
+const NAV_GROUPS = [
+  { key: "main", items: [["dashboard", "bi-speedometer2", "dashboard"], ["churches", "bi-building", "churches"], ["members", "bi-people", "members"], ["reports", "bi-bar-chart-line", "reports"]] },
+  { key: "pastoralCare", items: [["firstTimers", "bi-person-heart", "firstTimers"], ["followUp", "bi-telephone-outbound", "followUp"], ["foundation", "bi-mortarboard", "foundationSchool"], ["sacraments", "bi-droplet", "sacraments"], ["counseling", "bi-chat-heart", "counseling"]] },
+  // Order: Células (subnav) → F.E.V.O (subnav) → Finanças → Parcerias → Mídia (subnav) → Requisições → Inventário → Programas & Extensão (subnav)
+  { key: "departments", items: [["finance", "bi-cash-coin", "finance"], ["partnership", "bi-stars", "partnership"], ["requisitions", "bi-clipboard-check", "requisitions"], ["venueInventory", "bi-box-seam", "venueInventoryShort"]] },
+  { key: "admin", items: [["staffHr", "bi-people-fill", "staffHr"], ["users", "bi-person-lock", "usersRoles"], ["access", "bi-shield-lock", "accessControl"], ["settings", "bi-gear", "settings"], ["audit", "bi-journal-check", "auditLogs"]] }
+];
+
+const SIDEBAR_FALLBACK_ICONS = {
+  dashboard: "bi-speedometer2",
+  churches: "bi-building",
+  members: "bi-people",
+  reports: "bi-bar-chart-line",
+  firstTimers: "bi-person-heart",
+  followUp: "bi-telephone-outbound",
+  foundation: "bi-mortarboard",
+  sacraments: "bi-droplet",
+  counseling: "bi-chat-heart",
+  fevo: "bi-compass",
+  finance: "bi-cash-coin",
+  partnership: "bi-stars",
+  programs: "bi-calendar-event",
+  media: "bi-camera-reels",
+  requisitions: "bi-clipboard-check",
+  venueInventory: "bi-box-seam",
+  cellPrison: "bi-shield-lock",
+  cellMaterials: "bi-journal-richtext",
+  staffHr: "bi-people-fill",
+  users: "bi-person-lock",
+  access: "bi-shield-lock",
+  settings: "bi-gear",
+  audit: "bi-journal-check",
+  cellLeadership: "bi-diagram-3"
+};
+
+const CELL_AREA_ICONS = {
+  alec: "bi-mortarboard",
+  cellMinistry: "bi-diagram-3",
+  cellReports: "bi-clipboard-data",
+  finalValidation: "bi-patch-check",
+  default: "bi-circle-square"
+};
+
+function sidebarIcon(icon, route = "") {
+  return icon || SIDEBAR_FALLBACK_ICONS[route] || "bi-circle-square";
+}
+
+const followupStatuses = ["Pending", "Contacted", "No Answer", "Interested", "Sent to Cell", "Enrolled in Foundation School", "Became Member", "Closed"];
+const memberStatuses = ["Active", "Inactive", "In Progress", "Transferred"];
+const FINANCE_STATUS_PENDING = "Pendente de Verificação";
+const FINANCE_STATUS_VERIFIED = "Verificado";
+const FINANCE_STATUS_REJECTED = "Rejeitado";
+const FINANCE_STATUS_INCLUDED = "Incluído no Relatório";
+const financeStatuses = [FINANCE_STATUS_PENDING, FINANCE_STATUS_VERIFIED, FINANCE_STATUS_REJECTED, FINANCE_STATUS_INCLUDED];
+const foundationStatuses = ["Inscrito", "Em Curso", "Aulas e Testes Concluídos", "Ganhar Almas Pendente", "Pronto para Exame", "Exame Realizado", "Aprovado", "Pronto para Graduação", "Graduado", "Certificado Emitido", "Inactivo", "Reprovado"];
+const FOUNDATION_STATUS_MAP = {
+  "Pending Enrolment": "Inscrito",
+  Enrolled: "Inscrito",
+  "In Progress": "Em Curso",
+  "Exam Ready": "Pronto para Exame",
+  Passed: "Aprovado",
+  Graduated: "Graduado",
+  "Certificate Issued": "Certificado Emitido"
+};
+const givingCategories = [
+  "Dízimo", "Ofertas", "Acção de Graças", "Primícias", "Semente de Fé", "Ofertas Especiais", "Outros",
+  "Escola de Cura", "Rapsódia de Realidades", "Loveworld SAT", "Construtores de Visão",
+  "Missões de Cidades do Interior", "Alcançar Moçambique", "Projecto da Igreja",
+  "Projecto de Construção de Igreja", "Rapsódias das Crianças", "Mandato de Célula", "Outros Braços"
+];
+const paymentMethods = ["Dinheiro", "Cheque", "M-Pesa", "E-Mola", "Banco"];
+const serviceOptions = ["Domingo 1º Culto", "Domingo 2º Culto", "Domingo Culto Único", "Quarta-Feira", "Sexta-Feira", "Programa Especial"];
+const treatmentOptions = ["Sr.", "Sra.", "Irmão", "Irmã", "Pastor", "Pastora", "Diácono", "Diaconisa"];
+
+// Member records keep their stored codes stable, while the form renders a label
+// in the language selected for the dashboard. This avoids persisting translated
+// values (or legacy aliases) merely because an administrator opened a record.
+const MEMBER_MARITAL_STATUS_OPTIONS = ["Single", "Married", "Divorced", "Widowed", "Separated", "Unknown"];
+const MEMBER_MARITAL_STATUS_ALIASES = {
+  "": "",
+  "unknown": "Unknown",
+  "not specified": "Unknown",
+  "não informado": "Unknown",
+  "nao informado": "Unknown",
+  "por confirmar": "Unknown",
+  "single": "Single",
+  "solteiro": "Single",
+  "solteiro(a)": "Single",
+  "solteiro/a": "Single",
+  "married": "Married",
+  "casado": "Married",
+  "casada": "Married",
+  "casado(a)": "Married",
+  "casado/a": "Married",
+  "divorced": "Divorced",
+  "divorciado": "Divorced",
+  "divorciada": "Divorced",
+  "divorciado(a)": "Divorced",
+  "divorciado/a": "Divorced",
+  "widowed": "Widowed",
+  "viúvo": "Widowed",
+  "viuva": "Widowed",
+  "viúva": "Widowed",
+  "viúvo(a)": "Widowed",
+  "separated": "Separated",
+  "separado": "Separated",
+  "separada": "Separated",
+  "separado(a)": "Separated"
+};
+
+const MEMBER_SELECT_OPTION_LABELS = {
+  tratamento: {
+    "Sr.": ["Sr.", "Mr."], "Sra.": ["Sra.", "Mrs."], "Irmão": ["Irmão", "Brother"], "Irmã": ["Irmã", "Sister"],
+    Pastor: ["Pastor", "Pastor"], Pastora: ["Pastora", "Pastor"], "Diácono": ["Diácono", "Deacon"], Diaconisa: ["Diaconisa", "Deaconess"]
+  },
+  marital_status: {
+    Single: ["Solteiro(a)", "Single"], Married: ["Casado(a)", "Married"], Divorced: ["Divorciado(a)", "Divorced"],
+    Widowed: ["Viúvo(a)", "Widowed"], Separated: ["Separado(a)", "Separated"], Unknown: ["Não informado", "Not specified"]
+  },
+  cell_role: {
+    Member: ["Membro", "Member"], Leader: ["Líder", "Leader"], Assistant: ["Assistente", "Assistant"], Visitor: ["Visitante", "Visitor"]
+  },
+  cell_participation_status: {
+    Regular: ["Regular", "Regular"], Sometimes: ["Às vezes", "Sometimes"], NotParticipating: ["Não participa", "Not participating"], Unknown: ["Não informado", "Not specified"]
+  },
+  service_participation_status: {
+    Regular: ["Regular", "Regular"], Sometimes: ["Às vezes", "Sometimes"], NotParticipating: ["Não participa", "Not participating"], Unknown: ["Não informado", "Not specified"]
+  },
+  membership_status: {
+    Active: ["Activo", "Active"], Inactive: ["Inactivo", "Inactive"], Transferred: ["Transferido", "Transferred"], Pending: ["Pendente", "Pending"]
+  },
+  origem: {
+    "Primeira Vez": ["Primeira Vez", "First Timer"], "Escola de Fundação": ["Escola de Fundação", "Foundation School"],
+    "Transferência": ["Transferência", "Transfer"], Manual: ["Manual", "Manual"]
+  },
+  legacy_foundation_status: {
+    Unknown: ["Não informado", "Not specified"], NotStarted: ["Não iniciado", "Not started"], InterestedOrRegistered: ["Interessado ou registado", "Interested or registered"],
+    InProgress: ["Em curso", "In progress"], Completed: ["Concluído", "Completed"], Graduated: ["Graduado", "Graduated"], Incomplete: ["Incompleto", "Incomplete"]
+  },
+  legacy_alec_status: {
+    Unknown: ["Não informado", "Not specified"], NotStarted: ["Não iniciado", "Not started"], Registered: ["Registado", "Registered"],
+    InProgress: ["Em curso", "In progress"], Completed: ["Concluído", "Completed"]
+  },
+  legacy_baptism_status: { Unknown: ["Não informado", "Not specified"], Yes: ["Sim", "Yes"], No: ["Não", "No"] },
+  legacy_partner_status: { Unknown: ["Não informado", "Not specified"], Yes: ["Sim", "Yes"], No: ["Não", "No"] }
+};
+
+function normalizeMemberMaritalStatus(value) {
+  const key = cleanDisplayText(value).trim().toLocaleLowerCase("pt-PT");
+  return MEMBER_MARITAL_STATUS_ALIASES[key] ?? String(value || "");
+}
+
+function memberSelectOptionLabel(fieldName, value) {
+  const labels = MEMBER_SELECT_OPTION_LABELS[fieldName]?.[value];
+  if (labels) return labels[lang === "en" ? 1 : 0];
+  if (STATUS_KEYS[value]) return statusText(value);
+  return cleanDisplayText(value);
+}
+
+const prisonStatusOptions = ["Activo", "Inactivo"];
+const prisonServiceStatuses = ["Planeado", "Realizado", "Cancelado", "Relatório Submetido"];
+const prisonFoundationStatuses = ["Inscrito", "Em Curso", "Exame", "Graduado", "Certificado Emitido"];
+const prisonAgendaStatuses = ["Em Preparação", "Confirmado", "Concluído"];
+const materialStatuses = ["Disponível", "Esgotado", "Descontinuado"];
+const materialSalesStatuses = ["Pendente", "Confirmado", "Rejeitado"];
+const distributionStatuses = ["Solicitado", "Aprovado", "Enviado", "Recebido"];
+const fundStatuses = ["Activa", "Concluída", "Pausada"];
+const materialTypes = ["Livro", "Rapsódia", "Áudio", "Vídeo", "Manual", "Outro"];
+const materialFormats = ["Físico", "Digital"];
+const distributionTypes = ["Venda", "Distribuição Gratuita", "Missões"];
+const alecRegistrationStatuses = ["Activo", "Em Formação", "Concluído", "Inactivo"];
+const alecScoreStatuses = ["Em Curso", "Terminou", "Pendente de Pagamento", "Certificado Emitido"];
+const churchReportStatuses = ["Rascunho", "Submetido", "Em Avaliação", "Aprovado", "Rejeitado"];
+const cellReportStatuses = ["Rascunho", "Submetido", "Em Avaliação", "Aprovado", "Rejeitado", "Validado"];
+const cellLeaderStatuses = ["Activo", "Em Treinamento", "Pendente", "Inactivo"];
+const evaluationStatuses = ["Pendente", "Em Avaliação", "Aprovado", "Rejeitado", "Encaminhado para Validação"];
+const validationStatuses = ["Validado", "Pendente", "Devolvido", "Rejeitado"];
+const classifications = ["Excelente", "Bom", "Precisa de Atenção", "Crítico"];
+const fevoActivities = ["Acompanhamento", "Evangelização", "Visitação", "Oração"];
+const fevoTeams = ["Team A", "Team B", "Team C", "Team D"];
+const fevoConfigStatuses = ["Rascunho", "Activo", "Fechado"];
+const fevoReportStatuses = ["Rascunho", "Submetido", "Em Revisão", "Aprovado", "Rejeitado"];
+const fevoNoReportStatuses = ["Pendente", "Contactado", "Resolvido", "Reincidente"];
+const inventoryCategories = ["Som", "Media", "Luzes", "Instrumentos", "AC / Climatização", "Energia", "Mobiliário", "Decoração", "Escritório", "Informática", "Limpeza", "Outros"];
+const inventoryStatuses = ["Bom", "Mau", "Em Reparação", "Perdido", "Descontinuado"];
+const repairStatuses = ["Pendente", "Em Reparação", "Reparado", "Irrecuperável"];
+const movementStatuses = ["Solicitado", "Aprovado", "Em Uso", "Devolvido", "Atrasado", "Recusado"];
+const venueTypes = ["Auditório", "Sala", "Escritório", "Estúdio", "Armazém", "Outro"];
+const venueStatuses = ["Activo", "Indisponível", "Em Manutenção"];
+const checklistStatuses = ["Pendente", "Parcial", "Pronto"];
+const notificationTypes = ["info", "success", "warning", "urgent", "approval_required", "action_required", "reminder"];
+const notificationModules = ["requisitions", "finance", "foundation_school", "follow_up", "counseling", "fevo", "cell_ministry", "inventory", "staff_hr", "sacraments", "system"];
+const notificationPriorities = ["low", "normal", "high", "urgent"];
+const notificationScopes = ["user", "role", "department", "church", "national"];
+let notificationPanelFilter = "all";
+let notificationPageFilter = "all";
+
+const __cellSeed = typeof buildCellGroupsSeed === "function" ? buildCellGroupsSeed() : { cellGroups: [], cellRegistry: [] };
+if (__cellSeed.cellRegistry?.[0]) {
+  Object.assign(__cellSeed.cellRegistry[0], {
+    primary_leader_user_id: "u-7",
+    primary_leader_name: "Cell Leader Demo",
+    assistant_leader_user_ids: ["u-cell-assistant"],
+    assistant_leader_names: ["Cell Assistant Demo"]
+  });
+}
+
+const seedData = {
+  users: [
+    { id: "9691d45a-e613-4fa3-8cb5-43955f39aa66", auth_user_id: "f8d9954c-a17b-4870-98f6-a7d6f2576391", name: "Salésio Machava", full_name: "Salésio Machava", email: "admin@embaixadadecristo.org", role: "Super Admin", role_name: "Super Admin", church_id: "a1111111-1111-4111-8111-111111111101", department_permissions: ["*"], can_view_all_churches: true, status: "Active" },
+    { id: "38ee3dab-c172-4d78-97a9-aa76c554ce63", auth_user_id: "ac47e5fa-f9f5-4d58-ab91-eebcb01f1b01", name: "Pastor Valdemiro Machava", full_name: "Pastor Valdemiro Machava", email: "p.care@embaixadadecristo.org", role: "pastoral_care_rector", role_name: "Reitor de Cuidados Pastorais", church_id: "a1111111-1111-4111-8111-111111111101", department_permissions: ["firstTimers", "followUp", "foundation", "sacraments", "counseling", "reports"], can_view_all_churches: true, status: "Active" },
+    { id: "e83250d7-9f03-47fb-a4f8-1c2f6636b1c4", auth_user_id: "e83250d7-9f03-47fb-a4f8-1c2f6636b1c4", name: "Marcelo Panguene", full_name: "Marcelo Panguene", email: "venue@embaixadadecristo.org", phone: "+258841610468", role: "Venue Manager", role_name: "Gestor de Património & Instalações", church_id: "a1111111-1111-4111-8111-111111111101", cell_group_id: "217d9a73-3d57-4979-854d-dc97662a55e5", cell_group_name: "Estrelas de Sião", cell_id: "601b3fd7-ea6c-457a-8d6a-fca1fcd9c594", assigned_cells: ["601b3fd7-ea6c-457a-8d6a-fca1fcd9c594"], assigned_cell_groups: ["217d9a73-3d57-4979-854d-dc97662a55e5"], department_permissions: ["venueInventory", "inventory", "venues", "maintenance", "checklists", "cellReports", "reports"], can_view_all_churches: true, status: "Active" },
+    { id: "bd91b99f-362f-4eb1-8e5c-c4b125065c8b", auth_user_id: "bd91b99f-362f-4eb1-8e5c-c4b125065c8b", name: "Irmã Angélica Amilcar Macuacua", full_name: "Irmã Angélica Amilcar Macuacua", email: "alec@embaixadadecristo.org", phone: "+258855621609", role: "ALEC Manager", role_name: "Coordenadora ALEC", church_id: "a1111111-1111-4111-8111-111111111101", cell_group_id: "217d9a73-3d57-4979-854d-dc97662a55e5", cell_group_name: "Estrelas de Sião", cell_id: "1e6d6f18-d0e4-4731-8426-de2a73f2076d", cell_name: "ESTRELAS DE SIÃO D", assigned_cells: ["1e6d6f18-d0e4-4731-8426-de2a73f2076d"], assigned_cell_groups: ["217d9a73-3d57-4979-854d-dc97662a55e5"], department_permissions: ["cell", "alecRegistration", "alecScores", "churchReports", "cellReports"], can_view_all_churches: false, status: "Active" },
+    { id: "473e4df5-883c-499a-a42e-223495c266d1", auth_user_id: "473e4df5-883c-499a-a42e-223495c266d1", name: "Filipe Chamango", full_name: "Filipe Chamango", email: "diamantes.main@embaixadadecristo.org", role: "Cell Leader", role_name: "Líder de Célula Diamantes Main", church_id: "a1111111-1111-4111-8111-111111111101", cell_id: "d1a00000-d1a0-4000-8000-000000000001", cell_name: "Diamantes main", cell_group_id: "d1a00000-0000-4000-8000-000000000001", cell_group_name: "Diamantes Main", assigned_cells: ["d1a00000-d1a0-4000-8000-000000000001", "d1a00000-d1a0-4000-8000-000000000002", "d1a00000-d1a0-4000-8000-000000000003", "d1a00000-d1a0-4000-8000-000000000004", "d1a00000-d1a0-4000-8000-000000000005", "d1a00000-d1a0-4000-8000-000000000006", "d1a00000-d1a0-4000-8000-000000000007", "d1a00000-d1a0-4000-8000-000000000008", "d1a00000-d1a0-4000-8000-000000000009", "d1a00000-d1a0-4000-8000-000000000010"], assigned_cell_groups: ["d1a00000-0000-4000-8000-000000000001"], assigned_foundation_teacher_id: "ftch-filipe-chamango", department_permissions: ["cellReports", "followUp", "foundation", "foundation_teacher", "reports"], cannot_create_classes: false, permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_portal.view", "cell_portal.edit", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary", "follow_up.view", "follow_up.edit", "follow_up.enroll_foundation", "foundation.view", "foundation.edit_students", "foundation.record_lessons", "foundation.record_tests", "foundation.record_exam", "foundation.reports"], can_view_all_churches: false, status: "Active" },
+    { id: "1002af2a-86d0-4654-9aae-351a2dd546e7", auth_user_id: "1002af2a-86d0-4654-9aae-351a2dd546e7", name: "Eduarda Paula Manganhela Paula Manganhela", full_name: "Eduarda Paula Manganhela Paula Manganhela", email: "eduardapaula.jm@gmail.com", phone: "+258849246778", role: "Cell Leader", role_name: "Cell Leader", church_id: "a1111111-1111-4111-8111-111111111101", cell_id: "83336c21-1928-4d0c-8284-fcb88b770048", cell_name: "Visionários Main", cell_group_id: "f9f013c8-346f-4567-8911-762379b97d40", cell_group_name: "Visionários", assigned_cells: ["83336c21-1928-4d0c-8284-fcb88b770048"], assigned_cell_groups: ["f9f013c8-346f-4567-8911-762379b97d40"], department_permissions: ["cellReports"], cannot_create_classes: false, permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_portal.view", "cell_portal.edit", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary"], can_view_all_churches: false, status: "Active" },
+    { id: "edbcbcdc-f860-4cb7-8997-d667a5331e9c", auth_user_id: "edbcbcdc-f860-4cb7-8997-d667a5331e9c", name: "Test Creation Verify", full_name: "Test Creation Verify", email: "test_creation_verify@embaixadadecristo.org", role: "Cell Leader", role_name: "Cell Leader", church_id: "a1111111-1111-4111-8111-111111111101", assigned_cells: [], assigned_cell_groups: [], department_permissions: ["cellMinistry"], cannot_create_classes: false, permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_portal.view", "cell_portal.edit", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary"], can_view_all_churches: false, status: "Active" }
+  ],
+  departments: [
+    { id: "dept-finance", church_id: "church-hq", name: "Finanças", lead_name: "Finance Head Demo" },
+    { id: "dept-cell", church_id: "church-hq", name: "Ministério de Células", lead_name: "Pastora Flavia" },
+    { id: "dept-media", church_id: "church-hq", name: "Media", lead_name: "Media Team" },
+    { id: "dept-venue", church_id: "church-hq", name: "Venue Management", lead_name: "Marcelo Panguene" },
+    { id: "dept-programs", church_id: "church-hq", name: "Programas", lead_name: "Programs Team" },
+    { id: "dept-alec", church_id: "church-hq", name: "ALEC", lead_name: "Sister Angélica" }
+  ],
+  notifications: [
+    { id: "not-1", title: "Nova requisição submetida", message: "Uma nova requisição foi submetida e aguarda revisão.", type: "action_required", module: "requisitions", entity_type: "requisition", entity_id: "req-1", priority: "high", recipient_user_id: "", recipient_role: "Requisition Officer", recipient_department_id: "", recipient_church_id: "church-hq", scope: "role", action_url: "requisitions", action_label: "Rever Requisição", is_read: false, read_at: "", created_at: "2026-07-14T08:20:00.000Z", expires_at: "", metadata: { request_number: "REQ-2026-0001" } },
+    { id: "not-2", title: "Requisição aguarda aprovação pastoral", message: "A requisição REQ-2026-0005 foi revista e enviada para sua aprovação.", type: "approval_required", module: "requisitions", entity_type: "requisition", entity_id: "req-5", priority: "urgent", recipient_user_id: "", recipient_role: "Main Pastor", recipient_department_id: "", recipient_church_id: "church-hq", scope: "role", action_url: "requisitions", action_label: "Aprovar ou Rejeitar", is_read: false, read_at: "", created_at: "2026-07-14T08:30:00.000Z", expires_at: "", metadata: { request_number: "REQ-2026-0005" } },
+    { id: "not-3", title: "Requisição aprovada aguardando liberação", message: "A requisição REQ-2026-0008 foi aprovada e aguarda liberação de recursos.", type: "action_required", module: "finance", entity_type: "requisition", entity_id: "req-8", priority: "high", recipient_user_id: "", recipient_role: "Finance Head", recipient_department_id: "dept-finance", recipient_church_id: "church-hq", scope: "role", action_url: "finance", action_label: "Liberar Recursos", is_read: false, read_at: "", created_at: "2026-07-14T08:40:00.000Z", expires_at: "", metadata: { request_number: "REQ-2026-0008" } },
+    { id: "not-4", title: "Requisição aprovada", message: "A sua requisição foi aprovada e enviada para Finanças.", type: "success", module: "requisitions", entity_type: "requisition", entity_id: "req-8", priority: "normal", recipient_user_id: "u-12", recipient_role: "", recipient_department_id: "", recipient_church_id: "church-hq", scope: "user", action_url: "requisitions", action_label: "Ver Detalhes", is_read: false, read_at: "", created_at: "2026-07-14T08:41:00.000Z", expires_at: "", metadata: { request_number: "REQ-2026-0008" } },
+    { id: "not-5", title: "Nova submissão pública de contribuição", message: "Foi recebido um novo relatório de oferta/dízimo/parceria aguardando verificação.", type: "action_required", module: "finance", entity_type: "finance_record", entity_id: "fin-2", priority: "high", recipient_user_id: "", recipient_role: "Finance Officer", recipient_department_id: "dept-finance", recipient_church_id: "church-hq", scope: "role", action_url: "finance", action_label: "Verificar Submissão", is_read: false, read_at: "", created_at: "2026-07-14T09:00:00.000Z", expires_at: "", metadata: {} },
+    { id: "not-6", title: "Grupo sem relatório", message: "Grupo Choupal está sem relatório F.E.V.O e precisa de acompanhamento.", type: "warning", module: "fevo", entity_type: "fevo_report", entity_id: "fevo-nr-2", priority: "high", recipient_user_id: "", recipient_role: "F.E.V.O Coordinator", recipient_department_id: "", recipient_church_id: "church-hq", scope: "role", action_url: "fevoNoReportsRoute", action_label: "Ver Pendentes", is_read: false, read_at: "", created_at: "2026-07-14T09:10:00.000Z", expires_at: "", metadata: {} },
+    { id: "not-7", title: "Relatório pendente de validação", message: "Há relatório de célula encaminhado para validação final.", type: "action_required", module: "cell_ministry", entity_type: "fevo_report", entity_id: "eval-1", priority: "high", recipient_user_id: "", recipient_role: "Final Coordinator", recipient_department_id: "dept-cell", recipient_church_id: "church-hq", scope: "role", action_url: "cellFinalValidation", action_label: "Ver Validação", is_read: false, read_at: "", created_at: "2026-07-14T09:20:00.000Z", expires_at: "", metadata: {} },
+    { id: "not-8", title: "Equipamento danificado reportado", message: "Microphone FM Wireless está marcado como em reparação.", type: "warning", module: "inventory", entity_type: "inventory_item", entity_id: "inv-3", priority: "normal", recipient_user_id: "", recipient_role: "Venue Manager", recipient_department_id: "dept-venue", recipient_church_id: "church-hq", scope: "role", action_url: "venueInventoryMaintenance", action_label: "Ver Reparação", is_read: false, read_at: "", created_at: "2026-07-14T09:30:00.000Z", expires_at: "", metadata: {} },
+    { id: "not-9", title: "Certificado pendente", message: "Aluno pronto para emissão de certificado na Escola de Fundação.", type: "reminder", module: "foundation_school", entity_type: "foundation_student", entity_id: "fs-1", priority: "normal", recipient_user_id: "", recipient_role: "Church Pastor", recipient_department_id: "", recipient_church_id: "church-hq", scope: "role", action_url: "foundation", action_label: "Ver Aluno", is_read: true, read_at: "2026-07-14T10:00:00.000Z", created_at: "2026-07-14T09:40:00.000Z", expires_at: "", metadata: {} },
+    { id: "not-10", title: "Avaliação pendente", message: "Existe avaliação de staff pendente para revisão do departamento.", type: "reminder", module: "staff_hr", entity_type: "staff_member", entity_id: "staff-1", priority: "normal", recipient_user_id: "", recipient_role: "HR Manager", recipient_department_id: "", recipient_church_id: "church-hq", scope: "role", action_url: "staffHr", action_label: "Ver RH", is_read: false, read_at: "", created_at: "2026-07-14T09:50:00.000Z", expires_at: "", metadata: {} },
+    { id: "not-11", title: "Escala de Mídia publicada", message: "Você foi escalado para operar câmara no 1º culto de domingo.", type: "reminder", module: "media", entity_type: "media_schedule", entity_id: "sch-1", priority: "normal", recipient_user_id: "u-22", recipient_role: "", recipient_department_id: "dept-media", recipient_church_id: "church-hq", scope: "user", action_url: "media", action_label: "Ver Escala", is_read: false, read_at: "", created_at: "2026-07-15T07:10:00.000Z", expires_at: "", metadata: {} },
+    { id: "not-12", title: "Equipa de mídia incompleta", message: "A escala do culto de quarta-feira ainda precisa de operador de vídeo.", type: "action_required", module: "media", entity_type: "media_schedule", entity_id: "sch-2", priority: "high", recipient_user_id: "", recipient_role: "Media Supervisor", recipient_department_id: "dept-media", recipient_church_id: "church-hq", scope: "role", action_url: "media", action_label: "Actualizar Escala", is_read: false, read_at: "", created_at: "2026-07-15T07:20:00.000Z", expires_at: "", metadata: {} },
+    { id: "not-13", title: "Avaliação técnica pendente", message: "Há técnicos de mídia com avaliação de desempenho por concluir.", type: "reminder", module: "media", entity_type: "media_evaluation", entity_id: "mev-1", priority: "normal", recipient_user_id: "", recipient_role: "Media Supervisor", recipient_department_id: "dept-media", recipient_church_id: "church-hq", scope: "role", action_url: "media", action_label: "Avaliar Técnico", is_read: false, read_at: "", created_at: "2026-07-15T07:30:00.000Z", expires_at: "", metadata: {} },
+    { id: "not-14", title: "Programa especial requer mídia", message: "Pray-a-thon precisa de confirmação de transmissão e equipa técnica.", type: "approval_required", module: "media", entity_type: "media_service", entity_id: "ms-6", priority: "high", recipient_user_id: "", recipient_role: "Media Director", recipient_department_id: "dept-media", recipient_church_id: "church-hq", scope: "role", action_url: "media", action_label: "Confirmar Equipa", is_read: false, read_at: "", created_at: "2026-07-15T07:40:00.000Z", expires_at: "", metadata: {} },
+    { id: "not-15", title: "Substituição técnica necessária", message: "Um técnico informou indisponibilidade para o próximo culto.", type: "warning", module: "media", entity_type: "media_schedule", entity_id: "sch-1", priority: "high", recipient_user_id: "", recipient_role: "Media Supervisor", recipient_department_id: "dept-media", recipient_church_id: "church-hq", scope: "role", action_url: "media", action_label: "Rever Escala", is_read: false, read_at: "", created_at: "2026-07-15T07:50:00.000Z", expires_at: "", metadata: {} },
+    { id: "not-16", title: "Novo pedido de aconselhamento", message: "Existe um novo pedido de aconselhamento aguardando triagem.", type: "action_required", module: "counseling", entity_type: "counseling_request", entity_id: "cr-3", priority: "high", recipient_user_id: "", recipient_role: "Counseling Head", recipient_department_id: "", recipient_church_id: "church-hq", scope: "role", action_url: "counseling", action_label: "Ver Pedido", is_read: false, read_at: "", created_at: "2026-07-15T08:00:00.000Z", expires_at: "", metadata: {} },
+    { id: "not-17", title: "Aconselhamento agendado", message: "Aminata Chivinda tem sessão de aconselhamento confirmada.", type: "reminder", module: "counseling", entity_type: "counseling_appointment", entity_id: "ca-1", priority: "normal", recipient_user_id: "u-2", recipient_role: "", recipient_department_id: "", recipient_church_id: "church-hq", scope: "user", action_url: "counseling", action_label: "Ver Agenda", is_read: false, read_at: "", created_at: "2026-07-15T08:10:00.000Z", expires_at: "", metadata: {} },
+    { id: "not-18", title: "Acompanhamento necessário", message: "Um caso de aconselhamento precisa de acompanhamento pastoral.", type: "action_required", module: "counseling", entity_type: "counseling_feedback", entity_id: "cfb-1", priority: "high", recipient_user_id: "", recipient_role: "Follow-Up Coordinator", recipient_department_id: "", recipient_church_id: "church-hq", scope: "role", action_url: "counseling", action_label: "Criar Acompanhamento", is_read: false, read_at: "", created_at: "2026-07-15T08:20:00.000Z", expires_at: "", metadata: {} }
+  ],
+  requisitions: [],
+  financeDisbursements: [],
+  staffProfiles: [
+    { id: "staff-1", user_id: "u-5", full_name: "Flavia Moneedi Tivane", title: "Pastora", gender: "Feminino", phone: "860000101", whatsapp: "860000101", email: "flavia@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", department_id: "dept-cell", department_name: "Ministério de Células", role_title: "Cell Ministry Head", supervisor_user_id: "u-17", supervisor_name: "Pastor Kene Ume", start_date: "2024-01-15", employment_type: "Full-time", salary_or_allowance: 45000, payment_frequency: "Mensal", payment_method: "Banco", bank_name: "BCI", bank_account_number: "****4521", bank_or_mobile_details: "BCI ****4521", marital_status: "Casado/a", address: "Maputo, KaMpfumo", contract_start_date: "2024-01-15", status: "Activo", date_of_birth: "1990-03-14", notes: "", created_at: "2024-01-15", updated_at: "2026-07-10" },
+    { id: "staff-2", user_id: "u-4", full_name: "Angelica Amilcar Macuacua", title: "Irmã", gender: "Feminino", phone: "860000102", whatsapp: "860000102", email: "angelica@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", department_id: "dept-cell", department_name: "Ministério de Células", role_title: "ALEC Coordinator", supervisor_user_id: "u-5", supervisor_name: "Pastora Flavia", start_date: "2023-06-01", employment_type: "Full-time", salary_or_allowance: 38000, payment_frequency: "Mensal", payment_method: "M-Pesa", mobile_money_number: "860000102", bank_or_mobile_details: "86XXXXXXX", marital_status: "Solteiro/a", address: "Matola, Moçambique", status: "Activo", date_of_birth: "1992-07-22", notes: "", created_at: "2023-06-01", updated_at: "2026-07-10" },
+    { id: "staff-3", user_id: "u-11", full_name: "Marcelo Moises Panguene", title: "Irmão", gender: "Masculino", phone: "860000103", whatsapp: "860000103", email: "marcelo.panguene@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", department_id: "dept-venue", department_name: "Venue Management", role_title: "Venue Manager", supervisor_user_id: "u-17", supervisor_name: "Pastor Kene Ume", start_date: "2022-11-01", employment_type: "Full-time", salary_or_allowance: 52000, payment_frequency: "Mensal", payment_method: "Banco", bank_name: "BCI", bank_account_number: "****8832", bank_or_mobile_details: "BCI ****8832", marital_status: "Casado/a", address: "Maputo, Moçambique", emergency_contact_name: "Maria Panguene", emergency_contact_phone: "860000203", status: "Activo", date_of_birth: "1988-11-05", notes: "", created_at: "2022-11-01", updated_at: "2026-07-10" },
+    { id: "staff-4", user_id: "", full_name: "Laiza Teresa Chirindza", title: "Irmã", gender: "Feminino", phone: "860000104", whatsapp: "860000104", email: "laiza@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", department_id: "dept-finance", department_name: "Finanças", role_title: "Finance Officer", supervisor_user_id: "u-15", supervisor_name: "Finance Head Demo", start_date: "2024-03-01", employment_type: "Full-time", salary_or_allowance: 40000, payment_frequency: "Mensal", payment_method: "E-Mola", bank_or_mobile_details: "87XXXXXXX", status: "Activo", date_of_birth: "1995-01-18", notes: "", created_at: "2024-03-01", updated_at: "2026-07-10" },
+    { id: "staff-5", user_id: "u-6", full_name: "Eduarda Paula Mnganhela", title: "Irmã", gender: "Feminino", phone: "860000105", whatsapp: "860000105", email: "eduarda@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", department_id: "dept-cell", department_name: "Ministério de Células", role_title: "Final Coordinator", supervisor_user_id: "u-5", supervisor_name: "Pastora Flavia", start_date: "2023-09-01", employment_type: "Part-time", salary_or_allowance: 25000, payment_frequency: "Mensal", payment_method: "M-Pesa", bank_or_mobile_details: "86XXXXXXX", bank_name: "M-Pesa", mobile_money_number: "860000105", marital_status: "Solteiro/a", address: "Maputo, Moçambique", emergency_contact_name: "Paula Mnganhela", emergency_contact_phone: "860000199", national_id_number: "BI-****5521", nuit: "NUIT-****882", contract_start_date: "2023-09-01", contract_end_date: "", probation_end_date: "2023-12-01", status: "Activo", date_of_birth: "1993-07-15", notes: "", created_at: "2023-09-01", updated_at: "2026-07-10" },
+    { id: "staff-6", user_id: "u-3", full_name: "Janet Baptista Ngoca", title: "Irmã", gender: "Feminino", phone: "860000106", whatsapp: "860000106", email: "janet.marquele@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", department_id: "dept-programs", department_name: "Programas", role_title: "Ministry Coordinator", supervisor_user_id: "u-17", supervisor_name: "Pastor Kene Ume", start_date: "2022-05-01", employment_type: "Full-time", salary_or_allowance: 42000, payment_frequency: "Mensal", payment_method: "Banco", bank_or_mobile_details: "", status: "Activo", date_of_birth: "1987-12-02", notes: "", created_at: "2022-05-01", updated_at: "2026-07-10" },
+    { id: "staff-7", user_id: "u-18", full_name: "Pastora Responsável Requisições", title: "Pastora", gender: "Feminino", phone: "860000107", whatsapp: "860000107", email: "requisitions@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", department_id: "dept-programs", department_name: "Programas", role_title: "Requisition Officer", supervisor_user_id: "u-17", supervisor_name: "Pastor Kene Ume", start_date: "2024-06-01", employment_type: "Full-time", salary_or_allowance: 36000, payment_frequency: "Mensal", payment_method: "Banco", bank_or_mobile_details: "", status: "Activo", date_of_birth: "1991-05-20", notes: "Responsável por organizar requisições.", created_at: "2024-06-01", updated_at: "2026-07-10" },
+    { id: "staff-8", user_id: "u-7", full_name: "Cell Leader Demo", title: "Irmão", gender: "Masculino", phone: "860000108", whatsapp: "860000108", email: "cellleader@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", department_id: "dept-cell", department_name: "Ministério de Células", role_title: "Cell Leader", supervisor_user_id: "u-5", supervisor_name: "Pastora Flavia", start_date: "2025-01-01", employment_type: "Voluntário", salary_or_allowance: 0, payment_frequency: "Nenhum", payment_method: "Nenhum", bank_or_mobile_details: "", status: "Activo", date_of_birth: "1998-08-30", notes: "", created_at: "2025-01-01", updated_at: "2026-07-10" }
+  ],
+  staffSalaries: [
+    { id: "sal-1", staff_id: "staff-1", month: "2026-06", base_amount: 45000, bonus: 5000, deductions: 0, net_amount: 50000, payment_status: "Pago", approved_by: "Finance Head Demo", paid_by: "Finance Head Demo", paid_at: "2026-07-05", notes: "" },
+    { id: "sal-2", staff_id: "staff-3", month: "2026-07", base_amount: 52000, bonus: 0, deductions: 2000, net_amount: 50000, payment_status: "Pendente", approved_by: "", paid_by: "", paid_at: "", notes: "Aguardar aprovação." },
+    { id: "sal-3", staff_id: "staff-4", month: "2026-07", base_amount: 40000, bonus: 0, deductions: 0, net_amount: 40000, payment_status: "Aprovado", approved_by: "Finance Head Demo", paid_by: "", paid_at: "", notes: "" }
+  ],
+  staffPerformance: [
+    { id: "perf-1", staff_id: "staff-1", evaluation_period: "2026-H1", punctuality_score: 9, task_completion_score: 9, report_submission_score: 8, teamwork_score: 9, supervisor_rating: 9, overall_score: 8.8, strengths: "Liderança e organização.", areas_to_improve: "Delegação de tarefas.", action_plan: "Formação de líderes de Área.", evaluated_by: "Pastor Kene Ume", evaluated_at: "2026-07-01" },
+    { id: "perf-2", staff_id: "staff-3", evaluation_period: "2026-H1", punctuality_score: 0, task_completion_score: 0, report_submission_score: 0, teamwork_score: 0, supervisor_rating: 0, overall_score: 0, strengths: "", areas_to_improve: "", action_plan: "", evaluated_by: "", evaluated_at: "" }
+  ],
+  staffAttendance: [
+    { id: "att-1", staff_id: "staff-1", date: "2026-07-10", church_id: "church-hq", department_id: "dept-cell", attendance_status: "Presente", check_in_time: "08:45", check_out_time: "17:30", notes: "" },
+    { id: "att-2", staff_id: "staff-4", date: "2026-07-10", church_id: "church-hq", department_id: "dept-finance", attendance_status: "Presente", check_in_time: "09:00", check_out_time: "18:00", notes: "" },
+    { id: "att-3", staff_id: "staff-3", date: "2026-07-10", church_id: "church-hq", department_id: "dept-venue", attendance_status: "Atrasado", check_in_time: "09:35", check_out_time: "17:00", notes: "Trânsito." }
+  ],
+  staffDocuments: [],
+  notifications: [],
+  requisitions: [],
+  financeDisbursements: [],
+  staffProfiles: [],
+  staffSalaries: [],
+  staffPerformance: [],
+  staffAttendance: [],
+  churches: [
+    { id: "a1111111-1111-4111-8111-111111111101", church_id: "a1111111-1111-4111-8111-111111111101", church_name: "E.C. Maputo Central - Sede", public_name: "E.C. Maputo Central - Sede", type: "Sede Nacional", province: "Maputo Cidade", city: "KaMpfumo", district_or_area: "Urbanização", address: "Avenida de Angola, ao lado da CETRACO, Maputo", pastor_in_charge: "Pastor Kene Ume", phone_primary: "+258 86 227 0000", phone_secondary: "", email: "info@embaixadadecristo.org", facebook: "Embaixada de Cristo Moçambique", instagram: "@embaixada_de_cristo_mocambique", youtube: "", service_times: defaultSeedServiceTimes("a1111111-1111-4111-8111-111111111101", "Sede Nacional"), parent_church_id: "", status: "Activa", information_status: "Confirmado", notes: "Sede Nacional", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2024-01-01", updated_at: "2026-07-10", attendance_last_4_weeks: [112, 98, 104, 92] },
+    { id: "a1111111-1111-4111-8111-111111111102", church_id: "a1111111-1111-4111-8111-111111111102", church_name: "Christ Embassy Matola", public_name: "E.C. Matola", type: "Igreja Local", province: "Maputo Província", city: "Matola", district_or_area: "Matola", address: "Rua Mário Estêves Coluna, Nr 63B, perto do KFC / DNIC", pastor_in_charge: "", phone_primary: "+258 84 372 2630", phone_secondary: "+258 84 643 5951 / +258 87 780 9005", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("a1111111-1111-4111-8111-111111111102", "Igreja Local"), parent_church_id: "a1111111-1111-4111-8111-111111111101", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [48, 52, 46, 50] },
+    { id: "a1111111-1111-4111-8111-111111111103", church_id: "a1111111-1111-4111-8111-111111111103", church_name: "Christ Embassy Khongolote", public_name: "E.C. Khongolote", type: "Igreja Local", province: "Maputo Província", city: "Matola", district_or_area: "Khongolote", address: "Rua Licuacuanine, 648 – Khongolote, Matola", pastor_in_charge: "", phone_primary: "", phone_secondary: "", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("a1111111-1111-4111-8111-111111111103", "Igreja Local"), parent_church_id: "a1111111-1111-4111-8111-111111111101", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [32, 28, 30, 29] },
+    { id: "a1111111-1111-4111-8111-111111111104", church_id: "a1111111-1111-4111-8111-111111111104", church_name: "Christ Embassy Beira", public_name: "E.C. Beira", type: "Igreja Local", province: "Sofala", city: "Beira", district_or_area: "Beira", address: "Beira, Sofala", pastor_in_charge: "", phone_primary: "", phone_secondary: "", email: "", facebook: "Igreja Embaixada de Cristo Beira", instagram: "@embaixada_de_cristo_beira", youtube: "", service_times: defaultSeedServiceTimes("a1111111-1111-4111-8111-111111111104", "Igreja Local"), parent_church_id: "a1111111-1111-4111-8111-111111111101", status: "Activa", information_status: "Confirmado", notes: "Endereço e contactos a confirmar com a igreja local.", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [40, 38, 42, 39] },
+    { id: "a1111111-1111-4111-8111-111111111105", church_id: "a1111111-1111-4111-8111-111111111105", church_name: "Christ Embassy Nampula", public_name: "E.C. Nampula", type: "Igreja Local", province: "Nampula", city: "Nampula", district_or_area: "Muhala-Expansão", address: "Terminal de Chapa Muhala-Expansão, Paragem Igreja", pastor_in_charge: "Pastor Armando de Jesus", phone_primary: "", phone_secondary: "", email: "", facebook: "Embaixada De Cristo Nampula", instagram: "@embaixada_de_cristo.nampula", youtube: "", service_times: defaultSeedServiceTimes("a1111111-1111-4111-8111-111111111105", "Igreja Local"), parent_church_id: "a1111111-1111-4111-8111-111111111101", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [36, 34, 35, 37] },
+    { id: "a1111111-1111-4111-8111-111111111106", church_id: "a1111111-1111-4111-8111-111111111106", church_name: "Christ Embassy Choupal", public_name: "E.C. Choupal", type: "Igreja Local", province: "Maputo Cidade", city: "KaMubukwana", district_or_area: "Choupal", address: "Choupal, Maputo", pastor_in_charge: "", phone_primary: "", phone_secondary: "", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("a1111111-1111-4111-8111-111111111106", "Igreja Local"), parent_church_id: "a1111111-1111-4111-8111-111111111101", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [28, 30, 27, 31] },
+    { id: "a1111111-1111-4111-8111-111111111107", church_id: "a1111111-1111-4111-8111-111111111107", church_name: "Christ Embassy Online Church", public_name: "E.C. Online", type: "Igreja Online", province: "Online", city: "Online", district_or_area: "Virtual", address: "Transmissão online", pastor_in_charge: "Equipa de Media", phone_primary: "+258 86 877 389", phone_secondary: "", email: "online@embaixada-de-cristo.org", facebook: "", instagram: "", youtube: "Christ Embassy Mozambique Online", service_times: defaultSeedServiceTimes("a1111111-1111-4111-8111-111111111107", "Igreja Online"), parent_church_id: "a1111111-1111-4111-8111-111111111101", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2024-06-01", updated_at: "2026-07-10", attendance_last_4_weeks: [54, 61, 48, 57] }
+  ],
+  firstTimers: [],
+  followUps: [],
+  counseling: {
+    requests: [],
+    counselors: [],
+    appointments: [],
+    referrals: [],
+    feedback: [],
+    timeline: []
+  },
+  members: [],
+  foundationStudents: [],
+  contributors: [],
+  publicGivingSubmissions: [],
   finance: [],
   cells: [
     { id: "cell-1", church_id: "church-hq", group_cell_id: "group-1", nome_da_celula: "Cell Central", lider_id: "m-1", lider: "Pastor Kene Ume", area: "Maputo", membros: ["m-1", "m-2"], presencas: [{ data: "2026-07-05", total: 18 }, { data: "2026-06-28", total: 16 }], almas_ganhas: [{ data: "2026-07-05", total: 3 }], limite_crescimento: 20 },
