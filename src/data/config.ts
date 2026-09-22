@@ -77,9 +77,12 @@ export function getAppEnv(): string {
 
 /** Backend Phase 1 feature flags (all false by default). */
 export function getBackendFeatureFlags() {
+  const enableSupabase = flagTrue("VITE_ENABLE_SUPABASE") || readViteEnv("VITE_DATA_SOURCE") === "supabase";
+  const rawRealAuth = readViteEnv("VITE_ENABLE_REAL_AUTH");
+  const enableRealAuth = rawRealAuth !== "" ? flagTrue("VITE_ENABLE_REAL_AUTH") : enableSupabase;
   return {
-    enableSupabase: flagTrue("VITE_ENABLE_SUPABASE"),
-    enableRealAuth: flagTrue("VITE_ENABLE_REAL_AUTH"),
+    enableSupabase,
+    enableRealAuth,
     enableStorage: flagTrue("VITE_ENABLE_STORAGE"),
     enableRls: flagTrue("VITE_ENABLE_RLS"),
   };

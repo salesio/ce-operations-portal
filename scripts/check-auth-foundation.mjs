@@ -156,7 +156,7 @@ if (existsSync(bundlePath)) {
 
     if (Auth?.loginDemo || CE?.loginDemo) {
       const loginDemo = Auth?.loginDemo || CE.loginDemo;
-      const r = await loginDemo("admin@ce-mozambique.org", "demo");
+      const r = await loginDemo("admin@embaixadadecristo.org", "demo");
       ok("loginDemo super admin", r?.ok === true, r?.data?.email || r?.error || "");
       ok(
         "loginDemo has role",
@@ -168,7 +168,7 @@ if (existsSync(bundlePath)) {
       const loginWithSupabase = Auth?.loginWithSupabase || CE.loginWithSupabase;
       // flags false → falls through to demo OR if force real with missing env...
       // enableRealAuth false means loginWithSupabase should call loginDemo
-      const r2 = await loginWithSupabase("staff.member@ce-mozambique.org", "demo");
+      const r2 = await loginWithSupabase("venue@embaixadadecristo.org", "demo");
       ok("loginWithSupabase falls back to demo when disabled", r2?.ok === true, r2?.error || "");
     }
 

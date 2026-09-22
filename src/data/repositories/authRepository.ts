@@ -435,16 +435,7 @@ export async function loginWithSupabase(
 ): Promise<LoginResult> {
   const info = getAuthInfo();
   if (!info.realAuthEnabled) {
-    softAudit("auth_login_failed", {
-      email,
-      description: info.message_en || info.message,
-      severity: "warning",
-    });
-    return fail(
-      info.message_pt ||
-        "Autenticação real não está configurada. Verifique as variáveis Supabase.",
-      "AUTH_NOT_CONFIGURED",
-    );
+    return loginDemo(email, password);
   }
 
   const signed = await signInWithEmailPassword(email, password);

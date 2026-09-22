@@ -389,7 +389,30 @@
     "getInfo",
   ];
 
+  var pureStore = {
+    teamMembers: [],
+    roles: [],
+    services: [],
+    schedules: [],
+    channels: [],
+    performanceReviews: [],
+    awards: [],
+  };
+
   var dataApi = {
+    pure: function () {
+      return {
+        load: function () { return pureStore; },
+        getMediaRoles: function () { return pureStore.roles; },
+        saveMediaRole: function (r) {
+          var idx = pureStore.roles.findIndex(function (item) { return item.id === r.id; });
+          if (idx >= 0) pureStore.roles[idx] = r; else pureStore.roles.push(r);
+        },
+        deleteMediaRole: function (id) {
+          pureStore.roles = pureStore.roles.filter(function (item) { return item.id !== id; });
+        },
+      };
+    },
     dualWriteRecord: function (kind, mode, record) {
       if (!record) return Promise.resolve({ ok: true, skipped: true });
       var map = {
@@ -416,6 +439,23 @@
   methods.forEach(function (m) {
     dataApi[m] = function () {
       return call(m, Array.prototype.slice.call(arguments));
+    };
+  });
+
+  var aliases = [
+    { get: "getMediaTeamMembers", save: "saveMediaTeamMember", list: "listMediaTeam", create: "createMediaTeamMember", update: "updateMediaTeamMember" },
+    { get: "getMediaRoles", save: "saveMediaRole", list: "listMediaRoles", create: "createMediaRole", update: "updateMediaRole" },
+    { get: "getMediaServices", save: "saveMediaService", list: "listMediaServices", create: "createMediaService", update: "updateMediaService" },
+    { get: "getMediaSchedules", save: "saveMediaSchedule", list: "listMediaSchedules", create: "createMediaSchedule", update: "updateMediaSchedule" },
+    { get: "getMediaChannels", save: "saveMediaChannel", list: "listMediaChannels", create: "createMediaChannel", update: "updateMediaChannel" },
+    { get: "getMediaPerformanceReviews", save: "saveMediaPerformanceReview", list: "listMediaPerformanceReviews", create: "createMediaPerformanceReview", update: "updateMediaPerformanceReview" },
+    { get: "getMediaAwards", save: "saveMediaAward", list: "listMediaAwards", create: "createMediaAward", update: "updateMediaAward" },
+  ];
+  aliases.forEach(function (a) {
+    dataApi[a.get] = function () { return call(a.list, Array.prototype.slice.call(arguments)); };
+    dataApi[a.save] = function (rec) {
+      if (rec && rec.id) return call(a.update, [rec.id, rec]);
+      return call(a.create, [rec]);
     };
   });
 

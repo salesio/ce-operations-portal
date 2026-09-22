@@ -9,7 +9,7 @@ window.__CE_ENV__ = Object.assign(window.__CE_ENV__ || {}, {
   VITE_DATA_SOURCE: window.__CE_ENV__?.VITE_DATA_SOURCE || "mock",
   VITE_ENABLE_SUPABASE: window.__CE_ENV__?.VITE_ENABLE_SUPABASE || "false",
   VITE_ENABLE_STORAGE: window.__CE_ENV__?.VITE_ENABLE_STORAGE || "false",
-  VITE_ENABLE_REAL_AUTH: window.__CE_ENV__?.VITE_ENABLE_REAL_AUTH || "false",
+  VITE_ENABLE_REAL_AUTH: window.__CE_ENV__?.VITE_ENABLE_REAL_AUTH || "true",
   VITE_SUPABASE_URL: window.__CE_ENV__?.VITE_SUPABASE_URL || "",
   VITE_SUPABASE_ANON_KEY: window.__CE_ENV__?.VITE_SUPABASE_ANON_KEY || ""
 });
