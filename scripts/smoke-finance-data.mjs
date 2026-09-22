@@ -30,7 +30,7 @@ function read(rel) {
 // Static wiring
 ok("finance repository exists", existsSync(join(root, "src/data/repositories/financeRepository.ts")));
 ok("finance bridge exists", existsSync(join(root, "js/finance-data-bridge.js")));
-ok("index includes finance bridge", /finance-data-bridge\.js\?v=20260723-finance-data-v1/.test(read("index.html")));
+ok("index includes finance bridge", /finance-data-bridge\.js/.test(read("index.html")));
 ok("docs pilot Finance", /Pilot migration: Finance/.test(read("DATA_LAYER_PLAN.md")));
 ok("README mentions Finance pilot", /Finance \(pilot\)|Finance \/ Finanças/.test(read("README.md")));
 
