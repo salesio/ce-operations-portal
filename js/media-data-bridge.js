@@ -459,6 +459,14 @@
     };
   });
 
+  dataApi.deleteTechnician = function (id) { return call("deleteMediaTeamMember", [id]); };
+  dataApi.deleteRole = function (id) { return call("deleteMediaRole", [id]); };
+  dataApi.deleteService = function (id) { return call("deleteMediaService", [id]); };
+  dataApi.deleteSchedule = function (id) { return call("deleteMediaSchedule", [id]); };
+  dataApi.deleteStreamingChannel = function (id) { return call("deleteMediaChannel", [id]); };
+  dataApi.deleteEvaluation = function (id) { return call("deleteMediaPerformanceReview", [id]); };
+  dataApi.deleteAward = function (id) { return call("deleteMediaAward", [id]); };
+
   window.CEMedia = Object.assign({}, window.CEMedia || {}, dataApi);
   window.CEDataLayer = window.CEDataLayer || {};
   if (!window.CEDataLayer.media) window.CEDataLayer.media = dataApi;
@@ -467,6 +475,8 @@
       listMediaTeam: dataApi.listMediaTeam,
       createMediaTeamMember: dataApi.createMediaTeamMember,
       updateMediaTeamMember: dataApi.updateMediaTeamMember,
+      deleteMediaTeamMember: dataApi.deleteMediaTeamMember,
+      deleteTechnician: dataApi.deleteTechnician,
     };
   }
 

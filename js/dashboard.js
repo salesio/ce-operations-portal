@@ -27640,7 +27640,8 @@ function mediaActionButtons(type, id, extra = []) {
     ["view", type, id, L("view")],
     ["edit", type, id, L("edit")],
     ["update", type, id, L("updateStatus")],
-    ...extra
+    ...extra,
+    ["delete", type, id, L("delete")]
   ]);
 }
 
@@ -33499,13 +33500,11 @@ async function quickAction(action, type, id) {
       const mediaBridge = window.CEMedia || window.CEDataLayer?.media;
       if (mediaBridge && previous?.id) {
         try {
-          if (type === "mediaTechnician" && mediaBridge.deleteTechnician) await mediaBridge.deleteTechnician(previous.id);
-          else if (type === "mediaRole" && mediaBridge.deleteRole) await mediaBridge.deleteRole(previous.id);
-          else if (type === "mediaSchedule" && mediaBridge.deleteSchedule) await mediaBridge.deleteSchedule(previous.id);
-          else if (type === "mediaService" && mediaBridge.deleteService) await mediaBridge.deleteService(previous.id);
-          else if (type === "streamingChannel" && mediaBridge.deleteStreamingChannel) await mediaBridge.deleteStreamingChannel(previous.id);
-          else if (type === "mediaEvaluation" && mediaBridge.deleteEvaluation) await mediaBridge.deleteEvaluation(previous.id);
-          else if (type === "mediaAward" && mediaBridge.deleteAward) await mediaBridge.deleteAward(previous.id);
+          if (typeof mediaBridge.dualWriteRecord === "function") {
+            await mediaBridge.dualWriteRecord(type, "delete", previous);
+          } else {
+            await dualWriteMediaRecord(type, "delete", previous);
+          }
         } catch (err) {
           console.warn("[CE Media] delete sync error", err);
         }
@@ -37407,30 +37406,36 @@ async function dualWriteMediaRecord(modalType, mode, record) {
       result = await bridge.dualWriteRecord(modalType, mode, record);
     } else {
       const map = {
-        mediaTechnician: ["createMediaTeamMember", "updateMediaTeamMember"],
-        mediaRole: ["createMediaRole", "updateMediaRole"],
-        mediaService: ["createMediaService", "updateMediaService"],
-        mediaSchedule: ["createMediaSchedule", "updateMediaSchedule"],
-        streamingChannel: ["createMediaChannel", "updateMediaChannel"],
-        mediaEvaluation: ["createMediaPerformanceReview", "updateMediaPerformanceReview"],
-        mediaAward: ["createMediaAward", "updateMediaAward"],
+        mediaTechnician: { create: "createMediaTeamMember", update: "updateMediaTeamMember", delete: "deleteMediaTeamMember" },
+        mediaRole: { create: "createMediaRole", update: "updateMediaRole", delete: "deleteMediaRole" },
+        mediaService: { create: "createMediaService", update: "updateMediaService", delete: "deleteMediaService" },
+        mediaSchedule: { create: "createMediaSchedule", update: "updateMediaSchedule", delete: "deleteMediaSchedule" },
+        streamingChannel: { create: "createMediaChannel", update: "updateMediaChannel", delete: "deleteMediaChannel" },
+        mediaEvaluation: { create: "createMediaPerformanceReview", update: "updateMediaPerformanceReview", delete: "deleteMediaPerformanceReview" },
+        mediaAward: { create: "createMediaAward", update: "updateMediaAward", delete: "deleteMediaAward" },
       };
       const pair = map[modalType];
       if (!pair) return;
-      if (mode === "create" && bridge[pair[0]]) result = await bridge[pair[0]](record);
-      else if (mode === "update" && bridge[pair[1]]) result = await bridge[pair[1]](record.id, record);
+      if (mode === "create" && bridge[pair.create]) result = await bridge[pair.create](record);
+      else if (mode === "update" && bridge[pair.update]) result = await bridge[pair.update](record.id, record);
+      else if (mode === "delete" && bridge[pair.delete]) result = await bridge[pair.delete](record.id);
     }
-    if (result && result.ok && result.data) {
-      if (result.data.id && mode === "create") {
+    if (result && result.ok) {
+      const col = getCollection(modalType);
+      if (mode === "create" && result.data && result.data.id) {
         const oldId = record.id;
         record.id = result.data.id;
-        const col = getCollection(modalType);
         const idx = col.findIndex((item) => item.id === oldId || item === record);
         if (idx >= 0) {
           col[idx] = { ...col[idx], ...result.data };
         }
+      } else if (mode === "update" && result.data) {
+        const idx = col.findIndex((item) => item.id === record.id || (result.data.id && item.id === result.data.id));
+        if (idx >= 0) {
+          col[idx] = { ...col[idx], ...result.data };
+        }
       }
-      saveState(`Saved ${modalType} to Supabase`);
+      saveState(`Synced ${modalType} (${mode}) with Supabase`);
     }
   } catch (err) {
     console.warn("[CE Media] dualWrite error", err);

@@ -70,14 +70,26 @@ function aliases(table: Table, raw: MediaRecord): MediaRecord {
   return row;
 }
 
+const UUID_COLUMNS: Record<Table, string[]> = {
+  roles: ["created_by", "updated_by"],
+  team: ["staff_id", "user_id", "church_id", "media_role_id", "created_by", "updated_by"],
+  services: ["church_id", "program_id", "venue_space_id", "media_lead_id", "created_by", "updated_by"],
+  schedules: ["media_service_id", "team_member_id", "staff_id", "created_by", "updated_by"],
+  channels: ["church_id", "created_by", "updated_by"],
+  performance: ["media_service_id", "team_member_id", "staff_id", "reviewed_by"],
+  awards: ["team_member_id", "staff_id", "awarded_by", "created_by", "updated_by"],
+};
+
 function payload(table: Table, raw: MediaRecord): SupabaseRow {
   const row: MediaRecord = { ...raw };
   if (table === "roles") {
-    const nameStr = String(row.name || "").trim();
+    const nameStr = String(row.name || row.role || row.key || "").trim();
+    row.name = nameStr || String(row.name || "");
     row.slug ??= row.key || (nameStr ? nameStr.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") : `role-${Date.now()}`);
     row.status ??= row.is_active === false ? "Inactive" : "Active";
     row.category ??= "Other";
   } else if (table === "team") {
+    row.full_name = row.full_name || row.fullName || row.name || "";
     row.media_role_id ??= row.primary_role_id;
     row.media_role_name ??= row.primary_role_name ?? row.primary_role ?? (Array.isArray(row.roles_can_perform) ? (row.roles_can_perform as string[])[0] : row.role);
     row.skills ??= Array.isArray(row.roles_can_perform) ? row.roles_can_perform : (row.roles_can_perform ? [row.roles_can_perform] : (row.media_role_name ? [row.media_role_name] : []));
@@ -107,6 +119,21 @@ function payload(table: Table, raw: MediaRecord): SupabaseRow {
   }
   if (table === "services" && !String(row.service_code || "").trim()) delete row.service_code;
   if (row.id && !isValidUuid(String(row.id))) delete row.id;
+
+  for (const col of UUID_COLUMNS[table] || []) {
+    if (row[col] !== undefined && row[col] !== null) {
+      if (!isValidUuid(String(row[col]))) {
+        if ((col === "created_by" || col === "updated_by" || col === "reviewed_by" || col === "awarded_by") && typeof row[col] === "string") {
+          row.metadata = {
+            ...((row.metadata as Record<string, unknown>) || {}),
+            [`${col}_name`]: row[col],
+          };
+        }
+        delete row[col];
+      }
+    }
+  }
+
   return Object.fromEntries(Object.entries(row).filter(([key, value]) => COLUMNS[table].includes(key) && value !== undefined)) as SupabaseRow;
 }
 
@@ -134,10 +161,49 @@ async function create(table: Table, input: MediaRecord) {
 async function update(table: Table, id: EntityId, input: MediaRecord) {
   if (table === "channels") { const safe = assertPublicChannelPayload(input); if (!safe.ok) return safe as DataResult<MediaRecord>; }
   const row = payload(table, input); delete row.id; delete row.created_at;
-  const result = await updateRow(TABLES[table], String(id), row);
+  let targetId = String(id);
+  if (!isValidUuid(targetId)) {
+    if (table === "roles" && row.slug) {
+      const existing = await listRows(TABLES[table], { filters: { slug: String(row.slug) } });
+      if (existing.ok && existing.data && existing.data.length > 0) {
+        targetId = String(existing.data[0].id);
+      } else {
+        return create(table, input);
+      }
+    } else if (table === "team" && row.full_name) {
+      const existing = await listRows(TABLES[table], { filters: { full_name: String(row.full_name) } });
+      if (existing.ok && existing.data && existing.data.length > 0) {
+        targetId = String(existing.data[0].id);
+      } else {
+        return create(table, input);
+      }
+    } else {
+      return create(table, input);
+    }
+  }
+  const result = await updateRow(TABLES[table], targetId, row);
   return result.ok ? ok(aliases(table, result.data)) : cast<MediaRecord>(result);
 }
-const remove = async (table: Table, id: EntityId) => cast<boolean>(await deleteRow(TABLES[table], String(id)));
+async function remove(table: Table, id: EntityId) {
+  let targetId = String(id);
+  if (!isValidUuid(targetId)) {
+    if (table === "roles") {
+      const existing = await listRows(TABLES[table]);
+      if (existing.ok && existing.data) {
+        const found = existing.data.find((r: any) => String(r.id) === targetId || String(r.slug) === targetId || String(r.name).toLowerCase() === targetId.toLowerCase());
+        if (found) targetId = String(found.id);
+      }
+    } else if (table === "team") {
+      const existing = await listRows(TABLES[table]);
+      if (existing.ok && existing.data) {
+        const found = existing.data.find((r: any) => String(r.id) === targetId || String(r.full_name).toLowerCase() === targetId.toLowerCase());
+        if (found) targetId = String(found.id);
+      }
+    }
+  }
+  if (!isValidUuid(targetId)) return ok(true);
+  return cast<boolean>(await deleteRow(TABLES[table], targetId));
+}
 
 export const listMediaRoles = () => list("roles");
 export const getMediaRoleById = (id: EntityId) => get("roles", id);
