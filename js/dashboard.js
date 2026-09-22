@@ -27226,6 +27226,9 @@ function getMediaState() {
   const media = state.media;
   media.technicians = Array.isArray(media.technicians) ? media.technicians : [];
   media.roles = Array.isArray(media.roles) ? media.roles : [];
+  if (!media.roles.length && Array.isArray(window.CESupabase?.MEDIA_ROLES_SEED) && window.CESupabase.MEDIA_ROLES_SEED.length) {
+    media.roles = structuredClone(window.CESupabase.MEDIA_ROLES_SEED);
+  }
   media.services = Array.isArray(media.services) ? media.services : [];
   media.schedules = Array.isArray(media.schedules) ? media.schedules : [];
   media.streamingChannels = Array.isArray(media.streamingChannels) ? media.streamingChannels : [];
@@ -37325,7 +37328,21 @@ async function hydrateMediaFromRepository() {
       if (typeof listFn !== "function") return;
       const result = await listFn();
       if (!result?.ok || !Array.isArray(result.data)) return;
-      state.media[key] = result.data.map((row) => (mapRow ? mapRow(row) : row));
+      const fetched = result.data.map((row) => (mapRow ? mapRow(row) : row));
+      const existing = Array.isArray(state.media[key]) ? state.media[key] : [];
+      const byId = new Map(fetched.map((r) => [String(r.id), r]));
+      const bySlugOrName = new Map(fetched.map((r) => [String(r.slug || r.name || r.key || r.full_name || "").toLowerCase().trim(), r]).filter(([k]) => Boolean(k)));
+      
+      const combined = [...fetched];
+      for (const item of existing) {
+        if (!item) continue;
+        const idStr = String(item.id || "");
+        const nameStr = String(item.slug || item.name || item.key || item.full_name || "").toLowerCase().trim();
+        if (idStr && byId.has(idStr)) continue;
+        if (nameStr && bySlugOrName.has(nameStr)) continue;
+        combined.push(item);
+      }
+      state.media[key] = combined;
       hydrated = true;
     }
 
@@ -38014,7 +38031,9 @@ async function enterDashboard() {
       if (typeof window !== "undefined") window.activeUser = null;
 
       let errMessage = result?.error;
-      if (result?.code === "AUTH_NOT_PROVISIONED") {
+      if (result?.code === "AUTH_NOT_CONFIGURED") {
+        errMessage = lang === "pt" ? "Autenticação real não configurada." : "Real auth not configured.";
+      } else if (result?.code === "AUTH_NOT_PROVISIONED") {
         errMessage = lang === "pt" ? "Utilizador não aprovisionado no sistema." : "User not provisioned in system.";
       } else if (!errMessage || typeof errMessage !== "string" || errMessage === "Login failed") {
         errMessage = lang === "pt" ? "E-mail ou palavra-passe incorrectos." : "Incorrect email or password.";

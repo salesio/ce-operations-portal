@@ -112,8 +112,6 @@ function payload(table: Table, raw: MediaRecord): SupabaseRow {
 
 function isDemoMediaRow(row: MediaRecord): boolean {
   if (!row) return false;
-  const meta = row.metadata;
-  if (meta && typeof meta === "object" && (meta as Record<string, unknown>).demo === true) return true;
   if (typeof row.full_name === "string" && row.full_name.toLowerCase().includes("demo")) return true;
   if (typeof row.service_code === "string" && row.service_code.toLowerCase().includes("demo")) return true;
   if (typeof row.name === "string" && row.name.toLowerCase().includes("demo")) return true;
