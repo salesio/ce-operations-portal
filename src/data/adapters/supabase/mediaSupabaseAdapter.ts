@@ -51,7 +51,17 @@ function assertPublicChannelPayload(input: MediaRecord): DataResult<true> {
 function aliases(table: Table, raw: MediaRecord): MediaRecord {
   const row = { ...raw };
   if (table === "roles") Object.assign(row, { key: row.slug || row.name, role: row.name, is_active: row.status === "Active" });
-  if (table === "team") Object.assign(row, { primary_role_id: row.media_role_id, primary_role_name: row.media_role_name, roles_can_perform: row.skills, equipment_assigned_ids: row.assigned_equipment_ids, fullName: row.full_name });
+  if (table === "team") {
+    const rolesList = Array.isArray(row.skills) ? row.skills : (row.skills ? [row.skills] : (row.media_role_name ? [row.media_role_name] : []));
+    Object.assign(row, {
+      primary_role_id: row.media_role_id,
+      primary_role_name: row.media_role_name,
+      primary_role: row.media_role_name || (rolesList[0] as string) || "",
+      roles_can_perform: rolesList,
+      equipment_assigned_ids: row.assigned_equipment_ids,
+      fullName: row.full_name,
+    });
+  }
   if (table === "services") Object.assign(row, { name: row.service_name, needs_streaming: row.requires_streaming, responsible_name: row.media_lead_name, event_date: row.service_date });
   if (table === "schedules") Object.assign(row, { service_id: row.media_service_id, technicianId: row.team_member_id, role: row.role_name, assignments: [{ team_member_id: row.team_member_id, role_name: row.role_name, status: row.status, confirmation_status: row.confirmed ? "Confirmed" : "Pending" }] });
   if (table === "channels") Object.assign(row, { name: row.channel_name, type: row.platform, platform_url: row.url, channel_url: row.url, channel_handle: row.public_handle, status: row.is_active ? "Active" : "Inactive", requires_stream_key: false, stream_key_status: "Not Stored" });
@@ -68,8 +78,10 @@ function payload(table: Table, raw: MediaRecord): SupabaseRow {
     row.status ??= row.is_active === false ? "Inactive" : "Active";
     row.category ??= "Other";
   } else if (table === "team") {
-    row.media_role_id ??= row.primary_role_id; row.media_role_name ??= row.primary_role_name;
-    row.skills ??= row.roles_can_perform; row.assigned_equipment_ids ??= row.equipment_assigned_ids;
+    row.media_role_id ??= row.primary_role_id;
+    row.media_role_name ??= row.primary_role_name ?? row.primary_role ?? (Array.isArray(row.roles_can_perform) ? (row.roles_can_perform as string[])[0] : row.role);
+    row.skills ??= Array.isArray(row.roles_can_perform) ? row.roles_can_perform : (row.roles_can_perform ? [row.roles_can_perform] : (row.media_role_name ? [row.media_role_name] : []));
+    row.assigned_equipment_ids ??= row.equipment_assigned_ids;
   } else if (table === "services") {
     row.service_name ??= row.name; row.requires_streaming ??= row.needs_streaming;
     row.media_lead_name ??= row.responsible_name; row.service_date ??= row.event_date;

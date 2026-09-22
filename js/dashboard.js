@@ -4122,7 +4122,7 @@ const counselingPageState = { tab: "overview", filter: {} };
 const fevoPageState = { filter: {} };
 const venuePageState = { route: "venueInventory", filter: {}, page: 1, pageSize: 10, view: localStorage.getItem("ce_venue_view_mode") || "table" };
 const sacramentsPageState = { panel: "", filter: {} };
-const mediaPageState = { tab: "overview", filter: {} };
+const mediaPageState = { tab: "overview", filter: {}, teamView: localStorage.getItem("ce_media_team_view_mode") || "cards" };
 const programsPageState = { filter: {} };
 const prisonMinistryPageState = { filter: {} };
 const ministryMaterialsPageState = { filter: {} };
@@ -27355,9 +27355,18 @@ function findMediaScheduleAssignment(record = {}, slotConfig = {}, index = 0) {
 
 function mediaTechnicianCanServeRole(technician = {}, roleKey = "", selectedId = "") {
   if (technician.id === selectedId) return true;
-  const roles = technician.roles_can_perform || [];
-  if (roleKey === "mediaSupervisor") return roles.includes("mediaSupervisor") || roles.includes("mediaDirector");
-  return roles.includes(roleKey);
+  const roles = Array.isArray(technician.roles_can_perform) && technician.roles_can_perform.length
+    ? technician.roles_can_perform
+    : (technician.primary_role || technician.role ? [technician.primary_role || technician.role] : []);
+  if (!roleKey) return true;
+  const targetKey = String(roleKey).toLowerCase().trim();
+  if (targetKey === "mediasupervisor" || targetKey === "supervisor") {
+    return roles.some((r) => /supervisor|director|líder|lider|coordenador/i.test(String(r)));
+  }
+  return roles.some((r) => {
+    const s = String(r).toLowerCase().trim();
+    return s === targetKey || s.includes(targetKey) || targetKey.includes(s) || mediaRoleKey({ name: r }).toLowerCase() === targetKey;
+  });
 }
 
 function renderMediaTechnicianOptions(roleKey, selectedId = "") {
@@ -27718,6 +27727,57 @@ function renderMedia(activeTab = "overview") {
         <div class="col-xl-5">${modulePanel("mediaEvaluationSummary", L("mediaPerformanceEvaluation"), null, [L("name"), L("date"), L("score"), L("status"), L("actions")], pendingEvaluations.map((item) => [mediaTechnicianName(item.technician_id), item.period || item.date || "-", item.score || "-", badge(item.status), mediaActionButtons("mediaEvaluation", item.id, [["evaluate", "mediaEvaluation", item.id, L("evaluate")]])]), false)}</div>
       </div>`;
   } else if (active === "team") {
+    const currentView = mediaPageState.teamView || "cards";
+    const teamCardsHtml = `
+      <div class="row g-3">
+        ${technicians.length ? technicians.map((item) => {
+          const rolesList = Array.isArray(item.roles_can_perform) && item.roles_can_perform.length
+            ? item.roles_can_perform
+            : (item.primary_role || item.role ? [item.primary_role || item.role] : []);
+          const initials = (item.full_name || "T")
+            .split(" ")
+            .map((n) => n[0])
+            .slice(0, 2)
+            .join("")
+            .toUpperCase();
+          return `
+            <div class="col-12 col-md-6 col-xl-4">
+              <div class="panel glass-panel h-100 d-flex flex-column p-3" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px;">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                  <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white border border-primary border-opacity-25" style="width: 46px; height: 46px; min-width: 46px; font-size: 1.05rem; background: linear-gradient(135deg, rgba(212,175,55,0.25), rgba(0,180,216,0.25)); color: #fff;">
+                    ${escapeHtml(initials)}
+                  </div>
+                  <div class="flex-grow-1 overflow-hidden">
+                    <h4 class="panel-title mb-0 text-truncate fs-6 fw-bold text-light">${escapeHtml(item.full_name || "-")}</h4>
+                    <div class="small text-secondary text-truncate"><i class="bi bi-geo-alt me-1"></i>${escapeHtml(churchName(item.church_id) || "-")}</div>
+                  </div>
+                  <div>${badge(item.status || "Activo")}</div>
+                </div>
+
+                <div class="mb-3">
+                  <label class="text-secondary small d-block mb-1 fw-semibold">${L("mediaRolesFunctions") || "Funções"}:</label>
+                  <div class="d-flex flex-wrap gap-1">
+                    ${rolesList.length
+                      ? rolesList.map((r) => `<span class="mini-chip" style="font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; background: rgba(212,175,55,0.15); color: #e0ca79; border: 1px solid rgba(212,175,55,0.25);">${escapeHtml(mediaRoleName(r))}</span>`).join("")
+                      : `<span class="text-secondary small fst-italic">—</span>`
+                    }
+                  </div>
+                </div>
+
+                <div class="small text-secondary mb-3 d-flex flex-column gap-1">
+                  ${item.phone ? `<div class="d-flex align-items-center gap-2"><i class="bi bi-telephone text-warning"></i><span class="text-light">${escapeHtml(item.phone)}</span></div>` : ""}
+                  ${item.email ? `<div class="d-flex align-items-center gap-2 text-truncate"><i class="bi bi-envelope text-info"></i><span class="text-light text-truncate">${escapeHtml(item.email)}</span></div>` : ""}
+                  ${item.skill_level ? `<div class="d-flex align-items-center gap-2"><i class="bi bi-bar-chart-steps text-success"></i><span class="text-secondary">${L("skillLevel") || "Nível"}: <span class="text-light">${escapeHtml(item.skill_level)}</span></span></div>` : ""}
+                </div>
+
+                <div class="mt-auto pt-2 border-top border-secondary border-opacity-25 d-flex justify-content-end gap-1">
+                  ${mediaActionButtons("mediaTechnician", item.id)}
+                </div>
+              </div>
+            </div>`;
+        }).join("") : `<div class="col-12">${noResultsHtml()}</div>`}
+      </div>`;
+
     content = modulePanel("mediaTechnician", L("mediaTechnicalTeam"), "mediaTechnician", [L("name"), L("role"), L("phone"), L("email"), L("church"), L("status"), L("actions")], technicians.map((item) => [
       item.full_name,
       (item.roles_can_perform || []).map((role) => `<span class="mini-chip">${mediaRoleName(role)}</span>`).join(" "),
@@ -27726,7 +27786,11 @@ function renderMedia(activeTab = "overview") {
       churchName(item.church_id),
       badge(item.status),
       mediaActionButtons("mediaTechnician", item.id)
-    ]), true);
+    ]), true, false, {
+      view: currentView,
+      viewToggle: typeof ViewToggle === "function" ? ViewToggle(currentView) : "",
+      cardsHtml: teamCardsHtml
+    });
   } else if (active === "roles") {
     content = modulePanel("mediaRole", L("mediaRolesFunctions"), "mediaRole", [L("role"), L("description"), L("actions")], roles.map((item) => [
       mediaRoleName(mediaRoleKey(item)),
@@ -30247,14 +30311,24 @@ function fieldControl([name, labelKey, inputType = "text", options = []], record
   }
   if (inputType === "mediaRoleSelect") {
     const roleOptions = getMediaRoleOptions();
-    const currentVal = Array.isArray(value) ? (value[0] || "") : String(value || "");
+    const currentRoles = Array.isArray(value)
+      ? value.map((v) => String(v || "").trim().toLowerCase())
+      : (typeof value === "string" && value ? [value.trim().toLowerCase()] : []);
     return `
-      <div class="col-md-6">
-        <label class="form-label">${label}</label>
-        <select name="${name}" class="form-select">
-          <option value="">${lang === "pt" ? "Seleccionar Papel / Função…" : "Select Role…"}</option>
-          ${roleOptions.map((opt) => `<option value="${escapeAttr(opt.value)}" ${currentVal === opt.value ? "selected" : ""}>${escapeAttr(opt.label)}</option>`).join("")}
-        </select>
+      <div class="col-12">
+        <label class="form-label d-block fw-semibold mb-1">${label} <span class="text-secondary fw-normal">(${lang === "pt" ? "Múltipla selecção — escolha as funções que pode desempenhar" : "Multiple selection — choose roles can perform"})</span></label>
+        <div class="d-flex flex-wrap gap-2 p-2 rounded bg-dark-subtle border border-secondary border-opacity-25" style="max-height: 220px; overflow-y: auto;">
+          ${roleOptions.map((opt) => {
+            const optValStr = String(opt.value || "").trim().toLowerCase();
+            const optLblStr = String(opt.label || "").trim().toLowerCase();
+            const isChecked = currentRoles.some((r) => r === optValStr || r === optLblStr);
+            return `
+              <label class="form-check form-check-inline m-0 p-2 rounded d-flex align-items-center gap-2" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); cursor: pointer; user-select: none;">
+                <input type="checkbox" name="${name}" value="${escapeAttr(opt.value)}" class="form-check-input mt-0" ${isChecked ? "checked" : ""}>
+                <span class="form-check-label small text-light">${escapeHtml(opt.label)}</span>
+              </label>`;
+          }).join("")}
+        </div>
       </div>`;
   }
   if (inputType === "section") {
@@ -30309,6 +30383,12 @@ async function submitForm(form) {
         data[name] = formData.has(name);
       }
     });
+  }
+  if (modalType === "mediaTechnician") {
+    const roles = formData.getAll("roles_can_perform").map((s) => String(s).trim()).filter(Boolean);
+    data.roles_can_perform = roles;
+    data.primary_role = roles[0] || "";
+    data.role = data.primary_role;
   }
   if (modalType === "alecScore") {
     data.terminou = formData.has("terminou");
@@ -34055,6 +34135,10 @@ document.addEventListener("click", async (event) => {
       churchPageState.view = mode;
       try { localStorage.setItem(CHURCH_VIEW_KEY, mode); } catch (_) {}
       renderChurches();
+    } else if (activeRoute === "media" || activeRoute === "mediaTeamRoute" || activeRoute.startsWith("media")) {
+      mediaPageState.teamView = mode;
+      try { localStorage.setItem("ce_media_team_view_mode", mode); } catch (_) {}
+      renderMedia("team");
     } else if (activeRoute === "cellWeeklyReport" || activeRoute === "cellReceivedReports") {
       cellReportsPageState.view = mode === "cards" ? "card" : mode;
       try { localStorage.setItem("ce_cell_reports_view_mode", cellReportsPageState.view); } catch (_) {}
@@ -37877,12 +37961,16 @@ async function dualWriteRequisitionRecord(mode, record) {
  */
 async function enterDashboard() {
   showLoginError("");
-  let email = (byId("loginEmail")?.value || "").trim().toLowerCase();
-  let password = (byId("loginPassword")?.value || "").trim();
+  const email = (byId("loginEmail")?.value || "").trim().toLowerCase();
+  const password = (byId("loginPassword")?.value || "").trim();
 
-  if (!email) {
-    email = "admin@embaixadadecristo.org";
-    if (byId("loginEmail")) byId("loginEmail").value = email;
+  if (!email || !password) {
+    showLoginError(
+      lang === "pt"
+        ? "Por favor, introduza o seu e-mail e a palavra-passe."
+        : "Please enter your email and password."
+    );
+    return false;
   }
 
   const submitBtn = document.querySelector("[data-login-enter]");
@@ -37893,22 +37981,16 @@ async function enterDashboard() {
   if (spinner) spinner.classList.remove("d-none");
   if (btnText) btnText.textContent = lang === "en" ? "Signing in..." : "A iniciar sessão...";
 
-  const matchedLocalUser = (state.users || []).find((user) => {
-    const uEmail = String(user.email || "").trim().toLowerCase();
-    const uName = String(user.name || user.full_name || "").trim().toLowerCase();
-    const query = email || "admin";
-    return uEmail === query || uEmail.startsWith(query) || uEmail.includes(query) || uName.includes(query);
-  }) || (state.users && state.users[0]);
-
   try {
     const auth = resolveAuthApi();
     const realAuthActive = !!(auth?.isRealAuthEnabled && auth.isRealAuthEnabled());
+
     if (auth && typeof auth.login === "function") {
       let result;
       try {
         result = await Promise.race([
           auth.login(email, password),
-          new Promise((resolve) => setTimeout(() => resolve({ ok: false, error: "Login timeout" }), 4000)),
+          new Promise((resolve) => setTimeout(() => resolve({ ok: false, error: lang === "pt" ? "Tempo limite de resposta excedido." : "Login timeout" }), 8000)),
         ]);
       } catch (err) {
         result = { ok: false, error: err instanceof Error ? err.message : "Login failed" };
@@ -37926,25 +38008,28 @@ async function enterDashboard() {
         }
       }
 
-      if (realAuthActive && result && !result.ok && result.code !== "AUTH_NOT_CONFIGURED") {
-        if (!password || password === "demo" || email === "admin@embaixadadecristo.org" || !email) {
-          // Fall through to seamless local demo user
-        } else {
-          activeUser = null;
-          isUserAuthenticated = false;
-          if (typeof window !== "undefined") window.activeUser = null;
-          if (result.code === "AUTH_NOT_PROVISIONED") {
-            showLoginError(result.error || (lang === "pt" ? "Utilizador não aprovisionado no sistema." : "User not provisioned in system."));
-          } else {
-            showLoginError(result.error || (lang === "pt" ? "Falha na autenticação." : "Authentication failed."));
-          }
-          return false;
-        }
+      // Authentication attempted and failed — do not fall back to demo
+      activeUser = null;
+      isUserAuthenticated = false;
+      if (typeof window !== "undefined") window.activeUser = null;
+
+      let errMessage = result?.error;
+      if (result?.code === "AUTH_NOT_PROVISIONED") {
+        errMessage = lang === "pt" ? "Utilizador não aprovisionado no sistema." : "User not provisioned in system.";
+      } else if (!errMessage || typeof errMessage !== "string" || errMessage === "Login failed") {
+        errMessage = lang === "pt" ? "E-mail ou palavra-passe incorrectos." : "Incorrect email or password.";
       }
+      showLoginError(errMessage);
+      return false;
     }
 
-    // Seamless Local / Seeded User Fallback (Super Admin default)
-    if (matchedLocalUser) {
+    // Fallback if no auth module loaded — local state check
+    const matchedLocalUser = (state.users || []).find((user) => {
+      const uEmail = String(user.email || "").trim().toLowerCase();
+      return uEmail === email;
+    });
+
+    if (matchedLocalUser && (password === "demo" || password === matchedLocalUser.demo_password_hint || password.length >= 4)) {
       activeUser = matchedLocalUser;
       isUserAuthenticated = true;
       if (typeof window !== "undefined") window.activeUser = matchedLocalUser;
@@ -37956,7 +38041,7 @@ async function enterDashboard() {
     activeUser = null;
     isUserAuthenticated = false;
     if (typeof window !== "undefined") window.activeUser = null;
-    showLoginError(lang === "en" ? "User account not found. Check your credentials." : "Conta de utilizador não encontrada.");
+    showLoginError(lang === "en" ? "Incorrect email or password." : "E-mail ou palavra-passe incorrectos.");
     return false;
   } finally {
     if (submitBtn) submitBtn.disabled = false;
