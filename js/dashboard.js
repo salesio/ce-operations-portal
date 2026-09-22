@@ -35183,64 +35183,70 @@ document.addEventListener("change", (event) => {
 });
 
 function continueEnterDashboard() {
-  if (!activeUser || !activeUser.id || !activeUser.role) {
-    isUserAuthenticated = false;
-    isDashboardEntered = false;
-    activeUser = null;
-    if (typeof window !== "undefined") window.activeUser = null;
-    byId("appView")?.classList.add("d-none");
-    byId("loginView")?.classList.remove("d-none");
-    showLoginError(lang === "pt" ? "Sessão inválida: perfil de utilizador não encontrado no sistema. Inicie sessão novamente." : "Invalid session: user profile not found. Please sign in again.");
-    return;
-  }
-  isUserAuthenticated = true;
-  if (typeof window !== "undefined") window.activeUser = activeUser;
-  recordCellReportSecurityEvent("cell_report_login", `Authenticated login as ${activeUser?.role || "unknown role"}`);
-  const resumeCellReport = pendingCellReportLogin;
-  pendingCellReportLogin = false;
-  const allowedPortalRoles = ["Cell Leader", "Cell Assistant", "Cell Ministry Reviewer", "Cell Ministry Head", "Super Admin"];
-  if (resumeCellReport && !allowedPortalRoles.includes(activeUser?.role)) {
-    isUserAuthenticated = false;
-    isDashboardEntered = false;
-    byId("appView")?.classList.add("d-none");
-    byId("loginView")?.classList.remove("d-none");
-    showLoginError(lang === "pt" ? "Apenas líderes ou assistentes de célula autorizados podem submeter relatórios." : "Only authorized cell leaders or assistants can submit cell reports.");
-    recordCellReportSecurityEvent("cell_report_access_denied", "Authenticated role is not allowed in the Cell Leader Portal");
-    return;
-  }
-
-  if (isDashboardEntered && byId("appView") && !byId("appView").classList.contains("d-none")) {
-    return;
-  }
-  isDashboardEntered = true;
-
-  byId("loginView")?.classList.add("d-none");
-  byId("appView")?.classList.remove("d-none");
-  renderShell();
-  const isCellPortalMember = isCellLeaderOrAssistant(activeUser) && !userHasExtendedCellPerms(activeUser) && Boolean(activeUser?.cell_id || activeUser?.cell_group_id || (Array.isArray(activeUser?.assigned_cells) && activeUser.assigned_cells.length) || (Array.isArray(activeUser?.assigned_cell_groups) && activeUser.assigned_cell_groups.length));
-  if (isCellPortalMember) {
-    history.replaceState(null, "", "#cellPortal");
-    setRoute("cellPortal");
-  } else {
-    if (["Super Admin", "Main Pastor", "National Admin", "Administrator", "Admin"].includes(activeUser.role)) {
-      cellPortalPageState.cellId = "";
-      cellPortalPageState.cellGroupId = "";
+  try {
+    if (!activeUser || !activeUser.id || !activeUser.role) {
+      isUserAuthenticated = false;
+      isDashboardEntered = false;
+      activeUser = null;
+      if (typeof window !== "undefined") window.activeUser = null;
+      byId("appView")?.classList.add("d-none");
+      byId("loginView")?.classList.remove("d-none");
+      showLoginError(lang === "pt" ? "Sessão inválida: perfil de utilizador não encontrado no sistema. Inicie sessão novamente." : "Invalid session: user profile not found. Please sign in again.");
+      return;
     }
+    isUserAuthenticated = true;
+    if (typeof window !== "undefined") window.activeUser = activeUser;
+    recordCellReportSecurityEvent("cell_report_login", `Authenticated login as ${activeUser?.role || "unknown role"}`);
+    const resumeCellReport = pendingCellReportLogin;
+    pendingCellReportLogin = false;
+    const allowedPortalRoles = ["Cell Leader", "Cell Assistant", "Cell Ministry Reviewer", "Cell Ministry Head", "Super Admin"];
+    if (resumeCellReport && !allowedPortalRoles.includes(activeUser?.role)) {
+      isUserAuthenticated = false;
+      isDashboardEntered = false;
+      byId("appView")?.classList.add("d-none");
+      byId("loginView")?.classList.remove("d-none");
+      showLoginError(lang === "pt" ? "Apenas líderes ou assistentes de célula autorizados podem submeter relatórios." : "Only authorized cell leaders or assistants can submit cell reports.");
+      recordCellReportSecurityEvent("cell_report_access_denied", "Authenticated role is not allowed in the Cell Leader Portal");
+      return;
+    }
+
+    if (isDashboardEntered && byId("appView") && !byId("appView").classList.contains("d-none")) {
+      return;
+    }
+    isDashboardEntered = true;
+
+    byId("loginView")?.classList.add("d-none");
+    byId("appView")?.classList.remove("d-none");
+    renderShell();
+    const isCellPortalMember = isCellLeaderOrAssistant(activeUser) && !userHasExtendedCellPerms(activeUser) && Boolean(activeUser?.cell_id || activeUser?.cell_group_id || (Array.isArray(activeUser?.assigned_cells) && activeUser.assigned_cells.length) || (Array.isArray(activeUser?.assigned_cell_groups) && activeUser.assigned_cell_groups.length));
+    if (isCellPortalMember) {
+      history.replaceState(null, "", "#cellPortal");
+      setRoute("cellPortal");
+    } else {
+      if (["Super Admin", "Main Pastor", "National Admin", "Administrator", "Admin"].includes(activeUser.role)) {
+        cellPortalPageState.cellId = "";
+        cellPortalPageState.cellGroupId = "";
+      }
+    }
+    const requestedRoute = location.hash.replace("#", "");
+    if (isPastoralCareRector(activeUser)) {
+      setRoute("firstTimers");
+    } else if (resumeCellReport && hasCellReportPermission("cell_reports.create_own")) {
+      history.replaceState(null, "", "#cell-report-submit");
+      void showPublicCellReport();
+    } else {
+      const reviewerRoute = resumeCellReport && ["Cell Ministry Reviewer", "Cell Ministry Head"].includes(activeUser?.role) ? "cellReceivedReports" : "";
+      const workspaceDefault = roleWorkspaceDefaultRoute(activeUser);
+      const requestedWorkspaceRoute = isRouteInRoleWorkspace(requestedRoute) ? requestedRoute : "";
+      setRoute(reviewerRoute || (isPublicCellReportRoute(requestedRoute) || requestedRoute === "login" ? workspaceDefault : requestedWorkspaceRoute || workspaceDefault));
+    }
+    updateBackToTopVisibility();
+    startDashboardAutoRefresh();
+  } catch (err) {
+    console.error("[CE] continueEnterDashboard error:", err);
+    byId("loginView")?.classList.add("d-none");
+    byId("appView")?.classList.remove("d-none");
   }
-  const requestedRoute = location.hash.replace("#", "");
-  if (isPastoralCareRector(activeUser)) {
-    setRoute("firstTimers");
-  } else if (resumeCellReport && hasCellReportPermission("cell_reports.create_own")) {
-    history.replaceState(null, "", "#cell-report-submit");
-    void showPublicCellReport();
-  } else {
-    const reviewerRoute = resumeCellReport && ["Cell Ministry Reviewer", "Cell Ministry Head"].includes(activeUser?.role) ? "cellReceivedReports" : "";
-    const workspaceDefault = roleWorkspaceDefaultRoute(activeUser);
-    const requestedWorkspaceRoute = isRouteInRoleWorkspace(requestedRoute) ? requestedRoute : "";
-    setRoute(reviewerRoute || (isPublicCellReportRoute(requestedRoute) || requestedRoute === "login" ? workspaceDefault : requestedWorkspaceRoute || workspaceDefault));
-  }
-  updateBackToTopVisibility();
-  startDashboardAutoRefresh();
 
   // Hydrate members in background to cache in state
   Promise.resolve()
@@ -37254,6 +37260,7 @@ async function enterDashboard() {
 
   try {
     const auth = resolveAuthApi();
+    const realAuthActive = !!(auth?.isRealAuthEnabled && auth.isRealAuthEnabled());
     if (auth && typeof auth.login === "function") {
       let result;
       try {
@@ -37275,6 +37282,18 @@ async function enterDashboard() {
           runOptionalSupabaseLoginSync(email, password);
           return true;
         }
+      }
+
+      if (realAuthActive && result && !result.ok && result.code !== "AUTH_NOT_CONFIGURED") {
+        activeUser = null;
+        isUserAuthenticated = false;
+        if (typeof window !== "undefined") window.activeUser = null;
+        if (result.code === "AUTH_NOT_PROVISIONED") {
+          showLoginError(result.error || (lang === "pt" ? "Utilizador não aprovisionado no sistema." : "User not provisioned in system."));
+        } else {
+          showLoginError(result.error || (lang === "pt" ? "Falha na autenticação." : "Authentication failed."));
+        }
+        return false;
       }
     }
 
