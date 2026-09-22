@@ -28594,13 +28594,13 @@ function getCollection(type) {
   if (type === "venueSpace") return state.venueInventory.venues;
   if (type === "venueChecklist") return state.venueInventory.checklists;
   if (type === "venueReport") return state.venueInventory.reports || [];
-  if (type === "mediaTechnician") return state.media.technicians || [];
-  if (type === "mediaRole") return state.media.roles || [];
-  if (type === "mediaSchedule") return state.media.schedules || [];
-  if (type === "mediaService") return state.media.services || [];
-  if (type === "streamingChannel") return state.media.streamingChannels || [];
-  if (type === "mediaEvaluation") return state.media.performanceEvaluations || [];
-  if (type === "mediaAward") return state.media.awards || [];
+  if (type === "mediaTechnician") { state.media = state.media && typeof state.media === "object" && !Array.isArray(state.media) ? state.media : {}; state.media.technicians = Array.isArray(state.media.technicians) ? state.media.technicians : []; return state.media.technicians; }
+  if (type === "mediaRole") { state.media = state.media && typeof state.media === "object" && !Array.isArray(state.media) ? state.media : {}; state.media.roles = Array.isArray(state.media.roles) ? state.media.roles : []; return state.media.roles; }
+  if (type === "mediaSchedule") { state.media = state.media && typeof state.media === "object" && !Array.isArray(state.media) ? state.media : {}; state.media.schedules = Array.isArray(state.media.schedules) ? state.media.schedules : []; return state.media.schedules; }
+  if (type === "mediaService") { state.media = state.media && typeof state.media === "object" && !Array.isArray(state.media) ? state.media : {}; state.media.services = Array.isArray(state.media.services) ? state.media.services : []; return state.media.services; }
+  if (type === "streamingChannel") { state.media = state.media && typeof state.media === "object" && !Array.isArray(state.media) ? state.media : {}; state.media.streamingChannels = Array.isArray(state.media.streamingChannels) ? state.media.streamingChannels : []; return state.media.streamingChannels; }
+  if (type === "mediaEvaluation") { state.media = state.media && typeof state.media === "object" && !Array.isArray(state.media) ? state.media : {}; state.media.performanceEvaluations = Array.isArray(state.media.performanceEvaluations) ? state.media.performanceEvaluations : []; return state.media.performanceEvaluations; }
+  if (type === "mediaAward") { state.media = state.media && typeof state.media === "object" && !Array.isArray(state.media) ? state.media : {}; state.media.awards = Array.isArray(state.media.awards) ? state.media.awards : []; return state.media.awards; }
   if (type === "mediaReport") return [];
   return state[type] || [];
 }
