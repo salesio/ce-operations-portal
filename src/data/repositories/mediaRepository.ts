@@ -94,12 +94,15 @@ export function normalizeMediaTeamMember(
   };
 }
 
-export function normalizeMediaRole(input: Partial<MediaRole> & { id?: string }): MediaRole {
+export function normalizeMediaRole(input: Partial<MediaRole> & { id?: string; slug?: string }): MediaRole {
+  const name = input.name || "";
+  const slug = input.slug || input.key || (name ? name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") : `role-${Date.now()}`);
   return {
     ...input,
     id: input.id || `mr-${Date.now()}`,
-    name: input.name || "",
-    key: input.key || statusKey(input.name || "").replace(/\s+/g, ""),
+    name,
+    slug,
+    key: input.key || slug || name,
     description: input.description || "",
     category: input.category || "Other",
     required_skill_level: input.required_skill_level || "Intermediate",

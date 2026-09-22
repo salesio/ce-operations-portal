@@ -11366,12 +11366,23 @@ function setRoute(route) {
       })
       .catch((err) => console.warn("[CE Requisitions] route hydrate skipped", err));
   }
-  if (activeRoute === "media") {
+  if (activeRoute === "media" || (typeof activeRoute === "string" && activeRoute.startsWith("media"))) {
     Promise.resolve(hydrateMediaFromRepository())
       .then((hydrated) => {
-        if (hydrated && activeRoute === "media") {
+        if (hydrated && (activeRoute === "media" || (typeof activeRoute === "string" && activeRoute.startsWith("media")))) {
           try {
-            if (typeof renderMedia === "function") renderMedia();
+            if (typeof renderMedia === "function") {
+              const tab = activeRoute === "mediaTeamRoute" ? "team"
+                : activeRoute === "mediaRolesRoute" ? "roles"
+                : activeRoute === "mediaSchedulesRoute" ? "schedules"
+                : activeRoute === "mediaServicesRoute" ? "services"
+                : activeRoute === "mediaChannelsRoute" ? "channels"
+                : activeRoute === "mediaPerformanceRoute" ? "performance"
+                : activeRoute === "mediaReportsRoute" ? "reports"
+                : activeRoute === "mediaAwardsRoute" ? "awards"
+                : (mediaPageState.tab || "overview");
+              renderMedia(tab);
+            }
           } catch (_) {}
         }
       })
@@ -27234,13 +27245,13 @@ function mediaVisibleTechnicians(technicians) {
 
 function mediaRoleName(roleKey) {
   if (!roleKey) return "-";
-  const role = (getMediaState().roles || []).find((item) => item.id === roleKey || item.name === roleKey || item.key === roleKey || item.role_key === roleKey);
+  const role = (getMediaState().roles || []).find((item) => item.id === roleKey || item.name === roleKey || item.key === roleKey || item.role_key === roleKey || item.slug === roleKey || item.role === roleKey);
   if (role) return role.name || (L(mediaRoleKey(role)) !== mediaRoleKey(role) ? L(mediaRoleKey(role)) : role.name || role.key);
   return L(roleKey) !== roleKey ? L(roleKey) : roleKey;
 }
 
 function mediaRoleKey(role = {}) {
-  return role.name || role.role_key || role.key || role.id || "";
+  return role.name || role.role_key || role.key || role.slug || role.id || "";
 }
 
 function getMediaRoleOptions() {
@@ -31206,23 +31217,6 @@ async function submitForm(form) {
         rec.estado = rec.status;
       }
       await dualWriteVenueInventoryRecord(modalType, "update", collection[index]);
-      if (modalType === "mediaRole") {
-        const rec = collection[index];
-        rec.name = data.name || data.key || data.role || rec.name || "";
-        rec.key = rec.name;
-        rec.role = rec.name;
-        rec.description = data.description !== undefined ? data.description : (rec.description || "");
-        rec.status = rec.status || "Activo";
-      }
-      if (modalType === "mediaTechnician") {
-        const rec = collection[index];
-        if (typeof rec.roles_can_perform === "string") {
-          rec.roles_can_perform = rec.roles_can_perform ? [rec.roles_can_perform] : [];
-        } else if (!Array.isArray(rec.roles_can_perform)) {
-          rec.roles_can_perform = [];
-        }
-        rec.primary_role = rec.roles_can_perform[0] || rec.role || "";
-      }
     }
     if (
       [
@@ -31235,6 +31229,24 @@ async function submitForm(form) {
         "mediaAward",
       ].includes(modalType)
     ) {
+      if (modalType === "mediaRole") {
+        const rec = collection[index];
+        rec.name = data.name || data.key || data.role || rec.name || "";
+        rec.key = rec.name;
+        rec.role = rec.name;
+        rec.slug = (rec.name || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+        rec.description = data.description !== undefined ? data.description : (rec.description || "");
+        rec.status = rec.status || "Activo";
+      }
+      if (modalType === "mediaTechnician") {
+        const rec = collection[index];
+        if (typeof rec.roles_can_perform === "string") {
+          rec.roles_can_perform = rec.roles_can_perform ? [rec.roles_can_perform] : [];
+        } else if (!Array.isArray(rec.roles_can_perform)) {
+          rec.roles_can_perform = [];
+        }
+        rec.primary_role = rec.roles_can_perform[0] || rec.role || "";
+      }
       void dualWriteMediaRecord(modalType, "update", collection[index]);
     }
     if (
@@ -31622,6 +31634,7 @@ async function submitForm(form) {
         record.name = record.name || record.key || record.role || "";
         record.key = record.name;
         record.role = record.name;
+        record.slug = (record.name || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
         record.description = record.description || "";
         record.status = record.status || "Activo";
       }
@@ -37215,7 +37228,7 @@ async function dualWriteMediaRecord(modalType, mode, record) {
 
 async function hydrateMediaFromRepository() {
   const repo = window.CEMedia || window.CEDataLayer?.media;
-  if (!repo?.listMediaTeam) return false;
+  if (!repo?.listMediaTeam && !repo?.listMediaRoles) return false;
   window.mediaLoading = true;
   try {
     let hydrated = false;
@@ -37237,7 +37250,12 @@ async function hydrateMediaFromRepository() {
       full_name: row.full_name || row.fullName,
       status: row.status || "Activo",
     }));
-    await merge(repo.listMediaRoles?.bind(repo), "roles");
+    await merge(repo.listMediaRoles?.bind(repo), "roles", (row) => ({
+      ...row,
+      name: row.name || row.role || row.key || "",
+      description: row.description || row.notes || "",
+      status: row.status || "Activo",
+    }));
     await merge(repo.listMediaServices?.bind(repo), "services", (row) => ({
       ...row,
       time: row.time || row.start_time,
@@ -37270,8 +37288,17 @@ async function hydrateMediaFromRepository() {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       } catch (_) {}
-      if (activeRoute === "media" && typeof renderMedia === "function") {
-        renderMedia();
+      if ((activeRoute === "media" || (typeof activeRoute === "string" && activeRoute.startsWith("media"))) && typeof renderMedia === "function") {
+        const tab = activeRoute === "mediaTeamRoute" ? "team"
+          : activeRoute === "mediaRolesRoute" ? "roles"
+          : activeRoute === "mediaSchedulesRoute" ? "schedules"
+          : activeRoute === "mediaServicesRoute" ? "services"
+          : activeRoute === "mediaChannelsRoute" ? "channels"
+          : activeRoute === "mediaPerformanceRoute" ? "performance"
+          : activeRoute === "mediaReportsRoute" ? "reports"
+          : activeRoute === "mediaAwardsRoute" ? "awards"
+          : (mediaPageState.tab || "overview");
+        renderMedia(tab);
       }
     }
     return hydrated;

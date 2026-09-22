@@ -50,7 +50,7 @@ function assertPublicChannelPayload(input: MediaRecord): DataResult<true> {
 
 function aliases(table: Table, raw: MediaRecord): MediaRecord {
   const row = { ...raw };
-  if (table === "roles") Object.assign(row, { key: row.slug, is_active: row.status === "Active" });
+  if (table === "roles") Object.assign(row, { key: row.slug || row.name, role: row.name, is_active: row.status === "Active" });
   if (table === "team") Object.assign(row, { primary_role_id: row.media_role_id, primary_role_name: row.media_role_name, roles_can_perform: row.skills, equipment_assigned_ids: row.assigned_equipment_ids, fullName: row.full_name });
   if (table === "services") Object.assign(row, { name: row.service_name, needs_streaming: row.requires_streaming, responsible_name: row.media_lead_name, event_date: row.service_date });
   if (table === "schedules") Object.assign(row, { service_id: row.media_service_id, technicianId: row.team_member_id, role: row.role_name, assignments: [{ team_member_id: row.team_member_id, role_name: row.role_name, status: row.status, confirmation_status: row.confirmed ? "Confirmed" : "Pending" }] });
@@ -62,8 +62,12 @@ function aliases(table: Table, raw: MediaRecord): MediaRecord {
 
 function payload(table: Table, raw: MediaRecord): SupabaseRow {
   const row: MediaRecord = { ...raw };
-  if (table === "roles") { row.slug ??= row.key; row.status ??= row.is_active === false ? "Inactive" : "Active"; }
-  else if (table === "team") {
+  if (table === "roles") {
+    const nameStr = String(row.name || "").trim();
+    row.slug ??= row.key || (nameStr ? nameStr.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") : `role-${Date.now()}`);
+    row.status ??= row.is_active === false ? "Inactive" : "Active";
+    row.category ??= "Other";
+  } else if (table === "team") {
     row.media_role_id ??= row.primary_role_id; row.media_role_name ??= row.primary_role_name;
     row.skills ??= row.roles_can_perform; row.assigned_equipment_ids ??= row.equipment_assigned_ids;
   } else if (table === "services") {
@@ -85,7 +89,10 @@ function payload(table: Table, raw: MediaRecord): SupabaseRow {
     row.award_title ??= row.award_name; row.award_description ??= row.reason;
     row.award_date ??= row.awarded_at; row.team_member_id ??= row.technician_id;
   }
-  if (table === "roles" && !String(row.slug || "").trim()) delete row.slug;
+  if (table === "roles" && !String(row.slug || "").trim()) {
+    const nameStr = String(row.name || "").trim();
+    row.slug = nameStr ? nameStr.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") : `role-${Date.now()}`;
+  }
   if (table === "services" && !String(row.service_code || "").trim()) delete row.service_code;
   if (row.id && !isValidUuid(String(row.id))) delete row.id;
   return Object.fromEntries(Object.entries(row).filter(([key, value]) => COLUMNS[table].includes(key) && value !== undefined)) as SupabaseRow;
@@ -93,14 +100,11 @@ function payload(table: Table, raw: MediaRecord): SupabaseRow {
 
 function isDemoMediaRow(row: MediaRecord): boolean {
   if (!row) return false;
-  const idStr = String(row.id || "");
-  if (/^92[0-9a-f]{6}-/i.test(idStr)) return true;
   const meta = row.metadata;
   if (meta && typeof meta === "object" && (meta as Record<string, unknown>).demo === true) return true;
   if (typeof row.full_name === "string" && row.full_name.toLowerCase().includes("demo")) return true;
   if (typeof row.service_code === "string" && row.service_code.toLowerCase().includes("demo")) return true;
   if (typeof row.name === "string" && row.name.toLowerCase().includes("demo")) return true;
-  if (typeof row.slug === "string" && ["camera-operator", "sound-technician", "streaming-operator", "photographer", "graphics-designer", "projection-operator"].includes(row.slug)) return true;
   return false;
 }
 
