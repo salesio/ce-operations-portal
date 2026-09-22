@@ -563,6 +563,14 @@ const TEXT = {
     financeTabPartners: "Parceiros em Destaque",
     financeTabExports: "Exportações",
     financeTabAll: "Todos os Registos",
+    partnershipTabOverview: "Visão Geral",
+    partnershipTabArms: "Braços de Parceria",
+    partnershipTabPartners: "Parceiros",
+    partnershipTabContributions: "Contribuições",
+    partnershipTabHighlights: "Destaques",
+    partnershipTabAnalytics: "Análise",
+    partnershipTabReports: "Relatórios",
+    partnershipTabExports: "Exportações",
     financeReportsSection: "Relatórios Financeiros",
     financeReportsHint: "Análise detalhada por período, categoria, braço de parceria e contribuinte.",
     financeTotalReceived: "Total Recebido",
@@ -1301,6 +1309,14 @@ const TEXT = {
     financeTabPartners: "Featured Partners",
     financeTabExports: "Exports",
     financeTabAll: "All Records",
+    partnershipTabOverview: "Overview",
+    partnershipTabArms: "Partnership Arms",
+    partnershipTabPartners: "Partners",
+    partnershipTabContributions: "Contributions",
+    partnershipTabHighlights: "Highlights",
+    partnershipTabAnalytics: "Analytics",
+    partnershipTabReports: "Reports",
+    partnershipTabExports: "Exports",
     financeReportsSection: "Financial Reports",
     financeReportsHint: "Detailed analysis by period, category, partnership arm and contributor.",
     financeTotalReceived: "Total Received",
@@ -3208,6 +3224,24 @@ const FINANCE_NAV = {
 
 const FINANCE_TAB_ROUTES = new Set(FINANCE_NAV.routes.map(([route]) => route));
 
+const PARTNERSHIP_NAV = {
+  parentKey: "partnershipHeader",
+  label: "partnership",
+  icon: "bi-stars",
+  routes: [
+    ["partnership", "bi-grid-1x2", "partnershipTabOverview"],
+    ["partnershipArmsRoute", "bi-diagram-2", "partnershipTabArms"],
+    ["partnershipPartnersRoute", "bi-people", "partnershipTabPartners"],
+    ["partnershipContributionsRoute", "bi-cash-stack", "partnershipTabContributions"],
+    ["partnershipHighlightsRoute", "bi-trophy", "partnershipTabHighlights"],
+    ["partnershipAnalyticsRoute", "bi-graph-up-arrow", "partnershipTabAnalytics"],
+    ["partnershipReportsRoute", "bi-file-earmark-bar-graph", "partnershipTabReports"],
+    ["partnershipExportsRoute", "bi-download", "partnershipTabExports"]
+  ]
+};
+
+const PARTNERSHIP_TAB_ROUTES = new Set(PARTNERSHIP_NAV.routes.map(([route]) => route));
+
 const VENUE_TAB_ROUTES = new Set([
   "venueInventory", "venueInventoryGeneral", "venueInventoryAcquisitions",
   "venueInventoryStaff", "venueInventoryMaintenance", "venueInventoryMovements",
@@ -3250,6 +3284,7 @@ const TAB_PARALLAX_ORDER = {
   cell: CELL_NAV.areas.flatMap((area) => area.routes.map(([route]) => route)),
   fevo: ["fevo", "fevoConfigRoute", "fevoFollowUpRoute", "fevoEvangelismRoute", "fevoVisitationRoute", "fevoPrayerRoute", "fevoNoReportsRoute", "fevoWeeklyReportsRoute", "fevoAnalysisRoute"],
   finance: ["finance", "financeEntriesRoute", "financePublicSubmissionsRoute", "financeVerificationRoute", "financeApprovedRequisitionsRoute", "financeReportsRoute", "financePartnersRoute", "financeExportsRoute"],
+  partnership: ["partnership", "partnershipArmsRoute", "partnershipPartnersRoute", "partnershipContributionsRoute", "partnershipHighlightsRoute", "partnershipAnalyticsRoute", "partnershipReportsRoute", "partnershipExportsRoute"],
   venue: ["venueInventory", "venueInventoryGeneral", "venueInventoryAcquisitions", "venueInventoryStaff", "venueInventoryMaintenance", "venueInventoryMovements", "venueInventorySpaces", "venueInventoryChecklist", "venueInventoryReports"],
   media: ["media", "mediaTeamRoute", "mediaRolesRoute", "mediaSchedulesRoute", "mediaServicesRoute", "mediaChannelsRoute", "mediaPerformanceRoute", "mediaReportsRoute", "mediaAwardsRoute"],
   outreach: ["programs", "cellPrison", "cellMaterials"]
@@ -3261,6 +3296,7 @@ function tabParallaxFamily(route) {
   if (CELL_TAB_ROUTES.has(route)) return "cell";
   if (FEVO_TAB_ROUTES.has(route)) return "fevo";
   if (FINANCE_TAB_ROUTES.has(route)) return "finance";
+  if (PARTNERSHIP_TAB_ROUTES.has(route)) return "partnership";
   if (VENUE_TAB_ROUTES.has(route)) return "venue";
   if (MEDIA_TAB_ROUTES.has(route)) return "media";
   if (OUTREACH_TAB_ROUTES.has(route)) return "outreach";
@@ -3311,14 +3347,14 @@ function triggerScrollTabParallax(targetId) {
 }
 
 function isModuleTabRoute(route) {
-  return CELL_TAB_ROUTES.has(route) || FEVO_TAB_ROUTES.has(route) || VENUE_TAB_ROUTES.has(route) || OUTREACH_TAB_ROUTES.has(route) || MEDIA_TAB_ROUTES.has(route);
+  return CELL_TAB_ROUTES.has(route) || FEVO_TAB_ROUTES.has(route) || FINANCE_TAB_ROUTES.has(route) || PARTNERSHIP_TAB_ROUTES.has(route) || VENUE_TAB_ROUTES.has(route) || OUTREACH_TAB_ROUTES.has(route) || MEDIA_TAB_ROUTES.has(route);
 }
 
 const NAV_GROUPS = [
   { key: "main", items: [["dashboard", "bi-speedometer2", "dashboard"], ["churches", "bi-building", "churches"], ["members", "bi-people", "members"], ["reports", "bi-bar-chart-line", "reports"]] },
   { key: "pastoralCare", items: [["firstTimers", "bi-person-heart", "firstTimers"], ["followUp", "bi-telephone-outbound", "followUp"], ["foundation", "bi-mortarboard", "foundationSchool"], ["sacraments", "bi-droplet", "sacraments"], ["counseling", "bi-chat-heart", "counseling"]] },
-  // Order: Células (subnav) → F.E.V.O (subnav) → Finanças (subnav) → Parcerias → Mídia (subnav) → Requisições → Inventário → Programas & Extensão (subnav)
-  { key: "departments", items: [["partnership", "bi-stars", "partnership"], ["requisitions", "bi-clipboard-check", "requisitions"], ["venueInventory", "bi-box-seam", "venueInventoryShort"]] },
+  // Order: Células (subnav) → F.E.V.O (subnav) → Finanças (subnav) → Parcerias (subnav) → Requisições → Inventário → Mídia (subnav) → Programas & Extensão (subnav)
+  { key: "departments", items: [["requisitions", "bi-clipboard-check", "requisitions"], ["venueInventory", "bi-box-seam", "venueInventoryShort"]] },
   { key: "admin", items: [["staffHr", "bi-people-fill", "staffHr"], ["users", "bi-person-lock", "usersRoles"], ["access", "bi-shield-lock", "accessControl"], ["settings", "bi-gear", "settings"], ["audit", "bi-journal-check", "auditLogs"]] }
 ];
 
@@ -10622,6 +10658,36 @@ function renderOutreachSidebarNav() {
     </div>`;
 }
 
+function renderPartnershipSidebarNav() {
+  const workspaceRoutes = roleWorkspaceRoutes();
+  const parentExpanded = isSidebarGroupExpanded(PARTNERSHIP_NAV.parentKey);
+  const parentActive = PARTNERSHIP_TAB_ROUTES.has(activeRoute) || activeRoute === "partnership";
+  const visibleRoutes = PARTNERSHIP_NAV.routes.filter(([route]) => {
+    if (workspaceRoutes && !workspaceRoutes.includes(route) && !workspaceRoutes.includes("partnership")) return false;
+    const nav = resolveRouteAccess(route);
+    return nav.visible && !nav.locked;
+  });
+  if (!visibleRoutes.length) return "";
+  return `
+    <div class="nav-cell-branch nav-partnership-branch ${parentExpanded ? "is-expanded" : ""} ${parentActive ? "has-active" : ""}" data-nav-group="${PARTNERSHIP_NAV.parentKey}">
+      <button type="button" class="nav-cell-parent nav-partnership-parent" aria-expanded="${parentExpanded}" aria-label="${L("navGroupToggle")}: ${L(PARTNERSHIP_NAV.label)}">
+        <i class="bi ${PARTNERSHIP_NAV.icon}" aria-hidden="true"></i>
+        <span>${L(PARTNERSHIP_NAV.label)}</span>
+        <i class="bi bi-chevron-down nav-cell-chevron" aria-hidden="true"></i>
+      </button>
+      <div class="nav-cell-body">
+        <div class="nav-cell-body-inner">
+          ${visibleRoutes.map(([route, icon, label]) => `
+            <button type="button" class="nav-cell-item nav-partnership-item ${activeRoute === route || (route === "partnership" && (activeRoute === "partnership" || activeRoute === "partnershipOverviewRoute")) ? "active" : ""}" data-route="${route}" onclick="window.setRoute && window.setRoute('${route}'); return false;" title="${L(label)}">
+              <i class="bi ${sidebarIcon(icon, route)} me-2" aria-hidden="true"></i>
+              <span>${L(label)}</span>
+            </button>
+          `).join("")}
+        </div>
+      </div>
+    </div>`;
+}
+
 function renderFinanceSidebarNav() {
   const workspaceRoutes = roleWorkspaceRoutes();
   const parentExpanded = isSidebarGroupExpanded(FINANCE_NAV.parentKey);
@@ -10761,6 +10827,7 @@ function renderShell() {
     const cellNav = group.key === "departments" && (!workspaceRoutes || workspaceRoutes.some((r) => r.startsWith("cell") || r === "cellPortal")) ? renderCellSidebarNav() : "";
     const fevoNav = group.key === "departments" && (!workspaceRoutes || workspaceRoutes.some((r) => FEVO_TAB_ROUTES.has(r))) ? renderFevoSidebarNav() : "";
     const financeNav = group.key === "departments" && (!workspaceRoutes || workspaceRoutes.some((r) => FINANCE_TAB_ROUTES.has(r) || r === "finance")) ? renderFinanceSidebarNav() : "";
+    const partnershipNav = group.key === "departments" && (!workspaceRoutes || workspaceRoutes.some((r) => PARTNERSHIP_TAB_ROUTES.has(r) || r === "partnership")) ? renderPartnershipSidebarNav() : "";
     const mediaNav = group.key === "departments" && (!workspaceRoutes || workspaceRoutes.some((r) => MEDIA_TAB_ROUTES.has(r))) ? renderMediaSidebarNav() : "";
     const outreachNav = group.key === "departments" && (!workspaceRoutes || workspaceRoutes.some((r) => OUTREACH_TAB_ROUTES.has(r))) ? renderOutreachSidebarNav() : "";
     const navItems = items.map(({ route, icon, label }) => `
@@ -10768,7 +10835,7 @@ function renderShell() {
         <i class="bi ${sidebarIcon(icon, route)}"></i><span>${L(label)}</span>
       </button>
     `).join("");
-    if (!navItems && !cellNav && !fevoNav && !financeNav && !mediaNav && !outreachNav) return "";
+    if (!navItems && !cellNav && !fevoNav && !financeNav && !partnershipNav && !mediaNav && !outreachNav) return "";
     const expanded = isSidebarGroupExpanded(group.key) || (group.key === "departments" && String(activeUser?.role || "").toLowerCase().includes("venue"));
     return `
     <div class="nav-group ${expanded ? "is-expanded" : ""}" data-nav-group="${group.key}">
@@ -10781,6 +10848,7 @@ function renderShell() {
           ${cellNav}
           ${fevoNav}
           ${financeNav}
+          ${partnershipNav}
           ${navItems}
           ${mediaNav}
           ${outreachNav}
@@ -10959,6 +11027,14 @@ function setRoute(route) {
     financeReportsRoute: ["departments", "financeTabReports"],
     financePartnersRoute: ["departments", "financeTabPartners"],
     financeExportsRoute: ["departments", "financeTabExports"],
+    partnershipOverviewRoute: ["departments", "partnershipTabOverview"],
+    partnershipArmsRoute: ["departments", "partnershipTabArms"],
+    partnershipPartnersRoute: ["departments", "partnershipTabPartners"],
+    partnershipContributionsRoute: ["departments", "partnershipTabContributions"],
+    partnershipHighlightsRoute: ["departments", "partnershipTabHighlights"],
+    partnershipAnalyticsRoute: ["departments", "partnershipTabAnalytics"],
+    partnershipReportsRoute: ["departments", "partnershipTabReports"],
+    partnershipExportsRoute: ["departments", "partnershipTabExports"],
     notifications: ["main", "notifications"]
   };
   byId("pageTitle").textContent = activeRoute === "cellPortal" ? (lang === "pt" ? "Portal do Líder de Célula" : "Cell Leader Portal") : found ? L(found.item[2]) : isCellRoute(activeRoute) ? cellRouteLabel(activeRoute) : childRoutes[activeRoute] ? L(childRoutes[activeRoute][1]) : L("dashboard");
@@ -10992,6 +11068,19 @@ function setRoute(route) {
     const financeGroup = document.querySelector(`[data-nav-group="${FINANCE_NAV.parentKey}"]`);
     if (financeGroup && !financeGroup.classList.contains("is-expanded")) {
       financeGroup.classList.add("is-expanded");
+    }
+  }
+  if (PARTNERSHIP_TAB_ROUTES.has(activeRoute) || activeRoute === "partnership") {
+    sidebarGroupState[PARTNERSHIP_NAV.parentKey] = true;
+    sidebarGroupState.departments = true;
+    localStorage.setItem(SIDEBAR_GROUPS_KEY, JSON.stringify(sidebarGroupState));
+    const deptGroup = document.querySelector('[data-nav-group="departments"]');
+    if (deptGroup && !deptGroup.classList.contains("is-expanded")) {
+      deptGroup.classList.add("is-expanded");
+    }
+    const partGroup = document.querySelector(`[data-nav-group="${PARTNERSHIP_NAV.parentKey}"]`);
+    if (partGroup && !partGroup.classList.contains("is-expanded")) {
+      partGroup.classList.add("is-expanded");
     }
   }
   if (OUTREACH_TAB_ROUTES.has(activeRoute)) {
@@ -11068,7 +11157,49 @@ function setRoute(route) {
     programs: renderPrograms,
     partnership: () => {
       if (typeof hydratePartnershipArms === "function") void hydratePartnershipArms();
-      return typeof renderPartnerships === "function" ? renderPartnerships() : renderSimple("partnership", L("partnership"), state.partnership);
+      if (typeof setPartnershipTab === "function") setPartnershipTab("overview");
+      else if (typeof renderPartnerships === "function") renderPartnerships("overview");
+      else renderSimple("partnership", L("partnership"), state.partnership);
+    },
+    partnershipOverviewRoute: () => {
+      if (typeof hydratePartnershipArms === "function") void hydratePartnershipArms();
+      if (typeof setPartnershipTab === "function") setPartnershipTab("overview");
+      else if (typeof renderPartnerships === "function") renderPartnerships("overview");
+    },
+    partnershipArmsRoute: () => {
+      if (typeof hydratePartnershipArms === "function") void hydratePartnershipArms();
+      if (typeof setPartnershipTab === "function") setPartnershipTab("arms");
+      else if (typeof renderPartnerships === "function") renderPartnerships("arms");
+    },
+    partnershipPartnersRoute: () => {
+      if (typeof hydratePartnershipArms === "function") void hydratePartnershipArms();
+      if (typeof setPartnershipTab === "function") setPartnershipTab("partners");
+      else if (typeof renderPartnerships === "function") renderPartnerships("partners");
+    },
+    partnershipContributionsRoute: () => {
+      if (typeof hydratePartnershipArms === "function") void hydratePartnershipArms();
+      if (typeof setPartnershipTab === "function") setPartnershipTab("contributions");
+      else if (typeof renderPartnerships === "function") renderPartnerships("contributions");
+    },
+    partnershipHighlightsRoute: () => {
+      if (typeof hydratePartnershipArms === "function") void hydratePartnershipArms();
+      if (typeof setPartnershipTab === "function") setPartnershipTab("highlights");
+      else if (typeof renderPartnerships === "function") renderPartnerships("highlights");
+    },
+    partnershipAnalyticsRoute: () => {
+      if (typeof hydratePartnershipArms === "function") void hydratePartnershipArms();
+      if (typeof setPartnershipTab === "function") setPartnershipTab("analytics");
+      else if (typeof renderPartnerships === "function") renderPartnerships("analytics");
+    },
+    partnershipReportsRoute: () => {
+      if (typeof hydratePartnershipArms === "function") void hydratePartnershipArms();
+      if (typeof setPartnershipTab === "function") setPartnershipTab("reports");
+      else if (typeof renderPartnerships === "function") renderPartnerships("reports");
+    },
+    partnershipExportsRoute: () => {
+      if (typeof hydratePartnershipArms === "function") void hydratePartnershipArms();
+      if (typeof setPartnershipTab === "function") setPartnershipTab("exports");
+      else if (typeof renderPartnerships === "function") renderPartnerships("exports");
     },
     media: () => renderMedia("overview"),
     mediaTeamRoute: () => renderMedia("team"),

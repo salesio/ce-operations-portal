@@ -1310,7 +1310,7 @@
       </div>`;
 
     if (typeof setPageContent === "function") {
-      setPageContent(`${header}${tabsHtml()}${periodSelect}<div class="partnership-body">${body}</div>`);
+      setPageContent(`${header}${periodSelect}<div class="partnership-body">${body}</div>`);
     }
   }
 
@@ -1332,7 +1332,23 @@
         const tab = jump.getAttribute("data-partnership-jump");
         const armId = jump.getAttribute("data-partnership-arm");
         if (armId) partnershipPageState.armId = armId;
-        if (tab) partnershipPageState.tab = tab;
+        if (tab) {
+          const tabToRoute = {
+            overview: "partnership",
+            arms: "partnershipArmsRoute",
+            partners: "partnershipPartnersRoute",
+            contributions: "partnershipContributionsRoute",
+            highlights: "partnershipHighlightsRoute",
+            analytics: "partnershipAnalyticsRoute",
+            reports: "partnershipReportsRoute",
+            exports: "partnershipExportsRoute"
+          };
+          if (tabToRoute[tab] && typeof setRoute === "function") {
+            setRoute(tabToRoute[tab]);
+            return;
+          }
+          partnershipPageState.tab = tab;
+        }
         renderPartnerships();
         return;
       }
@@ -1359,15 +1375,21 @@
       const armPartners = event.target.closest("[data-partnership-arm-partners]");
       if (armPartners) {
         partnershipPageState.armId = armPartners.getAttribute("data-partnership-arm-partners") || "";
-        partnershipPageState.tab = "partners";
-        renderPartnerships();
+        if (typeof setRoute === "function") setRoute("partnershipPartnersRoute");
+        else {
+          partnershipPageState.tab = "partners";
+          renderPartnerships();
+        }
         return;
       }
       const armReport = event.target.closest("[data-partnership-arm-report]");
       if (armReport) {
         partnershipPageState.armId = armReport.getAttribute("data-partnership-arm-report") || "";
-        partnershipPageState.tab = "reports";
-        renderPartnerships();
+        if (typeof setRoute === "function") setRoute("partnershipReportsRoute");
+        else {
+          partnershipPageState.tab = "reports";
+          renderPartnerships();
+        }
         return;
       }
       const exp = event.target.closest("[data-partnership-export]");
@@ -1394,6 +1416,10 @@
   global.handleArmLogoError = handleArmLogoError;
   global.partnershipPageState = partnershipPageState;
   global.renderPartnerships = renderPartnerships;
+  global.setPartnershipTab = function setPartnershipTab(tab) {
+    partnershipPageState.tab = tab || "overview";
+    renderPartnerships();
+  };
   global.getPartnershipArmPromotionStatus = getPartnershipArmPromotionStatus;
   global.getVerifiedPartnershipRecords = getPartnershipFinanceList;
   global.computePartnershipArmAnalytics = computeArmAnalytics;
