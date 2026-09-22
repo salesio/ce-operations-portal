@@ -15009,6 +15009,12 @@ async function submitCellAttendanceModal(form) {
 
   // Consolidate to Church Reports
   const consolidatedChurchReport = consolidateCellReportToChurchReport(cellReport);
+  if (cellReport && (!cellReport.id || !cleanUuidVal(cellReport.id))) {
+    cellReport.id = generateUuid();
+  }
+  if (consolidatedChurchReport && (!consolidatedChurchReport.id || !cleanUuidVal(consolidatedChurchReport.id))) {
+    consolidatedChurchReport.id = generateUuid();
+  }
 
   void dualWriteCellMinistryRecord("cellReport", isNewReport ? "create" : "update", cellReport);
   if (consolidatedChurchReport) {
@@ -15016,10 +15022,19 @@ async function submitCellAttendanceModal(form) {
   }
 
   try {
+    const cellSb = window.CESupabase?.cellMinistrySupabaseAdapter || window.cellMinistrySupabaseAdapter;
+    if (cellSb) {
+      if (cellSb.upsertCellReport) void cellSb.upsertCellReport(cellReport);
+      else if (cellSb.updateCellReport) void cellSb.updateCellReport(cellReport.id, cellReport);
+      if (consolidatedChurchReport) {
+        if (cellSb.upsertChurchReport) void cellSb.upsertChurchReport(consolidatedChurchReport);
+        else if (cellSb.updateChurchReport) void cellSb.updateChurchReport(consolidatedChurchReport.id, consolidatedChurchReport);
+      }
+    }
     const sbClient = window.CESupabase?.getRawClient?.() || window.CESupabase?.getSupabaseFoundationClient?.() || window.CESupabase?.getSupabaseClient?.() || window.supabase;
     if (sbClient) {
       void sbClient.from("cell_reports").upsert({
-        id: cellReport.id,
+        id: cleanUuidVal(cellReport.id) || generateUuid(),
         church_id: churchId,
         cell_id: cellId,
         cell_group_id: cellReport.cell_group_id || null,
@@ -15030,6 +15045,7 @@ async function submitCellAttendanceModal(form) {
         att: Number(cellReport.att || 0),
         ft: Number(cellReport.ft || 0),
         nc: Number(cellReport.nc || 0),
+        oferta: Number(cellReport.oferta || 0),
         observacoes: cellReport.observacoes || "",
         submetido_por: cellReport.submetido_por,
         submetido_por_id: cleanUuidVal(activeUser?.id),
@@ -15037,7 +15053,7 @@ async function submitCellAttendanceModal(form) {
       });
       if (consolidatedChurchReport) {
         void sbClient.from("church_reports").upsert({
-          id: consolidatedChurchReport.id,
+          id: cleanUuidVal(consolidatedChurchReport.id) || generateUuid(),
           church_id: churchId,
           church_name: consolidatedChurchReport.church_name,
           semana: consolidatedChurchReport.semana,
@@ -15050,7 +15066,14 @@ async function submitCellAttendanceModal(form) {
           comentarios: consolidatedChurchReport.comentarios || "",
           submetido_por: consolidatedChurchReport.submetido_por,
           submetido_por_id: cleanUuidVal(activeUser?.id),
-          estado: "Submetido"
+          estado: "Submetido",
+          metadata: {
+            att: Number(consolidatedChurchReport.att || 0),
+            oferta: Number(consolidatedChurchReport.oferta || 0),
+            total_cells_reported: Number(consolidatedChurchReport.total_cells_reported || 1),
+            titulo_do_relatorio: consolidatedChurchReport.titulo_do_relatorio || consolidatedChurchReport.nome || "",
+            origem: consolidatedChurchReport.origem || "Portal de Células"
+          }
         });
       }
     }
@@ -20441,20 +20464,21 @@ async function dualWriteCellMinistryRecord(modalType, mode, record) {
     let result = null;
     if (modalType === "churchReport") {
       if (cellSb) {
-        if (mode === "create") {
-          result = await cellSb.createChurchReport(record);
+        if (mode === "create" || mode === "update") {
+          if (cellSb.upsertChurchReport) {
+            result = await cellSb.upsertChurchReport(record);
+          } else if (mode === "create" && cellSb.createChurchReport) {
+            result = await cellSb.createChurchReport(record);
+          } else if (cellSb.updateChurchReport) {
+            result = await cellSb.updateChurchReport(record.id, record);
+          }
           if (result?.ok && result.data) {
             Object.assign(record, result.data);
-            saveState(`Persisted churchReport to Supabase`);
+            saveState(`${mode === "create" ? "Persisted" : "Updated"} churchReport in Supabase`);
             if (activeRoute === "cellChurchReports") setRoute(activeRoute);
           }
-        } else if (mode === "update") {
-          result = await cellSb.updateChurchReport(record.id, record);
-          if (result?.ok && result.data) {
-            Object.assign(record, result.data);
-            saveState(`Updated churchReport in Supabase`);
-            if (activeRoute === "cellChurchReports") setRoute(activeRoute);
-          }
+        } else if (mode === "delete") {
+          if (cellSb.deleteChurchReport) result = await cellSb.deleteChurchReport(record.id);
         }
       }
     } else if (modalType === "alecRegistration") {
@@ -20787,6 +20811,7 @@ async function hydrateCellMinistryFromRepository() {
       const byId = new Map();
       data.forEach((row) => {
         const previous = prev.get(row.id) || {};
+        const meta = (row.metadata && typeof row.metadata === "object") ? row.metadata : {};
         byId.set(row.id, {
           ...previous,
           ...row,
@@ -20796,21 +20821,26 @@ async function hydrateCellMinistryFromRepository() {
           semana: row.semana || previous.semana,
           data_do_culto: row.data_do_culto || previous.data_do_culto,
           culto: row.culto || previous.culto,
-          att: row.att ?? previous.att ?? 0,
+          att: row.att ?? meta.att ?? previous.att ?? 0,
           ft: row.ft ?? previous.ft ?? 0,
           nc: row.nc ?? previous.nc ?? 0,
           rs: row.rs ?? previous.rs ?? 0,
           total_ft_reached: row.total_ft_reached ?? previous.total_ft_reached ?? 0,
-          oferta: row.oferta ?? previous.oferta ?? 0,
+          oferta: row.oferta ?? meta.oferta ?? previous.oferta ?? 0,
+          total_cells_reported: row.total_cells_reported ?? meta.total_cells_reported ?? previous.total_cells_reported ?? 1,
+          titulo_do_relatorio: row.titulo_do_relatorio || meta.titulo_do_relatorio || previous.titulo_do_relatorio || "",
+          origem: row.origem || meta.origem || previous.origem || "",
           comentarios: row.comentarios || previous.comentarios || "",
           submetido_por: row.submetido_por || previous.submetido_por || "",
           estado: row.estado || row.status || previous.estado || "Submetido",
           status: row.status || row.estado || previous.status || "Submetido"
         });
       });
-      prev.forEach((localRow, id) => {
-        if (!byId.has(id)) byId.set(id, localRow);
-      });
+      if (!usingSupabase) {
+        prev.forEach((localRow, id) => {
+          if (!byId.has(id)) byId.set(id, localRow);
+        });
+      }
       state.cellLeadership.churchReports = [...byId.values()];
       hydrated = true;
     }
@@ -39615,6 +39645,12 @@ document.addEventListener("click", (event) => {
 
     // Automatically consolidate to Church Reports
     const consolidatedChurchReport = consolidateCellReportToChurchReport(cellReport);
+    if (cellReport && (!cellReport.id || !cleanUuidVal(cellReport.id))) {
+      cellReport.id = generateUuid();
+    }
+    if (consolidatedChurchReport && (!consolidatedChurchReport.id || !cleanUuidVal(consolidatedChurchReport.id))) {
+      consolidatedChurchReport.id = generateUuid();
+    }
 
     void dualWriteCellMinistryRecord("cellReport", isNewReport ? "create" : "update", cellReport);
     if (consolidatedChurchReport) {
@@ -39622,10 +39658,19 @@ document.addEventListener("click", (event) => {
     }
 
     try {
+      const cellSb = window.CESupabase?.cellMinistrySupabaseAdapter || window.cellMinistrySupabaseAdapter;
+      if (cellSb) {
+        if (cellSb.upsertCellReport) void cellSb.upsertCellReport(cellReport);
+        else if (cellSb.updateCellReport) void cellSb.updateCellReport(cellReport.id, cellReport);
+        if (consolidatedChurchReport) {
+          if (cellSb.upsertChurchReport) void cellSb.upsertChurchReport(consolidatedChurchReport);
+          else if (cellSb.updateChurchReport) void cellSb.updateChurchReport(consolidatedChurchReport.id, consolidatedChurchReport);
+        }
+      }
       const sbClient = window.CESupabase?.getRawClient?.() || window.CESupabase?.getSupabaseFoundationClient?.() || window.CESupabase?.getSupabaseClient?.() || window.supabase;
       if (sbClient) {
         void sbClient.from("cell_reports").upsert({
-          id: cellReport.id,
+          id: cleanUuidVal(cellReport.id) || generateUuid(),
           church_id: churchId,
           cell_id: cellId,
           cell_group_id: cellReport.cell_group_id || null,
@@ -39644,22 +39689,27 @@ document.addEventListener("click", (event) => {
         });
         if (consolidatedChurchReport) {
           void sbClient.from("church_reports").upsert({
-            id: consolidatedChurchReport.id,
+            id: cleanUuidVal(consolidatedChurchReport.id) || generateUuid(),
             church_id: churchId,
             church_name: consolidatedChurchReport.church_name,
             semana: consolidatedChurchReport.semana,
             data_do_culto: consolidatedChurchReport.data_do_culto,
             culto: consolidatedChurchReport.culto,
-            att: Number(consolidatedChurchReport.att || 0),
             ft: Number(consolidatedChurchReport.ft || 0),
             nc: Number(consolidatedChurchReport.nc || 0),
             rs: Number(consolidatedChurchReport.rs || 0),
             total_ft_reached: Number(consolidatedChurchReport.total_ft_reached || consolidatedChurchReport.ft || 0),
-            oferta: Number(consolidatedChurchReport.oferta || 0),
             comentarios: consolidatedChurchReport.comentarios || "",
             submetido_por: consolidatedChurchReport.submetido_por,
             submetido_por_id: cleanUuidVal(activeUser?.id),
-            estado: "Submetido"
+            estado: "Submetido",
+            metadata: {
+              att: Number(consolidatedChurchReport.att || 0),
+              oferta: Number(consolidatedChurchReport.oferta || 0),
+              total_cells_reported: Number(consolidatedChurchReport.total_cells_reported || 1),
+              titulo_do_relatorio: consolidatedChurchReport.titulo_do_relatorio || consolidatedChurchReport.nome || "",
+              origem: consolidatedChurchReport.origem || "Portal de Células"
+            }
           });
         }
       }

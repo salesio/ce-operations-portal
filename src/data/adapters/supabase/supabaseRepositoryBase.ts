@@ -182,6 +182,30 @@ export async function updateRow(
   }
 }
 
+export async function upsertRow(
+  table: SupabaseTableName | string,
+  payload: SupabaseRow,
+  options: { onConflict?: string } = {},
+): Promise<SupabaseResult<SupabaseRow>> {
+  const clientRes = requireClient();
+  if (!clientRes.ok) return clientRes as SupabaseResult<SupabaseRow>;
+  try {
+    const { data, error } = await clientRes.data
+      .from(table)
+      .upsert(payload, options)
+      .select("*")
+      .single();
+    if (error) {
+      const m = mapSupabaseError(error.message);
+      return fail(m.error, m.code);
+    }
+    return ok(data as SupabaseRow);
+  } catch (e) {
+    const m = mapSupabaseError(e instanceof Error ? e.message : "upsertRow failed");
+    return fail(m.error, m.code);
+  }
+}
+
 export async function deleteRow(
   table: SupabaseTableName | string,
   id: string,

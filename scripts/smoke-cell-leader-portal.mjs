@@ -44,7 +44,7 @@ check("portal hydrates live cell context", /function ensureCellPortalContext\(\)
 check("mobile portal prepared", /@media \(max-width: 700px\)/.test(css) && /td::before/.test(css));
 check("leader lands in portal", /isCellPortalMember[\s\S]{0,220}setRoute\("cellPortal"\)/.test(dashboard));
 check("admin dashboard hidden from leaders", /isCellPortalOnly|if \(\["Cell Leader", "Cell Assistant"\][\s\S]{0,500}sidebarNav/.test(dashboard));
-check("cachebuster updated", /(?:20260806-runtime-provider-v8|20260819-members-runtime-fix-v[1-9]|20260821-[\w-]+|20260827-[\w-]+|20260902-[\w-]+|20260909-[\w-]+|20260910-[\w-]+|20260914-[\w-]+|20260916-[\w-]+)/.test(index));
+check("cachebuster updated", /(?:20260806-runtime-provider-v8|20260819-members-runtime-fix-v[1-9]|20260821-[\w-]+|20260827-[\w-]+|20260902-[\w-]+|20260909-[\w-]+|20260910-[\w-]+|20260914-[\w-]+|20260916-[\w-]+|20260921-[\w-]+|20260922-[\w-]+)/.test(index));
 check("documentation exists", existsSync(join(root, "docs/backend/CELL_LEADER_PORTAL.md")));
 
 console.log(`\nCell Leader Portal: ${passed} passed, ${failed} failed\n`);

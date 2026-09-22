@@ -1,7 +1,7 @@
 import type { EntityId } from "../../types/entities";
 import type { DataResult } from "../../types/repository";
 import type { SupabaseRow } from "./supabaseTypes";
-import { createRow, dateRangeRows, deleteRow, getRowById, isValidUuid, listRows, updateRow } from "./supabaseRepositoryBase";
+import { createRow, dateRangeRows, deleteRow, getRowById, isValidUuid, listRows, updateRow, upsertRow } from "./supabaseRepositoryBase";
 
 export type CellMinistryRecord = Record<string, unknown> & { id?: EntityId };
 type Table = keyof typeof TABLES;
@@ -207,6 +207,12 @@ function payload(t: Table, x: CellMinistryRecord): SupabaseRow {
       row[c] = churchId;
       continue;
     }
+    if (c === "id") {
+      if (x.id && isValidUuid(String(x.id))) {
+        row.id = String(x.id);
+      }
+      continue;
+    }
     if (c in x && x[c] !== undefined) {
       row[c] = x[c] as SupabaseRow[string];
     }
@@ -247,6 +253,15 @@ function payload(t: Table, x: CellMinistryRecord): SupabaseRow {
     if (x.status && !row.estado) row.estado = String(x.status);
     if (x.submitted_by && !row.submetido_por) row.submetido_por = String(x.submitted_by);
     if (x.comments && !row.comentarios) row.comentarios = String(x.comments);
+    
+    // Safely package additional metrics into metadata for Postgres JSONB storage
+    const meta = (typeof x.metadata === "object" && x.metadata ? { ...x.metadata } : {}) as Record<string, unknown>;
+    if (x.att !== undefined) meta.att = Number(x.att || 0);
+    if (x.oferta !== undefined) meta.oferta = Number(x.oferta || 0);
+    if (x.total_cells_reported !== undefined) meta.total_cells_reported = Number(x.total_cells_reported || 0);
+    if (x.titulo_do_relatorio) meta.titulo_do_relatorio = String(x.titulo_do_relatorio);
+    if (x.origem) meta.origem = String(x.origem);
+    row.metadata = meta;
   } else if (t === "alecRegistrations") {
     if (x.fullName && !row.nome_completo) row.nome_completo = String(x.fullName);
     if (x.contact && !row.contacto) row.contacto = String(x.contact);
@@ -340,24 +355,24 @@ async function get(t: Table, id: EntityId) {
 }
 
 async function create(t: Table, x: CellMinistryRecord) {
-  const r = await createRow(TABLES[t], payload(t, x));
+  const p = payload(t, x);
+  const r = p.id ? await upsertRow(TABLES[t], p) : await createRow(TABLES[t], p);
   return r.ok ? ok(aliases(t, r.data)) : cast<CellMinistryRecord>(r);
 }
 
 async function update(t: Table, id: EntityId, x: CellMinistryRecord) {
   const isUuid = isValidUuid(String(id));
-  if (!isUuid) {
-    return create(t, x);
-  }
   const p = payload(t, x);
-  delete p.id;
-  delete p.created_at;
-  const r = await updateRow(TABLES[t], String(id), p);
-  if (!r.ok) {
-    // If the record didn't exist in Supabase yet, create it
-    const createRes = await create(t, x);
-    if (createRes.ok) return createRes;
+  if (isUuid) {
+    p.id = String(id);
   }
+  const r = await upsertRow(TABLES[t], p);
+  return r.ok ? ok(aliases(t, r.data)) : cast<CellMinistryRecord>(r);
+}
+
+async function upsert(t: Table, x: CellMinistryRecord) {
+  const p = payload(t, x);
+  const r = await upsertRow(TABLES[t], p);
   return r.ok ? ok(aliases(t, r.data)) : cast<CellMinistryRecord>(r);
 }
 
@@ -368,6 +383,7 @@ export const listCellGroups = (filters: Record<string, string | number | boolean
 export const getCellGroupById = (id: EntityId) => get("cellGroups", id);
 export const createCellGroup = (p: CellMinistryRecord) => create("cellGroups", p);
 export const updateCellGroup = (id: EntityId, p: CellMinistryRecord) => update("cellGroups", id, p);
+export const upsertCellGroup = (p: CellMinistryRecord) => upsert("cellGroups", p);
 export const deleteCellGroup = (id: EntityId) => remove("cellGroups", id);
 
 // Cells
@@ -375,6 +391,7 @@ export const listCells = (filters: Record<string, string | number | boolean | nu
 export const getCellById = (id: EntityId) => get("cells", id);
 export const createCell = (p: CellMinistryRecord) => create("cells", p);
 export const updateCell = (id: EntityId, p: CellMinistryRecord) => update("cells", id, p);
+export const upsertCell = (p: CellMinistryRecord) => upsert("cells", p);
 export const deleteCell = (id: EntityId) => remove("cells", id);
 
 // Church Reports
@@ -382,6 +399,7 @@ export const listChurchReports = (filters: Record<string, string | number | bool
 export const getChurchReportById = (id: EntityId) => get("churchReports", id);
 export const createChurchReport = (p: CellMinistryRecord) => create("churchReports", p);
 export const updateChurchReport = (id: EntityId, p: CellMinistryRecord) => update("churchReports", id, p);
+export const upsertChurchReport = (p: CellMinistryRecord) => upsert("churchReports", p);
 export const deleteChurchReport = (id: EntityId) => remove("churchReports", id);
 export const getChurchReportsByChurch = (churchId: EntityId) => list("churchReports", { church_id: String(churchId) });
 
@@ -390,6 +408,7 @@ export const listAlecRegistrations = (filters: Record<string, string | number | 
 export const getAlecRegistrationById = (id: EntityId) => get("alecRegistrations", id);
 export const createAlecRegistration = (p: CellMinistryRecord) => create("alecRegistrations", p);
 export const updateAlecRegistration = (id: EntityId, p: CellMinistryRecord) => update("alecRegistrations", id, p);
+export const upsertAlecRegistration = (p: CellMinistryRecord) => upsert("alecRegistrations", p);
 export const deleteAlecRegistration = (id: EntityId) => remove("alecRegistrations", id);
 export const getAlecRegistrationsByChurch = (churchId: EntityId) => list("alecRegistrations", { church_id: String(churchId) });
 
@@ -398,6 +417,7 @@ export const listAlecScores = (filters: Record<string, string | number | boolean
 export const getAlecScoreById = (id: EntityId) => get("alecScores", id);
 export const createAlecScore = (p: CellMinistryRecord) => create("alecScores", p);
 export const updateAlecScore = (id: EntityId, p: CellMinistryRecord) => update("alecScores", id, p);
+export const upsertAlecScore = (p: CellMinistryRecord) => upsert("alecScores", p);
 export const deleteAlecScore = (id: EntityId) => remove("alecScores", id);
 export const getAlecScoresByChurch = (churchId: EntityId) => list("alecScores", { church_id: String(churchId) });
 
@@ -406,6 +426,7 @@ export const listCellReports = (filters: Record<string, string | number | boolea
 export const getCellReportById = (id: EntityId) => get("cellReports", id);
 export const createCellReport = (p: CellMinistryRecord) => create("cellReports", p);
 export const updateCellReport = (id: EntityId, p: CellMinistryRecord) => update("cellReports", id, p);
+export const upsertCellReport = (p: CellMinistryRecord) => upsert("cellReports", p);
 export const deleteCellReport = (id: EntityId) => remove("cellReports", id);
 export const getCellReportsByChurch = (churchId: EntityId) => list("cellReports", { church_id: String(churchId) });
 
@@ -414,6 +435,7 @@ export const listCellEvaluations = (filters: Record<string, string | number | bo
 export const getCellEvaluationById = (id: EntityId) => get("cellEvaluations", id);
 export const createCellEvaluation = (p: CellMinistryRecord) => create("cellEvaluations", p);
 export const updateCellEvaluation = (id: EntityId, p: CellMinistryRecord) => update("cellEvaluations", id, p);
+export const upsertCellEvaluation = (p: CellMinistryRecord) => upsert("cellEvaluations", p);
 export const deleteCellEvaluation = (id: EntityId) => remove("cellEvaluations", id);
 export const getCellEvaluationsByChurch = (churchId: EntityId) => list("cellEvaluations", { church_id: String(churchId) });
 
@@ -422,6 +444,7 @@ export const listCellActionPlans = (filters: Record<string, string | number | bo
 export const getCellActionPlanById = (id: EntityId) => get("cellActionPlans", id);
 export const createCellActionPlan = (p: CellMinistryRecord) => create("cellActionPlans", p);
 export const updateCellActionPlan = (id: EntityId, p: CellMinistryRecord) => update("cellActionPlans", id, p);
+export const upsertCellActionPlan = (p: CellMinistryRecord) => upsert("cellActionPlans", p);
 export const deleteCellActionPlan = (id: EntityId) => remove("cellActionPlans", id);
 export const getCellActionPlansByChurch = (churchId: EntityId) => list("cellActionPlans", { church_id: String(churchId) });
 
@@ -430,6 +453,7 @@ export const listCellLeaders = (filters: Record<string, string | number | boolea
 export const getCellLeaderById = (id: EntityId) => get("cellLeaders", id);
 export const createCellLeader = (p: CellMinistryRecord) => create("cellLeaders", p);
 export const updateCellLeader = (id: EntityId, p: CellMinistryRecord) => update("cellLeaders", id, p);
+export const upsertCellLeader = (p: CellMinistryRecord) => upsert("cellLeaders", p);
 export const deleteCellLeader = (id: EntityId) => remove("cellLeaders", id);
 export const getCellLeadersByChurch = (churchId: EntityId) => list("cellLeaders", { church_id: String(churchId) });
 
@@ -438,6 +462,7 @@ export const listCellValidations = (filters: Record<string, string | number | bo
 export const getCellValidationById = (id: EntityId) => get("cellValidations", id);
 export const createCellValidation = (p: CellMinistryRecord) => create("cellValidations", p);
 export const updateCellValidation = (id: EntityId, p: CellMinistryRecord) => update("cellValidations", id, p);
+export const upsertCellValidation = (p: CellMinistryRecord) => upsert("cellValidations", p);
 export const deleteCellValidation = (id: EntityId) => remove("cellValidations", id);
 export const getCellValidationsByChurch = (churchId: EntityId) => list("cellValidations", { church_id: String(churchId) });
 
