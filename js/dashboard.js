@@ -27246,10 +27246,68 @@ function mediaVisibleTechnicians(technicians) {
   return rows;
 }
 
+const STANDARD_MEDIA_ROLE_MAP = {
+  "camera-operator": "Operador de Câmera",
+  "camera operator": "Operador de Câmera",
+  "camera_operator": "Operador de Câmera",
+  "operador de câmera": "Operador de Câmera",
+  "operador de camera": "Operador de Câmera",
+  "operador de cmera": "Operador de Câmera",
+  "sound-technician": "Técnico de Som",
+  "sound technician": "Técnico de Som",
+  "sound_technician": "Técnico de Som",
+  "técnico de som": "Técnico de Som",
+  "tecnico de som": "Técnico de Som",
+  "tcnico de som": "Técnico de Som",
+  "streaming-operator": "Técnico de Streaming / Transmissão",
+  "streaming operator": "Técnico de Streaming / Transmissão",
+  "streaming_operator": "Técnico de Streaming / Transmissão",
+  "técnico de streaming / transmissão": "Técnico de Streaming / Transmissão",
+  "tecnico de streaming / transmissao": "Técnico de Streaming / Transmissão",
+  "photographer": "Fotógrafo",
+  "fotógrafo": "Fotógrafo",
+  "fotografo": "Fotógrafo",
+  "graphics-designer": "Designer Gráfico",
+  "graphics designer": "Designer Gráfico",
+  "graphics_designer": "Designer Gráfico",
+  "designer gráfico": "Designer Gráfico",
+  "designer grafico": "Designer Gráfico",
+  "projection-operator": "Operador de Projecção / Slides",
+  "projection operator": "Operador de Projecção / Slides",
+  "projection_operator": "Operador de Projecção / Slides",
+  "operador de projecção / slides": "Operador de Projecção / Slides",
+  "operador de projeção / slides": "Operador de Projecção / Slides",
+  "operador de projeccao / slides": "Operador de Projecção / Slides",
+  "scriptures-operator": "Operador de Escrituras",
+  "scriptures operator": "Operador de Escrituras",
+  "operador de escrituras": "Operador de Escrituras",
+  "video-mixer-operator": "Operador de Mixer de Vídeo",
+  "video mixer operator": "Operador de Mixer de Vídeo",
+  "operador de mixer de vídeo": "Operador de Mixer de Vídeo",
+  "operador de mixer de video": "Operador de Mixer de Vídeo",
+  "lighting-operator": "Operador de Iluminação",
+  "lighting operator": "Operador de Iluminação",
+  "operador de iluminação": "Operador de Iluminação",
+  "operador de iluminacao": "Operador de Iluminação",
+  "media-supervisor": "Supervisor de Mídia",
+  "media supervisor": "Supervisor de Mídia",
+  "supervisor de mídia": "Supervisor de Mídia",
+  "supervisor de midia": "Supervisor de Mídia",
+  "technical-assistant": "Assistente Técnico",
+  "technical assistant": "Assistente Técnico",
+  "assistente técnico": "Assistente Técnico",
+  "assistente tecnico": "Assistente Técnico"
+};
+
 function mediaRoleName(roleKey) {
   if (!roleKey) return "-";
+  const normKey = String(roleKey).trim().toLowerCase();
+  if (STANDARD_MEDIA_ROLE_MAP[normKey]) return STANDARD_MEDIA_ROLE_MAP[normKey];
   const role = (getMediaState().roles || []).find((item) => item.id === roleKey || item.name === roleKey || item.key === roleKey || item.role_key === roleKey || item.slug === roleKey || item.role === roleKey);
-  if (role) return role.name || (L(mediaRoleKey(role)) !== mediaRoleKey(role) ? L(mediaRoleKey(role)) : role.name || role.key);
+  if (role) {
+    const rKey = String(role.slug || role.name || role.key || "").trim().toLowerCase();
+    return STANDARD_MEDIA_ROLE_MAP[rKey] || role.name || (L(mediaRoleKey(role)) !== mediaRoleKey(role) ? L(mediaRoleKey(role)) : role.name || role.key);
+  }
   return L(roleKey) !== roleKey ? L(roleKey) : roleKey;
 }
 
@@ -27259,29 +27317,32 @@ function mediaRoleKey(role = {}) {
 
 function getMediaRoleOptions() {
   const media = getMediaState();
-  const definedRoles = (media.roles || []).map((r) => {
-    const val = r.name || r.key || r.role_key || r.role || r.id;
-    return { value: val, label: val };
-  }).filter((r) => Boolean(r.value));
-
   const standardRoles = [
-    "Operador de Câmera",
-    "Técnico de Som",
-    "Operador de Mixer de Vídeo",
-    "Técnico de Streaming / Transmissão",
-    "Operador de Projecção / Slides",
-    "Operador de Escrituras",
-    "Fotógrafo",
-    "Operador de Iluminação",
-    "Supervisor de Mídia",
-    "Assistente Técnico"
+    { value: "Operador de Câmera", label: "Operador de Câmera" },
+    { value: "Técnico de Som", label: "Técnico de Som" },
+    { value: "Operador de Mixer de Vídeo", label: "Operador de Mixer de Vídeo" },
+    { value: "Técnico de Streaming / Transmissão", label: "Técnico de Streaming / Transmissão" },
+    { value: "Operador de Projecção / Slides", label: "Operador de Projecção / Slides" },
+    { value: "Operador de Escrituras", label: "Operador de Escrituras" },
+    { value: "Fotógrafo", label: "Fotógrafo" },
+    { value: "Designer Gráfico", label: "Designer Gráfico" },
+    { value: "Operador de Iluminação", label: "Operador de Iluminação" },
+    { value: "Supervisor de Mídia", label: "Supervisor de Mídia" },
+    { value: "Assistente Técnico", label: "Assistente Técnico" }
   ];
 
   const seen = new Set();
   const options = [];
 
+  const definedRoles = (media.roles || []).map((r) => {
+    const rawVal = r.name || r.key || r.role_key || r.role || r.id;
+    const normKey = String(r.slug || rawVal || "").trim().toLowerCase();
+    const displayLabel = STANDARD_MEDIA_ROLE_MAP[normKey] || r.name || rawVal;
+    return { value: rawVal, label: displayLabel };
+  }).filter((r) => Boolean(r.value));
+
   for (const r of definedRoles) {
-    const k = String(r.value).trim().toLowerCase();
+    const k = String(r.label || r.value).trim().toLowerCase();
     if (k && !seen.has(k)) {
       seen.add(k);
       options.push(r);
@@ -27289,15 +27350,48 @@ function getMediaRoleOptions() {
   }
 
   for (const s of standardRoles) {
-    const k = s.trim().toLowerCase();
+    const k = s.label.trim().toLowerCase();
     if (k && !seen.has(k)) {
       seen.add(k);
-      options.push({ value: s, label: s });
+      options.push(s);
     }
   }
 
   return options;
 }
+
+window.handleMediaRoleCheckChange = function(chk) {
+  if (!chk) return;
+  const card = chk.closest(".media-role-card") || chk.parentElement;
+  if (card) {
+    if (chk.checked) {
+      card.style.background = "rgba(212, 175, 55, 0.24)";
+      card.style.borderColor = "#d4af37";
+      card.style.color = "#ffd700";
+      card.style.boxShadow = "0 0 12px rgba(212, 175, 55, 0.3)";
+    } else {
+      card.style.background = "rgba(255, 255, 255, 0.05)";
+      card.style.borderColor = "rgba(255, 255, 255, 0.18)";
+      card.style.color = "#ffffff";
+      card.style.boxShadow = "none";
+    }
+  }
+  const allChks = document.querySelectorAll(".media-role-chk");
+  const count = [...allChks].filter((c) => c.checked).length;
+  const badgeEl = document.getElementById("media-roles-count-badge");
+  if (badgeEl) {
+    const isPt = typeof currentLang === "function" ? currentLang() === "pt" : true;
+    badgeEl.textContent = `${count} ${isPt ? "selecionada(s)" : "selected"}`;
+  }
+};
+
+window.toggleAllMediaRoles = function(name, selectAll) {
+  const chks = document.querySelectorAll(`input[type="checkbox"][name="${name}"].media-role-chk`) || document.querySelectorAll(".media-role-chk");
+  chks.forEach((chk) => {
+    chk.checked = Boolean(selectAll);
+    window.handleMediaRoleCheckChange(chk);
+  });
+};
 
 function mediaChannelUrl(channel = {}) {
   return channel.channel_url || channel.url || channel.handle || "";
@@ -30317,20 +30411,50 @@ function fieldControl([name, labelKey, inputType = "text", options = []], record
     const currentRoles = Array.isArray(value)
       ? value.map((v) => String(v || "").trim().toLowerCase())
       : (typeof value === "string" && value ? [value.trim().toLowerCase()] : []);
+    const initialSelectedCount = roleOptions.filter((opt) => {
+      const optValStr = String(opt.value || "").trim().toLowerCase();
+      const optLblStr = String(opt.label || "").trim().toLowerCase();
+      return currentRoles.some((r) => r === optValStr || r === optLblStr);
+    }).length;
+
     return `
       <div class="col-12">
-        <label class="form-label d-block fw-semibold mb-1">${label} <span class="text-secondary fw-normal">(${lang === "pt" ? "Múltipla selecção — escolha as funções que pode desempenhar" : "Multiple selection — choose roles can perform"})</span></label>
-        <div class="d-flex flex-wrap gap-2 p-2 rounded bg-dark-subtle border border-secondary border-opacity-25" style="max-height: 220px; overflow-y: auto;">
-          ${roleOptions.map((opt) => {
-            const optValStr = String(opt.value || "").trim().toLowerCase();
-            const optLblStr = String(opt.label || "").trim().toLowerCase();
-            const isChecked = currentRoles.some((r) => r === optValStr || r === optLblStr);
-            return `
-              <label class="form-check form-check-inline m-0 p-2 rounded d-flex align-items-center gap-2" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); cursor: pointer; user-select: none;">
-                <input type="checkbox" name="${name}" value="${escapeAttr(opt.value)}" class="form-check-input mt-0" ${isChecked ? "checked" : ""}>
-                <span class="form-check-label small text-light">${escapeHtml(opt.label)}</span>
-              </label>`;
-          }).join("")}
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+          <div>
+            <label class="form-label mb-0 fw-bold" style="color: #ffffff !important; font-size: 0.95rem; letter-spacing: 0.01em;">
+              <i class="bi bi-person-badge me-1" style="color: #d4af37;"></i>${label}
+            </label>
+            <span class="d-block text-secondary" style="font-size: 0.8rem; color: #94a3b8 !important;">
+              ${lang === "pt" ? "Selecione todas as funções que este membro desempenha na equipa" : "Select all roles this team member performs"}
+            </span>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <span id="media-roles-count-badge" class="badge" style="background: rgba(212, 175, 55, 0.2); color: #ffd700; border: 1px solid rgba(212, 175, 55, 0.4); font-size: 0.75rem; padding: 5px 9px;">
+              ${initialSelectedCount} ${lang === "pt" ? "selecionada(s)" : "selected"}
+            </span>
+            <button type="button" class="btn btn-sm py-0 px-2" style="font-size: 0.75rem; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.25); color: #ffffff;" onclick="window.toggleAllMediaRoles('${name}', true)">
+              ${lang === "pt" ? "Marcar Todos" : "Select All"}
+            </button>
+            <button type="button" class="btn btn-sm py-0 px-2" style="font-size: 0.75rem; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.25); color: #cbd5e1;" onclick="window.toggleAllMediaRoles('${name}', false)">
+              ${lang === "pt" ? "Limpar" : "Clear"}
+            </button>
+          </div>
+        </div>
+        <div class="p-3 rounded-3" style="background: #070e1c !important; border: 1.5px solid #1e2d4d !important; max-height: 240px; overflow-y: auto; box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);">
+          <div class="row g-2">
+            ${roleOptions.map((opt, idx) => {
+              const optValStr = String(opt.value || "").trim().toLowerCase();
+              const optLblStr = String(opt.label || "").trim().toLowerCase();
+              const isChecked = currentRoles.some((r) => r === optValStr || r === optLblStr);
+              return `
+                <div class="col-12 col-sm-6 col-md-4">
+                  <label id="media-role-card-${idx}" class="media-role-card d-flex align-items-center gap-2 p-2 px-3 rounded-2 w-100 h-100" style="background: ${isChecked ? 'rgba(212, 175, 55, 0.24)' : 'rgba(255, 255, 255, 0.05)'}; border: 1.5px solid ${isChecked ? '#d4af37' : 'rgba(255, 255, 255, 0.18)'}; color: ${isChecked ? '#ffd700' : '#ffffff'}; cursor: pointer; user-select: none; transition: all 0.15s ease;" onmouseover="if(!this.querySelector('input').checked) { this.style.borderColor='#38bdf8'; this.style.background='rgba(255,255,255,0.09)'; }" onmouseout="if(!this.querySelector('input').checked) { this.style.borderColor='rgba(255, 255, 255, 0.18)'; this.style.background='rgba(255, 255, 255, 0.05)'; }">
+                    <input type="checkbox" name="${name}" value="${escapeAttr(opt.value)}" class="form-check-input mt-0 media-role-chk" style="width: 1.2rem; height: 1.2rem; min-width: 1.2rem; cursor: pointer; accent-color: #d4af37;" ${isChecked ? "checked" : ""} onchange="window.handleMediaRoleCheckChange(this)">
+                    <span class="small fw-semibold text-truncate" style="color: inherit; font-size: 0.835rem;" title="${escapeAttr(opt.label)}">${escapeHtml(opt.label)}</span>
+                  </label>
+                </div>`;
+            }).join("")}
+          </div>
         </div>
       </div>`;
   }
