@@ -136,6 +136,16 @@
         id: (payload && payload.id) || idPrefix + Date.now(),
         updated_at: new Date().toISOString().slice(0, 10),
       });
+      if (kind === "channels") {
+        var chName = String(row.name || row.channel_name || row.title || "").trim();
+        row.name = chName;
+        row.channel_name = chName;
+        row.title = chName;
+        var chUrl = String(row.channel_url || row.url || row.platform_url || "").trim();
+        row.channel_url = chUrl;
+        row.url = chUrl;
+        row.platform_url = chUrl;
+      }
       delete row.stream_key;
       delete row.streamKey;
       s.rows.unshift(row);
@@ -145,10 +155,20 @@
     function update(kind, id, payload) {
       var s = store(kind);
       var i = s.rows.findIndex(function (r) {
-        return r.id === id;
+        return r.id === id || (r.channel_name && payload && payload.name && r.channel_name === payload.name);
       });
       if (i < 0) return fail("Não encontrado", "NOT_FOUND");
-      var next = Object.assign({}, s.rows[i], payload, { id: id });
+      var next = Object.assign({}, s.rows[i], payload, { id: s.rows[i].id || id });
+      if (kind === "channels") {
+        var chName = String(payload.name || payload.channel_name || payload.title || next.name || next.channel_name || "").trim();
+        next.name = chName;
+        next.channel_name = chName;
+        next.title = chName;
+        var chUrl = String(payload.channel_url || payload.url || payload.platform_url || next.channel_url || next.url || "").trim();
+        next.channel_url = chUrl;
+        next.url = chUrl;
+        next.platform_url = chUrl;
+      }
       delete next.stream_key;
       delete next.streamKey;
       s.rows[i] = next;

@@ -31099,6 +31099,16 @@ function openForm(type, id = null, options = {}) {
             ? (mediaRoleDescription(selectedRecord) || selectedRecord.description || "")
             : (selectedRecord.description || selectedRecord.descricao || "")
         }
+      : type === "streamingChannel"
+      ? {
+          ...selectedRecord,
+          name: selectedRecord.name || selectedRecord.channel_name || selectedRecord.title || "",
+          channel_url: selectedRecord.channel_url || selectedRecord.url || selectedRecord.platform_url || "",
+          platform: selectedRecord.platform || selectedRecord.type || "",
+          responsible_name: selectedRecord.responsible_name || selectedRecord.responsible || "",
+          status: selectedRecord.status || (selectedRecord.is_active ? "Activo" : "Inactivo") || "Activo",
+          notes: selectedRecord.notes || ""
+        }
       : selectedRecord;
     byId("modalEyebrow").textContent = options.actionTitle || (modalMode === "edit" ? L("edit") : L("add"));
     byId("modalTitle").textContent = type === "finance" && !id ? L("addFinance") : formTitle(type);
@@ -32388,13 +32398,17 @@ async function submitForm(form) {
     ) {
       if (modalType === "streamingChannel") {
         const rec = collection[index];
-        rec.name = data.name || rec.name || "";
+        const newName = String(data.name || data.channel_name || data.title || rec.name || rec.channel_name || "").trim();
+        rec.name = newName;
+        rec.channel_name = newName;
+        rec.title = newName;
         rec.platform = data.platform || rec.platform || "";
-        rec.channel_url = data.channel_url || data.url || rec.channel_url || "";
+        rec.channel_url = data.channel_url || data.url || data.platform_url || rec.channel_url || "";
         rec.url = rec.channel_url;
+        rec.platform_url = rec.channel_url;
         rec.responsible_name = data.responsible_name || rec.responsible_name || "";
         rec.status = data.status || data.estado || rec.status || "Activo";
-        rec.notes = data.notes || rec.notes || "";
+        rec.notes = data.notes !== undefined ? data.notes : (rec.notes || "");
         delete rec.stream_key;
         delete rec.streamKey;
       }
@@ -32852,8 +32866,13 @@ async function submitForm(form) {
         }
       }
       if (modalType === "streamingChannel") {
-        record.url = record.channel_url || record.url || "";
+        const newName = String(record.name || record.channel_name || record.title || "").trim();
+        record.name = newName;
+        record.channel_name = newName;
+        record.title = newName;
+        record.url = record.channel_url || record.url || record.platform_url || "";
         record.channel_url = record.url;
+        record.platform_url = record.url;
         delete record.stream_key;
         delete record.streamKey;
         if (!record.stream_key_status) record.stream_key_status = "Not Required";
@@ -38463,20 +38482,36 @@ async function dualWriteMediaRecord(modalType, mode, record) {
     }
     if (result && result.ok) {
       const col = getCollection(modalType);
-      if (mode === "create" && result.data && result.data.id) {
+      const resData = result.data;
+      if (modalType === "streamingChannel" && resData) {
+        const normName = String(resData.name || resData.channel_name || resData.title || record.name || record.channel_name || "").trim();
+        if (normName) {
+          resData.name = normName;
+          resData.channel_name = normName;
+          resData.title = normName;
+        }
+        const normUrl = String(resData.channel_url || resData.url || resData.platform_url || record.channel_url || record.url || "").trim();
+        if (normUrl) {
+          resData.channel_url = normUrl;
+          resData.url = normUrl;
+          resData.platform_url = normUrl;
+        }
+      }
+      if (mode === "create" && resData && resData.id) {
         const oldId = record.id;
-        record.id = result.data.id;
+        record.id = resData.id;
         const idx = col.findIndex((item) => item.id === oldId || item === record);
         if (idx >= 0) {
-          col[idx] = { ...col[idx], ...result.data };
+          col[idx] = { ...col[idx], ...resData };
         }
-      } else if (mode === "update" && result.data) {
-        const idx = col.findIndex((item) => item.id === record.id || (result.data.id && item.id === result.data.id));
+      } else if (mode === "update" && resData) {
+        const idx = col.findIndex((item) => item.id === record.id || (resData.id && item.id === resData.id));
         if (idx >= 0) {
-          col[idx] = { ...col[idx], ...result.data };
+          col[idx] = { ...col[idx], ...resData };
         }
       }
       saveState(`Synced ${modalType} (${mode}) with Supabase`);
+      syncMediaToLocalStorage();
     }
   } catch (err) {
     console.warn("[CE Media] dualWrite error", err);
@@ -38530,12 +38565,21 @@ async function hydrateMediaFromRepository() {
       status: row.status || "Publicada",
       assignments: Array.isArray(row.assignments) ? row.assignments : [],
     }));
-    await merge(repo.listMediaChannels?.bind(repo), "streamingChannels", (row) => ({
-      ...row,
-      platform: row.platform || row.type,
-      channel_url: row.channel_url || row.platform_url,
-      status: row.status || (row.is_active ? "Activo" : "Inactivo"),
-    }));
+    await merge(repo.listMediaChannels?.bind(repo), "streamingChannels", (row) => {
+      const chName = String(row.name || row.channel_name || row.title || "").trim();
+      const chUrl = String(row.channel_url || row.platform_url || row.url || "").trim();
+      return {
+        ...row,
+        name: chName,
+        channel_name: chName,
+        title: chName,
+        platform: row.platform || row.type || "Online Stream",
+        channel_url: chUrl,
+        url: chUrl,
+        platform_url: chUrl,
+        status: row.status || (row.is_active === false || row.status === "Inactive" || row.status === "Inactivo" ? "Inactivo" : "Activo"),
+      };
+    });
     await merge(repo.listMediaPerformanceReviews?.bind(repo), "performanceEvaluations", (row) => ({
       ...row,
       score: row.score ?? row.overall_score,

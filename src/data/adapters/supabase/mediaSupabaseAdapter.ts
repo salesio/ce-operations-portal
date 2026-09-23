@@ -98,7 +98,24 @@ function aliases(table: Table, raw: MediaRecord): MediaRecord {
   }
   if (table === "services") Object.assign(row, { name: row.service_name, needs_streaming: row.requires_streaming, responsible_name: row.media_lead_name, event_date: row.service_date });
   if (table === "schedules") Object.assign(row, { service_id: row.media_service_id, technicianId: row.team_member_id, role: row.role_name, assignments: [{ team_member_id: row.team_member_id, role_name: row.role_name, status: row.status, confirmation_status: row.confirmed ? "Confirmed" : "Pending" }] });
-  if (table === "channels") Object.assign(row, { name: row.channel_name, type: row.platform, platform_url: row.url, channel_url: row.url, channel_handle: row.public_handle, status: row.is_active ? "Active" : "Inactive", requires_stream_key: false, stream_key_status: "Not Stored" });
+  if (table === "channels") {
+    const chName = (row.channel_name || row.name || row.title || "") as string;
+    const chUrl = (row.url || row.channel_url || row.platform_url || "") as string;
+    Object.assign(row, {
+      name: chName,
+      channel_name: chName,
+      title: chName,
+      type: row.platform,
+      platform: row.platform,
+      platform_url: chUrl,
+      channel_url: chUrl,
+      url: chUrl,
+      channel_handle: row.public_handle,
+      status: row.is_active === false || row.status === "Inactive" || row.status === "Inactivo" ? "Inactivo" : (row.status || "Activo"),
+      requires_stream_key: false,
+      stream_key_status: "Not Stored",
+    });
+  }
   if (table === "performance") Object.assign(row, { service_id: row.media_service_id, technician_id: row.team_member_id, technical_quality_score: row.technical_score, responsibility_score: row.communication_score, score: row.overall_score, reviewed_by_user_id: row.reviewed_by });
   if (table === "awards") Object.assign(row, { award_name: row.award_title, reason: row.award_description, awarded_at: row.award_date, technician_id: row.team_member_id });
   return row;
@@ -164,9 +181,15 @@ function payload(table: Table, raw: MediaRecord): SupabaseRow {
     row.media_service_id ??= row.service_id; row.team_member_id ??= row.technicianId || first?.team_member_id;
     row.role_name ??= row.role || first?.role_name; row.confirmed ??= String(first?.confirmation_status || "").toLowerCase() === "confirmed";
   } else if (table === "channels") {
-    row.channel_name ??= row.name; row.platform ??= row.type;
-    row.url ??= row.platform_url || row.channel_url; row.public_handle ??= row.channel_handle;
-    row.is_active ??= String(row.status || "Active").toLowerCase() !== "inactive";
+    const chName = (row.name || row.channel_name || row.title || "") as string;
+    row.channel_name = chName;
+    row.name = chName;
+    row.platform = row.platform || row.type || "";
+    const chUrl = (row.channel_url || row.url || row.platform_url || "") as string;
+    row.url = chUrl;
+    row.channel_url = chUrl;
+    row.public_handle = row.channel_handle || row.public_handle || "";
+    row.is_active = String(row.status || "Active").toLowerCase() !== "inactive" && String(row.status || "").toLowerCase() !== "inactivo";
   } else if (table === "performance") {
     row.media_service_id ??= row.service_id; row.team_member_id ??= row.technician_id;
     row.technical_score ??= row.technical_quality_score; row.communication_score ??= row.responsibility_score;
@@ -243,6 +266,36 @@ async function update(table: Table, id: EntityId, input: MediaRecord) {
           (phoneVal && String(r.phone || "").trim() === phoneVal) ||
           (emailVal && String(r.email || "").trim().toLowerCase() === emailVal) ||
           String(r.id) === targetId
+        );
+        if (found) targetId = String(found.id);
+        else return create(table, input);
+      } else {
+        return create(table, input);
+      }
+    } else if (table === "services") {
+      const nameVal = String(row.service_name || input.service_name || input.name || "").trim().toLowerCase();
+      const existing = await listRows(TABLES[table]);
+      if (existing.ok && existing.data && existing.data.length > 0) {
+        const found = existing.data.find((r: any) =>
+          String(r.id) === targetId ||
+          (nameVal && String(r.service_name || "").trim().toLowerCase() === nameVal)
+        );
+        if (found) targetId = String(found.id);
+        else return create(table, input);
+      } else {
+        return create(table, input);
+      }
+    } else if (table === "channels") {
+      const urlVal = String(row.url || input.channel_url || input.url || "").trim().toLowerCase();
+      const nameVal = String(row.channel_name || input.name || input.channel_name || "").trim().toLowerCase();
+      const platformVal = String(row.platform || input.platform || "").trim().toLowerCase();
+      const existing = await listRows(TABLES[table]);
+      if (existing.ok && existing.data && existing.data.length > 0) {
+        const found = existing.data.find((r: any) =>
+          String(r.id) === targetId ||
+          (urlVal && String(r.url || "").trim().toLowerCase() === urlVal) ||
+          (nameVal && String(r.channel_name || "").trim().toLowerCase() === nameVal) ||
+          (platformVal && String(r.platform || "").trim().toLowerCase() === platformVal && !urlVal)
         );
         if (found) targetId = String(found.id);
         else return create(table, input);

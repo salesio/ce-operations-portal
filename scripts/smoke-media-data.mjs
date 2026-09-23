@@ -232,6 +232,26 @@ if (api?.listMediaTeam) {
       /missing|configured|not required/i.test(String(ch?.data?.stream_key_status || "")),
       String(ch?.data?.stream_key_status),
     );
+
+    if (ch?.ok && ch.data?.id && api.updateMediaChannel) {
+      const updatedCh = await api.updateMediaChannel(ch.data.id, {
+        name: "Smoke YouTube Edited Title",
+        channel_url: "https://youtube.com/@smoke-edited",
+        platform: "YouTube",
+        status: "Active",
+      });
+      ok("updateMediaChannel ok", !!updatedCh?.ok, updatedCh?.error || "");
+      ok(
+        "channel title updated",
+        updatedCh?.data?.name === "Smoke YouTube Edited Title",
+        String(updatedCh?.data?.name),
+      );
+      ok(
+        "channel url updated",
+        updatedCh?.data?.channel_url === "https://youtube.com/@smoke-edited" || updatedCh?.data?.url === "https://youtube.com/@smoke-edited",
+        String(updatedCh?.data?.channel_url || updatedCh?.data?.url),
+      );
+    }
   }
 
   if (api.createMediaPerformanceReview) {
