@@ -64,8 +64,6 @@
 
   function load(key) {
     try {
-      var source = resolveDataSource();
-      if (source === "supabase" || source === "api") return [];
       var raw = localStorage.getItem(key);
       if (!raw) return [];
       var parsed = JSON.parse(raw);
@@ -99,24 +97,26 @@
   }
 
   function store(kind) {
-    var source = resolveDataSource();
     var key = KEYS[kind];
-    if (source === "local") {
-      var rows = load(key);
-      if (!rows.length) {
-        rows = seedFor(kind).map(function (s) {
-          return Object.assign({}, s);
-        });
-        if (rows.length) save(key, rows);
-      }
-      return { rows: rows, persist: true };
-    }
-    if (!memory[kind]) {
-      memory[kind] = seedFor(kind).map(function (s) {
+    var raw = null;
+    try {
+      raw = localStorage.getItem(key);
+    } catch (e) {}
+    var rows;
+    if (raw === null) {
+      rows = seedFor(kind).map(function (s) {
         return Object.assign({}, s);
       });
+      save(key, rows);
+    } else {
+      try {
+        rows = JSON.parse(raw);
+        if (!Array.isArray(rows)) rows = [];
+      } catch (e) {
+        rows = [];
+      }
     }
-    return { rows: memory[kind], persist: false };
+    return { rows: rows, persist: true };
   }
 
   function ok(data) {

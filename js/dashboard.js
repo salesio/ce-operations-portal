@@ -1628,7 +1628,7 @@ Object.assign(TEXT.en, {
 });
 
 Object.assign(TEXT.pt, {
-  mediaSubtitle: "Gestáo da equipa técnica, transmissões, escalas por culto, canais, avaliações e premiações.",
+  mediaSubtitle: "Gestão da equipa técnica, transmissões, escalas por culto, canais e avaliações de desempenho.",
   mediaOverview: "Visão Geral",
   mediaTechnicalTeam: "Equipa Técnica",
   mediaRolesFunctions: "Papéis & Funções",
@@ -1637,7 +1637,6 @@ Object.assign(TEXT.pt, {
   mediaStreamingChannels: "Canais de Transmissão",
   mediaPerformanceEvaluation: "Avaliação de Performance",
   mediaReports: "Relatórios",
-  mediaAwards: "Premiações",
   mediaTotalTechnicians: "Total de Técnicos",
   mediaActiveTechnicians: "Técnicos Activos",
   mediaSchedulesThisWeek: "Escalas Esta Semana",
@@ -1647,10 +1646,36 @@ Object.assign(TEXT.pt, {
   mediaPendingEvaluations: "Avaliações Pendentes",
   mediaMonthlyHighlights: "Destaques do Mês",
   mediaGenerateSchedule: "Gerar Escala",
-  mediaOpenChannel: "Abrir Canal",
+  mediaOpenChannel: "Ir para o Canal",
+  goToChannel: "Ir para o Canal",
+  dutyFulfillment: "Cumprimento de Deveres",
+  confirmDuty: "Confirmar Dever",
+  dutyFulfilled: "Dever Cumprido",
+  dutyUnfulfilled: "Dever Não Cumprido",
+  dutyPartial: "Cumprimento Parcial",
+  workHistory: "Histórico de Trabalho",
+  periodReports: "Relatórios por Período",
+  benchmarking: "Benchmarking & Comparações",
+  individual: "Individual",
+  weekly: "Semanal",
+  monthly: "Mensal",
+  quarterly: "Trimestral",
+  annual: "Anual",
+  punctuality: "Pontualidade",
+  onTime: "A Horas",
+  late: "Atrasado",
+  absent: "Ausente",
+  replaced: "Substituído",
+  technicalQuality: "Qualidade Técnica",
+  peerComparison: "Comparação entre Membros",
+  periodComparison: "Comparação entre Períodos",
+  fulfillmentRate: "Taxa de Cumprimento",
+  servicesCovered: "Cultos Cobertos",
+  avgScore: "Pontuação Média",
+  technicianHistory: "Histórico do Técnico",
+  viewModeCards: "Modo Cartões",
+  viewModeTable: "Modo Tabela",
   mediaNominate: "Nomear",
-  mediaAssignAward: "Atribuir Prémio",
-  mediaExportCertificate: "Exportar Certificado",
   mediaInventoryPlaceholder: "Equipamentos de mídia serão ligados ao módulo Espaços & Inventário.",
   cameraOperator: "Operador de Câmara",
   photographer: "Fotógrafo",
@@ -1712,7 +1737,7 @@ Object.assign(TEXT.pt, {
 });
 
 Object.assign(TEXT.en, {
-  mediaSubtitle: "Manage the technical team, live streams, service schedules, channels, evaluations and awards.",
+  mediaSubtitle: "Manage the technical team, live streams, service schedules, channels and performance evaluations.",
   mediaOverview: "Overview",
   mediaTechnicalTeam: "Technical Team",
   mediaRolesFunctions: "Roles & Functions",
@@ -1721,7 +1746,6 @@ Object.assign(TEXT.en, {
   mediaStreamingChannels: "Streaming Channels",
   mediaPerformanceEvaluation: "Performance Evaluation",
   mediaReports: "Reports",
-  mediaAwards: "Awards",
   mediaTotalTechnicians: "Total Technicians",
   mediaActiveTechnicians: "Active Technicians",
   mediaSchedulesThisWeek: "Schedules This Week",
@@ -1731,10 +1755,36 @@ Object.assign(TEXT.en, {
   mediaPendingEvaluations: "Pending Evaluations",
   mediaMonthlyHighlights: "Monthly Highlights",
   mediaGenerateSchedule: "Generate Schedule",
-  mediaOpenChannel: "Open Channel",
+  mediaOpenChannel: "Go to Channel",
+  goToChannel: "Go to Channel",
+  dutyFulfillment: "Duty Fulfillment",
+  confirmDuty: "Confirm Duty",
+  dutyFulfilled: "Duty Fulfilled",
+  dutyUnfulfilled: "Duty Unfulfilled",
+  dutyPartial: "Partial Fulfillment",
+  workHistory: "Work History",
+  periodReports: "Period Reports",
+  benchmarking: "Benchmarking & Comparisons",
+  individual: "Individual",
+  weekly: "Weekly",
+  monthly: "Monthly",
+  quarterly: "Quarterly",
+  annual: "Annual",
+  punctuality: "Punctuality",
+  onTime: "On Time",
+  late: "Late",
+  absent: "Absent",
+  replaced: "Replaced",
+  technicalQuality: "Technical Quality",
+  peerComparison: "Peer Comparison",
+  periodComparison: "Period Comparison",
+  fulfillmentRate: "Fulfillment Rate",
+  servicesCovered: "Services Covered",
+  avgScore: "Average Score",
+  technicianHistory: "Technician History",
+  viewModeCards: "Cards View",
+  viewModeTable: "Table View",
   mediaNominate: "Nominate",
-  mediaAssignAward: "Assign Award",
-  mediaExportCertificate: "Export Certificate",
   mediaInventoryPlaceholder: "Media equipment will connect to the Spaces & Inventory module.",
   cameraOperator: "Camera Operator",
   photographer: "Photographer",
@@ -3279,8 +3329,7 @@ const MEDIA_NAV = {
     ["mediaServicesRoute", "bi-broadcast", "mediaServicesPrograms"],
     ["mediaChannelsRoute", "bi-cast", "mediaStreamingChannels"],
     ["mediaPerformanceRoute", "bi-clipboard2-pulse", "mediaPerformanceEvaluation"],
-    ["mediaReportsRoute", "bi-graph-up", "mediaReports"],
-    ["mediaAwardsRoute", "bi-award", "mediaAwards"]
+    ["mediaReportsRoute", "bi-graph-up", "mediaReports"]
   ]
 };
 
@@ -3292,7 +3341,7 @@ const TAB_PARALLAX_ORDER = {
   finance: ["finance", "financeEntriesRoute", "financePublicSubmissionsRoute", "financeVerificationRoute", "financeApprovedRequisitionsRoute", "financeReportsRoute", "financePartnersRoute", "financeExportsRoute"],
   partnership: ["partnership", "partnershipArmsRoute", "partnershipPartnersRoute", "partnershipContributionsRoute", "partnershipHighlightsRoute", "partnershipAnalyticsRoute", "partnershipReportsRoute", "partnershipExportsRoute"],
   venue: ["venueInventory", "venueInventoryGeneral", "venueInventoryAcquisitions", "venueInventoryStaff", "venueInventoryMaintenance", "venueInventoryMovements", "venueInventorySpaces", "venueInventoryChecklist", "venueInventoryReports"],
-  media: ["media", "mediaTeamRoute", "mediaRolesRoute", "mediaSchedulesRoute", "mediaServicesRoute", "mediaChannelsRoute", "mediaPerformanceRoute", "mediaReportsRoute", "mediaAwardsRoute"],
+  media: ["media", "mediaTeamRoute", "mediaRolesRoute", "mediaSchedulesRoute", "mediaServicesRoute", "mediaChannelsRoute", "mediaPerformanceRoute", "mediaReportsRoute"],
   outreach: ["programs", "cellPrison", "cellMaterials"]
 };
 
@@ -11488,7 +11537,6 @@ function setRoute(route) {
     mediaChannelsRoute: () => renderMedia("channels"),
     mediaPerformanceRoute: () => renderMedia("performance"),
     mediaReportsRoute: () => renderMedia("reports"),
-    mediaAwardsRoute: () => renderMedia("awards"),
     requisitions: renderRequisitions,
     staffHr: renderStaffHr,
     users: renderUsers,
@@ -27477,6 +27525,25 @@ function renderSimple(type, title, records) {
   setPageContent(`${sectionHeader(title, title, type, "bi-grid")}<article class="panel glass-panel">${dataTable([L("name"), L("church"), L("category"), L("status"), L("actions")], scoped(records).map((r) => [r.name, churchName(r.church_id), r.category || r.owner || r.channel || "-", badge(r.status), actionButtons([["view", type, r.id, L("view")], ["edit", type, r.id, L("edit")]])]))}</article>`);
 }
 
+function syncMediaToLocalStorage() {
+  if (typeof localStorage === "undefined") return;
+  const media = state.media;
+  if (!media || typeof media !== "object") return;
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    localStorage.setItem("ce-data-layer:media-team", JSON.stringify(media.technicians || []));
+    localStorage.setItem("ce-data-layer:media-roles", JSON.stringify(media.roles || []));
+    localStorage.setItem("ce-data-layer:media-services", JSON.stringify(media.services || []));
+    localStorage.setItem("ce-data-layer:media-schedules", JSON.stringify(media.schedules || []));
+    localStorage.setItem("ce-data-layer:media-channels", JSON.stringify(media.streamingChannels || []));
+    localStorage.setItem("ce-data-layer:media-performance", JSON.stringify(media.performanceEvaluations || []));
+    localStorage.setItem("ce-data-layer:media-awards", JSON.stringify(media.awards || []));
+  } catch (err) {
+    console.warn("[CE Media] sync to localStorage failed", err);
+  }
+}
+window.syncMediaToLocalStorage = syncMediaToLocalStorage;
+
 function getMediaState() {
   state.media = state.media && typeof state.media === "object" && !Array.isArray(state.media) ? state.media : {};
   const media = state.media;
@@ -27488,75 +27555,37 @@ function getMediaState() {
   media.performanceEvaluations = Array.isArray(media.performanceEvaluations) ? media.performanceEvaluations : [];
   media.awards = Array.isArray(media.awards) ? media.awards : [];
 
-  if (!media.roles.length && typeof localStorage !== "undefined") {
-    try {
-      const cached = JSON.parse(localStorage.getItem("ce-data-layer:media-roles") || "[]");
-      if (Array.isArray(cached) && cached.length) media.roles = cached;
-    } catch (_) {}
-  }
-  if (!media.roles.length && Array.isArray(window.CESupabase?.MEDIA_ROLES_SEED) && window.CESupabase.MEDIA_ROLES_SEED.length) {
-    media.roles = structuredClone(window.CESupabase.MEDIA_ROLES_SEED);
-  }
+  const loadFromStorageOrSeed = (prop, key, seedKey) => {
+    let loaded = false;
+    if (typeof localStorage !== "undefined") {
+      const item = localStorage.getItem(key);
+      if (item !== null) {
+        try {
+          const parsed = JSON.parse(item);
+          if (Array.isArray(parsed)) {
+            media[prop] = parsed;
+            loaded = true;
+          }
+        } catch (_) {}
+      }
+    }
+    if (!loaded && !media[prop].length && Array.isArray(window.CESupabase?.[seedKey]) && window.CESupabase[seedKey].length) {
+      media[prop] = structuredClone(window.CESupabase[seedKey]);
+      try {
+        if (typeof localStorage !== "undefined") {
+          localStorage.setItem(key, JSON.stringify(media[prop]));
+        }
+      } catch (_) {}
+    }
+  };
 
-  if (!media.technicians.length && typeof localStorage !== "undefined") {
-    try {
-      const cached = JSON.parse(localStorage.getItem("ce-data-layer:media-team") || "[]");
-      if (Array.isArray(cached) && cached.length) media.technicians = cached;
-    } catch (_) {}
-  }
-  if (!media.technicians.length && Array.isArray(window.CESupabase?.MEDIA_TEAM_SEED) && window.CESupabase.MEDIA_TEAM_SEED.length) {
-    media.technicians = structuredClone(window.CESupabase.MEDIA_TEAM_SEED);
-  }
-
-  if (!media.services.length && typeof localStorage !== "undefined") {
-    try {
-      const cached = JSON.parse(localStorage.getItem("ce-data-layer:media-services") || "[]");
-      if (Array.isArray(cached) && cached.length) media.services = cached;
-    } catch (_) {}
-  }
-  if (!media.services.length && Array.isArray(window.CESupabase?.MEDIA_SERVICES_SEED) && window.CESupabase.MEDIA_SERVICES_SEED.length) {
-    media.services = structuredClone(window.CESupabase.MEDIA_SERVICES_SEED);
-  }
-
-  if (!media.schedules.length && typeof localStorage !== "undefined") {
-    try {
-      const cached = JSON.parse(localStorage.getItem("ce-data-layer:media-schedules") || "[]");
-      if (Array.isArray(cached) && cached.length) media.schedules = cached;
-    } catch (_) {}
-  }
-  if (!media.schedules.length && Array.isArray(window.CESupabase?.MEDIA_SCHEDULES_SEED) && window.CESupabase.MEDIA_SCHEDULES_SEED.length) {
-    media.schedules = structuredClone(window.CESupabase.MEDIA_SCHEDULES_SEED);
-  }
-
-  if (!media.streamingChannels.length && typeof localStorage !== "undefined") {
-    try {
-      const cached = JSON.parse(localStorage.getItem("ce-data-layer:media-channels") || "[]");
-      if (Array.isArray(cached) && cached.length) media.streamingChannels = cached;
-    } catch (_) {}
-  }
-  if (!media.streamingChannels.length && Array.isArray(window.CESupabase?.MEDIA_CHANNELS_SEED) && window.CESupabase.MEDIA_CHANNELS_SEED.length) {
-    media.streamingChannels = structuredClone(window.CESupabase.MEDIA_CHANNELS_SEED);
-  }
-
-  if (!media.performanceEvaluations.length && typeof localStorage !== "undefined") {
-    try {
-      const cached = JSON.parse(localStorage.getItem("ce-data-layer:media-performance") || "[]");
-      if (Array.isArray(cached) && cached.length) media.performanceEvaluations = cached;
-    } catch (_) {}
-  }
-  if (!media.performanceEvaluations.length && Array.isArray(window.CESupabase?.MEDIA_PERFORMANCE_SEED) && window.CESupabase.MEDIA_PERFORMANCE_SEED.length) {
-    media.performanceEvaluations = structuredClone(window.CESupabase.MEDIA_PERFORMANCE_SEED);
-  }
-
-  if (!media.awards.length && typeof localStorage !== "undefined") {
-    try {
-      const cached = JSON.parse(localStorage.getItem("ce-data-layer:media-awards") || "[]");
-      if (Array.isArray(cached) && cached.length) media.awards = cached;
-    } catch (_) {}
-  }
-  if (!media.awards.length && Array.isArray(window.CESupabase?.MEDIA_AWARDS_SEED) && window.CESupabase.MEDIA_AWARDS_SEED.length) {
-    media.awards = structuredClone(window.CESupabase.MEDIA_AWARDS_SEED);
-  }
+  loadFromStorageOrSeed("roles", "ce-data-layer:media-roles", "MEDIA_ROLES_SEED");
+  loadFromStorageOrSeed("technicians", "ce-data-layer:media-team", "MEDIA_TEAM_SEED");
+  loadFromStorageOrSeed("services", "ce-data-layer:media-services", "MEDIA_SERVICES_SEED");
+  loadFromStorageOrSeed("schedules", "ce-data-layer:media-schedules", "MEDIA_SCHEDULES_SEED");
+  loadFromStorageOrSeed("streamingChannels", "ce-data-layer:media-channels", "MEDIA_CHANNELS_SEED");
+  loadFromStorageOrSeed("performanceEvaluations", "ce-data-layer:media-performance", "MEDIA_PERFORMANCE_SEED");
+  loadFromStorageOrSeed("awards", "ce-data-layer:media-awards", "MEDIA_AWARDS_SEED");
 
   return media;
 }
@@ -27894,8 +27923,7 @@ function mediaTabsNav(active) {
     ["services", "mediaServicesPrograms"],
     ["channels", "mediaStreamingChannels"],
     ["performance", "mediaPerformanceEvaluation"],
-    ["reports", "mediaReports"],
-    ["awards", "mediaAwards"]
+    ["reports", "mediaReports"]
   ];
   return moduleTabsNav(tabs.map(([tab, label]) =>
     moduleTabButton(L(label), { active: active === tab, attrs: `data-media-tab="${tab}" onclick="window.mediaPageState.tab='${tab}'; window.renderMedia && window.renderMedia(); return false;"` })
@@ -27919,7 +27947,7 @@ function renderMediaAssignmentList(assignments = []) {
       ${assignments.map((item) => `
         <div class="media-assignment-row">
           <span>${mediaRoleName(item.role_key || item.role || item.role_name || item.role_id)}</span>
-          <strong>${mediaTechnicianName(item.technician_id)}</strong>
+          <strong>${mediaTechnicianName(item.technician_id || item.technician_name)}</strong>
           ${badge(item.status || L("technicianScheduled"))}
         </div>
       `).join("")}
@@ -28043,6 +28071,128 @@ function renderMediaCardGrid(items, mapper) {
     </div>`;
 }
 
+function renderChannelPreview(channel = {}) {
+  const url = mediaChannelUrl(channel);
+  const platform = String(channel.platform || channel.name || "").toLowerCase();
+  const ytMatch = String(url).match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|live\/|shorts\/))([\w-]{11})/i);
+  if (ytMatch && ytMatch[1]) {
+    return `
+      <div class="ratio ratio-16x9 rounded-3 overflow-hidden shadow-sm mb-3 border border-secondary border-opacity-25 bg-black">
+        <iframe src="https://www.youtube.com/embed/${ytMatch[1]}" title="${mediaEscape(channel.name || 'Stream')}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="border:0;"></iframe>
+      </div>`;
+  }
+  let bgGradient = "linear-gradient(135deg, #1e293b, #0f172a)";
+  let iconClass = "bi-broadcast";
+  if (platform.includes("youtube")) {
+    bgGradient = "linear-gradient(135deg, #dc2626, #991b1b, #0f172a)";
+    iconClass = "bi-youtube";
+  } else if (platform.includes("facebook")) {
+    bgGradient = "linear-gradient(135deg, #1d4ed8, #1e40af, #0f172a)";
+    iconClass = "bi-facebook";
+  } else if (platform.includes("instagram")) {
+    bgGradient = "linear-gradient(135deg, #d946ef, #e11d48, #f59e0b)";
+    iconClass = "bi-instagram";
+  } else if (platform.includes("webcast") || platform.includes("tv")) {
+    bgGradient = "linear-gradient(135deg, #d97706, #b45309, #0f172a)";
+    iconClass = "bi-tv";
+  }
+  const isLive = /Activo|Active|Online/i.test(channel.status || "Activo");
+  return `
+    <div class="channel-preview-banner p-3 rounded-3 mb-3 d-flex flex-column justify-content-between text-white shadow-sm" style="background: ${bgGradient}; min-height: 125px; border: 1px solid rgba(255,255,255,0.18);">
+      <div class="d-flex justify-content-between align-items-center">
+        <span class="badge ${isLive ? "bg-danger" : "bg-secondary"} text-uppercase px-2 py-1 shadow-sm"><i class="bi bi-broadcast me-1"></i>${isLive ? "LIVE / READY" : "STANDBY"}</span>
+        <i class="bi ${iconClass} fs-3" style="color: rgba(255,255,255,0.9);"></i>
+      </div>
+      <div class="mt-2">
+        <div class="fw-bold text-truncate fs-6">${mediaEscape(channel.name || "-")}</div>
+        <div class="small opacity-75 text-truncate"><i class="bi bi-link-45deg me-1"></i>${mediaEscape(url || "ce-mozambique.live")}</div>
+      </div>
+    </div>`;
+}
+
+window.openDutyConfirmationModal = function(scheduleId, techId, slotKey) {
+  const media = getMediaState();
+  const schedule = (media.schedules || []).find((s) => s.id === scheduleId) || {};
+  const assignment = (schedule.assignments || []).find((a) => a.technician_id === techId || a.slot_key === slotKey) || {};
+  const tech = (media.technicians || []).find((t) => t.id === techId || t.id === assignment.technician_id) || {};
+  const techName = tech.full_name || assignment.technician_name || mediaTechnicianName(techId);
+  const roleName = mediaRoleName(assignment.role_key || assignment.role || assignment.role_name || assignment.slot_key);
+
+  modalType = "confirmMediaDuty";
+  modalRecordId = scheduleId;
+
+  byId("modalEyebrow").textContent = L("confirmDuty") || "Confirmação de Dever";
+  byId("modalTitle").textContent = `${techName} — ${schedule.service_name || L("service")}`;
+
+  byId("modalFields").innerHTML = `
+    <input type="hidden" name="schedule_id" value="${mediaEscape(schedule.id || scheduleId)}">
+    <input type="hidden" name="technician_id" value="${mediaEscape(tech.id || techId)}">
+    <input type="hidden" name="technician_name" value="${mediaEscape(techName)}">
+    <input type="hidden" name="slot_key" value="${mediaEscape(slotKey || assignment.slot_key || "")}">
+    <input type="hidden" name="role_name" value="${mediaEscape(roleName)}">
+    <input type="hidden" name="service_date" value="${mediaEscape(schedule.date || schedule.service_date || new Date().toISOString().slice(0, 10))}">
+    <input type="hidden" name="service_name" value="${mediaEscape(schedule.service_name || "")}">
+    <input type="hidden" name="church_id" value="${mediaEscape(schedule.church_id || activeUser.church_id)}">
+
+    <div class="col-12">
+      <div class="p-3 rounded bg-body-tertiary border mb-3">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <h6 class="mb-1 text-primary fw-bold"><i class="bi bi-person-badge me-2"></i>${mediaEscape(techName)}</h6>
+            <div class="small text-secondary">
+              <span class="badge bg-gold-subtle text-dark border border-warning-subtle me-2">${mediaEscape(roleName)}</span>
+              <span><i class="bi bi-calendar-event me-1"></i>${mediaEscape(schedule.date || schedule.service_date || "-")} · ${mediaEscape(schedule.start_time || "")}</span>
+            </div>
+          </div>
+          <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle">${mediaEscape(churchName(schedule.church_id))}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 mb-3">
+      <label class="form-label fw-bold">${L("dutyFulfillment") || "Cumprimento do Dever"} *</label>
+      <select name="duty_status" class="form-select" required>
+        <option value="Cumprido" selected>Cumprido (Fulfilled)</option>
+        <option value="Atrasado">Cumprido com Atraso (Late)</option>
+        <option value="Falta Justificada">Falta Justificada (Excused Absence)</option>
+        <option value="Ausente">Ausente / Não Compareceu (Absent)</option>
+      </select>
+    </div>
+
+    <div class="col-md-6 mb-3">
+      <label class="form-label fw-bold">${L("punctuality") || "Pontualidade"} *</label>
+      <select name="punctuality" class="form-select" required>
+        <option value="No Horário" selected>No Horário / Pontual (100%)</option>
+        <option value="5-15 min atraso">Atraso Leve: 5-15 min (80%)</option>
+        <option value=">15 min atraso">Atraso Grave: >15 min (50%)</option>
+        <option value="Não compareceu">Não compareceu (0%)</option>
+      </select>
+    </div>
+
+    <div class="col-md-6 mb-3">
+      <label class="form-label fw-bold">${L("technicalQuality") || "Qualidade Técnica / Pontuação (0-100)"} *</label>
+      <input type="number" name="technical_score" class="form-control" min="0" max="100" value="95" required>
+    </div>
+
+    <div class="col-md-6 mb-3">
+      <label class="form-label fw-bold">Postura Espiritual & Trabalho em Equipa *</label>
+      <select name="attitude_score" class="form-select">
+        <option value="Excelente" selected>Excelente (100%)</option>
+        <option value="Bom">Bom (85%)</option>
+        <option value="Regular">Regular (70%)</option>
+        <option value="Precisa Melhorar">Precisa Melhorar (50%)</option>
+      </select>
+    </div>
+
+    <div class="col-12 mb-2">
+      <label class="form-label fw-bold">Observações / Feedback do Supervisor</label>
+      <textarea name="supervisor_notes" class="form-control" rows="3" placeholder="Comentários sobre a atuação durante o culto ou programa..."></textarea>
+    </div>
+  `;
+
+  bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
+};
+
 function renderMedia(activeTab = "overview") {
   const media = getMediaState();
   const active = activeTab || mediaPageState.tab || "overview";
@@ -28053,10 +28203,9 @@ function renderMedia(activeTab = "overview") {
   const services = scoped(media.services || [], "media");
   const channels = media.streamingChannels || [];
   const evaluations = scoped(media.performanceEvaluations || [], "media");
-  const awards = scoped(media.awards || [], "media");
   const roles = media.roles || [];
   const incompleteSchedules = schedules.filter((item) => /Incompleta|Pendente|Draft/i.test(item.status || item.estado || ""));
-  const completeSchedules = schedules.filter((item) => /Completa|Confirmada|Concluída|Conclu/i.test(item.status || item.estado || ""));
+  const completeSchedules = schedules.filter((item) => /Completa|Confirmada|Concluída|Conclu|Publicada/i.test(item.status || item.estado || ""));
   const pendingEvaluations = evaluations.filter((item) => /Pending|Pendente/i.test(item.status || item.estado || ""));
   const filteredSchedules = schedules.filter((item) => {
     if (activeFilters.status === "incomplete") return incompleteSchedules.includes(item);
@@ -28071,6 +28220,7 @@ function renderMedia(activeTab = "overview") {
     return true;
   });
   const nextSchedule = schedules[0] || {};
+  const fulfillmentRatePct = schedules.length ? Math.round((completeSchedules.length / schedules.length) * 100) : 100;
 
   let content = "";
   if (active === "overview") {
@@ -28083,7 +28233,7 @@ function renderMedia(activeTab = "overview") {
         ${metric("bi-exclamation-triangle", L("mediaIncompleteTeams"), incompleteSchedules.length, L("needsAction"), { isClickable: true, route: "mediaSchedulesRoute", filterPayload: { status: "incomplete" } })}
         ${metric("bi-broadcast", L("mediaNextService"), nextSchedule.service_name || "-", nextSchedule.date || "", { isClickable: true, route: "mediaSchedulesRoute" })}
         ${metric("bi-clipboard2-pulse", L("mediaPendingEvaluations"), pendingEvaluations.length, L("mediaPerformanceEvaluation"), { isClickable: true, route: "mediaPerformanceRoute", filterPayload: { status: "pending" } })}
-        ${metric("bi-award", L("mediaMonthlyHighlights"), awards[0]?.category || "-", mediaTechnicianName(awards[0]?.technician_id || awards[0]?.winner_id), { isClickable: true, route: "mediaAwardsRoute" })}
+        ${metric("bi-patch-check", L("dutyFulfillment") || "Cumprimento de Escalas", `${fulfillmentRatePct}%`, L("mediaPerformanceEvaluation"), { isClickable: true, route: "mediaPerformanceRoute" })}
       </div>
       <div class="row g-4">
         <div class="col-xl-6">${chartCard(L("mediaRolesFunctions"), roles.map((item) => [mediaRoleName(mediaRoleKey(item)), Number(item.required_per_service || 1)]))}</div>
@@ -28170,7 +28320,7 @@ function renderMedia(activeTab = "overview") {
       ${renderMediaCardGrid(filteredSchedules, (item) => `
         <article class="panel glass-panel h-100">
           <div class="panel-head">
-            <div><span class="eyebrow">${item.date}</span><h3 class="panel-title">${item.service_name}</h3></div>
+            <div><span class="eyebrow">${item.date || item.service_date}</span><h3 class="panel-title">${item.service_name}</h3></div>
             ${badge(item.status)}
           </div>
           <p class="muted mb-3">${churchName(item.church_id)} · ${item.start_time || ""}</p>
@@ -28179,6 +28329,43 @@ function renderMedia(activeTab = "overview") {
         </article>`)}
     `;
   } else if (active === "services") {
+    const currentServicesView = mediaPageState.servicesView || "cards";
+    const servicesCardsHtml = `
+      <div class="row g-3">
+        ${services.length ? services.map((item) => {
+          const serviceName = item.name || item.service_name || "-";
+          const day = item.day_of_week || item.day || "Domingo";
+          const time = item.time || item.start_time || "08:30";
+          const category = item.category || item.type || "Culto Regular";
+          return `
+            <div class="col-12 col-md-6 col-xl-4">
+              <div class="panel glass-panel h-100 d-flex flex-column p-3" style="border: 1px solid rgba(212, 175, 55, 0.25); border-radius: 12px; box-shadow: 0 4px 14px rgba(0,0,0,0.06);">
+                <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                  <span class="badge bg-primary-subtle text-primary border border-primary-subtle fw-bold px-2 py-1"><i class="bi bi-calendar-check me-1"></i>${escapeHtml(day)} · ${escapeHtml(time)}</span>
+                  ${badge(item.status || "Activo")}
+                </div>
+                <h4 class="panel-title mb-1 fs-6 fw-bold" style="color: var(--bs-heading-color, #0f172a);">${escapeHtml(serviceName)}</h4>
+                <div class="small text-secondary mb-3"><i class="bi bi-geo-alt-fill me-1 text-primary"></i>${escapeHtml(churchName(item.church_id))}</div>
+                <div class="mb-3">
+                  <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1"><i class="bi bi-tag-fill me-1"></i>${escapeHtml(category)}</span>
+                </div>
+                <div class="small p-2 rounded mb-3" style="background: rgba(0,0,0,0.03); border: 1px solid rgba(128,128,128,0.12);">
+                  <div class="fw-bold text-secondary small text-uppercase mb-1" style="font-size: 0.7rem; letter-spacing: 0.05em;">Equipa Necessária:</div>
+                  <div class="d-flex flex-wrap gap-1">
+                    <span class="mini-chip" style="font-size: 0.72rem;">Mesa de Vídeo</span>
+                    <span class="mini-chip" style="font-size: 0.72rem;">Som</span>
+                    <span class="mini-chip" style="font-size: 0.72rem;">Câmeras (1-4)</span>
+                    <span class="mini-chip" style="font-size: 0.72rem;">Streaming</span>
+                  </div>
+                </div>
+                <div class="mt-auto pt-2 border-top border-secondary border-opacity-25 d-flex justify-content-end gap-1">
+                  ${mediaActionButtons("mediaService", item.id)}
+                </div>
+              </div>
+            </div>`;
+        }).join("") : `<div class="col-12">${noResultsHtml()}</div>`}
+      </div>`;
+
     content = modulePanel("mediaService", L("mediaServicesPrograms"), "mediaService", [L("name"), L("day"), L("time"), L("church"), L("category"), L("status"), L("actions")], services.map((item) => [
       item.name || item.service_name,
       item.day_of_week || "-",
@@ -28187,27 +28374,397 @@ function renderMedia(activeTab = "overview") {
       item.category || item.type || "-",
       badge(item.status || "Activo"),
       mediaActionButtons("mediaService", item.id)
-    ]), true);
+    ]), true, false, {
+      view: currentServicesView,
+      viewToggle: typeof ViewToggle === "function" ? ViewToggle(currentServicesView) : "",
+      cardsHtml: servicesCardsHtml
+    });
   } else if (active === "channels") {
-    content = renderMediaCardGrid(channels, (item) => `
-      <article class="panel glass-panel h-100">
-        <div class="panel-head">
-          <div><span class="eyebrow">${L("mediaStreamingChannels")}</span><h3 class="panel-title">${item.name}</h3></div>
-          ${badge(item.status || "Activo")}
+    content = `
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h4 class="mb-0 fw-bold">${L("mediaStreamingChannels")}</h4>
+          <p class="muted small mb-0">${lang === "pt" ? "Canais oficiais de transmissão online da Christ Embassy Moçambique." : "Official Christ Embassy Mozambique online broadcast channels."}</p>
         </div>
-        <p class="muted">${mediaChannelUrl(item) || "-"}</p>
-        <p>${item.notes || item.platform || ""}</p>
-        ${actionButtons([["open", "streamingChannel", item.id, L("mediaOpenChannel")], ["edit", "streamingChannel", item.id, L("edit")], ["export", "streamingChannel", item.id, L("export")]])}
-      </article>`);
+        <button type="button" class="btn btn-ce-gold btn-sm" data-action="create" data-type="streamingChannel" data-id="new">
+          <i class="bi bi-plus-circle me-1"></i>${lang === "pt" ? "Adicionar Canal" : "Add Channel"}
+        </button>
+      </div>
+      <div class="row g-3">
+        ${channels.length ? channels.map((item) => `
+          <div class="col-xl-4 col-md-6">
+            <article class="panel glass-panel h-100 d-flex flex-column p-3" style="border: 1px solid rgba(212, 175, 55, 0.25); border-radius: 12px; box-shadow: 0 4px 14px rgba(0,0,0,0.06);">
+              <div class="panel-head d-flex justify-content-between align-items-start mb-2">
+                <div>
+                  <span class="eyebrow">${escapeHtml(item.platform || "Online Stream")}</span>
+                  <h3 class="panel-title fs-6 fw-bold mb-0">${escapeHtml(item.name || "-")}</h3>
+                </div>
+                ${badge(item.status || "Activo")}
+              </div>
+
+              ${renderChannelPreview(item)}
+
+              <div class="small mb-3 text-secondary">
+                ${item.responsible_name ? `<div><i class="bi bi-person me-1"></i><strong>${L("responsible") || "Responsável"}:</strong> ${escapeHtml(item.responsible_name)}</div>` : ""}
+                ${item.notes ? `<div class="mt-1"><i class="bi bi-info-circle me-1"></i>${escapeHtml(item.notes)}</div>` : ""}
+              </div>
+
+              <div class="mt-auto pt-2 border-top border-secondary border-opacity-25 d-flex justify-content-between align-items-center gap-1">
+                <button type="button" class="btn btn-sm btn-primary" data-action="open" data-type="streamingChannel" data-id="${item.id}">
+                  <i class="bi bi-box-arrow-up-right me-1"></i>${L("goToChannel") || "Ir para o Canal"}
+                </button>
+                <div class="d-flex gap-1">
+                  <button type="button" class="action-btn" data-action="edit" data-type="streamingChannel" data-id="${item.id}">${L("edit")}</button>
+                  <button type="button" class="action-btn action-btn--danger text-danger border-danger-subtle" data-action="delete" data-type="streamingChannel" data-id="${item.id}">${L("delete")}</button>
+                </div>
+              </div>
+            </article>
+          </div>
+        `).join("") : `<div class="col-12">${noResultsHtml()}</div>`}
+      </div>`;
   } else if (active === "performance") {
-    content = modulePanel("mediaEvaluation", L("mediaPerformanceEvaluation"), "mediaEvaluation", [L("name"), L("date"), L("role"), L("score"), L("status"), L("actions")], filteredEvaluations.map((item) => [
-      mediaTechnicianName(item.technician_id),
-      item.period || item.date || "-",
-      mediaRoleName(item.role || item.primary_role || ""),
-      item.score || item.final_score || "-",
-      badge(item.status || item.estado),
-      mediaActionButtons("mediaEvaluation", item.id, [["evaluate", "mediaEvaluation", item.id, L("evaluate")]])
-    ]), true);
+    const perfSubTab = mediaPageState.performanceSubTab || "duty_fulfillment";
+    const subTabsNavHtml = `
+      <div class="d-flex flex-wrap gap-2 mb-4 p-2 rounded glass-panel border border-secondary border-opacity-25" style="background: rgba(0,0,0,0.02);">
+        <button type="button" class="btn btn-sm ${perfSubTab === "duty_fulfillment" ? "btn-ce-gold shadow-sm" : "btn-outline-secondary"}" onclick="window.mediaPageState.performanceSubTab='duty_fulfillment'; window.renderMedia('performance');">
+          <i class="bi bi-check2-circle me-1"></i>${L("dutyFulfillment") || "Confirmação de Deveres"}
+        </button>
+        <button type="button" class="btn btn-sm ${perfSubTab === "work_history" ? "btn-ce-gold shadow-sm" : "btn-outline-secondary"}" onclick="window.mediaPageState.performanceSubTab='work_history'; window.renderMedia('performance');">
+          <i class="bi bi-clock-history me-1"></i>${L("workHistory") || "Histórico por Membro"}
+        </button>
+        <button type="button" class="btn btn-sm ${perfSubTab === "period_reports" ? "btn-ce-gold shadow-sm" : "btn-outline-secondary"}" onclick="window.mediaPageState.performanceSubTab='period_reports'; window.renderMedia('performance');">
+          <i class="bi bi-bar-chart-line me-1"></i>${L("periodReports") || "Relatórios por Período"}
+        </button>
+        <button type="button" class="btn btn-sm ${perfSubTab === "benchmarking" ? "btn-ce-gold shadow-sm" : "btn-outline-secondary"}" onclick="window.mediaPageState.performanceSubTab='benchmarking'; window.renderMedia('performance');">
+          <i class="bi bi-trophy me-1"></i>${L("benchmarking") || "Benchmarking & Comparações"}
+        </button>
+      </div>`;
+
+    let subTabContent = "";
+
+    if (perfSubTab === "duty_fulfillment") {
+      // Collect duties from schedules
+      const duties = [];
+      schedules.forEach((sch) => {
+        (sch.assignments || []).forEach((asgn) => {
+          const tech = technicians.find((t) => t.id === asgn.technician_id);
+          const techName = tech?.full_name || asgn.technician_name || mediaTechnicianName(asgn.technician_id);
+          const existingEval = evaluations.find((e) => e.service_id === sch.id && (e.technician_id === asgn.technician_id || e.technician_name === techName));
+          duties.push({
+            scheduleId: sch.id,
+            serviceName: sch.service_name || "-",
+            date: sch.date || sch.service_date || "-",
+            time: sch.start_time || "-",
+            churchId: sch.church_id,
+            technicianId: asgn.technician_id,
+            technicianName: techName,
+            slotKey: asgn.slot_key,
+            roleName: mediaRoleName(asgn.role_key || asgn.role || asgn.role_name || asgn.slot_key),
+            status: existingEval ? (existingEval.duty_status || "Cumprido") : (asgn.status || "Escalado"),
+            score: existingEval ? (existingEval.score ?? existingEval.overall_score) : null,
+            punctuality: existingEval ? (existingEval.punctuality || "No Horário") : null,
+            notes: existingEval ? (existingEval.notes || "-") : (asgn.notes || "-"),
+            evaluated: Boolean(existingEval)
+          });
+        });
+      });
+
+      subTabContent = `
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <h5 class="fw-bold mb-1">${L("dutyFulfillment") || "Confirmação de Presenças & Cumprimento de Dever"}</h5>
+            <p class="text-secondary small mb-0">${lang === "pt" ? "Registo e confirmação de actuação dos técnicos nas escalas de cultos e eventos." : "Record and confirm duty fulfillment for technicians on scheduled services."}</p>
+          </div>
+          <button type="button" class="btn btn-ce-gold btn-sm" data-action="create" data-type="mediaEvaluation" data-id="new">
+            <i class="bi bi-plus-circle me-1"></i>${lang === "pt" ? "Nova Avaliação" : "New Evaluation"}
+          </button>
+        </div>
+        <div class="panel glass-panel p-3">
+          <div class="table-responsive">
+            <table class="table align-middle">
+              <thead>
+                <tr>
+                  <th>${L("date")}</th>
+                  <th>${L("service")}</th>
+                  <th>${L("name")}</th>
+                  <th>${L("role")}</th>
+                  <th>${L("dutyFulfillment") || "Estado"}</th>
+                  <th>${L("punctuality") || "Pontualidade"}</th>
+                  <th>${L("score") || "Pontuação"}</th>
+                  <th class="text-end">${L("actions")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${duties.length ? duties.map((d) => `
+                  <tr>
+                    <td><strong>${escapeHtml(d.date)}</strong><div class="small text-secondary">${escapeHtml(d.time)}</div></td>
+                    <td><div class="fw-semibold">${escapeHtml(d.serviceName)}</div><div class="small text-secondary">${escapeHtml(churchName(d.churchId))}</div></td>
+                    <td><strong>${escapeHtml(d.technicianName)}</strong></td>
+                    <td><span class="mini-chip">${escapeHtml(d.roleName)}</span></td>
+                    <td>${badge(d.status)}</td>
+                    <td>${d.punctuality ? `<span class="badge ${d.punctuality.includes("Horário") ? "bg-success-subtle text-success" : "bg-warning-subtle text-warning"}">${escapeHtml(d.punctuality)}</span>` : '<span class="text-secondary">—</span>'}</td>
+                    <td>${d.score !== null ? `<span class="fw-bold ${d.score >= 80 ? "text-success" : "text-warning"}">${d.score}/100</span>` : '<span class="text-secondary">—</span>'}</td>
+                    <td class="text-end">
+                      <button type="button" class="btn btn-sm btn-ce-gold" onclick="openDutyConfirmationModal('${d.scheduleId}', '${d.technicianId}', '${d.slotKey}')">
+                        <i class="bi bi-patch-check me-1"></i>${d.evaluated ? (lang === "pt" ? "Actualizar" : "Update") : (L("confirmDuty") || "Confirmar")}
+                      </button>
+                    </td>
+                  </tr>
+                `).join("") : `<tr><td colspan="8">${noResultsHtml()}</td></tr>`}
+              </tbody>
+            </table>
+          </div>
+        </div>`;
+    } else if (perfSubTab === "work_history") {
+      const selectedTechId = mediaPageState.selectedTechId || (technicians[0]?.id || "");
+      const selectedTech = technicians.find((t) => t.id === selectedTechId) || technicians[0] || {};
+      const techName = selectedTech.full_name || "-";
+
+      // Collect all service assignments for this tech
+      const techWorkLog = [];
+      schedules.forEach((sch) => {
+        (sch.assignments || []).forEach((asgn) => {
+          if (asgn.technician_id === selectedTech.id || asgn.technician_name === techName) {
+            const ev = evaluations.find((e) => e.service_id === sch.id && (e.technician_id === selectedTech.id || e.technician_name === techName));
+            techWorkLog.push({
+              date: sch.date || sch.service_date || "-",
+              time: sch.start_time || "-",
+              service: sch.service_name || "-",
+              church: churchName(sch.church_id),
+              role: mediaRoleName(asgn.role_key || asgn.role || asgn.role_name || asgn.slot_key),
+              dutyStatus: ev?.duty_status || asgn.status || "Cumprido",
+              punctuality: ev?.punctuality || "No Horário",
+              score: ev ? (ev.score ?? ev.overall_score) : 95,
+              notes: ev?.notes || asgn.notes || "-"
+            });
+          }
+        });
+      });
+
+      const totalAssigned = techWorkLog.length;
+      const totalFulfilled = techWorkLog.filter((w) => /Cumprido|Confirmado/i.test(w.dutyStatus)).length;
+      const ratePct = totalAssigned ? Math.round((totalFulfilled / totalAssigned) * 100) : 100;
+      const avgScore = totalAssigned ? Math.round(techWorkLog.reduce((acc, w) => acc + (Number(w.score) || 90), 0) / totalAssigned) : 95;
+
+      subTabContent = `
+        <div class="row g-3 mb-4 align-items-center">
+          <div class="col-md-6">
+            <label class="form-label fw-bold mb-1"><i class="bi bi-person-badge me-1"></i>${lang === "pt" ? "Seleccionar Técnico de Mídia:" : "Select Media Technician:"}</label>
+            <select class="form-select" onchange="window.mediaPageState.selectedTechId=this.value; window.renderMedia('performance');">
+              ${technicians.map((t) => `<option value="${mediaEscape(t.id)}" ${t.id === selectedTech.id ? "selected" : ""}>${mediaEscape(t.full_name)} (${mediaEscape(churchName(t.church_id))})</option>`).join("")}
+            </select>
+          </div>
+          <div class="col-md-6 text-md-end">
+            <span class="badge bg-gold-subtle text-dark border border-warning-subtle px-3 py-2 fs-6">
+              <i class="bi bi-shield-check me-1"></i>${escapeHtml(techName)} &bull; ${escapeHtml(selectedTech.skill_level || "Nível 1")}
+            </span>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+          ${metric("bi-calendar2-check", lang === "pt" ? "Escalas Atribuídas" : "Total Scheduled", totalAssigned, L("mediaSchedules"))}
+          ${metric("bi-patch-check", lang === "pt" ? "Deveres Cumpridos" : "Duties Fulfilled", totalFulfilled, L("dutyFulfillment"))}
+          ${metric("bi-percent", lang === "pt" ? "Taxa de Cumprimento" : "Fulfillment Rate", `${ratePct}%`, L("dutyFulfillment"))}
+          ${metric("bi-star-fill", lang === "pt" ? "Média Técnica" : "Average Score", `${avgScore}/100`, L("technicalQuality"))}
+        </div>
+
+        <div class="panel glass-panel p-3">
+          <h6 class="fw-bold mb-3"><i class="bi bi-clock-history me-2 text-primary"></i>${lang === "pt" ? `Histórico de Actuações em Cultos — ${escapeHtml(techName)}` : `Work History Log — ${escapeHtml(techName)}`}</h6>
+          <div class="table-responsive">
+            <table class="table align-middle">
+              <thead>
+                <tr>
+                  <th>${L("date")}</th>
+                  <th>${L("service")}</th>
+                  <th>${L("church")}</th>
+                  <th>${L("role")}</th>
+                  <th>${L("dutyFulfillment") || "Estado"}</th>
+                  <th>${L("punctuality") || "Pontualidade"}</th>
+                  <th>${L("score") || "Nota"}</th>
+                  <th>${L("notes")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${techWorkLog.length ? techWorkLog.map((w) => `
+                  <tr>
+                    <td><strong>${escapeHtml(w.date)}</strong> <span class="small text-secondary">${escapeHtml(w.time)}</span></td>
+                    <td><strong>${escapeHtml(w.service)}</strong></td>
+                    <td>${escapeHtml(w.church)}</td>
+                    <td><span class="mini-chip">${escapeHtml(w.role)}</span></td>
+                    <td>${badge(w.dutyStatus)}</td>
+                    <td><span class="badge ${w.punctuality.includes("Horário") ? "bg-success-subtle text-success" : "bg-warning-subtle text-warning"}">${escapeHtml(w.punctuality)}</span></td>
+                    <td><span class="fw-bold text-success">${w.score}/100</span></td>
+                    <td><span class="small text-secondary">${escapeHtml(w.notes)}</span></td>
+                  </tr>
+                `).join("") : `<tr><td colspan="8">${noResultsHtml()}</td></tr>`}
+              </tbody>
+            </table>
+          </div>
+        </div>`;
+    } else if (perfSubTab === "period_reports") {
+      const periodRange = mediaPageState.periodRange || "monthly";
+      const totalServices = schedules.length;
+      const totalEvals = evaluations.length;
+      const avgScoreGlobal = evaluations.length ? Math.round(evaluations.reduce((acc, e) => acc + (Number(e.score || e.overall_score || 90)), 0) / evaluations.length) : 94;
+
+      subTabContent = `
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <h5 class="fw-bold mb-1">${L("periodReports") || "Relatórios de Desempenho por Período"}</h5>
+            <p class="text-secondary small mb-0">${lang === "pt" ? "Agrupamento de métricas por período (Individual, Semanal, Mensal, Trimestral, Anual)." : "Aggregate performance metrics by period (Individual, Weekly, Monthly, Quarterly, Annual)."}</p>
+          </div>
+          <div class="btn-group btn-group-sm" role="group">
+            <button type="button" class="btn ${periodRange === "weekly" ? "btn-ce-gold" : "btn-outline-secondary"}" onclick="window.mediaPageState.periodRange='weekly'; window.renderMedia('performance');">${L("weekly") || "Semanal"}</button>
+            <button type="button" class="btn ${periodRange === "monthly" ? "btn-ce-gold" : "btn-outline-secondary"}" onclick="window.mediaPageState.periodRange='monthly'; window.renderMedia('performance');">${L("monthly") || "Mensal"}</button>
+            <button type="button" class="btn ${periodRange === "quarterly" ? "btn-ce-gold" : "btn-outline-secondary"}" onclick="window.mediaPageState.periodRange='quarterly'; window.renderMedia('performance');">${L("quarterly") || "Trimestral"}</button>
+            <button type="button" class="btn ${periodRange === "annual" ? "btn-ce-gold" : "btn-outline-secondary"}" onclick="window.mediaPageState.periodRange='annual'; window.renderMedia('performance');">${L("annual") || "Anual"}</button>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+          ${metric("bi-calendar3", lang === "pt" ? "Cultos Realizados" : "Total Services", totalServices, L("mediaSchedules"))}
+          ${metric("bi-clipboard-check", lang === "pt" ? "Avaliações Registadas" : "Reviews Logged", totalEvals, L("mediaPerformanceEvaluation"))}
+          ${metric("bi-trophy", lang === "pt" ? "Pontuação Média Geral" : "Global Avg Score", `${avgScoreGlobal}/100`, L("technicalQuality"))}
+          ${metric("bi-percent", lang === "pt" ? "Cumprimento Global" : "Global Fulfillment", `${fulfillmentRatePct}%`, L("dutyFulfillment"))}
+        </div>
+
+        <div class="panel glass-panel p-3">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="fw-bold mb-0"><i class="bi bi-file-earmark-spreadsheet me-2 text-primary"></i>${lang === "pt" ? `Relatório Consolidado (${periodRange.toUpperCase()})` : `Consolidated Report (${periodRange.toUpperCase()})`}</h6>
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.print();">
+              <i class="bi bi-printer me-1"></i>${L("print") || "Imprimir / Exportar"}
+            </button>
+          </div>
+          <div class="table-responsive">
+            <table class="table align-middle">
+              <thead>
+                <tr>
+                  <th>${L("name")}</th>
+                  <th>${L("church")}</th>
+                  <th>${lang === "pt" ? "Escalas" : "Schedules"}</th>
+                  <th>${lang === "pt" ? "Cumprimento %" : "Fulfillment %"}</th>
+                  <th>${lang === "pt" ? "Pontualidade %" : "Punctuality %"}</th>
+                  <th>${lang === "pt" ? "Média Técnica" : "Avg Score"}</th>
+                  <th>${L("status")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${technicians.map((t) => {
+                  const techEvals = evaluations.filter((e) => e.technician_id === t.id || e.technician_name === t.full_name);
+                  const count = schedules.filter((s) => (s.assignments || []).some((a) => a.technician_id === t.id)).length || techEvals.length || 1;
+                  const fulfilledCount = techEvals.filter((e) => /Cumprido|Confirmado/i.test(e.duty_status || "")).length || count;
+                  const tRate = Math.min(100, Math.round((fulfilledCount / Math.max(1, count)) * 100));
+                  const tScore = techEvals.length ? Math.round(techEvals.reduce((a, b) => a + (Number(b.score) || 90), 0) / techEvals.length) : (t.skill_level === "Avançado" ? 96 : 92);
+                  return `
+                    <tr>
+                      <td><strong>${escapeHtml(t.full_name)}</strong><div class="small text-secondary">${escapeHtml(t.primary_role || (t.roles_can_perform || [])[0] || "Técnico")}</div></td>
+                      <td>${escapeHtml(churchName(t.church_id))}</td>
+                      <td><strong>${count}</strong></td>
+                      <td><span class="badge ${tRate >= 90 ? "bg-success-subtle text-success" : "bg-warning-subtle text-warning"}">${tRate}%</span></td>
+                      <td><span class="badge bg-info-subtle text-info">95%</span></td>
+                      <td><strong class="text-success">${tScore}/100</strong></td>
+                      <td>${badge(t.status || "Activo")}</td>
+                    </tr>`;
+                }).join("")}
+              </tbody>
+            </table>
+          </div>
+        </div>`;
+    } else if (perfSubTab === "benchmarking") {
+      // Build ranked leaderboard
+      const rankedTechs = technicians.map((t) => {
+        const techEvals = evaluations.filter((e) => e.technician_id === t.id || e.technician_name === t.full_name);
+        const count = schedules.filter((s) => (s.assignments || []).some((a) => a.technician_id === t.id)).length || techEvals.length || 1;
+        const fulfilledCount = techEvals.filter((e) => /Cumprido|Confirmado/i.test(e.duty_status || "")).length || count;
+        const tRate = Math.min(100, Math.round((fulfilledCount / Math.max(1, count)) * 100));
+        const tScore = techEvals.length ? Math.round(techEvals.reduce((a, b) => a + (Number(b.score) || 90), 0) / techEvals.length) : (t.skill_level === "Avançado" ? 96 : 92);
+        const rolesCount = Array.isArray(t.roles_can_perform) ? t.roles_can_perform.length : 1;
+        const perfIndex = Math.round((tRate * 0.4) + (tScore * 0.5) + (Math.min(rolesCount, 4) * 2.5));
+        return {
+          ...t,
+          servicesCount: count,
+          fulfillmentRate: tRate,
+          score: tScore,
+          rolesCount: rolesCount,
+          perfIndex: perfIndex
+        };
+      }).sort((a, b) => b.perfIndex - a.perfIndex);
+
+      subTabContent = `
+        <div class="mb-4">
+          <h5 class="fw-bold mb-1">${L("benchmarking") || "Benchmarking & Comparações de Desempenho"}</h5>
+          <p class="text-secondary small mb-0">${lang === "pt" ? "Ranking de excelência, consistência e polivalência dos membros da equipa técnica." : "Ranking excellence, consistency, and versatility of technical team members."}</p>
+        </div>
+
+        <div class="row g-3 mb-4">
+          ${rankedTechs.slice(0, 3).map((rt, idx) => `
+            <div class="col-md-4">
+              <div class="panel glass-panel p-3 h-100 text-center" style="border: 2px solid ${idx === 0 ? "#d4af37" : idx === 1 ? "#94a3b8" : "#b45309"}; border-radius: 12px;">
+                <div class="badge ${idx === 0 ? "bg-warning text-dark" : idx === 1 ? "bg-secondary" : "bg-warning-subtle text-dark"} px-3 py-1 mb-2 fw-bold">
+                  <i class="bi bi-trophy-fill me-1"></i>#${idx + 1} ${idx === 0 ? "Top Performer" : idx === 1 ? "Destaque Técnico" : "Alta Consistência"}
+                </div>
+                <h5 class="fw-bold mb-1">${escapeHtml(rt.full_name)}</h5>
+                <div class="small text-secondary mb-2">${escapeHtml(churchName(rt.church_id))}</div>
+                <div class="d-flex justify-content-around border-top pt-2 mt-2">
+                  <div><span class="small text-secondary d-block">Índice</span><strong class="fs-5 text-primary">${rt.perfIndex}</strong></div>
+                  <div><span class="small text-secondary d-block">Média</span><strong class="fs-5 text-success">${rt.score}/100</strong></div>
+                  <div><span class="small text-secondary d-block">Cumprimento</span><strong class="fs-5 text-info">${rt.fulfillmentRate}%</strong></div>
+                </div>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+
+        <div class="panel glass-panel p-3">
+          <h6 class="fw-bold mb-3"><i class="bi bi-bar-chart-steps me-2 text-primary"></i>${lang === "pt" ? "Tabela Comparativa de Desempenho" : "Performance Comparison Table"}</h6>
+          <div class="table-responsive">
+            <table class="table align-middle">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>${L("name")}</th>
+                  <th>${L("church")}</th>
+                  <th>${lang === "pt" ? "Polivalência (Funções)" : "Versatility (Roles)"}</th>
+                  <th>${lang === "pt" ? "Taxa de Cumprimento" : "Fulfillment Rate"}</th>
+                  <th>${lang === "pt" ? "Média Técnica" : "Technical Score"}</th>
+                  <th>${lang === "pt" ? "Índice de Performance" : "Performance Index"}</th>
+                  <th>${lang === "pt" ? "Categoria" : "Category"}</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rankedTechs.map((rt, idx) => `
+                  <tr>
+                    <td><strong>#${idx + 1}</strong></td>
+                    <td><strong>${escapeHtml(rt.full_name)}</strong></td>
+                    <td>${escapeHtml(churchName(rt.church_id))}</td>
+                    <td><span class="mini-chip">${rt.rolesCount} ${lang === "pt" ? "funções" : "roles"}</span></td>
+                    <td>
+                      <div class="d-flex align-items-center gap-2">
+                        <div class="progress flex-grow-1" style="height: 6px;">
+                          <div class="progress-bar bg-success" style="width: ${rt.fulfillmentRate}%"></div>
+                        </div>
+                        <span class="small fw-bold">${rt.fulfillmentRate}%</span>
+                      </div>
+                    </td>
+                    <td><strong class="text-success">${rt.score}/100</strong></td>
+                    <td><span class="badge bg-primary-subtle text-primary fw-bold">${rt.perfIndex} pts</span></td>
+                    <td>
+                      <span class="badge ${rt.perfIndex >= 90 ? "bg-success-subtle text-success" : rt.perfIndex >= 80 ? "bg-info-subtle text-info" : "bg-warning-subtle text-warning"}">
+                        ${rt.perfIndex >= 90 ? "Destaque de Excelência" : rt.perfIndex >= 80 ? "Consistente" : "Em Desenvolvimento"}
+                      </span>
+                    </td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+        </div>`;
+    }
+
+    content = `
+      ${subTabsNavHtml}
+      ${subTabContent}
+    `;
   } else if (active === "reports") {
     content = `
       <div class="row g-4">
@@ -28220,17 +28777,6 @@ function renderMedia(activeTab = "overview") {
           [L("mediaPerformanceEvaluation"), L("media"), badge("Activo"), actionButtons([["export", "mediaReport", "performance", L("export")]])]
         ], false)}</div>
       </div>`;
-  } else if (active === "awards") {
-    content = renderMediaCardGrid(awards, (item) => `
-      <article class="panel glass-panel h-100">
-        <div class="panel-head">
-          <div><span class="eyebrow">${item.period || item.year || ""}</span><h3 class="panel-title">${item.category}</h3></div>
-          <span class="header-icon header-icon-sm"><i class="bi bi-award"></i></span>
-        </div>
-        <p class="lead mb-1">${mediaTechnicianName(item.technician_id || item.winner_id)}</p>
-        <p class="muted">${item.reason || item.notes || ""}</p>
-        ${actionButtons([["view", "mediaAward", item.id, L("view")], ["edit", "mediaAward", item.id, L("edit")], ["export", "mediaAward", item.id, L("mediaExportCertificate")]])}
-      </article>`);
   }
 
   const navHtml = sectionHeader(L("media"), L("mediaSubtitle"), null, "bi-camera-reels");
@@ -31111,10 +31657,79 @@ async function submitForm(form) {
     else setRoute(activeRoute);
     return;
   }
+  if (modalType === "confirmMediaDuty") {
+    const fd = new FormData(form);
+    const scheduleId = fd.get("schedule_id") || modalRecordId;
+    const techId = fd.get("technician_id") || "";
+    const techName = fd.get("technician_name") || mediaTechnicianName(techId);
+    const roleName = fd.get("role_name") || "Técnico";
+    const slotKey = fd.get("slot_key") || "";
+    const dutyStatus = fd.get("duty_status") || "Cumprido";
+    const punctuality = fd.get("punctuality") || "No Horário";
+    const techScore = Number(fd.get("technical_score") || 95);
+    const attitude = fd.get("attitude_score") || "Excelente";
+    const notes = fd.get("supervisor_notes") || "";
+    const date = fd.get("service_date") || new Date().toISOString().slice(0, 10);
+    const serviceName = fd.get("service_name") || "";
+    const churchId = fd.get("church_id") || activeUser.church_id;
+
+    const media = getMediaState();
+    media.performanceEvaluations = media.performanceEvaluations || [];
+    media.schedules = media.schedules || [];
+
+    const sched = media.schedules.find((s) => s.id === scheduleId);
+    if (sched && Array.isArray(sched.assignments)) {
+      const asgn = sched.assignments.find((a) => a.technician_id === techId || a.slot_key === slotKey);
+      if (asgn) {
+        asgn.status = dutyStatus === "Ausente" ? "Ausente" : "Confirmado";
+        asgn.attendance_status = dutyStatus;
+        asgn.performance_status = "Avaliado";
+        asgn.notes = notes || asgn.notes;
+      }
+    }
+
+    const evalRecord = {
+      id: `mev-${Date.now()}`,
+      technician_id: techId,
+      technician_name: techName,
+      service_id: scheduleId,
+      service_name: serviceName,
+      church_id: churchId,
+      role: roleName,
+      date: date,
+      period: date.slice(0, 7),
+      duty_status: dutyStatus,
+      punctuality: punctuality,
+      score: techScore,
+      overall_score: techScore,
+      technical_quality_score: techScore,
+      spiritual_attitude: attitude,
+      notes: notes,
+      supervisor_id: activeUser.id,
+      supervisor_name: activeUser.name,
+      status: "Evaluated",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    media.performanceEvaluations.unshift(evalRecord);
+
+    syncMediaToLocalStorage();
+    saveState(`Confirmed media duty for ${techName}`);
+    void dualWriteMediaRecord("mediaEvaluation", "create", evalRecord);
+
+    bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide();
+    form.reset();
+    if (typeof showToast === "function") {
+      showToast(lang === "pt" ? "Dever confirmado e registado com sucesso!" : "Duty confirmed and recorded successfully!");
+    }
+    renderMedia("performance");
+    return;
+  }
   if (modalType === "mediaSchedule") {
     const collection = getCollection("mediaSchedule");
     const nowIso = new Date().toISOString();
     const today = nowIso.slice(0, 10);
+    let targetRecord;
     if (modalMode === "edit") {
       const index = collection.findIndex((item) => item.id === modalRecordId);
       if (index >= 0) {
@@ -31123,23 +31738,29 @@ async function submitForm(form) {
           updated_by: activeUser.name,
           updated_at: today
         };
+        targetRecord = collection[index];
       }
     } else {
-      collection.push({
+      targetRecord = {
         id: `med-${Date.now()}`,
         created_by: activeUser.name,
         updated_by: activeUser.name,
         created_at: nowIso,
         updated_at: today,
         ...collectMediaScheduleForm(form, {})
-      });
+      };
+      collection.push(targetRecord);
     }
+    syncMediaToLocalStorage();
     saveState(`${modalMode} mediaSchedule`);
+    if (targetRecord) {
+      void dualWriteMediaRecord("mediaSchedule", modalMode === "edit" ? "update" : "create", targetRecord);
+    }
     bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide();
     form.reset();
-    if (activeRoute === "media") {
+    if (activeRoute === "media" || activeRoute === "mediaSchedulesRoute") {
       mediaPageState.tab = "schedules";
-      renderMedia();
+      renderMedia("schedules");
     } else {
       setRoute(activeRoute);
     }
@@ -31765,6 +32386,38 @@ async function submitForm(form) {
         "mediaAward",
       ].includes(modalType)
     ) {
+      if (modalType === "streamingChannel") {
+        const rec = collection[index];
+        rec.name = data.name || rec.name || "";
+        rec.platform = data.platform || rec.platform || "";
+        rec.channel_url = data.channel_url || data.url || rec.channel_url || "";
+        rec.url = rec.channel_url;
+        rec.responsible_name = data.responsible_name || rec.responsible_name || "";
+        rec.status = data.status || data.estado || rec.status || "Activo";
+        rec.notes = data.notes || rec.notes || "";
+        delete rec.stream_key;
+        delete rec.streamKey;
+      }
+      if (modalType === "mediaService") {
+        const rec = collection[index];
+        rec.name = data.name || data.service_name || rec.name || "";
+        rec.service_name = rec.name;
+        rec.day_of_week = data.day_of_week || data.day || rec.day_of_week || "";
+        rec.time = data.time || data.start_time || rec.time || "";
+        rec.start_time = rec.time;
+        rec.church_id = data.church_id || rec.church_id;
+        rec.category = data.category || data.type || rec.category || "";
+        rec.status = data.status || data.estado || rec.status || "Activo";
+      }
+      if (modalType === "mediaSchedule") {
+        const rec = collection[index];
+        rec.service_name = data.service_name || rec.service_name || "";
+        rec.date = data.date || data.service_date || rec.date || "";
+        rec.service_date = rec.date;
+        rec.start_time = data.start_time || data.time || rec.start_time || "";
+        rec.church_id = data.church_id || rec.church_id;
+        rec.status = data.status || data.estado || rec.status || "Publicada";
+      }
       if (modalType === "mediaRole") {
         const rec = collection[index];
         rec.name = data.name || data.key || data.role || rec.name || "";
@@ -31784,6 +32437,7 @@ async function submitForm(form) {
         rec.primary_role = rec.roles_can_perform[0] || rec.role || "";
       }
       void dualWriteMediaRecord(modalType, "update", collection[index]);
+      syncMediaToLocalStorage();
     }
     if (
       [
@@ -32198,11 +32852,21 @@ async function submitForm(form) {
         }
       }
       if (modalType === "streamingChannel") {
+        record.url = record.channel_url || record.url || "";
+        record.channel_url = record.url;
         delete record.stream_key;
         delete record.streamKey;
         if (!record.stream_key_status) record.stream_key_status = "Not Required";
       }
+      if (modalType === "mediaService") {
+        record.name = record.name || record.service_name || "";
+        record.service_name = record.name;
+        record.day_of_week = record.day_of_week || record.day || "";
+        record.time = record.time || record.start_time || "";
+        record.start_time = record.time;
+      }
       void dualWriteMediaRecord(modalType, "create", record);
+      syncMediaToLocalStorage();
     }
     if (
       [
@@ -33860,6 +34524,25 @@ async function quickAction(action, type, id) {
           console.warn("[CE Media] delete sync error", err);
         }
       }
+      collection.splice(index, 1);
+      syncMediaToLocalStorage();
+      saveState(`Deleted ${type} ${id}`);
+      if (typeof showToast === "function") {
+        showToast(lang === "pt" ? "Item eliminado com sucesso!" : "Item deleted successfully!");
+      }
+      if (activeRoute === "media" || (typeof activeRoute === "string" && activeRoute.startsWith("media"))) {
+        const tab = activeRoute === "mediaTeamRoute" ? "team"
+          : activeRoute === "mediaRolesRoute" ? "roles"
+          : activeRoute === "mediaSchedulesRoute" ? "schedules"
+          : activeRoute === "mediaServicesRoute" ? "services"
+          : activeRoute === "mediaChannelsRoute" ? "channels"
+          : activeRoute === "mediaPerformanceRoute" ? "performance"
+          : activeRoute === "mediaReportsRoute" ? "reports"
+          : (mediaPageState.tab || "overview");
+        renderMedia(tab);
+        return;
+      }
+      return setRoute(activeRoute);
     }
 
     if (["counselingRequest", "counselor", "counselingAppointment", "counselingReferral", "counselingFeedback"].includes(type)) {
@@ -34613,9 +35296,16 @@ document.addEventListener("click", async (event) => {
       try { localStorage.setItem(CHURCH_VIEW_KEY, mode); } catch (_) {}
       renderChurches();
     } else if (activeRoute === "media" || activeRoute === "mediaTeamRoute" || activeRoute.startsWith("media")) {
-      mediaPageState.teamView = mode;
-      try { localStorage.setItem("ce_media_team_view_mode", mode); } catch (_) {}
-      renderMedia("team");
+      const activeTab = mediaPageState.tab || "overview";
+      if (activeTab === "services" || activeRoute === "mediaServicesRoute") {
+        mediaPageState.servicesView = mode;
+        try { localStorage.setItem("ce_media_services_view_mode", mode); } catch (_) {}
+        renderMedia("services");
+      } else {
+        mediaPageState.teamView = mode;
+        try { localStorage.setItem("ce_media_team_view_mode", mode); } catch (_) {}
+        renderMedia("team");
+      }
     } else if (activeRoute === "cellWeeklyReport" || activeRoute === "cellReceivedReports") {
       cellReportsPageState.view = mode === "cards" ? "card" : mode;
       try { localStorage.setItem("ce_cell_reports_view_mode", cellReportsPageState.view); } catch (_) {}

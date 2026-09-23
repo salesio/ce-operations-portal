@@ -90,8 +90,7 @@
     mediaServicesRoute: "media",
     mediaChannelsRoute: "media",
     mediaPerformanceRoute: "media",
-    mediaReportsRoute: "media",
-    mediaAwardsRoute: "media"
+    mediaReportsRoute: "media"
   };
 
   const ALL_MODULES = [
