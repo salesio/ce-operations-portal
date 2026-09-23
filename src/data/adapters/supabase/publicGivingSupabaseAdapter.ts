@@ -294,7 +294,20 @@ export async function verifyPublicGivingSubmission(
     return fail("Submissão rejeitada não pode ser verificada.", "INVALID_STATUS");
   }
 
-  const lines = (sub.contributions || []).filter((c) => Number(c.amount || 0) > 0);
+  let lines = (sub.contributions || []).map((c: any) => ({
+    ...c,
+    amount: Number(c.amount ?? c.valor ?? 0),
+    contribution_category: c.contribution_category || c.categoria || c.category || "",
+    contribution_group: c.contribution_group || c.grupo || guessGroup(String(c.contribution_category || c.categoria || c.category || "")),
+  })).filter((c) => Number(c.amount || 0) > 0);
+
+  if (!lines.length && Number(sub.total_amount || sub.valor_total || 0) > 0) {
+    lines = [{
+      amount: Number(sub.total_amount || sub.valor_total || 0),
+      contribution_category: "Dízimos",
+      contribution_group: "Dízimos",
+    }];
+  }
   const created: FinanceRecord[] = [];
   const verifier = payload.verified_by || "Finance Head";
   const now = nowIso();

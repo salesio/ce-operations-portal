@@ -56,30 +56,26 @@ export async function submitPublicGiving(
   const submissionRow = {
     id: submissionId,
     submission_group_id: groupId,
-    nome_completo: submission.nome_completo,
-    data_de_aniversario: submission.data_de_aniversario || null,
-    telefone: submission.telefone,
+    full_name: submission.nome_completo || submission.full_name || "Contributor",
+    phone: submission.telefone || submission.phone || null,
     email: submission.email || null,
-    igreja_id: submission.igreja_id,
-    igreja_nome: submission.igreja_nome || null,
-    cell_group_id: submission.cell_group_id || null,
+    church_id: submission.igreja_id || submission.church_id || null,
+    church_name: submission.igreja_nome || submission.church_name || null,
+    cell_group_id: submission.cell_group_id != null ? String(submission.cell_group_id) : null,
     cell_group_name: submission.cell_group_name || submission.grupo_de_celula || null,
-    cell_id: submission.cell_id || null,
+    cell_id: submission.cell_id != null ? String(submission.cell_id) : null,
     cell_name: submission.cell_name || submission.celula || null,
-    grupo_de_celula: submission.grupo_de_celula || null,
-    celula: submission.celula || null,
-    contribuicoes: submission.contribuicoes,
-    outros_descricao: submission.outros_descricao || null,
-    metodo_de_pagamento: submission.metodo_de_pagamento,
-    referencia_da_transaccao: submission.referencia_da_transaccao || null,
-    data_da_transferencia: submission.data_da_transferencia,
-    comprovativo_path: proofPath || null,
-    comprovativo_url: proofPublicUrl || null,
-    mensagem_transferencia: submission.mensagem_transferencia || null,
-    observacoes: submission.observacoes || null,
-    total_geral: Number(submission.total_geral || 0),
+    contributions: submission.contribuicoes || submission.contributions || [],
+    total_amount: Number(submission.total_geral || submission.total_amount || 0),
+    currency: submission.currency || "MZN",
+    payment_method: submission.metodo_de_pagamento || submission.payment_method || null,
+    payment_reference: submission.referencia_da_transaccao || submission.payment_reference || null,
+    payment_date: submission.data_da_transferencia || submission.payment_date || now.slice(0, 10),
+    proof_file_url: proofPublicUrl || null,
+    proof_file_name: proofFile?.name || null,
     source: "public_website",
     status: PENDING,
+    notes: submission.observacoes || submission.notes || null,
     created_at: now
   };
 
@@ -113,7 +109,7 @@ export async function fetchFinanceSnapshot(churchIds?: string[]) {
 
   if (churchIds?.length) {
     financeQuery = financeQuery.in("church_id", churchIds);
-    submissionQuery = submissionQuery.in("igreja_id", churchIds);
+    submissionQuery = submissionQuery.in("church_id", churchIds);
   }
 
   const [{ data: finance, error: financeError }, { data: submissions, error: submissionError }] = await Promise.all([
@@ -126,7 +122,7 @@ export async function fetchFinanceSnapshot(churchIds?: string[]) {
 
   return {
     finance: (finance as FinanceRecordRow[]).map(mapFinanceRecordToDashboard),
-    publicGivingSubmissions: (submissions || []).map(mapSubmissionToDashboard)
+    publicGivingSubmissions: (submissions || []).map(mapSubmissionToDashboard).filter(Boolean)
   };
 }
 

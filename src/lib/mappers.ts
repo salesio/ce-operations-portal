@@ -9,31 +9,66 @@ export function splitFullName(fullName: string) {
   return { nome: parts[0], apelido: parts.slice(1).join(" ") };
 }
 
-export function mapSubmissionToDashboard(submission: PublicGivingSubmissionRow) {
+export function mapSubmissionToDashboard(submission: any) {
+  if (!submission) return null;
+  const fullName = submission.full_name || submission.nome_completo || "";
+  const churchId = submission.church_id || submission.igreja_id || null;
+  const churchName = submission.church_name || submission.igreja_nome || "";
+  const contributions = Array.isArray(submission.contributions)
+    ? submission.contributions
+    : Array.isArray(submission.contribuicoes)
+      ? submission.contribuicoes
+      : [];
+  const totalAmount = Number(
+    submission.total_amount ?? submission.total_geral ?? submission.valor_total ?? 0
+  );
+  const paymentMethod = submission.payment_method || submission.metodo_de_pagamento || "";
+  const paymentReference = submission.payment_reference || submission.referencia_da_transaccao || "";
+  const paymentDate = submission.payment_date || submission.data_da_transferencia || "";
+  const proofUrl = submission.proof_file_url || submission.comprovativo_url || submission.comprovativo_path || "";
+  const notes = submission.notes || submission.observacoes || "";
+  const cellGroupId = submission.cell_group_id || "";
+  const cellGroupName = submission.cell_group_name || submission.grupo_de_celula || "";
+  const cellId = submission.cell_id || "";
+  const cellName = submission.cell_name || submission.celula || "";
+
   return {
     id: submission.id,
-    submission_group_id: submission.submission_group_id,
-    nome_completo: submission.nome_completo,
+    submission_group_id: submission.submission_group_id || `sg-${submission.id}`,
+    full_name: fullName,
+    nome_completo: fullName,
     data_de_aniversario: submission.data_de_aniversario || "",
-    telefone: submission.telefone,
+    phone: submission.phone || submission.telefone || "",
+    telefone: submission.telefone || submission.phone || "",
     email: submission.email || "",
-    igreja_id: submission.igreja_id,
-    igreja_nome: submission.igreja_nome || "",
-    cell_group_id: submission.cell_group_id || "",
-    cell_group_name: submission.cell_group_name || submission.grupo_de_celula || "",
-    cell_id: submission.cell_id || "",
-    cell_name: submission.cell_name || submission.celula || "",
-    grupo_de_celula: submission.grupo_de_celula || "",
-    celula: submission.celula || "",
-    contribuicoes: submission.contribuicoes || [],
+    church_id: churchId,
+    igreja_id: churchId,
+    church_name: churchName,
+    igreja_nome: churchName,
+    cell_group_id: cellGroupId,
+    cell_group_name: cellGroupName,
+    cell_id: cellId,
+    cell_name: cellName,
+    grupo_de_celula: cellGroupName,
+    celula: cellName,
+    contributions: contributions,
+    contribuicoes: contributions,
     outros_descricao: submission.outros_descricao || "",
-    metodo_de_pagamento: submission.metodo_de_pagamento,
-    referencia_da_transaccao: submission.referencia_da_transaccao || "",
-    data_da_transferencia: submission.data_da_transferencia,
-    comprovativo_url: submission.comprovativo_url || submission.comprovativo_path || "",
+    payment_method: paymentMethod,
+    metodo_de_pagamento: paymentMethod,
+    payment_reference: paymentReference,
+    referencia_da_transaccao: paymentReference,
+    payment_date: paymentDate,
+    data_da_transferencia: paymentDate,
+    proof_file_url: proofUrl,
+    comprovativo_url: proofUrl,
+    comprovativo_path: submission.comprovativo_path || "",
     mensagem_transferencia: submission.mensagem_transferencia || "",
-    observacoes: submission.observacoes || "",
-    total_geral: Number(submission.total_geral || 0),
+    notes: notes,
+    observacoes: notes,
+    total_amount: totalAmount,
+    total_geral: totalAmount,
+    valor_total: totalAmount,
     source: submission.source || "public_website",
     status: submission.status || PENDING,
     created_at: submission.created_at

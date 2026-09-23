@@ -9437,38 +9437,93 @@ function financeOriginBadge(record) {
 }
 
 function getScopedPublicSubmissionRows() {
-  const churchIds = activeUser.can_view_all_churches ? state.churches.map((church) => church.id) : [activeUser.church_id];
-  const submissions = (state.publicGivingSubmissions || []).filter((submission) => churchIds.includes(submission.igreja_id));
+  const churchIds = activeUser?.can_view_all_churches
+    ? (state.churches || []).map((c) => c.id)
+    : [activeUser?.church_id].filter(Boolean);
+
+  const submissions = (state.publicGivingSubmissions || []).filter((submission) => {
+    if (!submission) return false;
+    if (activeUser?.can_view_all_churches) return true;
+    const subChurchId = submission.church_id || submission.igreja_id;
+    if (!subChurchId) return true;
+    return churchIds.includes(subChurchId);
+  });
+
   return submissions.map((submission) => {
-    const records = scoped(getSubmissionGroupRecords(state, submission.submission_group_id)).map((record) => migrateFinanceRecord(record));
-    const total = records.reduce((sum, record) => sum + Number(record.valor || 0), 0);
-    const categories = records.map((record) => record.categoria_da_contribuicao).filter(Boolean).join(", ");
-    const status = records.length && records.every((record) => statusKey(record.estado) === "verified")
-      ? FINANCE_STATUS_VERIFIED
-      : records.some((record) => statusKey(record.estado) === "rejected")
-        ? FINANCE_STATUS_REJECTED
-        : FINANCE_STATUS_PENDING;
+    const subGroupId = submission.submission_group_id || submission.id;
+    let records = scoped(getSubmissionGroupRecords(state, subGroupId)).map((record) => migrateFinanceRecord(record));
+    if (!records.length && typeof financeRecordsFromPublicSubmission === "function") {
+      records = financeRecordsFromPublicSubmission(submission);
+    }
+    if (!records.length) {
+      const contribs = Array.isArray(submission.contributions) ? submission.contributions
+        : Array.isArray(submission.contribuicoes) ? submission.contribuicoes : [];
+      const lines = contribs.length ? contribs : [{
+        category: submission.category || submission.categoria || "Dízimos",
+        amount: submission.total_amount || submission.valor_total || submission.amount || 0,
+      }];
+      records = lines.map((line, idx) => ({
+        id: `virtual-pub-${subGroupId}-${idx + 1}`,
+        submission_group_id: subGroupId,
+        public_submission_id: submission.id,
+        source: "public_website",
+        source_type: "public_website",
+        nome: submission.nome || (submission.full_name || submission.nome_completo || "").split(" ")[0] || "Contributor",
+        apelido: submission.apelido || (submission.full_name || submission.nome_completo || "").split(" ").slice(1).join(" ") || "",
+        telefone: submission.telefone || submission.phone || "",
+        email: submission.email || "",
+        church_id: submission.church_id || submission.igreja_id || activeUser?.church_id || "",
+        categoria_da_contribuicao: line.category || line.categoria || line.name || "Dízimos",
+        valor: Number(line.amount || line.valor || 0),
+        metodo_de_pagamento: submission.metodo_de_pagamento || submission.payment_method || "Transferência",
+        data: submission.data_da_transferencia || submission.payment_date || submission.created_at?.slice(0, 10) || new Date().toISOString().slice(0, 10),
+        estado: submission.status || submission.estado || FINANCE_STATUS_PENDING,
+      }));
+    }
+
+    const total = Number(submission.total_amount || submission.valor_total || submission.total_geral) ||
+      records.reduce((sum, record) => sum + Number(record.valor || 0), 0);
+
+    const categories = records.map((record) => record.categoria_da_contribuicao).filter(Boolean).join(", ") ||
+      (Array.isArray(submission.contributions) ? submission.contributions.map((c) => c.category || c.categoria).filter(Boolean).join(", ") : "-");
+
+    let status = submission.status || submission.estado || FINANCE_STATUS_PENDING;
+    if (statusKey(status) === "pendingverification" || statusKey(status) === "pending" || !status) {
+      if (records.length && records.every((r) => statusKey(r.estado) === "verified")) {
+        status = FINANCE_STATUS_VERIFIED;
+      } else if (records.some((r) => statusKey(r.estado) === "rejected")) {
+        status = FINANCE_STATUS_REJECTED;
+      } else {
+        status = FINANCE_STATUS_PENDING;
+      }
+    }
     return { submission, records, total, categories, status };
-  }).filter((row) => row.records.length);
+  });
 }
 
-function publicSubmissionActions(submissionGroupId, records) {
+function publicSubmissionActions(submissionGroupId, records, currentStatus) {
   const actions = [["viewSubmission", "finance", submissionGroupId, L("viewSubmission")]];
-  const pending = records.some((record) => statusKey(record.estado) === "pendingVerification");
-  if (pending) {
+  const isPending = (currentStatus && statusKey(currentStatus) === "pendingVerification") ||
+    (records && records.some((record) => statusKey(record.estado) === "pendingVerification"));
+  if (isPending) {
     actions.push(["verifyGroup", "finance", submissionGroupId, L("verify")], ["rejectGroup", "finance", submissionGroupId, L("reject")]);
   }
   return actionButtons(actions);
 }
 
 function publicSubmissionDetailHtml(submission, records) {
-  const lines = records.map((record) => `
+  const safeRecords = Array.isArray(records) && records.length ? records : [{
+    categoria_da_contribuicao: submission?.category || submission?.categoria || "Dízimos",
+    valor: Number(submission?.total_amount || submission?.valor_total || submission?.total_geral || 0),
+    id: submission?.id || "sub-1"
+  }];
+  const lines = safeRecords.map((record) => `
     <div class="public-submission-line">
-      <div><span>${L("category")}</span><strong>${record.categoria_da_contribuicao}</strong></div>
-      <div><span>${L("amount")}</span><strong>${money(record.valor)}</strong></div>
-      <div class="public-submission-line-actions">${financeActions(record.id, record)}</div>
+      <div><span>${L("category")}</span><strong>${record.categoria_da_contribuicao || record.category || "Dízimos"}</strong></div>
+      <div><span>${L("amount")}</span><strong>${money(record.valor || record.amount || 0)}</strong></div>
+      <div class="public-submission-line-actions">${record.id && !String(record.id).startsWith("virtual-") ? financeActions(record.id, record) : ""}</div>
     </div>`).join("");
-  const proof = submission?.comprovativo_url || records[0]?.imagem_envelope_ou_pop || "";
+  const proof = submission?.comprovativo_url || submission?.proof_file_url || safeRecords[0]?.imagem_envelope_ou_pop || "";
   const proofHtml = proof
     ? `<div class="mt-3"><a class="btn btn-sm btn-outline-cyan" href="${proof}" target="_blank" rel="noopener"><i class="bi bi-paperclip me-1"></i>${L("viewProof")}</a></div>`
     : "";
@@ -9476,18 +9531,18 @@ function publicSubmissionDetailHtml(submission, records) {
     <section class="finance-detail-section">
       <h4 class="finance-detail-title">${L("publicSubmission")}</h4>
       <div class="church-detail-grid">
-        <div><span>${L("name")}</span><strong>${submission?.nome_completo || fullName(records[0] || {})}</strong></div>
-        <div><span>${L("phone")}</span><strong>${submission?.telefone || records[0]?.telefone || "-"}</strong></div>
-        <div><span>${L("email")}</span><strong>${submission?.email || records[0]?.email || "-"}</strong></div>
-        <div><span>${L("church")}</span><strong>${submission?.igreja_nome || churchName(records[0]?.church_id)}</strong></div>
-        <div><span>${L("cellGroup")}</span><strong>${submission?.grupo_de_celula || records[0]?.grupo_de_celula || "-"}</strong></div>
-        <div><span>${L("cell")}</span><strong>${submission?.celula || records[0]?.celula || "-"}</strong></div>
-        <div><span>${L("method")}</span><strong>${submission?.metodo_de_pagamento || records[0]?.metodo_de_pagamento || "-"}</strong></div>
-        <div><span>${L("transactionReference")}</span><strong>${submission?.referencia_da_transaccao || records[0]?.referencia_da_transaccao || "-"}</strong></div>
-        <div><span>${L("transferDate")}</span><strong>${submission?.data_da_transferencia || records[0]?.data_da_transferencia || "-"}</strong></div>
-        <div><span>${L("grandTotal")}</span><strong>${money(submission?.total_geral || records.reduce((sum, record) => sum + Number(record.valor || 0), 0))}</strong></div>
-        <div><span>${L("sourceType")}</span><strong>${financeOriginBadge(records[0] || {})}</strong></div>
-        <div><span>${L("status")}</span><strong>${badge(records[0]?.estado || FINANCE_STATUS_PENDING)}</strong></div>
+        <div><span>${L("name")}</span><strong>${submission?.full_name || submission?.nome_completo || fullName(safeRecords[0] || {})}</strong></div>
+        <div><span>${L("phone")}</span><strong>${submission?.phone || submission?.telefone || safeRecords[0]?.telefone || "-"}</strong></div>
+        <div><span>${L("email")}</span><strong>${submission?.email || safeRecords[0]?.email || "-"}</strong></div>
+        <div><span>${L("church")}</span><strong>${submission?.church_name || submission?.igreja_nome || churchName(submission?.church_id || submission?.igreja_id || safeRecords[0]?.church_id)}</strong></div>
+        <div><span>${L("cellGroup")}</span><strong>${submission?.cell_group_name || submission?.grupo_de_celula || safeRecords[0]?.grupo_de_celula || "-"}</strong></div>
+        <div><span>${L("cell")}</span><strong>${submission?.cell_name || submission?.celula || safeRecords[0]?.celula || "-"}</strong></div>
+        <div><span>${L("method")}</span><strong>${submission?.payment_method || submission?.metodo_de_pagamento || safeRecords[0]?.metodo_de_pagamento || "-"}</strong></div>
+        <div><span>${L("transactionReference")}</span><strong>${submission?.payment_reference || submission?.referencia_da_transaccao || safeRecords[0]?.referencia_da_transaccao || "-"}</strong></div>
+        <div><span>${L("transferDate")}</span><strong>${submission?.payment_date || submission?.data_da_transferencia || safeRecords[0]?.data_da_transferencia || safeRecords[0]?.data || "-"}</strong></div>
+        <div><span>${L("grandTotal")}</span><strong>${money(submission?.total_amount || submission?.valor_total || submission?.total_geral || safeRecords.reduce((sum, record) => sum + Number(record.valor || record.amount || 0), 0))}</strong></div>
+        <div><span>${L("sourceType")}</span><strong>${financeOriginBadge(safeRecords[0] || { source: "public_website", source_type: "public_website" })}</strong></div>
+        <div><span>${L("status")}</span><strong>${badge(submission?.status || safeRecords[0]?.estado || FINANCE_STATUS_PENDING)}</strong></div>
       </div>
       ${proofHtml}
     </section>
@@ -9495,56 +9550,95 @@ function publicSubmissionDetailHtml(submission, records) {
       <h4 class="finance-detail-title">${L("contributionLines")}</h4>
       <div class="public-submission-lines">${lines}</div>
     </section>
-    ${submission?.mensagem_transferencia || records[0]?.mensagem_transferencia ? `
+    ${submission?.mensagem_transferencia || safeRecords[0]?.mensagem_transferencia ? `
       <section class="finance-detail-section">
         <h4 class="finance-detail-title">${L("transferMessage")}</h4>
-        <p class="public-submission-message">${escapeFinanceHtml(submission?.mensagem_transferencia || records[0]?.mensagem_transferencia)}</p>
+        <p class="public-submission-message">${escapeFinanceHtml(submission?.mensagem_transferencia || safeRecords[0]?.mensagem_transferencia)}</p>
       </section>` : ""}
-    ${submission?.observacoes || records[0]?.observacoes ? `
+    ${submission?.notes || submission?.observacoes || safeRecords[0]?.observacoes ? `
       <section class="finance-detail-section">
         <h4 class="finance-detail-title">${L("observations")}</h4>
-        <p class="public-submission-message">${escapeFinanceHtml(submission?.observacoes || records[0]?.observacoes)}</p>
+        <p class="public-submission-message">${escapeFinanceHtml(submission?.notes || submission?.observacoes || safeRecords[0]?.observacoes)}</p>
       </section>` : ""}`;
 }
 
 function openPublicSubmissionDrawer(mode, submissionGroupId) {
   financeDrawerMode = mode;
   financeDrawerRecordId = submissionGroupId;
-  const submission = typeof getPublicSubmission === "function" ? getPublicSubmission(state, submissionGroupId) : null;
-  const records = scoped(getSubmissionGroupRecords(state, submissionGroupId)).map((record) => migrateFinanceRecord(record));
+  const submission = (state.publicGivingSubmissions || []).find(
+    (s) => s.submission_group_id === submissionGroupId || s.id === submissionGroupId
+  ) || (typeof getPublicSubmission === "function" ? getPublicSubmission(state, submissionGroupId) : null);
+  let records = scoped(getSubmissionGroupRecords(state, submissionGroupId)).map((record) => migrateFinanceRecord(record));
+  if (!records.length && submission && typeof financeRecordsFromPublicSubmission === "function") {
+    records = financeRecordsFromPublicSubmission(submission);
+  }
+  if (!records.length && submission) {
+    const contribs = Array.isArray(submission.contributions) ? submission.contributions
+      : Array.isArray(submission.contribuicoes) ? submission.contribuicoes : [];
+    const lines = contribs.length ? contribs : [{
+      category: submission.category || submission.categoria || "Dízimos",
+      amount: submission.total_amount || submission.valor_total || submission.amount || 0,
+    }];
+    records = lines.map((line, idx) => ({
+      id: `virtual-pub-${submissionGroupId}-${idx + 1}`,
+      submission_group_id: submissionGroupId,
+      public_submission_id: submission.id,
+      source: "public_website",
+      source_type: "public_website",
+      nome: submission.nome || (submission.full_name || submission.nome_completo || "").split(" ")[0] || "Contributor",
+      apelido: submission.apelido || (submission.full_name || submission.nome_completo || "").split(" ").slice(1).join(" ") || "",
+      telefone: submission.telefone || submission.phone || "",
+      email: submission.email || "",
+      church_id: submission.church_id || submission.igreja_id || "",
+      categoria_da_contribuicao: line.category || line.categoria || "Dízimos",
+      valor: Number(line.amount || line.valor || 0),
+      metodo_de_pagamento: submission.metodo_de_pagamento || submission.payment_method || "Transferência",
+      data: submission.data_da_transferencia || submission.payment_date || new Date().toISOString().slice(0, 10),
+      estado: submission.status || submission.estado || FINANCE_STATUS_PENDING,
+    }));
+  }
   const drawer = byId("financeDrawer");
   const backdrop = byId("financeDrawerBackdrop");
   const body = byId("financeDrawerBody");
   const foot = byId("financeDrawerFoot");
-  if (!drawer || !backdrop || !body || !foot || !records.length) return;
+  if (!drawer || !backdrop || !body || !foot) return;
+
+  const displayName = submission?.full_name || submission?.nome_completo || fullName(records[0] || {});
 
   if (mode === "viewSubmission") {
     byId("financeDrawerEyebrow").textContent = L("publicSubmission");
-    byId("financeDrawerTitle").textContent = submission?.nome_completo || fullName(records[0]);
+    byId("financeDrawerTitle").textContent = displayName;
     body.innerHTML = publicSubmissionDetailHtml(submission, records);
-    const pending = records.some((record) => statusKey(record.estado) === "pendingVerification");
+    const pending = (submission?.status && statusKey(submission.status) === "pendingVerification") ||
+      records.some((record) => statusKey(record.estado) === "pendingVerification");
     foot.innerHTML = `<button type="button" class="btn btn-outline-glass" data-finance-drawer-close>${L("cancel")}</button>
       ${pending ? `<button type="button" class="btn btn-ce-gold" data-action="verifyGroup" data-type="finance" data-id="${submissionGroupId}">${L("verify")}</button>
       <button type="button" class="btn btn-outline-danger" data-action="rejectGroup" data-type="finance" data-id="${submissionGroupId}">${L("reject")}</button>` : ""}`;
   } else if (mode === "verifyGroup") {
     byId("financeDrawerEyebrow").textContent = L("verifyFinance");
-    byId("financeDrawerTitle").textContent = submission?.nome_completo || fullName(records[0]);
+    byId("financeDrawerTitle").textContent = displayName;
     body.innerHTML = `${publicSubmissionDetailHtml(submission, records)}
       <form id="financeDrawerForm" class="row g-3 mt-2">
-        ${fieldControl(["comentario_verificacao", "verificationComment", "textarea-optional"], records[0])}
+        ${fieldControl(["comentario_verificacao", "verificationComment", "textarea-optional"], records[0] || {})}
       </form>`;
     foot.innerHTML = `<button type="button" class="btn btn-outline-glass" data-finance-drawer-close>${L("cancel")}</button>
       <button type="submit" form="financeDrawerForm" class="btn btn-ce-gold">${L("verify")}</button>`;
   } else if (mode === "rejectGroup") {
     byId("financeDrawerEyebrow").textContent = L("rejectFinance");
-    byId("financeDrawerTitle").textContent = submission?.nome_completo || fullName(records[0]);
+    byId("financeDrawerTitle").textContent = displayName;
     body.innerHTML = `${publicSubmissionDetailHtml(submission, records)}
       <form id="financeDrawerForm" class="row g-3 mt-2">
-        ${fieldControl(["motivo_rejeicao", "rejectionReason", "textarea"], records[0])}
+        ${fieldControl(["motivo_rejeicao", "rejectionReason", "textarea"], records[0] || {})}
       </form>`;
     foot.innerHTML = `<button type="button" class="btn btn-outline-glass" data-finance-drawer-close>${L("cancel")}</button>
       <button type="submit" form="financeDrawerForm" class="btn btn-outline-danger">${L("reject")}</button>`;
   }
+
+  drawer.classList.remove("d-none");
+  backdrop.classList.remove("d-none");
+  requestAnimationFrame(() => drawer.classList.add("is-open"));
+  drawer.setAttribute("aria-hidden", "false");
+}
 
   drawer.classList.remove("d-none");
   backdrop.classList.remove("d-none");
@@ -19370,15 +19464,15 @@ function renderFinance() {
   const publicTable = dataTable(
     [L("contributor"), L("category"), L("amount"), L("method"), L("date"), L("church"), L("sourceType"), L("status"), L("actions")],
     publicRows.map((row) => [
-      row.submission.nome_completo || fullName(row.records[0] || {}),
+      row.submission?.full_name || row.submission?.nome_completo || fullName(row.records[0] || {}),
       row.categories || "-",
       money(row.total),
-      row.submission.metodo_de_pagamento || row.records[0]?.metodo_de_pagamento || "-",
-      row.submission.data_da_transferencia || row.records[0]?.data || "-",
-      row.submission.igreja_nome || churchName(row.records[0]?.church_id),
-      financeOriginBadge(row.records[0] || {}),
+      row.submission?.payment_method || row.submission?.metodo_de_pagamento || row.records[0]?.metodo_de_pagamento || "-",
+      row.submission?.payment_date || row.submission?.data_da_transferencia || row.records[0]?.data || "-",
+      row.submission?.church_name || row.submission?.igreja_nome || churchName(row.submission?.church_id || row.submission?.igreja_id || row.records[0]?.church_id),
+      financeOriginBadge(row.records[0] || { source: "public_website", source_type: "public_website" }),
       badge(row.status),
-      publicSubmissionActions(row.submission.submission_group_id, row.records)
+      publicSubmissionActions(row.submission?.submission_group_id || row.submission?.id, row.records, row.status)
     ])
   );
 
