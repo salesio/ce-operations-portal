@@ -9640,12 +9640,6 @@ function openPublicSubmissionDrawer(mode, submissionGroupId) {
   drawer.setAttribute("aria-hidden", "false");
 }
 
-  drawer.classList.remove("d-none");
-  backdrop.classList.remove("d-none");
-  requestAnimationFrame(() => drawer.classList.add("is-open"));
-  drawer.setAttribute("aria-hidden", "false");
-}
-
 async function syncFinanceFromSupabaseIfEnabled() {
   if (!window.CESupabaseBridge?.isEnabled?.()) return false;
   const churchIds = activeUser.can_view_all_churches
