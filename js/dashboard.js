@@ -3907,131 +3907,7 @@ let modalMode = null;
 let modalType = null;
 let currentSessionVisitors = [];
 
-function normalizeMediaMockData() {
-  const media = state.media || {};
-  const technicianNames = {
-    "mt-1": "Marcelo Panguene",
-    "mt-2": "Técnico A",
-    "mt-3": "Técnico B",
-    "mt-4": "Técnico C",
-    "mt-5": "Técnico D",
-    "mt-6": "Técnico E",
-    "mt-7": "Técnico F"
-  };
-  const roleNames = {
-    "mr-1": "Operador de Câmara",
-    "mr-2": "Fotógrafo",
-    "mr-3": "Técnico de Som",
-    "mr-4": "Operador de Video Mixer",
-    "mr-5": "Técnico de Transmissão",
-    "mr-6": "Lançador de Escrituras",
-    "mr-7": "Supervisor de Mídia",
-    "mr-8": "Director de Mídia",
-    "mr-9": "Operador de ProPresenter / EasyWorship",
-    "mr-10": "Operador de Slides",
-    "mr-11": "Assistente Técnico",
-    "mr-12": "Iluminação",
-    "mr-13": "Edição de Vídeo",
-    "mr-14": "Social Media / Publicação"
-  };
-  const roleDescriptions = {
-    "mr-1": "Opera câmaras durante cultos e programas.",
-    "mr-2": "Regista momentos para arquivo e comunicação.",
-    "mr-3": "Gere som, microfones e captação.",
-    "mr-4": "Opera switcher/video mixer.",
-    "mr-5": "Configura e monitoriza transmissões.",
-    "mr-6": "Projecta escrituras, letras e slides.",
-    "mr-7": "Coordena a equipa em cada culto.",
-    "mr-8": "Responsável pelo ministério de mídia.",
-    "mr-9": "Opera letras, escrituras e slides de apoio ao culto.",
-    "mr-10": "Apoia projecção de apresentações e conteúdos visuais.",
-    "mr-11": "Apoia montagem, cabos, comunicação e substituições.",
-    "mr-12": "Gere luzes e ambiente visual do culto.",
-    "mr-13": "Edita clips, mensagens e conteúdo pós-culto.",
-    "mr-14": "Publica clips, chamadas e destaques nas redes sociais."
-  };
-  const roleCategories = {
-    "mr-7": "Liderança",
-    "mr-8": "Liderança",
-    "mr-13": "Pós-produção",
-    "mr-14": "Comunicação"
-  };
-  const skillLevels = {
-    "mr-1": "Intermédio",
-    "mr-2": "Intermédio",
-    "mr-3": "Avançado",
-    "mr-4": "Avançado",
-    "mr-5": "Avançado",
-    "mr-6": "Intermédio",
-    "mr-9": "Intermédio",
-    "mr-12": "Intermédio",
-    "mr-13": "Intermédio",
-    "mr-14": "Intermédio"
-  };
-  (media.technicians || []).forEach((item) => {
-    item.full_name = technicianNames[item.id] || item.full_name;
-    item.department_name = "Mídia";
-    item.title = item.id === "mt-4" || item.id === "mt-5" ? "Irmã" : (item.title === "Sr." ? "Sr." : "Irmão");
-    if (item.skill_level && /Avan|Interm|Supervisor|Iniciante/i.test(item.skill_level)) {
-      item.skill_level = item.skill_level.replace(/Avan.*/i, "Avançado").replace(/Interm.*/i, "Intermédio");
-    }
-  });
-  (media.roles || []).forEach((item) => {
-    item.name = roleNames[item.id] || item.name;
-    item.description = roleDescriptions[item.id] || item.description;
-    item.category = roleCategories[item.id] || item.category;
-    item.required_skill_level = skillLevels[item.id] || item.required_skill_level;
-  });
-  (media.services || []).forEach((item) => {
-    if (item.id === "ms-2") item.name = "Domingo 1º Culto";
-    if (item.id === "ms-3") item.name = "Domingo 2º Culto";
-    if (item.id === "ms-4") {
-      item.name = "Orações";
-      item.service_type = "Oração";
-    }
-    if (item.id === "ms-6") item.notes = "Programa especial requer equipa de mídia.";
-  });
-  (media.schedules || []).forEach((schedule) => {
-    if (schedule.service_id === "ms-3") schedule.service_name = "Domingo 2º Culto";
-    (schedule.assignments || []).forEach((assignment) => {
-      assignment.role_name = roleNames[assignment.role_id] || assignment.role_name;
-      assignment.technician_name = technicianNames[assignment.technician_id] || assignment.technician_name;
-      if (assignment.notes && /C.mara/i.test(assignment.notes)) assignment.notes = "Câmara 1";
-    });
-  });
-  (media.streamingChannels || []).forEach((item) => {
-    if (item.id === "mc-2") item.notes = "Cultos e arquivo de vídeos.";
-    if (item.id === "mc-4") item.notes = "Orações e Master Class.";
-    if (item.id === "mc-5") {
-      item.name = "Live TV no Site Público";
-      item.status = "Em Preparação";
-      item.notes = "Transmissão directa para a página LIVE TV do site público.";
-    }
-  });
-  (media.performanceEvaluations || []).forEach((item) => {
-    item.technician_name = technicianNames[item.technician_id] || item.technician_name;
-    if (item.role_performed && item.technician_id === "mt-2") item.role_performed = "Operador de Câmara";
-    if (item.technician_id === "mt-1") {
-      item.role_performed = "Supervisor de Mídia";
-      item.strengths = "Liderança e estabilidade técnica.";
-    }
-  });
-  (media.awards || []).forEach((item) => {
-    item.technician_name = technicianNames[item.technician_id] || item.technician_name;
-    if (item.id === "maw-1") {
-      item.category = "Técnico do Ano";
-      item.reason = "Excelência na supervisão e transmissão.";
-      item.score_basis = "Média 5/5 + presença consistente";
-    }
-    if (item.id === "maw-2") {
-      item.category = "Mais Pontual";
-      item.reason = "Alta pontualidade nas escalas.";
-      item.score_basis = "Presença pontual";
-    }
-  });
-}
-
-normalizeMediaMockData();
+// Media mock normalization removed to prevent overwriting Supabase / user edits
 let modalRecordId = null;
 let churchDrawerMode = null;
 let churchDrawerRecordId = null;
@@ -37676,63 +37552,29 @@ async function hydrateMediaFromRepository() {
       const result = await listFn();
       if (!result?.ok || !Array.isArray(result.data)) return;
       const fetched = result.data.map((row) => (mapRow ? mapRow(row) : row));
-      const existing = Array.isArray(state.media[key]) ? state.media[key] : [];
-      
-      const combined = [];
-      const seenIds = new Set();
-      const seenNames = new Set();
-
-      for (const fItem of fetched) {
-        if (!fItem) continue;
-        const idStr = String(fItem.id || "");
-        const nameStr = String(fItem.slug || fItem.name || fItem.key || fItem.full_name || "").toLowerCase().trim();
-
-        const localMatch = existing.find((e) => (idStr && String(e.id) === idStr) || (nameStr && String(e.slug || e.name || e.key || e.full_name || "").toLowerCase().trim() === nameStr));
-
-        if (localMatch) {
-          const localUpdated = localMatch.updated_at ? new Date(localMatch.updated_at).getTime() : 0;
-          const remoteUpdated = fItem.updated_at ? new Date(fItem.updated_at).getTime() : 0;
-          if (localUpdated >= remoteUpdated) {
-            combined.push({ ...fItem, ...localMatch, id: fItem.id || localMatch.id });
-          } else {
-            combined.push({ ...localMatch, ...fItem });
-          }
-        } else {
-          combined.push(fItem);
-        }
-        if (idStr) seenIds.add(idStr);
-        if (nameStr) seenNames.add(nameStr);
-      }
-
-      for (const eItem of existing) {
-        if (!eItem) continue;
-        const idStr = String(eItem.id || "");
-        const nameStr = String(eItem.slug || eItem.name || eItem.key || eItem.full_name || "").toLowerCase().trim();
-        if (idStr && seenIds.has(idStr)) continue;
-        if (nameStr && seenNames.has(nameStr)) continue;
-        combined.push(eItem);
-        if (idStr) seenIds.add(idStr);
-        if (nameStr) seenNames.add(nameStr);
-      }
-
-      state.media[key] = combined;
+      state.media[key] = fetched;
       hydrated = true;
     }
 
     await merge(repo.listMediaTeam?.bind(repo), "technicians", (row) => ({
       ...row,
-      full_name: row.full_name || row.fullName,
+      full_name: row.full_name || row.fullName || row.name || "",
+      roles_can_perform: Array.isArray(row.roles_can_perform) ? row.roles_can_perform : (row.skills || (row.media_role_name ? [row.media_role_name] : [])),
+      skill_level: row.skill_level || row.skillLevel || "Intermédio",
       status: row.status || "Activo",
     }));
     await merge(repo.listMediaRoles?.bind(repo), "roles", (row) => ({
       ...row,
       name: row.name || row.role || row.key || "",
       description: row.description || row.notes || "",
+      category: row.category || "Other",
+      required_skill_level: row.required_skill_level || "Intermédio",
       status: row.status || "Activo",
     }));
     await merge(repo.listMediaServices?.bind(repo), "services", (row) => ({
       ...row,
-      time: row.time || row.start_time,
+      name: row.name || row.service_name || "",
+      time: row.time || row.start_time || "",
       status: row.status || "Activo",
     }));
     await merge(repo.listMediaSchedules?.bind(repo), "schedules", (row) => ({
@@ -37761,6 +37603,13 @@ async function hydrateMediaFromRepository() {
     if (hydrated) {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        localStorage.setItem("ce-data-layer:media-team", JSON.stringify(state.media.technicians));
+        localStorage.setItem("ce-data-layer:media-roles", JSON.stringify(state.media.roles));
+        localStorage.setItem("ce-data-layer:media-services", JSON.stringify(state.media.services));
+        localStorage.setItem("ce-data-layer:media-schedules", JSON.stringify(state.media.schedules));
+        localStorage.setItem("ce-data-layer:media-channels", JSON.stringify(state.media.streamingChannels));
+        localStorage.setItem("ce-data-layer:media-performance", JSON.stringify(state.media.performanceEvaluations));
+        localStorage.setItem("ce-data-layer:media-awards", JSON.stringify(state.media.awards));
       } catch (_) {}
       if ((activeRoute === "media" || (typeof activeRoute === "string" && activeRoute.startsWith("media"))) && typeof renderMedia === "function") {
         const tab = activeRoute === "mediaTeamRoute" ? "team"

@@ -50,9 +50,33 @@ function assertPublicChannelPayload(input: MediaRecord): DataResult<true> {
 
 function aliases(table: Table, raw: MediaRecord): MediaRecord {
   const row = { ...raw };
-  if (table === "roles") Object.assign(row, { key: row.slug || row.name, role: row.name, is_active: row.status === "Active" });
+  if (table === "roles") {
+    const meta = (row.metadata && typeof row.metadata === "object" ? row.metadata : {}) as Record<string, unknown>;
+    Object.assign(row, {
+      key: row.slug || row.name,
+      role: row.name,
+      is_active: row.status === "Active" || row.status === "Activo",
+      status: row.status || "Activo",
+      description: row.description || (meta.description as string) || "",
+      category: row.category || (meta.category as string) || "Other",
+      required_skill_level: (meta.required_skill_level as string) || "Intermédio",
+    });
+  }
   if (table === "team") {
-    const rolesList = Array.isArray(row.skills) ? row.skills : (row.skills ? [row.skills] : (row.media_role_name ? [row.media_role_name] : []));
+    const meta = (row.metadata && typeof row.metadata === "object" ? row.metadata : {}) as Record<string, unknown>;
+    let rolesList: string[] = [];
+    if (Array.isArray(row.skills)) {
+      rolesList = row.skills as string[];
+    } else if (typeof row.skills === "string" && row.skills) {
+      try {
+        const parsed = JSON.parse(row.skills);
+        rolesList = Array.isArray(parsed) ? parsed : [row.skills];
+      } catch (_) {
+        rolesList = [row.skills];
+      }
+    } else if (row.media_role_name) {
+      rolesList = [row.media_role_name as string];
+    }
     Object.assign(row, {
       primary_role_id: row.media_role_id,
       primary_role_name: row.media_role_name,
@@ -60,6 +84,16 @@ function aliases(table: Table, raw: MediaRecord): MediaRecord {
       roles_can_perform: rolesList,
       equipment_assigned_ids: row.assigned_equipment_ids,
       fullName: row.full_name,
+      phone: row.phone || "",
+      email: row.email || "",
+      church_id: row.church_id || "",
+      church_name: row.church_name || "",
+      status: row.status || "Activo",
+      skill_level: (meta.skill_level as string) || (meta.skillLevel as string) || "Intermédio",
+      title: (meta.title as string) || "",
+      whatsapp: (meta.whatsapp as string) || row.phone || "",
+      preferred_services: (meta.preferred_services as string[]) || ["Todos"],
+      availability_notes: (meta.availability_notes as string) || row.notes || "",
     });
   }
   if (table === "services") Object.assign(row, { name: row.service_name, needs_streaming: row.requires_streaming, responsible_name: row.media_lead_name, event_date: row.service_date });
@@ -98,15 +132,30 @@ function payload(table: Table, raw: MediaRecord): SupabaseRow {
   if (table === "roles") {
     const nameStr = String(row.name || row.role || row.key || "").trim();
     row.name = nameStr || String(row.name || "");
-    row.slug ??= row.key || (nameStr ? nameStr.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") : `role-${Date.now()}`);
-    row.status ??= row.is_active === false ? "Inactive" : "Active";
-    row.category ??= "Other";
+    row.slug = row.slug || row.key || (nameStr ? nameStr.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") : `role-${Date.now()}`);
+    row.status = row.status || (row.is_active === false ? "Inactive" : "Active");
+    row.category = row.category || "Other";
+    row.description = row.description || "";
+    row.metadata = {
+      ...((row.metadata as Record<string, unknown>) || {}),
+      required_skill_level: row.required_skill_level || "Intermédio",
+      category: row.category,
+      description: row.description,
+    };
   } else if (table === "team") {
     row.full_name = row.full_name || row.fullName || row.name || "";
-    row.media_role_id ??= row.primary_role_id;
-    row.media_role_name ??= row.primary_role_name ?? row.primary_role ?? (Array.isArray(row.roles_can_perform) ? (row.roles_can_perform as string[])[0] : row.role);
-    row.skills ??= Array.isArray(row.roles_can_perform) ? row.roles_can_perform : (row.roles_can_perform ? [row.roles_can_perform] : (row.media_role_name ? [row.media_role_name] : []));
-    row.assigned_equipment_ids ??= row.equipment_assigned_ids;
+    row.media_role_id = row.media_role_id || row.primary_role_id;
+    row.media_role_name = row.media_role_name || row.primary_role_name || row.primary_role || (Array.isArray(row.roles_can_perform) ? (row.roles_can_perform as string[])[0] : row.role);
+    row.skills = Array.isArray(row.roles_can_perform) ? row.roles_can_perform : (row.roles_can_perform ? [row.roles_can_perform] : (row.media_role_name ? [row.media_role_name] : []));
+    row.assigned_equipment_ids = row.assigned_equipment_ids || row.equipment_assigned_ids || [];
+    row.metadata = {
+      ...((row.metadata as Record<string, unknown>) || {}),
+      skill_level: row.skill_level || "Intermédio",
+      title: row.title || "",
+      whatsapp: row.whatsapp || row.phone || "",
+      preferred_services: row.preferred_services || [],
+      availability_notes: row.availability_notes || row.notes || "",
+    };
   } else if (table === "services") {
     row.service_name ??= row.name; row.requires_streaming ??= row.needs_streaming;
     row.media_lead_name ??= row.responsible_name; row.service_date ??= row.event_date;
@@ -150,17 +199,9 @@ function payload(table: Table, raw: MediaRecord): SupabaseRow {
   return Object.fromEntries(Object.entries(row).filter(([key, value]) => COLUMNS[table].includes(key) && value !== undefined)) as SupabaseRow;
 }
 
-function isDemoMediaRow(row: MediaRecord): boolean {
-  if (!row) return false;
-  if (typeof row.full_name === "string" && row.full_name.toLowerCase().includes("demo")) return true;
-  if (typeof row.service_code === "string" && row.service_code.toLowerCase().includes("demo")) return true;
-  if (typeof row.name === "string" && row.name.toLowerCase().includes("demo")) return true;
-  return false;
-}
-
 async function list(table: Table, filters: Record<string, string | number | boolean | null> = {}, orderBy = "created_at") {
   const result = await listRows(TABLES[table], { filters, orderBy, ascending: orderBy.endsWith("_date") });
-  return result.ok ? ok(result.data.filter((row) => !isDemoMediaRow(row)).map((row) => aliases(table, row))) : cast<MediaRecord[]>(result);
+  return result.ok ? ok(result.data.map((row) => aliases(table, row))) : cast<MediaRecord[]>(result);
 }
 async function get(table: Table, id: EntityId) {
   const result = await getRowById(TABLES[table], String(id));
