@@ -4399,7 +4399,12 @@ Object.assign(TEXT.en, {
   mediaDirector: "Media Director",
   technicalAssistant: "Technical Assistant",
   videoEditor: "Video Editor",
-  socialMediaPublisher: "Social Media / Publisher"
+  socialMediaPublisher: "Social Media / Publisher",
+  presentationOperator: "ProPresenter / EasyWorship Operator",
+  role: "Role",
+  description: "Description",
+  category: "Category",
+  requiredSkillLevel: "Required Skill Level"
 });
 
 Object.assign(TEXT.pt, {
@@ -4424,8 +4429,218 @@ Object.assign(TEXT.pt, {
   mediaDirector: "Director de Mídia",
   technicalAssistant: "Assistente Técnico",
   videoEditor: "Edição de Vídeo",
-  socialMediaPublisher: "Social Media / Publicação"
+  socialMediaPublisher: "Social Media / Publicação",
+  presentationOperator: "Operador de ProPresenter / EasyWorship",
+  role: "Função",
+  description: "Descrição",
+  category: "Categoria",
+  requiredSkillLevel: "Nível de Habilidade Necessário"
 });
+
+const STANDARD_MEDIA_ROLE_KEYS = {
+  "cameraoperator": "cameraOperator",
+  "camera-operator": "cameraOperator",
+  "camera operator": "cameraOperator",
+  "camera_operator": "cameraOperator",
+  "operador de câmera": "cameraOperator",
+  "operador de câmara": "cameraOperator",
+  "operador de camera": "cameraOperator",
+  "operador de camara": "cameraOperator",
+  "soundtechnician": "soundTechnician",
+  "sound-technician": "soundTechnician",
+  "sound technician": "soundTechnician",
+  "sound_technician": "soundTechnician",
+  "técnico de som": "soundTechnician",
+  "tecnico de som": "soundTechnician",
+  "videomixeroperator": "videoMixerOperator",
+  "video-mixer-operator": "videoMixerOperator",
+  "video mixer operator": "videoMixerOperator",
+  "video_mixer_operator": "videoMixerOperator",
+  "operador de video mixer": "videoMixerOperator",
+  "operador de vídeo mixer": "videoMixerOperator",
+  "streamingtechnician": "streamingTechnician",
+  "streaming-technician": "streamingTechnician",
+  "streaming technician": "streamingTechnician",
+  "streaming_technician": "streamingTechnician",
+  "streaming-operator": "streamingTechnician",
+  "streaming operator": "streamingTechnician",
+  "técnico de transmissão": "streamingTechnician",
+  "tecnico de transmissao": "streamingTechnician",
+  "slidesoperator": "slidesOperator",
+  "slides-operator": "slidesOperator",
+  "slides operator": "slidesOperator",
+  "slides_operator": "slidesOperator",
+  "operador de slides": "slidesOperator",
+  "operador de projecção / slides": "slidesOperator",
+  "operador de projeção / slides": "slidesOperator",
+  "scriptureoperator": "scriptureOperator",
+  "scripture-operator": "scriptureOperator",
+  "scripture operator": "scriptureOperator",
+  "scripture_operator": "scriptureOperator",
+  "lançador de escrituras": "scriptureOperator",
+  "lancador de escrituras": "scriptureOperator",
+  "operador de escrituras": "scriptureOperator",
+  "photographer": "photographer",
+  "fotógrafo": "photographer",
+  "fotografo": "photographer",
+  "graphicsdesigner": "graphicsDesigner",
+  "graphics-designer": "graphicsDesigner",
+  "graphics designer": "graphicsDesigner",
+  "graphics_designer": "graphicsDesigner",
+  "designer gráfico": "graphicsDesigner",
+  "designer grafico": "graphicsDesigner",
+  "lightingoperator": "lightingOperator",
+  "lighting-operator": "lightingOperator",
+  "lighting operator": "lightingOperator",
+  "lighting_operator": "lightingOperator",
+  "iluminação": "lightingOperator",
+  "iluminacao": "lightingOperator",
+  "mediasupervisor": "mediaSupervisor",
+  "media-supervisor": "mediaSupervisor",
+  "media supervisor": "mediaSupervisor",
+  "media_supervisor": "mediaSupervisor",
+  "supervisor de mídia": "mediaSupervisor",
+  "supervisor de midia": "mediaSupervisor",
+  "mediadirector": "mediaDirector",
+  "media-director": "mediaDirector",
+  "media director": "mediaDirector",
+  "media_director": "mediaDirector",
+  "director de mídia": "mediaDirector",
+  "diretor de mídia": "mediaDirector",
+  "presentationoperator": "presentationOperator",
+  "presentation-operator": "presentationOperator",
+  "presentation operator": "presentationOperator",
+  "operador de propresenter / easyworship": "presentationOperator",
+  "technicalassistant": "technicalAssistant",
+  "technical-assistant": "technicalAssistant",
+  "technical assistant": "technicalAssistant",
+  "technical_assistant": "technicalAssistant",
+  "assistente técnico": "technicalAssistant",
+  "assistente tecnico": "technicalAssistant",
+  "videoeditor": "videoEditor",
+  "video-editor": "videoEditor",
+  "video editor": "videoEditor",
+  "video_editor": "videoEditor",
+  "edição de vídeo": "videoEditor",
+  "edicao de video": "videoEditor",
+  "socialmediapublisher": "socialMediaPublisher",
+  "social-media-publisher": "socialMediaPublisher",
+  "social media publisher": "socialMediaPublisher",
+  "social_media_publisher": "socialMediaPublisher",
+  "social media / publicação": "socialMediaPublisher",
+  "social media / publicacao": "socialMediaPublisher"
+};
+
+const STANDARD_MEDIA_ROLE_DESCRIPTIONS = {
+  cameraOperator: {
+    pt: "Opera câmaras durante cultos e programas.",
+    en: "Operates cameras during services and events."
+  },
+  photographer: {
+    pt: "Regista momentos para arquivo e comunicação.",
+    en: "Captures photos for archiving and communication."
+  },
+  soundTechnician: {
+    pt: "Gere som, microfones e captação.",
+    en: "Manages audio, microphones and live capture."
+  },
+  videoMixerOperator: {
+    pt: "Opera switcher/video mixer.",
+    en: "Operates video switcher and live camera mixing."
+  },
+  streamingTechnician: {
+    pt: "Configura e monitoriza transmissões.",
+    en: "Configures and monitors live broadcasts."
+  },
+  scriptureOperator: {
+    pt: "Projecta escrituras, letras e slides.",
+    en: "Projects scriptures, lyrics and presentation slides."
+  },
+  mediaSupervisor: {
+    pt: "Coordena a equipa em cada culto.",
+    en: "Coordinates the media crew during each service."
+  },
+  mediaDirector: {
+    pt: "Responsável pelo ministério de mídia.",
+    en: "Head of the media department and overall operations."
+  },
+  presentationOperator: {
+    pt: "Opera letras, escrituras e slides de apoio ao culto.",
+    en: "Operates lyrics, scriptures and service presentation slides."
+  },
+  slidesOperator: {
+    pt: "Apoia projecção de apresentações e conteúdos visuais.",
+    en: "Assists with slide projections and visual assets."
+  },
+  technicalAssistant: {
+    pt: "Apoia montagem, cabos, comunicação e substituições.",
+    en: "Assists with setup, cabling, comms and replacements."
+  },
+  lightingOperator: {
+    pt: "Gere luzes e ambiente visual do culto.",
+    en: "Controls stage lighting and sanctuary ambience."
+  },
+  videoEditor: {
+    pt: "Edita clips, mensagens e conteúdo pós-culto.",
+    en: "Edits sermon clips, recap videos and media packages."
+  },
+  socialMediaPublisher: {
+    pt: "Publica clips, chamadas e destaques nas redes sociais.",
+    en: "Publishes highlights, reels and announcements to social media."
+  }
+};
+
+const DEPARTMENT_TRANSLATIONS = {
+  "Mídia": { pt: "Mídia", en: "Media" },
+  "Media": { pt: "Mídia", en: "Media" },
+  "Células & Liderança": { pt: "Células & Liderança", en: "Cells & Leadership" },
+  "F.E.V.O": { pt: "F.E.V.O", en: "F.E.V.O" },
+  "Finanças": { pt: "Finanças", en: "Finance" },
+  "Parcerias": { pt: "Parcerias", en: "Partnerships" },
+  "Requisições & Aprovações": { pt: "Requisições & Aprovações", en: "Requisitions & Approvals" },
+  "Espaços & Inventário": { pt: "Espaços & Inventário", en: "Venues & Inventory" },
+  "Programas & Extensão": { pt: "Programas & Extensão", en: "Programs & Outreach" },
+  "Ministério Prisional": { pt: "Ministério Prisional", en: "Prison Ministry" },
+  "Materiais do Ministério": { pt: "Materiais do Ministério", en: "Ministry Materials" },
+  "Aconselhamento Pastoral": { pt: "Aconselhamento Pastoral", en: "Pastoral Counseling" },
+  "Sacramentos": { pt: "Sacramentos", en: "Sacraments" },
+  "Escola de Fundação": { pt: "Escola de Fundação", en: "Foundation School" },
+  "ALEC (Academia de Líderes)": { pt: "ALEC (Academia de Líderes)", en: "ALEC (Leader Academy)" },
+  "Recursos Humanos & Staff": { pt: "Recursos Humanos & Staff", en: "Human Resources & Staff" },
+  "Administração": { pt: "Administração", en: "Administration" }
+};
+
+const SKILL_LEVEL_TRANSLATIONS = {
+  beginner: { pt: "Iniciante", en: "Beginner" },
+  intermediate: { pt: "Intermédio", en: "Intermediate" },
+  advanced: { pt: "Avançado", en: "Advanced" },
+  expert: { pt: "Especialista", en: "Expert" }
+};
+
+function mediaRoleDescription(item) {
+  if (!item) return "—";
+  if (typeof item === "string") {
+    const raw = item.trim();
+    const normKey = raw.toLowerCase();
+    const transKey = STANDARD_MEDIA_ROLE_KEYS[normKey];
+    if (transKey && STANDARD_MEDIA_ROLE_DESCRIPTIONS[transKey]) {
+      const curLang = typeof lang !== "undefined" ? lang : "pt";
+      return STANDARD_MEDIA_ROLE_DESCRIPTIONS[transKey][curLang] || STANDARD_MEDIA_ROLE_DESCRIPTIONS[transKey].pt;
+    }
+    return cleanDisplayText(raw);
+  }
+  const rawKey = item.slug || item.role_key || item.key || item.name || "";
+  const normKey = String(rawKey).trim().toLowerCase();
+  const transKey = STANDARD_MEDIA_ROLE_KEYS[normKey] || (typeof mediaRoleKey === "function" ? STANDARD_MEDIA_ROLE_KEYS[String(mediaRoleKey(item) || "").toLowerCase()] : null);
+  if (transKey && STANDARD_MEDIA_ROLE_DESCRIPTIONS[transKey]) {
+    const curLang = typeof lang !== "undefined" ? lang : "pt";
+    return STANDARD_MEDIA_ROLE_DESCRIPTIONS[transKey][curLang] || STANDARD_MEDIA_ROLE_DESCRIPTIONS[transKey].pt;
+  }
+  const curLang = typeof lang !== "undefined" ? lang : "pt";
+  if (curLang === "en" && item.description_en) return cleanDisplayText(item.description_en);
+  if (item.description || item.descricao || item.notes) return cleanDisplayText(item.description || item.descricao || item.notes);
+  return "—";
+}
 
 function preserveCase(match, target) {
   if (!match || !target) return target || "";
@@ -4439,109 +4654,121 @@ function preserveCase(match, target) {
 function cleanDisplayText(value) {
   let text = String(value ?? "");
   if (!text) return text;
-  if (/[ÃÂâï¿½\uFFFD]/.test(text)) {
+
+  // Fix true double-encoded UTF-8 mojibake (e.g. Ã¡ -> á, Ã© -> é, Ã£ -> ã, Ã§ -> ç)
+  if (/[\u00C2\u00C3][\u0080-\u00BF]/.test(text)) {
     try {
       const bytes = Uint8Array.from([...text].map((char) => char.charCodeAt(0) & 255));
-      const decoded = new TextDecoder("utf-8", { fatal: false }).decode(bytes);
-      if (decoded && !/\uFFFD/.test(decoded.replace(/\uFFFD/g, ""))) text = decoded;
-      else if ((decoded.match(/[A-Za-zÀ-ÿ]/g) || []).length >= (text.match(/[A-Za-z]/g) || []).length * 0.7) text = decoded;
-    } catch (error) {
-      // Keep original
+      const decoded = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+      if (decoded && !/\uFFFD/.test(decoded)) {
+        text = decoded;
+      }
+    } catch (_) {}
+  }
+
+  // In Portuguese mode, fix broken tokens containing replacement chars or specific corrupted patterns
+  const curLang = typeof lang !== "undefined" ? lang : "pt";
+  if (curLang === "pt") {
+    const ptFixes = [
+      [/c[\uFFFD\?]?[\u00E2\u00E3a]mar[ao]s/gi, (m) => preserveCase(m, "câmaras")],
+      [/c[\uFFFD\?]?[\u00E2\u00E3a]mara\b/gi, (m) => preserveCase(m, "câmara")],
+      [/t[\uFFFD\?]?[\u00E9e]cnic[ao]s/gi, (m) => preserveCase(m, "técnicos")],
+      [/t[\uFFFD\?]?[\u00E9e]cnico\b/gi, (m) => preserveCase(m, "técnico")],
+      [/t[\uFFFD\?]?[\u00E9e]cnica\b/gi, (m) => preserveCase(m, "técnica")],
+      [/m[\uFFFD\?]?[\u00EDi]dias?/gi, (m) => preserveCase(m, "mídia")],
+      [/m[\uFFFD\?]?[\u00F3o]dulos?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "módulos" : "módulo")],
+      [/m[\uFFFD\?]?[\u00E9e]todos?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "métodos" : "método")],
+      [/m[\uFFFD\?]?[\u00E9e]tricas?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "métricas" : "métrica")],
+      [/\bm[\uFFFD\?]?[\u00EAs]s?\b/gi, (m) => preserveCase(m, "mês")],
+      [/\bm[\uFFFD\?]?[\u00E3a]es?\b/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "mães" : "mãe")],
+      [/\bn[\uFFFD\?]?[\u00E3a]o\b/gi, (m) => preserveCase(m, "não")],
+      [/\bj[\uFFFD\?]?[\u00E1a]\b/gi, (m) => preserveCase(m, "já")],
+      [/\bat[\uFFFD\?]?[\u00E9e]\b/gi, (m) => preserveCase(m, "até")],
+      [/pr[\uFFFD\?]?[\u00F3o]xim[ao]s?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("a") ? "próxima" : m.toLowerCase().endsWith("as") ? "próximas" : m.toLowerCase().endsWith("os") ? "próximos" : "próximo")],
+      [/hist[\uFFFD\?]?[\u00F3o]ric[ao]s?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "históricos" : "histórico")],
+      [/prot[\uFFFD\?]?[\u00F3o]tipos?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "protótipos" : "protótipo")],
+      [/c[\uFFFD\?]?[\u00E9e]lulas?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "células" : "célula")],
+      [/pap[\uFFFD\?]?[\u00E9e]is/gi, (m) => preserveCase(m, "papéis")],
+      [/fun[\uFFFD\?c\u00E7]+[\u00F5o\uFFFD\?]+es/gi, (m) => preserveCase(m, "funções")],
+      [/fun[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "função")],
+      [/permiss[\uFFFD\?o\u00F5]+es/gi, (m) => preserveCase(m, "permissões")],
+      [/notifica[\uFFFD\?c\u00E7]+[\u00F5o\uFFFD\?]+es/gi, (m) => preserveCase(m, "notificações")],
+      [/autentica[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "autenticação")],
+      [/integra[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "integração")],
+      [/funda[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "fundação")],
+      [/finan[\uFFFD\?c\u00E7]+as/gi, (m) => preserveCase(m, "finanças")],
+      [/vis[\uFFFD\?a\u00E3]+o/gi, (m) => preserveCase(m, "visão")],
+      [/miss[\uFFFD\?a\u00E3]+o/gi, (m) => preserveCase(m, "missão")],
+      [/ora[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "oração")],
+      [/visita[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "visitação")],
+      [/evangeliza[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "evangelização")],
+      [/forma[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "formação")],
+      [/pris[\uFFFD\?a\u00E3]+o/gi, (m) => preserveCase(m, "prisão")],
+      [/espa[\uFFFD\?c\u00E7]+os?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "espaços" : "espaço")],
+      [/movimenta[\uFFFD\?c\u00E7]+[\u00F5o\uFFFD\?]+es/gi, (m) => preserveCase(m, "movimentações")],
+      [/aquisi[\uFFFD\?c\u00E7]+[\u00F5o\uFFFD\?]+es/gi, (m) => preserveCase(m, "aquisições")],
+      [/aten[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "atenção")],
+      [/descri[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "descrição")],
+      [/observa[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "observação")],
+      [/classifica[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "classificação")],
+      [/corre[c\uFFFD\?]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "correcção")],
+      [/devolu[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "devolução")],
+      [/evolu[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "evolução")],
+      [/sal[\uFFFD\?a\u00E1]rios?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "salários" : "salário")],
+      [/sa[\uFFFD\?i\u00ED]das?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "saídas" : "saída")],
+      [/\b[\uFFFD\?]?ltim[ao]s?\b/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("a") ? "última" : m.toLowerCase().endsWith("as") ? "últimas" : "último")],
+      [/\b[\uFFFD\?]?reas?\b/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "áreas" : "área")],
+      [/\b[\uFFFD\?]?mbitos?\b/gi, (m) => preserveCase(m, "âmbito")],
+      [/relat[\uFFFD\?o\u00F3]rios?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "relatórios" : "relatório")],
+      [/neg[\uFFFD\?o\u00F3]cios?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "negócios" : "negócio")],
+      [/lideran[\uFFFD\?c\u00E7]+as?/gi, (m) => preserveCase(m, "liderança")],
+      [/sess[\uFFFD\?o\u00F5]+es/gi, (m) => preserveCase(m, "sessões")],
+      [/sess[\uFFFD\?a\u00E3]+o/gi, (m) => preserveCase(m, "sessão")],
+      [/compar[\uFFFD\?e\u00EA]ncias?/gi, (m) => preserveCase(m, "comparência")],
+      [/quest[\uFFFD\?a\u00E3]+o/gi, (m) => preserveCase(m, "questão")],
+      [/decis[\uFFFD\?a\u00E3]+o/gi, (m) => preserveCase(m, "decisão")],
+      [/orienta[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "orientação")],
+      [/resolu[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "resolução")],
+      [/manuten[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "manutenção")],
+      [/repara[\uFFFD\?c\u00E7]+[\u00F5o\uFFFD\?]+es/gi, (m) => preserveCase(m, "reparações")],
+      [/invent[\uFFFD\?a\u00E1]rios?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "inventários" : "inventário")],
+      [/requisi[\uFFFD\?c\u00E7]+[\u00F5o\uFFFD\?]+es/gi, (m) => preserveCase(m, "requisições")],
+      [/requisi[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "requisição")],
+      [/submiss[\uFFFD\?a\u00E3]+o/gi, (m) => preserveCase(m, "submissão")],
+      [/contribui[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "contribuição")],
+      [/verifica[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "verificação")],
+      [/libera[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "liberação")],
+      [/ac[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "acção")],
+      [/ac[\uFFFD\?c\u00E7]+[\u00F5o\uFFFD\?]+es/gi, (m) => preserveCase(m, "acções")],
+      [/avalia[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "avaliação")],
+      [/avalia[\uFFFD\?c\u00E7]+[\u00F5o\uFFFD\?]+es/gi, (m) => preserveCase(m, "avaliações")],
+      [/dedica[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "dedicação")],
+      [/beb[\uFFFD\?e\u00E9]s/gi, (m) => preserveCase(m, "bebés")],
+      [/fam[\uFFFD\?i\u00ED]lias?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "famílias" : "família")],
+      [/interm[\uFFFD\?e\u00E9]di[ao]s?/gi, (m) => preserveCase(m, "intermédio")],
+      [/avan[\uFFFD\?c\u00E7]ad[ao]s?/gi, (m) => preserveCase(m, "avançado")],
+      [/fot[\uFFFD\?o\u00F3]graf[ao]s?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "fotógrafos" : "fotógrafo")],
+      [/gr[\uFFFD\?a\u00E1]fic[ao]s?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "gráficos" : "gráfico")],
+      [/projec[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "projecção")],
+      [/ilumina[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "iluminação")],
+      [/transmiss[\uFFFD\?a\u00E3]+o/gi, (m) => preserveCase(m, "transmissão")],
+      [/publica[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "publicação")],
+      [/CONCLU[ÍI\uFFFD\?]*DO/g, () => "CONCLUÍDO"],
+      [/Conclu[íi\uFFFD\?]*do/g, () => "Concluído"],
+      [/conclu[íi\uFFFD\?]*do/g, () => "concluído"],
+      [/CR[ÍI\uFFFD\?]*TICO/g, () => "CRÍTICO"],
+      [/Cr[íi\uFFFD\?]*tico/g, () => "Crítico"],
+      [/cr[íi\uFFFD\?]*tico/g, () => "crítico"]
+    ];
+    for (const [regex, replacer] of ptFixes) {
+      text = text.replace(regex, replacer);
     }
   }
 
-  const casePreservingRules = [
-    [/c[\uFFFD\?]?[\u00E2\u00E3a]mar[ao]s?/gi, (m) => preserveCase(m, /camera|câmera/i.test(m) ? "câmera" : "câmara")],
-    [/t[\uFFFD\?]?[\u00E9e]cnic[ao]s?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "técnicos" : "técnico")],
-    [/m[\uFFFD\?]?[\u00EDi]dias?/gi, (m) => preserveCase(m, "mídia")],
-    [/m[\uFFFD\?]?[\u00F3o]dulos?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "módulos" : "módulo")],
-    [/m[\uFFFD\?]?[\u00E9e]todos?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "métodos" : "método")],
-    [/m[\uFFFD\?]?[\u00E9e]tricas?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "métricas" : "métrica")],
-    [/\bm[\uFFFD\?]?[\u00EAs]s?\b/gi, (m) => preserveCase(m, "mês")],
-    [/\bm[\uFFFD\?]?[\u00E3a]es?\b/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "mães" : "mãe")],
-    [/\bn[\uFFFD\?]?[\u00E3a]o\b/gi, (m) => preserveCase(m, "não")],
-    [/\bj[\uFFFD\?]?[\u00E1a]\b/gi, (m) => preserveCase(m, "já")],
-    [/\bat[\uFFFD\?]?[\u00E9e]\b/gi, (m) => preserveCase(m, "até")],
-    [/pr[\uFFFD\?]?[\u00F3o]xim[ao]s?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("a") ? "próxima" : m.toLowerCase().endsWith("as") ? "próximas" : m.toLowerCase().endsWith("os") ? "próximos" : "próximo")],
-    [/hist[\uFFFD\?]?[\u00F3o]ric[ao]s?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "históricos" : "histórico")],
-    [/prot[\uFFFD\?]?[\u00F3o]tipos?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "protótipos" : "protótipo")],
-    [/c[\uFFFD\?]?[\u00E9e]lulas?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "células" : "célula")],
-    [/pap[\uFFFD\?]?[\u00E9e]is/gi, (m) => preserveCase(m, "papéis")],
-    [/fun[\uFFFD\?c\u00E7]+[\u00F5o\uFFFD\?]+es/gi, (m) => preserveCase(m, "funções")],
-    [/fun[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "função")],
-    [/permiss[\uFFFD\?o\u00F5]+es/gi, (m) => preserveCase(m, "permissões")],
-    [/notifica[\uFFFD\?c\u00E7]+[\u00F5o\uFFFD\?]+es/gi, (m) => preserveCase(m, "notificações")],
-    [/autentica[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "autenticação")],
-    [/integra[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "integração")],
-    [/funda[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "fundação")],
-    [/finan[\uFFFD\?c\u00E7]+as/gi, (m) => preserveCase(m, "finanças")],
-    [/vis[\uFFFD\?a\u00E3]+o/gi, (m) => preserveCase(m, "visão")],
-    [/miss[\uFFFD\?a\u00E3]+o/gi, (m) => preserveCase(m, "missão")],
-    [/ora[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "oração")],
-    [/visita[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "visitação")],
-    [/evangeliza[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "evangelização")],
-    [/forma[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "formação")],
-    [/pris[\uFFFD\?a\u00E3]+o/gi, (m) => preserveCase(m, "prisão")],
-    [/espa[\uFFFD\?c\u00E7]+os?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "espaços" : "espaço")],
-    [/movimenta[\uFFFD\?c\u00E7]+[\u00F5o\uFFFD\?]+es/gi, (m) => preserveCase(m, "movimentações")],
-    [/aquisi[\uFFFD\?c\u00E7]+[\u00F5o\uFFFD\?]+es/gi, (m) => preserveCase(m, "aquisições")],
-    [/aten[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "atenção")],
-    [/descri[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "descrição")],
-    [/observa[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "observação")],
-    [/classifica[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "classificação")],
-    [/corre[c\uFFFD\?]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "correcção")],
-    [/devolu[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "devolução")],
-    [/evolu[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "evolução")],
-    [/sal[\uFFFD\?a\u00E1]rios?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "salários" : "salário")],
-    [/sa[\uFFFD\?i\u00ED]das?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "saídas" : "saída")],
-    [/\b[\uFFFD\?]?ltim[ao]s?\b/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("a") ? "última" : m.toLowerCase().endsWith("as") ? "últimas" : "último")],
-    [/\b[\uFFFD\?]?reas?\b/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "áreas" : "área")],
-    [/\b[\uFFFD\?]?mbitos?\b/gi, (m) => preserveCase(m, "âmbito")],
-    [/relat[\uFFFD\?o\u00F3]rios?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "relatórios" : "relatório")],
-    [/neg[\uFFFD\?o\u00F3]cios?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "negócios" : "negócio")],
-    [/lideran[\uFFFD\?c\u00E7]+as?/gi, (m) => preserveCase(m, "liderança")],
-    [/sess[\uFFFD\?o\u00F5]+es/gi, (m) => preserveCase(m, "sessões")],
-    [/sess[\uFFFD\?a\u00E3]+o/gi, (m) => preserveCase(m, "sessão")],
-    [/compar[\uFFFD\?e\u00EA]ncias?/gi, (m) => preserveCase(m, "comparência")],
-    [/quest[\uFFFD\?a\u00E3]+o/gi, (m) => preserveCase(m, "questão")],
-    [/decis[\uFFFD\?a\u00E3]+o/gi, (m) => preserveCase(m, "decisão")],
-    [/orienta[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "orientação")],
-    [/resolu[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "resolução")],
-    [/manuten[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "manutenção")],
-    [/repara[\uFFFD\?c\u00E7]+[\u00F5o\uFFFD\?]+es/gi, (m) => preserveCase(m, "reparações")],
-    [/invent[\uFFFD\?a\u00E1]rios?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "inventários" : "inventário")],
-    [/requisi[\uFFFD\?c\u00E7]+[\u00F5o\uFFFD\?]+es/gi, (m) => preserveCase(m, "requisições")],
-    [/requisi[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "requisição")],
-    [/submiss[\uFFFD\?a\u00E3]+o/gi, (m) => preserveCase(m, "submissão")],
-    [/contribui[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "contribuição")],
-    [/verifica[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "verificação")],
-    [/libera[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "liberação")],
-    [/ac[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "acção")],
-    [/ac[\uFFFD\?c\u00E7]+[\u00F5o\uFFFD\?]+es/gi, (m) => preserveCase(m, "acções")],
-    [/avalia[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "avaliação")],
-    [/avalia[\uFFFD\?c\u00E7]+[\u00F5o\uFFFD\?]+es/gi, (m) => preserveCase(m, "avaliações")],
-    [/dedica[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "dedicação")],
-    [/beb[\uFFFD\?e\u00E9]s/gi, (m) => preserveCase(m, "bebés")],
-    [/fam[\uFFFD\?i\u00ED]lias?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "famílias" : "família")],
-    [/interm[\uFFFD\?e\u00E9]di[ao]s?/gi, (m) => preserveCase(m, "intermédio")],
-    [/avan[\uFFFD\?c\u00E7]ad[ao]s?/gi, (m) => preserveCase(m, "avançado")],
-    [/fot[\uFFFD\?o\u00F3]graf[ao]s?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "fotógrafos" : "fotógrafo")],
-    [/gr[\uFFFD\?a\u00E1]fic[ao]s?/gi, (m) => preserveCase(m, m.toLowerCase().endsWith("s") ? "gráficos" : "gráfico")],
-    [/projec[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "projecção")],
-    [/ilumina[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "iluminação")],
-    [/transmiss[\uFFFD\?a\u00E3]+o/gi, (m) => preserveCase(m, "transmissão")],
-    [/publica[\uFFFD\?c\u00E7]+[\u00E3a\uFFFD\?]+o/gi, (m) => preserveCase(m, "publicação")],
-    [/CONCLU[ÍI\uFFFD\?]*DO/g, () => "CONCLUÍDO"],
-    [/Conclu[íi\uFFFD\?]*do/g, () => "Concluído"],
-    [/conclu[íi\uFFFD\?]*do/g, () => "concluído"],
-    [/CR[ÍI\uFFFD\?]*TICO/g, () => "CRÍTICO"],
-    [/Cr[íi\uFFFD\?]*tico/g, () => "Crítico"],
-    [/cr[íi\uFFFD\?]*tico/g, () => "crítico"]
-  ];
-
-  for (const [regex, replacer] of casePreservingRules) {
-    text = text.replace(regex, replacer);
+  if (text.includes("\uFFFD")) {
+    text = text.replace(/\uFFFD/g, "");
   }
+
   return text;
 }
 
@@ -27962,8 +28189,8 @@ function renderMedia(activeTab = "overview") {
   } else if (active === "roles") {
     content = modulePanel("mediaRole", L("mediaRolesFunctions"), "mediaRole", [L("role"), L("description"), L("actions")], roles.map((item) => [
       mediaRoleName(mediaRoleKey(item)),
-      item.description || item.notes || "-",
-      mediaActionButtons("mediaRole", item.id)
+      mediaRoleDescription(item),
+      mediaActionButtons("mediaRole", item.id || item.slug || item.key || item.name)
     ]), false);
   } else if (active === "schedules") {
     content = `
@@ -32512,7 +32739,12 @@ function openView(type, id) {
   if (type === "foundationClassGroup") return openFoundationClassForm(id, "view");
 
   const collection = getCollection(type) || [];
-  const record = collection.find((item) => String(item.id) === String(id)) || {};
+  const record = collection.find((item) =>
+    String(item.id) === String(id) ||
+    String(item.slug || "") === String(id) ||
+    String(item.key || "") === String(id) ||
+    String(item.name || "") === String(id)
+  ) || {};
   byId("modalEyebrow").textContent = L("view");
   byId("modalTitle").textContent = formTitle(type);
   byId("modalFields").innerHTML = `
@@ -32540,9 +32772,20 @@ function detailGrid(record, type = "") {
   const schema = (formSchemas && formSchemas[normalizedType]) || (forms && forms[normalizedType]);
 
   const formatDetailVal = (key, val, fieldType = "") => {
+    if (type === "mediaRole" && (key === "name" || key === "role" || key === "slug" || key === "key" || key === "title")) {
+      return mediaRoleName(mediaRoleKey(record));
+    }
+    if (type === "mediaRole" && (key === "description" || key === "descricao")) {
+      return mediaRoleDescription(record);
+    }
     if (val === null || val === undefined || val === "") return "—";
     if (typeof val === "boolean" || fieldType === "checkbox") return yesNo(val);
-    if (Array.isArray(val)) return val.length ? val.join(", ") : "—";
+    if (Array.isArray(val)) {
+      if (key === "roles_can_perform" || key === "roles") {
+        return val.map((r) => mediaRoleName(r)).join(", ");
+      }
+      return val.length ? val.join(", ") : "—";
+    }
     if (typeof val === "object") return "—";
 
     if (key === "church_id" || key === "igreja" || key === "church" || fieldType === "church" || fieldType === "parentChurch") {
@@ -32578,6 +32821,13 @@ function detailGrid(record, type = "") {
         Pending: lang === "pt" ? "Pendente" : "Pending"
       };
       return payMap[val] || val;
+    }
+    if (key === "skill_level" || key === "required_level" || key === "nivel" || fieldType === "skillLevel") {
+      const norm = normalizeSkillLevelKey(val);
+      return (SKILL_LEVEL_TRANSLATIONS[norm] && SKILL_LEVEL_TRANSLATIONS[norm][lang]) || L(`skillLevel_${norm}`) || val;
+    }
+    if (key === "department" || key === "departamento" || fieldType === "department") {
+      return (DEPARTMENT_TRANSLATIONS[val] && DEPARTMENT_TRANSLATIONS[val][lang]) || val;
     }
     if (key === "pop_prova_de_pagamento" || key === "payment_reference" || key === "payment_proof") {
       if (!val) return `<span class="text-muted">${L("noProof") || "Sem comprovativo"}</span>`;
