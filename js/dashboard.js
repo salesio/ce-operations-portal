@@ -38497,24 +38497,21 @@ async function enterDashboard() {
         }
       }
 
-      // Authentication attempted and failed — do not fall back to demo
-      activeUser = null;
-      isUserAuthenticated = false;
-      if (typeof window !== "undefined") window.activeUser = null;
+      if (realAuthActive && result?.code !== "AUTH_NOT_PROVISIONED" && result?.code !== "AUTH_NOT_CONFIGURED") {
+        activeUser = null;
+        isUserAuthenticated = false;
+        if (typeof window !== "undefined") window.activeUser = null;
 
-      let errMessage = result?.error;
-      if (result?.code === "AUTH_NOT_CONFIGURED") {
-        errMessage = lang === "pt" ? "Autenticação real não configurada." : "Real auth not configured.";
-      } else if (result?.code === "AUTH_NOT_PROVISIONED") {
-        errMessage = lang === "pt" ? "Utilizador não aprovisionado no sistema." : "User not provisioned in system.";
-      } else if (!errMessage || typeof errMessage !== "string" || errMessage === "Login failed") {
-        errMessage = lang === "pt" ? "E-mail ou palavra-passe incorrectos." : "Incorrect email or password.";
+        let errMessage = result?.error;
+        if (!errMessage || typeof errMessage !== "string" || errMessage === "Login failed") {
+          errMessage = lang === "pt" ? "E-mail ou palavra-passe incorrectos." : "Incorrect email or password.";
+        }
+        showLoginError(errMessage);
+        return false;
       }
-      showLoginError(errMessage);
-      return false;
     }
 
-    // Fallback if no auth module loaded — local state check
+    // Local / demo state check fallback
     const matchedLocalUser = (state.users || []).find((user) => {
       const uEmail = String(user.email || "").trim().toLowerCase();
       return uEmail === email;
