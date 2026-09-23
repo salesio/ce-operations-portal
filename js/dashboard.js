@@ -56,6 +56,9 @@ const TEXT = {
     view: "Ver",
     save: "Guardar",
     cancel: "Cancelar",
+    close: "Fechar",
+    searchExistingMembers: "Digite para pesquisar membros existentes...",
+    noMembersFound: "Nenhum membro encontrado na base",
     delete: "Apagar",
     update: "Actualizar",
     export: "Exportar",
@@ -802,6 +805,9 @@ const TEXT = {
     view: "View",
     save: "Save",
     cancel: "Cancel",
+    close: "Close",
+    searchExistingMembers: "Type to search existing members...",
+    noMembersFound: "No member found in database",
     delete: "Delete",
     update: "Update",
     export: "Export",
@@ -11141,6 +11147,9 @@ function applyLanguage(next = lang) {
       key === "top.site" ? L("viewSite") :
       key === "top.logout" ? L("logout") :
       key === "cancel" ? L("cancel") :
+      key === "close" ? L("close") :
+      key === "edit" ? L("edit") :
+      key === "add" ? L("add") :
       key === "save" ? L("save") : L(key);
   });
   document.querySelectorAll("[data-lang]").forEach((button) => button.classList.toggle("active", button.dataset.lang === lang));
@@ -11155,6 +11164,15 @@ function applyLanguage(next = lang) {
     setRoute(activeRoute);
     syncTopbarHeight();
     updateBackToTopVisibility();
+  }
+  const entryModalEl = byId("entryModal");
+  if (entryModalEl && entryModalEl.classList.contains("show")) {
+    if (modalType) {
+      const titleEl = byId("modalTitle");
+      if (titleEl && typeof formTitle === "function") titleEl.textContent = formTitle(modalType);
+      const eyebrowEl = byId("modalEyebrow");
+      if (eyebrowEl && modalMode) eyebrowEl.textContent = modalMode === "edit" ? L("edit") : L("add");
+    }
   }
 }
 
@@ -16680,7 +16698,7 @@ function openFoundationTeacherForm(id = null, mode = "edit") {
   modalRecordId = id;
   const footer = byId("entryForm")?.querySelector(".ops-modal-footer");
   if (mode === "view") {
-    if (footer) footer.innerHTML = `<button type="button" class="btn btn-outline-glass btn-touch" data-bs-dismiss="modal">${L("close") || "Fechar"}</button>`;
+    if (footer) footer.innerHTML = `<button type="button" class="btn btn-outline-glass btn-touch" data-bs-dismiss="modal" data-i18n="close">${L("close") || "Fechar"}</button>`;
   } else {
     restoreEntryModalFooter();
   }
@@ -16736,7 +16754,7 @@ function openFoundationClassForm(id = null, mode = "edit", defaults = {}) {
   modalRecordId = id;
   const footer = byId("entryForm")?.querySelector(".ops-modal-footer");
   if (mode === "view") {
-    if (footer) footer.innerHTML = `<button type="button" class="btn btn-outline-glass btn-touch" data-bs-dismiss="modal">${L("close") || "Fechar"}</button>`;
+    if (footer) footer.innerHTML = `<button type="button" class="btn btn-outline-glass btn-touch" data-bs-dismiss="modal" data-i18n="close">${L("close") || "Fechar"}</button>`;
   } else {
     restoreEntryModalFooter();
   }
@@ -16914,7 +16932,7 @@ function openFoundationStudentForm(id = null, mode = "edit") {
   const show = () => {
     const footer = byId("entryForm")?.querySelector(".ops-modal-footer");
     if (mode === "view") {
-      if (footer) footer.innerHTML = `<button type="button" class="btn btn-outline-glass btn-touch" data-bs-dismiss="modal">${L("close") || "Fechar"}</button>`;
+      if (footer) footer.innerHTML = `<button type="button" class="btn btn-outline-glass btn-touch" data-bs-dismiss="modal" data-i18n="close">${L("close") || "Fechar"}</button>`;
     } else {
       restoreEntryModalFooter();
     }
@@ -27490,6 +27508,56 @@ function getMediaState() {
     media.technicians = structuredClone(window.CESupabase.MEDIA_TEAM_SEED);
   }
 
+  if (!media.services.length && typeof localStorage !== "undefined") {
+    try {
+      const cached = JSON.parse(localStorage.getItem("ce-data-layer:media-services") || "[]");
+      if (Array.isArray(cached) && cached.length) media.services = cached;
+    } catch (_) {}
+  }
+  if (!media.services.length && Array.isArray(window.CESupabase?.MEDIA_SERVICES_SEED) && window.CESupabase.MEDIA_SERVICES_SEED.length) {
+    media.services = structuredClone(window.CESupabase.MEDIA_SERVICES_SEED);
+  }
+
+  if (!media.schedules.length && typeof localStorage !== "undefined") {
+    try {
+      const cached = JSON.parse(localStorage.getItem("ce-data-layer:media-schedules") || "[]");
+      if (Array.isArray(cached) && cached.length) media.schedules = cached;
+    } catch (_) {}
+  }
+  if (!media.schedules.length && Array.isArray(window.CESupabase?.MEDIA_SCHEDULES_SEED) && window.CESupabase.MEDIA_SCHEDULES_SEED.length) {
+    media.schedules = structuredClone(window.CESupabase.MEDIA_SCHEDULES_SEED);
+  }
+
+  if (!media.streamingChannels.length && typeof localStorage !== "undefined") {
+    try {
+      const cached = JSON.parse(localStorage.getItem("ce-data-layer:media-channels") || "[]");
+      if (Array.isArray(cached) && cached.length) media.streamingChannels = cached;
+    } catch (_) {}
+  }
+  if (!media.streamingChannels.length && Array.isArray(window.CESupabase?.MEDIA_CHANNELS_SEED) && window.CESupabase.MEDIA_CHANNELS_SEED.length) {
+    media.streamingChannels = structuredClone(window.CESupabase.MEDIA_CHANNELS_SEED);
+  }
+
+  if (!media.performanceEvaluations.length && typeof localStorage !== "undefined") {
+    try {
+      const cached = JSON.parse(localStorage.getItem("ce-data-layer:media-performance") || "[]");
+      if (Array.isArray(cached) && cached.length) media.performanceEvaluations = cached;
+    } catch (_) {}
+  }
+  if (!media.performanceEvaluations.length && Array.isArray(window.CESupabase?.MEDIA_PERFORMANCE_SEED) && window.CESupabase.MEDIA_PERFORMANCE_SEED.length) {
+    media.performanceEvaluations = structuredClone(window.CESupabase.MEDIA_PERFORMANCE_SEED);
+  }
+
+  if (!media.awards.length && typeof localStorage !== "undefined") {
+    try {
+      const cached = JSON.parse(localStorage.getItem("ce-data-layer:media-awards") || "[]");
+      if (Array.isArray(cached) && cached.length) media.awards = cached;
+    } catch (_) {}
+  }
+  if (!media.awards.length && Array.isArray(window.CESupabase?.MEDIA_AWARDS_SEED) && window.CESupabase.MEDIA_AWARDS_SEED.length) {
+    media.awards = structuredClone(window.CESupabase.MEDIA_AWARDS_SEED);
+  }
+
   return media;
 }
 
@@ -27537,10 +27605,11 @@ function getMediaRoleOptions() {
   const seen = new Set();
   const options = [];
 
+  // Exclusively load registered roles defined in the Papéis & Funções collection / database
   const definedRoles = (media.roles || []).map((r) => {
     const rawVal = r.name || r.key || r.role_key || r.role || r.id;
     const normKey = String(r.slug || rawVal || "").trim().toLowerCase();
-    const transKey = STANDARD_MEDIA_ROLE_KEYS[normKey];
+    const transKey = STANDARD_MEDIA_ROLE_KEYS[normKey] || (typeof mediaRoleKey === "function" ? STANDARD_MEDIA_ROLE_KEYS[String(mediaRoleKey(r) || "").toLowerCase()] : null);
     const displayLabel = (transKey && L(transKey) && L(transKey) !== transKey)
       ? L(transKey)
       : cleanDisplayText(r.name || rawVal);
@@ -27548,34 +27617,10 @@ function getMediaRoleOptions() {
   }).filter((r) => Boolean(r.value));
 
   for (const r of definedRoles) {
-    const k = String(r.value || r.label).trim().toLowerCase();
+    const k = String(r.value).trim().toLowerCase();
     if (k && !seen.has(k)) {
       seen.add(k);
       options.push(r);
-    }
-  }
-
-  const standardRoleEntries = [
-    { key: "cameraOperator", fallback: "Operador de Câmera" },
-    { key: "soundTechnician", fallback: "Técnico de Som" },
-    { key: "videoMixerOperator", fallback: "Operador de Video Mixer" },
-    { key: "streamingTechnician", fallback: "Técnico de Transmissão" },
-    { key: "slidesOperator", fallback: "Operador de Slides" },
-    { key: "scriptureOperator", fallback: "Lançador de Escrituras" },
-    { key: "photographer", fallback: "Fotógrafo" },
-    { key: "graphicsDesigner", fallback: "Designer Gráfico" },
-    { key: "lightingOperator", fallback: "Iluminação" },
-    { key: "mediaSupervisor", fallback: "Supervisor de Mídia" },
-    { key: "technicalAssistant", fallback: "Assistente Técnico" }
-  ];
-
-  for (const s of standardRoleEntries) {
-    const val = s.fallback;
-    const label = L(s.key) && L(s.key) !== s.key ? L(s.key) : s.fallback;
-    const k = val.trim().toLowerCase();
-    if (k && !seen.has(k)) {
-      seen.add(k);
-      options.push({ value: val, label });
     }
   }
 
@@ -28987,21 +29032,21 @@ function getCollection(type) {
   if (type === "cellActionPlan") { state.cellLeadership = state.cellLeadership || {}; state.cellLeadership.actionPlans = state.cellLeadership.actionPlans || []; return state.cellLeadership.actionPlans; }
   if (type === "cellGroup") { state.cellGroups = state.cellGroups || []; return state.cellGroups; }
   if (type === "cellRegistry") { state.cellRegistry = state.cellRegistry || []; return state.cellRegistry; }
-  if (type === "inventoryItem") return state.venueInventory.inventory;
-  if (type === "venueAcquisition") return state.venueInventory.acquisitions;
-  if (type === "venueStaffEquipment") return state.venueInventory.staffEquipment;
-  if (type === "venueMaintenance") return state.venueInventory.maintenance;
-  if (type === "venueMovement") return state.venueInventory.movements;
-  if (type === "venueSpace") return state.venueInventory.venues;
-  if (type === "venueChecklist") return state.venueInventory.checklists;
-  if (type === "venueReport") return state.venueInventory.reports || [];
-  if (type === "mediaTechnician") { state.media = state.media && typeof state.media === "object" && !Array.isArray(state.media) ? state.media : {}; state.media.technicians = Array.isArray(state.media.technicians) ? state.media.technicians : []; return state.media.technicians; }
-  if (type === "mediaRole") { state.media = state.media && typeof state.media === "object" && !Array.isArray(state.media) ? state.media : {}; state.media.roles = Array.isArray(state.media.roles) ? state.media.roles : []; return state.media.roles; }
-  if (type === "mediaSchedule") { state.media = state.media && typeof state.media === "object" && !Array.isArray(state.media) ? state.media : {}; state.media.schedules = Array.isArray(state.media.schedules) ? state.media.schedules : []; return state.media.schedules; }
-  if (type === "mediaService") { state.media = state.media && typeof state.media === "object" && !Array.isArray(state.media) ? state.media : {}; state.media.services = Array.isArray(state.media.services) ? state.media.services : []; return state.media.services; }
-  if (type === "streamingChannel") { state.media = state.media && typeof state.media === "object" && !Array.isArray(state.media) ? state.media : {}; state.media.streamingChannels = Array.isArray(state.media.streamingChannels) ? state.media.streamingChannels : []; return state.media.streamingChannels; }
-  if (type === "mediaEvaluation") { state.media = state.media && typeof state.media === "object" && !Array.isArray(state.media) ? state.media : {}; state.media.performanceEvaluations = Array.isArray(state.media.performanceEvaluations) ? state.media.performanceEvaluations : []; return state.media.performanceEvaluations; }
-  if (type === "mediaAward") { state.media = state.media && typeof state.media === "object" && !Array.isArray(state.media) ? state.media : {}; state.media.awards = Array.isArray(state.media.awards) ? state.media.awards : []; return state.media.awards; }
+  if (type === "inventoryItem") return state.venueInventory?.inventory || [];
+  if (type === "venueAcquisition") return state.venueInventory?.acquisitions || [];
+  if (type === "venueStaffEquipment") return state.venueInventory?.staffEquipment || [];
+  if (type === "venueMaintenance") return state.venueInventory?.maintenance || [];
+  if (type === "venueMovement") return state.venueInventory?.movements || [];
+  if (type === "venueSpace") return state.venueInventory?.venues || [];
+  if (type === "venueChecklist") return state.venueInventory?.checklists || [];
+  if (type === "venueReport") return state.venueInventory?.reports || [];
+  if (type === "mediaTechnician") return (typeof getMediaState === "function" ? getMediaState() : state.media)?.technicians || [];
+  if (type === "mediaRole") return (typeof getMediaState === "function" ? getMediaState() : state.media)?.roles || [];
+  if (type === "mediaSchedule") return (typeof getMediaState === "function" ? getMediaState() : state.media)?.schedules || [];
+  if (type === "mediaService") return (typeof getMediaState === "function" ? getMediaState() : state.media)?.services || [];
+  if (type === "streamingChannel") return (typeof getMediaState === "function" ? getMediaState() : state.media)?.streamingChannels || [];
+  if (type === "mediaEvaluation") return (typeof getMediaState === "function" ? getMediaState() : state.media)?.performanceEvaluations || [];
+  if (type === "mediaAward") return (typeof getMediaState === "function" ? getMediaState() : state.media)?.awards || [];
   if (type === "mediaReport") return [];
   return state[type] || [];
 }
@@ -30475,10 +30520,21 @@ function openForm(type, id = null, options = {}) {
     modalMode = id ? "edit" : "create";
     modalType = type;
     modalRecordId = id;
+    const collection = getCollection(type) || [];
     const selectedRecord = id
       ? (type === "member"
           ? (findMemberRecord(id) || {})
-          : (getCollection(type).find((item) => String(item.id) === String(id)) || {}))
+          : (collection.find((item) =>
+              item && (
+                String(item.id) === String(id) ||
+                String(item.slug || "") === String(id) ||
+                String(item.key || "") === String(id) ||
+                String(item.code || "") === String(id) ||
+                String(item.name || "") === String(id) ||
+                (typeof mediaRoleKey === "function" && mediaRoleKey(item) === id) ||
+                (typeof mediaRoleKey === "function" && String(item.id) === String(id))
+              )
+            ) || {}))
       : {};
     const record = type === "program"
       ? {
@@ -30486,6 +30542,16 @@ function openForm(type, id = null, options = {}) {
           responsible_name: selectedRecord.responsible_name || selectedRecord.owner || "",
           owner: selectedRecord.owner || selectedRecord.responsible_name || "",
           status: selectedRecord.status || selectedRecord.estado || "Draft",
+        }
+      : type === "mediaRole"
+      ? {
+          ...selectedRecord,
+          name: lang === "en" && (typeof mediaRoleKey === "function") && (typeof mediaRoleName === "function")
+            ? (mediaRoleName(mediaRoleKey(selectedRecord)) || selectedRecord.name || "")
+            : (selectedRecord.name || ""),
+          description: lang === "en" && (typeof mediaRoleDescription === "function")
+            ? (mediaRoleDescription(selectedRecord) || selectedRecord.description || "")
+            : (selectedRecord.description || selectedRecord.descricao || "")
         }
       : selectedRecord;
     byId("modalEyebrow").textContent = options.actionTitle || (modalMode === "edit" ? L("edit") : L("add"));
@@ -30640,10 +30706,19 @@ function fieldControl([name, labelKey, inputType = "text", options = []], record
     const currentRoles = Array.isArray(value)
       ? value.map((v) => String(v || "").trim().toLowerCase())
       : (typeof value === "string" && value ? [value.trim().toLowerCase()] : []);
+    const isRoleMatch = (roleValOrKey, opt) => {
+      if (!roleValOrKey || !opt) return false;
+      const r = String(roleValOrKey).trim().toLowerCase();
+      const optVal = String(opt.value || "").trim().toLowerCase();
+      const optLbl = String(opt.label || "").trim().toLowerCase();
+      if (r === optVal || r === optLbl) return true;
+      const rTransKey = STANDARD_MEDIA_ROLE_KEYS[r];
+      const optValTransKey = STANDARD_MEDIA_ROLE_KEYS[optVal];
+      if (rTransKey && optValTransKey && rTransKey === optValTransKey) return true;
+      return false;
+    };
     const initialSelectedCount = roleOptions.filter((opt) => {
-      const optValStr = String(opt.value || "").trim().toLowerCase();
-      const optLblStr = String(opt.label || "").trim().toLowerCase();
-      return currentRoles.some((r) => r === optValStr || r === optLblStr);
+      return currentRoles.some((r) => isRoleMatch(r, opt));
     }).length;
 
     return `
@@ -30672,9 +30747,7 @@ function fieldControl([name, labelKey, inputType = "text", options = []], record
         <div class="p-3 rounded-3" style="background: #070e1c !important; border: 1.5px solid #1e2d4d !important; max-height: 240px; overflow-y: auto; box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);">
           <div class="row g-2">
             ${roleOptions.map((opt, idx) => {
-              const optValStr = String(opt.value || "").trim().toLowerCase();
-              const optLblStr = String(opt.label || "").trim().toLowerCase();
-              const isChecked = currentRoles.some((r) => r === optValStr || r === optLblStr);
+              const isChecked = currentRoles.some((r) => isRoleMatch(r, opt));
               return `
                 <div class="col-12 col-sm-6 col-md-4">
                   <label id="media-role-card-${idx}" class="media-role-card d-flex align-items-center gap-2 p-2 px-3 rounded-2 w-100 h-100" style="background: ${isChecked ? 'rgba(212, 175, 55, 0.24)' : 'rgba(255, 255, 255, 0.05)'}; border: 1.5px solid ${isChecked ? '#d4af37' : 'rgba(255, 255, 255, 0.18)'}; color: ${isChecked ? '#ffd700' : '#ffffff'}; cursor: pointer; user-select: none; transition: all 0.15s ease;" onmouseover="if(!this.querySelector('input').checked) { this.style.borderColor='#38bdf8'; this.style.background='rgba(255,255,255,0.09)'; }" onmouseout="if(!this.querySelector('input').checked) { this.style.borderColor='rgba(255, 255, 255, 0.18)'; this.style.background='rgba(255, 255, 255, 0.05)'; }">
@@ -31428,7 +31501,16 @@ async function submitForm(form) {
 
   const collection = getCollection(modalType);
   if (modalMode === "edit") {
-    let index = collection.findIndex((item) => item && (String(item.id) === String(modalRecordId) || item.id === modalRecordId));
+    let index = collection.findIndex((item) => item && (
+      String(item.id) === String(modalRecordId) ||
+      item.id === modalRecordId ||
+      String(item.slug || "") === String(modalRecordId) ||
+      String(item.key || "") === String(modalRecordId) ||
+      String(item.code || "") === String(modalRecordId) ||
+      String(item.name || "") === String(modalRecordId) ||
+      (typeof mediaRoleKey === "function" && mediaRoleKey(item) === modalRecordId) ||
+      (typeof mediaRoleKey === "function" && String(item.id) === String(modalRecordId))
+    ));
     if (index < 0 && modalRecordId) {
       if (modalType === "cellEvaluation" && Array.isArray(state.cellLeadership?.evaluations)) {
         index = state.cellLeadership.evaluations.findIndex((item) => item && (String(item.id) === String(modalRecordId) || item.id === modalRecordId));
@@ -32421,7 +32503,7 @@ async function submitForm(form) {
 function restoreEntryModalFooter() {
   const footer = byId("entryForm")?.querySelector(".ops-modal-footer");
   if (!footer) return;
-  footer.innerHTML = `<button type="button" class="btn btn-outline-glass btn-touch" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-ce-gold btn-touch">Guardar</button>`;
+  footer.innerHTML = `<button type="button" class="btn btn-outline-glass btn-touch" data-bs-dismiss="modal" data-i18n="cancel">${L("cancel")}</button><button type="submit" class="btn btn-ce-gold btn-touch" data-i18n="save">${L("save")}</button>`;
 }
 
 const MEMBER_PROFILE_TEXT = {
@@ -32543,7 +32625,7 @@ function openMemberProfileView(id) {
   byId("modalTitle").textContent = fullName(member) || "Membro";
   byId("modalFields").innerHTML = `<div class="col-12">${memberProfileHtml(member)}</div>`;
   const footer = byId("entryForm")?.querySelector(".ops-modal-footer");
-  if (footer) footer.innerHTML = `<button type="button" class="btn btn-outline-glass btn-touch" data-bs-dismiss="modal">Fechar</button>${canRenderAction("edit", "member") ? `<button type="button" class="btn btn-outline-warning btn-touch" data-member-merge="${escapeAttr(id)}"><i class="bi bi-arrows-collapse me-1"></i>Fundir Membro</button><button type="button" class="btn btn-ce-gold btn-touch" data-member-profile-edit="${escapeAttr(id)}">Editar</button>` : ""}`;
+  if (footer) footer.innerHTML = `<button type="button" class="btn btn-outline-glass btn-touch" data-bs-dismiss="modal" data-i18n="close">${L("close")}</button>${canRenderAction("edit", "member") ? `<button type="button" class="btn btn-outline-warning btn-touch" data-member-merge="${escapeAttr(id)}"><i class="bi bi-arrows-collapse me-1"></i>${lang === "pt" ? "Fundir Membro" : "Merge Member"}</button><button type="button" class="btn btn-ce-gold btn-touch" data-member-profile-edit="${escapeAttr(id)}" data-i18n="edit">${L("edit")}</button>` : ""}`;
   modalType = null;
   bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
   // Refresh the visible profile from the authoritative record, including old
@@ -32618,7 +32700,7 @@ function openGroupCellsModal(groupId) {
       <button type="button" class="btn btn-outline-cyan btn-sm" id="btnViewGroupCellsFullList">
         <i class="bi bi-arrow-right-circle me-1"></i>${lang === "pt" ? "Ver na Lista Completa" : "View in Full List"}
       </button>
-      <button type="button" class="btn btn-outline-glass btn-sm" data-bs-dismiss="modal">${lang === "pt" ? "Fechar" : "Close"}</button>
+      <button type="button" class="btn btn-outline-glass btn-sm" data-bs-dismiss="modal" data-i18n="close">${L("close")}</button>
     `;
     const fullListBtn = byId("btnViewGroupCellsFullList");
     if (fullListBtn) {
@@ -32652,7 +32734,7 @@ function openView(type, id) {
     byId("modalFields").innerHTML = mediaScheduleViewHtml(record || {});
     const footer = byId("entryForm")?.querySelector(".ops-modal-footer");
     if (footer) {
-      footer.innerHTML = `<button type="button" class="btn btn-outline-glass btn-touch" data-bs-dismiss="modal">${lang === "pt" ? "Fechar" : "Close"}</button>`;
+      footer.innerHTML = `<button type="button" class="btn btn-outline-glass btn-touch" data-bs-dismiss="modal" data-i18n="close">${L("close")}</button>`;
     }
     modalType = null;
     bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
@@ -32681,8 +32763,8 @@ function openView(type, id) {
   if (footer) {
     const canEdit = canRenderAction("edit", type);
     footer.innerHTML = `
-      <button type="button" class="btn btn-outline-glass btn-touch" data-bs-dismiss="modal">${lang === "pt" ? "Fechar" : "Close"}</button>
-      ${canEdit ? `<button type="button" class="btn btn-ce-gold btn-touch" data-view-edit-type="${escapeAttr(type)}" data-view-edit-id="${escapeAttr(id)}"><i class="bi bi-pencil me-1"></i>${lang === "pt" ? "Editar" : "Edit"}</button>` : ""}
+      <button type="button" class="btn btn-outline-glass btn-touch" data-bs-dismiss="modal" data-i18n="close">${L("close")}</button>
+      ${canEdit ? `<button type="button" class="btn btn-ce-gold btn-touch" data-i18n="edit" data-view-edit-type="${escapeAttr(type)}" data-view-edit-id="${escapeAttr(id)}"><i class="bi bi-pencil me-1"></i>${L("edit")}</button>` : ""}
     `;
   }
   modalType = null;
@@ -39624,7 +39706,7 @@ function mountPersonAutocomplete(formEl, options = {}) {
   if (!formEl) return;
   if (modalType === "memberMerge") return;
 
-  // Non-person entity modals where 'name' / 'nome' refers to an event, facility, inventory, or entity title — NOT a person's name.
+  // Non-person entity modals where 'name' / 'nome' refers to an event, facility, inventory, media role/service, or entity title — NOT a person's name.
   const isNonPersonEntityModal = [
     "program",
     "programs",
@@ -39634,13 +39716,40 @@ function mountPersonAutocomplete(formEl, options = {}) {
     "cell",
     "materialCatalogue",
     "material",
+    "materialDistribution",
+    "materialStock",
+    "materialFund",
+    "materialReport",
     "inventoryItem",
     "venueSpace",
     "venueAcquisition",
     "venueMaintenance",
     "venueChecklist",
+    "venueMovement",
     "prisonLocation",
-    "fevoConfig"
+    "prisonService",
+    "prisonFoundation",
+    "prisonAgenda",
+    "prisonReport",
+    "fevoConfig",
+    "fevoReport",
+    "fevoNoReport",
+    "fevoWeeklyReport",
+    "mediaRole",
+    "mediaRoles",
+    "mediaService",
+    "mediaServices",
+    "streamingChannel",
+    "streamingChannels",
+    "mediaAward",
+    "mediaAwards",
+    "mediaEvaluation",
+    "mediaEvaluations",
+    "mediaSchedule",
+    "mediaSchedules",
+    "cellActionPlan",
+    "finance",
+    "churchFinance"
   ].includes(modalType);
 
   const defaultSelectors = [
@@ -39697,7 +39806,7 @@ function mountPersonAutocomplete(formEl, options = {}) {
 
     nameInput.setAttribute("autocomplete", "off");
     if (!nameInput.getAttribute("placeholder")) {
-      nameInput.setAttribute("placeholder", "Digite para pesquisar membros existentes...");
+      nameInput.setAttribute("placeholder", L("searchExistingMembers") || (lang === "pt" ? "Digite para pesquisar membros existentes..." : "Type to search existing members..."));
     }
 
     const hideBox = () => {
@@ -39736,7 +39845,8 @@ function mountPersonAutocomplete(formEl, options = {}) {
         if (currentSeq !== searchSeq || nameInput.dataset.personSelected === "true") return;
 
         if (!matches.length) {
-          suggestionsBox.innerHTML = `<div class="list-group-item bg-dark text-white-50 p-2 small"><i class="bi bi-info-circle me-1"></i>Nenhum membro encontrado na base</div>`;
+          const noMatchesMsg = L("noMembersFound") || (lang === "pt" ? "Nenhum membro encontrado na base" : "No member found in database");
+          suggestionsBox.innerHTML = `<div class="list-group-item bg-dark text-white-50 p-2 small"><i class="bi bi-info-circle me-1"></i>${escapeAttr(noMatchesMsg)}</div>`;
           suggestionsBox.classList.remove("d-none");
           return;
         }
