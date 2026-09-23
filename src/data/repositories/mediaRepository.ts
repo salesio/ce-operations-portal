@@ -916,6 +916,15 @@ export async function updateMediaPerformanceReview(
     return fail(e instanceof Error ? e.message : "updateMediaPerformanceReview failed");
   }
 }
+export async function deleteMediaPerformanceReview(id: EntityId) {
+  try {
+    const repo = getDataProvider().mediaPerformance;
+    if (!repo.remove) return fail("delete not supported", "NOT_SUPPORTED");
+    return (await repo.remove(id)) as DataResult<boolean>;
+  } catch (e) {
+    return fail(e instanceof Error ? e.message : "deleteMediaPerformanceReview failed");
+  }
+}
 export async function getPerformanceByTeamMember(teamMemberId: EntityId) {
   const list = await listMediaPerformanceReviews();
   if (!list.ok) return list;
@@ -1015,6 +1024,15 @@ export async function updateMediaAward(id: EntityId, payload: Partial<MediaAward
     return ok(normalizeMediaAward(result.data as MediaAward));
   } catch (e) {
     return fail(e instanceof Error ? e.message : "updateMediaAward failed");
+  }
+}
+export async function deleteMediaAward(id: EntityId) {
+  try {
+    const repo = getDataProvider().mediaAwards;
+    if (!repo.remove) return fail("delete not supported", "NOT_SUPPORTED");
+    return (await repo.remove(id)) as DataResult<boolean>;
+  } catch (e) {
+    return fail(e instanceof Error ? e.message : "deleteMediaAward failed");
   }
 }
 export async function getAwardsByYear(year: number) {

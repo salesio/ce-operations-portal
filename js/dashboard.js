@@ -27764,8 +27764,10 @@ function mediaTechnicianCanServeRole(technician = {}, roleKey = "", selectedId =
 
 function renderMediaTechnicianOptions(roleKey, selectedId = "") {
   const technicians = mediaVisibleTechnicians(getMediaState().technicians || []);
-  const options = technicians
-    .filter((technician) => /Activo|Active|Treinamento|Training/i.test(technician.status || "") && mediaTechnicianCanServeRole(technician, roleKey, selectedId))
+  const activeTechnicians = technicians.filter((technician) => /Activo|Active|Treinamento|Training/i.test(technician.status || "") || technician.id === selectedId);
+  const matching = activeTechnicians.filter((technician) => mediaTechnicianCanServeRole(technician, roleKey, selectedId));
+  const listToRender = matching.length > 0 ? matching : activeTechnicians;
+  const options = listToRender
     .map((technician) => `<option value="${mediaEscape(technician.id)}" ${technician.id === selectedId ? "selected" : ""}>${mediaEscape(technician.full_name)}${technician.skill_level ? ` - ${mediaEscape(technician.skill_level)}` : ""}</option>`)
     .join("");
   return `<option value="">${mediaEscape(L("selectTechnician"))}</option>${options}`;
@@ -27819,6 +27821,7 @@ function mountMediaScheduleFormControls(form = byId("entryForm")) {
         if (selectedOpt) {
           const sTime = selectedOpt.dataset.time;
           const sChurch = selectedOpt.dataset.church;
+          const sDay = selectedOpt.dataset.day;
           if (sTime && timeInputEl && (!timeInputEl.value || timeInputEl.value === "00:00")) {
             timeInputEl.value = sTime;
           }
@@ -27842,7 +27845,22 @@ function mountMediaScheduleFormControls(form = byId("entryForm")) {
 
 function renderMediaScheduleForm(record = {}) {
   const mondaySchedule = isMediaMondaySchedule(record);
-  const mediaServices = (getMediaState().services || []).filter((s) => /Activo|Active/i.test(s.status || "Activo") || s.name === record.service_name || s.service_name === record.service_name);
+  let localMediaServices = [];
+  try {
+    const rawLocal = localStorage.getItem("ce-data-layer:media-services");
+    if (rawLocal) {
+      const parsed = JSON.parse(rawLocal);
+      if (Array.isArray(parsed)) localMediaServices = parsed;
+    }
+  } catch (_) {}
+
+  const allRawServices = [
+    ...(state.media?.services || []),
+    ...(getMediaState().services || []),
+    ...localMediaServices,
+  ];
+
+  const mediaServices = allRawServices.filter((s) => /Activo|Active/i.test(s.status || "Activo") || s.name === record.service_name || s.service_name === record.service_name);
   const generalPrograms = (state.programs || []).filter((p) => p.name || p.title);
   
   const allServicesMap = new Map();
@@ -29611,7 +29629,7 @@ const formSchemas = {
   mediaTechnician: [["full_name", "fullName"], ["title", "treatment", "select", treatmentOptions], ["roles_can_perform", "role", "mediaRoleSelect"], ["phone", "phone"], ["whatsapp", "whatsapp"], ["email", "email", "email"], ["church_id", "church", "church"], ["department_name", "department", "departmentSelect"], ["skill_level", "skillLevel", "select", ["Iniciante", "Intermédio", "Avançado", "Supervisor"]], ["preferred_services", "mediaSchedules"], ["availability_notes", "notes", "textarea"], ["status", "status", "select", ["Activo", "Inactivo"]]],
   mediaRole: [["name", "role"], ["description", "description", "textarea"]],
   mediaSchedule: [["date", "date", "date"], ["service_name", "service"], ["church_id", "church", "church"], ["start_time", "time", "time"], ["leader_responsible", "responsible"], ["status", "status", "select", ["Rascunho", "Publicada", "Incompleta", "Concluída"]], ["notes", "notes", "textarea"]],
-  mediaService: [["name", "name"], ["day_of_week", "weekday"], ["time", "time", "time"], ["church_id", "church", "church"], ["category", "category"], ["status", "status", "select", ["Activo", "Inactivo"]], ["notes", "notes", "textarea"]],
+  mediaService: [["name", "name"], ["day_of_week", "weekday", "weekday"], ["time", "time", "time"], ["church_id", "church", "church"], ["category", "category"], ["status", "status", "select", ["Activo", "Inactivo"]], ["notes", "notes", "textarea"]],
   streamingChannel: [["name", "name"], ["platform", "platform"], ["channel_url", "url"], ["responsible_name", "responsible"], ["status", "status", "select", ["Activo", "Por Configurar", "Em Breve", "Inactivo"]], ["notes", "notes", "textarea"]],
   mediaEvaluation: [["technician_id", "staffFullName"], ["period", "evaluationPeriod"], ["role", "role"], ["score", "score", "number"], ["status", "status", "select", ["Pending Evaluation", "Evaluated", "Approved"]], ["notes", "notes", "textarea"]],
   mediaAward: [["category", "category"], ["technician_id", "staffFullName"], ["period", "evaluationPeriod"], ["reason", "description", "textarea"], ["status", "status", "select", ["Activo", "Publicado"]]],
@@ -31314,6 +31332,29 @@ function fieldControl([name, labelKey, inputType = "text", options = []], record
   if ((name === "provincia" || name === "cidade") && !enrichedRecord.province && enrichedRecord.provincia) {
     enrichedRecord.province = enrichedRecord.provincia;
     enrichedRecord.city = enrichedRecord.cidade;
+  }
+  if (inputType === "weekday" || inputType === "weekdaySelect" || name === "day_of_week" || name === "weekday") {
+    const weekdays = [
+      { value: "Domingo", labelPt: "Domingo", labelEn: "Sunday" },
+      { value: "Segunda-feira", labelPt: "Segunda-feira", labelEn: "Monday" },
+      { value: "Terça-feira", labelPt: "Terça-feira", labelEn: "Tuesday" },
+      { value: "Quarta-feira", labelPt: "Quarta-feira", labelEn: "Wednesday" },
+      { value: "Quinta-feira", labelPt: "Quinta-feira", labelEn: "Thursday" },
+      { value: "Sexta-feira", labelPt: "Sexta-feira", labelEn: "Friday" },
+      { value: "Sábado", labelPt: "Sábado", labelEn: "Saturday" },
+    ];
+    return `
+      <div class="col-md-6">
+        <label class="form-label">${label}</label>
+        <select name="${name}" class="form-select">
+          <option value="">${lang === "pt" ? "Seleccionar dia da semana..." : "Select day of week..."}</option>
+          ${weekdays.map((w) => {
+            const curVal = String(value || "").trim().toLowerCase();
+            const isSel = curVal === w.value.toLowerCase() || curVal === w.labelEn.toLowerCase() || (curVal.startsWith("segunda") && w.value === "Segunda-feira") || (curVal.startsWith("ter") && w.value === "Terça-feira") || (curVal.startsWith("quarta") && w.value === "Quarta-feira") || (curVal.startsWith("quinta") && w.value === "Quinta-feira") || (curVal.startsWith("sexta") && w.value === "Sexta-feira") || (curVal.startsWith("dom") && w.value === "Domingo") || (curVal.startsWith("s") && curVal.includes("b") && w.value === "Sábado");
+            return `<option value="${w.value}" ${isSel ? "selected" : ""}>${lang === "pt" ? w.labelPt : w.labelEn}</option>`;
+          }).join("")}
+        </select>
+      </div>`;
   }
   if (inputType === "province") {
     const cityTarget = name === "provincia" ? "cidade" : "city";
@@ -34638,16 +34679,36 @@ async function quickAction(action, type, id) {
 
     if (["mediaTechnician", "mediaRole", "mediaSchedule", "mediaService", "streamingChannel", "mediaEvaluation", "mediaAward"].includes(type)) {
       const mediaBridge = window.CEMedia || window.CEDataLayer?.media;
-      if (mediaBridge && previous?.id) {
+      const targetId = previous?.id || id;
+      if (mediaBridge && targetId) {
         try {
           if (typeof mediaBridge.dualWriteRecord === "function") {
-            await mediaBridge.dualWriteRecord(type, "delete", previous);
+            await mediaBridge.dualWriteRecord(type, "delete", previous || { id: targetId });
           } else {
-            await dualWriteMediaRecord(type, "delete", previous);
+            await dualWriteMediaRecord(type, "delete", previous || { id: targetId });
           }
         } catch (err) {
           console.warn("[CE Media] delete sync error", err);
         }
+      }
+      const client = (typeof window !== "undefined" && (window.CESupabase?.getRawClient?.() || window.CESupabase?.getSupabaseFoundationClient?.() || window.CESupabase?.getSupabaseClient?.() || window.supabase));
+      if (client && targetId) {
+        try {
+          const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(targetId));
+          const mediaTableMap = {
+            mediaTechnician: "media_team_members",
+            mediaRole: "media_roles",
+            mediaService: "media_services",
+            mediaSchedule: "media_schedules",
+            streamingChannel: "media_channels",
+            mediaEvaluation: "media_performance_records",
+            mediaAward: "media_awards"
+          };
+          const tbl = mediaTableMap[type];
+          if (tbl && isUuid) {
+            await client.from(tbl).delete().eq("id", targetId);
+          }
+        } catch (_) {}
       }
       collection.splice(index, 1);
       syncMediaToLocalStorage();

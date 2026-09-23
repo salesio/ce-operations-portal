@@ -197,8 +197,13 @@
     }
     function remove(kind, id) {
       var s = store(kind);
+      var targetId = String(id || "");
       s.rows = s.rows.filter(function (r) {
-        return r.id !== id;
+        var rMeta = (r && r.metadata && typeof r.metadata === "object") ? r.metadata : {};
+        if (String(r.id) === targetId) return false;
+        if (rMeta.id && String(rMeta.id) === targetId) return false;
+        if (rMeta.client_id && String(rMeta.client_id) === targetId) return false;
+        return true;
       });
       if (s.persist) save(KEYS[kind], s.rows);
       return ok(true);

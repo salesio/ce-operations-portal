@@ -219,6 +219,8 @@ function payload(table: Table, raw: MediaRecord): SupabaseRow {
     const existingMeta = (row.metadata && typeof row.metadata === "object" ? row.metadata : {}) as Record<string, unknown>;
     row.metadata = {
       ...existingMeta,
+      id: raw.id || existingMeta.id,
+      client_id: raw.id || existingMeta.client_id,
       service_name: row.service_name || existingMeta.service_name || "",
       date: row.date || row.service_date || existingMeta.date || existingMeta.service_date || "",
       service_date: row.service_date || row.date || existingMeta.service_date || existingMeta.date || "",
@@ -377,51 +379,44 @@ async function update(table: Table, id: EntityId, input: MediaRecord) {
   const result = await updateRow(TABLES[table], targetId, row);
   return result.ok ? ok(aliases(table, result.data)) : cast<MediaRecord>(result);
 }
-async function remove(table: Table, id: EntityId) {
+async function remove(table: Table, id: EntityId, extra?: MediaRecord) {
   let targetId = String(id);
-  if (!isValidUuid(targetId)) {
-    if (table === "roles") {
-      const existing = await listRows(TABLES[table]);
-      if (existing.ok && existing.data) {
-        const found = existing.data.find((r: any) =>
-          String(r.id) === targetId ||
-          String(r.slug).toLowerCase() === targetId.toLowerCase() ||
-          String(r.name).toLowerCase() === targetId.toLowerCase()
-        );
-        if (found) targetId = String(found.id);
+  const existing = await listRows(TABLES[table]);
+  if (existing.ok && existing.data && existing.data.length > 0) {
+    const found = existing.data.find((r: any) => {
+      const rMeta = (r.metadata && typeof r.metadata === "object") ? r.metadata : {};
+      if (String(r.id) === targetId) return true;
+      if (rMeta.id && String(rMeta.id) === targetId) return true;
+      if (rMeta.client_id && String(rMeta.client_id) === targetId) return true;
+      if (table === "roles") {
+        if (r.slug && String(r.slug).toLowerCase() === targetId.toLowerCase()) return true;
+        if (r.name && String(r.name).toLowerCase() === targetId.toLowerCase()) return true;
       }
-    } else if (table === "team") {
-      const existing = await listRows(TABLES[table]);
-      if (existing.ok && existing.data) {
-        const found = existing.data.find((r: any) =>
-          String(r.id) === targetId ||
-          String(r.full_name).toLowerCase() === targetId.toLowerCase() ||
-          (r.phone && String(r.phone) === targetId)
-        );
-        if (found) targetId = String(found.id);
+      if (table === "team") {
+        if (r.full_name && String(r.full_name).toLowerCase() === targetId.toLowerCase()) return true;
+        if (r.phone && String(r.phone) === targetId) return true;
       }
-    } else if (table === "services") {
-      const existing = await listRows(TABLES[table]);
-      if (existing.ok && existing.data) {
-        const found = existing.data.find((r: any) => String(r.id) === targetId || String(r.service_name).toLowerCase() === targetId.toLowerCase() || String(r.service_code).toLowerCase() === targetId.toLowerCase());
-        if (found) targetId = String(found.id);
+      if (table === "services") {
+        if (r.service_name && String(r.service_name).toLowerCase() === targetId.toLowerCase()) return true;
+        if (r.service_code && String(r.service_code).toLowerCase() === targetId.toLowerCase()) return true;
       }
-    } else if (table === "schedules") {
-      const existing = await listRows(TABLES[table]);
-      if (existing.ok && existing.data) {
-        const found = existing.data.find((r: any) => {
-          const rMeta = (r.metadata && typeof r.metadata === "object") ? r.metadata : {};
-          return String(r.id) === targetId || (rMeta.id && String(rMeta.id) === targetId);
-        });
-        if (found) targetId = String(found.id);
+      if (table === "schedules") {
+        if (r.assignment_title && String(r.assignment_title) === targetId) return true;
+        if (extra) {
+          const extraSvc = String(extra.service_name || extra.name || "").trim().toLowerCase();
+          const extraDate = String(extra.date || extra.service_date || "").trim();
+          const rSvc = String(rMeta.service_name || r.service_name || r.assignment_title || "").trim().toLowerCase();
+          const rDate = String(rMeta.date || rMeta.service_date || r.date || r.service_date || "").trim();
+          if (extraSvc && extraDate && extraSvc === rSvc && extraDate === rDate) return true;
+        }
       }
-    } else if (table === "channels") {
-      const existing = await listRows(TABLES[table]);
-      if (existing.ok && existing.data) {
-        const found = existing.data.find((r: any) => String(r.id) === targetId || String(r.channel_name).toLowerCase() === targetId.toLowerCase());
-        if (found) targetId = String(found.id);
+      if (table === "channels") {
+        if (r.channel_name && String(r.channel_name).toLowerCase() === targetId.toLowerCase()) return true;
+        if (r.url && String(r.url).toLowerCase() === targetId.toLowerCase()) return true;
       }
-    }
+      return false;
+    });
+    if (found) targetId = String(found.id);
   }
   if (!isValidUuid(targetId)) return ok(true);
   return cast<boolean>(await deleteRow(TABLES[table], targetId));
@@ -468,6 +463,7 @@ export const getMediaSchedulesByTeamMember = (teamMemberId: EntityId) => list("s
 export const getMediaSchedulesByStaff = (staffId: EntityId) => list("schedules", { staff_id: String(staffId) });
 export const createMediaSchedule = (input: MediaRecord) => create("schedules", input);
 export const updateMediaSchedule = (id: EntityId, input: MediaRecord) => update("schedules", id, input);
+export const deleteMediaSchedule = (id: EntityId, extra?: MediaRecord) => remove("schedules", id, extra);
 export const confirmMediaSchedule = (id: EntityId, input: MediaRecord = {}) => update("schedules", id, { ...input, status: "Confirmed", confirmed: true, confirmed_at: input.confirmed_at || new Date().toISOString() });
 export const completeMediaSchedule = (id: EntityId, input: MediaRecord = {}) => update("schedules", id, { ...input, status: "Completed" });
 
@@ -475,6 +471,7 @@ export const listMediaChannels = () => list("channels");
 export const getMediaChannelById = (id: EntityId) => get("channels", id);
 export const createMediaChannel = (input: MediaRecord) => create("channels", { ...input, metadata: { public_metadata_only: true, ...((input.metadata as object) || {}) } });
 export const updateMediaChannel = (id: EntityId, input: MediaRecord) => update("channels", id, input);
+export const deleteMediaChannel = (id: EntityId, extra?: MediaRecord) => remove("channels", id, extra);
 export const deactivateMediaChannel = (id: EntityId, input: MediaRecord = {}) => update("channels", id, { ...input, is_active: false });
 export const getActiveMediaChannels = () => list("channels", { is_active: true });
 export const getMediaChannelsByPlatform = (platform: string) => list("channels", { platform });
@@ -487,6 +484,7 @@ function scorePayload(input: MediaRecord) {
 export const listMediaPerformanceRecords = () => list("performance", {}, "service_date");
 export const createMediaPerformanceRecord = (input: MediaRecord) => create("performance", scorePayload(input));
 export const updateMediaPerformanceRecord = (id: EntityId, input: MediaRecord) => update("performance", id, scorePayload(input));
+export const deleteMediaPerformanceRecord = (id: EntityId, extra?: MediaRecord) => remove("performance", id, extra);
 export const getMediaPerformanceByTeamMember = (teamMemberId: EntityId) => list("performance", { team_member_id: String(teamMemberId) }, "service_date");
 export const getMediaPerformanceByService = (serviceId: EntityId) => list("performance", { media_service_id: String(serviceId) }, "service_date");
 export async function recalculateMediaOverallScore(recordId: EntityId) {
@@ -497,6 +495,7 @@ export async function recalculateMediaOverallScore(recordId: EntityId) {
 export const listMediaAwards = () => list("awards", {}, "award_date");
 export const createMediaAward = (input: MediaRecord) => create("awards", input);
 export const updateMediaAward = (id: EntityId, input: MediaRecord) => update("awards", id, input);
+export const deleteMediaAward = (id: EntityId, extra?: MediaRecord) => remove("awards", id, extra);
 export const getAwardsByTeamMember = (teamMemberId: EntityId) => list("awards", { team_member_id: String(teamMemberId) }, "award_date");
 
 export const getMediaServiceDocuments = (serviceId: EntityId) => documents.getDocumentsByEntity("media_service", serviceId);
