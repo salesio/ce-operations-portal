@@ -146,6 +146,16 @@
         row.url = chUrl;
         row.platform_url = chUrl;
       }
+      if (kind === "schedules") {
+        row.service_name = row.service_name || (payload && payload.service_name) || "";
+        row.date = row.date || row.service_date || (payload && (payload.date || payload.service_date)) || "";
+        row.service_date = row.date;
+        row.church_id = row.church_id || (payload && payload.church_id) || "";
+        row.church_name = row.church_name || (payload && payload.church_name) || "";
+        row.start_time = row.start_time || (payload && payload.start_time) || "";
+        row.status = row.status || (payload && payload.status) || "Publicada";
+        row.assignments = Array.isArray(row.assignments) ? row.assignments : ((payload && Array.isArray(payload.assignments)) ? payload.assignments : []);
+      }
       delete row.stream_key;
       delete row.streamKey;
       s.rows.unshift(row);
@@ -168,6 +178,16 @@
         next.channel_url = chUrl;
         next.url = chUrl;
         next.platform_url = chUrl;
+      }
+      if (kind === "schedules") {
+        next.service_name = (payload && payload.service_name) || next.service_name || "";
+        next.date = (payload && (payload.date || payload.service_date)) || next.date || next.service_date || "";
+        next.service_date = next.date;
+        next.church_id = (payload && payload.church_id) || next.church_id || "";
+        next.church_name = (payload && payload.church_name) || next.church_name || "";
+        next.start_time = (payload && payload.start_time) || next.start_time || "";
+        next.status = (payload && payload.status) || next.status || "Publicada";
+        next.assignments = (payload && Array.isArray(payload.assignments)) ? payload.assignments : (next.assignments || []);
       }
       delete next.stream_key;
       delete next.streamKey;

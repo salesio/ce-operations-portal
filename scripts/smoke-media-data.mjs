@@ -181,6 +181,9 @@ if (api?.listMediaTeam) {
       ],
     });
     ok("createMediaSchedule ok", !!sch?.ok, sch?.error || "");
+    ok("createMediaSchedule keeps service_name", sch?.data?.service_name === "Smoke Special Service", String(sch?.data?.service_name));
+    ok("createMediaSchedule keeps date", sch?.data?.date === "2026-08-15" || sch?.data?.service_date === "2026-08-15", String(sch?.data?.date || sch?.data?.service_date));
+    ok("createMediaSchedule keeps assignments array", Array.isArray(sch?.data?.assignments) && sch.data.assignments.length > 0, String(sch?.data?.assignments?.length));
     scheduleId = sch?.data?.id || null;
   }
 
@@ -208,6 +211,11 @@ if (api?.listMediaTeam) {
       check_out_time: "20:00",
     });
     ok("markCheckOut ok", !!cout?.ok, cout?.error || "");
+  }
+
+  if (scheduleId && api.deleteMediaSchedule) {
+    const del = await api.deleteMediaSchedule(scheduleId);
+    ok("deleteMediaSchedule ok", !!del?.ok, del?.error || "");
   }
 
   if (api.createMediaChannel) {

@@ -27800,21 +27800,113 @@ function syncMediaScheduleCameraSlots(form = byId("entryForm")) {
 
 function mountMediaScheduleFormControls(form = byId("entryForm")) {
   if (!form || modalType !== "mediaSchedule") return;
+  const selectEl = form.querySelector('[name="service_name_select"]');
+  const customInputEl = form.querySelector('#mediaScheduleCustomServiceName');
+  const timeInputEl = form.querySelector('[name="start_time"]');
+  const churchSelectEl = form.querySelector('[name="church_id"]');
+  const dateInputEl = form.querySelector('[name="date"]');
+
+  if (selectEl && customInputEl) {
+    selectEl.addEventListener("change", () => {
+      const selectedVal = selectEl.value;
+      if (selectedVal === "__custom__") {
+        customInputEl.classList.remove("d-none");
+        customInputEl.focus();
+      } else {
+        customInputEl.classList.add("d-none");
+        customInputEl.value = selectedVal;
+        const selectedOpt = selectEl.selectedOptions?.[0];
+        if (selectedOpt) {
+          const sTime = selectedOpt.dataset.time;
+          const sChurch = selectedOpt.dataset.church;
+          if (sTime && timeInputEl && (!timeInputEl.value || timeInputEl.value === "00:00")) {
+            timeInputEl.value = sTime;
+          }
+          if (sChurch && churchSelectEl && !churchSelectEl.value) {
+            churchSelectEl.value = sChurch;
+          }
+        }
+      }
+      syncMediaScheduleCameraSlots(form);
+    });
+  }
+  if (customInputEl) {
+    customInputEl.addEventListener("input", () => {
+      syncMediaScheduleCameraSlots(form);
+    });
+  }
+
   form.querySelector('[name="date"]')?.addEventListener("change", () => syncMediaScheduleCameraSlots(form));
-  form.querySelector('[name="service_name"]')?.addEventListener("input", () => syncMediaScheduleCameraSlots(form));
   syncMediaScheduleCameraSlots(form);
 }
 
 function renderMediaScheduleForm(record = {}) {
   const mondaySchedule = isMediaMondaySchedule(record);
-  const baseFields = [
+  const mediaServices = (getMediaState().services || []).filter((s) => /Activo|Active/i.test(s.status || "Activo") || s.name === record.service_name || s.service_name === record.service_name);
+  const generalPrograms = (state.programs || []).filter((p) => p.name || p.title);
+  
+  const allServicesMap = new Map();
+  mediaServices.forEach((s) => {
+    const sName = String(s.name || s.service_name || "").trim();
+    if (sName) {
+      allServicesMap.set(sName.toLowerCase(), {
+        name: sName,
+        time: s.time || s.start_time || "",
+        church_id: s.church_id || "",
+        day_of_week: s.day_of_week || s.day || "",
+        category: s.category || s.type || "Culto Regular"
+      });
+    }
+  });
+  generalPrograms.forEach((p) => {
+    const pName = String(p.name || p.title || "").trim();
+    if (pName && !allServicesMap.has(pName.toLowerCase())) {
+      allServicesMap.set(pName.toLowerCase(), {
+        name: pName,
+        time: p.start_time || p.time || "",
+        church_id: p.church_id || "",
+        day_of_week: p.day_of_week || "",
+        category: p.category || p.type || "Programa"
+      });
+    }
+  });
+
+  const registeredServiceList = Array.from(allServicesMap.values());
+  const currentServiceName = String(record.service_name || record.name || "").trim();
+  const isCustomService = currentServiceName && !registeredServiceList.some((s) => s.name.toLowerCase() === currentServiceName.toLowerCase());
+
+  const serviceSelectHtml = `
+    <div class="col-md-6">
+      <label class="form-label d-flex justify-content-between">
+        <span>${L("service") || "Culto / Programa"}</span>
+        <span class="mini-chip">${L("required") || "Obrigatório"}</span>
+      </label>
+      <select name="service_name_select" class="form-select" id="mediaScheduleServiceSelect">
+        <option value="">${lang === "pt" ? "-- Seleccione o Culto / Programa --" : "-- Select Service / Program --"}</option>
+        ${registeredServiceList.map((s) => {
+          const isSelected = currentServiceName && s.name.toLowerCase() === currentServiceName.toLowerCase();
+          const subtitle = [s.day_of_week, s.time].filter(Boolean).join(" · ");
+          return `<option value="${mediaEscape(s.name)}" data-time="${mediaEscape(s.time)}" data-church="${mediaEscape(s.church_id)}" data-day="${mediaEscape(s.day_of_week)}" ${isSelected ? "selected" : ""}>${mediaEscape(s.name)}${subtitle ? ` (${mediaEscape(subtitle)})` : ""}</option>`;
+        }).join("")}
+        <option value="__custom__" ${isCustomService ? "selected" : ""}>${lang === "pt" ? "+ Outro Culto / Programa Personalizado" : "+ Other Custom Service / Program"}</option>
+      </select>
+      <input name="service_name" id="mediaScheduleCustomServiceName" type="text" class="form-control mt-1 ${isCustomService ? "" : "d-none"}" value="${mediaEscape(currentServiceName)}" placeholder="${lang === "pt" ? "Introduza o nome do culto ou programa" : "Enter service or program name"}">
+    </div>`;
+
+  const otherFields = [
     ["date", "date", "date"],
-    ["service_name", "service"],
     ["church_id", "church", "church"],
     ["start_time", "time", "time"],
     ["status", "status", "select", ["Rascunho", "Publicada", "Incompleta", "Concluida"]],
     ["notes", "notes", "textarea"]
-  ].map((field) => fieldControl(field, record)).join("");
+  ];
+
+  const dateFieldHtml = fieldControl(["date", "date", "date"], record);
+  const churchFieldHtml = fieldControl(["church_id", "church", "church"], record);
+  const timeFieldHtml = fieldControl(["start_time", "time", "time"], record);
+  const statusFieldHtml = fieldControl(["status", "status", "select", ["Rascunho", "Publicada", "Incompleta", "Concluida"]], record);
+  const notesFieldHtml = fieldControl(["notes", "notes", "textarea"], record);
+
   const assignmentsHtml = mediaScheduleAssignmentSlots.map((slotConfig, index) => {
     const role = mediaRoleByKey(slotConfig.roleKey);
     const assignment = findMediaScheduleAssignment(record, slotConfig, index);
@@ -27847,8 +27939,14 @@ function renderMediaScheduleForm(record = {}) {
         </div>
       </div>`;
   }).join("");
+
   return `
-    ${baseFields}
+    ${dateFieldHtml}
+    ${serviceSelectHtml}
+    ${churchFieldHtml}
+    ${timeFieldHtml}
+    ${statusFieldHtml}
+    ${notesFieldHtml}
     <div class="col-12">
       <div class="media-assignment-form">
         <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
@@ -27892,11 +27990,19 @@ function collectMediaScheduleForm(form, existing = {}) {
     };
   }).filter(Boolean);
   const supervisor = assignments.find((item) => item.slot_key === "supervisor");
+  
+  let serviceName = fd.get("service_name") || "";
+  const serviceSelectVal = fd.get("service_name_select") || "";
+  if (serviceSelectVal && serviceSelectVal !== "__custom__") {
+    serviceName = serviceSelectVal;
+  }
+  serviceName = String(serviceName || existing.service_name || "").trim();
+
   const record = {
     ...existing,
-    date: fd.get("date") || existing.date || "",
-    service_date: fd.get("date") || existing.service_date || "",
-    service_name: fd.get("service_name") || existing.service_name || "",
+    date: fd.get("date") || existing.date || existing.service_date || "",
+    service_date: fd.get("date") || existing.service_date || existing.date || "",
+    service_name: serviceName,
     church_id: fd.get("church_id") || existing.church_id || activeUser.church_id,
     church_name: churchName(fd.get("church_id") || existing.church_id || activeUser.church_id),
     start_time: fd.get("start_time") || existing.start_time || "",
@@ -38497,6 +38603,18 @@ async function dualWriteMediaRecord(modalType, mode, record) {
           resData.platform_url = normUrl;
         }
       }
+      if (modalType === "mediaSchedule" && resData) {
+        resData.service_name = resData.service_name || record.service_name || "";
+        resData.date = resData.date || resData.service_date || record.date || record.service_date || "";
+        resData.service_date = resData.date;
+        resData.church_id = resData.church_id || record.church_id;
+        resData.church_name = resData.church_name || record.church_name;
+        resData.start_time = resData.start_time || record.start_time || "";
+        resData.assignments = Array.isArray(resData.assignments) && resData.assignments.length ? resData.assignments : (record.assignments || []);
+        resData.leader_responsible = resData.leader_responsible || record.leader_responsible;
+        resData.supervisor_name = resData.supervisor_name || record.supervisor_name;
+        resData.status = resData.status || record.status || "Publicada";
+      }
       if (mode === "create" && resData && resData.id) {
         const oldId = record.id;
         record.id = resData.id;
@@ -38559,12 +38677,27 @@ async function hydrateMediaFromRepository() {
       time: row.time || row.start_time || "",
       status: row.status || "Activo",
     }));
-    await merge(repo.listMediaSchedules?.bind(repo), "schedules", (row) => ({
-      ...row,
-      date: row.date || row.service_date,
-      status: row.status || "Publicada",
-      assignments: Array.isArray(row.assignments) ? row.assignments : [],
-    }));
+    await merge(repo.listMediaSchedules?.bind(repo), "schedules", (row) => {
+      const meta = (row.metadata && typeof row.metadata === "object") ? row.metadata : {};
+      const svcName = row.service_name || meta.service_name || row.assignment_title || "";
+      const dt = row.date || row.service_date || meta.date || meta.service_date || "";
+      const asgns = Array.isArray(row.assignments) && row.assignments.length
+        ? row.assignments
+        : (Array.isArray(meta.assignments) && meta.assignments.length ? meta.assignments : []);
+      return {
+        ...row,
+        service_name: svcName,
+        date: dt,
+        service_date: dt,
+        church_id: row.church_id || meta.church_id || "",
+        church_name: row.church_name || meta.church_name || "",
+        start_time: row.start_time || meta.start_time || "",
+        leader_responsible: row.leader_responsible || meta.leader_responsible || row.supervisor_name || meta.supervisor_name || "",
+        supervisor_name: row.supervisor_name || meta.supervisor_name || row.leader_responsible || meta.leader_responsible || "",
+        status: row.status || meta.status || "Publicada",
+        assignments: asgns,
+      };
+    });
     await merge(repo.listMediaChannels?.bind(repo), "streamingChannels", (row) => {
       const chName = String(row.name || row.channel_name || row.title || "").trim();
       const chUrl = String(row.channel_url || row.platform_url || row.url || "").trim();

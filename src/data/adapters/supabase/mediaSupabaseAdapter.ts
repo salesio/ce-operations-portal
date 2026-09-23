@@ -97,7 +97,40 @@ function aliases(table: Table, raw: MediaRecord): MediaRecord {
     });
   }
   if (table === "services") Object.assign(row, { name: row.service_name, needs_streaming: row.requires_streaming, responsible_name: row.media_lead_name, event_date: row.service_date });
-  if (table === "schedules") Object.assign(row, { service_id: row.media_service_id, technicianId: row.team_member_id, role: row.role_name, assignments: [{ team_member_id: row.team_member_id, role_name: row.role_name, status: row.status, confirmation_status: row.confirmed ? "Confirmed" : "Pending" }] });
+  if (table === "schedules") {
+    const meta = (row.metadata && typeof row.metadata === "object" ? row.metadata : {}) as Record<string, unknown>;
+    const asgns = Array.isArray(meta.assignments) && meta.assignments.length
+      ? meta.assignments
+      : Array.isArray(row.assignments) && row.assignments.length
+      ? row.assignments
+      : (row.team_member_id ? [{
+          slot_key: "technician",
+          role_name: row.role_name || "Técnico",
+          technician_id: row.team_member_id,
+          technician_name: row.team_member_id ? "" : "Técnico",
+          status: row.status || "Escalado",
+          confirmation_status: row.confirmed ? "Confirmed" : "Pending"
+        }] : []);
+    const svcName = (meta.service_name as string) || row.service_name || row.assignment_title || "";
+    const dt = (meta.date as string) || (meta.service_date as string) || row.date || row.service_date || "";
+    Object.assign(row, {
+      service_id: row.media_service_id || meta.service_id,
+      service_name: svcName,
+      date: dt,
+      service_date: dt,
+      church_id: (meta.church_id as string) || row.church_id || "",
+      church_name: (meta.church_name as string) || row.church_name || "",
+      start_time: row.start_time || (meta.start_time as string) || "",
+      leader_responsible: (meta.leader_responsible as string) || (meta.supervisor_name as string) || row.leader_responsible || "",
+      supervisor_id: (meta.supervisor_id as string) || row.supervisor_id || "",
+      supervisor_name: (meta.supervisor_name as string) || (meta.leader_responsible as string) || row.supervisor_name || "",
+      status: row.status || (meta.status as string) || "Publicada",
+      notes: row.notes || (meta.notes as string) || "",
+      technicianId: row.team_member_id,
+      role: row.role_name,
+      assignments: asgns,
+    });
+  }
   if (table === "channels") {
     const chName = (row.channel_name || row.name || row.title || "") as string;
     const chUrl = (row.url || row.channel_url || row.platform_url || "") as string;
@@ -178,8 +211,27 @@ function payload(table: Table, raw: MediaRecord): SupabaseRow {
     row.media_lead_name ??= row.responsible_name; row.service_date ??= row.event_date;
   } else if (table === "schedules") {
     const first = Array.isArray(row.assignments) ? (row.assignments[0] as MediaRecord | undefined) : undefined;
-    row.media_service_id ??= row.service_id; row.team_member_id ??= row.technicianId || first?.team_member_id;
-    row.role_name ??= row.role || first?.role_name; row.confirmed ??= String(first?.confirmation_status || "").toLowerCase() === "confirmed";
+    row.media_service_id ??= row.service_id;
+    row.team_member_id ??= row.technicianId || first?.technician_id;
+    row.role_name ??= row.role || first?.role_name;
+    row.confirmed ??= String(first?.confirmation_status || "").toLowerCase() === "confirmed";
+    row.assignment_title = row.assignment_title || row.service_name || "Escala de Culto";
+    const existingMeta = (row.metadata && typeof row.metadata === "object" ? row.metadata : {}) as Record<string, unknown>;
+    row.metadata = {
+      ...existingMeta,
+      service_name: row.service_name || existingMeta.service_name || "",
+      date: row.date || row.service_date || existingMeta.date || existingMeta.service_date || "",
+      service_date: row.service_date || row.date || existingMeta.service_date || existingMeta.date || "",
+      church_id: row.church_id || existingMeta.church_id || "",
+      church_name: row.church_name || existingMeta.church_name || "",
+      start_time: row.start_time || existingMeta.start_time || "",
+      leader_responsible: row.leader_responsible || row.supervisor_name || existingMeta.leader_responsible || existingMeta.supervisor_name || "",
+      supervisor_id: row.supervisor_id || existingMeta.supervisor_id || "",
+      supervisor_name: row.supervisor_name || row.leader_responsible || existingMeta.supervisor_name || existingMeta.leader_responsible || "",
+      assignments: Array.isArray(row.assignments) && row.assignments.length ? row.assignments : existingMeta.assignments || [],
+      status: row.status || existingMeta.status || "Publicada",
+      notes: row.notes || existingMeta.notes || "",
+    };
   } else if (table === "channels") {
     const chName = (row.name || row.channel_name || row.title || "") as string;
     row.channel_name = chName;
@@ -285,6 +337,22 @@ async function update(table: Table, id: EntityId, input: MediaRecord) {
       } else {
         return create(table, input);
       }
+    } else if (table === "schedules") {
+      const dateVal = String(row.date || row.service_date || input.date || input.service_date || "").trim();
+      const serviceVal = String(row.service_name || input.service_name || "").trim().toLowerCase();
+      const existing = await listRows(TABLES[table]);
+      if (existing.ok && existing.data && existing.data.length > 0) {
+        const found = existing.data.find((r: any) => {
+          const rMeta = (r.metadata && typeof r.metadata === "object") ? r.metadata : {};
+          const rDate = String(rMeta.date || rMeta.service_date || r.service_date || "").trim();
+          const rService = String(rMeta.service_name || r.assignment_title || "").trim().toLowerCase();
+          return String(r.id) === targetId || (dateVal && rDate === dateVal && serviceVal && rService === serviceVal);
+        });
+        if (found) targetId = String(found.id);
+        else return create(table, input);
+      } else {
+        return create(table, input);
+      }
     } else if (table === "channels") {
       const urlVal = String(row.url || input.channel_url || input.url || "").trim().toLowerCase();
       const nameVal = String(row.channel_name || input.name || input.channel_name || "").trim().toLowerCase();
@@ -336,6 +404,15 @@ async function remove(table: Table, id: EntityId) {
       const existing = await listRows(TABLES[table]);
       if (existing.ok && existing.data) {
         const found = existing.data.find((r: any) => String(r.id) === targetId || String(r.service_name).toLowerCase() === targetId.toLowerCase() || String(r.service_code).toLowerCase() === targetId.toLowerCase());
+        if (found) targetId = String(found.id);
+      }
+    } else if (table === "schedules") {
+      const existing = await listRows(TABLES[table]);
+      if (existing.ok && existing.data) {
+        const found = existing.data.find((r: any) => {
+          const rMeta = (r.metadata && typeof r.metadata === "object") ? r.metadata : {};
+          return String(r.id) === targetId || (rMeta.id && String(rMeta.id) === targetId);
+        });
         if (found) targetId = String(found.id);
       }
     } else if (table === "channels") {
