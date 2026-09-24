@@ -31958,14 +31958,17 @@ async function submitForm(form) {
     return;
   }
   if (modalType === "mediaSchedule") {
-    const collection = getCollection("mediaSchedule");
+    const media = typeof getMediaState === "function" ? getMediaState() : (state.media || {});
+    media.schedules = Array.isArray(media.schedules) ? media.schedules : [];
+    const collection = media.schedules;
     const nowIso = new Date().toISOString();
     const today = nowIso.slice(0, 10);
     let targetRecord;
     if (modalMode === "edit") {
-      const index = collection.findIndex((item) => item.id === modalRecordId);
+      const index = collection.findIndex((item) => item.id === modalRecordId || String(item.id) === String(modalRecordId));
       if (index >= 0) {
         collection[index] = {
+          ...collection[index],
           ...collectMediaScheduleForm(form, collection[index]),
           updated_by: activeUser.name,
           updated_at: today
@@ -31981,8 +31984,9 @@ async function submitForm(form) {
         updated_at: today,
         ...collectMediaScheduleForm(form, {})
       };
-      collection.push(targetRecord);
+      collection.unshift(targetRecord);
     }
+    state.media.schedules = collection;
     syncMediaToLocalStorage();
     saveState(`${modalMode} mediaSchedule`);
     if (targetRecord) {
@@ -31990,6 +31994,9 @@ async function submitForm(form) {
     }
     bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide();
     form.reset();
+    if (typeof showToast === "function") {
+      showToast(lang === "pt" ? (modalMode === "edit" ? "Escala atualizada com sucesso!" : "Escala criada e guardada com sucesso!") : (modalMode === "edit" ? "Schedule updated successfully!" : "Schedule created and saved successfully!"));
+    }
     if (activeRoute === "media" || activeRoute === "mediaSchedulesRoute") {
       mediaPageState.tab = "schedules";
       renderMedia("schedules");
@@ -38839,9 +38846,17 @@ async function dualWriteMediaRecord(modalType, mode, record) {
       if (mode === "create" && resData && resData.id) {
         const oldId = record.id;
         record.id = resData.id;
-        const idx = col.findIndex((item) => item.id === oldId || item === record);
+        const idx = col.findIndex((item) => item.id === oldId || String(item.id) === String(oldId) || item === record);
         if (idx >= 0) {
           col[idx] = { ...col[idx], ...resData };
+        } else {
+          col.unshift(resData);
+        }
+        if (state.media && state.media.schedules && modalType === "mediaSchedule") {
+          const sIdx = state.media.schedules.findIndex((item) => item.id === oldId || String(item.id) === String(oldId) || item === record);
+          if (sIdx >= 0) {
+            state.media.schedules[sIdx] = { ...state.media.schedules[sIdx], ...resData };
+          }
         }
       } else if (mode === "update" && resData) {
         const idx = col.findIndex((item) => item.id === record.id || (resData.id && item.id === resData.id));
@@ -38851,6 +38866,9 @@ async function dualWriteMediaRecord(modalType, mode, record) {
       }
       saveState(`Synced ${modalType} (${mode}) with Supabase`);
       syncMediaToLocalStorage();
+      if (modalType === "mediaSchedule" && (activeRoute === "media" || activeRoute === "mediaSchedulesRoute") && typeof renderMedia === "function") {
+        renderMedia("schedules");
+      }
     }
   } catch (err) {
     console.warn("[CE Media] dualWrite error", err);
@@ -38873,7 +38891,42 @@ async function hydrateMediaFromRepository() {
       const result = await listFn();
       if (!result?.ok || !Array.isArray(result.data)) return;
       const fetched = result.data.map((row) => (mapRow ? mapRow(row) : row));
-      state.media[key] = fetched;
+      
+      const byId = new Map();
+      const prevList = Array.isArray(state.media[key]) ? state.media[key] : [];
+      const prevMap = new Map();
+      prevList.forEach((r) => {
+        if (r && r.id) prevMap.set(String(r.id), r);
+        const rMeta = (r && r.metadata && typeof r.metadata === "object") ? r.metadata : {};
+        if (rMeta.id) prevMap.set(String(rMeta.id), r);
+        if (rMeta.client_id) prevMap.set(String(rMeta.client_id), r);
+      });
+
+      fetched.forEach((row) => {
+        const rowId = String(row.id);
+        const metaId = row.metadata?.id ? String(row.metadata.id) : null;
+        const clientId = row.metadata?.client_id ? String(row.metadata.client_id) : (row.client_id ? String(row.client_id) : null);
+        const previous = prevMap.get(rowId) || (metaId ? prevMap.get(metaId) : null) || (clientId ? prevMap.get(clientId) : null) || {};
+        byId.set(rowId, { ...previous, ...row, id: row.id });
+      });
+
+      // Keep un-synced client-created items
+      prevList.forEach((localRow) => {
+        if (!localRow || !localRow.id) return;
+        const localId = String(localRow.id);
+        const isClientOnly = localId.startsWith("med-") || localId.startsWith("as-") || localId.startsWith("mrl-") || localId.startsWith("msv-") || localId.startsWith("mch-") || localId.startsWith("mev-") || localId.startsWith("maw-");
+        
+        const alreadyFetched = fetched.some((f) => {
+          const fMeta = (f.metadata && typeof f.metadata === "object") ? f.metadata : {};
+          return String(f.id) === localId || String(fMeta.id) === localId || String(fMeta.client_id) === localId || String(f.client_id) === localId;
+        });
+
+        if (isClientOnly && !alreadyFetched && !byId.has(localId)) {
+          byId.set(localId, localRow);
+        }
+      });
+
+      state.media[key] = [...byId.values()];
       hydrated = true;
     }
 

@@ -286,7 +286,15 @@ async function get(table: Table, id: EntityId) {
 }
 async function create(table: Table, input: MediaRecord) {
   if (table === "channels") { const safe = assertPublicChannelPayload(input); if (!safe.ok) return safe as DataResult<MediaRecord>; }
-  const result = await createRow(TABLES[table], payload(table, input));
+  const rowPayload = payload(table, input);
+  let result = await createRow(TABLES[table], rowPayload);
+  if (!result.ok && table === "schedules" && (rowPayload.media_service_id || rowPayload.team_member_id)) {
+    const fallbackPayload = { ...rowPayload };
+    delete fallbackPayload.media_service_id;
+    delete fallbackPayload.team_member_id;
+    const retryResult = await createRow(TABLES[table], fallbackPayload);
+    if (retryResult.ok) result = retryResult;
+  }
   return result.ok ? ok(aliases(table, result.data)) : cast<MediaRecord>(result);
 }
 async function update(table: Table, id: EntityId, input: MediaRecord) {
