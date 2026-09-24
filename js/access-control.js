@@ -597,6 +597,8 @@
     if (route.startsWith("fevo")) return "fevo";
     if (route.startsWith("media")) return "media";
     if (route.startsWith("cell")) return "cell";
+    if (route.startsWith("finance")) return "finance";
+    if (route.startsWith("partnership")) return "partnership";
     return route;
   }
 

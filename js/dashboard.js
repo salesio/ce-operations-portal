@@ -10749,7 +10749,9 @@ function fallbackRouteModule(route = "dashboard") {
   if (route.startsWith("cell")) return "cell";
   if (route.startsWith("fevo")) return "fevo";
   if (route.startsWith("finance")) return "finance";
+  if (route.startsWith("partnership")) return "partnership";
   if (route.startsWith("venueInventory")) return "venueInventory";
+  if (route.startsWith("media")) return "media";
   return route;
 }
 
@@ -10761,7 +10763,8 @@ function fallbackCanViewModule(user = activeUser, module = "dashboard") {
   if (module === "dashboard") return true;
   if (role === "Main Pastor") return !["accessControl"].includes(module);
   if (role === "Church Pastor") return !["usersRoles", "accessControl", "auditLogs"].includes(module);
-  if (role === "Finance Head" || role === "Finance Officer") return ["finance", "reports", "requisitions", "auditLogs"].includes(module);
+  if (role === "Finance Head" || role === "Finance Officer") return ["finance", "partnership", "reports", "requisitions", "auditLogs"].includes(module);
+  if (role === "Partnership Coordinator") return ["partnership", "finance", "reports", "notifications"].includes(module);
   if (role === "HR Manager") return ["staffHr", "reports"].includes(module);
   if (role === "Requisition Officer") return ["requisitions", "reports", "venueInventory"].includes(module);
   if (role === "Counseling Head") return ["counseling", "followUp", "firstTimers", "reports", "notifications"].includes(module);
@@ -10771,11 +10774,12 @@ function fallbackCanViewModule(user = activeUser, module = "dashboard") {
   if (role === "Foundation Teacher" || role === "Foundation Assistant") return ["foundation", "notifications"].includes(module);
   if (role === "Media Director" || role === "Media Supervisor") return ["media", "reports", "venueInventory", "programs", "notifications"].includes(module);
   if (role === "Media Team Member") return ["media", "notifications"].includes(module);
-  if (role === "Department Head") return ["members", "firstTimers", "followUp", "reports", "requisitions", "staffHr", "venueInventory", "cell", "cellMinistry", "cellReports", "alec", "fevo"].includes(module);
+  if (role === "Department Head") return ["members", "firstTimers", "followUp", "reports", "requisitions", "staffHr", "venueInventory", "cell", "cellMinistry", "cellReports", "alec", "fevo", "media", "programs", "counseling", "sacraments", "foundation", "finance", "partnership"].includes(module);
   if (role === "Staff Member") return ["requisitions", "venueInventory", "staffHr", "notifications"].includes(module);
   const legacyModuleKeys = {
     foundation: ["foundation", "foundation_teacher", "foundation_assistant", "foundation_rector", "foundation_coordinator"],
     finance: ["finance", "financeHead", "financeOfficer", "financeVerify", "financeViewer"],
+    partnership: ["partnership", "partnerships", "partnershipCoordinator"],
     staffHr: ["staffHr"],
     requisitions: ["requisitions"],
     reports: ["reports"],
@@ -10787,7 +10791,7 @@ function fallbackCanViewModule(user = activeUser, module = "dashboard") {
     venueInventory: ["venueInventory", "venueInventoryRequests", "assignedEquipment", "inventory", "venues", "maintenance", "checklists"],
     prisonMinistry: ["prisonMinistry"],
     ministryMaterials: ["ministryMaterials"],
-    media: ["media", "mediaTeam"]
+    media: ["media", "mediaTeam", "mediaDirector", "mediaSupervisor"]
   };
   return (legacyModuleKeys[module] || [module]).some((key) => grants.includes(key));
 }
@@ -10796,7 +10800,7 @@ function userHasExtendedCellPerms(user = activeUser) {
   if (!user) return false;
   if ((user.department_permissions || []).includes("*") || user.role === "Super Admin" || String(user.role || "").toLowerCase().includes("super_admin")) return true;
   const deptPerms = user.department_permissions || [];
-  const nonCellPerms = deptPerms.filter((p) => !["cellReports", "cell_reports"].includes(p));
+  const nonCellPerms = deptPerms.filter((p) => !["cellReports", "cell_reports", "cellPortal", "cell_portal"].includes(p));
   if (nonCellPerms.length > 0) return true;
   return deptPerms.some((p) => ["cellMinistry", "cell_ministry", "cell", "alec", "alec_manager"].includes(p)) ||
     ["Cell Ministry Head", "Cell Ministry Reviewer", "ALEC Manager", "ALEC Coordinator", "Coordenadora ALEC", "Coordenador ALEC", "Department Head", "Program Coordinator", "Prison Ministry Coordinator", "Ministry Materials Manager", "Media Director", "Venue Manager", "Finance Head", "Finance Officer", "Counselor", "HR Manager", "Requisition Officer", "Staff Member"].includes(user.role);
@@ -10814,60 +10818,40 @@ function isPastoralCareRector(user = activeUser) {
 }
 
 function isCellLeaderOrAssistant(user = activeUser) {
+  if (!user) return false;
   const role = String(user?.role || user?.role_name || "").toLowerCase().trim();
+  const isCellRole = [
+    "cell leader", "cell assistant", "cell_leader", "assistant_cell_leader",
+    "cell_assistant", "líder de célula", "lider de celula", "assistente de célula", "assistente de celula"
+  ].includes(role);
   const hasCell = Boolean(user?.cell_id || user?.cell_group_id || (Array.isArray(user?.assigned_cells) && user.assigned_cells.length > 0) || (Array.isArray(user?.assigned_cell_groups) && user.assigned_cell_groups.length > 0));
   return (
     user?.auth_user_id === "47df0cce-9701-492c-90aa-b3cb205bbd4b" ||
     user?.id === "47df0cce-9701-492c-90aa-b3cb205bbd4b" ||
-    (hasCell && [
-      "cell leader", "cell assistant", "cell_leader", "assistant_cell_leader",
-      "cell_assistant", "líder de célula", "lider de celula", "assistente de célula", "assistente de celula"
-    ].includes(role))
+    isCellRole ||
+    (hasCell && isCellRole)
   );
 }
 
 function roleWorkspaceRoutes(user = activeUser) {
+  if (!user) return null;
   const role = String(user?.role || user?.role_name || "").toLowerCase().trim();
   const grants = user?.department_permissions || [];
-  if (isCellLeaderOrAssistant(user) && !userHasExtendedCellPerms(user)) {
-    const routes = ["cellPortal", "cellReceivedReports", "cellWeeklyReport"];
-    if (grants.includes("*") || user.role === "Super Admin" || role.includes("super_admin") || role === "cell ministry head") {
-      routes.push(
-        "cellMinistryOverview", "cellReceivedReports", "cellEvaluationRoute", "cellPerformance", "cellLeadersAttention", "cellActionPlan",
-        "cellWeeklyReport", "cellGroups", "cellCellsList", "cellMembers", "cellLeadersRoute", "cellFinalValidation", "cellConsolidation",
-        "cellAlecOverview", "cellAlecRegistration", "cellAlecScores", "cellChurchReports"
-      );
-    } else {
-      if (grants.includes("cellMinistry") || grants.includes("cell_ministry") || grants.includes("cell")) {
-        routes.push("cellMinistryOverview", "cellReceivedReports", "cellEvaluationRoute", "cellPerformance", "cellLeadersAttention", "cellActionPlan");
-      }
-      if (grants.includes("cellReports") || grants.includes("cell_reports") || grants.includes("cell")) {
-        routes.push("cellWeeklyReport", "cellGroups", "cellCellsList", "cellMembers", "cellLeadersRoute", "cellFinalValidation", "cellConsolidation");
-      }
-      if (grants.includes("alec") || grants.includes("alecRegistration") || grants.includes("alecScores") || grants.includes("alec_manager") || grants.includes("cell")) {
-        routes.push("cellAlecOverview", "cellAlecRegistration", "cellAlecScores", "cellChurchReports");
-      }
-    }
-    if (grants.includes("fevo") || grants.includes("*")) {
-      routes.push("fevo", "fevoConfigRoute", "fevoFollowUpRoute", "fevoEvangelismRoute", "fevoVisitationRoute", "fevoPrayerRoute", "fevoNoReportsRoute", "fevoWeeklyReportsRoute", "fevoAnalysisRoute");
-    }
-    if (grants.includes("followUp") || grants.includes("follow_up")) routes.push("followUp");
-    if (grants.includes("foundation") || grants.includes("foundation_teacher") || grants.includes("foundation_assistant")) routes.push("foundation");
-    if (grants.includes("reports") || grants.includes("reports_viewer")) routes.push("reports");
-    if (grants.includes("firstTimers") || grants.includes("first_timers")) routes.push("firstTimers");
-    if (grants.includes("pastoralCare")) routes.push("counseling", "sacraments");
-    if (grants.includes("counseling")) routes.push("counseling");
-    if (grants.includes("sacraments")) routes.push("sacraments");
-    if (grants.includes("venueInventory")) routes.push("venueInventory");
-    if (grants.includes("finance")) routes.push("finance", "financeOverviewRoute", "financeEntriesRoute", "financePublicSubmissionsRoute", "financeVerificationRoute", "financeApprovedRequisitionsRoute", "financeReportsRoute", "financePartnersRoute", "financeExportsRoute");
-    if (grants.includes("media")) routes.push("media");
-    if (grants.includes("programs")) routes.push("programs");
-    if (grants.includes("prisonMinistry")) routes.push("cellPrison");
-    if (grants.includes("ministryMaterials")) routes.push("cellMaterials");
-    if (grants.includes("staffHr")) routes.push("staffHr");
-    if (grants.includes("requisitions")) routes.push("requisitions");
-    return routes;
+  const isSuper = grants.includes("*") || user.role === "Super Admin" || role.includes("super_admin") || role === "super admin";
+  if (isSuper) return null;
+
+  const routes = [];
+
+  // 1. Cell leader assignment or cell role
+  const isCellLeader = isCellLeaderOrAssistant(user) || [
+    "cell leader", "cell assistant", "cell_leader", "assistant_cell_leader",
+    "cell_assistant", "líder de célula", "lider de celula", "assistente de célula", "assistente de celula"
+  ].includes(role);
+  if (isCellLeader) {
+    routes.push("cellPortal", "cellReceivedReports", "cellWeeklyReport");
   }
+
+  // 2. Base role routes
   if (
     role === "venue manager" ||
     role === "venue_manager" ||
@@ -10875,7 +10859,7 @@ function roleWorkspaceRoutes(user = activeUser) {
     role === "gestor de patrimonio e instalacoes" ||
     role === "gestor de patrimonio"
   ) {
-    return [
+    routes.push(
       "venueInventory",
       "venueInventoryGeneral",
       "venueInventoryAcquisitions",
@@ -10886,29 +10870,52 @@ function roleWorkspaceRoutes(user = activeUser) {
       "venueInventoryChecklist",
       "venueInventoryReports",
       "cellPortal"
-    ];
+    );
+  } else if (role === "alec_manager" || role === "alec coordinator" || role === "alec manager" || role === "alec_coordinator") {
+    routes.push("cellAlecOverview", "cellAlecRegistration", "cellAlecScores", "cellChurchReports", "cellPortal");
+  } else if (isPastoralCareRector(user)) {
+    routes.push("firstTimers", "followUp", "foundation", "sacraments", "counseling");
+  } else if (role === "follow-up coordinator" || role === "follow_up_coordinator" || role === "coordenador de acompanhamento") {
+    routes.push("firstTimers", "followUp");
+  } else if (role === "counseling head" || role === "counseling_head" || role === "head de aconselhamento") {
+    routes.push("counseling", "followUp", "firstTimers", "reports");
+  } else if (role === "counselor" || role === "conselheiro") {
+    routes.push("counseling", "followUp");
+  } else if (role === "foundation teacher" || role === "foundation assistant" || role === "foundation rector" || role === "foundation coordinator") {
+    routes.push("foundation");
+  } else if (role === "media director" || role === "media supervisor" || role === "director de mídia" || role === "supervisor de mídia") {
+    routes.push("media", "mediaTeamRoute", "mediaRolesRoute", "mediaSchedulesRoute", "mediaServicesRoute", "mediaChannelsRoute", "mediaPerformanceRoute", "mediaReportsRoute", "reports", "venueInventory", "programs");
+  } else if (role === "media team member" || role === "membro da equipa de mídia") {
+    routes.push("media", "mediaTeamRoute", "mediaRolesRoute", "mediaSchedulesRoute", "mediaServicesRoute", "mediaChannelsRoute", "mediaPerformanceRoute", "mediaReportsRoute");
+  } else if (role === "finance head" || role === "finance officer") {
+    routes.push("finance", "financeOverviewRoute", "financeEntriesRoute", "financePublicSubmissionsRoute", "financeVerificationRoute", "financeApprovedRequisitionsRoute", "financeReportsRoute", "financePartnersRoute", "financeExportsRoute", "partnership", "partnershipArmsRoute", "partnershipPartnersRoute", "partnershipContributionsRoute", "partnershipHighlightsRoute", "partnershipAnalyticsRoute", "partnershipReportsRoute", "partnershipExportsRoute", "reports", "requisitions");
+  } else if (role === "partnership coordinator") {
+    routes.push("partnership", "partnershipArmsRoute", "partnershipPartnersRoute", "partnershipContributionsRoute", "partnershipHighlightsRoute", "partnershipAnalyticsRoute", "partnershipReportsRoute", "partnershipExportsRoute", "finance", "reports");
+  } else if (role === "hr manager") {
+    routes.push("staffHr", "reports");
+  } else if (role === "requisition officer") {
+    routes.push("requisitions", "reports", "venueInventory");
+  } else if (role === "department head") {
+    routes.push("members", "firstTimers", "followUp", "reports", "requisitions", "staffHr", "venueInventory", "fevo", "cell", "cellMinistry", "cellReports", "alec", "media", "programs", "cellPrison", "cellMaterials", "counseling", "sacraments", "foundation", "finance", "partnership");
+  } else if (role === "staff member") {
+    routes.push("requisitions", "venueInventory", "venueInventoryStaff", "staffHr");
   }
-  if (role === "alec_manager" || role === "alec coordinator" || role === "alec manager" || role === "alec_coordinator") {
-    return ["cellAlecOverview", "cellAlecRegistration", "cellAlecScores", "cellChurchReports", "cellPortal"];
-  }
-  if (isPastoralCareRector(user)) {
-    return ["firstTimers", "followUp", "foundation", "sacraments", "counseling"];
-  }
-  if (role === "follow-up coordinator" || role === "follow_up_coordinator") return ["firstTimers", "followUp"];
 
-  // For department managers and staff users with specific department permissions:
-  if (grants.length && !grants.includes("*")) {
-    const routes = [];
-    if (grants.includes("cellMinistry") || grants.includes("cell_ministry")) {
+  // 3. Department grants expansion
+  if (grants.length) {
+    if (grants.includes("cellMinistry") || grants.includes("cell_ministry") || grants.includes("cell")) {
       routes.push("cellMinistryOverview", "cellReceivedReports", "cellEvaluationRoute", "cellPerformance", "cellLeadersAttention", "cellActionPlan");
     }
-    if (grants.includes("cellReports") || grants.includes("cell_reports")) {
+    if (grants.includes("cellReports") || grants.includes("cell_reports") || grants.includes("cell")) {
       routes.push("cellWeeklyReport", "cellGroups", "cellCellsList", "cellMembers", "cellLeadersRoute", "cellFinalValidation", "cellConsolidation");
     }
-    if (grants.includes("alec") || grants.includes("alecRegistration") || grants.includes("alecScores") || grants.includes("alec_manager")) {
+    if (grants.includes("alec") || grants.includes("alecRegistration") || grants.includes("alecScores") || grants.includes("alec_manager") || grants.includes("cell")) {
       routes.push("cellAlecOverview", "cellAlecRegistration", "cellAlecScores", "cellChurchReports");
     }
-    if (grants.includes("fevo")) {
+    if (grants.includes("cellPortal") || grants.includes("cell_portal")) {
+      routes.push("cellPortal", "cellReceivedReports", "cellWeeklyReport");
+    }
+    if (grants.includes("fevo") || grants.includes("fevoConfig") || grants.includes("fevoReports") || grants.includes("fevoAnalytics")) {
       routes.push("fevo", "fevoConfigRoute", "fevoFollowUpRoute", "fevoEvangelismRoute", "fevoVisitationRoute", "fevoPrayerRoute", "fevoNoReportsRoute", "fevoWeeklyReportsRoute", "fevoAnalysisRoute");
     }
     if (grants.includes("followUp") || grants.includes("follow_up")) routes.push("followUp");
@@ -10918,20 +10925,34 @@ function roleWorkspaceRoutes(user = activeUser) {
     if (grants.includes("pastoralCare")) routes.push("counseling", "sacraments");
     if (grants.includes("counseling")) routes.push("counseling");
     if (grants.includes("sacraments")) routes.push("sacraments");
-    if (grants.includes("venueInventory")) {
+    if (grants.includes("venueInventory") || grants.includes("inventory") || grants.includes("venues")) {
       routes.push("venueInventory", "venueInventoryGeneral", "venueInventoryAcquisitions", "venueInventoryStaff", "venueInventoryMaintenance", "venueInventoryMovements", "venueInventorySpaces", "venueInventoryChecklist", "venueInventoryReports");
     }
-    if (grants.includes("finance")) routes.push("finance");
-    if (grants.includes("media")) routes.push("media");
+    if (grants.includes("finance") || grants.includes("financeHead") || grants.includes("financeOfficer")) {
+      routes.push("finance", "financeOverviewRoute", "financeEntriesRoute", "financePublicSubmissionsRoute", "financeVerificationRoute", "financeApprovedRequisitionsRoute", "financeReportsRoute", "financePartnersRoute", "financeExportsRoute");
+    }
+    if (grants.includes("partnership") || grants.includes("partnershipCoordinator")) {
+      routes.push("partnership", "partnershipArmsRoute", "partnershipPartnersRoute", "partnershipContributionsRoute", "partnershipHighlightsRoute", "partnershipAnalyticsRoute", "partnershipReportsRoute", "partnershipExportsRoute");
+    }
+    if (grants.includes("media") || grants.includes("mediaTeam") || grants.includes("mediaDirector") || grants.includes("mediaSupervisor")) {
+      routes.push("media", "mediaTeamRoute", "mediaRolesRoute", "mediaSchedulesRoute", "mediaServicesRoute", "mediaChannelsRoute", "mediaPerformanceRoute", "mediaReportsRoute");
+    }
     if (grants.includes("programs")) routes.push("programs");
-    if (grants.includes("prisonMinistry")) routes.push("cellPrison");
-    if (grants.includes("ministryMaterials")) routes.push("cellMaterials");
+    if (grants.includes("prisonMinistry") || grants.includes("cellPrison")) routes.push("cellPrison");
+    if (grants.includes("ministryMaterials") || grants.includes("cellMaterials")) routes.push("cellMaterials");
     if (grants.includes("staffHr")) routes.push("staffHr");
     if (grants.includes("requisitions")) routes.push("requisitions");
+    if (grants.includes("members")) routes.push("members");
+    if (grants.includes("churches")) routes.push("churches");
+    if (grants.includes("usersRoles") || grants.includes("users")) routes.push("users");
+    if (grants.includes("accessControl") || grants.includes("access")) routes.push("access");
+    if (grants.includes("settings")) routes.push("settings");
+    if (grants.includes("auditLogs") || grants.includes("audit")) routes.push("audit");
     if (grants.includes("dashboard")) routes.push("dashboard");
-    if (routes.length) {
-      return routes;
-    }
+  }
+
+  if (routes.length) {
+    return Array.from(new Set(routes));
   }
 
   return null;
@@ -11035,7 +11056,7 @@ function renderCellSidebarNav() {
       </div></div>
     </div>`;
   }
-  const showCellPortal = hasCellPortalPermission("cell_portal.view") && (!workspaceRoutes || workspaceRoutes.includes("cellPortal"));
+  const showCellPortal = (hasCellPortalPermission("cell_portal.view") || isCellLeaderOrAssistant(activeUser) || Boolean(activeUser?.cell_id)) && (!workspaceRoutes || workspaceRoutes.includes("cellPortal"));
   const areaItems = CELL_NAV.areas.map((area) => {
     const visibleRoutes = area.routes.filter(([route]) => {
       if (workspaceRoutes && !workspaceRoutes.includes(route)) return false;
@@ -11076,6 +11097,8 @@ function renderCellSidebarNav() {
       <div class="nav-cell-body">
         <div class="nav-cell-body-inner">
           ${showCellPortal ? `<button type="button" class="nav-cell-item ${activeRoute === "cellPortal" ? "active" : ""}" data-route="cellPortal" onclick="window.setRoute && window.setRoute('cellPortal'); return false;"><i class="bi bi-grid-1x2 me-2"></i><span>${lang === "pt" ? "Portal do Líder de Célula" : "Cell Portal"}</span></button>` : ""}
+          ${showCellPortal && (!workspaceRoutes || workspaceRoutes.includes("cellReceivedReports")) ? `<button type="button" class="nav-cell-item ${activeRoute === "cellReceivedReports" ? "active" : ""}" data-route="cellReceivedReports" onclick="window.setRoute && window.setRoute('cellReceivedReports'); return false;"><i class="bi bi-clock-history me-2"></i><span>${L("receivedReports")}</span></button>` : ""}
+          ${showCellPortal ? `<button type="button" class="nav-cell-item" data-public-cell-report><i class="bi bi-clipboard-plus me-2"></i><span>${L("submitCellReport")}</span></button>` : ""}
           ${areaItems}
         </div>
       </div>
