@@ -470,20 +470,25 @@ export async function updateUserStatus(userId: EntityId, status: string) {
 export async function listRoles(): Promise<DataResult<AccessRole[]>> {
   try {
     const result = await getDataProvider().roles.list();
-    if (!result.ok) return result as DataResult<AccessRole[]>;
-    return ok((result.data || []).map((r) => normalizeRole(r as AccessRole)));
-  } catch (e) {
-    return fail(e instanceof Error ? e.message : "listRoles failed");
+    if (result.ok && Array.isArray(result.data) && result.data.length > 0) {
+      return ok((result.data || []).map((r) => normalizeRole(r as AccessRole)));
+    }
+  } catch (_e) {
+    /* soft fallthrough */
   }
+  return ok(ROLES_SEED.map((r) => normalizeRole(r)));
 }
 export async function getRoleById(id: EntityId) {
+  const normId = String(id || "").trim();
+  if (!normId) return ok(null);
   try {
-    const result = await getDataProvider().roles.getById(id);
-    if (!result.ok) return result as DataResult<AccessRole | null>;
-    return ok(result.data ? normalizeRole(result.data as AccessRole) : null);
-  } catch (e) {
-    return fail(e instanceof Error ? e.message : "getRoleById failed");
+    const result = await getDataProvider().roles.getById(normId);
+    if (result.ok && result.data) return ok(normalizeRole(result.data as AccessRole));
+  } catch (_e) {
+    /* soft fallthrough */
   }
+  const seedFound = ROLES_SEED.find((r) => r.id === normId || r.name === normId) || null;
+  return ok(seedFound ? normalizeRole(seedFound) : null);
 }
 export async function createRole(payload: Partial<AccessRole>) {
   try {

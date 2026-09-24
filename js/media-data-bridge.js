@@ -103,17 +103,23 @@
       raw = localStorage.getItem(key);
     } catch (e) {}
     var rows;
-    if (raw === null) {
+    if (raw === null || (kind === "roles" && (!raw || raw === "[]"))) {
       rows = seedFor(kind).map(function (s) {
         return Object.assign({}, s);
       });
-      save(key, rows);
+      if (rows.length) save(key, rows);
     } else {
       try {
         rows = JSON.parse(raw);
-        if (!Array.isArray(rows)) rows = [];
+        if (!Array.isArray(rows) || (rows.length === 0 && kind === "roles")) {
+          rows = seedFor(kind).map(function (s) {
+            return Object.assign({}, s);
+          });
+        }
       } catch (e) {
-        rows = [];
+        rows = seedFor(kind).map(function (s) {
+          return Object.assign({}, s);
+        });
       }
     }
     return { rows: rows, persist: true };

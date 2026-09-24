@@ -3811,7 +3811,22 @@ const seedData = {
   partnershipArms: typeof PARTNERSHIP_ARMS_SEED !== "undefined" ? structuredClone(PARTNERSHIP_ARMS_SEED) : [],
   media: {
     technicians: [],
-    roles: [],
+    roles: [
+      { id: "mr-1", name: "Operador de Câmara", key: "cameraOperator", description: "Opera câmaras durante cultos e programas.", category: "Camera", required_skill_level: "Intermédio", is_required_for_service: true, is_critical_role: true, allow_multiple: true, required_per_service: 2, requires_equipment: true, equipment_categories: ["Media"], is_active: true, status: "Activo" },
+      { id: "mr-2", name: "Fotógrafo", key: "photographer", description: "Regista momentos para arquivo e comunicação.", category: "Photography", required_skill_level: "Intermédio", is_required_for_service: false, allow_multiple: true, is_active: true, status: "Activo" },
+      { id: "mr-3", name: "Técnico de Som", key: "soundTechnician", description: "Gere som, microfones e captação.", category: "Sound", required_skill_level: "Avançado", is_required_for_service: true, is_critical_role: true, allow_multiple: false, requires_equipment: true, equipment_categories: ["Sound"], is_active: true, status: "Activo" },
+      { id: "mr-4", name: "Operador de Video Mixer", key: "videoMixerOperator", description: "Opera switcher/video mixer.", category: "Video Mixing", required_skill_level: "Avançado", is_required_for_service: true, is_critical_role: true, allow_multiple: false, is_active: true, status: "Activo" },
+      { id: "mr-5", name: "Técnico de Transmissão", key: "streamingTechnician", description: "Configura e monitoriza transmissões.", category: "Streaming", required_skill_level: "Avançado", is_required_for_service: true, is_critical_role: true, allow_multiple: false, is_active: true, status: "Activo" },
+      { id: "mr-6", name: "Lançador de Escrituras", key: "scriptureOperator", description: "Projecta escrituras, letras e slides.", category: "Scriptures", required_skill_level: "Intermédio", is_required_for_service: true, allow_multiple: false, is_active: true, status: "Activo" },
+      { id: "mr-7", name: "Supervisor de Mídia", key: "mediaSupervisor", description: "Coordena a equipa em cada culto.", category: "Supervision", required_skill_level: "Supervisor", is_required_for_service: true, is_critical_role: true, allow_multiple: false, is_active: true, status: "Activo" },
+      { id: "mr-8", name: "Director de Mídia", key: "mediaDirector", description: "Responsável pelo ministério de mídia.", category: "Supervision", required_skill_level: "Supervisor", is_required_for_service: false, allow_multiple: false, is_active: true, status: "Activo" },
+      { id: "mr-9", name: "Operador de ProPresenter / EasyWorship", key: "presentationOperator", description: "Opera letras, escrituras e slides de apoio ao culto.", category: "Presentation", required_skill_level: "Intermédio", is_required_for_service: true, allow_multiple: false, is_active: true, status: "Activo" },
+      { id: "mr-10", name: "Operador de Slides", key: "slidesOperator", description: "Apoia projecção de apresentações e conteúdos visuais.", category: "Presentation", required_skill_level: "Iniciante", is_required_for_service: false, allow_multiple: true, is_active: true, status: "Activo" },
+      { id: "mr-11", name: "Assistente Técnico", key: "technicalAssistant", description: "Apoia montagem, cabos, comunicação e substituições.", category: "Technical Support", required_skill_level: "Iniciante", is_required_for_service: false, allow_multiple: true, is_active: true, status: "Activo" },
+      { id: "mr-12", name: "Iluminação", key: "lightingOperator", description: "Gere luzes e ambiente visual do culto.", category: "Lighting", required_skill_level: "Intermédio", is_required_for_service: false, allow_multiple: false, is_active: true, status: "Activo" },
+      { id: "mr-13", name: "Edição de Vídeo", key: "videoEditor", description: "Edita clips, mensagens e conteúdo pós-culto.", category: "Editing", required_skill_level: "Intermédio", is_required_for_service: false, allow_multiple: true, is_active: true, status: "Activo" },
+      { id: "mr-14", name: "Social Media / Publicação", key: "socialMediaPublisher", description: "Publica clips, chamadas e destaques nas redes sociais.", category: "Social Media", required_skill_level: "Intermédio", is_required_for_service: false, allow_multiple: true, is_active: true, status: "Activo" }
+    ],
     services: [],
     schedules: [],
     streamingChannels: [],
@@ -4984,10 +4999,40 @@ function registerDeletedUser(user) {
   } catch (_) {}
 }
 
-function isUserDeleted(user, checkState = (typeof state !== "undefined" ? state : null)) {
-if (typeof window !== "undefined") {
-  window.isUserDeleted = isUserDeleted;
+function unregisterDeletedUser(user) {
+  if (!user) return;
+  const id = typeof user === "string" ? user : (user.id || "");
+  const authId = typeof user === "object" ? (user.auth_user_id || "") : "";
+  const email = typeof user === "object" && user.email ? String(user.email).trim().toLowerCase() : (typeof user === "string" && user.includes("@") ? user.trim().toLowerCase() : "");
+
+  if (state) {
+    if (id && Array.isArray(state.deletedUserIds)) {
+      state.deletedUserIds = state.deletedUserIds.filter((x) => String(x) !== String(id) && String(x) !== String(authId));
+    }
+    if (authId && Array.isArray(state.deletedUserIds)) {
+      state.deletedUserIds = state.deletedUserIds.filter((x) => String(x) !== String(authId));
+    }
+    if (email && Array.isArray(state.deletedUserEmails)) {
+      state.deletedUserEmails = state.deletedUserEmails.filter((x) => String(x).toLowerCase() !== email);
+    }
+  }
+
+  try {
+    let persistentIds = JSON.parse(localStorage.getItem("ce_tombstone_user_ids") || "[]");
+    let persistentEmails = JSON.parse(localStorage.getItem("ce_tombstone_user_emails") || "[]");
+    if (id) persistentIds = persistentIds.filter((x) => String(x) !== String(id) && String(x) !== String(authId));
+    if (authId) persistentIds = persistentIds.filter((x) => String(x) !== String(authId));
+    if (email) persistentEmails = persistentEmails.filter((x) => String(x).toLowerCase() !== email);
+    localStorage.setItem("ce_tombstone_user_ids", JSON.stringify(persistentIds));
+    localStorage.setItem("ce_tombstone_user_emails", JSON.stringify(persistentEmails));
+  } catch (_) {}
 }
+
+function isUserDeleted(user, checkState = (typeof state !== "undefined" ? state : null)) {
+  if (typeof window !== "undefined") {
+    window.isUserDeleted = isUserDeleted;
+    window.unregisterDeletedUser = unregisterDeletedUser;
+  }
   if (!user) return false;
   let persistentIds = [];
   let persistentEmails = [];
@@ -5011,6 +5056,7 @@ if (typeof window !== "undefined") {
 
 if (typeof window !== "undefined") {
   window.registerDeletedUser = registerDeletedUser;
+  window.unregisterDeletedUser = unregisterDeletedUser;
   window.isUserDeleted = isUserDeleted;
 }
 
@@ -5476,7 +5522,11 @@ function saveState(action = "Updated data") {
 
 function dualWriteUserRecord(mode, record) {
   const ac = window.CEAccessControl || window.CEAccessControlData || window.CEDataLayer?.accessControl;
-  if (!ac || !record) return;
+  if (!record) return;
+  if (mode === "create" || mode === "update") {
+    unregisterDeletedUser(record);
+  }
+  if (!ac) return;
   if (typeof ac.dualWriteUser === "function") {
     void ac.dualWriteUser(mode, record);
     return;
@@ -27650,15 +27700,16 @@ function getMediaState() {
       if (item !== null) {
         try {
           const parsed = JSON.parse(item);
-          if (Array.isArray(parsed)) {
+          if (Array.isArray(parsed) && (parsed.length > 0 || prop !== "roles")) {
             media[prop] = parsed;
             loaded = true;
           }
         } catch (_) {}
       }
     }
-    if (!loaded && !media[prop].length && Array.isArray(window.CESupabase?.[seedKey]) && window.CESupabase[seedKey].length) {
-      media[prop] = structuredClone(window.CESupabase[seedKey]);
+    const seedArray = window.CESupabase?.[seedKey] || (typeof window !== "undefined" && window[seedKey]) || (typeof globalThis !== "undefined" && globalThis[seedKey]);
+    if ((!loaded || (prop === "roles" && !media[prop].length)) && Array.isArray(seedArray) && seedArray.length) {
+      media[prop] = structuredClone(seedArray);
       try {
         if (typeof localStorage !== "undefined") {
           localStorage.setItem(key, JSON.stringify(media[prop]));
@@ -38890,7 +38941,13 @@ async function hydrateMediaFromRepository() {
       if (typeof listFn !== "function") return;
       const result = await listFn();
       if (!result?.ok || !Array.isArray(result.data)) return;
-      const fetched = result.data.map((row) => (mapRow ? mapRow(row) : row));
+      let fetched = result.data.map((row) => (mapRow ? mapRow(row) : row));
+      if (fetched.length === 0 && key === "roles") {
+        const seedRoles = window.CESupabase?.MEDIA_ROLES_SEED || (typeof MEDIA_ROLES_SEED !== "undefined" ? MEDIA_ROLES_SEED : []);
+        if (seedRoles.length > 0) {
+          fetched = seedRoles.map((row) => (mapRow ? mapRow(row) : row));
+        }
+      }
       
       const byId = new Map();
       const prevList = Array.isArray(state.media[key]) ? state.media[key] : [];
@@ -38914,7 +38971,7 @@ async function hydrateMediaFromRepository() {
       prevList.forEach((localRow) => {
         if (!localRow || !localRow.id) return;
         const localId = String(localRow.id);
-        const isClientOnly = localId.startsWith("med-") || localId.startsWith("as-") || localId.startsWith("mrl-") || localId.startsWith("msv-") || localId.startsWith("mch-") || localId.startsWith("mev-") || localId.startsWith("maw-");
+        const isClientOnly = localId.startsWith("med-") || localId.startsWith("as-") || localId.startsWith("mrl-") || localId.startsWith("mr-") || localId.startsWith("msv-") || localId.startsWith("mch-") || localId.startsWith("mev-") || localId.startsWith("maw-");
         
         const alreadyFetched = fetched.some((f) => {
           const fMeta = (f.metadata && typeof f.metadata === "object") ? f.metadata : {};
@@ -38925,6 +38982,12 @@ async function hydrateMediaFromRepository() {
           byId.set(localId, localRow);
         }
       });
+
+      if (fetched.length === 0 && prevList.length > 0 && byId.size === 0) {
+        prevList.forEach((r) => {
+          if (r && r.id) byId.set(String(r.id), r);
+        });
+      }
 
       state.media[key] = [...byId.values()];
       hydrated = true;
@@ -39110,8 +39173,7 @@ async function hydrateAccessControlFromRepository() {
               status: row.status || "Active"
             };
           })
-          .filter((u) => !isDemoUser(u))
-          .filter((u) => !isUserDeleted(u));
+          .filter((u) => !isDemoUser(u));
       }
     } catch (e) {
       console.warn("[CE AccessControl] direct Supabase users fetch notice:", e);
@@ -39124,8 +39186,7 @@ async function hydrateAccessControlFromRepository() {
       const users = await repo.listUsers();
       if (users?.ok && Array.isArray(users.data) && users.data.length) {
         cleanUsers = users.data
-          .filter((u) => !isDemoUser(u))
-          .filter((u) => !isUserDeleted(u));
+          .filter((u) => !isDemoUser(u));
       }
     } catch (e) {
       console.warn("[CE AccessControl] repo.listUsers notice:", e);
@@ -39140,6 +39201,7 @@ async function hydrateAccessControlFromRepository() {
 
       // 1. Primary truth: live users from DB/repo
       cleanUsers.forEach((row) => {
+        unregisterDeletedUser(row);
         const emailNorm = row.email ? String(row.email).trim().toLowerCase() : "";
         const id = String(row.id);
         const userObj = {
@@ -39165,7 +39227,7 @@ async function hydrateAccessControlFromRepository() {
         }
       });
 
-      state.users = [...byId.values()].filter((u) => !isUserDeleted(u));
+      state.users = [...byId.values()];
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       } catch (_) {}
@@ -39639,6 +39701,10 @@ async function enterDashboard() {
           activeUser = mapped;
           isUserAuthenticated = true;
           if (typeof window !== "undefined") window.activeUser = mapped;
+          unregisterDeletedUser(mapped);
+          if (!state.users.some((u) => String(u.id) === String(mapped.id) || (u.email && String(u.email).toLowerCase() === email))) {
+            state.users.push(mapped);
+          }
           continueEnterDashboard();
           runOptionalSupabaseLoginSync(email, password);
           return true;
@@ -39660,12 +39726,28 @@ async function enterDashboard() {
     }
 
     // Local / demo state check fallback
-    const matchedLocalUser = (state.users || []).find((user) => {
+    let matchedLocalUser = (state.users || []).find((user) => {
       const uEmail = String(user.email || "").trim().toLowerCase();
       return uEmail === email;
     });
 
+    if (!matchedLocalUser && window.CEAccessControlData?.getUserByEmail) {
+      try {
+        const res = await window.CEAccessControlData.getUserByEmail(email);
+        if (res?.ok && res.data) {
+          matchedLocalUser = mapAccountToDashboardUser(res.data);
+          if (matchedLocalUser) {
+            unregisterDeletedUser(matchedLocalUser);
+            if (!state.users.some((u) => String(u.id) === String(matchedLocalUser.id) || (u.email && String(u.email).toLowerCase() === email))) {
+              state.users.push(matchedLocalUser);
+            }
+          }
+        }
+      } catch (_) {}
+    }
+
     if (matchedLocalUser && (password === "demo" || password === matchedLocalUser.demo_password_hint || password.length >= 4)) {
+      unregisterDeletedUser(matchedLocalUser);
       activeUser = matchedLocalUser;
       isUserAuthenticated = true;
       if (typeof window !== "undefined") window.activeUser = matchedLocalUser;

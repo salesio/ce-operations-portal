@@ -6,6 +6,7 @@ import {
   listRows, updateRow,
 } from "./supabaseRepositoryBase";
 import * as documents from "./documentsSupabaseAdapter";
+import { MEDIA_ROLES_SEED } from "../../seeds/mediaRolesSeed";
 
 export type MediaRecord = Record<string, unknown> & { id?: EntityId };
 type Table = keyof typeof TABLES;
@@ -430,7 +431,11 @@ async function remove(table: Table, id: EntityId, extra?: MediaRecord) {
   return cast<boolean>(await deleteRow(TABLES[table], targetId));
 }
 
-export const listMediaRoles = () => list("roles");
+export const listMediaRoles = async () => {
+  const res = await list("roles");
+  if (res.ok && Array.isArray(res.data) && res.data.length > 0) return res;
+  return ok(MEDIA_ROLES_SEED.map((r) => aliases("roles", r as unknown as MediaRecord)));
+};
 export const getMediaRoleById = (id: EntityId) => get("roles", id);
 export const createMediaRole = (input: MediaRecord) => create("roles", input);
 export const updateMediaRole = (id: EntityId, input: MediaRecord) => update("roles", id, input);

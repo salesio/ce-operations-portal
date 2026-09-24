@@ -439,20 +439,25 @@ export async function getMediaTeamByAvailability(_day: string) {
 export async function listMediaRoles(): Promise<DataResult<MediaRole[]>> {
   try {
     const result = await getDataProvider().mediaRoles.list();
-    if (!result.ok) return result as DataResult<MediaRole[]>;
-    return ok((result.data || []).map((r) => normalizeMediaRole(r as MediaRole)));
-  } catch (e) {
-    return fail(e instanceof Error ? e.message : "listMediaRoles failed");
+    if (result.ok && Array.isArray(result.data) && result.data.length > 0) {
+      return ok((result.data || []).map((r) => normalizeMediaRole(r as MediaRole)));
+    }
+  } catch (_e) {
+    /* soft fallthrough */
   }
+  return ok(MEDIA_ROLES_SEED.map((r) => normalizeMediaRole(r)));
 }
 export async function getMediaRoleById(id: EntityId) {
+  const normId = String(id || "").trim();
+  if (!normId) return ok(null);
   try {
-    const result = await getDataProvider().mediaRoles.getById(id);
-    if (!result.ok) return result as DataResult<MediaRole | null>;
-    return ok(result.data ? normalizeMediaRole(result.data as MediaRole) : null);
-  } catch (e) {
-    return fail(e instanceof Error ? e.message : "getMediaRoleById failed");
+    const result = await getDataProvider().mediaRoles.getById(normId);
+    if (result.ok && result.data) return ok(normalizeMediaRole(result.data as MediaRole));
+  } catch (_e) {
+    /* soft fallthrough */
   }
+  const seedFound = MEDIA_ROLES_SEED.find((r) => r.id === normId || r.key === normId || r.name === normId) || null;
+  return ok(seedFound ? normalizeMediaRole(seedFound) : null);
 }
 export async function createMediaRole(payload: Partial<MediaRole>) {
   try {
