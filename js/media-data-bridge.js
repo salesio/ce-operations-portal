@@ -195,14 +195,22 @@
       if (s.persist) save(KEYS[kind], s.rows);
       return ok(s.rows[i]);
     }
-    function remove(kind, id) {
+    function remove(kind, id, extra) {
       var s = store(kind);
       var targetId = String(id || "");
       s.rows = s.rows.filter(function (r) {
+        if (!r) return false;
         var rMeta = (r && r.metadata && typeof r.metadata === "object") ? r.metadata : {};
         if (String(r.id) === targetId) return false;
         if (rMeta.id && String(rMeta.id) === targetId) return false;
         if (rMeta.client_id && String(rMeta.client_id) === targetId) return false;
+        if (extra && kind === "schedules") {
+          var extraSvc = String(extra.service_name || extra.name || "").trim().toLowerCase();
+          var extraDate = String(extra.date || extra.service_date || "").trim();
+          var rSvc = String(rMeta.service_name || r.service_name || r.assignment_title || "").trim().toLowerCase();
+          var rDate = String(rMeta.date || rMeta.service_date || r.date || r.service_date || "").trim();
+          if (extraSvc && extraDate && extraSvc === rSvc && extraDate === rDate) return false;
+        }
         return true;
       });
       if (s.persist) save(KEYS[kind], s.rows);
@@ -477,7 +485,7 @@
       if (!entry) return Promise.resolve({ ok: true, skipped: true });
       if (mode === "create") return call(entry.create, [record]);
       if (mode === "update") return call(entry.update, [record.id, record]);
-      if (mode === "delete") return call(entry.delete, [record.id]);
+      if (mode === "delete") return call(entry.delete, [record.id || record, record]);
       return Promise.resolve({ ok: true, skipped: true });
     },
   };

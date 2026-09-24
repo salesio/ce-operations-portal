@@ -27933,23 +27933,22 @@ function mountMediaScheduleFormControls(form = byId("entryForm")) {
 
 function renderMediaScheduleForm(record = {}) {
   const mondaySchedule = isMediaMondaySchedule(record);
-  let localMediaServices = [];
-  try {
-    const rawLocal = localStorage.getItem("ce-data-layer:media-services");
-    if (rawLocal) {
-      const parsed = JSON.parse(rawLocal);
-      if (Array.isArray(parsed)) localMediaServices = parsed;
-    }
-  } catch (_) {}
+  const mediaState = typeof getMediaState === "function" ? getMediaState() : (state.media || {});
+  let sourceServices = Array.isArray(mediaState.services) && mediaState.services.length
+    ? mediaState.services
+    : (Array.isArray(state.media?.services) && state.media.services.length ? state.media.services : []);
 
-  const allRawServices = [
-    ...(state.media?.services || []),
-    ...(getMediaState().services || []),
-    ...localMediaServices,
-  ];
+  if (!sourceServices.length) {
+    try {
+      const rawLocal = localStorage.getItem("ce-data-layer:media-services");
+      if (rawLocal) {
+        const parsed = JSON.parse(rawLocal);
+        if (Array.isArray(parsed) && parsed.length) sourceServices = parsed;
+      }
+    } catch (_) {}
+  }
 
-  const mediaServices = allRawServices.filter((s) => /Activo|Active/i.test(s.status || "Activo") || s.name === record.service_name || s.service_name === record.service_name);
-  const generalPrograms = (state.programs || []).filter((p) => p.name || p.title);
+  const mediaServices = sourceServices.filter((s) => /Activo|Active/i.test(s.status || "Activo") || s.name === record.service_name || s.service_name === record.service_name);
   
   const allServicesMap = new Map();
   mediaServices.forEach((s) => {
@@ -27961,18 +27960,6 @@ function renderMediaScheduleForm(record = {}) {
         church_id: s.church_id || "",
         day_of_week: s.day_of_week || s.day || "",
         category: s.category || s.type || "Culto Regular"
-      });
-    }
-  });
-  generalPrograms.forEach((p) => {
-    const pName = String(p.name || p.title || "").trim();
-    if (pName && !allServicesMap.has(pName.toLowerCase())) {
-      allServicesMap.set(pName.toLowerCase(), {
-        name: pName,
-        time: p.start_time || p.time || "",
-        church_id: p.church_id || "",
-        day_of_week: p.day_of_week || "",
-        category: p.category || p.type || "Programa"
       });
     }
   });
@@ -34479,7 +34466,33 @@ async function quickAction(action, type, id) {
   if (action === "view") return openView(type, id);
   if (action === "delete") {
     const collection = getCollection(type);
-    const index = collection.findIndex((item) => item.id === id);
+    let index = collection.findIndex((item) => item && (
+      item.id === id ||
+      String(item.id) === String(id) ||
+      (item.metadata && (String(item.metadata.id) === String(id) || String(item.metadata.client_id) === String(id))) ||
+      (item.client_id && String(item.client_id) === String(id))
+    ));
+    if (index < 0 && ["mediaTechnician", "mediaRole", "mediaSchedule", "mediaService", "streamingChannel", "mediaEvaluation", "mediaAward"].includes(type)) {
+      const media = typeof getMediaState === "function" ? getMediaState() : (state.media || {});
+      const propMap = {
+        mediaTechnician: "technicians",
+        mediaRole: "roles",
+        mediaSchedule: "schedules",
+        mediaService: "services",
+        streamingChannel: "streamingChannels",
+        mediaEvaluation: "performanceEvaluations",
+        mediaAward: "awards"
+      };
+      const prop = propMap[type];
+      if (prop && Array.isArray(media[prop])) {
+        index = media[prop].findIndex((item) => item && (
+          item.id === id ||
+          String(item.id) === String(id) ||
+          (item.metadata && (String(item.metadata.id) === String(id) || String(item.metadata.client_id) === String(id))) ||
+          (item.client_id && String(item.client_id) === String(id))
+        ));
+      }
+    }
     if (index < 0) return;
     const title = formTitle(type);
     const message = lang === "pt"
@@ -34766,14 +34779,91 @@ async function quickAction(action, type, id) {
     }
 
     if (["mediaTechnician", "mediaRole", "mediaSchedule", "mediaService", "streamingChannel", "mediaEvaluation", "mediaAward"].includes(type)) {
-      const mediaBridge = window.CEMedia || window.CEDataLayer?.media;
+      const media = typeof getMediaState === "function" ? getMediaState() : (state.media || {});
+      const propMap = {
+        mediaTechnician: "technicians",
+        mediaRole: "roles",
+        mediaSchedule: "schedules",
+        mediaService: "services",
+        streamingChannel: "streamingChannels",
+        mediaEvaluation: "performanceEvaluations",
+        mediaAward: "awards"
+      };
+      const prop = propMap[type];
       const targetId = previous?.id || id;
+
+      // 1. Immediately remove from collection and state.media (Optimistic UI)
+      if (collection && index >= 0) {
+        collection.splice(index, 1);
+      }
+      if (prop && Array.isArray(media[prop])) {
+        media[prop] = media[prop].filter((item) => item && (
+          String(item.id) !== String(targetId) &&
+          String(item.id) !== String(id) &&
+          (!item.metadata || (String(item.metadata.id) !== String(targetId) && String(item.metadata.id) !== String(id))) &&
+          (!item.client_id || (String(item.client_id) !== String(targetId) && String(item.client_id) !== String(id)))
+        ));
+        if (state.media) state.media[prop] = media[prop];
+      }
+
+      // 2. Sync to localStorage immediately
+      syncMediaToLocalStorage();
+      const localKeyMap = {
+        mediaTechnician: "ce-data-layer:media-team",
+        mediaRole: "ce-data-layer:media-roles",
+        mediaSchedule: "ce-data-layer:media-schedules",
+        mediaService: "ce-data-layer:media-services",
+        streamingChannel: "ce-data-layer:media-channels",
+        mediaEvaluation: "ce-data-layer:media-performance",
+        mediaAward: "ce-data-layer:media-awards"
+      };
+      const lk = localKeyMap[type];
+      if (lk && typeof localStorage !== "undefined") {
+        try {
+          const rawLocal = localStorage.getItem(lk);
+          if (rawLocal) {
+            const parsed = JSON.parse(rawLocal);
+            if (Array.isArray(parsed)) {
+              const filtered = parsed.filter((item) => item && (
+                String(item.id) !== String(targetId) &&
+                String(item.id) !== String(id) &&
+                (!item.metadata || (String(item.metadata.id) !== String(targetId) && String(item.metadata.id) !== String(id))) &&
+                (!item.client_id || (String(item.client_id) !== String(targetId) && String(item.client_id) !== String(id)))
+              ));
+              localStorage.setItem(lk, JSON.stringify(filtered));
+            }
+          }
+        } catch (_) {}
+      }
+
+      saveState(`Deleted ${type} ${id}`);
+      if (typeof showToast === "function") {
+        showToast(lang === "pt" ? "Item eliminado com sucesso!" : "Item deleted successfully!");
+      }
+
+      // 3. Re-render UI immediately
+      if (activeRoute === "media" || (typeof activeRoute === "string" && activeRoute.startsWith("media"))) {
+        const tab = activeRoute === "mediaTeamRoute" ? "team"
+          : activeRoute === "mediaRolesRoute" ? "roles"
+          : activeRoute === "mediaSchedulesRoute" ? "schedules"
+          : activeRoute === "mediaServicesRoute" ? "services"
+          : activeRoute === "mediaChannelsRoute" ? "channels"
+          : activeRoute === "mediaPerformanceRoute" ? "performance"
+          : activeRoute === "mediaReportsRoute" ? "reports"
+          : (mediaPageState.tab || "overview");
+        renderMedia(tab);
+      } else {
+        setRoute(activeRoute);
+      }
+
+      // 4. Background non-blocking network sync
+      const mediaBridge = window.CEMedia || window.CEDataLayer?.media;
       if (mediaBridge && targetId) {
         try {
           if (typeof mediaBridge.dualWriteRecord === "function") {
-            await mediaBridge.dualWriteRecord(type, "delete", previous || { id: targetId });
+            void mediaBridge.dualWriteRecord(type, "delete", previous || { id: targetId });
           } else {
-            await dualWriteMediaRecord(type, "delete", previous || { id: targetId });
+            void dualWriteMediaRecord(type, "delete", previous || { id: targetId });
           }
         } catch (err) {
           console.warn("[CE Media] delete sync error", err);
@@ -34794,29 +34884,11 @@ async function quickAction(action, type, id) {
           };
           const tbl = mediaTableMap[type];
           if (tbl && isUuid) {
-            await client.from(tbl).delete().eq("id", targetId);
+            void client.from(tbl).delete().eq("id", targetId);
           }
         } catch (_) {}
       }
-      collection.splice(index, 1);
-      syncMediaToLocalStorage();
-      saveState(`Deleted ${type} ${id}`);
-      if (typeof showToast === "function") {
-        showToast(lang === "pt" ? "Item eliminado com sucesso!" : "Item deleted successfully!");
-      }
-      if (activeRoute === "media" || (typeof activeRoute === "string" && activeRoute.startsWith("media"))) {
-        const tab = activeRoute === "mediaTeamRoute" ? "team"
-          : activeRoute === "mediaRolesRoute" ? "roles"
-          : activeRoute === "mediaSchedulesRoute" ? "schedules"
-          : activeRoute === "mediaServicesRoute" ? "services"
-          : activeRoute === "mediaChannelsRoute" ? "channels"
-          : activeRoute === "mediaPerformanceRoute" ? "performance"
-          : activeRoute === "mediaReportsRoute" ? "reports"
-          : (mediaPageState.tab || "overview");
-        renderMedia(tab);
-        return;
-      }
-      return setRoute(activeRoute);
+      return;
     }
 
     if (["counselingRequest", "counselor", "counselingAppointment", "counselingReferral", "counselingFeedback"].includes(type)) {
