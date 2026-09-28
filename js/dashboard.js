@@ -7426,7 +7426,7 @@ function returnFromCellReportToDashboard() {
   byId("loginView")?.classList.add("d-none");
   byId("appView")?.classList.remove("d-none");
   renderShell();
-  const dashboardRoute = ["Cell Leader", "Cell Assistant"].includes(activeUser.role) ? "cellPortal" : "dashboard";
+  const dashboardRoute = isCellLeaderOrAssistant(activeUser) ? "cellPortal" : "dashboard";
   setRoute(dashboardRoute);
   updateBackToTopVisibility();
 }
@@ -7462,7 +7462,7 @@ function collectPublicCellReport(form, proofMeta = null) {
   const leaderPhone = String(data.get("leader_phone") || "").trim();
   const proofFile = form.querySelector('[name="proof_file"]')?.files?.[0] || null;
   const legacyPublic = !isUserAuthenticated && isLegacyPublicCellReportEnabled();
-  const cellRole = ["Cell Leader", "Cell Assistant"].includes(activeUser?.role) ? activeUser.role : "Cell Ministry";
+  const cellRole = isCellLeaderOrAssistant(activeUser) ? activeUser.role : "Cell Ministry";
   return {
     id,
     report_week: data.get("report_week"),
@@ -11103,10 +11103,11 @@ function isCellLeaderOrAssistant(user = activeUser) {
   if (!user) return false;
   const role = String(user?.role || user?.role_name || "").toLowerCase().trim();
   const isCellRole = [
-    "cell leader", "cell assistant", "cell_leader", "assistant_cell_leader",
+    "cell leader", "cell assistant", "cell_leader", "assistant_cell_leader", "assistant cell leader",
     "cell_assistant", "líder de célula", "lider de celula", "assistente de célula", "assistente de celula",
     "cell group leader", "cell_group_leader", "líder de grupo de células", "lider de grupo de celulas",
-    "cell group coordinator", "coordenador de grupo de células", "coordenador de grupo de celulas"
+    "cell group coordinator", "coordenador de grupo de células", "coordenador de grupo de celulas",
+    "líder de grupo", "lider de grupo"
   ].includes(role);
   const hasCell = Boolean(user?.cell_id || user?.cell_group_id || (Array.isArray(user?.assigned_cells) && user.assigned_cells.length > 0) || (Array.isArray(user?.assigned_cell_groups) && user.assigned_cell_groups.length > 0));
   return (
@@ -11127,12 +11128,7 @@ function roleWorkspaceRoutes(user = activeUser) {
   const routes = [];
 
   // 1. Cell leader / Cell group leader assignment or cell role
-  const isCellLeader = isCellLeaderOrAssistant(user) || [
-    "cell leader", "cell assistant", "cell_leader", "assistant_cell_leader",
-    "cell_assistant", "líder de célula", "lider de celula", "assistente de célula", "assistente de celula",
-    "cell group leader", "cell_group_leader", "líder de grupo de células", "lider de grupo de celulas",
-    "cell group coordinator", "coordenador de grupo de células", "coordenador de grupo de celulas"
-  ].includes(role);
+  const isCellLeader = isCellLeaderOrAssistant(user);
   if (isCellLeader) {
     routes.push("cellPortal", "cellReceivedReports", "cellWeeklyReport");
   }
@@ -11264,9 +11260,9 @@ function fallbackRouteAccess(route) {
   return { route, module, visible: false, locked: true, access: { can_view: false }, sensitive };
 }
 
-function resolveRouteAccess(route) {
+function resolveRouteAccess(route, user = activeUser) {
   if (window.CEAccessControl?.getNavItemState) {
-    return window.CEAccessControl.getNavItemState(activeUser, route);
+    return window.CEAccessControl.getNavItemState(user, route);
   }
   return fallbackRouteAccess(route);
 }
@@ -16449,7 +16445,7 @@ async function candidateAction(action, id) {
     return;
   }
   const now = new Date().toISOString();
-  const leaderOwnRecord = candidate.registered_by_user_id === activeUser?.id && ["Cell Leader", "Cell Assistant"].includes(activeUser?.role);
+  const leaderOwnRecord = candidate.registered_by_user_id === activeUser?.id && isCellLeaderOrAssistant(activeUser);
   const cleanUuidVal = (v) => {
     const s = String(v || "").trim();
     return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(s) ? s : null;
@@ -25091,7 +25087,7 @@ function renderCellMinistry(activeTab = "alecOverview") {
   const alecScores = scopedNested(leadership.alecScores || []);
   const churchReports = scopedNested(leadership.churchReports || []);
   let cellReports = sortCellReportsNewestFirst(scopedNested(leadership.cellReports || []));
-  if (["Cell Leader", "Cell Assistant"].includes(activeUser?.role) && !userHasExtendedCellPerms(activeUser)) {
+  if (isCellLeaderOrAssistant(activeUser) && !userHasExtendedCellPerms(activeUser)) {
     const authorizedIds = new Set(getAuthorizedCellsForUser(activeUser.id).map((cell) => cell.id));
     cellReports = cellReports.filter((report) => authorizedIds.has(report.cell_id) || report.submitted_by_user_id === activeUser.id);
   }

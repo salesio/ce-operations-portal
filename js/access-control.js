@@ -13,7 +13,7 @@
 
   const ROUTE_MODULE_MAP = {
     dashboard: "dashboard",
-    cellPortal: "dashboard",
+    cellPortal: "cell",
     churches: "churches",
     members: "members",
     firstTimers: "firstTimers",
@@ -379,37 +379,37 @@
     },
     "Cell Group Leader": {
       modules: {
-        dashboard: { ...VIEW_ONLY, scope: "cell_group", cell_portal_permissions: ["cell_portal.view", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary"] },
+        dashboard: { ...NO_ACCESS, can_view: false, scope: "cell_group", cell_portal_permissions: ["cell_portal.view", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary"] },
         cell: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "cell_group", cell_report_permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"] },
         cellReports: { ...NO_ACCESS, scope: "cell_group", cell_report_permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"] },
-        members: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "cell_group" },
+        members: { ...NO_ACCESS, can_view: false, scope: "cell_group" },
         notifications: { ...VIEW_ONLY, scope: "cell_group" }
       }
     },
     "Cell Leader": {
       modules: {
-        dashboard: { ...VIEW_ONLY, scope: "own", cell_portal_permissions: ["cell_portal.view", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts"] },
+        dashboard: { ...NO_ACCESS, can_view: false, scope: "own", cell_portal_permissions: ["cell_portal.view", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts"] },
         cell: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "own", cell_report_permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"] },
         cellReports: { ...NO_ACCESS, scope: "own", cell_report_permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"] },
-        members: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "own" },
+        members: { ...NO_ACCESS, can_view: false, scope: "own" },
         notifications: { ...VIEW_ONLY, scope: "own" }
       }
     },
     "Cell Assistant": {
       modules: {
-        dashboard: { ...VIEW_ONLY, scope: "own", cell_portal_permissions: ["cell_portal.view", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts"] },
+        dashboard: { ...NO_ACCESS, can_view: false, scope: "own", cell_portal_permissions: ["cell_portal.view", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts"] },
         cell: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "own", cell_report_permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"] },
         cellReports: { ...NO_ACCESS, scope: "own", cell_report_permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"] },
-        members: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "own" },
+        members: { ...NO_ACCESS, can_view: false, scope: "own" },
         notifications: { ...VIEW_ONLY, scope: "own" }
       }
     },
     "Assistant Cell Leader": {
       modules: {
-        dashboard: { ...VIEW_ONLY, scope: "own", cell_portal_permissions: ["cell_portal.view", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts"] },
+        dashboard: { ...NO_ACCESS, can_view: false, scope: "own", cell_portal_permissions: ["cell_portal.view", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts"] },
         cell: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "own", cell_report_permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"] },
         cellReports: { ...NO_ACCESS, scope: "own", cell_report_permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"] },
-        members: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "own" },
+        members: { ...NO_ACCESS, can_view: false, scope: "own" },
         notifications: { ...VIEW_ONLY, scope: "own" }
       }
     },
@@ -725,9 +725,9 @@
     }
     if (r === "super_admin" || r === "super admin") return "Super Admin";
     if (r === "main_pastor" || r === "main pastor") return "Main Pastor";
-    if (r === "cell_leader" || r === "cell leader") return "Cell Leader";
-    if (r === "cell_assistant" || r === "cell assistant" || r === "assistant cell leader" || r === "assistant_cell_leader") return "Cell Assistant";
-    if (r === "cell_group_leader" || r === "cell group leader") return "Cell Group Leader";
+    if (r === "cell_leader" || r === "cell leader" || r === "líder de célula" || r === "lider de celula" || r === "lider da celula" || r === "líder da célula") return "Cell Leader";
+    if (r === "cell_assistant" || r === "cell assistant" || r === "assistant cell leader" || r === "assistant_cell_leader" || r === "assistente de célula" || r === "assistente de celula") return "Cell Assistant";
+    if (r === "cell_group_leader" || r === "cell group leader" || r === "líder de grupo de células" || r === "lider de grupo de celulas" || r === "lider de grupo" || r === "líder de grupo" || r === "cell group coordinator" || r === "coordenador de grupo de células") return "Cell Group Leader";
     if (r === "counseling_head" || r === "counseling head" || r === "head de aconselhamento") return "Counseling Head";
     if (r === "counselor" || r === "conselheiro") return "Counselor";
     if (r === "follow_up_coordinator" || r === "follow-up coordinator" || r === "coordenador de acompanhamento") return "Follow-Up Coordinator";
@@ -926,8 +926,10 @@
       const canonRecordChurch = CANONICAL_CHURCH_MAP[recordChurch] || recordChurch;
       return recordChurch === userChurch || canonRecordChurch === canonUserChurch;
     }
-    const isCellLeader = ["Cell Leader", "Cell Assistant", "Assistant Cell Leader"].includes(user.role);
-    const hasCellDeptGrant = !isCellLeader && (user.department_permissions || []).some((p) => ["cellMinistry", "cell_ministry", "cell", "alec", "*"].includes(p));
+    const normalizedRole = normalizeRole(user.role);
+    const isCellLeader = ["Cell Leader", "Cell Assistant", "Assistant Cell Leader"].includes(normalizedRole);
+    const isCellGroupLeader = normalizedRole === "Cell Group Leader";
+    const hasCellDeptGrant = !isCellLeader && !isCellGroupLeader && (user.department_permissions || []).some((p) => ["cellMinistry", "cell_ministry", "cell", "alec", "*"].includes(p));
     if (!hasCellDeptGrant && (scope === "cell" || (isCellLeader && (module === "members" || module === "cell")))) {
       const authorizedCells = new Set([
         ...(user.assigned_cells || []),
@@ -938,7 +940,7 @@
       if (!authorizedCells.size) return false;
       return authorizedCells.has(recordCellId);
     }
-    if (!hasCellDeptGrant && (scope === "cell_group" || (user.role === "Cell Group Leader" && (module === "members" || module === "cell")))) {
+    if (!hasCellDeptGrant && (scope === "cell_group" || (isCellGroupLeader && (module === "members" || module === "cell")))) {
       const authorizedGroups = new Set([
         ...(user.assigned_cell_groups || []),
         user.cell_group_id,
