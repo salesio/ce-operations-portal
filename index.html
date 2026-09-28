@@ -137,14 +137,14 @@
           <nav id="topbarBreadcrumbs" class="topbar-breadcrumbs d-none d-md-flex" aria-label="Breadcrumb"></nav>
         </div>
         <div class="topbar-actions">
-          <button id="manualRefreshBtn" type="button" class="btn btn-outline-glass btn-sm me-2 d-inline-flex align-items-center gap-2" aria-label="Actualizar dados" title="Actualizar dados (Sincronizar)">
+          <button id="manualRefreshBtn" type="button" class="btn btn-outline-glass btn-sm d-inline-flex align-items-center gap-1" aria-label="Actualizar dados" title="Actualizar dados (Sincronizar)">
             <i class="bi bi-arrow-clockwise" id="manualRefreshIcon"></i>
             <span class="d-none d-md-inline" data-i18n="top.refresh">Actualizar</span>
           </button>
-          <button id="universalSearchBtn" type="button" class="btn btn-outline-glass btn-sm me-2 d-inline-flex align-items-center gap-2" aria-label="Pesquisa Global (Ctrl+K)">
+          <button id="universalSearchBtn" type="button" class="btn btn-outline-glass btn-sm d-inline-flex align-items-center gap-1" aria-label="Pesquisa Global (Ctrl+K)">
             <i class="bi bi-search"></i>
             <span class="d-none d-sm-inline">Pesquisar...</span>
-            <kbd class="kbd-pill">Ctrl K</kbd>
+            <kbd class="kbd-pill d-none d-lg-inline-block">Ctrl K</kbd>
           </button>
           <div class="dash-lang-switch" role="group" aria-label="Idioma">
             <button type="button" data-lang="pt" class="active">PT</button>
@@ -173,8 +173,8 @@
               </div>
             </section>
           </div>
-          <a class="btn btn-sm btn-outline-light" href="https://salesio.github.io/ce-mozambique-site/" target="_blank" rel="noopener" data-i18n="top.site">Ver Site</a>
-          <button id="logoutBtn" class="btn btn-sm btn-ce-gold" type="button" data-i18n="top.logout">Sair</button>
+          <a class="btn btn-sm btn-outline-light d-none d-md-inline-block" href="https://salesio.github.io/ce-mozambique-site/" target="_blank" rel="noopener" data-i18n="top.site">Ver Site</a>
+          <button id="logoutBtn" class="btn btn-sm btn-ce-gold" type="button" data-i18n="top.logout"><i class="bi bi-box-arrow-right d-none d-sm-inline me-1"></i><span id="logoutBtnText">Sair</span></button>
         </div>
       </header>
 
