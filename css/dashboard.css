@@ -316,19 +316,16 @@ table,
   text-decoration: none;
 }
 
-.login-logo-circle {
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
-  background: linear-gradient(135deg, #f7d070 0%, #e5b342 100%);
+.login-brand-logo {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  object-fit: contain;
+  padding: 3px;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 14px rgba(229, 179, 66, 0.35);
-}
-
-.login-logo-circle svg {
+  background: #ffffff;
+  box-shadow: 0 4px 16px rgba(229, 179, 66, 0.4);
+  border: 1px solid rgba(229, 179, 66, 0.35);
   display: block;
 }
 
