@@ -1371,6 +1371,46 @@ table,
   color: #fff;
 }
 
+.universal-search-btn {
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0 0.85rem;
+  min-width: 175px;
+  max-width: 250px;
+  border: 1px solid rgba(32, 215, 255, 0.28);
+  border-radius: 12px;
+  background: rgba(13, 27, 49, 0.85);
+  color: rgba(248, 251, 255, 0.75);
+  font-size: 0.84rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.universal-search-btn:hover {
+  background: rgba(22, 45, 80, 0.95);
+  border-color: rgba(32, 215, 255, 0.55);
+  color: #ffffff;
+}
+
+.universal-search-btn i {
+  color: rgba(248, 251, 255, 0.7);
+  font-size: 0.95rem;
+}
+
+.universal-search-btn .kbd-pill {
+  margin-left: auto;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.15rem 0.45rem;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.85);
+}
+
 .topbar-site-btn {
   height: 42px;
   display: inline-flex;
@@ -3607,14 +3647,19 @@ tr[data-public-cell-report="1"] td:last-child {
     margin-left: 0;
   }
 
-  .topbar-right .icon-btn {
+  .topbar-right .icon-btn,
+  .topbar-right .universal-search-btn {
     width: 44px;
+    min-width: 44px;
     height: 44px;
+    padding: 0;
     border-radius: 12px;
     background: #0f223d;
     border: 1px solid rgba(56, 189, 248, 0.3);
     color: #ffffff;
     font-size: 1.15rem;
+    display: inline-grid;
+    place-items: center;
   }
 
   .topbar-title-wrap {
