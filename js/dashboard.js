@@ -45,9 +45,14 @@ function generateUuid() {
 const TEXT = {
   pt: {
     loginTitle: "Portal da Equipa",
+    loginSubtitle: "Tudo para servir melhor, num só lugar.",
+    loginEmailOrUser: "E-mail ou utilizador",
     loginLead: "Acesso interno para acompanhamento espiritual, igrejas, células, escola, finanças e administração.",
     loginPassword: "Senha",
-    loginSubmit: "Entrar no Painel",
+    loginSubmit: "Iniciar sessão",
+    loginForgot: "Esqueceu a senha?",
+    loginFooterNote: "Acesso reservado à equipa da Embaixada de Cristo.",
+    portalInternal: "PORTAL INTERNO",
     loginNote: "Protótipo frontend-first. Autenticação real e base de dados entram na próxima fase.",
     viewSite: "Ver Site",
     logout: "Sair",
@@ -794,9 +799,14 @@ const TEXT = {
   },
   en: {
     loginTitle: "Team Portal",
+    loginSubtitle: "Everything to serve better, in one place.",
+    loginEmailOrUser: "Email or username",
     loginLead: "Internal access for spiritual follow-up, churches, cells, school, finance and administration.",
     loginPassword: "Password",
-    loginSubmit: "Enter Dashboard",
+    loginSubmit: "Sign In",
+    loginForgot: "Forgot password?",
+    loginFooterNote: "Access reserved for Christ Embassy staff.",
+    portalInternal: "INTERNAL PORTAL",
     loginNote: "Frontend-first prototype. Real authentication and database come next.",
     viewSite: "View Site",
     logout: "Logout",
@@ -11348,10 +11358,14 @@ function applyLanguage(next = lang) {
   document.querySelectorAll("[data-i18n]").forEach((el) => {
     const key = el.dataset.i18n;
     el.textContent = key === "login.title" ? L("loginTitle") :
+      key === "login.subtitle" ? L("loginSubtitle") :
+      key === "login.emailOrUser" ? L("loginEmailOrUser") :
       key === "login.lead" ? L("loginLead") :
       key === "login.password" ? L("loginPassword") :
-      key === "login.submit" ? (lang === "en" ? "Sign In" : "Iniciar Sessão") :
-      key === "login.forgot" ? (lang === "en" ? "Forgot password?" : "Esqueci a senha") :
+      key === "login.submit" ? L("loginSubmit") :
+      key === "login.forgot" ? L("loginForgot") :
+      key === "login.footerNote" ? L("loginFooterNote") :
+      key === "portal.internal" ? L("portalInternal") :
       key === "login.note" ? L("loginNote") :
       key === "top.refresh" ? (lang === "en" ? "Refresh" : "Actualizar") :
       key === "top.site" ? L("viewSite") :
@@ -11362,6 +11376,14 @@ function applyLanguage(next = lang) {
       key === "add" ? L("add") :
       key === "save" ? L("save") : L(key);
   });
+  const emailInput = byId("loginEmail");
+  if (emailInput) {
+    emailInput.placeholder = lang === "en" ? "name@embaixadadecristo.org" : "nome@embaixadadecristo.org";
+  }
+  const passInput = byId("loginPassword");
+  if (passInput) {
+    passInput.placeholder = lang === "en" ? "Enter your password" : "Introduza a sua senha";
+  }
   document.querySelectorAll("[data-lang]").forEach((button) => button.classList.toggle("active", button.dataset.lang === lang));
   const brandOps = byId("brandOps");
   if (brandOps) {

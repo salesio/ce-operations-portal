@@ -15,42 +15,67 @@
 </head>
 <body>
   <main id="loginView" class="login-shell">
-    <section class="login-panel">
-      <div class="login-mark">
-        <img src="assets/logo-ce.jpg" alt="Christ Embassy Mozambique" onerror="this.onerror=null; this.src='logo-ce.jpg';">
-      </div>
-      <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
-        <span class="eyebrow" data-i18n="church.operations">Operações da Igreja</span>
-        <div class="dash-lang-switch" role="group" aria-label="Idioma">
-          <button type="button" data-lang="pt" class="active">PT</button>
-          <button type="button" data-lang="en">EN</button>
-        </div>
-      </div>
-      <h1 data-i18n="login.title">Portal da Equipa</h1>
-      <p class="login-lead" data-i18n="login.lead">Acesso interno para acompanhamento espiritual, igrejas, celulas, escola, financas e administracao.</p>
-      <div id="loginModeBadge" class="mb-2"></div>
-      <form id="loginForm" class="d-grid gap-3 mt-4" onsubmit="event.preventDefault(); window.enterDashboard && window.enterDashboard(); return false;">
-        <div>
-          <label class="form-label fw-semibold" for="loginEmail">E-mail ou Utilizador</label>
-          <input id="loginEmail" class="form-control" type="text" placeholder="ex: admin@embaixadadecristo.org" autocomplete="username">
-        </div>
-        <div>
-          <label class="form-label fw-semibold" for="loginPassword" data-i18n="login.password">Senha</label>
-          <div class="input-group">
-            <input id="loginPassword" class="form-control" type="password" placeholder="Introduza a sua senha" autocomplete="current-password">
-            <button class="btn btn-outline-secondary" type="button" id="togglePasswordBtn" aria-label="Mostrar ou ocultar senha">
-              <i class="bi bi-eye" id="togglePasswordIcon"></i>
-            </button>
+    <div class="login-frame">
+      <header class="login-header">
+        <div class="login-brand">
+          <div class="login-logo-circle">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="4" x2="12" y2="20"></line><line x1="4" y1="12" x2="20" y2="12"></line></svg>
+          </div>
+          <div class="login-brand-text">
+            <span>EMBAIXADA</span>
+            <span>DE CRISTO</span>
           </div>
         </div>
-        <div id="loginError" class="alert alert-danger d-none py-2 small mb-0" role="alert"></div>
-        <button class="btn btn-ce-gold btn-lg w-100 d-flex align-items-center justify-content-center" type="submit" data-login-enter>
-          <span class="spinner-border spinner-border-sm d-none me-2" role="status" aria-hidden="true" id="loginSpinner"></span>
-          <span id="loginBtnText" data-i18n="login.submit">Iniciar Sessão</span>
-        </button>
-        <button id="loginForgotPassword" class="btn btn-link btn-sm text-white-50 p-0" type="button" data-i18n="login.forgot">Esqueci a senha</button>
-      </form>
-    </section>
+        <div class="login-header-tag" data-i18n="portal.internal">PORTAL INTERNO</div>
+      </header>
+
+      <div class="login-card-container">
+        <section class="login-panel">
+          <div class="login-panel-top">
+            <div class="dash-lang-switch" role="group" aria-label="Idioma">
+              <button type="button" data-lang="pt" class="active">PT</button>
+              <button type="button" data-lang="en">EN</button>
+            </div>
+          </div>
+          
+          <div class="login-gold-bar"></div>
+          <h1 class="login-title" data-i18n="login.title">Portal da Equipa</h1>
+          <p class="login-subtitle" data-i18n="login.subtitle">Tudo para servir melhor, num só lugar.</p>
+          <div id="loginModeBadge" class="mb-2"></div>
+          
+          <form id="loginForm" class="login-form" onsubmit="event.preventDefault(); window.enterDashboard && window.enterDashboard(); return false;">
+            <div class="form-group mb-3">
+              <label class="form-label" for="loginEmail" data-i18n="login.emailOrUser">E-mail ou utilizador</label>
+              <input id="loginEmail" class="form-control" type="text" placeholder="nome@embaixadadecristo.org" autocomplete="username" required>
+            </div>
+
+            <div class="form-group mb-1">
+              <label class="form-label" for="loginPassword" data-i18n="login.password">Senha</label>
+              <div class="login-password-wrapper">
+                <input id="loginPassword" class="form-control" type="password" placeholder="Introduza a sua senha" autocomplete="current-password" required>
+                <button class="login-password-toggle" type="button" id="togglePasswordBtn" aria-label="Mostrar ou ocultar senha">
+                  <i class="bi bi-eye" id="togglePasswordIcon"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="login-forgot-wrapper mb-3">
+              <button id="loginForgotPassword" class="login-forgot-btn" type="button" data-i18n="login.forgot">Esqueceu a senha?</button>
+            </div>
+
+            <div id="loginError" class="alert alert-danger d-none py-2 small mb-3" role="alert"></div>
+
+            <button class="login-submit-btn" type="submit" data-login-enter>
+              <span class="spinner-border spinner-border-sm d-none me-2" role="status" aria-hidden="true" id="loginSpinner"></span>
+              <span id="loginBtnText" data-i18n="login.submit">Iniciar sessão</span>
+              <i class="bi bi-arrow-right ms-2"></i>
+            </button>
+
+            <p class="login-footer-note" data-i18n="login.footerNote">Acesso reservado à equipa da Embaixada de Cristo.</p>
+          </form>
+        </section>
+      </div>
+    </div>
   </main>
 
   <main id="publicCellReportView" class="public-report-shell d-none" aria-live="polite"></main>
