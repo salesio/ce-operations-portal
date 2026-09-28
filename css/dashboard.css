@@ -3008,37 +3008,37 @@ tr[data-public-cell-report="1"] td:last-child {
 
 @keyframes tabParallaxEnterForward {
   from {
-    opacity: 0;
-    transform: translate3d(48px, 32px, 0) scale(0.982);
+    opacity: 0.95;
+    transform: translate3d(16px, 0, 0);
   }
 
   to {
     opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
+    transform: translate3d(0, 0, 0);
   }
 }
 
 @keyframes tabParallaxEnterBack {
   from {
-    opacity: 0;
-    transform: translate3d(-48px, 32px, 0) scale(0.982);
+    opacity: 0.95;
+    transform: translate3d(-16px, 0, 0);
   }
 
   to {
     opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
+    transform: translate3d(0, 0, 0);
   }
 }
 
 @keyframes tabParallaxEnterNeutral {
   from {
-    opacity: 0;
-    transform: translate3d(0, 24px, 0) scale(0.99);
+    opacity: 0.95;
+    transform: translate3d(0, 4px, 0);
   }
 
   to {
     opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
+    transform: translate3d(0, 0, 0);
   }
 }
 
@@ -4956,12 +4956,6 @@ tr[data-public-cell-report="1"] td:last-child {
 .page-shell {
   display: grid;
   gap: 1.25rem;
-  animation: pageShellIn 0.38s ease;
-}
-
-@keyframes pageShellIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
 }
 
 .module-hero-card {

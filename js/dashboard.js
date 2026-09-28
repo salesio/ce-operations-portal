@@ -11060,8 +11060,8 @@ function renderCellSidebarNav() {
   if (!hasExtendedCellPerms && (isCellLeaderOrAssistant(activeUser) || ["Cell Leader", "Cell Assistant"].includes(activeUser?.role))) {
     return `<div class="nav-cell-branch is-expanded ${parentActive ? "has-active" : ""}">
       <div class="nav-cell-body"><div class="nav-cell-body-inner">
-        <button type="button" class="nav-cell-item ${activeRoute === "cellPortal" || activeRoute === "dashboard" ? "active" : ""}" data-route="cellPortal" onclick="window.setRoute && window.setRoute('cellPortal'); return false;"><i class="bi bi-grid-1x2 me-2"></i><span>${lang === "pt" ? "Minha Célula" : "My Cell"}</span></button>
-        <button type="button" class="nav-cell-item ${activeRoute === "cellReceivedReports" ? "active" : ""}" data-route="cellReceivedReports" onclick="window.setRoute && window.setRoute('cellReceivedReports'); return false;"><i class="bi bi-clock-history me-2"></i><span>${L("receivedReports")}</span></button>
+        <button type="button" class="nav-cell-item ${activeRoute === "cellPortal" || activeRoute === "dashboard" ? "active" : ""}" data-route="cellPortal"><i class="bi bi-grid-1x2 me-2"></i><span>${lang === "pt" ? "Minha Célula" : "My Cell"}</span></button>
+        <button type="button" class="nav-cell-item ${activeRoute === "cellReceivedReports" ? "active" : ""}" data-route="cellReceivedReports"><i class="bi bi-clock-history me-2"></i><span>${L("receivedReports")}</span></button>
         <button type="button" class="nav-cell-item" data-public-cell-report><i class="bi bi-clipboard-plus me-2"></i><span>${L("submitCellReport")}</span></button>
       </div></div>
     </div>`;
@@ -11086,7 +11086,7 @@ function renderCellSidebarNav() {
         <div class="nav-cell-area-body">
           <div class="nav-cell-area-body-inner">
             ${visibleRoutes.map(([route, label]) => `
-              <button type="button" class="nav-cell-item ${activeRoute === route ? "active" : ""}" data-route="${route}" onclick="window.setRoute && window.setRoute('${route}'); return false;" title="${L(label)}">
+              <button type="button" class="nav-cell-item ${activeRoute === route ? "active" : ""}" data-route="${route}" title="${L(label)}">
                 <span>${L(label)}</span>
               </button>
             `).join("")}
@@ -11106,8 +11106,8 @@ function renderCellSidebarNav() {
       </button>
       <div class="nav-cell-body">
         <div class="nav-cell-body-inner">
-          ${showCellPortal ? `<button type="button" class="nav-cell-item ${activeRoute === "cellPortal" ? "active" : ""}" data-route="cellPortal" onclick="window.setRoute && window.setRoute('cellPortal'); return false;"><i class="bi bi-grid-1x2 me-2"></i><span>${lang === "pt" ? "Portal do Líder de Célula" : "Cell Portal"}</span></button>` : ""}
-          ${showCellPortal && (!workspaceRoutes || workspaceRoutes.includes("cellReceivedReports")) ? `<button type="button" class="nav-cell-item ${activeRoute === "cellReceivedReports" ? "active" : ""}" data-route="cellReceivedReports" onclick="window.setRoute && window.setRoute('cellReceivedReports'); return false;"><i class="bi bi-clock-history me-2"></i><span>${L("receivedReports")}</span></button>` : ""}
+          ${showCellPortal ? `<button type="button" class="nav-cell-item ${activeRoute === "cellPortal" ? "active" : ""}" data-route="cellPortal"><i class="bi bi-grid-1x2 me-2"></i><span>${lang === "pt" ? "Portal do Líder de Célula" : "Cell Portal"}</span></button>` : ""}
+          ${showCellPortal && (!workspaceRoutes || workspaceRoutes.includes("cellReceivedReports")) ? `<button type="button" class="nav-cell-item ${activeRoute === "cellReceivedReports" ? "active" : ""}" data-route="cellReceivedReports"><i class="bi bi-clock-history me-2"></i><span>${L("receivedReports")}</span></button>` : ""}
           ${showCellPortal ? `<button type="button" class="nav-cell-item" data-public-cell-report><i class="bi bi-clipboard-plus me-2"></i><span>${L("submitCellReport")}</span></button>` : ""}
           ${areaItems}
         </div>
@@ -11135,7 +11135,7 @@ function renderOutreachSidebarNav() {
       <div class="nav-cell-body">
         <div class="nav-cell-body-inner">
           ${visibleRoutes.map(([route, icon, label]) => `
-            <button type="button" class="nav-cell-item nav-outreach-item ${activeRoute === route ? "active" : ""}" data-route="${route}" onclick="window.setRoute && window.setRoute('${route}'); return false;" title="${L(label)}">
+            <button type="button" class="nav-cell-item nav-outreach-item ${activeRoute === route ? "active" : ""}" data-route="${route}" title="${L(label)}">
               <i class="bi ${sidebarIcon(icon, route)} me-2" aria-hidden="true"></i>
               <span>${L(label)}</span>
             </button>
@@ -11165,7 +11165,7 @@ function renderPartnershipSidebarNav() {
       <div class="nav-cell-body">
         <div class="nav-cell-body-inner">
           ${visibleRoutes.map(([route, icon, label]) => `
-            <button type="button" class="nav-cell-item nav-partnership-item ${activeRoute === route || (route === "partnership" && (activeRoute === "partnership" || activeRoute === "partnershipOverviewRoute")) ? "active" : ""}" data-route="${route}" onclick="window.setRoute && window.setRoute('${route}'); return false;" title="${L(label)}">
+            <button type="button" class="nav-cell-item nav-partnership-item ${activeRoute === route || (route === "partnership" && (activeRoute === "partnership" || activeRoute === "partnershipOverviewRoute")) ? "active" : ""}" data-route="${route}" title="${L(label)}">
               <i class="bi ${sidebarIcon(icon, route)} me-2" aria-hidden="true"></i>
               <span>${L(label)}</span>
             </button>
@@ -11195,7 +11195,7 @@ function renderFinanceSidebarNav() {
       <div class="nav-cell-body">
         <div class="nav-cell-body-inner">
           ${visibleRoutes.map(([route, icon, label]) => `
-            <button type="button" class="nav-cell-item nav-finance-item ${activeRoute === route || (route === "finance" && activeRoute === "financeOverviewRoute") || (route === "financeOverviewRoute" && activeRoute === "finance") ? "active" : ""}" data-route="${route}" onclick="window.setRoute && window.setRoute('${route}'); return false;" title="${L(label)}">
+            <button type="button" class="nav-cell-item nav-finance-item ${activeRoute === route || (route === "finance" && activeRoute === "financeOverviewRoute") || (route === "financeOverviewRoute" && activeRoute === "finance") ? "active" : ""}" data-route="${route}" title="${L(label)}">
               <i class="bi ${sidebarIcon(icon, route)} me-2" aria-hidden="true"></i>
               <span>${L(label)}</span>
             </button>
@@ -11225,7 +11225,7 @@ function renderFevoSidebarNav() {
       <div class="nav-cell-body">
         <div class="nav-cell-body-inner">
           ${visibleRoutes.map(([route, icon, label]) => `
-            <button type="button" class="nav-cell-item nav-fevo-item ${activeRoute === route ? "active" : ""}" data-route="${route}" onclick="window.setRoute && window.setRoute('${route}'); return false;" title="${L(label)}">
+            <button type="button" class="nav-cell-item nav-fevo-item ${activeRoute === route ? "active" : ""}" data-route="${route}" title="${L(label)}">
               <i class="bi ${sidebarIcon(icon, route)} me-2" aria-hidden="true"></i>
               <span>${L(label)}</span>
             </button>
@@ -11255,7 +11255,7 @@ function renderMediaSidebarNav() {
       <div class="nav-cell-body">
         <div class="nav-cell-body-inner">
           ${visibleRoutes.map(([route, icon, label]) => `
-            <button type="button" class="nav-cell-item nav-media-item ${activeRoute === route ? "active" : ""}" data-route="${route}" onclick="window.setRoute && window.setRoute('${route}'); return false;" title="${L(label)}">
+            <button type="button" class="nav-cell-item nav-media-item ${activeRoute === route ? "active" : ""}" data-route="${route}" title="${L(label)}">
               <i class="bi ${sidebarIcon(icon, route)} me-2" aria-hidden="true"></i>
               <span>${L(label)}</span>
             </button>
@@ -11294,12 +11294,12 @@ function renderShell() {
   const isCellPortalOnly = isCellLeaderOrAssistant(activeUser) && !userHasExtendedCellPerms(activeUser) && Boolean(activeUser?.cell_id || activeUser?.cell_group_id || (Array.isArray(activeUser?.assigned_cells) && activeUser.assigned_cells.length) || (Array.isArray(activeUser?.assigned_cell_groups) && activeUser.assigned_cell_groups.length));
   if (isCellPortalOnly) {
     byId("sidebarNav").innerHTML = `<div class="nav-group is-expanded"><div class="nav-group-body"><div class="nav-group-body-inner">
-      <button type="button" class="nav-item-btn ${["dashboard", "cellPortal"].includes(activeRoute) ? "active" : ""}" data-route="cellPortal" onclick="window.setRoute && window.setRoute('cellPortal'); return false;"><i class="bi bi-grid-1x2"></i><span>${lang === "pt" ? "Minha Célula" : "My Cell"}</span></button>
-      <button type="button" class="nav-item-btn ${activeRoute === "cellReceivedReports" ? "active" : ""}" data-route="cellReceivedReports" onclick="window.setRoute && window.setRoute('cellReceivedReports'); return false;"><i class="bi bi-clock-history"></i><span>${lang === "pt" ? "Relatórios Submetidos" : "Submitted Reports"}</span></button>
+      <button type="button" class="nav-item-btn ${["dashboard", "cellPortal"].includes(activeRoute) ? "active" : ""}" data-route="cellPortal"><i class="bi bi-grid-1x2"></i><span>${lang === "pt" ? "Minha Célula" : "My Cell"}</span></button>
+      <button type="button" class="nav-item-btn ${activeRoute === "cellReceivedReports" ? "active" : ""}" data-route="cellReceivedReports"><i class="bi bi-clock-history"></i><span>${lang === "pt" ? "Relatórios Submetidos" : "Submitted Reports"}</span></button>
       <button type="button" class="nav-item-btn" data-public-cell-report><i class="bi bi-clipboard-plus"></i><span>${lang === "pt" ? "Submeter Relatório" : "Submit Report"}</span></button>
-      ${typeof resolveRouteAccess === "function" && resolveRouteAccess("followUp").visible && !resolveRouteAccess("followUp").locked ? `<button type="button" class="nav-item-btn ${activeRoute === "followUp" ? "active" : ""}" data-route="followUp" onclick="window.setRoute && window.setRoute('followUp'); return false;"><i class="bi bi-person-lines-fill"></i><span>${lang === "pt" ? "Acompanhamento" : "Follow-Up"}</span></button>` : ""}
-      ${typeof resolveRouteAccess === "function" && resolveRouteAccess("foundation").visible && !resolveRouteAccess("foundation").locked ? `<button type="button" class="nav-item-btn ${activeRoute === "foundation" ? "active" : ""}" data-route="foundation" onclick="window.setRoute && window.setRoute('foundation'); return false;"><i class="bi bi-book"></i><span>${lang === "pt" ? "Escola de Fundação" : "Foundation School"}</span></button>` : ""}
-      ${typeof resolveRouteAccess === "function" && resolveRouteAccess("reports").visible && !resolveRouteAccess("reports").locked ? `<button type="button" class="nav-item-btn ${activeRoute === "reports" ? "active" : ""}" data-route="reports" onclick="window.setRoute && window.setRoute('reports'); return false;"><i class="bi bi-bar-chart"></i><span>${lang === "pt" ? "Relatórios" : "Reports"}</span></button>` : ""}
+      ${typeof resolveRouteAccess === "function" && resolveRouteAccess("followUp").visible && !resolveRouteAccess("followUp").locked ? `<button type="button" class="nav-item-btn ${activeRoute === "followUp" ? "active" : ""}" data-route="followUp"><i class="bi bi-person-lines-fill"></i><span>${lang === "pt" ? "Acompanhamento" : "Follow-Up"}</span></button>` : ""}
+      ${typeof resolveRouteAccess === "function" && resolveRouteAccess("foundation").visible && !resolveRouteAccess("foundation").locked ? `<button type="button" class="nav-item-btn ${activeRoute === "foundation" ? "active" : ""}" data-route="foundation"><i class="bi bi-book"></i><span>${lang === "pt" ? "Escola de Fundação" : "Foundation School"}</span></button>` : ""}
+      ${typeof resolveRouteAccess === "function" && resolveRouteAccess("reports").visible && !resolveRouteAccess("reports").locked ? `<button type="button" class="nav-item-btn ${activeRoute === "reports" ? "active" : ""}" data-route="reports"><i class="bi bi-bar-chart"></i><span>${lang === "pt" ? "Relatórios" : "Reports"}</span></button>` : ""}
     </div></div></div>`;
     byId("activeUserName").textContent = activeUser.name || activeUser.full_name || "";
     byId("activeUserRole").textContent = activeUser.role || activeUser.role_name || "";
@@ -11318,7 +11318,7 @@ function renderShell() {
     const mediaNav = group.key === "departments" && (!workspaceRoutes || workspaceRoutes.some((r) => MEDIA_TAB_ROUTES.has(r))) ? renderMediaSidebarNav() : "";
     const outreachNav = group.key === "departments" && (!workspaceRoutes || workspaceRoutes.some((r) => OUTREACH_TAB_ROUTES.has(r))) ? renderOutreachSidebarNav() : "";
     const navItems = items.map(({ route, icon, label }) => `
-      <button type="button" class="nav-item-btn" data-route="${route}" onclick="window.setRoute && window.setRoute('${route}'); return false;" title="${L(label)}">
+      <button type="button" class="nav-item-btn" data-route="${route}" title="${L(label)}">
         <i class="bi ${sidebarIcon(icon, route)}"></i><span>${L(label)}</span>
       </button>
     `).join("");
@@ -35640,7 +35640,12 @@ document.addEventListener("click", async (event) => {
   const routeButton = event.target.closest("[data-route]");
   if (routeButton) {
     toggleNotificationPanel(false);
-    return setRoute(routeButton.dataset.route);
+    const targetRoute = routeButton.dataset.route;
+    if (targetRoute && targetRoute === activeRoute && isRouteHydrated(activeRoute) && !byId("content")?.querySelector(".dept-loading-stage")) {
+      document.querySelector(".ops-sidebar")?.classList.remove("is-open");
+      return;
+    }
+    return setRoute(targetRoute);
   }
   const lockedRoute = event.target.closest("[data-locked-route]");
   if (lockedRoute) {
@@ -37572,115 +37577,16 @@ function continueEnterDashboard() {
     byId("appView")?.classList.remove("d-none");
   }
 
-  // Hydrate members in background to cache in state
+  // Data-layer background hydration: sync all modules safely with debounced route sync
   Promise.resolve()
     .then(() => hydrateMembersFromRepository())
+    .then((hydrated) => {
+      if (hydrated) {
+        markRouteHydrated("members");
+        requestRouteSync("cellMembers");
+      }
+    })
     .catch((error) => console.warn("[CE Members] background hydrate skipped", error));
-
-  // Hydrate sacraments asynchronously in background from Supabase
-  Promise.resolve()
-    .then(() => hydrateSacramentsFromRepository())
-    .then((hydrated) => {
-      if (hydrated && activeRoute === "sacraments" && typeof renderSacraments === "function") {
-        renderSacraments();
-      }
-    })
-    .catch((error) => console.warn("[CE Sacraments] background hydrate skipped", error));
-
-  // Hydrate cell ministry & church reports asynchronously in background without full-screen re-renders
-  Promise.resolve()
-    .then(() => hydrateCellMinistryFromRepository())
-    .then((hydrated) => {
-      if (hydrated && String(activeRoute || "").startsWith("cell")) {
-        try {
-          if (activeRoute === "cellChurchReports") renderCellMinistry("churchReports");
-          else if (activeRoute === "cellAlecRegistration") renderCellMinistry("alecRegistration");
-          else if (activeRoute === "cellAlecScores") renderCellMinistry("alecScores");
-          else if (activeRoute === "cellAlecOverview") renderCellMinistry("alecOverview");
-          else if (activeRoute === "cellPortal") renderCellLeaderPortal();
-          else if (activeRoute === "cellEvaluationRoute" || activeRoute === "cellEvaluation") renderCellMinistry("cellEvaluation");
-          else if (activeRoute === "cellPerformance") renderCellMinistry("cellPerformance");
-          else if (activeRoute === "cellLeadersAttention" || activeRoute === "cellAttentionRoute") renderCellMinistry("leadersAttention");
-          else if (activeRoute === "cellActionPlan") renderCellMinistry("actionPlan");
-          else if (activeRoute === "cellReceivedReports" || activeRoute === "cellWeeklyReport") renderCellMinistry("receivedReports");
-          else if (activeRoute === "cellMinistryOverview" || activeRoute === "cellMinistry") renderCellMinistry("ministryOverview");
-          else if (activeRoute === "cellGroups") renderCellGroups();
-          else if (activeRoute === "cellCellsList") renderCellCellsList();
-          else if (activeRoute === "cellMembers") renderCellMembers();
-          else setRoute(activeRoute);
-        } catch (_) {}
-      }
-    })
-    .catch((error) => console.warn("[CE CellMinistry] background hydrate skipped", error));
-
-  // Active background sync for first timers and follow ups from Supabase
-  Promise.resolve()
-    .then(() => hydrateFirstTimersFromRepository())
-    .then((hydrated) => {
-      state.firstTimersHydrated = true;
-      if (hydrated && (activeRoute === "firstTimers" || activeRoute === "followUp")) {
-        if (activeRoute === "firstTimers") renderFirstTimers();
-        else renderFollowUp();
-      }
-    })
-    .catch((error) => console.warn("[CE FirstTimers] background hydrate skipped", error));
-
-  Promise.resolve()
-    .then(() => hydrateFollowUpsFromRepository())
-    .then((hydrated) => {
-      if (hydrated && activeRoute === "followUp") renderFollowUp();
-    })
-    .catch((error) => console.warn("[CE FollowUps] background hydrate skipped", error));
-
-  // Active background sync for foundation school from Supabase
-  Promise.resolve()
-    .then(() => hydrateFoundationSchoolFromRepository())
-    .then((hydrated) => {
-      if (hydrated && activeRoute === "foundation") {
-        try { renderFoundation(); } catch (_) {}
-      }
-    })
-    .catch((error) => console.warn("[CE Foundation] background hydrate skipped", error));
-
-  // Active background sync for churches from Supabase
-  Promise.resolve()
-    .then(() => hydrateChurchesFromRepository())
-    .then((hydrated) => {
-      if (hydrated && activeRoute === "churches") {
-        try { renderChurches(); } catch (_) {}
-      }
-    })
-    .catch((error) => console.warn("[CE Churches] background hydrate skipped", error));
-
-  // Active background sync for DOP modules (programs, prison ministry, ministry materials)
-  Promise.resolve()
-    .then(() => hydrateProgramsFromRepository())
-    .then((hydrated) => {
-      if (hydrated && activeRoute === "programs") {
-        try { renderPrograms(); } catch (_) {}
-      }
-    })
-    .catch((error) => console.warn("[CE Programs] background hydrate skipped", error));
-
-  Promise.resolve()
-    .then(() => hydratePrisonMinistryFromRepository())
-    .then((hydrated) => {
-      if (hydrated && (activeRoute === "cellPrison" || activeRoute === "prisonMinistry")) {
-        try { renderPrisonMinistry(); } catch (_) {}
-      }
-    })
-    .catch((error) => console.warn("[CE PrisonMinistry] background hydrate skipped", error));
-
-  Promise.resolve()
-    .then(() => hydrateMinistryMaterialsFromRepository())
-    .then((hydrated) => {
-      if (hydrated && (activeRoute === "cellMaterials" || activeRoute === "ministryMaterials")) {
-        try { renderMinistryMaterials(); } catch (_) {}
-      }
-    })
-    .catch((error) => console.warn("[CE MinistryMaterials] background hydrate skipped", error));
-
-  // Data-layer background hydration: sync all modules safely with debounced route sync
   Promise.resolve()
     .then(() => hydrateChurchesFromRepository())
     .then((hydrated) => {
