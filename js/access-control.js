@@ -733,6 +733,7 @@
     if (r === "follow_up_coordinator" || r === "follow-up coordinator" || r === "coordenador de acompanhamento") return "Follow-Up Coordinator";
     return role;
   }
+  const normalizeRole = normalizeRoleKey;
 
   function isExplicitlyDenied(user, module) {
     if (!user || !module) return false;
@@ -926,7 +927,7 @@
       const canonRecordChurch = CANONICAL_CHURCH_MAP[recordChurch] || recordChurch;
       return recordChurch === userChurch || canonRecordChurch === canonUserChurch;
     }
-    const normalizedRole = normalizeRole(user.role);
+    const normalizedRole = normalizeRoleKey(user.role);
     const isCellLeader = ["Cell Leader", "Cell Assistant", "Assistant Cell Leader"].includes(normalizedRole);
     const isCellGroupLeader = normalizedRole === "Cell Group Leader";
     const hasCellDeptGrant = !isCellLeader && !isCellGroupLeader && (user.department_permissions || []).some((p) => ["cellMinistry", "cell_ministry", "cell", "alec", "*"].includes(p));
@@ -1070,7 +1071,9 @@
     canViewSalary,
     canViewStaffBirthday,
     canViewSensitiveStaffData,
-    isSensitiveModule
+    isSensitiveModule,
+    normalizeRoleKey,
+    normalizeRole
   };
 
   window.CEAccess = Object.assign(window.CEAccess || {}, {

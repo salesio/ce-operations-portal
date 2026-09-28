@@ -172,4 +172,13 @@ if (authCellIds.includes("cell-3")) {
 }
 
 console.log("✓ Leopold group cells authorization verified!");
+
+// 6. Test renderCellLeaderPortal executes without errors
+try {
+  context.renderCellLeaderPortal();
+  console.log("✓ renderCellLeaderPortal executed successfully without any errors!");
+} catch (err) {
+  throw new Error(`renderCellLeaderPortal threw error: ${err.message}`);
+}
+
 console.log("=== All Cell Group Leader Access Isolation Tests Passed! ===");
