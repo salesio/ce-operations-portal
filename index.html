@@ -128,53 +128,59 @@
 
     <div class="ops-main">
       <header class="ops-topbar">
-        <button id="menuToggle" class="icon-btn d-lg-none" type="button" aria-label="Menu">
-          <i class="bi bi-list"></i>
-        </button>
-        <div class="topbar-title-wrap">
-          <span id="sectionLabel" class="eyebrow">MAIN</span>
-          <h1 id="pageTitle">Dashboard</h1>
-          <nav id="topbarBreadcrumbs" class="topbar-breadcrumbs d-none d-md-flex" aria-label="Breadcrumb"></nav>
+        <div class="topbar-row topbar-row-primary">
+          <div class="topbar-left">
+            <button id="menuToggle" class="icon-btn d-lg-none" type="button" aria-label="Menu">
+              <i class="bi bi-list"></i>
+            </button>
+            <div class="topbar-title-wrap">
+              <h1 id="pageTitle">Dashboard</h1>
+              <span id="sectionLabel" class="eyebrow">MAIN</span>
+              <nav id="topbarBreadcrumbs" class="topbar-breadcrumbs d-none d-md-flex" aria-label="Breadcrumb"></nav>
+            </div>
+          </div>
+          <div class="topbar-right">
+            <button id="universalSearchBtn" type="button" class="icon-btn universal-search-btn" aria-label="Pesquisa Global (Ctrl+K)" title="Pesquisar">
+              <i class="bi bi-search"></i>
+              <span class="universal-search-text d-none d-xl-inline ms-1">Pesquisar...</span>
+              <kbd class="kbd-pill d-none d-xl-inline-block ms-1">Ctrl K</kbd>
+            </button>
+            <div class="notification-wrap">
+              <button id="notificationBell" class="icon-btn notification-bell" type="button" aria-label="Notificações" aria-expanded="false">
+                <i class="bi bi-bell"></i>
+                <span id="notificationBadge" class="notification-badge d-none">0</span>
+              </button>
+              <section id="notificationPanel" class="notification-panel d-none" aria-label="Notificações">
+                <div class="notification-panel-head">
+                  <div>
+                    <span class="eyebrow" data-i18n="notifications">Notificações</span>
+                    <h2 data-i18n="recentNotifications">Recentes</h2>
+                  </div>
+                  <button type="button" class="icon-btn notification-close" data-notification-close aria-label="Fechar">
+                    <i class="bi bi-x-lg"></i>
+                  </button>
+                </div>
+                <div id="notificationPanelFilters" class="notification-filter-row"></div>
+                <div id="notificationPanelList" class="notification-list"></div>
+                <div class="notification-panel-actions">
+                  <button type="button" class="btn btn-sm btn-outline-light action-secondary" data-notification-mark-all data-i18n="markAllRead">Marcar todas como lidas</button>
+                  <button type="button" class="btn btn-sm btn-ce-gold" data-route="notifications" data-i18n="viewAll">Ver todas</button>
+                </div>
+              </section>
+            </div>
+          </div>
         </div>
-        <div class="topbar-actions">
-          <button id="manualRefreshBtn" type="button" class="btn btn-outline-glass btn-sm d-inline-flex align-items-center gap-1" aria-label="Actualizar dados" title="Actualizar dados (Sincronizar)">
+
+        <div class="topbar-row topbar-row-secondary">
+          <button id="manualRefreshBtn" type="button" class="icon-btn refresh-btn" aria-label="Actualizar dados" title="Actualizar dados (Sincronizar)">
             <i class="bi bi-arrow-clockwise" id="manualRefreshIcon"></i>
-            <span class="d-none d-md-inline" data-i18n="top.refresh">Actualizar</span>
-          </button>
-          <button id="universalSearchBtn" type="button" class="btn btn-outline-glass btn-sm d-inline-flex align-items-center gap-1" aria-label="Pesquisa Global (Ctrl+K)">
-            <i class="bi bi-search"></i>
-            <span class="d-none d-sm-inline">Pesquisar...</span>
-            <kbd class="kbd-pill d-none d-lg-inline-block">Ctrl K</kbd>
           </button>
           <div class="dash-lang-switch" role="group" aria-label="Idioma">
             <button type="button" data-lang="pt" class="active">PT</button>
             <button type="button" data-lang="en">EN</button>
           </div>
-          <div class="notification-wrap">
-            <button id="notificationBell" class="icon-btn notification-bell" type="button" aria-label="Notificações" aria-expanded="false">
-              <i class="bi bi-bell"></i>
-              <span id="notificationBadge" class="notification-badge d-none">0</span>
-            </button>
-            <section id="notificationPanel" class="notification-panel d-none" aria-label="Notificações">
-              <div class="notification-panel-head">
-                <div>
-                  <span class="eyebrow" data-i18n="notifications">Notificações</span>
-                  <h2 data-i18n="recentNotifications">Recentes</h2>
-                </div>
-                <button type="button" class="icon-btn notification-close" data-notification-close aria-label="Fechar">
-                  <i class="bi bi-x-lg"></i>
-                </button>
-              </div>
-              <div id="notificationPanelFilters" class="notification-filter-row"></div>
-              <div id="notificationPanelList" class="notification-list"></div>
-              <div class="notification-panel-actions">
-                <button type="button" class="btn btn-sm btn-outline-light action-secondary" data-notification-mark-all data-i18n="markAllRead">Marcar todas como lidas</button>
-                <button type="button" class="btn btn-sm btn-ce-gold" data-route="notifications" data-i18n="viewAll">Ver todas</button>
-              </div>
-            </section>
-          </div>
-          <a class="btn btn-sm btn-outline-light d-none d-md-inline-block" href="https://salesio.github.io/ce-mozambique-site/" target="_blank" rel="noopener" data-i18n="top.site">Ver Site</a>
-          <button id="logoutBtn" class="btn btn-sm btn-ce-gold" type="button" data-i18n="top.logout"><i class="bi bi-box-arrow-right d-none d-sm-inline me-1"></i><span id="logoutBtnText">Sair</span></button>
+          <a id="topbarSiteLink" class="btn topbar-site-btn" href="https://salesio.github.io/ce-mozambique-site/" target="_blank" rel="noopener" data-i18n="top.site">Ver Site</a>
+          <button id="logoutBtn" class="btn topbar-logout-btn" type="button" data-i18n="top.logout"><i class="bi bi-box-arrow-right d-none d-lg-inline me-1"></i><span id="logoutBtnText">Sair</span></button>
         </div>
       </header>
 
