@@ -11455,6 +11455,289 @@ function renderAccessDenied() {
   `);
 }
 
+const ROUTE_HYDRATION_FLAGS = {};
+let currentRouteTransitionId = 0;
+let renderSyncDebounceTimeout = null;
+
+function getRouteHydrationKey(route) {
+  if (!route) return "dashboard";
+  if (route.startsWith("cell")) return "cell";
+  if (route.startsWith("fevo")) return "fevo";
+  if (route.startsWith("venueInventory")) return "venueInventory";
+  if (route.startsWith("finance")) return "finance";
+  if (route.startsWith("partnership")) return "partnership";
+  if (route.startsWith("media")) return "media";
+  if (route === "prisonMinistry" || route === "cellPrison") return "prison";
+  if (route === "ministryMaterials" || route === "cellMaterials") return "materials";
+  if (route === "users" || route === "access" || route === "audit") return "access";
+  return route;
+}
+
+function isRouteHydrated(route) {
+  const key = getRouteHydrationKey(route);
+  if (key === "dashboard" || key === "reports") return true;
+  return Boolean(ROUTE_HYDRATION_FLAGS[key]);
+}
+
+function markRouteHydrated(route) {
+  const key = getRouteHydrationKey(route);
+  ROUTE_HYDRATION_FLAGS[key] = true;
+}
+
+function renderRouteLoadingState(route) {
+  const contentEl = byId("content");
+  if (!contentEl) return;
+  const found = NAV_GROUPS.flatMap((group) => group.items.map((item) => ({ group, item }))).find(({ item }) => item[0] === route);
+  const title = (byId("pageTitle") && byId("pageTitle").textContent) || (found ? L(found.item[2]) : "Operações");
+  const subText = lang === "pt" ? "A sincronizar dados do departamento..." : "Loading department data...";
+  contentEl.innerHTML = `
+    <div class="dept-loading-stage" aria-live="polite" aria-busy="true">
+      <div class="dept-loading-backdrop"></div>
+      <div class="dept-loading-card">
+        <div class="dept-loading-logo-wrapper">
+          <img src="assets/logo-ce.png" alt="LoveWorld" class="dept-loading-logo" onerror="this.onerror=null; this.src='logo-ce.png';">
+          <div class="dept-loading-glow"></div>
+        </div>
+        <div class="dept-loading-info">
+          <h3 class="dept-loading-title">${title}</h3>
+          <div class="dept-loading-progress-track">
+            <div class="dept-loading-progress-bar"></div>
+          </div>
+          <p class="dept-loading-subtitle">${subText}</p>
+        </div>
+      </div>
+    </div>`;
+}
+
+function getRouteRenderers() {
+  return {
+    dashboard: renderDashboard,
+    cellPortal: renderCellLeaderPortal,
+    churches: renderChurches,
+    members: renderMembers,
+    firstTimers: renderFirstTimers,
+    followUp: renderFollowUp,
+    reports: renderReports,
+    notifications: renderNotifications,
+    counseling: renderCounseling,
+    foundation: renderFoundation,
+    finance: () => { financePageState.tab = "overview"; renderFinance(); },
+    financeOverviewRoute: () => { financePageState.tab = "overview"; renderFinance(); },
+    financeEntriesRoute: () => { financePageState.tab = "entries"; renderFinance(); },
+    financePublicSubmissionsRoute: () => { financePageState.tab = "public"; renderFinance(); },
+    financeVerificationRoute: () => { financePageState.tab = "verification"; renderFinance(); },
+    financeApprovedRequisitionsRoute: () => { financePageState.tab = "approvedRequisitions"; renderFinance(); },
+    financeReportsRoute: () => { financePageState.tab = "reports"; renderFinance(); },
+    financePartnersRoute: () => { financePageState.tab = "partners"; renderFinance(); },
+    financeExportsRoute: () => { financePageState.tab = "exports"; renderFinance(); },
+    cellAlecOverview: () => renderCellMinistry("alecOverview"),
+    cellAlecRegistration: () => renderCellMinistry("alecRegistration"),
+    cellAlecScores: () => renderCellMinistry("alecScores"),
+    cellChurchReports: () => renderCellMinistry("churchReports"),
+    cellMinistryOverview: () => renderCellMinistry("ministryOverview"),
+    cellReceivedReports: () => renderCellMinistry("receivedReports"),
+    cellEvaluationRoute: () => renderCellMinistry("cellEvaluation"),
+    cellPerformance: () => renderCellMinistry("cellPerformance"),
+    cellLeadersAttention: () => renderCellMinistry("leadersAttention"),
+    cellActionPlan: () => renderCellMinistry("actionPlan"),
+    cellWeeklyReport: () => renderCellMinistry("weeklyReport"),
+    cellGroups: renderCellGroups,
+    cellCellsList: renderCellCellsList,
+    cellMembers: renderCellMembers,
+    cellLeadersRoute: () => renderCellMinistry("cellLeaders"),
+    cellFinalValidation: () => renderCellMinistry("finalValidation"),
+    cellConsolidation: () => renderCellMinistry("consolidation"),
+    cellPrison: renderPrisonMinistry,
+    cellMaterials: renderMinistryMaterials,
+    fevo: () => renderFevo("overview"),
+    fevoConfigRoute: () => renderFevo("config"),
+    fevoFollowUpRoute: () => renderFevo("followup"),
+    fevoEvangelismRoute: () => renderFevo("evangelism"),
+    fevoVisitationRoute: () => renderFevo("visitation"),
+    fevoPrayerRoute: () => renderFevo("prayer"),
+    fevoNoReportsRoute: () => renderFevo("noReports"),
+    fevoWeeklyReportsRoute: () => renderFevo("weeklyReports"),
+    fevoAnalysisRoute: () => renderFevo("analysis"),
+    venueInventory: () => renderVenueInventory("overview"),
+    venueInventoryGeneral: () => renderVenueInventory("inventory"),
+    venueInventoryAcquisitions: () => renderVenueInventory("acquisitions"),
+    venueInventoryStaff: () => renderVenueInventory("staff"),
+    venueInventoryMaintenance: () => renderVenueInventory("maintenance"),
+    venueInventoryMovements: () => renderVenueInventory("movements"),
+    venueInventorySpaces: () => renderVenueInventory("spaces"),
+    venueInventoryChecklist: () => renderVenueInventory("checklist"),
+    venueInventoryReports: () => renderVenueInventory("reports"),
+    sacraments: renderSacraments,
+    programs: renderPrograms,
+    partnership: () => {
+      if (typeof hydratePartnershipArms === "function") void hydratePartnershipArms();
+      if (typeof setPartnershipTab === "function") setPartnershipTab("overview");
+      else if (typeof renderPartnerships === "function") renderPartnerships("overview");
+      else renderSimple("partnership", L("partnership"), state.partnership);
+    },
+    partnershipOverviewRoute: () => {
+      if (typeof hydratePartnershipArms === "function") void hydratePartnershipArms();
+      if (typeof setPartnershipTab === "function") setPartnershipTab("overview");
+      else if (typeof renderPartnerships === "function") renderPartnerships("overview");
+    },
+    partnershipArmsRoute: () => {
+      if (typeof hydratePartnershipArms === "function") void hydratePartnershipArms();
+      if (typeof setPartnershipTab === "function") setPartnershipTab("arms");
+      else if (typeof renderPartnerships === "function") renderPartnerships("arms");
+    },
+    partnershipPartnersRoute: () => {
+      if (typeof hydratePartnershipArms === "function") void hydratePartnershipArms();
+      if (typeof setPartnershipTab === "function") setPartnershipTab("partners");
+      else if (typeof renderPartnerships === "function") renderPartnerships("partners");
+    },
+    partnershipContributionsRoute: () => {
+      if (typeof hydratePartnershipArms === "function") void hydratePartnershipArms();
+      if (typeof setPartnershipTab === "function") setPartnershipTab("contributions");
+      else if (typeof renderPartnerships === "function") renderPartnerships("contributions");
+    },
+    partnershipHighlightsRoute: () => {
+      if (typeof hydratePartnershipArms === "function") void hydratePartnershipArms();
+      if (typeof setPartnershipTab === "function") setPartnershipTab("highlights");
+      else if (typeof renderPartnerships === "function") renderPartnerships("highlights");
+    },
+    partnershipAnalyticsRoute: () => {
+      if (typeof hydratePartnershipArms === "function") void hydratePartnershipArms();
+      if (typeof setPartnershipTab === "function") setPartnershipTab("analytics");
+      else if (typeof renderPartnerships === "function") renderPartnerships("analytics");
+    },
+    partnershipReportsRoute: () => {
+      if (typeof hydratePartnershipArms === "function") void hydratePartnershipArms();
+      if (typeof setPartnershipTab === "function") setPartnershipTab("reports");
+      else if (typeof renderPartnerships === "function") renderPartnerships("reports");
+    },
+    partnershipExportsRoute: () => {
+      if (typeof hydratePartnershipArms === "function") void hydratePartnershipArms();
+      if (typeof setPartnershipTab === "function") setPartnershipTab("exports");
+      else if (typeof renderPartnerships === "function") renderPartnerships("exports");
+    },
+    media: () => renderMedia("overview"),
+    mediaTeamRoute: () => renderMedia("team"),
+    mediaRolesRoute: () => renderMedia("roles"),
+    mediaSchedulesRoute: () => renderMedia("schedules"),
+    mediaServicesRoute: () => renderMedia("services"),
+    mediaChannelsRoute: () => renderMedia("channels"),
+    mediaPerformanceRoute: () => renderMedia("performance"),
+    mediaReportsRoute: () => renderMedia("reports"),
+    requisitions: renderRequisitions,
+    staffHr: renderStaffHr,
+    users: renderUsers,
+    access: renderAccess,
+    settings: renderSettings,
+    audit: renderAudit
+  };
+}
+
+function getRouteHydrationPromises(route) {
+  const promises = [];
+  const key = getRouteHydrationKey(route);
+
+  const memberDependent = [
+    "cell", "counseling", "sacraments", "foundation", "fevo", "staffHr",
+    "prison", "materials", "programs", "media"
+  ];
+  if (memberDependent.includes(key) && (!state.members || !state.members.length)) {
+    promises.push(Promise.resolve(hydrateMembersFromRepository()).catch((err) => {
+      console.warn("[CE Members] hydrate error", err);
+      return false;
+    }));
+  }
+
+  switch (key) {
+    case "churches":
+      promises.push(Promise.resolve(hydrateChurchesFromRepository()).catch(() => false));
+      break;
+    case "members":
+      if (typeof loadMembersPage === "function" && !modulePageState?.members?.loading) {
+        promises.push(Promise.resolve(loadMembersPage()).catch(() => false));
+      }
+      break;
+    case "firstTimers":
+    case "followUp":
+      promises.push(Promise.resolve(hydrateFirstTimersFromRepository()).catch(() => false));
+      promises.push(Promise.resolve(hydrateFollowUpsFromRepository()).catch(() => false));
+      break;
+    case "foundation":
+      promises.push(Promise.resolve(hydrateFoundationSchoolFromRepository()).catch(() => false));
+      break;
+    case "sacraments":
+      promises.push(Promise.resolve(hydrateSacramentsFromRepository()).catch(() => false));
+      break;
+    case "counseling":
+      promises.push(Promise.resolve(hydrateCounselingFromRepository()).catch(() => false));
+      break;
+    case "cell":
+      promises.push(Promise.resolve(hydrateCellMinistryFromRepository()).catch(() => false));
+      break;
+    case "programs":
+      promises.push(Promise.resolve(hydrateProgramsFromRepository()).catch(() => false));
+      break;
+    case "prison":
+      promises.push(Promise.resolve(hydratePrisonMinistryFromRepository()).catch(() => false));
+      break;
+    case "materials":
+      promises.push(Promise.resolve(hydrateMinistryMaterialsFromRepository()).catch(() => false));
+      break;
+    case "venueInventory":
+      promises.push(Promise.resolve(hydrateVenueInventoryFromRepository()).catch(() => false));
+      break;
+    case "requisitions":
+      promises.push(Promise.resolve(hydrateRequisitionsFromRepository()).catch(() => false));
+      break;
+    case "staffHr":
+      promises.push(Promise.resolve(hydrateStaffHrFromRepository()).catch(() => false));
+      break;
+    case "finance":
+      promises.push(Promise.resolve(hydrateFinanceFromRepository()).catch(() => false));
+      break;
+    case "partnership":
+      if (typeof hydratePartnershipArms === "function") {
+        promises.push(Promise.resolve(hydratePartnershipArms()).catch(() => false));
+      }
+      break;
+    case "media":
+      promises.push(Promise.resolve(hydrateMediaFromRepository()).catch(() => false));
+      break;
+    case "fevo":
+      promises.push(Promise.resolve(hydrateFevoFromRepository()).catch(() => false));
+      break;
+    case "access":
+      promises.push(Promise.resolve(hydrateAccessControlFromRepository()).catch(() => false));
+      break;
+    case "settings":
+      promises.push(Promise.resolve(hydrateSettingsFromRepository()).catch(() => false));
+      break;
+    case "notifications":
+      promises.push(Promise.resolve(hydrateNotificationsFromRepository()).catch(() => false));
+      break;
+    default:
+      break;
+  }
+  return promises;
+}
+
+function requestRouteSync(route) {
+  if (renderSyncDebounceTimeout) clearTimeout(renderSyncDebounceTimeout);
+  renderSyncDebounceTimeout = setTimeout(() => {
+    renderSyncDebounceTimeout = null;
+    if (activeRoute && !byId("appView")?.classList.contains("d-none")) {
+      const isCurrent = activeRoute === route || getRouteHydrationKey(activeRoute) === getRouteHydrationKey(route);
+      if (isCurrent) {
+        try {
+          const renderers = getRouteRenderers();
+          (renderers[activeRoute] || renderDashboard)();
+        } catch (e) {
+          console.warn("[requestRouteSync]", e);
+        }
+      }
+    }
+  }, 120);
+}
+
 function setRoute(route) {
   if (isCellLeaderOrAssistant(activeUser) && !userHasExtendedCellPerms(activeUser) && (!route || route === "dashboard" || route === "login")) {
     route = "cellPortal";
@@ -11607,319 +11890,32 @@ function setRoute(route) {
       outreachGroup.classList.add("is-expanded");
     }
   }
-  const renderers = {
-    dashboard: renderDashboard,
-    cellPortal: renderCellLeaderPortal,
-    churches: renderChurches,
-    members: renderMembers,
-    firstTimers: renderFirstTimers,
-    followUp: renderFollowUp,
-    reports: renderReports,
-    notifications: renderNotifications,
-    counseling: renderCounseling,
-    foundation: renderFoundation,
-    finance: () => { financePageState.tab = "overview"; renderFinance(); },
-    financeOverviewRoute: () => { financePageState.tab = "overview"; renderFinance(); },
-    financeEntriesRoute: () => { financePageState.tab = "entries"; renderFinance(); },
-    financePublicSubmissionsRoute: () => { financePageState.tab = "public"; renderFinance(); },
-    financeVerificationRoute: () => { financePageState.tab = "verification"; renderFinance(); },
-    financeApprovedRequisitionsRoute: () => { financePageState.tab = "approvedRequisitions"; renderFinance(); },
-    financeReportsRoute: () => { financePageState.tab = "reports"; renderFinance(); },
-    financePartnersRoute: () => { financePageState.tab = "partners"; renderFinance(); },
-    financeExportsRoute: () => { financePageState.tab = "exports"; renderFinance(); },
-    cellAlecOverview: () => renderCellMinistry("alecOverview"),
-    cellAlecRegistration: () => renderCellMinistry("alecRegistration"),
-    cellAlecScores: () => renderCellMinistry("alecScores"),
-    cellChurchReports: () => renderCellMinistry("churchReports"),
-    cellMinistryOverview: () => renderCellMinistry("ministryOverview"),
-    cellReceivedReports: () => renderCellMinistry("receivedReports"),
-    cellEvaluationRoute: () => renderCellMinistry("cellEvaluation"),
-    cellPerformance: () => renderCellMinistry("cellPerformance"),
-    cellLeadersAttention: () => renderCellMinistry("leadersAttention"),
-    cellActionPlan: () => renderCellMinistry("actionPlan"),
-    cellWeeklyReport: () => renderCellMinistry("weeklyReport"),
-    cellGroups: renderCellGroups,
-    cellCellsList: renderCellCellsList,
-    cellMembers: renderCellMembers,
-    cellLeadersRoute: () => renderCellMinistry("cellLeaders"),
-    cellFinalValidation: () => renderCellMinistry("finalValidation"),
-    cellConsolidation: () => renderCellMinistry("consolidation"),
-    cellPrison: renderPrisonMinistry,
-    cellMaterials: renderMinistryMaterials,
-    fevo: () => renderFevo("overview"),
-    fevoConfigRoute: () => renderFevo("config"),
-    fevoFollowUpRoute: () => renderFevo("followup"),
-    fevoEvangelismRoute: () => renderFevo("evangelism"),
-    fevoVisitationRoute: () => renderFevo("visitation"),
-    fevoPrayerRoute: () => renderFevo("prayer"),
-    fevoNoReportsRoute: () => renderFevo("noReports"),
-    fevoWeeklyReportsRoute: () => renderFevo("weeklyReports"),
-    fevoAnalysisRoute: () => renderFevo("analysis"),
-    venueInventory: () => renderVenueInventory("overview"),
-    venueInventoryGeneral: () => renderVenueInventory("inventory"),
-    venueInventoryAcquisitions: () => renderVenueInventory("acquisitions"),
-    venueInventoryStaff: () => renderVenueInventory("staff"),
-    venueInventoryMaintenance: () => renderVenueInventory("maintenance"),
-    venueInventoryMovements: () => renderVenueInventory("movements"),
-    venueInventorySpaces: () => renderVenueInventory("spaces"),
-    venueInventoryChecklist: () => renderVenueInventory("checklist"),
-    venueInventoryReports: () => renderVenueInventory("reports"),
-    sacraments: renderSacraments,
-    programs: renderPrograms,
-    partnership: () => {
-      if (typeof hydratePartnershipArms === "function") void hydratePartnershipArms();
-      if (typeof setPartnershipTab === "function") setPartnershipTab("overview");
-      else if (typeof renderPartnerships === "function") renderPartnerships("overview");
-      else renderSimple("partnership", L("partnership"), state.partnership);
-    },
-    partnershipOverviewRoute: () => {
-      if (typeof hydratePartnershipArms === "function") void hydratePartnershipArms();
-      if (typeof setPartnershipTab === "function") setPartnershipTab("overview");
-      else if (typeof renderPartnerships === "function") renderPartnerships("overview");
-    },
-    partnershipArmsRoute: () => {
-      if (typeof hydratePartnershipArms === "function") void hydratePartnershipArms();
-      if (typeof setPartnershipTab === "function") setPartnershipTab("arms");
-      else if (typeof renderPartnerships === "function") renderPartnerships("arms");
-    },
-    partnershipPartnersRoute: () => {
-      if (typeof hydratePartnershipArms === "function") void hydratePartnershipArms();
-      if (typeof setPartnershipTab === "function") setPartnershipTab("partners");
-      else if (typeof renderPartnerships === "function") renderPartnerships("partners");
-    },
-    partnershipContributionsRoute: () => {
-      if (typeof hydratePartnershipArms === "function") void hydratePartnershipArms();
-      if (typeof setPartnershipTab === "function") setPartnershipTab("contributions");
-      else if (typeof renderPartnerships === "function") renderPartnerships("contributions");
-    },
-    partnershipHighlightsRoute: () => {
-      if (typeof hydratePartnershipArms === "function") void hydratePartnershipArms();
-      if (typeof setPartnershipTab === "function") setPartnershipTab("highlights");
-      else if (typeof renderPartnerships === "function") renderPartnerships("highlights");
-    },
-    partnershipAnalyticsRoute: () => {
-      if (typeof hydratePartnershipArms === "function") void hydratePartnershipArms();
-      if (typeof setPartnershipTab === "function") setPartnershipTab("analytics");
-      else if (typeof renderPartnerships === "function") renderPartnerships("analytics");
-    },
-    partnershipReportsRoute: () => {
-      if (typeof hydratePartnershipArms === "function") void hydratePartnershipArms();
-      if (typeof setPartnershipTab === "function") setPartnershipTab("reports");
-      else if (typeof renderPartnerships === "function") renderPartnerships("reports");
-    },
-    partnershipExportsRoute: () => {
-      if (typeof hydratePartnershipArms === "function") void hydratePartnershipArms();
-      if (typeof setPartnershipTab === "function") setPartnershipTab("exports");
-      else if (typeof renderPartnerships === "function") renderPartnerships("exports");
-    },
-    media: () => renderMedia("overview"),
-    mediaTeamRoute: () => renderMedia("team"),
-    mediaRolesRoute: () => renderMedia("roles"),
-    mediaSchedulesRoute: () => renderMedia("schedules"),
-    mediaServicesRoute: () => renderMedia("services"),
-    mediaChannelsRoute: () => renderMedia("channels"),
-    mediaPerformanceRoute: () => renderMedia("performance"),
-    mediaReportsRoute: () => renderMedia("reports"),
-    requisitions: renderRequisitions,
-    staffHr: renderStaffHr,
-    users: renderUsers,
-    access: renderAccess,
-    settings: renderSettings,
-    audit: renderAudit
-  };
-  try {
-    (renderers[activeRoute] || renderDashboard)();
-  } catch (renderError) {
-    console.error("[setRoute renderer error]", activeRoute, renderError);
-  }
-  if (activeRoute === "members" && !modulePageState.members.loading) void loadMembersPage();
-  if (activeRoute === "churches") {
-    Promise.resolve(hydrateChurchesFromRepository())
-      .then((hydrated) => {
-        if (hydrated && activeRoute === "churches") {
-          try { renderChurches(); } catch (_) {}
-        }
-      })
-      .catch((err) => console.warn("[CE Churches] route hydrate skipped", err));
-  }
-  const memberDependentRoutes = [
-    "cellMembers", "cellGroups", "cellCellsList", "cellMinistryOverview",
-    "counseling", "sacraments", "foundation", "fevo", "staffHr",
-    "cellPrison", "cellMaterials", "programs"
-  ];
-  if (memberDependentRoutes.some((r) => activeRoute === r || String(activeRoute || "").startsWith(r))) {
-    if (!state.members || !state.members.length) {
-      Promise.resolve(hydrateMembersFromRepository())
-        .then((hydrated) => {
-          if (hydrated) {
-            try {
-              (renderers[activeRoute] || renderDashboard)();
-            } catch (_) {}
-          }
-        })
-        .catch((err) => console.warn("[CE Members] route hydrate skipped", err));
+  const renderers = getRouteRenderers();
+  const transitionId = ++currentRouteTransitionId;
+  const needsHydration = !isRouteHydrated(activeRoute);
+  const hydrationPromises = getRouteHydrationPromises(activeRoute);
+
+  if (needsHydration && hydrationPromises.length > 0) {
+    renderRouteLoadingState(activeRoute);
+    Promise.allSettled(hydrationPromises).then(() => {
+      if (transitionId !== currentRouteTransitionId) return;
+      markRouteHydrated(activeRoute);
+      try {
+        const freshRenderers = getRouteRenderers();
+        (freshRenderers[activeRoute] || renderDashboard)();
+      } catch (postError) {
+        console.error("[setRoute post-hydration error]", activeRoute, postError);
+      }
+    });
+  } else {
+    markRouteHydrated(activeRoute);
+    try {
+      (renderers[activeRoute] || renderDashboard)();
+    } catch (renderError) {
+      console.error("[setRoute renderer error]", activeRoute, renderError);
     }
   }
-  if (activeRoute === "sacraments") {
-    Promise.resolve(hydrateSacramentsFromRepository())
-      .then((hydrated) => {
-        if (hydrated && activeRoute === "sacraments") {
-          try { renderSacraments(); } catch (_) {}
-        }
-      })
-      .catch((err) => console.warn("[CE Sacraments] route hydrate skipped", err));
-  }
-  if (activeRoute === "foundation") {
-    Promise.resolve(hydrateFoundationSchoolFromRepository())
-      .then((hydrated) => {
-        if (hydrated && activeRoute === "foundation") {
-          try { renderFoundation(); } catch (_) {}
-        }
-      })
-      .catch((err) => console.warn("[CE Foundation] route hydrate skipped", err));
-  }
-  if (String(activeRoute || "").startsWith("cell")) {
-    if (!state.cellLeadership || !state.cellLeadership.churchReports || !state.cellLeadership.churchReports.length) {
-      Promise.resolve(hydrateCellMinistryFromRepository())
-        .then((hydrated) => {
-          if (hydrated && String(activeRoute || "").startsWith("cell")) {
-            try {
-              (renderers[activeRoute] || renderDashboard)();
-            } catch (_) {}
-          }
-        })
-        .catch((err) => console.warn("[CE CellMinistry] route hydrate skipped", err));
-    }
-  }
-  if (activeRoute === "programs") {
-    Promise.resolve(hydrateProgramsFromRepository())
-      .then((hydrated) => {
-        if (hydrated && activeRoute === "programs") {
-          try { renderPrograms(); } catch (_) {}
-        }
-      })
-      .catch((err) => console.warn("[CE Programs] route hydrate skipped", err));
-  }
-  if (activeRoute === "cellPrison" || activeRoute === "prisonMinistry") {
-    Promise.resolve(hydratePrisonMinistryFromRepository())
-      .then((hydrated) => {
-        if (hydrated && (activeRoute === "cellPrison" || activeRoute === "prisonMinistry")) {
-          try { renderPrisonMinistry(); } catch (_) {}
-        }
-      })
-      .catch((err) => console.warn("[CE PrisonMinistry] route hydrate skipped", err));
-  }
-  if (activeRoute === "cellMaterials" || activeRoute === "ministryMaterials") {
-    Promise.resolve(hydrateMinistryMaterialsFromRepository())
-      .then((hydrated) => {
-        if (hydrated && (activeRoute === "cellMaterials" || activeRoute === "ministryMaterials")) {
-          try { renderMinistryMaterials(); } catch (_) {}
-        }
-      })
-      .catch((err) => console.warn("[CE MinistryMaterials] route hydrate skipped", err));
-  }
-  if (activeRoute === "venueInventory" || String(activeRoute || "").startsWith("venueInventory")) {
-    Promise.resolve(hydrateVenueInventoryFromRepository())
-      .then((hydrated) => {
-        if (hydrated && (activeRoute === "venueInventory" || String(activeRoute || "").startsWith("venueInventory"))) {
-          try {
-            const routeToTab = {
-              venueInventory: "overview",
-              venueInventoryGeneral: "inventory",
-              venueInventoryAcquisitions: "acquisitions",
-              venueInventoryStaff: "staff",
-              venueInventoryMaintenance: "maintenance",
-              venueInventoryMovements: "movements",
-              venueInventorySpaces: "spaces",
-              venueInventoryChecklist: "checklist",
-              venueInventoryReports: "reports",
-            };
-            if (typeof renderVenueInventory === "function") {
-              renderVenueInventory(routeToTab[activeRoute] || "overview");
-            }
-          } catch (_) {}
-        }
-      })
-      .catch((err) => console.warn("[CE VenueInventory] route hydrate skipped", err));
-  }
-  if (activeRoute === "requisitions") {
-    Promise.resolve(hydrateRequisitionsFromRepository())
-      .then((hydrated) => {
-        if (hydrated && activeRoute === "requisitions") {
-          try {
-            if (typeof renderRequisitions === "function") renderRequisitions();
-          } catch (_) {}
-        }
-      })
-      .catch((err) => console.warn("[CE Requisitions] route hydrate skipped", err));
-  }
-  if (activeRoute === "media" || (typeof activeRoute === "string" && activeRoute.startsWith("media"))) {
-    Promise.resolve(hydrateMediaFromRepository())
-      .then((hydrated) => {
-        if (hydrated && (activeRoute === "media" || (typeof activeRoute === "string" && activeRoute.startsWith("media")))) {
-          try {
-            if (typeof renderMedia === "function") {
-              const tab = activeRoute === "mediaTeamRoute" ? "team"
-                : activeRoute === "mediaRolesRoute" ? "roles"
-                : activeRoute === "mediaSchedulesRoute" ? "schedules"
-                : activeRoute === "mediaServicesRoute" ? "services"
-                : activeRoute === "mediaChannelsRoute" ? "channels"
-                : activeRoute === "mediaPerformanceRoute" ? "performance"
-                : activeRoute === "mediaReportsRoute" ? "reports"
-                : activeRoute === "mediaAwardsRoute" ? "awards"
-                : (mediaPageState.tab || "overview");
-              renderMedia(tab);
-            }
-          } catch (_) {}
-        }
-      })
-      .catch((err) => console.warn("[CE Media] route hydrate skipped", err));
-  }
-  if (activeRoute === "staffHr") {
-    Promise.resolve(hydrateStaffHrFromRepository())
-      .then((hydrated) => {
-        if (hydrated && activeRoute === "staffHr") {
-          try {
-            if (typeof renderStaffHr === "function") renderStaffHr();
-          } catch (_) {}
-        }
-      })
-      .catch((err) => console.warn("[CE StaffHR] route hydrate skipped", err));
-  }
-  if (activeRoute === "counseling") {
-    Promise.resolve(hydrateCounselingFromRepository())
-      .then((hydrated) => {
-        if (hydrated && activeRoute === "counseling") {
-          try {
-            if (typeof renderCounseling === "function") renderCounseling();
-          } catch (_) {}
-        }
-      })
-      .catch((err) => console.warn("[CE Counseling] route hydrate skipped", err));
-  }
-  if (activeRoute === "finance" || String(activeRoute || "").startsWith("finance")) {
-    Promise.resolve(hydrateFinanceFromRepository())
-      .then((hydrated) => {
-        if (hydrated && (activeRoute === "finance" || String(activeRoute || "").startsWith("finance"))) {
-          try {
-            (renderers[activeRoute] || renderDashboard)();
-          } catch (_) {}
-        }
-      })
-      .catch((err) => console.warn("[CE Finance] route hydrate skipped", err));
-  }
-  if (activeRoute === "firstTimers" || activeRoute === "followUp") {
-    Promise.resolve(hydrateFirstTimersFromRepository())
-      .then((hydrated) => {
-        if (hydrated && (activeRoute === "firstTimers" || activeRoute === "followUp")) {
-          try {
-            if (activeRoute === "firstTimers" && typeof renderFirstTimers === "function") renderFirstTimers();
-            else if (typeof renderFollowUp === "function") renderFollowUp();
-          } catch (_) {}
-        }
-      })
-      .catch((err) => console.warn("[CE FirstTimers] route hydrate skipped", err));
-  }
+
   history.replaceState(null, "", `#${activeRoute}`);
   document.querySelector(".ops-sidebar")?.classList.remove("is-open");
   const contentEl = byId("content");
@@ -37684,126 +37680,143 @@ function continueEnterDashboard() {
     })
     .catch((error) => console.warn("[CE MinistryMaterials] background hydrate skipped", error));
 
-  // Data-layer background hydration: sync all modules without blocking UI paint
+  // Data-layer background hydration: sync all modules safely with debounced route sync
   Promise.resolve()
     .then(() => hydrateChurchesFromRepository())
     .then((hydrated) => {
-      if (hydrated && activeRoute === "churches") renderChurches();
+      if (hydrated) {
+        markRouteHydrated("churches");
+        requestRouteSync("churches");
+      }
     })
     .catch((error) => console.warn("[CE Churches] background hydrate skipped", error));
+
   Promise.resolve()
     .then(() => hydrateFirstTimersFromRepository())
     .then((hydrated) => {
-      if (hydrated && (activeRoute === "firstTimers" || activeRoute === "followUp")) {
-        if (activeRoute === "firstTimers") renderFirstTimers();
-        else renderFollowUp();
+      if (hydrated) {
+        markRouteHydrated("firstTimers");
+        requestRouteSync("firstTimers");
       }
     })
     .catch((error) => console.warn("[CE FirstTimers] background hydrate skipped", error));
+
   Promise.resolve()
     .then(() => hydrateFollowUpsFromRepository())
     .then((hydrated) => {
-      if (hydrated && activeRoute === "followUp") renderFollowUp();
+      if (hydrated) {
+        markRouteHydrated("followUp");
+        requestRouteSync("followUp");
+      }
     })
     .catch((error) => console.warn("[CE FollowUps] background hydrate skipped", error));
+
   Promise.resolve()
     .then(() => hydrateFoundationSchoolFromRepository())
     .then((hydrated) => {
-      if (hydrated && activeRoute === "foundation") {
-        if (typeof renderFoundation === "function") renderFoundation();
+      if (hydrated) {
+        markRouteHydrated("foundation");
+        requestRouteSync("foundation");
       }
     })
     .catch((error) => console.warn("[CE Foundation] background hydrate skipped", error));
+
   Promise.resolve()
     .then(() => hydrateCellMinistryFromRepository())
     .then((hydrated) => {
-      if (hydrated && String(activeRoute || "").startsWith("cell")) setRoute(activeRoute);
+      if (hydrated) {
+        markRouteHydrated("cell");
+        requestRouteSync("cell");
+      }
     })
     .catch((error) => console.warn("[CE CellMinistry] background hydrate skipped", error));
+
   Promise.resolve()
     .then(() => hydrateFinanceFromRepository())
     .then((hydrated) => {
-      if (hydrated && (activeRoute === "finance" || String(activeRoute || "").startsWith("finance"))) {
-        setRoute(activeRoute);
+      if (hydrated) {
+        markRouteHydrated("finance");
+        requestRouteSync("finance");
       }
     })
     .catch((error) => console.warn("[CE Finance] background hydrate skipped", error));
+
   Promise.resolve()
     .then(() => hydrateRequisitionsFromRepository())
     .then((hydrated) => {
-      if (hydrated && activeRoute === "requisitions" && typeof renderRequisitions === "function") {
-        renderRequisitions();
+      if (hydrated) {
+        markRouteHydrated("requisitions");
+        requestRouteSync("requisitions");
       }
     })
     .catch((error) => console.warn("[CE Requisitions] background hydrate skipped", error));
+
   Promise.resolve()
     .then(() => hydrateVenueInventoryFromRepository())
     .then((hydrated) => {
-      if (
-        hydrated &&
-        (activeRoute === "venueInventory" || String(activeRoute || "").startsWith("venueInventory")) &&
-        typeof renderVenueInventory === "function"
-      ) {
-        const routeToTab = {
-          venueInventory: "overview",
-          venueInventoryGeneral: "inventory",
-          venueInventoryAcquisitions: "acquisitions",
-          venueInventoryStaff: "staff",
-          venueInventoryMaintenance: "maintenance",
-          venueInventoryMovements: "movements",
-          venueInventorySpaces: "spaces",
-          venueInventoryChecklist: "checklist",
-          venueInventoryReports: "reports",
-        };
-        renderVenueInventory(routeToTab[activeRoute] || "overview");
+      if (hydrated) {
+        markRouteHydrated("venueInventory");
+        requestRouteSync("venueInventory");
       }
     })
     .catch((error) => console.warn("[CE VenueInventory] background hydrate skipped", error));
+
   Promise.resolve()
     .then(() => hydrateStaffHrFromRepository())
     .then((hydrated) => {
-      if (hydrated && activeRoute === "staffHr" && typeof renderStaffHr === "function") {
-        renderStaffHr();
+      if (hydrated) {
+        markRouteHydrated("staffHr");
+        requestRouteSync("staffHr");
       }
     })
     .catch((error) => console.warn("[CE StaffHR] background hydrate skipped", error));
+
   Promise.resolve()
     .then(() => hydrateAccessControlFromRepository())
     .then((hydrated) => {
-      if (hydrated && (activeRoute === "users" || activeRoute === "access" || activeRoute === "audit")) {
-        setRoute(activeRoute);
+      if (hydrated) {
+        markRouteHydrated("access");
+        requestRouteSync("access");
       }
     })
     .catch((error) => console.warn("[CE AccessControl] background hydrate skipped", error));
+
   Promise.resolve()
     .then(() => hydrateMediaFromRepository())
     .then((hydrated) => {
-      if (hydrated && activeRoute === "media" && typeof renderMedia === "function") {
-        renderMedia();
+      if (hydrated) {
+        markRouteHydrated("media");
+        requestRouteSync("media");
       }
     })
     .catch((error) => console.warn("[CE Media] background hydrate skipped", error));
+
   Promise.resolve()
     .then(() => hydrateCounselingFromRepository())
     .then((hydrated) => {
-      if (hydrated && activeRoute === "counseling" && typeof renderCounseling === "function") {
-        renderCounseling();
+      if (hydrated) {
+        markRouteHydrated("counseling");
+        requestRouteSync("counseling");
       }
     })
     .catch((error) => console.warn("[CE Counseling] background hydrate skipped", error));
+
   Promise.resolve()
     .then(() => hydrateSacramentsFromRepository())
     .then((hydrated) => {
-      if (hydrated && activeRoute === "sacraments" && typeof renderSacraments === "function") {
-        renderSacraments();
+      if (hydrated) {
+        markRouteHydrated("sacraments");
+        requestRouteSync("sacraments");
       }
     })
     .catch((error) => console.warn("[CE Sacraments] background hydrate skipped", error));
+
   Promise.resolve()
     .then(() => hydrateFevoFromRepository())
     .then((hydrated) => {
-      if (hydrated && String(activeRoute || "").startsWith("fevo") && typeof renderFevo === "function") {
-        renderFevo();
+      if (hydrated) {
+        markRouteHydrated("fevo");
+        requestRouteSync("fevo");
       }
     })
     .catch((error) => console.warn("[CE FEVO] background hydrate skipped", error));
@@ -37811,12 +37824,9 @@ function continueEnterDashboard() {
   Promise.resolve()
     .then(() => hydratePrisonMinistryFromRepository())
     .then((hydrated) => {
-      if (
-        hydrated &&
-        (activeRoute === "prisonMinistry" || activeRoute === "cellPrison") &&
-        typeof renderPrisonMinistry === "function"
-      ) {
-        renderPrisonMinistry();
+      if (hydrated) {
+        markRouteHydrated("prison");
+        requestRouteSync("prison");
       }
     })
     .catch((error) => console.warn("[CE Prison] background hydrate skipped", error));
@@ -37824,12 +37834,9 @@ function continueEnterDashboard() {
   Promise.resolve()
     .then(() => hydrateMinistryMaterialsFromRepository())
     .then((hydrated) => {
-      if (
-        hydrated &&
-        (activeRoute === "ministryMaterials" || activeRoute === "cellMaterials") &&
-        typeof renderMinistryMaterials === "function"
-      ) {
-        renderMinistryMaterials();
+      if (hydrated) {
+        markRouteHydrated("materials");
+        requestRouteSync("materials");
       }
     })
     .catch((error) => console.warn("[CE Materials] background hydrate skipped", error));
@@ -37837,8 +37844,9 @@ function continueEnterDashboard() {
   Promise.resolve()
     .then(() => hydrateProgramsFromRepository())
     .then((hydrated) => {
-      if (hydrated && activeRoute === "programs") {
-        setRoute(activeRoute);
+      if (hydrated) {
+        markRouteHydrated("programs");
+        requestRouteSync("programs");
       }
     })
     .catch((error) => console.warn("[CE Programs] background hydrate skipped", error));
@@ -37846,8 +37854,9 @@ function continueEnterDashboard() {
   Promise.resolve()
     .then(() => hydrateSettingsFromRepository())
     .then((hydrated) => {
-      if (hydrated && activeRoute === "settings" && typeof renderSettings === "function") {
-        renderSettings();
+      if (hydrated) {
+        markRouteHydrated("settings");
+        requestRouteSync("settings");
       }
     })
     .catch((error) => console.warn("[CE Settings] background hydrate skipped", error));
