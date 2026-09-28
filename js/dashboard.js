@@ -12362,7 +12362,10 @@ async function loadMembersPage({ force = false, liveSearch = false } = {}) {
     }
   }
   try {
-    const result = await repo.listMembersPage(memberPageQuery());
+    const [result] = await Promise.all([
+      repo.listMembersPage(memberPageQuery()),
+      syncMemberRegistrationCandidatesFromRepository()
+    ]);
     if (requestId !== pageState.requestId) return false;
     if (!result?.ok) {
       pageState.error = result?.error || "Falha ao carregar membros.";
@@ -16577,7 +16580,13 @@ async function candidateAction(action, id) {
     }
   }
   const repoResult = await persistMemberCandidateViaRepository("update", candidate); if (repoResult?.ok === false) return alert(repoResult.error || "Não foi possível actualizar o pedido.");
-  saveState("Fluxo de adesão actualizado"); if (activeRoute === "cellPortal") renderCellLeaderPortal(); else renderMembers();
+  saveState("Fluxo de adesão actualizado");
+  if (activeRoute === "cellPortal") {
+    renderCellLeaderPortal();
+  } else {
+    void loadMembersPage({ force: true });
+    renderMembers();
+  }
 }
 
 function renderMembersResultsOnly() {
@@ -16587,10 +16596,80 @@ function renderMembersResultsOnly() {
   const list = scoped(pageState.items || [], "members").slice(0, pageState.pageSize || 50);
   const view = modulePageState.members.view;
   const filtered = list;
-  const tableRows = filtered.map((m) => [
+  const activeMainTab = modulePageState.members.activeTab || "all";
+  const candidates = (state.memberRegistrationCandidates || []).filter((item) => canReviewMemberCandidates() || scoped([item], "members").length);
+  const pendingCandidates = candidates.filter((item) => !["Approved", "Withdrawn"].includes(item.approval_status));
+
+  // Match candidates against active filter
+  const filterObj = modulePageState.members.filter || {};
+  let matchingCandidates = pendingCandidates;
+  if (filterObj.search) {
+    const s = normalizedMemberFilterText(filterObj.search);
+    matchingCandidates = matchingCandidates.filter((c) => [
+      candidateFullName(c), c.primary_phone, c.secondary_phone, c.email,
+      c.church_name, c.cell_group_name, c.cell_name
+    ].some((val) => normalizedMemberFilterText(val).includes(s)));
+  }
+  if (filterObj.church_id) {
+    matchingCandidates = matchingCandidates.filter((c) => String(c.church_id) === String(filterObj.church_id));
+  }
+  if (filterObj.cell_group) {
+    const g = filterObj.cell_group;
+    matchingCandidates = matchingCandidates.filter((c) => {
+      if (g.startsWith("id:")) return String(c.cell_group_id) === g.slice(3);
+      if (g.startsWith("name:")) return normalizedMemberFilterText(c.cell_group_name).includes(g.slice(5));
+      return true;
+    });
+  }
+  if (filterObj.cell) {
+    const cl = filterObj.cell;
+    matchingCandidates = matchingCandidates.filter((c) => {
+      if (cl.startsWith("id:")) return String(c.cell_id) === cl.slice(3);
+      if (cl.startsWith("name:")) return normalizedMemberFilterText(c.cell_name).includes(cl.slice(5));
+      return true;
+    });
+  }
+
+  const officialTableRows = filtered.map((m) => [
     fullName(m), m.telefone || m.primary_phone || "—", churchName(m.church_id), memberCellGroupLabel(m) || "—", memberCellLabel(m) || "—", m.departamento, badge(m.estado), memberActions(m.id)
   ]);
-  const rowAttrs = filtered.map((m) => ` data-filter-row data-filter-church-values="${churchFilterTokens(m)}" data-filter-status-values="${statusKey(m.estado)} ${m.estado || ""}"`);
+  const officialRowAttrs = filtered.map((m) => ` data-filter-row data-filter-church-values="${churchFilterTokens(m)}" data-filter-status-values="${statusKey(m.estado)} ${m.estado || ""}"`);
+
+  const candidateTableRows = matchingCandidates.map((c) => {
+    const dups = candidateDuplicates(c);
+    const topDup = dups[0];
+    const dupPill = topDup
+      ? `<br><small class="text-warning"><i class="bi bi-magic me-1"></i>Duplicado: ${escapeAttr(fullName(topDup.member))} (${topDup.reason})</small>`
+      : "";
+    const originLabel = c.origin_role || c.origin
+      ? `<span class="badge text-bg-info text-dark small me-1"><i class="bi bi-tag-fill me-1"></i>${escapeAttr(c.origin_role || c.origin)}</span>`
+      : "";
+
+    return [
+      `<div class="d-flex flex-column"><div class="d-flex align-items-center gap-2"><strong class="text-warning">${escapeAttr(candidateFullName(c))}</strong> <span class="badge text-bg-warning text-dark small">Lista de Espera</span></div><div>${originLabel}${dupPill}</div></div>`,
+      c.primary_phone || "Não informado",
+      c.church_name || churchName(c.church_id) || "—",
+      c.cell_group_name || "—",
+      c.cell_name || "—",
+      c.origin_role || "—",
+      badge(candidateStatusLabel(c.approval_status)),
+      candidateAdminActions(c)
+    ];
+  });
+  const candidateRowAttrs = matchingCandidates.map((c) => ` class="table-warning bg-opacity-10 border-start border-3 border-warning" data-filter-row`);
+
+  let tableRows = [];
+  let rowAttrs = [];
+  if (activeMainTab === "candidates") {
+    tableRows = candidateTableRows;
+    rowAttrs = candidateRowAttrs;
+  } else if (activeMainTab === "official") {
+    tableRows = officialTableRows;
+    rowAttrs = officialRowAttrs;
+  } else {
+    tableRows = [...candidateTableRows, ...officialTableRows];
+    rowAttrs = [...candidateRowAttrs, ...officialRowAttrs];
+  }
 
   resultsEl.innerHTML = pageState.loading
     ? `<div class="p-5 text-center text-secondary"><div class="spinner-border text-warning mb-2" role="status"></div><div>${lang === "pt" ? "A carregar membros do Supabase…" : "Loading members from Supabase…"}</div></div>`
@@ -16599,9 +16678,9 @@ function renderMembersResultsOnly() {
           <div><i class="bi bi-exclamation-triangle me-2"></i>${escapeAttr(pageState.error)}</div>
           <button type="button" class="btn btn-sm btn-outline-dark" data-member-filter-apply>${lang === "pt" ? "Tentar novamente" : "Retry"}</button>
          </div>`
-      : filtered.length === 0
+      : tableRows.length === 0
         ? (typeof EmptyState === "function" ? EmptyState({ icon: "bi-people", title: lang === "pt" ? "Nenhum membro encontrado" : "No members found", subtitle: lang === "pt" ? "Verifique os filtros aplicados ou efectue uma nova pesquisa." : "Check applied filters or try another search." }) : `<div class="p-4 text-center text-secondary">${lang === "pt" ? "Nenhum membro encontrado." : "No members found."}</div>`)
-        : view === "cards"
+        : view === "cards" && activeMainTab !== "candidates"
           ? DataCardsGrid(filtered.map((m) => renderMemberCard(m)).join(""))
           : dataTable([L("name"), L("phone"), L("church"), "Grupo de Célula", L("cell"), L("department"), L("status"), L("actions")], tableRows, { rowAttrs });
 
@@ -37923,6 +38002,9 @@ function continueEnterDashboard() {
   }
 
   // Data-layer background hydration: sync all modules safely with debounced route sync
+  Promise.resolve()
+    .then(() => syncMemberRegistrationCandidatesFromRepository())
+    .catch((error) => console.warn("[CE Member Candidates] background sync skipped", error));
   Promise.resolve()
     .then(() => hydrateMembersFromRepository())
     .then((hydrated) => {
