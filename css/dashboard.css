@@ -8547,3 +8547,102 @@ nav.module-tabs {
   0% { left: -40%; }
   100% { left: 100%; }
 }
+
+/* ==========================================================================
+   Cell Portal Sidebar Navigation & Mobile/Tablet Layout Enhancements
+   ========================================================================== */
+.nav-cell-portal-area {
+  margin-bottom: 0.35rem;
+  border-radius: 0.85rem;
+  background: rgba(229, 179, 66, 0.03);
+  border: 1px solid rgba(229, 179, 66, 0.12);
+}
+
+.nav-cell-portal-area.has-active {
+  border-color: rgba(229, 179, 66, 0.35);
+  background: rgba(229, 179, 66, 0.06);
+}
+
+.nav-cell-portal-toggle {
+  color: #ffd875;
+}
+
+.nav-cell-portal-toggle .nav-cell-area-icon {
+  color: #e5b342;
+}
+
+.nav-cell-portal-subitems {
+  padding: 0.35rem 0.2rem 0.45rem;
+}
+
+.nav-cell-section-item {
+  display: flex;
+  align-items: center;
+  font-size: 0.72rem;
+  padding: 0.52rem 0.75rem;
+  border-radius: 0.65rem;
+  margin: 0 0.35rem 0.25rem;
+  width: calc(100% - 0.7rem);
+  color: rgba(248, 251, 255, 0.75);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.18s ease;
+}
+
+.nav-cell-section-item i {
+  font-size: 0.88rem;
+  color: #20d7ff;
+  flex: 0 0 18px;
+}
+
+.nav-cell-section-item:hover,
+.nav-cell-section-item.active {
+  color: #ffffff;
+  background: linear-gradient(135deg, rgba(229, 179, 66, 0.2), rgba(32, 215, 255, 0.15));
+  border-color: rgba(229, 179, 66, 0.45);
+  transform: translateX(3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.nav-cell-section-item.active i {
+  color: #ffd875;
+}
+
+/* Mobile & Tablet Optimizations for Cell Portal */
+@media (max-width: 991px) {
+  .cell-portal-hero {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.25rem;
+    padding: 1.25rem;
+  }
+
+  .cell-portal-hero-actions {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 0.65rem;
+  }
+
+  .cell-portal-hero-actions .btn {
+    width: 100%;
+    justify-content: center;
+    padding: 0.75rem 1rem;
+    font-size: 0.92rem;
+  }
+
+  .cell-portal-filters {
+    padding: 1rem;
+    gap: 0.75rem;
+  }
+
+  .cell-portal-section {
+    scroll-margin-top: calc(var(--topbar-height, 60px) + 12px);
+  }
+
+  .nav-cell-section-item {
+    padding: 0.65rem 0.85rem;
+    font-size: 0.8rem;
+    min-height: 42px;
+  }
+}

@@ -11062,6 +11062,47 @@ function cellRouteAreaLabel(route) {
   return area ? L(area.label) : L("cellLeadership");
 }
 
+function renderCellPortalSidebarSubnav() {
+  const sections = [
+    { id: "cell-portal-overview", icon: "bi-grid-1x2", labelPt: "Visão Geral", labelEn: "Overview" },
+    { id: "cell-portal-attendance", icon: "bi-calendar-check", labelPt: "Presenças & Visitantes", labelEn: "Attendance & Visitors" },
+    { id: "cell-portal-members", icon: "bi-people", labelPt: "Membros & Reconciliação", labelEn: "Members" },
+    { id: "cell-portal-candidates", icon: "bi-person-plus", labelPt: "Adesões Pendentes", labelEn: "Pending Registrations" },
+    { id: "cell-portal-reports", icon: "bi-clipboard-check", labelPt: "Relatório Semanal", labelEn: "Weekly Reports" },
+    { id: "cell-portal-activities", icon: "bi-calendar-event", labelPt: "Actividades", labelEn: "Activities" },
+    { id: "cell-portal-growth", icon: "bi-graph-up-arrow", labelPt: "Crescimento", labelEn: "Growth" },
+    { id: "cell-portal-finance", icon: "bi-cash-coin", labelPt: "Parcerias & Dízimos", labelEn: "Partnerships & Tithes" },
+    { id: "cell-portal-souls", icon: "bi-heart-pulse", labelPt: "Ganhar Almas", labelEn: "Soul Winning" },
+    { id: "cell-portal-foundation", icon: "bi-book", labelPt: "Fundação & Sacramentos", labelEn: "Foundation & Sacraments" },
+    { id: "cell-portal-programs", icon: "bi-megaphone", labelPt: "Programas", labelEn: "Programs" },
+    { id: "cell-portal-history", icon: "bi-clock-history", labelPt: "Histórico", labelEn: "History" }
+  ];
+
+  const isExpanded = isSidebarGroupExpanded("cellPortalSections") || activeRoute === "cellPortal";
+
+  return `
+    <div class="nav-cell-area nav-cell-portal-area ${isExpanded ? "is-expanded" : ""} ${activeRoute === "cellPortal" ? "has-active" : ""}" data-nav-group="cellPortalSections">
+      <button type="button" class="nav-cell-area-toggle nav-cell-portal-toggle" aria-expanded="${isExpanded}" aria-label="Secções do Portal">
+        <i class="bi bi-person-badge nav-cell-area-icon" aria-hidden="true"></i>
+        <span>${lang === "pt" ? "Portal do Líder de Célula" : "Cell Portal"}</span>
+        <i class="bi bi-chevron-down nav-cell-area-chevron" aria-hidden="true"></i>
+      </button>
+      <div class="nav-cell-area-body">
+        <div class="nav-cell-area-body-inner nav-cell-portal-subitems">
+          <button type="button" class="nav-cell-item ${activeRoute === "cellPortal" ? "active" : ""}" data-route="cellPortal" title="${lang === "pt" ? "Abrir Portal de Célula" : "Open Cell Portal"}">
+            <i class="bi bi-house-door me-2"></i><span>${lang === "pt" ? "Página Principal" : "Main Page"}</span>
+          </button>
+          ${sections.map((sec) => `
+            <button type="button" class="nav-cell-item nav-cell-section-item" data-cell-portal-section="${sec.id}" title="${escapeAttr(lang === "pt" ? sec.labelPt : sec.labelEn)}">
+              <i class="bi ${sec.icon} me-2" aria-hidden="true"></i>
+              <span>${escapeAttr(lang === "pt" ? sec.labelPt : sec.labelEn)}</span>
+            </button>
+          `).join("")}
+        </div>
+      </div>
+    </div>`;
+}
+
 function renderCellSidebarNav() {
   const workspaceRoutes = roleWorkspaceRoutes();
   const parentExpanded = isSidebarGroupExpanded(CELL_NAV.parentKey) || String(activeUser?.role || "").toLowerCase().includes("venue");
@@ -11070,7 +11111,7 @@ function renderCellSidebarNav() {
   if (!hasExtendedCellPerms && (isCellLeaderOrAssistant(activeUser) || ["Cell Leader", "Cell Assistant"].includes(activeUser?.role))) {
     return `<div class="nav-cell-branch is-expanded ${parentActive ? "has-active" : ""}">
       <div class="nav-cell-body"><div class="nav-cell-body-inner">
-        <button type="button" class="nav-cell-item ${activeRoute === "cellPortal" || activeRoute === "dashboard" ? "active" : ""}" data-route="cellPortal"><i class="bi bi-grid-1x2 me-2"></i><span>${lang === "pt" ? "Minha Célula" : "My Cell"}</span></button>
+        ${renderCellPortalSidebarSubnav()}
         <button type="button" class="nav-cell-item ${activeRoute === "cellReceivedReports" ? "active" : ""}" data-route="cellReceivedReports"><i class="bi bi-clock-history me-2"></i><span>${L("receivedReports")}</span></button>
         <button type="button" class="nav-cell-item" data-public-cell-report><i class="bi bi-clipboard-plus me-2"></i><span>${L("submitCellReport")}</span></button>
       </div></div>
@@ -11116,7 +11157,7 @@ function renderCellSidebarNav() {
       </button>
       <div class="nav-cell-body">
         <div class="nav-cell-body-inner">
-          ${showCellPortal ? `<button type="button" class="nav-cell-item ${activeRoute === "cellPortal" ? "active" : ""}" data-route="cellPortal"><i class="bi bi-grid-1x2 me-2"></i><span>${lang === "pt" ? "Portal do Líder de Célula" : "Cell Portal"}</span></button>` : ""}
+          ${showCellPortal ? renderCellPortalSidebarSubnav() : ""}
           ${showCellPortal && (!workspaceRoutes || workspaceRoutes.includes("cellReceivedReports")) ? `<button type="button" class="nav-cell-item ${activeRoute === "cellReceivedReports" ? "active" : ""}" data-route="cellReceivedReports"><i class="bi bi-clock-history me-2"></i><span>${L("receivedReports")}</span></button>` : ""}
           ${showCellPortal ? `<button type="button" class="nav-cell-item" data-public-cell-report><i class="bi bi-clipboard-plus me-2"></i><span>${L("submitCellReport")}</span></button>` : ""}
           ${areaItems}
@@ -11853,12 +11894,19 @@ function setRoute(route) {
   if (isCellRoute(activeRoute)) {
     sidebarGroupState[CELL_NAV.parentKey] = true;
     sidebarGroupState.departments = true;
+    if (activeRoute === "cellPortal") {
+      sidebarGroupState.cellPortalSections = true;
+    }
     const activeArea = CELL_NAV.areas.find((area) => area.routes.some(([route]) => route === activeRoute));
     if (activeArea) sidebarGroupState[activeArea.key] = true;
     localStorage.setItem(SIDEBAR_GROUPS_KEY, JSON.stringify(sidebarGroupState));
     const deptGroup = document.querySelector('[data-nav-group="departments"]');
     if (deptGroup && !deptGroup.classList.contains("is-expanded")) {
       deptGroup.classList.add("is-expanded");
+    }
+    const portalGroup = document.querySelector('[data-nav-group="cellPortalSections"]');
+    if (portalGroup && activeRoute === "cellPortal" && !portalGroup.classList.contains("is-expanded")) {
+      portalGroup.classList.add("is-expanded");
     }
   }
   if (FINANCE_TAB_ROUTES.has(activeRoute) || activeRoute === "finance") {
@@ -13616,7 +13664,6 @@ function renderCellLeaderPortal() {
         <label>Dizimista<select class="form-select" data-cell-portal-filter="tithe"><option value="">Todos</option><option value="true" ${cellPortalPageState.tithe === "true" ? "selected" : ""}>Sim</option><option value="false" ${cellPortalPageState.tithe === "false" ? "selected" : ""}>Não</option></select></label>
         <label>Convidou<select class="form-select" data-cell-portal-filter="invited"><option value="">Todos</option><option value="true" ${cellPortalPageState.invited === "true" ? "selected" : ""}>Sim</option><option value="false" ${cellPortalPageState.invited === "false" ? "selected" : ""}>Não</option></select></label>
       </section>
-      <nav class="cell-portal-nav" aria-label="Secções do portal">${[["overview","Visão Geral"],["attendance","Presenças & Visitantes"],["members","Membros & Reconciliação"],["candidates","Adesões Pendentes"],["reports","Relatório"],["activities","Actividades"],["growth","Crescimento"],["finance","Parcerias & Dízimos"],["souls","Ganhar Almas"],["foundation","Fundação & Sacramentos"],["programs","Programas"],["history","Histórico"]].map(([id,label]) => `<button type="button" data-cell-portal-section="cell-portal-${id}">${label}</button>`).join("")}</nav>
       <section id="cell-portal-overview" class="cell-portal-section">
         ${cellPortalSectionTitle("bi-grid-1x2", "Visão Geral", "Indicadores seguros da célula autorizada")}
         <div class="cell-portal-kpis">${[["bi-people","Total de membros",stats.total_members],["bi-person-check","Membros activos",stats.active_members],["bi-person-plus","Novos este mês",stats.new_members_month],["bi-person-heart","Visitantes ligados",stats.visitors],["bi-clipboard-check","Relatórios este mês",stats.reports_month],["bi-activity","Estado actual",stats.current_report_status],["bi-clock-history","Último relatório",stats.latest_report ? String(portalDateValue(stats.latest_report) || "").slice(0,10) : "—"],["bi-calendar-week","Próxima submissão",stats.next_submission]].map(([icon,label,value]) => `<article><i class="bi ${icon}"></i><span>${label}</span><strong>${escapeAttr(value)}</strong></article>`).join("")}</div>
@@ -35533,7 +35580,22 @@ document.addEventListener("click", async (event) => {
     return openForm(viewEditBtn.dataset.viewEditType, viewEditBtn.dataset.viewEditId);
   }
   const portalSection = event.target.closest("[data-cell-portal-section]");
-  if (portalSection) return scrollContentTo(portalSection.dataset.cellPortalSection);
+  if (portalSection) {
+    const targetSection = portalSection.dataset.cellPortalSection;
+    document.querySelector(".ops-sidebar")?.classList.remove("is-open");
+    if (activeRoute !== "cellPortal") {
+      setRoute("cellPortal");
+      setTimeout(() => {
+        scrollContentTo(targetSection);
+      }, 150);
+    } else {
+      scrollContentTo(targetSection);
+    }
+    document.querySelectorAll("[data-cell-portal-section]").forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.cellPortalSection === targetSection);
+    });
+    return;
+  }
   const confirmBtn = event.target.closest("[data-cell-member-confirm]");
   if (confirmBtn) return confirmCellMember(confirmBtn.dataset.cellMemberConfirm);
   const bulkConfirmBtn = event.target.closest("[data-cell-member-bulk-confirm]");
