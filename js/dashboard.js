@@ -6199,7 +6199,10 @@ function canAccessCell(userId, cellId) {
   if (!cellId) return false;
   const user = (state.users || []).find((item) => item.id === userId) || (activeUser?.id === userId ? activeUser : null);
   if (!user) return false;
-  if (user.role === "Super Admin" || user.role === "Main Pastor" || user.role === "National Admin" || user.can_view_all_churches || (user.permissions || []).includes("*")) return true;
+  const hasSpecificAssignment = Boolean(user.cell_id || (user.assigned_cells || []).length || (user.assigned_cell_groups || []).length || isCellLeaderOrAssistant(user));
+  if (!hasSpecificAssignment && (user.role === "Super Admin" || user.role === "Main Pastor" || user.role === "National Admin" || user.can_view_all_churches || (user.permissions || []).includes("*"))) {
+    return true;
+  }
   const authorized = getAuthorizedCellsForUser(userId);
   if (!authorized.length) {
     if (activeUser?.id === userId) {
@@ -6738,45 +6741,8 @@ function getAuthorizedCellsForUser(userId) {
   const user = (state.users || []).find((item) => item.id === userId) || (activeUser?.id === userId ? activeUser : null);
   if (!user) return [];
   const cells = getAllRegisteredCells();
-  const isAdmin = ["Super Admin", "Main Pastor", "National Admin", "Administrator", "Admin"].includes(user.role) ||
-    user.can_view_all_churches ||
-    (user.permissions || []).includes("*");
-  if (isAdmin) return [...cells];
-  if (userHasExtendedCellPerms(user) || ["Church Admin", "Church Pastor", "Cell Ministry Reviewer", "Cell Ministry Head", "Cell Coordinator", "ALEC Coordinator"].includes(user.role)) {
-    return cells.filter((cell) => !user.church_id || user.can_view_all_churches || cell.church_id === user.church_id);
-  }
 
-  const isCellGroupLeader = [
-    "Cell Group Leader",
-    "cell_group_leader",
-    "Líder de Grupo de Células",
-    "Lider de Grupo de Celulas",
-    "Cell Group Coordinator"
-  ].includes(user.role);
-
-  if (isCellGroupLeader) {
-    const userGroups = new Set(
-      [
-        user.cell_group_id,
-        user.cell_group_name,
-        user.group_id,
-        user.group_name,
-        ...(user.assigned_cell_groups || [])
-      ]
-        .filter(Boolean)
-        .map((v) => String(v).trim().toLowerCase())
-    );
-
-    const groupCells = cells.filter((cell) => {
-      const gId = String(cell.group_id || cell.cell_group_id || "").trim().toLowerCase();
-      const gName = String(cell.group_name || cell.cell_group_name || "").trim().toLowerCase();
-      return (gId && userGroups.has(gId)) || (gName && userGroups.has(gName));
-    });
-
-    return groupCells;
-  }
-
-  // Single Cell Leader or Cell Assistant
+  // 1. Direct cell assignment (Cell Leader, Assistant, or specific assigned cells)
   const assignedKeys = new Set(
     [
       ...(user.assigned_cells || []),
@@ -6797,7 +6763,7 @@ function getAuthorizedCellsForUser(userId) {
     }
   });
 
-  const filtered = cells.filter((cell) => {
+  const specificAssignedCells = cells.filter((cell) => {
     const cellId = String(cell.id || "").trim().toLowerCase();
     const cellName = String(cell.cell_name || cell.name || cell.nome_da_celula || cell.raw_cell_name || "").trim().toLowerCase();
     const matchesAssigned = (cellId && assignedKeys.has(cellId)) || (cellName && assignedKeys.has(cellName));
@@ -6805,7 +6771,51 @@ function getAuthorizedCellsForUser(userId) {
     return matchesAssigned || matchesLeaderId;
   });
 
-  return filtered;
+  if (specificAssignedCells.length > 0) {
+    return specificAssignedCells;
+  }
+
+  // 2. Cell Group assignment (Cell Group Leader or assigned cell groups)
+  const isCellGroupLeader = [
+    "Cell Group Leader",
+    "cell_group_leader",
+    "Líder de Grupo de Células",
+    "Lider de Grupo de Celulas",
+    "Cell Group Coordinator"
+  ].includes(user.role) || (user.assigned_cell_groups || []).length > 0 || Boolean(user.cell_group_id && ["Cell Leader", "Cell Assistant"].includes(user.role));
+
+  const userGroups = new Set(
+    [
+      user.cell_group_id,
+      user.cell_group_name,
+      user.group_id,
+      user.group_name,
+      ...(user.assigned_cell_groups || [])
+    ]
+      .filter(Boolean)
+      .map((v) => String(v).trim().toLowerCase())
+  );
+
+  if (userGroups.size > 0 && (isCellGroupLeader || ["Cell Leader", "Cell Assistant"].includes(user.role))) {
+    const groupCells = cells.filter((cell) => {
+      const gId = String(cell.group_id || cell.cell_group_id || "").trim().toLowerCase();
+      const gName = String(cell.group_name || cell.cell_group_name || "").trim().toLowerCase();
+      return (gId && userGroups.has(gId)) || (gName && userGroups.has(gName));
+    });
+    if (groupCells.length > 0) return groupCells;
+  }
+
+  // 3. Fallback for Church/National Admin without specific cell assignment
+  const isAdmin = ["Super Admin", "Main Pastor", "National Admin", "Administrator", "Admin"].includes(user.role) ||
+    user.can_view_all_churches ||
+    (user.permissions || []).includes("*");
+  if (isAdmin) return [...cells];
+
+  if (userHasExtendedCellPerms(user) || ["Church Admin", "Church Pastor", "Cell Ministry Reviewer", "Cell Ministry Head", "Cell Coordinator", "ALEC Coordinator"].includes(user.role)) {
+    return cells.filter((cell) => !user.church_id || user.can_view_all_churches || cell.church_id === user.church_id);
+  }
+
+  return [];
 }
 
 window.getAuthorizedCellsForUser = getAuthorizedCellsForUser;
@@ -13542,7 +13552,8 @@ function renderCellLeaderPortal() {
     const isGroupLeaderOnly = ["Cell Group Leader", "cell_group_leader", "Líder de Grupo de Células", "Lider de Grupo de Celulas", "Cell Group Coordinator"].includes(activeUser?.role);
     const isHigherAdmin = ["Super Admin", "super_admin", "Main Pastor", "National Admin", "Church Admin", "Cell Ministry Head", "Cell Ministry Reviewer", "Cell Coordinator"].includes(activeUser?.role) || Boolean(activeUser?.can_view_all_churches);
 
-    const showCellGroupSelectors = Boolean(isHigherAdmin && !isSingleCellLeader && !isGroupLeaderOnly);
+    const hasAssignedCellScope = Boolean(activeUser?.cell_id || (activeUser?.assigned_cells || []).length || isSingleCellLeader);
+    const showCellGroupSelectors = Boolean(isHigherAdmin && !hasAssignedCellScope && !isGroupLeaderOnly && authorizedCells.length > 1);
     const canChooseCell = authorizedCells.length > 1;
     const memberStatuses = [...new Set(allMembers.map((member) => member.status).filter(Boolean))];
     const foundationOptions = [...new Set(allMembers.map((member) => member.foundation_status).filter(Boolean))];
