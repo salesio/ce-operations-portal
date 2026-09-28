@@ -5720,14 +5720,17 @@ function cellName(idOrName) {
 function cellReportPublicText(key) {
   const labels = {
     pt: {
+      step1: "1. Encontro & Célula",
+      step2: "2. Frequência & Almas",
+      step3: "3. Oferta, Estado & Envio",
       cell: "Célula",
       cellIdentity: "Identificação da Célula",
-      meeting: "Encontro",
-      participation: "Participação",
-      spiritual: "Actividade Espiritual",
-      offering: "Oferta",
-      status: "Estado",
-      confirm: "Confirmar",
+      meeting: "Dados do Encontro",
+      participation: "Frequência & Participação",
+      spiritual: "Actividade Espiritual & Almas",
+      offering: "Oferta da Reunião",
+      status: "Estado da Célula",
+      confirm: "Revisão & Submissão",
       reportWeek: "Semana do relatório",
       meetingDate: "Data do encontro",
       church: "Igreja",
@@ -5740,20 +5743,20 @@ function cellReportPublicText(key) {
       meetingLocation: "Local do encontro",
       startTime: "Hora de início",
       endTime: "Hora de fim",
-      topic: "Tema/assunto da reunião",
-      lessonShared: "Palavra/estudo partilhado",
+      topic: "Tema / assunto da reunião",
+      lessonShared: "Palavra / estudo partilhado",
       meetingNotes: "Observações do encontro",
-      attendance: "Assistência - Membros presentes",
+      attendance: "Assistência de Membros",
       firstTimers: "Primeira Vez / Visitantes",
       newConverts: "Novos Convertidos",
       contacted: "Pessoas contactadas",
-      absent: "Pessoas ausentes importantes",
-      childrenYouth: "Crianças/Jovens",
-      soulsWon: "Almas ganhas",
+      absent: "Membros ausentes",
+      childrenYouth: "Crianças e Jovens",
+      soulsWon: "Almas ganhas no encontro",
       peoplePrayed: "Pessoas que receberam oração",
       testimonies: "Testemunhos",
-      referredFollowUp: "Pessoas encaminhadas para Acompanhamento",
-      interestedFoundation: "Interessadas na Escola de Fundação",
+      referredFollowUp: "Encaminhadas p/ Acompanhamento",
+      interestedFoundation: "Interessadas na Esc. Fundação",
       pastoralVisit: "Precisam de visita pastoral",
       prayerRequests: "Pedidos de oração",
       offeringGiven: "Houve oferta?",
@@ -5769,18 +5772,21 @@ function cellReportPublicText(key) {
       required: "Preencha os campos obrigatórios antes de submeter.",
       duplicate: "Já existe um relatório submetido para esta célula nesta semana",
       duplicateAllow: "Pode submeter mesmo assim — o relatório será marcado como possível duplicado.",
-      next: "Próximo",
-      previous: "Anterior"
+      next: "Avançar",
+      previous: "Voltar"
     },
     en: {
+      step1: "1. Meeting & Cell",
+      step2: "2. Attendance & Souls",
+      step3: "3. Offering, Status & Submit",
       cell: "Cell",
       cellIdentity: "Cell Identification",
-      meeting: "Meeting",
-      participation: "Participation",
-      spiritual: "Spiritual Activity",
-      offering: "Offering",
-      status: "Status",
-      confirm: "Confirm",
+      meeting: "Meeting Details",
+      participation: "Attendance & Participation",
+      spiritual: "Spiritual Activity & Souls",
+      offering: "Meeting Offering",
+      status: "Cell Health & Status",
+      confirm: "Review & Submit",
       reportWeek: "Report week",
       meetingDate: "Meeting date",
       church: "Church",
@@ -5794,18 +5800,18 @@ function cellReportPublicText(key) {
       startTime: "Start time",
       endTime: "End time",
       topic: "Meeting topic",
-      lessonShared: "Word/study shared",
+      lessonShared: "Word / study shared",
       meetingNotes: "Meeting notes",
-      attendance: "Attendance - Members present",
+      attendance: "Members Attendance",
       firstTimers: "First Timers / Visitors",
       newConverts: "New Converts",
       contacted: "People contacted",
-      absent: "Important absent members",
-      childrenYouth: "Children/Youth",
-      soulsWon: "Souls won",
+      absent: "Absent members",
+      childrenYouth: "Children & Youth",
+      soulsWon: "Souls won in meeting",
       peoplePrayed: "People prayed for",
       testimonies: "Testimonies",
-      referredFollowUp: "People referred to Follow-Up",
+      referredFollowUp: "Referred to Follow-Up",
       interestedFoundation: "Interested in Foundation School",
       pastoralVisit: "Need pastoral visit",
       prayerRequests: "Prayer requests",
@@ -5857,18 +5863,27 @@ function publicCellReportSelectOptions(items, valueKey, labelKey, selected = "",
 
 function publicCellReportSelectedCell() {
   const groupId = byId("publicCellGroup")?.value || "";
-  const cellId = byId("publicCell")?.value || "";
+  const cellId = byId("publicCell")?.value || byId("publicCellSelect")?.value || "";
   return (state.cellRegistry || []).find((cell) =>
     cell.id === cellId &&
     (!groupId || cell.group_id === groupId || cell.cell_group_id === groupId || cell.group_cell_id === groupId)
   ) || null;
 }
 
-function publicCellNumericField(name, label, { required = false, hint = "" } = {}) {
-  return `<div class="col-md-4 col-6">
-    <label class="form-label">${label}${required ? " *" : ""}</label>
-    ${hint ? `<small class="d-block text-secondary mb-1">${hint}</small>` : ""}
-    <input name="${name}" type="number" min="0" step="1" class="form-control" value="0" ${required ? "required" : ""}>
+function publicCellNumericField(name, label, { required = false, hint = "", tag = "", colClass = "col-lg-4 col-md-6 col-12" } = {}) {
+  return `<div class="${colClass}">
+    <div class="cell-stat-card">
+      <div class="cell-stat-head">
+        <div class="cell-stat-title-wrap">
+          <span class="cell-stat-label">${label}${required ? " *" : ""}</span>
+          ${hint ? `<small class="cell-stat-hint">${hint}</small>` : ""}
+        </div>
+        ${tag ? `<span class="cell-stat-tag">${escapeAttr(tag)}</span>` : ""}
+      </div>
+      <div class="cell-stat-input-wrap">
+        <input name="${name}" type="number" min="0" step="1" class="form-control cell-stat-input" value="0" ${required ? "required" : ""}>
+      </div>
+    </div>
   </div>`;
 }
 
@@ -6864,6 +6879,59 @@ function requestAuthenticatedCellReport() {
   showLoginError(lang === "pt" ? "É necessário iniciar sessão para submeter um relatório de célula." : "You must sign in to submit a cell report.");
 }
 
+function getCellLeaderDetails(cell) {
+  const leader = (state.cellLeadership?.leaders || []).find((item) =>
+    item.cell_id === cell?.id ||
+    item.celula === cell?.cell_name ||
+    item.cell_name === cell?.cell_name ||
+    item.leader_id === cell?.leader_id ||
+    item.id === cell?.leader_id
+  );
+  const name = cell?.leader_name || cell?.nome_do_lider || leader?.nome_completo || leader?.full_name || activeUser?.name || "";
+  const phone = cell?.leader_phone || cell?.contacto || leader?.contacto || leader?.phone || leader?.whatsapp || activeUser?.phone || "";
+  return { name, phone };
+}
+
+function getCellGroupAndChurchDetails(cell) {
+  const groupId = cell?.group_id || cell?.cell_group_id || cell?.group_cell_id || "";
+  const group = (state.cellGroups || []).find((g) => g.id === groupId) || {};
+  const churchId = cell?.church_id || group?.church_id || "";
+  const church = (state.churches || []).find((c) => c.id === churchId) || {};
+  const churchName = church.public_name || church.church_name || cell?.church_name || "-";
+  const groupName = group.group_name || group.name || cell?.group_name || cell?.cell_group_name || "-";
+  return { groupId, groupName, churchId, churchName };
+}
+
+function updatePublicCellSelection(cellId) {
+  const authorizedCells = isUserAuthenticated ? getAuthorizedCellsForUser(activeUser?.id) : [];
+  const cell = authorizedCells.find((c) => String(c.id) === String(cellId)) || authorizedCells[0];
+  if (!cell) return;
+  const { name: leaderName, phone: leaderPhone } = getCellLeaderDetails(cell);
+  const { groupId, groupName, churchId, churchName } = getCellGroupAndChurchDetails(cell);
+
+  const churchHidden = byId("publicCellChurchHidden");
+  const groupHidden = byId("publicCellGroupHidden");
+  const cellHidden = byId("publicCellHidden");
+  const leaderNameInput = byId("publicLeaderName");
+  const leaderPhoneInput = byId("publicLeaderPhone");
+
+  if (churchHidden) churchHidden.value = churchId;
+  if (groupHidden) groupHidden.value = groupId;
+  if (cellHidden) cellHidden.value = cell.id;
+  if (leaderNameInput) leaderNameInput.value = leaderName;
+  if (leaderPhoneInput) leaderPhoneInput.value = leaderPhone;
+
+  const metaEl = byId("publicMultiCellMeta");
+  if (metaEl) {
+    metaEl.innerHTML = `
+      <div><i class="bi bi-people me-1 text-gold"></i> <strong>${lang === "pt" ? "Grupo:" : "Group:"}</strong> ${escapeAttr(groupName)}</div>
+      <div><i class="bi bi-building me-1 text-gold"></i> <strong>${lang === "pt" ? "Igreja:" : "Church:"}</strong> ${escapeAttr(churchName)}</div>
+      <div><i class="bi bi-person-badge me-1 text-gold"></i> <strong>${lang === "pt" ? "Líder:" : "Leader:"}</strong> ${escapeAttr(leaderName)}</div>
+      ${leaderPhone ? `<div><i class="bi bi-telephone me-1 text-gold"></i> <strong>${lang === "pt" ? "Contacto:" : "Phone:"}</strong> ${escapeAttr(leaderPhone)}</div>` : ""}
+    `;
+  }
+}
+
 /** Authenticated weekly cell report form. Legacy anonymous access is dev/demo-only behind a disabled-by-default flag. */
 function renderPublicCellReportForm(successRecord = null) {
   const root = byId("publicCellReportView");
@@ -6884,8 +6952,7 @@ function renderPublicCellReportForm(successRecord = null) {
   const churches = legacyPublic ? (state.churches || []) : (state.churches || []).filter((church) => authorizedChurchIds.has(church.id));
   const groups = legacyPublic ? (state.cellGroups || []) : (state.cellGroups || []).filter((group) => authorizedGroupIds.has(group.id));
   const singleCell = !legacyPublic && authorizedCells.length === 1 ? authorizedCells[0] : null;
-  const selectedChurchId = singleCell?.church_id || "";
-  const selectedGroupId = singleCell?.group_id || singleCell?.cell_group_id || "";
+  const multiCell = !legacyPublic && authorizedCells.length > 1;
   const today = new Date().toISOString().slice(0, 10);
   if (successRecord) {
     const submittedAt = successRecord.created_at
@@ -6895,7 +6962,7 @@ function renderPublicCellReportForm(successRecord = null) {
       <section class="public-report-card public-report-success">
         <img src="assets/logo-ce.jpg" alt="Christ Embassy Mozambique" class="public-report-logo" onerror="this.onerror=null; this.src='logo-ce.jpg';">
         <span class="eyebrow">${L("weeklyCellReportPublic")}</span>
-        <div class="public-success-badge mb-2"><i class="bi bi-check-circle-fill me-1"></i>${lang === "pt" ? "Enviado" : "Sent"}</div>
+        <div class="public-success-badge mb-2"><i class="bi bi-check-circle-fill me-1"></i>${lang === "pt" ? "Enviado com Sucesso" : "Successfully Submitted"}</div>
         <h1>${L("reportSubmittedSuccess")}</h1>
         <p>${L("reportSubmittedThanks")}</p>
         <div class="public-confirm-grid">
@@ -6916,7 +6983,76 @@ function renderPublicCellReportForm(successRecord = null) {
       </section>`;
     return;
   }
-  const stepKeys = ["cellIdentity", "meeting", "participation", "spiritual", "offering", "status", "confirm"];
+  const stepKeys = ["step1", "step2", "step3"];
+
+  // Cell Identity Badge / Header Setup
+  let cellIdentityHtml = "";
+  if (singleCell) {
+    const { name: leaderName, phone: leaderPhone } = getCellLeaderDetails(singleCell);
+    const { groupId, groupName, churchId, churchName } = getCellGroupAndChurchDetails(singleCell);
+    cellIdentityHtml = `
+      <div class="cell-identity-card mb-4">
+        <div class="cell-identity-badge">
+          <i class="bi bi-shield-check me-1"></i> ${lang === "pt" ? "Célula Identificada & Autenticada" : "Identified & Authenticated Cell"}
+        </div>
+        <div class="cell-identity-title">
+          <i class="bi bi-diagram-3-fill text-cyan me-2"></i>
+          <span>${escapeAttr(singleCell.cell_name || singleCell.name || "Célula")}</span>
+        </div>
+        <div class="cell-identity-meta">
+          <div><i class="bi bi-people me-1 text-gold"></i> <strong>${lang === "pt" ? "Grupo:" : "Group:"}</strong> ${escapeAttr(groupName)}</div>
+          <div><i class="bi bi-building me-1 text-gold"></i> <strong>${lang === "pt" ? "Igreja:" : "Church:"}</strong> ${escapeAttr(churchName)}</div>
+          <div><i class="bi bi-person-badge me-1 text-gold"></i> <strong>${lang === "pt" ? "Líder:" : "Leader:"}</strong> ${escapeAttr(leaderName)}</div>
+          ${leaderPhone ? `<div><i class="bi bi-telephone me-1 text-gold"></i> <strong>${lang === "pt" ? "Contacto:" : "Phone:"}</strong> ${escapeAttr(leaderPhone)}</div>` : ""}
+        </div>
+        <input type="hidden" name="church_id" value="${escapeAttr(churchId)}">
+        <input type="hidden" name="cell_group_id" value="${escapeAttr(groupId)}">
+        <input type="hidden" name="cell_id" value="${escapeAttr(singleCell.id)}">
+        <input type="hidden" id="publicLeaderName" name="leader_name" value="${escapeAttr(leaderName)}">
+        <input type="hidden" id="publicLeaderPhone" name="leader_phone" value="${escapeAttr(leaderPhone)}">
+      </div>`;
+  } else if (multiCell) {
+    const defaultCell = authorizedCells[0];
+    const { name: leaderName, phone: leaderPhone } = getCellLeaderDetails(defaultCell);
+    const { groupId, groupName, churchId, churchName } = getCellGroupAndChurchDetails(defaultCell);
+    cellIdentityHtml = `
+      <div class="cell-identity-card mb-4">
+        <div class="cell-identity-badge">
+          <i class="bi bi-shield-check me-1"></i> ${lang === "pt" ? "Selecione a sua Célula" : "Select your Cell"}
+        </div>
+        <div class="row g-2 mb-2">
+          <div class="col-12">
+            <select id="publicCellSelect" name="cell_id" class="form-select form-select-lg fw-bold" style="background:#fff; color:#0b1f3a;">
+              ${authorizedCells.map((c, i) => `<option value="${escapeAttr(c.id)}" ${i === 0 ? "selected" : ""}>${escapeAttr(c.cell_name || c.name)}</option>`).join("")}
+            </select>
+          </div>
+        </div>
+        <div id="publicMultiCellMeta" class="cell-identity-meta">
+          <div><i class="bi bi-people me-1 text-gold"></i> <strong>${lang === "pt" ? "Grupo:" : "Group:"}</strong> ${escapeAttr(groupName)}</div>
+          <div><i class="bi bi-building me-1 text-gold"></i> <strong>${lang === "pt" ? "Igreja:" : "Church:"}</strong> ${escapeAttr(churchName)}</div>
+          <div><i class="bi bi-person-badge me-1 text-gold"></i> <strong>${lang === "pt" ? "Líder:" : "Leader:"}</strong> ${escapeAttr(leaderName)}</div>
+          ${leaderPhone ? `<div><i class="bi bi-telephone me-1 text-gold"></i> <strong>${lang === "pt" ? "Contacto:" : "Phone:"}</strong> ${escapeAttr(leaderPhone)}</div>` : ""}
+        </div>
+        <input type="hidden" id="publicCellChurchHidden" name="church_id" value="${escapeAttr(churchId)}">
+        <input type="hidden" id="publicCellGroupHidden" name="cell_group_id" value="${escapeAttr(groupId)}">
+        <input type="hidden" id="publicCellHidden" name="cell_id" value="${escapeAttr(defaultCell.id)}">
+        <input type="hidden" id="publicLeaderName" name="leader_name" value="${escapeAttr(leaderName)}">
+        <input type="hidden" id="publicLeaderPhone" name="leader_phone" value="${escapeAttr(leaderPhone)}">
+      </div>`;
+  } else {
+    // Legacy anonymous public fallback
+    cellIdentityHtml = `
+      <div class="row g-3 mb-3 p-3 bg-light rounded border">
+        <div class="col-md-6"><label class="form-label">${cellReportPublicText("church")}</label><select id="publicCellChurch" name="church_id" class="form-select">${publicCellReportSelectOptions(churches, "id", "public_name", "", cellReportPublicText("church"))}</select></div>
+        <div class="col-md-6"><label class="form-label">${cellReportPublicText("cellGroup")}</label><select id="publicCellGroup" name="cell_group_id" class="form-select">${publicCellReportSelectOptions(groups, "id", "group_name", "", cellReportPublicText("cellGroup"))}</select></div>
+        <div class="col-md-6"><label class="form-label">${cellReportPublicText("cellName")}</label><select id="publicCell" name="cell_id" class="form-select"><option value="">${cellReportPublicText("cellName")}</option></select></div>
+        <div class="col-md-6 d-flex align-items-end"><label class="form-check"><input id="publicMissingCell" name="missing_cell" type="checkbox" class="form-check-input"> <span class="form-check-label">${L("cannotFindCell")}</span></label></div>
+        <div class="col-md-6 d-none" data-manual-cell-wrap><label class="form-label">${cellReportPublicText("manualCellName")}</label><input name="manual_cell_name" class="form-control"></div>
+        <div class="col-md-6"><label class="form-label">${cellReportPublicText("leaderName")}</label><input id="publicLeaderName" name="leader_name" class="form-control" value="${escapeAttr(activeUser?.name || "")}"></div>
+        <div class="col-md-6"><label class="form-label">${cellReportPublicText("leaderPhone")}</label><input id="publicLeaderPhone" name="leader_phone" class="form-control" value="${escapeAttr(activeUser?.phone || "")}"></div>
+      </div>`;
+  }
+
   root.innerHTML = `
     <section class="public-report-card">
       <div class="public-report-head">
@@ -6924,104 +7060,206 @@ function renderPublicCellReportForm(successRecord = null) {
         <div>
           <span class="eyebrow">Christ Embassy Mozambique</span>
           <h1>${L("weeklyCellReportPublic")}</h1>
-          <p>${L("weeklyCellReportPublicHint")}</p>
+          <p class="text-secondary mb-0">${lang === "pt" ? "Preencha os 3 passos simples abaixo para submeter o relatório semanal da sua célula." : "Complete the 3 simple steps below to submit your cell's weekly report."}</p>
         </div>
       </div>
       <form id="publicCellReportForm" class="public-report-form" novalidate>
-        ${legacyPublic ? `<div class="alert alert-warning">${lang === "pt" ? "Modo público legado activo apenas para demonstração/desenvolvimento. Não utilizar com dados reais." : "Legacy public mode enabled for demo/development only. Do not use real data."}</div>` : `<div class="alert alert-info">${lang === "pt" ? `Sessão autenticada: ${escapeAttr(activeUser?.name || "")}` : `Authenticated session: ${escapeAttr(activeUser?.name || "")}`}</div>`}
+        ${legacyPublic ? `<div class="alert alert-warning py-2 mb-3">${lang === "pt" ? "Modo público legado activo apenas para demonstração. Não utilizar com dados reais." : "Legacy public mode enabled for demo. Do not use real data."}</div>` : ""}
         <input type="text" name="website" class="public-honeypot" tabindex="-1" autocomplete="off" aria-hidden="true">
+        
         <div class="public-stepper" aria-label="${L("weeklyCellReportPublic")}">
           ${stepKeys.map((key, index) => `<button type="button" class="${index === 0 ? "active" : ""}" data-public-step-jump="${index}"><span>${index + 1}</span>${cellReportPublicText(key)}</button>`).join("")}
         </div>
+        
         <div class="public-form-alert d-none" data-public-form-alert></div>
+
+        <!-- PASSO 1: IDENTIFICAÇÃO & ENCONTRO -->
         <section class="public-form-step active" data-public-step="0">
-          <h2>${cellReportPublicText("cellIdentity")}</h2>
+          <div class="cell-section-divider mt-1">
+            <h3><i class="bi bi-info-circle me-2 text-primary"></i>${cellReportPublicText("step1")}</h3>
+          </div>
+          
+          ${cellIdentityHtml}
+
           <div class="row g-3">
-            <div class="col-md-6"><label class="form-label">${cellReportPublicText("reportWeek")}</label><input name="report_week" class="form-control" value="${today}"></div>
-            <div class="col-md-6"><label class="form-label">${cellReportPublicText("meetingDate")}</label><input name="meeting_date" type="date" class="form-control" value="${today}"></div>
-            <div class="col-md-6"><label class="form-label">${cellReportPublicText("church")}</label><select id="publicCellChurch" name="church_id" class="form-select" ${singleCell ? "disabled" : ""}>${publicCellReportSelectOptions(churches, "id", "public_name", selectedChurchId, cellReportPublicText("church"))}</select>${singleCell ? `<input type="hidden" name="church_id" value="${escapeAttr(selectedChurchId)}">` : ""}</div>
-            <div class="col-md-6"><label class="form-label">${cellReportPublicText("cellGroup")}</label><select id="publicCellGroup" name="cell_group_id" class="form-select" ${singleCell ? "disabled" : ""}>${publicCellReportSelectOptions(groups, "id", "group_name", selectedGroupId, cellReportPublicText("cellGroup"))}</select>${singleCell ? `<input type="hidden" name="cell_group_id" value="${escapeAttr(selectedGroupId)}">` : ""}</div>
-            <div class="col-md-6"><label class="form-label">${cellReportPublicText("cellName")}</label><select id="publicCell" name="cell_id" class="form-select" ${singleCell ? "disabled" : ""}><option value="">${cellReportPublicText("cellName")}</option></select>${singleCell ? `<input type="hidden" name="cell_id" value="${escapeAttr(singleCell.id)}">` : ""}</div>
-            ${legacyPublic ? `<div class="col-md-6 d-flex align-items-end"><label class="form-check"><input id="publicMissingCell" name="missing_cell" type="checkbox" class="form-check-input"> <span class="form-check-label">${L("cannotFindCell")}</span></label></div>` : ""}
-            <div class="col-md-6 d-none" data-manual-cell-wrap><label class="form-label">${cellReportPublicText("manualCellName")}</label><input name="manual_cell_name" class="form-control"></div>
-            <div class="col-md-6"><label class="form-label">${cellReportPublicText("leaderName")}</label><input id="publicLeaderName" name="leader_name" class="form-control" value="${escapeAttr(activeUser?.name || "")}"></div>
-            <div class="col-md-6"><label class="form-label">${cellReportPublicText("leaderPhone")}</label><input id="publicLeaderPhone" name="leader_phone" class="form-control" value="${escapeAttr(activeUser?.phone || "")}"></div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">${cellReportPublicText("reportWeek")} *</label>
+              <input name="report_week" class="form-control" value="${today}" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">${cellReportPublicText("meetingDate")} *</label>
+              <input name="meeting_date" type="date" class="form-control" value="${today}" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">${cellReportPublicText("meetingType")}</label>
+              <select name="meeting_type" class="form-select">
+                ${["Presencial", "Online", "Híbrido", "Outro"].map((item) => `<option value="${item}">${item}</option>`).join("")}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">${cellReportPublicText("meetingLocation")}</label>
+              <input name="meeting_location" class="form-control" placeholder="${lang === "pt" ? "Ex: Casa do líder / Sala 3" : "Ex: Leader's house / Room 3"}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">${cellReportPublicText("startTime")}</label>
+              <input name="start_time" type="time" class="form-control" value="18:00">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">${cellReportPublicText("endTime")}</label>
+              <input name="end_time" type="time" class="form-control" value="19:30">
+            </div>
+            <div class="col-12">
+              <label class="form-label">${cellReportPublicText("topic")}</label>
+              <input name="topic" class="form-control" placeholder="${lang === "pt" ? "Tema ou assunto abordado no encontro" : "Topic discussed in the meeting"}">
+            </div>
+            <div class="col-12">
+              <label class="form-label">${cellReportPublicText("lessonShared")}</label>
+              <textarea name="lesson_shared" class="form-control" rows="2" placeholder="${lang === "pt" ? "Palavra ministrada, textos bíblicos partilhados…" : "Word shared, scriptures referenced…"}"></textarea>
+            </div>
+            <div class="col-12">
+              <label class="form-label">${cellReportPublicText("meetingNotes")}</label>
+              <textarea name="meeting_notes" class="form-control" rows="2" placeholder="${lang === "pt" ? "Observações ou notas gerais do encontro…" : "General meeting notes or comments…"}"></textarea>
+            </div>
           </div>
         </section>
+
+        <!-- PASSO 2: FREQUÊNCIA & ALMAS -->
         <section class="public-form-step" data-public-step="1">
-          <h2>${cellReportPublicText("meeting")}</h2>
+          <div class="cell-section-divider mt-1">
+            <h3><i class="bi bi-people-fill me-2 text-primary"></i>${cellReportPublicText("participation")}</h3>
+          </div>
+          <p class="text-secondary small mb-3">${lang === "pt" ? "Insira o número de presentes no encontro semanal. Campos aceitam 0 ou mais." : "Enter attendance for the weekly meeting. Values accept 0 or more."}</p>
           <div class="row g-3">
-            <div class="col-md-6"><label class="form-label">${cellReportPublicText("meetingType")}</label><select name="meeting_type" class="form-select">${["Presencial", "Online", "Híbrido", "Outro"].map((item) => `<option value="${item}">${item}</option>`).join("")}</select></div>
-            <div class="col-md-6"><label class="form-label">${cellReportPublicText("meetingLocation")}</label><input name="meeting_location" class="form-control"></div>
-            <div class="col-md-6"><label class="form-label">${cellReportPublicText("startTime")}</label><input name="start_time" type="time" class="form-control"></div>
-            <div class="col-md-6"><label class="form-label">${cellReportPublicText("endTime")}</label><input name="end_time" type="time" class="form-control"></div>
-            <div class="col-md-6"><label class="form-label">${cellReportPublicText("topic")}</label><input name="topic" class="form-control"></div>
-            <div class="col-12"><label class="form-label">${cellReportPublicText("lessonShared")}</label><textarea name="lesson_shared" class="form-control" rows="3"></textarea></div>
-            <div class="col-12"><label class="form-label">${cellReportPublicText("meetingNotes")}</label><textarea name="meeting_notes" class="form-control" rows="3"></textarea></div>
+            ${publicCellNumericField("attendance_count", cellReportPublicText("attendance"), { required: false, tag: "ATT", hint: lang === "pt" ? "Membros presentes" : "Members present" })}
+            ${publicCellNumericField("first_timers_count", cellReportPublicText("firstTimers"), { tag: "FT", hint: lang === "pt" ? "Visitantes 1ª vez" : "First time visitors" })}
+            ${publicCellNumericField("new_converts_count", cellReportPublicText("newConverts"), { tag: "NC", hint: lang === "pt" ? "Novos convertidos" : "New converts" })}
+            ${publicCellNumericField("contacted_people_count", cellReportPublicText("contacted"), { hint: lang === "pt" ? "Contactos feitos" : "People reached" })}
+            ${publicCellNumericField("absent_members_count", cellReportPublicText("absent"), { hint: lang === "pt" ? "Membros ausentes" : "Absent members" })}
+            ${publicCellNumericField("children_youth_count", cellReportPublicText("childrenYouth"), { hint: lang === "pt" ? "Crianças / Jovens" : "Kids / Youth" })}
+          </div>
+
+          <div class="cell-section-divider mt-4">
+            <h3><i class="bi bi-heart-pulse-fill me-2 text-danger"></i>${cellReportPublicText("spiritual")}</h3>
+          </div>
+          <div class="row g-3">
+            ${publicCellNumericField("souls_won_count", cellReportPublicText("soulsWon"), { tag: "RS", hint: lang === "pt" ? "Almas salvas" : "Souls won" })}
+            ${publicCellNumericField("people_prayed_for_count", cellReportPublicText("peoplePrayed"), { hint: lang === "pt" ? "Receberam oração" : "Prayed for" })}
+            ${publicCellNumericField("referred_to_follow_up_count", cellReportPublicText("referredFollowUp"), { hint: lang === "pt" ? "P/ Acompanhamento" : "For Follow-Up" })}
+            ${publicCellNumericField("interested_in_foundation_school_count", cellReportPublicText("interestedFoundation"), { hint: lang === "pt" ? "Escola de Fundação" : "Foundation School" })}
+            ${publicCellNumericField("needs_pastoral_visit_count", cellReportPublicText("pastoralVisit"), { hint: lang === "pt" ? "Visita Pastoral" : "Pastoral Visit" })}
+          </div>
+
+          <div class="row g-3 mt-2">
+            <div class="col-md-6">
+              <label class="form-label fw-bold">${cellReportPublicText("testimonies")}</label>
+              <textarea name="testimonies" class="form-control" rows="3" placeholder="${lang === "pt" ? "Testemunhos de milagres, respostas de oração, bênçãos…" : "Testimonies of miracles, answers to prayer, blessings…"}"></textarea>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">${cellReportPublicText("prayerRequests")}</label>
+              <textarea name="prayer_requests" class="form-control" rows="3" placeholder="${lang === "pt" ? "Pedidos especiais de oração da célula…" : "Special prayer requests from the cell…"}"></textarea>
+            </div>
           </div>
         </section>
+
+        <!-- PASSO 3: OFERTA, ESTADO DA CÉLULA & ENVIO -->
         <section class="public-form-step" data-public-step="2">
-          <h2>${cellReportPublicText("participation")}</h2>
-          <p class="text-secondary small mb-3">${lang === "pt" ? "ATT = Assistência · FT = Primeira Vez · NC = Novos Convertidos. Aceite 0 ou mais." : "ATT = Attendance · FT = First Timers · NC = New Converts. Accepts 0 or more."}</p>
-          <div class="row g-3">
-            ${publicCellNumericField("attendance_count", cellReportPublicText("attendance"), { required: false, hint: "ATT" })}
-            ${publicCellNumericField("first_timers_count", cellReportPublicText("firstTimers"), { hint: "FT" })}
-            ${publicCellNumericField("new_converts_count", cellReportPublicText("newConverts"), { hint: "NC" })}
-            ${publicCellNumericField("contacted_people_count", cellReportPublicText("contacted"))}
-            ${publicCellNumericField("absent_members_count", cellReportPublicText("absent"))}
-            ${publicCellNumericField("children_youth_count", cellReportPublicText("childrenYouth"))}
+          <div class="cell-section-divider mt-1">
+            <h3><i class="bi bi-cash-coin me-2 text-warning"></i>${cellReportPublicText("offering")}</h3>
           </div>
-        </section>
-        <section class="public-form-step" data-public-step="3">
-          <h2>${cellReportPublicText("spiritual")}</h2>
+          <p class="text-secondary small mb-3">${lang === "pt" ? "A oferta reportada fica registada sob revisão financeira («Pending Finance Review»)." : "Reported offering is recorded under finance review («Pending Finance Review»)."}</p>
           <div class="row g-3">
-            ${publicCellNumericField("souls_won_count", cellReportPublicText("soulsWon"))}
-            ${publicCellNumericField("people_prayed_for_count", cellReportPublicText("peoplePrayed"))}
-            ${publicCellNumericField("referred_to_follow_up_count", cellReportPublicText("referredFollowUp"))}
-            ${publicCellNumericField("interested_in_foundation_school_count", cellReportPublicText("interestedFoundation"))}
-            ${publicCellNumericField("needs_pastoral_visit_count", cellReportPublicText("pastoralVisit"))}
-            <div class="col-md-6"><label class="form-label">${cellReportPublicText("testimonies")}</label><textarea name="testimonies" class="form-control" rows="3"></textarea></div>
-            <div class="col-md-6"><label class="form-label">${cellReportPublicText("prayerRequests")}</label><textarea name="prayer_requests" class="form-control" rows="3"></textarea></div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold">${cellReportPublicText("offeringGiven")}</label>
+              <select name="offering_given" class="form-select" data-offering-given>
+                <option value="false">${L("no")}</option>
+                <option value="true">${L("yes")}</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold">${cellReportPublicText("offeringAmount")}</label>
+              <input name="offering_amount" type="number" min="0" class="form-control" value="0">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold">${lang === "pt" ? "Moeda" : "Currency"}</label>
+              <input name="currency" class="form-control" value="MZN" readonly>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">${cellReportPublicText("paymentMethod")}</label>
+              <select name="payment_method" class="form-select">
+                ${["Dinheiro", "M-Pesa", "E-Mola", "Banco", "Outro"].map((item) => `<option value="${item}">${item}</option>`).join("")}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">${cellReportPublicText("paymentReference")}</label>
+              <input name="payment_reference" class="form-control" placeholder="${lang === "pt" ? "Nº de transacção M-Pesa / Talão" : "M-Pesa transaction # / Receipt"}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">${cellReportPublicText("proof")}</label>
+              <input name="proof_file" type="file" class="form-control" accept="image/*,.pdf">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">${cellReportPublicText("financeNotes")}</label>
+              <textarea name="finance_notes" class="form-control" rows="2" placeholder="${lang === "pt" ? "Notas sobre a entrega da oferta…" : "Notes on offering handover…"}"></textarea>
+            </div>
           </div>
-        </section>
-        <section class="public-form-step" data-public-step="4">
-          <h2>${cellReportPublicText("offering")}</h2>
-          <p class="text-secondary small mb-3">${lang === "pt" ? "A oferta reportada não vira receita verificada automaticamente — fica como «Pending Finance Review»." : "Reported offering does not become verified income automatically — it is marked Pending Finance Review."}</p>
+
+          <div class="cell-section-divider mt-4">
+            <h3><i class="bi bi-activity me-2 text-info"></i>${cellReportPublicText("status")}</h3>
+          </div>
           <div class="row g-3">
-            <div class="col-md-4"><label class="form-label">${cellReportPublicText("offeringGiven")}</label><select name="offering_given" class="form-select" data-offering-given><option value="false">${L("no")}</option><option value="true">${L("yes")}</option></select></div>
-            <div class="col-md-4"><label class="form-label">${cellReportPublicText("offeringAmount")}</label><input name="offering_amount" type="number" min="0" class="form-control" value="0"></div>
-            <div class="col-md-4"><label class="form-label">${lang === "pt" ? "Moeda" : "Currency"}</label><input name="currency" class="form-control" value="MZN"></div>
-            <div class="col-md-6"><label class="form-label">${cellReportPublicText("paymentMethod")}</label><select name="payment_method" class="form-select">${["Dinheiro", "M-Pesa", "E-Mola", "Banco", "Outro"].map((item) => `<option value="${item}">${item}</option>`).join("")}</select></div>
-            <div class="col-md-6"><label class="form-label">${cellReportPublicText("paymentReference")}</label><input name="payment_reference" class="form-control"></div>
-            <div class="col-md-6"><label class="form-label">${cellReportPublicText("proof")}</label><input name="proof_file" type="file" class="form-control" accept="image/*,.pdf"></div>
-            <div class="col-md-6"><label class="form-label">${cellReportPublicText("financeNotes")}</label><textarea name="finance_notes" class="form-control" rows="3"></textarea></div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">${cellReportPublicText("cellHealth")}</label>
+              <select name="cell_health_status" class="form-select">
+                ${["Saudável", "Estável", "Precisa de Acompanhamento", "Precisa de Visita Pastoral", "Pronta para Multiplicar", "Sem Encontro Esta Semana"].map((item) => `<option value="${item}">${item}</option>`).join("")}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">${cellReportPublicText("challenges")}</label>
+              <textarea name="challenges" class="form-control" rows="2" placeholder="${lang === "pt" ? "Desafios enfrentados esta semana…" : "Challenges faced this week…"}"></textarea>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">${cellReportPublicText("needs")}</label>
+              <textarea name="needs" class="form-control" rows="2" placeholder="${lang === "pt" ? "Necessidades de apoio ou materiais…" : "Support or material needs…"}"></textarea>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">${cellReportPublicText("leaderComments")}</label>
+              <textarea name="leader_comments" class="form-control" rows="2" placeholder="${lang === "pt" ? "Comentários adicionais do líder…" : "Additional leader comments…"}"></textarea>
+            </div>
           </div>
-        </section>
-        <section class="public-form-step" data-public-step="5">
-          <h2>${cellReportPublicText("status")}</h2>
-          <div class="row g-3">
-            <div class="col-md-6"><label class="form-label">${cellReportPublicText("cellHealth")}</label><select name="cell_health_status" class="form-select">${["Saudável", "Estável", "Precisa de Acompanhamento", "Precisa de Visita Pastoral", "Pronta para Multiplicar", "Sem Encontro Esta Semana"].map((item) => `<option value="${item}">${item}</option>`).join("")}</select></div>
-            <div class="col-md-6"><label class="form-label">${cellReportPublicText("challenges")}</label><textarea name="challenges" class="form-control" rows="3"></textarea></div>
-            <div class="col-md-6"><label class="form-label">${cellReportPublicText("needs")}</label><textarea name="needs" class="form-control" rows="3"></textarea></div>
-            <div class="col-md-6"><label class="form-label">${cellReportPublicText("leaderComments")}</label><textarea name="leader_comments" class="form-control" rows="3"></textarea></div>
+
+          <div class="cell-section-divider mt-4">
+            <h3><i class="bi bi-check-all me-2 text-success"></i>${cellReportPublicText("confirm")}</h3>
           </div>
-        </section>
-        <section class="public-form-step" data-public-step="6">
-          <h2>${cellReportPublicText("confirm")}</h2>
           <div class="public-confirm-summary record-card mb-3" data-public-confirm-summary>
-            <p class="text-secondary mb-0">${lang === "pt" ? "Revise os dados e confirme." : "Review the details and confirm."}</p>
+            <p class="text-secondary mb-0">${lang === "pt" ? "Revise os dados antes de submeter." : "Review the details before submitting."}</p>
           </div>
-          <label class="form-check public-confirm-check"><input name="confirmation" type="checkbox" class="form-check-input" checked> <span class="form-check-label">${L("confirmAccurate")}</span></label>
+          <label class="form-check public-confirm-check">
+            <input name="confirmation" type="checkbox" class="form-check-input" checked>
+            <span class="form-check-label">${L("confirmAccurate")}</span>
+          </label>
         </section>
+
+        <!-- AÇÕES DO FORMULÁRIO -->
         <div class="public-form-actions">
-          <button type="button" class="btn btn-outline-cyan btn-touch" data-public-prev disabled>${cellReportPublicText("previous")}</button>
-          <button type="button" class="btn btn-outline-cyan btn-touch" data-back-cell-portal>${lang === "pt" ? "Cancelar e voltar ao painel" : "Cancel and return to dashboard"}</button>
-          <button type="button" class="btn btn-ce-gold btn-touch" data-public-next>${cellReportPublicText("next")}</button>
-          <button type="submit" class="btn btn-ce-gold btn-touch d-none" data-public-submit>${L("submitReport")}</button>
+          <button type="button" class="btn btn-outline-cyan btn-touch" data-public-prev disabled>
+            <i class="bi bi-arrow-left me-1"></i>${cellReportPublicText("previous")}
+          </button>
+          <button type="button" class="btn btn-outline-cyan btn-touch" data-back-cell-portal>
+            <i class="bi bi-x-circle me-1"></i>${lang === "pt" ? "Voltar ao painel" : "Return to dashboard"}
+          </button>
+          <button type="button" class="btn btn-ce-gold btn-touch" data-public-next>
+            ${cellReportPublicText("next")}<i class="bi bi-arrow-right ms-1"></i>
+          </button>
+          <button type="submit" class="btn btn-ce-gold btn-touch d-none" data-public-submit>
+            <i class="bi bi-check2-circle me-1"></i>${L("submitReport")}
+          </button>
         </div>
       </form>
     </section>`;
-  updatePublicCellReportDependentSelects();
+
+  if (legacyPublic) {
+    updatePublicCellReportDependentSelects();
+  }
   setPublicCellReportStep(0);
 }
 
@@ -7032,26 +7270,38 @@ function updatePublicCellReportConfirmSummary() {
   const data = new FormData(form);
   const church = (state.churches || []).find((c) => c.id === data.get("church_id")) || {};
   const group = (state.cellGroups || []).find((g) => g.id === data.get("cell_group_id")) || {};
-  const cell = publicCellReportSelectedCell();
-  const cellName = data.get("missing_cell") === "on"
-    ? String(data.get("manual_cell_name") || "").trim()
-    : (cell?.cell_name || "");
+  
+  let cellName = "";
+  if (data.get("missing_cell") === "on") {
+    cellName = String(data.get("manual_cell_name") || "").trim();
+  } else {
+    const cellId = data.get("cell_id");
+    const cell = (state.cellRegistry || []).find((c) => c.id === cellId) ||
+                 (isUserAuthenticated ? getAuthorizedCellsForUser(activeUser?.id).find((c) => c.id === cellId) : null);
+    cellName = cell?.cell_name || cell?.name || "";
+  }
+
+  const leaderName = String(data.get("leader_name") || activeUser?.name || "-");
+  const churchName = church.public_name || church.church_name || "-";
+  const groupName = group.group_name || group.name || "-";
   const offeringGiven = data.get("offering_given") === "true";
   const offeringAmount = Number(data.get("offering_amount") || 0);
   const offeringRow = offeringGiven
     ? `<div><span>${cellReportPublicText("offeringAmount")}</span><strong>${escapeAttr(String(offeringAmount))} ${escapeAttr(data.get("currency") || "MZN")}</strong></div>`
-    : "";
+    : `<div><span>${cellReportPublicText("offeringGiven")}</span><strong>${L("no")}</strong></div>`;
+
   box.innerHTML = `
     <div class="public-confirm-grid">
       <div><span>${cellReportPublicText("reportWeek")}</span><strong>${escapeAttr(data.get("report_week") || "-")}</strong></div>
       <div><span>${cellReportPublicText("meetingDate")}</span><strong>${escapeAttr(data.get("meeting_date") || "-")}</strong></div>
-      <div><span>${cellReportPublicText("church")}</span><strong>${escapeAttr(church.public_name || church.church_name || "-")}</strong></div>
-      <div><span>${cellReportPublicText("cellGroup")}</span><strong>${escapeAttr(group.group_name || group.name || "-")}</strong></div>
+      <div><span>${cellReportPublicText("church")}</span><strong>${escapeAttr(churchName)}</strong></div>
+      <div><span>${cellReportPublicText("cellGroup")}</span><strong>${escapeAttr(groupName)}</strong></div>
       <div><span>${cellReportPublicText("cellName")}</span><strong>${escapeAttr(cellName || "-")}</strong></div>
-      <div><span>${cellReportPublicText("leaderName")}</span><strong>${escapeAttr(data.get("leader_name") || "-")}</strong></div>
+      <div><span>${cellReportPublicText("leaderName")}</span><strong>${escapeAttr(leaderName)}</strong></div>
       <div><span>${cellReportPublicText("attendance")} (ATT)</span><strong>${escapeAttr(data.get("attendance_count") || "0")}</strong></div>
       <div><span>${cellReportPublicText("firstTimers")} (FT)</span><strong>${escapeAttr(data.get("first_timers_count") || "0")}</strong></div>
       <div><span>${cellReportPublicText("newConverts")} (NC)</span><strong>${escapeAttr(data.get("new_converts_count") || "0")}</strong></div>
+      <div><span>${cellReportPublicText("soulsWon")} (RS)</span><strong>${escapeAttr(data.get("souls_won_count") || "0")}</strong></div>
       ${offeringRow}
       <div><span>${cellReportPublicText("cellHealth")}</span><strong>${escapeAttr(data.get("cell_health_status") || "-")}</strong></div>
     </div>`;
@@ -11062,56 +11312,17 @@ function cellRouteAreaLabel(route) {
   return area ? L(area.label) : L("cellLeadership");
 }
 
-function renderCellPortalSidebarSubnav() {
-  const sections = [
-    { id: "cell-portal-overview", icon: "bi-grid-1x2", labelPt: "Visão Geral", labelEn: "Overview" },
-    { id: "cell-portal-attendance", icon: "bi-calendar-check", labelPt: "Presenças & Visitantes", labelEn: "Attendance & Visitors" },
-    { id: "cell-portal-members", icon: "bi-people", labelPt: "Membros & Reconciliação", labelEn: "Members" },
-    { id: "cell-portal-candidates", icon: "bi-person-plus", labelPt: "Adesões Pendentes", labelEn: "Pending Registrations" },
-    { id: "cell-portal-reports", icon: "bi-clipboard-check", labelPt: "Relatório Semanal", labelEn: "Weekly Reports" },
-    { id: "cell-portal-activities", icon: "bi-calendar-event", labelPt: "Actividades", labelEn: "Activities" },
-    { id: "cell-portal-growth", icon: "bi-graph-up-arrow", labelPt: "Crescimento", labelEn: "Growth" },
-    { id: "cell-portal-finance", icon: "bi-cash-coin", labelPt: "Parcerias & Dízimos", labelEn: "Partnerships & Tithes" },
-    { id: "cell-portal-souls", icon: "bi-heart-pulse", labelPt: "Ganhar Almas", labelEn: "Soul Winning" },
-    { id: "cell-portal-foundation", icon: "bi-book", labelPt: "Fundação & Sacramentos", labelEn: "Foundation & Sacraments" },
-    { id: "cell-portal-programs", icon: "bi-megaphone", labelPt: "Programas", labelEn: "Programs" },
-    { id: "cell-portal-history", icon: "bi-clock-history", labelPt: "Histórico", labelEn: "History" }
-  ];
-
-  const isExpanded = isSidebarGroupExpanded("cellPortalSections") || activeRoute === "cellPortal";
-
-  return `
-    <div class="nav-cell-area nav-cell-portal-area ${isExpanded ? "is-expanded" : ""} ${activeRoute === "cellPortal" ? "has-active" : ""}" data-nav-group="cellPortalSections">
-      <button type="button" class="nav-cell-area-toggle nav-cell-portal-toggle" aria-expanded="${isExpanded}" aria-label="Secções do Portal">
-        <i class="bi bi-person-badge nav-cell-area-icon" aria-hidden="true"></i>
-        <span>${lang === "pt" ? "Portal do Líder de Célula" : "Cell Portal"}</span>
-        <i class="bi bi-chevron-down nav-cell-area-chevron" aria-hidden="true"></i>
-      </button>
-      <div class="nav-cell-area-body">
-        <div class="nav-cell-area-body-inner nav-cell-portal-subitems">
-          <button type="button" class="nav-cell-item ${activeRoute === "cellPortal" ? "active" : ""}" data-route="cellPortal" title="${lang === "pt" ? "Abrir Portal de Célula" : "Open Cell Portal"}">
-            <i class="bi bi-house-door me-2"></i><span>${lang === "pt" ? "Página Principal" : "Main Page"}</span>
-          </button>
-          ${sections.map((sec) => `
-            <button type="button" class="nav-cell-item nav-cell-section-item" data-cell-portal-section="${sec.id}" title="${escapeAttr(lang === "pt" ? sec.labelPt : sec.labelEn)}">
-              <i class="bi ${sec.icon} me-2" aria-hidden="true"></i>
-              <span>${escapeAttr(lang === "pt" ? sec.labelPt : sec.labelEn)}</span>
-            </button>
-          `).join("")}
-        </div>
-      </div>
-    </div>`;
-}
-
 function renderCellSidebarNav() {
   const workspaceRoutes = roleWorkspaceRoutes();
   const parentExpanded = isSidebarGroupExpanded(CELL_NAV.parentKey) || String(activeUser?.role || "").toLowerCase().includes("venue");
   const parentActive = isCellRoute(activeRoute);
   const hasExtendedCellPerms = userHasExtendedCellPerms(activeUser);
+  const cellPortalBtn = `<button type="button" class="nav-cell-item ${activeRoute === "cellPortal" ? "active" : ""}" data-route="cellPortal"><i class="bi bi-person-badge me-2"></i><span>${lang === "pt" ? "Portal do Líder de Célula" : "Cell Leader Portal"}</span></button>`;
+
   if (!hasExtendedCellPerms && (isCellLeaderOrAssistant(activeUser) || ["Cell Leader", "Cell Assistant"].includes(activeUser?.role))) {
     return `<div class="nav-cell-branch is-expanded ${parentActive ? "has-active" : ""}">
       <div class="nav-cell-body"><div class="nav-cell-body-inner">
-        ${renderCellPortalSidebarSubnav()}
+        ${cellPortalBtn}
         <button type="button" class="nav-cell-item ${activeRoute === "cellReceivedReports" ? "active" : ""}" data-route="cellReceivedReports"><i class="bi bi-clock-history me-2"></i><span>${L("receivedReports")}</span></button>
         <button type="button" class="nav-cell-item" data-public-cell-report><i class="bi bi-clipboard-plus me-2"></i><span>${L("submitCellReport")}</span></button>
       </div></div>
@@ -11157,7 +11368,7 @@ function renderCellSidebarNav() {
       </button>
       <div class="nav-cell-body">
         <div class="nav-cell-body-inner">
-          ${showCellPortal ? renderCellPortalSidebarSubnav() : ""}
+          ${showCellPortal ? cellPortalBtn : ""}
           ${showCellPortal && (!workspaceRoutes || workspaceRoutes.includes("cellReceivedReports")) ? `<button type="button" class="nav-cell-item ${activeRoute === "cellReceivedReports" ? "active" : ""}" data-route="cellReceivedReports"><i class="bi bi-clock-history me-2"></i><span>${L("receivedReports")}</span></button>` : ""}
           ${showCellPortal ? `<button type="button" class="nav-cell-item" data-public-cell-report><i class="bi bi-clipboard-plus me-2"></i><span>${L("submitCellReport")}</span></button>` : ""}
           ${areaItems}
@@ -35491,6 +35702,10 @@ function enrollFirstTimer(id) {
 }
 
 document.addEventListener("click", async (event) => {
+  const sidebar = document.querySelector(".ops-sidebar");
+  if (sidebar?.classList.contains("is-open") && !event.target.closest(".ops-sidebar") && !event.target.closest("#menuToggle")) {
+    sidebar.classList.remove("is-open");
+  }
   const exportUsersBtn = event.target.closest('[data-action="export-users"], #btnOpenUserExportModal, #btnTableExportUsers');
   if (exportUsersBtn) {
     if (window.CEUserExport?.openUserExportModal) {
@@ -39929,6 +40144,10 @@ document.addEventListener("click", (event) => {
 });
 
 byId("publicCellReportView")?.addEventListener("change", (event) => {
+  if (event.target.matches("#publicCellSelect")) {
+    updatePublicCellSelection(event.target.value);
+    return;
+  }
   if (event.target.matches("#publicCellChurch")) {
     updatePublicCellReportDependentSelects();
     return;

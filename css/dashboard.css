@@ -1907,45 +1907,218 @@ table,
 
 .public-stepper {
   display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 0.45rem;
-  margin-bottom: 1rem;
-  overflow-x: auto;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin-bottom: 1.25rem;
+}
+
+@media (max-width: 640px) {
+  .public-stepper {
+    grid-template-columns: 1fr;
+    gap: 0.45rem;
+  }
 }
 
 .public-stepper button {
-  min-height: 3.1rem;
-  padding: 0.55rem;
+  min-height: 3.4rem;
+  padding: 0.65rem 0.85rem;
   border: 1px solid rgba(34, 211, 238, 0.35);
-  border-radius: 0.85rem;
-  color: var(--text-dark);
-  background: rgba(255, 255, 255, 0.65);
-  font-size: 0.72rem;
-  font-weight: 900;
+  border-radius: 0.95rem;
+  color: #0b1f3a;
+  background: rgba(255, 255, 255, 0.75);
+  font-size: 0.82rem;
+  font-weight: 800;
   text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
 }
 
 .public-stepper button span {
   display: inline-grid;
   place-items: center;
-  width: 1.35rem;
-  height: 1.35rem;
-  margin-right: 0.3rem;
+  width: 1.75rem;
+  height: 1.75rem;
   border-radius: 999px;
-  background: rgba(34, 211, 238, 0.16);
+  background: rgba(34, 211, 238, 0.2);
+  color: #08204b;
+  font-weight: 900;
+  font-size: 0.88rem;
+  flex-shrink: 0;
 }
 
 .public-stepper button.active {
-  border-color: rgba(215, 174, 75, 0.8);
-  background: linear-gradient(135deg, var(--gold-soft), var(--gold));
+  border-color: rgba(215, 174, 75, 0.9);
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 50%, #f59e0b 100%);
+  color: #78350f;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.25);
+}
+
+.public-stepper button.active span {
+  background: #78350f;
+  color: #fff;
+}
+
+/* Cell Identity Card */
+.cell-identity-card {
+  padding: 1.25rem;
+  border-radius: 1.1rem;
+  background: linear-gradient(145deg, #0b1f3a 0%, #08204b 100%);
+  color: #fff;
+  border: 1px solid rgba(34, 211, 238, 0.4);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.cell-identity-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(34, 211, 238, 0.18);
+  border: 1px solid rgba(34, 211, 238, 0.45);
+  color: #38bdf8;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.75rem;
+}
+
+.cell-identity-title {
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: #fff;
+  margin-bottom: 0.65rem;
+  display: flex;
+  align-items: center;
+}
+
+.cell-identity-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.6rem;
+  font-size: 0.85rem;
+  color: rgba(248, 250, 252, 0.9);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 0.85rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Section dividers inside steps */
+.cell-section-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.25rem 0 0.85rem;
+  color: #0b1f3a;
+}
+
+.cell-section-divider h3 {
+  font-size: 1.05rem;
+  font-weight: 800;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.cell-section-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(11, 31, 58, 0.12);
+}
+
+/* Stat Cards for Numeric Fields (Step 2) */
+.cell-stat-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  min-height: 110px;
+  padding: 0.9rem;
+  border-radius: 0.95rem;
+  background: #fff;
+  border: 1px solid rgba(34, 211, 238, 0.35);
+  box-shadow: 0 4px 12px rgba(11, 31, 58, 0.04);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.cell-stat-card:focus-within,
+.cell-stat-card:hover {
+  border-color: #0284c7;
+  box-shadow: 0 6px 18px rgba(2, 132, 199, 0.12);
+  transform: translateY(-1px);
+}
+
+.cell-stat-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.cell-stat-title-wrap {
+  flex: 1;
+}
+
+.cell-stat-label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.25;
+}
+
+.cell-stat-hint {
+  display: block;
+  font-size: 0.7rem;
+  color: #64748b;
+  margin-top: 0.15rem;
+}
+
+.cell-stat-tag {
+  display: inline-block;
+  padding: 0.18rem 0.48rem;
+  border-radius: 0.5rem;
+  background: rgba(34, 211, 238, 0.14);
+  color: #0369a1;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  flex-shrink: 0;
+}
+
+.cell-stat-input-wrap {
+  margin-top: auto;
+}
+
+.cell-stat-input {
+  font-size: 1.25rem !important;
+  font-weight: 800 !important;
+  text-align: center;
+  color: #0b1f3a !important;
+  background: #f8fafc !important;
+  border: 1px solid rgba(11, 31, 58, 0.15) !important;
+  border-radius: 0.65rem !important;
+  padding: 0.4rem 0.6rem !important;
+}
+
+.cell-stat-input:focus {
+  background: #fff !important;
+  border-color: #0284c7 !important;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.2) !important;
 }
 
 .public-form-step {
   display: none;
-  padding: 1rem;
-  border: 1px solid rgba(34, 211, 238, 0.2);
-  border-radius: 1rem;
-  background: rgba(255, 255, 255, 0.55);
+  padding: 1.2rem;
+  border: 1px solid rgba(34, 211, 238, 0.25);
+  border-radius: 1.15rem;
+  background: rgba(255, 255, 255, 0.65);
 }
 
 .public-form-step.active {
@@ -1963,7 +2136,7 @@ table,
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 0.65rem;
-  margin-top: 1rem;
+  margin-top: 1.25rem;
 }
 
 /* Public form sits on light card — never use low-contrast outline-light here */
@@ -3452,11 +3625,11 @@ tr[data-public-cell-report="1"] td:last-child {
   }
 
   .topbar-title-wrap h1 {
-    font-size: 1.18rem;
+    font-size: clamp(0.86rem, 3.8vw, 1.15rem);
     font-weight: 800;
     font-family: var(--font-heading);
     color: #ffffff;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.02em;
     text-transform: uppercase;
     line-height: 1.15;
     margin: 0;
@@ -3466,12 +3639,12 @@ tr[data-public-cell-report="1"] td:last-child {
   }
 
   .topbar-title-wrap .eyebrow {
-    font-size: 0.72rem;
+    font-size: 0.68rem;
     font-weight: 800;
     color: #fac638;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-top: 0.2rem;
+    letter-spacing: 0.06em;
+    margin-top: 0.15rem;
     line-height: 1;
     display: block;
   }
