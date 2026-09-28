@@ -9099,49 +9099,108 @@ nav.module-tabs {
   background: rgba(229, 179, 66, 0.06);
 }
 
+.nav-cell-portal-area {
+  margin: 0.35rem 0.25rem 0.55rem;
+  border: 1px solid rgba(32, 215, 255, 0.22);
+  border-radius: 0.85rem;
+  background: rgba(8, 19, 38, 0.85);
+  overflow: hidden;
+  transition: all 0.24s ease;
+}
+
+.nav-cell-portal-area.is-expanded {
+  border-color: rgba(229, 179, 66, 0.45);
+  background: rgba(10, 24, 48, 0.96);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(229, 179, 66, 0.18);
+}
+
 .nav-cell-portal-toggle {
-  color: #ffd875;
-}
-
-.nav-cell-portal-toggle .nav-cell-area-icon {
-  color: #e5b342;
-}
-
-.nav-cell-portal-subitems {
-  padding: 0.35rem 0.2rem 0.45rem;
-}
-
-.nav-cell-section-item {
+  width: 100%;
   display: flex;
   align-items: center;
-  font-size: 0.72rem;
-  padding: 0.52rem 0.75rem;
-  border-radius: 0.65rem;
-  margin: 0 0.35rem 0.25rem;
-  width: calc(100% - 0.7rem);
-  color: rgba(248, 251, 255, 0.75);
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.72rem 0.85rem;
+  border: none;
+  background: transparent;
+  color: #f8fbff;
+  font-size: 0.86rem;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
   transition: all 0.18s ease;
 }
 
+.nav-cell-portal-toggle:hover {
+  color: #ffd875;
+  background: rgba(229, 179, 66, 0.1);
+}
+
+.nav-cell-portal-toggle .nav-cell-area-icon {
+  font-size: 1.1rem;
+  color: #fac638;
+}
+
+.nav-cell-portal-toggle .nav-cell-area-chevron {
+  font-size: 0.85rem;
+  color: #38bdf8;
+  transition: transform 0.24s ease;
+}
+
+.nav-cell-portal-area.is-expanded .nav-cell-portal-toggle .nav-cell-area-chevron {
+  transform: rotate(180deg);
+}
+
+.nav-cell-portal-area .nav-cell-area-body {
+  display: none;
+}
+
+.nav-cell-portal-area.is-expanded .nav-cell-area-body {
+  display: block;
+  padding: 0.35rem 0.35rem 0.55rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.nav-cell-portal-subitems {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.nav-cell-section-item {
+  display: flex !important;
+  align-items: center !important;
+  font-size: 0.82rem !important;
+  font-weight: 600 !important;
+  padding: 0.55rem 0.8rem !important;
+  border-radius: 0.7rem !important;
+  margin: 0 !important;
+  width: 100% !important;
+  color: #cbd5e1 !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  cursor: pointer !important;
+  text-decoration: none !important;
+  transition: all 0.18s ease !important;
+}
+
 .nav-cell-section-item i {
-  font-size: 0.88rem;
-  color: #20d7ff;
-  flex: 0 0 18px;
+  font-size: 0.95rem !important;
+  color: #38bdf8 !important;
+  flex: 0 0 20px !important;
 }
 
 .nav-cell-section-item:hover,
 .nav-cell-section-item.active {
-  color: #ffffff;
-  background: linear-gradient(135deg, rgba(229, 179, 66, 0.2), rgba(32, 215, 255, 0.15));
-  border-color: rgba(229, 179, 66, 0.45);
-  transform: translateX(3px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  color: #ffffff !important;
+  background: linear-gradient(135deg, rgba(229, 179, 66, 0.22), rgba(32, 215, 255, 0.15)) !important;
+  border-color: rgba(229, 179, 66, 0.5) !important;
+  transform: translateX(3px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
 }
 
 .nav-cell-section-item.active i {
-  color: #ffd875;
+  color: #ffd875 !important;
 }
 
 /* Mobile & Tablet Optimizations for Cell Portal */

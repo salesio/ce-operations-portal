@@ -6768,36 +6768,15 @@ function getAuthorizedCellsForUser(userId) {
       .map((v) => String(v).trim().toLowerCase())
   );
 
-  const leaders = state.cellLeadership?.leaders || [];
-  leaders.forEach((leader) => {
-    const matchesUser = leader.user_id === user.id || leader.staff_id === user.staff_id || (leader.email && String(leader.email).toLowerCase() === String(user.email || "").toLowerCase());
-    const active = !leader.status || /active|activo|training|treinamento/i.test(String(leader.status));
-    if (matchesUser && active) {
-      if (leader.cell_id) assignedKeys.add(String(leader.cell_id).trim().toLowerCase());
-      if (leader.cell_name) assignedKeys.add(String(leader.cell_name).trim().toLowerCase());
-    }
-  });
-
-  const specificAssignedCells = cells.filter((cell) => {
-    const cellId = String(cell.id || "").trim().toLowerCase();
-    const cellName = String(cell.cell_name || cell.name || cell.nome_da_celula || cell.raw_cell_name || "").trim().toLowerCase();
-    const matchesAssigned = (cellId && assignedKeys.has(cellId)) || (cellName && assignedKeys.has(cellName));
-    const matchesLeaderId = (cell.primary_leader_user_id && cell.primary_leader_user_id === user.id) || ((cell.assistant_user_ids || []).includes(user.id));
-    return matchesAssigned || matchesLeaderId;
-  });
-
-  if (specificAssignedCells.length > 0) {
-    return specificAssignedCells;
-  }
-
-  // 2. Cell Group assignment (Cell Group Leader or assigned cell groups)
   const isCellGroupLeader = [
     "Cell Group Leader",
     "cell_group_leader",
     "Líder de Grupo de Células",
     "Lider de Grupo de Celulas",
-    "Cell Group Coordinator"
-  ].includes(user.role) || (user.assigned_cell_groups || []).length > 0 || Boolean(user.cell_group_id && ["Cell Leader", "Cell Assistant"].includes(user.role));
+    "Cell Group Coordinator",
+    "coordenador de grupo de células",
+    "coordenador de grupo de celulas"
+  ].includes(user.role) || (Array.isArray(user.assigned_cell_groups) && user.assigned_cell_groups.length > 0);
 
   const userGroups = new Set(
     [
@@ -6811,9 +6790,42 @@ function getAuthorizedCellsForUser(userId) {
       .map((v) => String(v).trim().toLowerCase())
   );
 
-  if (userGroups.size > 0 && (isCellGroupLeader || ["Cell Leader", "Cell Assistant"].includes(user.role))) {
+  const leaders = state.cellLeadership?.leaders || [];
+  leaders.forEach((leader) => {
+    const matchesUser = leader.user_id === user.id || leader.staff_id === user.staff_id || (leader.email && String(leader.email).toLowerCase() === String(user.email || "").toLowerCase());
+    const active = !leader.status || /active|activo|training|treinamento/i.test(String(leader.status));
+    if (matchesUser && active) {
+      if (leader.cell_id) assignedKeys.add(String(leader.cell_id).trim().toLowerCase());
+      if (leader.cell_name) assignedKeys.add(String(leader.cell_name).trim().toLowerCase());
+      if (leader.cell_group_id) userGroups.add(String(leader.cell_group_id).trim().toLowerCase());
+      if (leader.cell_group_name) userGroups.add(String(leader.cell_group_name).trim().toLowerCase());
+    }
+  });
+
+  if (isCellGroupLeader && userGroups.size > 0) {
     const groupCells = cells.filter((cell) => {
-      const gId = String(cell.group_id || cell.cell_group_id || "").trim().toLowerCase();
+      const gId = String(cell.group_id || cell.cell_group_id || cell.group_cell_id || "").trim().toLowerCase();
+      const gName = String(cell.group_name || cell.cell_group_name || "").trim().toLowerCase();
+      return (gId && userGroups.has(gId)) || (gName && userGroups.has(gName));
+    });
+    if (groupCells.length > 0) return groupCells;
+  }
+
+  const specificAssignedCells = cells.filter((cell) => {
+    const cellId = String(cell.id || "").trim().toLowerCase();
+    const cellName = String(cell.cell_name || cell.name || cell.nome_da_celula || cell.raw_cell_name || "").trim().toLowerCase();
+    const matchesAssigned = (cellId && assignedKeys.has(cellId)) || (cellName && assignedKeys.has(cellName));
+    const matchesLeaderId = (cell.primary_leader_user_id && cell.primary_leader_user_id === user.id) || ((cell.assistant_user_ids || []).includes(user.id));
+    return matchesAssigned || matchesLeaderId;
+  });
+
+  if (specificAssignedCells.length > 0) {
+    return specificAssignedCells;
+  }
+
+  if (userGroups.size > 0 && (isCellGroupLeader || ["Cell Leader", "Cell Assistant", "Assistant Cell Leader"].includes(user.role))) {
+    const groupCells = cells.filter((cell) => {
+      const gId = String(cell.group_id || cell.cell_group_id || cell.group_cell_id || "").trim().toLowerCase();
       const gName = String(cell.group_name || cell.cell_group_name || "").trim().toLowerCase();
       return (gId && userGroups.has(gId)) || (gName && userGroups.has(gName));
     });
@@ -11092,7 +11104,9 @@ function isCellLeaderOrAssistant(user = activeUser) {
   const role = String(user?.role || user?.role_name || "").toLowerCase().trim();
   const isCellRole = [
     "cell leader", "cell assistant", "cell_leader", "assistant_cell_leader",
-    "cell_assistant", "líder de célula", "lider de celula", "assistente de célula", "assistente de celula"
+    "cell_assistant", "líder de célula", "lider de celula", "assistente de célula", "assistente de celula",
+    "cell group leader", "cell_group_leader", "líder de grupo de células", "lider de grupo de celulas",
+    "cell group coordinator", "coordenador de grupo de células", "coordenador de grupo de celulas"
   ].includes(role);
   const hasCell = Boolean(user?.cell_id || user?.cell_group_id || (Array.isArray(user?.assigned_cells) && user.assigned_cells.length > 0) || (Array.isArray(user?.assigned_cell_groups) && user.assigned_cell_groups.length > 0));
   return (
@@ -11112,10 +11126,12 @@ function roleWorkspaceRoutes(user = activeUser) {
 
   const routes = [];
 
-  // 1. Cell leader assignment or cell role
+  // 1. Cell leader / Cell group leader assignment or cell role
   const isCellLeader = isCellLeaderOrAssistant(user) || [
     "cell leader", "cell assistant", "cell_leader", "assistant_cell_leader",
-    "cell_assistant", "líder de célula", "lider de celula", "assistente de célula", "assistente de celula"
+    "cell_assistant", "líder de célula", "lider de celula", "assistente de célula", "assistente de celula",
+    "cell group leader", "cell_group_leader", "líder de grupo de células", "lider de grupo de celulas",
+    "cell group coordinator", "coordenador de grupo de células", "coordenador de grupo de celulas"
   ].includes(role);
   if (isCellLeader) {
     routes.push("cellPortal", "cellReceivedReports", "cellWeeklyReport");
@@ -11312,17 +11328,59 @@ function cellRouteAreaLabel(route) {
   return area ? L(area.label) : L("cellLeadership");
 }
 
+function renderCellPortalSidebarSubnav() {
+  const sections = [
+    { id: "cell-portal-overview", icon: "bi-grid-1x2", labelPt: "Visão Geral", labelEn: "Overview" },
+    { id: "cell-portal-attendance", icon: "bi-calendar-check", labelPt: "Presenças & Visitantes", labelEn: "Attendance & Visitors" },
+    { id: "cell-portal-members", icon: "bi-people", labelPt: "Membros & Reconciliação", labelEn: "Members" },
+    { id: "cell-portal-candidates", icon: "bi-person-plus", labelPt: "Adesões Pendentes", labelEn: "Pending Registrations" },
+    { id: "cell-portal-reports", icon: "bi-clipboard-check", labelPt: "Relatório Semanal", labelEn: "Weekly Reports" },
+    { id: "cell-portal-activities", icon: "bi-calendar-event", labelPt: "Actividades", labelEn: "Activities" },
+    { id: "cell-portal-growth", icon: "bi-graph-up-arrow", labelPt: "Crescimento", labelEn: "Growth" },
+    { id: "cell-portal-finance", icon: "bi-cash-coin", labelPt: "Parcerias & Dízimos", labelEn: "Partnerships & Tithes" },
+    { id: "cell-portal-souls", icon: "bi-heart-pulse", labelPt: "Ganhar Almas", labelEn: "Soul Winning" },
+    { id: "cell-portal-foundation", icon: "bi-book", labelPt: "Fundação & Sacramentos", labelEn: "Foundation & Sacraments" },
+    { id: "cell-portal-programs", icon: "bi-megaphone", labelPt: "Programas", labelEn: "Programs" },
+    { id: "cell-portal-history", icon: "bi-clock-history", labelPt: "Histórico", labelEn: "History" }
+  ];
+
+  const isExpanded = isSidebarGroupExpanded("cellPortalSections");
+
+  return `
+    <div class="nav-cell-portal-area ${isExpanded ? "is-expanded" : ""} ${activeRoute === "cellPortal" ? "has-active" : ""}" data-nav-group="cellPortalSections">
+      <button type="button" class="nav-cell-portal-toggle" data-portal-dropdown-toggle aria-expanded="${isExpanded}" aria-label="Portal do Líder de Célula">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-person-badge nav-cell-area-icon" aria-hidden="true"></i>
+          <span>${lang === "pt" ? "Portal do Líder de Célula" : "Cell Leader Portal"}</span>
+        </div>
+        <i class="bi bi-chevron-down nav-cell-area-chevron" aria-hidden="true"></i>
+      </button>
+      <div class="nav-cell-area-body">
+        <div class="nav-cell-portal-subitems">
+          <button type="button" class="nav-cell-item nav-cell-section-item ${activeRoute === "cellPortal" ? "active" : ""}" data-route="cellPortal" data-cell-portal-section="cell-portal-overview" title="${lang === "pt" ? "Página Principal" : "Main Page"}">
+            <i class="bi bi-house-door me-2"></i><span>${lang === "pt" ? "Página Principal" : "Main Page"}</span>
+          </button>
+          ${sections.map((sec) => `
+            <button type="button" class="nav-cell-item nav-cell-section-item" data-cell-portal-section="${sec.id}" title="${escapeAttr(lang === "pt" ? sec.labelPt : sec.labelEn)}">
+              <i class="bi ${sec.icon} me-2" aria-hidden="true"></i>
+              <span>${escapeAttr(lang === "pt" ? sec.labelPt : sec.labelEn)}</span>
+            </button>
+          `).join("")}
+        </div>
+      </div>
+    </div>`;
+}
+
 function renderCellSidebarNav() {
   const workspaceRoutes = roleWorkspaceRoutes();
   const parentExpanded = isSidebarGroupExpanded(CELL_NAV.parentKey) || String(activeUser?.role || "").toLowerCase().includes("venue");
   const parentActive = isCellRoute(activeRoute);
   const hasExtendedCellPerms = userHasExtendedCellPerms(activeUser);
-  const cellPortalBtn = `<button type="button" class="nav-cell-item ${activeRoute === "cellPortal" ? "active" : ""}" data-route="cellPortal"><i class="bi bi-person-badge me-2"></i><span>${lang === "pt" ? "Portal do Líder de Célula" : "Cell Leader Portal"}</span></button>`;
 
   if (!hasExtendedCellPerms && (isCellLeaderOrAssistant(activeUser) || ["Cell Leader", "Cell Assistant"].includes(activeUser?.role))) {
     return `<div class="nav-cell-branch is-expanded ${parentActive ? "has-active" : ""}">
       <div class="nav-cell-body"><div class="nav-cell-body-inner">
-        ${cellPortalBtn}
+        ${renderCellPortalSidebarSubnav()}
         <button type="button" class="nav-cell-item ${activeRoute === "cellReceivedReports" ? "active" : ""}" data-route="cellReceivedReports"><i class="bi bi-clock-history me-2"></i><span>${L("receivedReports")}</span></button>
         <button type="button" class="nav-cell-item" data-public-cell-report><i class="bi bi-clipboard-plus me-2"></i><span>${L("submitCellReport")}</span></button>
       </div></div>
@@ -11368,7 +11426,7 @@ function renderCellSidebarNav() {
       </button>
       <div class="nav-cell-body">
         <div class="nav-cell-body-inner">
-          ${showCellPortal ? cellPortalBtn : ""}
+          ${showCellPortal ? renderCellPortalSidebarSubnav() : ""}
           ${showCellPortal && (!workspaceRoutes || workspaceRoutes.includes("cellReceivedReports")) ? `<button type="button" class="nav-cell-item ${activeRoute === "cellReceivedReports" ? "active" : ""}" data-route="cellReceivedReports"><i class="bi bi-clock-history me-2"></i><span>${L("receivedReports")}</span></button>` : ""}
           ${showCellPortal ? `<button type="button" class="nav-cell-item" data-public-cell-report><i class="bi bi-clipboard-plus me-2"></i><span>${L("submitCellReport")}</span></button>` : ""}
           ${areaItems}
@@ -11553,10 +11611,12 @@ function applySidebarCollapse(collapsed = isSidebarCollapsed()) {
 }
 
 function renderShell() {
-  const isCellPortalOnly = isCellLeaderOrAssistant(activeUser) && !userHasExtendedCellPerms(activeUser) && Boolean(activeUser?.cell_id || activeUser?.cell_group_id || (Array.isArray(activeUser?.assigned_cells) && activeUser.assigned_cells.length) || (Array.isArray(activeUser?.assigned_cell_groups) && activeUser.assigned_cell_groups.length));
+  const isCellPortalOnly = isCellLeaderOrAssistant(activeUser) && !userHasExtendedCellPerms(activeUser);
   if (isCellPortalOnly) {
+    const isGroup = ["cell group leader", "cell_group_leader", "líder de grupo de células", "lider de grupo de celulas", "cell group coordinator"].includes(String(activeUser?.role || "").toLowerCase().trim()) || (Array.isArray(activeUser?.assigned_cell_groups) && activeUser.assigned_cell_groups.length > 0);
+    const portalTitle = isGroup ? (lang === "pt" ? "Meu Grupo de Células" : "My Cell Group") : (lang === "pt" ? "Minha Célula" : "My Cell");
     byId("sidebarNav").innerHTML = `<div class="nav-group is-expanded"><div class="nav-group-body"><div class="nav-group-body-inner">
-      <button type="button" class="nav-item-btn ${["dashboard", "cellPortal"].includes(activeRoute) ? "active" : ""}" data-route="cellPortal"><i class="bi bi-grid-1x2"></i><span>${lang === "pt" ? "Minha Célula" : "My Cell"}</span></button>
+      <button type="button" class="nav-item-btn ${["dashboard", "cellPortal"].includes(activeRoute) ? "active" : ""}" data-route="cellPortal"><i class="bi bi-grid-1x2"></i><span>${portalTitle}</span></button>
       <button type="button" class="nav-item-btn ${activeRoute === "cellReceivedReports" ? "active" : ""}" data-route="cellReceivedReports"><i class="bi bi-clock-history"></i><span>${lang === "pt" ? "Relatórios Submetidos" : "Submitted Reports"}</span></button>
       <button type="button" class="nav-item-btn" data-public-cell-report><i class="bi bi-clipboard-plus"></i><span>${lang === "pt" ? "Submeter Relatório" : "Submit Report"}</span></button>
       ${typeof resolveRouteAccess === "function" && resolveRouteAccess("followUp").visible && !resolveRouteAccess("followUp").locked ? `<button type="button" class="nav-item-btn ${activeRoute === "followUp" ? "active" : ""}" data-route="followUp"><i class="bi bi-person-lines-fill"></i><span>${lang === "pt" ? "Acompanhamento" : "Follow-Up"}</span></button>` : ""}
@@ -12015,10 +12075,6 @@ function setRoute(route) {
   if (isCellLeaderOrAssistant(activeUser) && !userHasExtendedCellPerms(activeUser) && isCellRoute(activeRoute) && !["cellPortal", "cellReceivedReports", "cellWeeklyReport"].includes(activeRoute)) {
     recordCellReportSecurityEvent("cell_report_route_denied", `Restricted cell portal route: ${activeRoute}`);
     activeRoute = "cellPortal";
-  }
-  if (["Cell Leader", "Cell Assistant"].includes(activeUser?.role) && !userHasExtendedCellPerms(activeUser) && isCellRoute(activeRoute) && !["cellPortal", "cellReceivedReports"].includes(activeRoute)) {
-    recordCellReportSecurityEvent("cell_report_route_denied", `Restricted cell portal route: ${activeRoute}`);
-    activeRoute = "cellReceivedReports";
   }
   if (!canEnterRoute(activeRoute)) {
     try {
@@ -35852,6 +35908,11 @@ document.addEventListener("click", async (event) => {
   if (cellAreaToggle) {
     const key = cellAreaToggle.closest("[data-nav-group]")?.dataset.navGroup;
     if (key && key !== "departments") toggleSidebarGroup(key);
+    return;
+  }
+  const portalDropdownToggle = event.target.closest("[data-portal-dropdown-toggle], .nav-cell-portal-toggle");
+  if (portalDropdownToggle) {
+    toggleSidebarGroup("cellPortalSections");
     return;
   }
   const moduleNavToggle = event.target.closest("[data-module-nav-toggle]");
