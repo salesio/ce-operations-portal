@@ -9705,16 +9705,22 @@ function renderRequisitionReportsPanel(options = {}) {
     </div>`;
 }
 
-function financeReportStatsCards(stats) {
+function financeReportStatsCards(stats, comparison = null) {
+  const growthTag = (g) => {
+    if (g === undefined || g === null || Number.isNaN(g) || !comparison) return "";
+    const isUp = g >= 0;
+    return ` · <span class="badge ${isUp ? "bg-success-subtle text-success" : "bg-danger-subtle text-danger"}"><i class="bi ${isUp ? "bi-arrow-up" : "bi-arrow-down"}"></i> ${isUp ? "+" : ""}${g}%</span>`;
+  };
+
   return `
-    <div class="row g-3 summary-cards-row finance-report-stats">
-      ${metric("bi-cash-stack", L("financeTotalReceived"), money(stats.totalReceived), L("finance"))}
-      ${metric("bi-patch-check", L("financeTotalVerified"), money(stats.totalVerified), L("verified"))}
-      ${metric("bi-hourglass", L("financeTotalPending"), money(stats.totalPending), L("pendingVerification"))}
+    <div class="row g-3 summary-cards-row finance-report-stats mb-3">
+      ${metric("bi-cash-stack", L("financeTotalReceived"), money(stats.totalReceived), `${L("finance")}${growthTag(comparison?.growthReceived)}`)}
+      ${metric("bi-patch-check", L("financeTotalVerified"), money(stats.totalVerified), `${L("verified")}${growthTag(comparison?.growthVerified)}`)}
+      ${metric("bi-hourglass", L("financeTotalPending"), money(stats.totalPending), `${L("pendingVerification")}${growthTag(comparison?.growthPending)}`)}
       ${metric("bi-x-circle", L("financeTotalRejected"), money(stats.totalRejected), L("rejected"))}
       ${metric("bi-receipt", L("financeContributionCount"), stats.contributionCount, L("finance"))}
-      ${metric("bi-people", L("financeUniqueContributors"), stats.uniqueContributors, L("contributor"))}
-      ${metric("bi-calculator", L("financeAverageContribution"), money(stats.averageContribution), L("amount"))}
+      ${metric("bi-people", L("financeUniqueContributors"), stats.uniqueContributors, `${L("contributor")}${growthTag(comparison?.growthContributors)}`)}
+      ${metric("bi-calculator", L("financeAverageContribution"), money(stats.averageContribution), `${L("amount")}${growthTag(comparison?.growthAverage)}`)}
     </div>`;
 }
 
@@ -11035,6 +11041,14 @@ function fallbackRouteModule(route = "dashboard") {
   if (route.startsWith("venueInventory")) return "venueInventory";
   if (route.startsWith("media")) return "media";
   return route;
+}
+
+function isFinanceRoute(route = activeRoute) {
+  return [
+    "finance", "financeOverviewRoute", "financeEntriesRoute", "financePublicSubmissionsRoute",
+    "financeVerificationRoute", "financeApprovedRequisitionsRoute", "financeReportsRoute",
+    "financePartnersRoute", "financeExportsRoute"
+  ].includes(route);
 }
 
 function fallbackCanViewModule(user = activeUser, module = "dashboard") {
@@ -19862,6 +19876,9 @@ function renderFinance() {
   const stats = typeof computeFinanceReportStats === "function"
     ? computeFinanceReportStats(list)
     : { totalReceived: 0, totalVerified: 0, totalPending: 0, totalRejected: 0, contributionCount: 0, uniqueContributors: 0, averageContribution: 0 };
+  const comparison = typeof computeFinanceComparison === "function"
+    ? computeFinanceComparison(list, previousList)
+    : null;
 
   const today = allList.filter((f) => f.data === new Date().toISOString().slice(0, 10)).reduce((sum, f) => sum + Number(f.valor || 0), 0);
   const monthKey = new Date().toISOString().slice(0, 7);
@@ -19889,6 +19906,12 @@ function renderFinance() {
   const monthlyRows = typeof groupFinanceMonthly === "function" ? groupFinanceMonthly(list) : [];
   const churchRows = typeof groupFinanceByChurch === "function"
     ? groupFinanceByChurch(list, churchName)
+    : [];
+  const cellRows = typeof groupFinanceByCell === "function"
+    ? groupFinanceByCell(list)
+    : [];
+  const methodRows = typeof groupFinanceByMethod === "function"
+    ? groupFinanceByMethod(list)
     : [];
   const topPartnerRows = contributorProfiles.slice(0, 8).map((p) => [p.name, p.total]);
   const partnerProfilesRaw = typeof computePartnerProfiles === "function"
@@ -20053,31 +20076,76 @@ function renderFinance() {
       );
     }
   } else if (financePageState.tab === "reports") {
+    const quickActionsToolbar = `
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3 p-2 rounded bg-body-tertiary border">
+        <div class="d-flex flex-wrap align-items-center gap-2">
+          <span class="badge bg-primary px-3 py-2 fs-6"><i class="bi bi-funnel me-1"></i>${list.length} ${list.length === 1 ? "registo" : "registos"}</span>
+          ${prevRange.from ? `<span class="badge bg-secondary-subtle text-secondary-emphasis border px-2 py-2"><i class="bi bi-clock-history me-1"></i>Período Anterior: ${prevRange.from} a ${prevRange.to}</span>` : ""}
+          ${filters.category ? `<span class="badge bg-info-subtle text-info-emphasis border px-2 py-2"><i class="bi bi-tag me-1"></i>${filters.category}</span>` : ""}
+          ${filters.churchId ? `<span class="badge bg-warning-subtle text-warning-emphasis border px-2 py-2"><i class="bi bi-building me-1"></i>${churchName(filters.churchId)}</span>` : ""}
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+          <button type="button" class="btn btn-sm btn-ce-gold btn-touch fw-semibold" data-finance-quick-print title="Imprimir Relatório A4 / Salvar em PDF">
+            <i class="bi bi-printer me-1"></i>${L("financePrintReport") || "Imprimir A4 / PDF"}
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-success btn-touch fw-semibold" data-finance-quick-excel title="Exportar para Excel (.xlsx) com múltiplas folhas analíticas">
+            <i class="bi bi-file-earmark-excel me-1"></i>${L("financeExportExcel") || "Exportar Excel (.xlsx)"}
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-secondary btn-touch" data-finance-quick-csv title="Exportar dados brutos para CSV">
+            <i class="bi bi-filetype-csv me-1"></i>CSV
+          </button>
+        </div>
+      </div>`;
+
+    const methodChart = typeof financeBarChart === "function"
+      ? financeBarChart(L("byPaymentMethod") || "Canais de Pagamento", methodRows, L("financeNoChartData"))
+      : chartCard(L("byPaymentMethod") || "Canais de Pagamento", methodRows);
+
     tabContent = `
       ${moduleSection(L("financeReportsSection"), L("financeReportsHint"), "bi-graph-up", "", `
         ${privacyBanner}
         ${reportFiltersHtml}
-        ${financeReportStatsCards(stats)}
-        <div class="d-flex justify-content-end mb-3">${chartModeToggle}</div>
+        ${quickActionsToolbar}
+        ${financeReportStatsCards(stats, comparison)}
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h4 class="h6 text-secondary mb-0 fw-bold text-uppercase tracking-wider"><i class="bi bi-bar-chart-line me-2"></i>Análise Gráfica & Distribuição</h4>
+          ${chartModeToggle}
+        </div>
         <div class="row g-4 mb-4">
           <div class="col-xl-6">${categoryChart}</div>
           <div class="col-xl-6">${armChart}</div>
           <div class="col-xl-6">${monthlyChart}</div>
+          <div class="col-xl-6">${methodChart}</div>
+          <div class="col-xl-6">${churchChart}</div>
           <div class="col-xl-6">${financeAccess.canViewIndividualDetails ? topPartnersChart : `<article class="chart-card glass-panel finance-chart-card light-surface h-100"><div class="panel-head"><h3 class="panel-title">${L("financeTopPartners")}</h3></div><p class="finance-chart-empty">${L("financeAggregatedOnly")}</p></article>`}</div>
-          <div class="col-12">${churchChart}</div>
         </div>
         <div class="row g-4 mb-4">
-          <div class="col-12">
-            <article class="panel glass-panel">
+          <div class="col-xl-6">
+            <article class="panel glass-panel h-100">
               <div class="panel-head"><h3 class="panel-title"><i class="bi bi-building me-2"></i>${L("financeChurchRanking")}</h3></div>
               ${financeChurchReportHtml(churchRows, financeAccess)}
             </article>
           </div>
+          <div class="col-xl-6">
+            <article class="panel glass-panel h-100">
+              <div class="panel-head"><h3 class="panel-title"><i class="bi bi-diagram-3 me-2"></i>Desempenho por Célula & Grupo</h3></div>
+              ${cellRows.length ? dataTable(
+                ["Grupo", "Célula", "Total", "Verificado", "Ofertantes"],
+                cellRows.slice(0, 20).map((c) => [
+                  c.cell_group_name || "-",
+                  c.cell_name || "-",
+                  money(c.total),
+                  money(c.verified),
+                  c.contributorCount
+                ])
+              ) : `<p class="text-secondary p-3 mb-0">${L("noRecords")}</p>`}
+            </article>
+          </div>
         </div>
-        <div class="row g-4">
+        <div class="row g-4 mb-4">
           <div class="col-xl-5">
             <article class="panel glass-panel h-100">
-              <div class="panel-head"><h3 class="panel-title">${L("financeReportByIndividual")}</h3></div>
+              <div class="panel-head"><h3 class="panel-title"><i class="bi bi-person-lines-fill me-2"></i>${L("financeReportByIndividual")}</h3></div>
               ${financeAccess.canViewIndividualDetails ? `
                 <select class="form-select mb-3" data-finance-select-contributor aria-label="${L("financeSelectContributor")}">
                   <option value="">${L("financeSelectContributor")}</option>
@@ -20088,8 +20156,19 @@ function renderFinance() {
           </div>
           <div class="col-xl-7">
             <article class="panel glass-panel h-100">
-              <div class="panel-head"><h3 class="panel-title">${L("financeReportByPartnershipArm")}</h3></div>
+              <div class="panel-head"><h3 class="panel-title"><i class="bi bi-heart me-2"></i>${L("financeReportByPartnershipArm")}</h3></div>
               ${financePartnersArmCards(armDetails)}
+            </article>
+          </div>
+        </div>
+        <div class="row g-4 mb-4">
+          <div class="col-12">
+            <article class="panel glass-panel">
+              <div class="panel-head d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <h3 class="panel-title mb-0"><i class="bi bi-receipt me-2"></i>Transações do Relatório (${list.length})</h3>
+                <span class="badge bg-ce-gold text-dark fs-6 px-3 py-1 fw-bold">${money(stats.totalReceived)}</span>
+              </div>
+              <div class="table-responsive">${entriesTable}</div>
             </article>
           </div>
         </div>`)}
@@ -36379,16 +36458,96 @@ document.addEventListener("click", async (event) => {
       return;
     }
     financePageState.tab = tab;
-    if (activeRoute === "finance") renderFinance();
+    if (isFinanceRoute(activeRoute)) renderFinance();
     return;
   }
   if (event.target.closest("[data-finance-report-apply]")) {
-    if (activeRoute === "finance") renderFinance();
+    if (isFinanceRoute(activeRoute)) renderFinance();
+    return;
+  }
+  if (event.target.closest("[data-finance-report-reset]")) {
+    financePageState.reportFilters = {
+      period: "month",
+      dateFrom: "",
+      dateTo: "",
+      churchId: "",
+      category: "",
+      contributionType: "",
+      partnershipArm: "",
+      method: "",
+      status: "",
+      minValue: "",
+      maxValue: "",
+      contributor: "",
+      cellGroup: "",
+      cell: "",
+      frequency: ""
+    };
+    if (isFinanceRoute(activeRoute)) renderFinance();
+    return;
+  }
+  if (event.target.closest("[data-finance-quick-print]")) {
+    const access = resolveFinanceAccess();
+    if (!access.canExport) {
+      alert(L("noPermissionArea"));
+      return;
+    }
+    const allList = getScopedFinanceList();
+    const list = typeof filterFinanceRecords === "function"
+      ? filterFinanceRecords(allList, financePageState.reportFilters)
+      : allList;
+    const prevRange = typeof getPreviousPeriodRange === "function"
+      ? getPreviousPeriodRange(financePageState.reportFilters.period, financePageState.reportFilters.dateFrom, financePageState.reportFilters.dateTo)
+      : { from: "", to: "" };
+    const previousList = prevRange.from && typeof filterFinanceRecords === "function"
+      ? filterFinanceRecords(allList, { ...financePageState.reportFilters, period: "custom", dateFrom: prevRange.from, dateTo: prevRange.to })
+      : [];
+    const stats = typeof computeFinanceReportStats === "function" ? computeFinanceReportStats(list) : {};
+    const comparison = typeof computeFinanceComparison === "function" ? computeFinanceComparison(list, previousList) : null;
+    const churchRows = typeof groupFinanceByChurch === "function" ? groupFinanceByChurch(list, churchName) : [];
+    const cellRows = typeof groupFinanceByCell === "function" ? groupFinanceByCell(list) : [];
+    const categoryRows = typeof groupFinanceByBucket === "function" ? groupFinanceByBucket(list, (key) => L(key)) : [];
+    const armDetails = typeof computePartnershipArmDetails === "function" ? computePartnershipArmDetails(list, previousList) : [];
+    const methodRows = typeof groupFinanceByMethod === "function" ? groupFinanceByMethod(list) : [];
+
+    const html = buildFinanceA4PrintHtml(list, stats, comparison, churchRows, cellRows, categoryRows, armDetails, methodRows, {
+      userName: activeUser?.name,
+      userRole: activeUser?.role,
+      filters: financePageState.reportFilters,
+      churchName: financePageState.reportFilters.churchId ? churchName(financePageState.reportFilters.churchId) : ""
+    });
+    exportFinancePrint(html, "Relatório Financeiro A4");
+    return;
+  }
+  if (event.target.closest("[data-finance-quick-excel]")) {
+    const access = resolveFinanceAccess();
+    if (!access.canExport) {
+      alert(L("noPermissionArea"));
+      return;
+    }
+    const allList = getScopedFinanceList();
+    const list = typeof filterFinanceRecords === "function"
+      ? filterFinanceRecords(allList, financePageState.reportFilters)
+      : allList;
+    exportFinanceExcel(list, `relatorio-financeiro-${financePageState.reportFilters.period || "geral"}.xlsx`);
+    return;
+  }
+  if (event.target.closest("[data-finance-quick-csv]")) {
+    const access = resolveFinanceAccess();
+    if (!access.canExport) {
+      alert(L("noPermissionArea"));
+      return;
+    }
+    const allList = getScopedFinanceList();
+    const list = typeof filterFinanceRecords === "function"
+      ? filterFinanceRecords(allList, financePageState.reportFilters)
+      : allList;
+    exportFinanceCsv(list, `relatorio-financeiro-${financePageState.reportFilters.period || "geral"}.csv`);
     return;
   }
   if (event.target.closest("[data-finance-approved-req-clear]")) {
     financePageState.approvedReqFilters = { period: "month", dateFrom: "", dateTo: "", churchId: "", department: "", finance_status: "", urgency: "", requester: "", minValue: "", maxValue: "" };
-    if (activeRoute === "finance") renderFinance();
+    if (isFinanceRoute(activeRoute)) renderFinance();
     return;
   }
   if (event.target.closest("[data-requisition-report-clear]")) {
@@ -36495,7 +36654,7 @@ document.addEventListener("click", async (event) => {
   const financeChartModeBtn = event.target.closest("[data-finance-chart-mode]");
   if (financeChartModeBtn) {
     financePageState.reportChartMode = financeChartModeBtn.dataset.financeChartMode || "bar";
-    if (activeRoute === "finance") renderFinance();
+    if (isFinanceRoute(activeRoute)) renderFinance();
     return;
   }
   const financeExportBtn = event.target.closest("[data-finance-export]");
@@ -36523,7 +36682,7 @@ document.addEventListener("click", async (event) => {
       link.click();
       URL.revokeObjectURL(link.href);
     } else if (financeExportBtn.dataset.financeExport === "excel" && typeof exportFinanceExcel === "function") {
-      exportFinanceExcel(exportList, `ce-finance-${reportType}-${stamp}.xls`, `CE Finance ${reportType}`);
+      exportFinanceExcel(exportList, `ce-finance-${reportType}-${stamp}.xlsx`, `CE Finance ${reportType}`);
     } else if ((financeExportBtn.dataset.financeExport === "pdf" || financeExportBtn.dataset.financeExport === "print") && typeof exportFinancePrint === "function") {
       const html = buildFinanceExportHtml(reportType, exportList, stats, churchRows, partnerProfiles);
       exportFinancePrint(html, `CE Finance ${reportType}`);
@@ -36533,7 +36692,7 @@ document.addEventListener("click", async (event) => {
   const financePartnerSegmentBtn = event.target.closest("[data-finance-partner-segment]");
   if (financePartnerSegmentBtn) {
     financePageState.partnerSegment = financePartnerSegmentBtn.dataset.financePartnerSegment || "all";
-    if (activeRoute === "finance") renderFinance();
+    if (isFinanceRoute(activeRoute)) renderFinance();
     return;
   }
   const financePartnerActionBtn = event.target.closest("[data-finance-partner-action]");
@@ -36547,7 +36706,7 @@ document.addEventListener("click", async (event) => {
       financePageState.selectedContributor = key;
       financePageState.exportReportType = "individual";
       financePageState.tab = "exports";
-      if (activeRoute === "finance") renderFinance();
+      if (isFinanceRoute(activeRoute)) renderFinance();
     }
     return;
   }
@@ -36555,7 +36714,7 @@ document.addEventListener("click", async (event) => {
   if (financeContributorBtn) {
     financePageState.selectedContributor = financeContributorBtn.dataset.financeSelectContributor || "";
     financePageState.tab = financeContributorBtn.dataset.financeTabJump || "reports";
-    if (activeRoute === "finance") renderFinance();
+    if (isFinanceRoute(activeRoute)) renderFinance();
     return;
   }
   const foundationTabBtn = event.target.closest("[data-foundation-tab]");
@@ -36979,12 +37138,19 @@ document.addEventListener("input", (event) => {
   const reportFilterKey = event.target.dataset?.financeReportFilter;
   if (reportFilterKey) {
     financePageState.reportFilters[reportFilterKey] = event.target.value || "";
-    if (activeRoute === "finance") renderFinance();
+    if (reportFilterKey === "period") {
+      const customContainers = document.querySelectorAll("[data-finance-custom-date-container]");
+      customContainers.forEach((el) => {
+        if (event.target.value === "custom") el.classList.remove("d-none");
+        else el.classList.add("d-none");
+      });
+    }
+    if (isFinanceRoute(activeRoute)) renderFinance();
     return;
   }
   if (event.target.matches("[data-finance-select-contributor]")) {
     financePageState.selectedContributor = event.target.value || "";
-    if (activeRoute === "finance") renderFinance();
+    if (isFinanceRoute(activeRoute)) renderFinance();
     return;
   }
   if (event.target.matches("[data-finance-export-type]")) {
@@ -37112,6 +37278,24 @@ document.addEventListener("input", (event) => {
         if (inp) {
           inp.focus();
           inp.setSelectionRange(inp.value.length, inp.value.length);
+        }
+      }, 250);
+    }
+    return;
+  }
+  const financeFilterKey = event.target.dataset?.financeReportFilter;
+  if (financeFilterKey && (event.target.type === "search" || event.target.type === "number" || event.target.type === "text")) {
+    financePageState.reportFilters[financeFilterKey] = event.target.value || "";
+    if (isFinanceRoute(activeRoute)) {
+      clearTimeout(window.__financeSearchDebounce);
+      window.__financeSearchDebounce = setTimeout(() => {
+        renderFinance();
+        const inp = document.querySelector(`[data-finance-report-filter="${financeFilterKey}"]`);
+        if (inp) {
+          inp.focus();
+          if (inp.setSelectionRange && typeof inp.value === "string") {
+            inp.setSelectionRange(inp.value.length, inp.value.length);
+          }
         }
       }, 250);
     }
