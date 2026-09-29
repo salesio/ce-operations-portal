@@ -6640,32 +6640,81 @@ function getCellReportTrends(cellId, filters = cellPortalPageState) {
 }
 
 function getCellSoulWinningStats(cellId, filters = cellPortalPageState, cachedMembers = null) {
-  if (!canAccessCell(activeUser?.id, cellId) || !hasCellPortalPermission("cell_portal.view_soul_winning")) return { total: 0, first_timers: 0, follow_up: 0, foundation: 0, became_members: 0, ranking: [] };
+  if (!canAccessCell(activeUser?.id, cellId) || !hasCellPortalPermission("cell_portal.view_soul_winning")) {
+    return { total: 0, first_timers: 0, follow_up: 0, foundation: 0, became_members: 0, received_from_pastoral: 0, pending_pastoral: 0, ranking: [], top_soul_winner: null, top_partners: [] };
+  }
   const members = cachedMembers || getCellMembersProfile(cellId, {});
   const cell = findCellSafe(cellId);
   const memberNames = new Map(members.map((member) => [portalText(member.name), member]));
   const memberPhones = new Map(members.map((member) => [String(member.phone || "").replace(/\D/g, ""), member]).filter(([phone]) => phone));
-  const firstTimers = (state.firstTimers || []).filter((person) => {
-    if (!portalInPeriod(person, filters) || person.church_id !== cell?.church_id) return false;
+
+  const allCellFirstTimers = (state.firstTimers || []).filter((person) => {
+    if (person.church_id && cell?.church_id && String(person.church_id) !== String(cell.church_id)) return false;
     const invited = portalText(person.invited_by_name || person.convidado_por || "");
     const invitedPhone = String(person.invited_by_phone || "").replace(/\D/g, "");
-    return person.cell_id === cellId || memberNames.has(invited) || memberPhones.has(invitedPhone);
+    const matchesCellId = person.cell_id && String(person.cell_id) === String(cellId);
+    const matchesCellName = person.cell_name && cell?.cell_name && person.cell_name.trim().toLowerCase() === cell.cell_name.trim().toLowerCase();
+    const matchesCelula = person.celula && cell?.cell_name && person.celula.trim().toLowerCase() === cell.cell_name.trim().toLowerCase();
+    return matchesCellId || matchesCellName || matchesCelula || memberNames.has(invited) || memberPhones.has(invitedPhone);
   });
+
+  const firstTimersInPeriod = allCellFirstTimers.filter((person) => portalInPeriod(person, filters));
+
+  const receivedFromPastoral = allCellFirstTimers.filter((p) => Boolean(p.cell_received || p.workflow_status === "CELL_RECEIVED" || p.estado_do_seguimento === "Received in Cell")).length;
+  const pendingPastoral = allCellFirstTimers.filter((p) => !p.cell_received && p.workflow_status !== "CELL_RECEIVED" && p.estado_do_seguimento !== "Received in Cell").length;
+
   const counts = new Map(members.map((member) => [member.id, 0]));
-  firstTimers.forEach((person) => {
+  const soulsWonCounts = new Map(members.map((member) => [member.id, 0]));
+
+  firstTimersInPeriod.forEach((person) => {
     const inviter = memberNames.get(portalText(person.invited_by_name || person.convidado_por || "")) || memberPhones.get(String(person.invited_by_phone || "").replace(/\D/g, ""));
-    if (inviter) counts.set(inviter.id, (counts.get(inviter.id) || 0) + 1);
+    if (inviter) {
+      counts.set(inviter.id, (counts.get(inviter.id) || 0) + 1);
+      if (person.nasceu_de_novo || person.born_again) {
+        soulsWonCounts.set(inviter.id, (soulsWonCounts.get(inviter.id) || 0) + 1);
+      }
+    }
   });
-  members.forEach((member) => counts.set(member.id, Math.max(counts.get(member.id) || 0, member.invited_count || 0)));
-  const timerIds = new Set(firstTimers.map((person) => person.id));
+
+  members.forEach((member) => {
+    counts.set(member.id, Math.max(counts.get(member.id) || 0, member.invited_count || 0));
+  });
+
+  const timerIds = new Set(firstTimersInPeriod.map((person) => person.id));
   const followUps = (state.followUps || []).filter((item) => timerIds.has(item.first_timer_id));
+
+  const ranking = members.map((member) => ({
+    member_id: member.id,
+    name: member.name,
+    phone: member.phone || "",
+    invited: counts.get(member.id) || 0,
+    souls_won: soulsWonCounts.get(member.id) || 0,
+    is_partner: Boolean(member.is_partner),
+    is_tither: Boolean(member.is_tither),
+    partnership_arms: member.partnership_arms || []
+  })).sort((a, b) => (b.invited * 2 + b.souls_won) - (a.invited * 2 + a.souls_won) || b.invited - a.invited);
+
+  const topSoulWinner = ranking.find((r) => r.invited > 0 || r.souls_won > 0) || ranking[0] || null;
+
+  const topPartners = members.filter((m) => m.is_partner).map((m) => ({
+    member_id: m.id,
+    name: m.name,
+    phone: m.phone || "",
+    arms: m.partnership_arms || [],
+    is_tither: Boolean(m.is_tither)
+  }));
+
   return {
-    total: firstTimers.reduce((sum, item) => sum + Number(item.souls_won || item.nasceu_de_novo || 0), 0),
-    first_timers: firstTimers.length,
+    total: firstTimersInPeriod.reduce((sum, item) => sum + Number(item.souls_won || item.nasceu_de_novo || 0), 0),
+    first_timers: firstTimersInPeriod.length,
+    received_from_pastoral: receivedFromPastoral,
+    pending_pastoral: pendingPastoral,
     follow_up: followUps.filter((item) => !/became member|concluido/.test(portalText(item.status))).length,
     foundation: followUps.filter((item) => /foundation|fundacao/.test(portalText(item.status || item.estado || item.resultado))).length,
     became_members: followUps.filter((item) => item.became_member || /became member/.test(portalText(item.status))).length,
-    ranking: members.map((member) => ({ member_id: member.id, name: member.name, invited: counts.get(member.id) || 0 })).sort((a, b) => b.invited - a.invited)
+    ranking,
+    top_soul_winner: topSoulWinner,
+    top_partners: topPartners
   };
 }
 
@@ -9925,13 +9974,13 @@ function financeReportStatsCards(stats, comparison = null) {
 
   return `
     <div class="row g-3 summary-cards-row finance-report-stats mb-3">
-      ${metric("bi-cash-stack", L("financeTotalReceived"), money(stats.totalReceived), `${L("finance")}${growthTag(comparison?.growthReceived)}`)}
-      ${metric("bi-patch-check", L("financeTotalVerified"), money(stats.totalVerified), `${L("verified")}${growthTag(comparison?.growthVerified)}`)}
-      ${metric("bi-hourglass", L("financeTotalPending"), money(stats.totalPending), `${L("pendingVerification")}${growthTag(comparison?.growthPending)}`)}
-      ${metric("bi-x-circle", L("financeTotalRejected"), money(stats.totalRejected), L("rejected"))}
-      ${metric("bi-receipt", L("financeContributionCount"), stats.contributionCount, L("finance"))}
-      ${metric("bi-people", L("financeUniqueContributors"), stats.uniqueContributors, `${L("contributor")}${growthTag(comparison?.growthContributors)}`)}
-      ${metric("bi-calculator", L("financeAverageContribution"), money(stats.averageContribution), `${L("amount")}${growthTag(comparison?.growthAverage)}`)}
+      ${metric("bi-cash-stack", L("financeTotalReceived"), money(stats.totalReceived), `${L("finance")}${growthTag(comparison?.growthReceived)}`, { isClickable: true, module: "finance", route: "financeEntriesRoute", filterPayload: { status: "" }, tooltip: "Ver todas as entradas financeiras" })}
+      ${metric("bi-patch-check", L("financeTotalVerified"), money(stats.totalVerified), `${L("verified")}${growthTag(comparison?.growthVerified)}`, { isClickable: true, module: "finance", route: "financeEntriesRoute", filterPayload: { status: "Verificado" }, tooltip: "Filtrar entradas verificadas" })}
+      ${metric("bi-hourglass", L("financeTotalPending"), money(stats.totalPending), `${L("pendingVerification")}${growthTag(comparison?.growthPending)}`, { isClickable: true, module: "finance", route: "financeVerificationRoute", filterPayload: { status: "Pendente" }, tooltip: "Ir para fila de verificação pendente" })}
+      ${metric("bi-x-circle", L("financeTotalRejected"), money(stats.totalRejected), L("rejected"), { isClickable: true, module: "finance", route: "financeEntriesRoute", filterPayload: { status: "Rejeitado" }, tooltip: "Filtrar entradas rejeitadas" })}
+      ${metric("bi-receipt", L("financeContributionCount"), stats.contributionCount, L("finance"), { isClickable: true, module: "finance", route: "financeEntriesRoute", tooltip: "Ver lista detalhada de contribuições" })}
+      ${metric("bi-people", L("financeUniqueContributors"), stats.uniqueContributors, `${L("contributor")}${growthTag(comparison?.growthContributors)}`, { isClickable: true, module: "partnership", route: "partnershipPartnersRoute", tooltip: "Ver lista de parceiros e contribuintes" })}
+      ${metric("bi-calculator", L("financeAverageContribution"), money(stats.averageContribution), `${L("amount")}${growthTag(comparison?.growthAverage)}`, { isClickable: true, module: "finance", route: "financeEntriesRoute", tooltip: "Ver lançamentos financeiros" })}
     </div>`;
 }
 
@@ -12834,6 +12883,13 @@ function applyFirstTimerCardFilters(list, filters = {}) {
   }
   if (workflowFilter) rows = rows.filter((p) => p.workflow_status === workflowFilter);
   if (workflowFilters.length) rows = rows.filter((p) => workflowFilters.includes(p.workflow_status));
+  if (filters.cell_assignment === "assigned" || filters.assigned_to_cell) {
+    rows = rows.filter((p) => Boolean(p.cell_id || p.cell_name || p.celula));
+  } else if (filters.cell_assignment === "not_assigned" || filters.not_assigned_to_cell) {
+    rows = rows.filter((p) => !p.cell_id && !p.cell_name && !p.celula);
+  } else if (filters.cell_assignment === "received" || filters.cell_received) {
+    rows = rows.filter((p) => Boolean(p.cell_received || p.workflow_status === "CELL_RECEIVED" || p.estado_do_seguimento === "Received in Cell"));
+  }
   if (filters.quer_escola_de_fundacao || filters.wants_foundation_school) {
     rows = rows.filter((p) => p.quer_escola_de_fundacao || p.wants_foundation_school || p.wantsFoundationSchool || p.foundation_school_interest);
   }
@@ -12844,7 +12900,7 @@ function applyFirstTimerCardFilters(list, filters = {}) {
     rows = rows.filter((p) => ["becameMember", "closed"].includes(statusKey(p.estado_do_seguimento || p.follow_up_status)) || p.converted_to_member);
   }
   if (filters.sent_to_cell) {
-    rows = rows.filter((p) => ["Sent to Cell", "sentToCell", "Enrolled in Foundation School"].includes(p.estado_do_seguimento || p.follow_up_status) || p.cell_interest || p.interesse_em_celula);
+    rows = rows.filter((p) => Boolean(p.cell_id || p.cell_name || p.celula) || ["Sent to Cell", "sentToCell", "Enrolled in Foundation School"].includes(p.estado_do_seguimento || p.follow_up_status) || p.cell_interest || p.interesse_em_celula);
   }
   if (query) {
     rows = rows.filter((p) =>
@@ -12853,6 +12909,7 @@ function applyFirstTimerCardFilters(list, filters = {}) {
         p.telefone, p.phone, p.whatsapp, p.email, p.culto, p.service_name,
         p.endereco, p.address, p.neighborhood, p.bairro,
         p.celula, p.cell_name, p.celula_preferida,
+        p.convidado_por, p.invited_by, p.invited_by_name,
         p.conselheiro_responsavel, p.responsible_name,
         p.estado_do_seguimento, p.follow_up_status, p.first_timer_number
       ].some((value) => String(value || "").toLowerCase().includes(query))
@@ -14145,6 +14202,14 @@ function renderCellLeaderPortal() {
     const isReadOnlyPortal = ["alec_manager", "ALEC Coordinator", "ALEC Manager"].includes(activeUser?.role) ||
       (!isCellLeaderOrAssistant(activeUser) && !["Super Admin", "Main Pastor", "National Admin", "Administrator", "Admin", "Cell Ministry Head"].includes(activeUser?.role) && !hasCellPortalPermission("cell_portal.edit"));
 
+    const pastoralArrivals = (state.firstTimers || []).filter((ft) => {
+      if (!ft.cell_id && !ft.celula && !ft.cell_name) return false;
+      const matchesCellId = ft.cell_id && String(ft.cell_id) === String(context?.cell_id);
+      const matchesCellName = ft.cell_name && context?.cell_name && ft.cell_name.trim().toLowerCase() === context.cell_name.trim().toLowerCase();
+      const matchesCelula = ft.celula && context?.cell_name && ft.celula.trim().toLowerCase() === context.cell_name.trim().toLowerCase();
+      return matchesCellId || matchesCellName || matchesCelula;
+    });
+
     setPageContent(`<div class="cell-portal-shell">
       <section class="cell-portal-hero">
         <div>
@@ -14180,7 +14245,18 @@ function renderCellLeaderPortal() {
       </section>
       <section id="cell-portal-overview" class="cell-portal-section">
         ${cellPortalSectionTitle("bi-grid-1x2", "Visão Geral", "Indicadores seguros da célula autorizada")}
-        <div class="cell-portal-kpis">${[["bi-people","Total de membros",stats.total_members],["bi-person-check","Membros activos",stats.active_members],["bi-person-plus","Novos este mês",stats.new_members_month],["bi-person-heart","Visitantes ligados",stats.visitors],["bi-clipboard-check","Relatórios este mês",stats.reports_month],["bi-activity","Estado actual",stats.current_report_status],["bi-clock-history","Último relatório",stats.latest_report ? String(portalDateValue(stats.latest_report) || "").slice(0,10) : "—"],["bi-calendar-week","Próxima submissão",stats.next_submission]].map(([icon,label,value]) => `<article><i class="bi ${icon}"></i><span>${label}</span><strong>${escapeAttr(value)}</strong></article>`).join("")}</div>
+        <div class="cell-portal-kpis">${[
+          ["bi-people","Total de membros",stats.total_members],
+          ["bi-person-check","Membros activos",stats.active_members],
+          ["bi-box-arrow-in-down-right text-cyan","Recebidos de Pastoral",`${soul?.received_from_pastoral || 0} (${soul?.pending_pastoral || 0} pendentes)`],
+          ["bi-trophy-fill text-warning","Top Soul Winner",soul?.top_soul_winner?.name ? `${soul.top_soul_winner.name} (${soul.top_soul_winner.invited})` : "—"],
+          ["bi-person-plus","Novos este mês",stats.new_members_month],
+          ["bi-person-heart","Visitantes ligados",stats.visitors],
+          ["bi-clipboard-check","Relatórios este mês",stats.reports_month],
+          ["bi-activity","Estado actual",stats.current_report_status],
+          ["bi-clock-history","Último relatório",stats.latest_report ? String(portalDateValue(stats.latest_report) || "").slice(0,10) : "—"],
+          ["bi-calendar-week","Próxima submissão",stats.next_submission]
+        ].map(([icon,label,value]) => `<article><i class="bi ${icon}"></i><span>${label}</span><strong>${escapeAttr(value)}</strong></article>`).join("")}</div>
         <div class="cell-portal-meta">
           <div><span>Igreja</span><strong>${escapeAttr(context?.church_name || "—")}</strong></div>
           <div><span>Grupo</span><strong>${escapeAttr(context?.cell_group_name || "—")}</strong></div>
@@ -14191,7 +14267,73 @@ function renderCellLeaderPortal() {
       <section class="cell-portal-section">
         <div class="cell-portal-alerts">${safeAlerts.map((alert) => `<article class="is-${alert.tone || "info"}"><i class="bi bi-bell"></i><div><strong>${escapeAttr(alert.title)}</strong><p>${escapeAttr(alert.detail)}</p></div></article>`).join("") || `<article class="is-success"><i class="bi bi-check-circle"></i><div><strong>Sem alertas críticos</strong><p>Os principais indicadores estão actualizados.</p></div></article>`}</div>
       </section>
-            <section id="cell-portal-attendance" class="cell-portal-section">
+
+      <!-- Pastoral Care Referral & Handoff Panel -->
+      <section id="cell-portal-pastoral-handoff" class="cell-portal-section">
+        ${cellPortalSectionTitle("bi-person-heart", "Membros Encaminhados pelos Cuidados Pastorais", "Visitantes e novos convertidos atribuídos a esta célula. Confirme a recepção para integrá-los e enviá-los à Lista de Espera por aprovação no MAIN.")}
+        <div class="panel glass-panel mb-4">
+          <div class="panel-head mb-3 d-flex flex-wrap justify-content-between align-items-center">
+            <div>
+              <h4 class="panel-title fs-6 text-warning mb-1"><i class="bi bi-inbox-fill me-2"></i>Entradas da Pastoral (First Timers & Convertidos)</h4>
+              <p class="text-secondary small mb-0">Total atribuído: <strong>${pastoralArrivals.length}</strong> &bull; Recebidos na célula: <strong class="text-success">${pastoralArrivals.filter(p => p.cell_received || p.workflow_status === "CELL_RECEIVED" || p.estado_do_seguimento === "Received in Cell").length}</strong> &bull; Aguardando recepção: <strong class="text-warning">${pastoralArrivals.filter(p => !p.cell_received && p.workflow_status !== "CELL_RECEIVED" && p.estado_do_seguimento !== "Received in Cell").length}</strong></p>
+            </div>
+            <div class="d-flex gap-2">
+              <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i>${pastoralArrivals.filter(p => !p.cell_received && p.workflow_status !== "CELL_RECEIVED" && p.estado_do_seguimento !== "Received in Cell").length} pendente(s)</span>
+            </div>
+          </div>
+          ${(() => {
+            if (!pastoralArrivals.length) {
+              return `<p class="text-secondary small mb-0 p-3"><i class="bi bi-info-circle me-1"></i>Nenhum visitante ou novo convertido encaminhado pelos Cuidados Pastorais para esta célula até ao momento.</p>`;
+            }
+            return `
+              <div class="table-responsive">
+                <table class="table cell-portal-table mb-0">
+                  <thead>
+                    <tr>
+                      <th>Nome do Membro</th>
+                      <th>Contacto</th>
+                      <th>Data da Visita</th>
+                      <th>Convidado por / Ganhador</th>
+                      <th>Data de Atribuição</th>
+                      <th>Estado</th>
+                      <th>Acção de Recepção</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${pastoralArrivals.map((ft) => {
+                      const isReceived = Boolean(ft.cell_received || ft.workflow_status === "CELL_RECEIVED" || ft.estado_do_seguimento === "Received in Cell");
+                      return `
+                        <tr>
+                          <td>
+                            <strong>${escapeAttr(fullName(ft))}</strong>
+                            <small class="text-secondary">${ft.nasceu_de_novo ? '<span class="badge bg-success-subtle text-success border border-success me-1">Novo Convertido</span>' : '<span class="badge bg-secondary-subtle text-body me-1">Visitante</span>'}${ft.quer_escola_de_fundacao ? '<span class="badge bg-info-subtle text-cyan border border-info">Interesse ESF</span>' : ''}</small>
+                          </td>
+                          <td>${escapeAttr(ft.telefone || ft.phone || "—")}</td>
+                          <td><small>${escapeAttr(ft.data_do_culto || ft.created_at?.slice(0, 10) || "—")}</small></td>
+                          <td>${ft.convidado_por || ft.invited_by || ft.invited_by_name ? `<span class="badge bg-warning-subtle text-warning border border-warning"><i class="bi bi-person-badge me-1"></i>${escapeAttr(ft.convidado_por || ft.invited_by || ft.invited_by_name)}</span>` : '<span class="text-secondary small">—</span>'}</td>
+                          <td><small>${escapeAttr(ft.cell_assigned_at ? String(ft.cell_assigned_at).slice(0, 10) : (ft.data_do_culto || "—"))}</small></td>
+                          <td>
+                            ${isReceived
+                              ? '<span class="badge bg-success"><i class="bi bi-check-circle-fill me-1"></i>Recebido na Célula</span>'
+                              : '<span class="badge bg-warning text-dark"><i class="bi bi-clock me-1"></i>Aguardando Recepção</span>'}
+                          </td>
+                          <td>
+                            ${isReceived
+                              ? '<span class="badge bg-info text-dark" title="Enviado para a Lista de Espera por aprovação oficial no MAIN"><i class="bi bi-hourglass me-1"></i>Lista de Espera MAIN</span>'
+                              : (!isReadOnlyPortal ? `<button type="button" class="btn btn-sm btn-success btn-touch shadow-sm" data-cell-receive-member="${escapeAttr(ft.id)}"><i class="bi bi-person-check-fill me-1"></i>Receber na Célula</button>` : '<span class="text-secondary small">Aguardando</span>')}
+                          </td>
+                        </tr>
+                      `;
+                    }).join("")}
+                  </tbody>
+                </table>
+              </div>
+            `;
+          })()}
+        </div>
+      </section>
+
+      <section id="cell-portal-attendance" class="cell-portal-section">
         ${cellPortalSectionTitle("bi-calendar-check-fill", "Registo de Presenças & Visitantes da Célula", "Registe as presenças dos membros e novos visitantes por culto. As presenças serão consolidadas automaticamente no relatório geral da Igreja.")}
         
         <!-- Action Banner to Open Modal -->
@@ -14439,13 +14581,50 @@ function renderCellLeaderPortal() {
       <section id="cell-portal-finance" class="cell-portal-section">
         ${cellPortalSectionTitle("bi-shield-check", "Parcerias & Dízimos", "Apenas registos verificados; sem valores, comprovativos ou edição")}
         <div class="cell-portal-kpis cell-portal-kpis--compact">${[["bi-stars","Membros parceiros",partners],["bi-percent","Participação em parcerias",`${partnerPercent}%`],["bi-check2-circle","Dizimistas identificados",tithers],["bi-pie-chart","Participação em dízimos",`${tithePercent}%`]].map(([icon,label,value]) => `<article><i class="bi ${icon}"></i><span>${label}</span><strong>${value}</strong></article>`).join("")}</div>
-        <div class="alert alert-info mt-3 mb-0">Pending, Rejected e Expense não entram. O portal não edita Finance nem cria financeRecord.</div>
+        ${soul?.top_partners?.length ? `
+          <div class="panel glass-panel mt-3 p-3">
+            <h5 class="fs-6 text-warning mb-2"><i class="bi bi-star-fill me-2"></i>Membros Parceiros Activos na Célula</h5>
+            <div class="d-flex flex-wrap gap-2">
+              ${soul.top_partners.map((p) => `<span class="badge bg-dark border border-warning text-light py-2 px-3"><i class="bi bi-person-fill text-warning me-1"></i>${escapeAttr(p.name)} ${p.arms?.length ? `<small class="text-warning-subtle">(${escapeAttr(p.arms.join(", "))})</small>` : ""}</span>`).join("")}
+            </div>
+          </div>
+        ` : ""}
       </section>
       <section id="cell-portal-souls" class="cell-portal-section">
-        ${cellPortalSectionTitle("bi-person-hearts", "Ganhar Almas", "Conversão e ranking simples")}
+        ${cellPortalSectionTitle("bi-person-hearts", "Ganhamento de Almas & Top Soul Winners", "Conversão, convites e ranking de ganhadores de almas da célula")}
         <div class="cell-portal-grid-2">
-          <div class="cell-portal-kpis cell-portal-kpis--compact">${[["bi-person-plus","First Timers",soul?.first_timers || 0],["bi-telephone","Em acompanhamento",soul?.follow_up || 0],["bi-mortarboard","Enviados à Fundação",soul?.foundation || 0],["bi-person-check","Tornaram-se membros",soul?.became_members || 0]].map(([icon,label,value]) => `<article><i class="bi ${icon}"></i><span>${label}</span><strong>${value}</strong></article>`).join("")}</div>
-          <article class="panel glass-panel"><h4>Top inviters</h4>${safeRanking.map((item,index) => `<div class="cell-portal-ranking"><span>${index+1}</span><strong>${escapeAttr(item.name || "Membro")}</strong><b>${Number(item.invited || 0)}</b></div>`).join("") || `<p class="text-secondary">Sem convites registados.</p>`}</article>
+          <div class="cell-portal-kpis cell-portal-kpis--compact">${[
+            ["bi-person-plus","First Timers Ligados",soul?.first_timers || 0],
+            ["bi-box-arrow-in-down-right text-cyan","Recebidos de Pastoral",soul?.received_from_pastoral || 0],
+            ["bi-hourglass-split text-warning","Aguardando Recepção",soul?.pending_pastoral || 0],
+            ["bi-stars text-warning","Almas Ganhas (NC)",soul?.total || 0],
+            ["bi-telephone","Em Acompanhamento",soul?.follow_up || 0],
+            ["bi-person-check text-success","Tornaram-se Membros",soul?.became_members || 0]
+          ].map(([icon,label,value]) => `<article><i class="bi ${icon}"></i><span>${label}</span><strong>${value}</strong></article>`).join("")}</div>
+          <article class="panel glass-panel">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h4 class="fs-6 text-warning mb-0"><i class="bi bi-trophy-fill me-2"></i>Melhores Ganhadores de Almas (Top Soul Winners)</h4>
+              <span class="badge bg-warning text-dark">Ranking</span>
+            </div>
+            ${safeRanking.map((item, index) => {
+              const trophy = index === 0 ? '<i class="bi bi-trophy-fill text-warning me-1"></i>' : (index === 1 ? '<i class="bi bi-award-fill text-info me-1"></i>' : (index === 2 ? '<i class="bi bi-award text-secondary me-1"></i>' : ''));
+              return `
+                <div class="cell-portal-ranking d-flex justify-content-between align-items-center py-2 border-bottom border-secondary border-opacity-25">
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="badge ${index === 0 ? 'bg-warning text-dark' : (index < 3 ? 'bg-secondary text-white' : 'bg-dark text-secondary')} rounded-pill" style="width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem;">${index + 1}</span>
+                    <div>
+                      <strong class="text-white">${trophy}${escapeAttr(item.name || "Membro")}</strong>
+                      ${item.is_partner ? '<span class="badge bg-warning-subtle text-warning border border-warning ms-1" style="font-size: 0.65rem;">Parceiro</span>' : ''}
+                    </div>
+                  </div>
+                  <div class="text-end">
+                    <b class="text-warning fs-6">${Number(item.invited || 0)}</b>
+                    <small class="text-secondary d-block" style="font-size: 0.7rem;">${Number(item.souls_won || 0)} novo(s) convertido(s)</small>
+                  </div>
+                </div>
+              `;
+            }).join("") || `<p class="text-secondary small mb-0 p-2">Sem convites registados neste período.</p>`}
+          </article>
         </div>
       </section>
       <section id="cell-portal-foundation" class="cell-portal-section cell-portal-grid-2">
@@ -14498,7 +14677,171 @@ function renderCellLeaderPortal() {
   }
 }
 
+async function receiveCellMember(firstTimerId) {
+  const ft = (state.firstTimers || []).find((p) => String(p.id) === String(firstTimerId));
+  if (!ft) {
+    alert("Registo de Primeira Vez não encontrado.");
+    return;
+  }
+  const now = new Date().toISOString();
+  const today = now.slice(0, 10);
+  const cellId = ft.cell_id || cellPortalPageState?.cellId || activeUser?.cell_id;
+  const cellObj = findCellSafe(cellId) || {};
+  const churchId = ft.church_id || cellObj.church_id || activeUser?.church_id;
+  const cellGroupId = ft.cell_group_id || cellObj.group_id || cellObj.cell_group_id || "";
+
+  // 1. Update First Timer
+  ft.cell_received = true;
+  ft.cell_received_at = now;
+  ft.cell_received_by_id = cleanUuidVal(activeUser?.id);
+  ft.cell_received_by_name = activeUser?.name || "Líder de Célula";
+  ft.workflow_status = "CELL_RECEIVED";
+  ft.estado_do_seguimento = "Received in Cell";
+  ft.follow_up_status = "Received in Cell";
+  ft.updated_at = today;
+  if (!ft.cell_id && cellId) {
+    ft.cell_id = cellId;
+    ft.cell_name = cellObj.cell_name || cellObj.name || ft.cell_name || "";
+    ft.celula = ft.cell_name;
+  }
+  ft.notas = (ft.notas ? ft.notas + "\n" : "") + `[${today} Recepção na Célula]: Recebido e acolhido na célula ${ft.cell_name || cellObj.cell_name || ""} por ${activeUser?.name || "Líder de Célula"}.`;
+
+  // Persist First Timer
+  const ftResult = await persistFirstTimerViaRepository("update", migrateFirstTimerRecord(ft));
+  if (ftResult?.ok === false) {
+    console.warn("[Cell Portal] Warning saving first timer reception:", ftResult.error);
+  }
+
+  // 2. Update / Create Follow-Up log
+  const followUpPayload = migrateFollowUpRecord({
+    id: generateUuid(),
+    first_timer_id: ft.id,
+    person_type: "First Timer",
+    full_name: fullName(ft),
+    phone: ft.telefone || ft.phone || "",
+    whatsapp: ft.whatsapp || ft.telefone || ft.phone || "",
+    church_id: churchId,
+    church_name: churchName(churchId),
+    cell_group_id: cellGroupId,
+    cell_group_name: cellGroupName(cellGroupId),
+    cell_id: cellId,
+    cell_name: ft.cell_name || cellObj.cell_name || "",
+    responsible_name: activeUser?.name || "Líder de Célula",
+    actualizado_por: activeUser?.name || "Líder de Célula",
+    data_do_contacto: today,
+    metodo: "Presencial na Célula",
+    resultado: `Recebido na Célula ${ft.cell_name || cellObj.cell_name || ""}`,
+    proximo_passo: "Acompanhamento e integração como membro oficial",
+    status: "Received in Cell",
+    estado: "Received in Cell",
+    cell_received: true,
+    notas: `Recebido e integrado na reunião de célula por ${activeUser?.name || "Líder"}.`,
+    created_at: today,
+    updated_at: today
+  });
+  void persistFollowUpViaRepository("fromFirstTimer", followUpPayload);
+
+  // 3. Create or update memberRegistrationCandidate to land on the MAIN Members Pending Approval list
+  state.memberRegistrationCandidates = Array.isArray(state.memberRegistrationCandidates) ? state.memberRegistrationCandidates : [];
+  let existingCandidate = state.memberRegistrationCandidates.find((c) => {
+    return (c.first_timer_id && String(c.first_timer_id) === String(ft.id)) ||
+      (c.primary_phone && (ft.telefone || ft.phone) && String(c.primary_phone).replace(/\D/g, "") === String(ft.telefone || ft.phone).replace(/\D/g, ""));
+  });
+
+  const parts = String(fullName(ft) || "").trim().split(/\s+/);
+  if (existingCandidate) {
+    existingCandidate.approval_status = "Submitted";
+    existingCandidate.cell_approved_at = now;
+    existingCandidate.cell_approved_by_id = cleanUuidVal(activeUser?.id);
+    existingCandidate.cell_approved_by_name = activeUser?.name || "Líder de Célula";
+    existingCandidate.origin = "Cell";
+    existingCandidate.origin_role = "First Timer Integrado na Célula";
+    existingCandidate.cell_id = cellId;
+    existingCandidate.cell_name = ft.cell_name || cellObj.cell_name || existingCandidate.cell_name;
+    existingCandidate.church_id = churchId;
+    existingCandidate.church_name = churchName(churchId);
+    existingCandidate.cell_group_id = cellGroupId;
+    existingCandidate.cell_group_name = cellGroupName(cellGroupId);
+    existingCandidate.first_timer_id = ft.id;
+    existingCandidate.invited_by_name = ft.convidado_por || ft.invited_by || existingCandidate.invited_by_name || "";
+    existingCandidate.updated_at = now;
+    void persistMemberCandidateViaRepository("update", existingCandidate);
+  } else {
+    existingCandidate = {
+      id: generateUuid(),
+      candidate_number: typeof generateUniqueCandidateNumber === "function" ? generateUniqueCandidateNumber() : `MC-${Date.now()}`,
+      full_name: fullName(ft),
+      first_name: parts[0] || "",
+      last_name: parts.slice(1).join(" ") || "",
+      primary_phone: ft.telefone || ft.phone || "",
+      secondary_phone: ft.telefone_alternativo || null,
+      email: ft.email || null,
+      church_id: churchId,
+      church_name: churchName(churchId),
+      cell_group_id: cellGroupId,
+      cell_group_name: cellGroupName(cellGroupId),
+      cell_id: cellId,
+      cell_name: ft.cell_name || cellObj.cell_name || null,
+      approval_status: "Submitted",
+      origin: "Cell",
+      origin_role: "First Timer Integrado na Célula",
+      registration_source: "CellLeader",
+      registered_by_user_id: activeUser?.id || "cell-leader",
+      registered_by_name: activeUser?.name || "Líder de Célula",
+      cell_approved_at: now,
+      cell_approved_by_id: cleanUuidVal(activeUser?.id),
+      cell_approved_by_name: activeUser?.name || "Líder de Célula",
+      invited_by_name: ft.convidado_por || ft.invited_by || null,
+      invited_by: ft.convidado_por || ft.invited_by || null,
+      first_timer_id: ft.id,
+      entity_type: "first_timer",
+      entity_id: ft.id,
+      neighborhood: ft.neighborhood || ft.endereco || null,
+      data_quality_status: (ft.telefone || ft.phone) ? "Valid" : "NeedsReview",
+      notes: `Encaminhado pelos Cuidados Pastorais e recebido na célula por ${activeUser?.name || "Líder"}.`,
+      created_at: now,
+      updated_at: now
+    };
+    state.memberRegistrationCandidates.push(existingCandidate);
+    void persistMemberCandidateViaRepository("create", existingCandidate);
+  }
+
+  // 4. Update cell leadership visitor tracking / attendance
+  if (!state.cellLeadership) state.cellLeadership = {};
+  if (!Array.isArray(state.cellLeadership.cellVisitors)) state.cellLeadership.cellVisitors = [];
+  const vIdx = state.cellLeadership.cellVisitors.findIndex((v) => v.first_timer_id === ft.id || (v.phone && (ft.telefone || ft.phone) && v.phone === (ft.telefone || ft.phone)));
+  if (vIdx >= 0) {
+    state.cellLeadership.cellVisitors[vIdx].cell_id = cellId;
+    state.cellLeadership.cellVisitors[vIdx].attendance_count = Math.max(Number(state.cellLeadership.cellVisitors[vIdx].attendance_count || 1), 2);
+    state.cellLeadership.cellVisitors[vIdx].last_attended_at = today;
+  } else {
+    state.cellLeadership.cellVisitors.unshift({
+      id: `ft-v-${ft.id}`,
+      first_timer_id: ft.id,
+      cell_id: cellId,
+      name: fullName(ft),
+      phone: ft.telefone || ft.phone || "",
+      type: ft.nasceu_de_novo ? "FT_NC" : "FT",
+      attendance_count: 2,
+      last_attended_at: today,
+      first_attended_at: ft.data_do_culto || today,
+      promoted_to_member: false
+    });
+  }
+
+  saveState(`Membro ${fullName(ft)} recebido na célula ${ft.cell_name || cellObj.cell_name || ""}`);
+
+  if (typeof showToast === "function") {
+    showToast(`✅ ${fullName(ft)} foi recebido(a) na célula e adicionado(a) à Lista de Espera por aprovação nos Membros (MAIN)!`);
+  }
+
+  if (activeRoute === "cellPortal") renderCellLeaderPortal();
+  else if (activeRoute === "firstTimers") renderFirstTimers();
+  else setRoute(activeRoute);
+}
+
 window.renderCellLeaderPortal = renderCellLeaderPortal;
+window.receiveCellMember = receiveCellMember;
 window.openCellPortalMemberProfile = openCellPortalMemberProfile;
 window.confirmCellMember = confirmCellMember;
 window.bulkConfirmCellMembers = bulkConfirmCellMembers;
@@ -15159,6 +15502,9 @@ function renderFirstTimerIntakeForm(record = {}) {
 
 function renderFirstTimerCard(person) {
   if (typeof DataCard !== "function") return "";
+  const isReceived = Boolean(person.cell_received || person.workflow_status === "CELL_RECEIVED" || person.estado_do_seguimento === "Received in Cell");
+  const hasCell = Boolean(person.cell_id || person.cell_name || person.celula);
+  const cellStatusText = isReceived ? "Recebido na Célula" : (hasCell ? "Atribuído à Célula" : "Não Atribuído");
   return DataCard({
     title: fullName(person),
     subtitle: person.culto || L("service"),
@@ -15166,10 +15512,16 @@ function renderFirstTimerCard(person) {
     meta: [
       [L("phone"), person.telefone || person.phone, "bi-telephone"],
       [L("church"), churchName(person.church_id), "bi-building"],
+      ["Estado Célula", cellStatusText, isReceived ? "bi-check-circle-fill text-success" : (hasCell ? "bi-diagram-3 text-info" : "bi-dash-circle text-muted")],
       [L("cell"), person.cell_name || person.celula || "Não atribuída", "bi-diagram-3"],
+      ...(person.convidado_por || person.invited_by || person.invited_by_name ? [["Convidado por", person.convidado_por || person.invited_by || person.invited_by_name, "bi-person-badge"]] : []),
       [L("service"), person.culto || "-", "bi-calendar-event"]
     ],
-    pills: [person.nasceu_de_novo ? L("bornAgainHint") : null, person.quer_escola_de_fundacao || person.foundation_school_interest ? L("foundationSchool") : null].filter(Boolean),
+    pills: [
+      person.nasceu_de_novo ? L("bornAgainHint") : null,
+      person.quer_escola_de_fundacao || person.foundation_school_interest ? L("foundationSchool") : null,
+      isReceived ? "Recebido na Célula" : (hasCell ? "Atribuído à Célula" : "Não Atribuído à Célula")
+    ].filter(Boolean),
     actions: firstTimerActions(person.id)
   });
 }
@@ -15189,10 +15541,11 @@ function renderFirstTimers() {
     ${sectionHeader(L("firstTimers"), L("firstTimerSubtitle"), "firstTimer", "bi-person-heart")}
     <div class="row g-3 mb-4 summary-cards-row">
       ${sm("bi-person-heart", L("totalFirstTimers"), list.length, "firstTimers", { scrollTo: "first-timers-results", filterPayload: {} })}
+      ${sm("bi-diagram-3 text-cyan", "Atribuídos à Célula", list.filter((p) => Boolean(p.cell_id || p.celula || p.cell_name)).length, "firstTimers", { scrollTo: "first-timers-results", filterPayload: { cell_assignment: "assigned" } })}
+      ${sm("bi-check2-circle text-success", "Recebidos na Célula", list.filter((p) => Boolean(p.cell_received || p.workflow_status === "CELL_RECEIVED" || p.estado_do_seguimento === "Received in Cell")).length, "firstTimers", { scrollTo: "first-timers-results", filterPayload: { cell_assignment: "received" } })}
+      ${sm("bi-dash-circle text-secondary", "Não Atribuídos", list.filter((p) => !p.cell_id && !p.celula && !p.cell_name).length, "firstTimers", { scrollTo: "first-timers-results", filterPayload: { cell_assignment: "not_assigned" } })}
       ${sm("bi-hourglass-split", "Em revisão", list.filter((p) => ["SUBMITTED_TO_RECTOR", "READY_FOR_REVIEW"].includes(p.workflow_status)).length, "firstTimers", { scrollTo: "first-timers-results", filterPayload: { workflow_statuses: ["SUBMITTED_TO_RECTOR", "READY_FOR_REVIEW"] } })}
-      ${sm("bi-check2-circle", "Aprovados", list.filter((p) => p.workflow_status === "RECTOR_APPROVED").length, "firstTimers", { scrollTo: "first-timers-results", filterPayload: { workflow_status: "RECTOR_APPROVED" } })}
       ${sm("bi-mortarboard", "Interesse ESF", list.filter((p) => p.foundation_school_interest || p.quer_escola_de_fundacao).length, "firstTimers", { scrollTo: "first-timers-results", filterPayload: { wants_foundation_school: true } })}
-      ${sm("bi-send-check", "Em Follow-Up", list.filter((p) => ["SENT_TO_FOLLOWUP", "FOLLOWUP_RECEIVED", "FOLLOWUP_IN_PROGRESS"].includes(p.workflow_status)).length, "firstTimers", { scrollTo: "first-timers-results", filterPayload: { workflow_statuses: ["SENT_TO_FOLLOWUP", "FOLLOWUP_RECEIVED", "FOLLOWUP_IN_PROGRESS"] } })}
     </div>
     ${summaryFilterChips("firstTimers")}
     ${renderFirstTimerRectorPanel(list)}
@@ -15206,14 +15559,32 @@ function renderFirstTimers() {
       ${filterBar({ viewToggle: ViewToggle(view), statusOptions: followupStatuses })}
       ${(() => {
         const filtered = applyFirstTimerCardFilters(list, firstTimersPageState.filter);
-        const fTableRows = filtered.map((p) => [
-          p.first_timer_number || "—", fullName(p), p.telefone || p.phone || "—", churchName(p.church_id), p.cell_name || p.celula ? `<span class="badge bg-secondary-subtle text-body"><i class="bi bi-diagram-3 me-1"></i>${escapeAttr(p.cell_name || p.celula)}</span>` : `<span class="text-secondary small">Não atribuída</span>`, yesNo(p.nasceu_de_novo), yesNo(p.foundation_school_interest ?? p.quer_escola_de_fundacao), badge(firstTimerWorkflowLabel(p.workflow_status)),
-          firstTimerActions(p.id)
-        ]);
+        const fTableRows = filtered.map((p) => {
+          const isReceived = Boolean(p.cell_received || p.workflow_status === "CELL_RECEIVED" || p.estado_do_seguimento === "Received in Cell");
+          const hasCell = Boolean(p.cell_id || p.celula || p.cell_name);
+          const cellBadge = isReceived
+            ? `<span class="badge bg-success-subtle text-success border border-success"><i class="bi bi-check-circle-fill me-1"></i>Recebido na Célula</span>`
+            : (hasCell
+              ? `<span class="badge bg-info-subtle text-cyan border border-info"><i class="bi bi-clock-history me-1"></i>Atribuído à Célula</span>`
+              : `<span class="badge bg-secondary-subtle text-muted border border-secondary"><i class="bi bi-dash-circle me-1"></i>Não Atribuído</span>`);
+          return [
+            p.first_timer_number || "—",
+            fullName(p),
+            p.telefone || p.phone || "—",
+            churchName(p.church_id),
+            cellBadge,
+            p.cell_name || p.celula ? `<span class="badge bg-secondary-subtle text-body"><i class="bi bi-diagram-3 me-1"></i>${escapeAttr(p.cell_name || p.celula)}</span>` : `<span class="text-secondary small">—</span>`,
+            p.convidado_por || p.invited_by || p.invited_by_name || "—",
+            yesNo(p.nasceu_de_novo),
+            yesNo(p.foundation_school_interest ?? p.quer_escola_de_fundacao),
+            badge(firstTimerWorkflowLabel(p.workflow_status)),
+            firstTimerActions(p.id)
+          ];
+        });
         const fCardsHtml = filtered.map((p) => renderFirstTimerCard(p)).join("");
         return view === "cards"
           ? (filtered.length ? DataCardsGrid(fCardsHtml) : noResultsHtml())
-          : (filtered.length ? dataTable(["Nº", L("name"), L("phone"), L("church"), L("cell"), L("bornAgain"), "ESF", "Workflow", L("actions")], fTableRows) : noResultsHtml());
+          : (filtered.length ? dataTable(["Nº", L("name"), L("phone"), L("church"), "Estado Célula", L("cell"), "Convidado por", L("bornAgain"), "ESF", "Workflow", L("actions")], fTableRows) : noResultsHtml());
       })()}
     </article>
     ${moduleSection(L("rptFunnelTitle"), L("rptFunnelHint"), "bi-funnel", "", renderDomainReportsPanel("funnel", { module: "firstTimers", showTitle: false }))}
@@ -15350,16 +15721,23 @@ function memberActions(id) {
 
 function renderMemberCard(member) {
   if (typeof DataCard !== "function") return "";
+  const inviter = member.convidado_por || member.invited_by;
+  const isFromCell = member.origem === "Cell" || member.origem === "CellLeader" || member.registration_source === "CellLeader" || member.first_timer_id;
+  const originBadge = isFromCell
+    ? `<span class="badge bg-info text-dark small"><i class="bi bi-diagram-3-fill me-1"></i>Célula</span>`
+    : (member.origem ? `<span class="badge bg-secondary small">${escapeAttr(member.origem)}</span>` : "");
+
   return DataCard({
     title: fullName(member),
-    subtitle: member.departamento || L("department"),
-    badges: [badge(member.estado)],
+    subtitle: member.departamento || (inviter ? `Convidado por: ${inviter}` : L("department")),
+    badges: [badge(member.estado), originBadge].filter(Boolean),
     meta: [
-      [L("phone"), member.telefone, "bi-telephone"],
+      [L("phone"), member.telefone || member.primary_phone || "—", "bi-telephone"],
       [L("church"), churchName(member.church_id), "bi-building"],
-      [L("cell"), memberCellLabel(member) || "-", "bi-diagram-3"]
+      [L("cell"), memberCellLabel(member) || "-", "bi-diagram-3"],
+      ...(inviter ? [["Convidado por", inviter, "bi-person-heart"]] : [])
     ],
-    pills: [member.origem || L("origin")],
+    pills: [member.origem || (isFromCell ? "Célula" : L("origin"))],
     actions: memberActions(member.id)
   });
 }
@@ -15499,6 +15877,7 @@ function renderMembersFilterBar(list, filters = {}, view = "table") {
     <select class="form-select" data-member-filter="church_id"><option value="">${L("filterChurch")}</option>${churchOptions}</select>
     <select class="form-select" data-member-filter="cell_group"><option value="">Grupo de Célula</option>${groupHtml}</select>
     <select class="form-select" data-member-filter="cell"><option value="">${L("cell")}</option>${cellHtml}</select>
+    <select class="form-select" data-member-filter="origin"><option value="">${lang === "pt" ? "Todas as Origens" : "All Origins"}</option><option value="cell"${selected("origin", "cell")}>${lang === "pt" ? "Vindos de Célula" : "From Cells"}</option><option value="first_timer"${selected("origin", "first_timer")}>${lang === "pt" ? "First Timers" : "First Timers"}</option><option value="direct"${selected("origin", "direct")}>${lang === "pt" ? "Registo Directo" : "Direct Registration"}</option></select>
     <select class="form-select" data-member-filter="status"><option value="">${L("filterStatus")}</option>${["active", "inProgress", "transferred"].map((status) => `<option value="${status}"${selected("status", status)}>${statusText(status)}</option>`).join("")}</select>
     ${ViewToggle(view)}
     <button type="button" class="btn btn-ce-gold btn-touch" data-member-filter-apply><i class="bi bi-search me-1"></i>${L("search")}</button>
@@ -15581,6 +15960,16 @@ function applyMemberCardFilters(list, filters = {}) {
       }
       return false;
     });
+  }
+  if (filters.origin) {
+    const orig = String(filters.origin).toLowerCase();
+    if (orig === "cell") {
+      rows = rows.filter((m) => m.origem === "Cell" || m.origem === "CellLeader" || m.registration_source === "CellLeader" || m.first_timer_id || m.cell_id);
+    } else if (orig === "first_timer") {
+      rows = rows.filter((m) => m.origem === "FirstTimer" || m.first_timer_id);
+    } else if (orig === "direct") {
+      rows = rows.filter((m) => !m.first_timer_id && m.origem !== "Cell" && m.origem !== "CellLeader" && m.registration_source !== "CellLeader");
+    }
   }
   if (filters.status) rows = rows.filter((member) => statusKey(member.estado) === filters.status);
   if (filters.hasChurch) rows = rows.filter((member) => Boolean(member.church_id));
@@ -16796,7 +17185,12 @@ async function candidateAction(action, id) {
             cell_id: candidate.cell_id,
             cell_name: candidate.cell_name || null,
             celula: candidate.cell_name || null,
-            origem: candidate.registration_source || "CellLeader",
+            origem: candidate.origem || candidate.registration_source || (candidate.cell_id ? "Cell" : "Registration"),
+            convidado_por: candidate.convidado_por || candidate.invited_by || null,
+            invited_by: candidate.invited_by || candidate.convidado_por || null,
+            first_timer_id: candidate.first_timer_id || null,
+            cell_received_at: candidate.cell_received_at || null,
+            cell_received_by: candidate.cell_received_by || null,
             estado: "Active",
             status: "Active",
             membership_status: "Active",
@@ -16809,8 +17203,36 @@ async function candidateAction(action, id) {
           // It is preserved during hydration instead of disappearing after refresh.
           if (memberResult?.skipped) member.provider_sync_status = "Pending";
           state.members.push(member);
+
+          // Synchronize First Timer status if applicable
+          if (candidate.first_timer_id || member.first_timer_id) {
+            const ftId = candidate.first_timer_id || member.first_timer_id;
+            const ft = (state.firstTimers || []).find((item) => String(item.id) === String(ftId));
+            if (ft) {
+              ft.converted_to_member = true;
+              ft.cell_received = true;
+              ft.converted_member_id = member.id;
+              ft.converted_at = now;
+              ft.status = "Membro";
+              ft.estado_do_seguimento = "Received in Cell";
+              void persistFirstTimerViaRepository("update", migrateFirstTimerRecord(ft));
+            }
+          }
         } else if (!member.cell_id) {
-          Object.assign(member, { cell_id: candidate.cell_id, cell_name: candidate.cell_name, celula: candidate.cell_name, cell_group_id: candidate.cell_group_id, cell_group_name: candidate.cell_group_name, updated_at: now }); void persistMemberViaRepository("update", member);
+          Object.assign(member, {
+            cell_id: candidate.cell_id,
+            cell_name: candidate.cell_name,
+            celula: candidate.cell_name,
+            cell_group_id: candidate.cell_group_id,
+            cell_group_name: candidate.cell_group_name,
+            convidado_por: member.convidado_por || candidate.convidado_por || candidate.invited_by || null,
+            invited_by: member.invited_by || candidate.invited_by || candidate.convidado_por || null,
+            first_timer_id: member.first_timer_id || candidate.first_timer_id || null,
+            cell_received_at: member.cell_received_at || candidate.cell_received_at || null,
+            cell_received_by: member.cell_received_by || candidate.cell_received_by || null,
+            updated_at: now
+          });
+          void persistMemberViaRepository("update", member);
         }
         Object.assign(candidate, {
           approval_status: "Approved",
@@ -16878,9 +17300,17 @@ function renderMembersResultsOnly() {
     });
   }
 
-  const officialTableRows = filtered.map((m) => [
-    fullName(m), m.telefone || m.primary_phone || "—", churchName(m.church_id), memberCellGroupLabel(m) || "—", memberCellLabel(m) || "—", m.departamento, badge(m.estado), memberActions(m.id)
-  ]);
+  const officialTableRows = filtered.map((m) => {
+    const inviter = m.convidado_por || m.invited_by;
+    const isFromCell = m.origem === "Cell" || m.origem === "CellLeader" || m.registration_source === "CellLeader" || m.first_timer_id;
+    const nameCell = `<div class="d-flex flex-column">
+      <strong>${escapeAttr(fullName(m))}</strong>
+      ${isFromCell ? `<span class="badge text-bg-info text-dark small mt-1" style="width: fit-content;"><i class="bi bi-diagram-3-fill me-1"></i>Célula${inviter ? ` · Conv: ${escapeAttr(inviter)}` : ''}</span>` : (inviter ? `<small class="text-secondary"><i class="bi bi-person-heart me-1"></i>${escapeAttr(inviter)}</small>` : '')}
+    </div>`;
+    return [
+      nameCell, m.telefone || m.primary_phone || "—", churchName(m.church_id), memberCellGroupLabel(m) || "—", memberCellLabel(m) || "—", m.departamento || "—", badge(m.estado), memberActions(m.id)
+    ];
+  });
   const officialRowAttrs = filtered.map((m) => ` data-filter-row data-filter-church-values="${churchFilterTokens(m)}" data-filter-status-values="${statusKey(m.estado)} ${m.estado || ""}"`);
 
   const candidateTableRows = matchingCandidates.map((c) => {
@@ -16994,9 +17424,17 @@ function renderMembers() {
   let tableRows = [];
   let rowAttrs = [];
 
-  const officialTableRows = filtered.map((m) => [
-    fullName(m), m.telefone || m.primary_phone || "—", churchName(m.church_id), memberCellGroupLabel(m) || "—", memberCellLabel(m) || "—", m.departamento, badge(m.estado), memberActions(m.id)
-  ]);
+  const officialTableRows = filtered.map((m) => {
+    const inviter = m.convidado_por || m.invited_by;
+    const isFromCell = m.origem === "Cell" || m.origem === "CellLeader" || m.registration_source === "CellLeader" || m.first_timer_id;
+    const nameCell = `<div class="d-flex flex-column">
+      <strong>${escapeAttr(fullName(m))}</strong>
+      ${isFromCell ? `<span class="badge text-bg-info text-dark small mt-1" style="width: fit-content;"><i class="bi bi-diagram-3-fill me-1"></i>Célula${inviter ? ` · Conv: ${escapeAttr(inviter)}` : ''}</span>` : (inviter ? `<small class="text-secondary"><i class="bi bi-person-heart me-1"></i>${escapeAttr(inviter)}</small>` : '')}
+    </div>`;
+    return [
+      nameCell, m.telefone || m.primary_phone || "—", churchName(m.church_id), memberCellGroupLabel(m) || "—", memberCellLabel(m) || "—", m.departamento || "—", badge(m.estado), memberActions(m.id)
+    ];
+  });
   const officialRowAttrs = filtered.map((m) => ` data-filter-row data-filter-church-values="${churchFilterTokens(m)}" data-filter-status-values="${statusKey(m.estado)} ${m.estado || ""}"`);
 
   const candidateTableRows = matchingCandidates.map((c) => {
@@ -24424,6 +24862,14 @@ function renderAlecRegistrationAnalyticalView() {
   if (st.status) {
     filtered = filtered.filter((r) => String(r.estado || r.status || "").toLowerCase() === st.status.toLowerCase());
   }
+  if (st.e_lider !== undefined && st.e_lider !== null && st.e_lider !== "") {
+    const wantLeader = st.e_lider === true || String(st.e_lider).toLowerCase() === "true" || String(st.e_lider) === "1";
+    filtered = filtered.filter((r) => !!r.e_lider === wantLeader);
+  }
+  if (st.fez_escola_de_fundacao !== undefined && st.fez_escola_de_fundacao !== null && st.fez_escola_de_fundacao !== "") {
+    const wantFoundation = st.fez_escola_de_fundacao === true || String(st.fez_escola_de_fundacao).toLowerCase() === "true" || String(st.fez_escola_de_fundacao) === "1";
+    filtered = filtered.filter((r) => !!r.fez_escola_de_fundacao === wantFoundation);
+  }
   if (st.search) {
     const q = st.search.toLowerCase();
     filtered = filtered.filter((r) => {
@@ -24464,11 +24910,11 @@ function renderAlecRegistrationAnalyticalView() {
 
       <!-- KPI Summary Cards -->
       <div class="row g-3 summary-cards-row mb-4">
-        ${metric("bi-mortarboard", L("totalAlecRegistered") || "Total Inscritos", registrations.length, L("alecFull") || "Academia de Liderança")}
-        ${metric("bi-hourglass-split", L("inTraining") || "Em Formação", registrations.filter((r) => ["Em Formação", "Em Formao", "Inscrito", "Activo"].includes(r.estado)).length, L("active") || "Activos")}
-        ${metric("bi-patch-check", L("alecCompleted") || "Concluídos", registrations.filter((r) => ["Concluído", "Graduado"].includes(r.estado)).length, L("certificateIssued") || "Certificados")}
-        ${metric("bi-person-badge", L("alreadyLeaders") || "Já Líderes", registrations.filter((r) => r.e_lider).length, L("cellLeaders") || "Líderes de Célula")}
-        ${metric("bi-book", L("didFoundationSchool") || "Escola de Fundação", registrations.filter((r) => r.fez_escola_de_fundacao).length, L("foundationSchool") || "Concluída")}
+        ${metric("bi-mortarboard", L("totalAlecRegistered") || "Total Inscritos", registrations.length, L("alecFull") || "Academia de Liderança", { isClickable: true, module: "alec", route: "cellAlecRegistration", filterPayload: { status: "", e_lider: "", fez_escola_de_fundacao: "" }, tooltip: "Ver todos os inscritos" })}
+        ${metric("bi-hourglass-split", L("inTraining") || "Em Formação", registrations.filter((r) => ["Em Formação", "Em Formao", "Inscrito", "Activo"].includes(r.estado)).length, L("active") || "Activos", { isClickable: true, module: "alec", route: "cellAlecRegistration", filterPayload: { status: "Em Formação", e_lider: "", fez_escola_de_fundacao: "" }, tooltip: "Filtrar alunos em formação" })}
+        ${metric("bi-patch-check", L("alecCompleted") || "Concluídos", registrations.filter((r) => ["Concluído", "Graduado"].includes(r.estado)).length, L("certificateIssued") || "Certificados", { isClickable: true, module: "alec", route: "cellAlecRegistration", filterPayload: { status: "Concluído", e_lider: "", fez_escola_de_fundacao: "" }, tooltip: "Filtrar alunos concluídos" })}
+        ${metric("bi-person-badge", L("alreadyLeaders") || "Já Líderes", registrations.filter((r) => r.e_lider).length, L("cellLeaders") || "Líderes de Célula", { isClickable: true, module: "alec", route: "cellAlecRegistration", filterPayload: { e_lider: "true" }, tooltip: "Filtrar alunos que já são líderes" })}
+        ${metric("bi-book", L("didFoundationSchool") || "Escola de Fundação", registrations.filter((r) => r.fez_escola_de_fundacao).length, L("foundationSchool") || "Concluída", { isClickable: true, module: "alec", route: "cellAlecRegistration", filterPayload: { fez_escola_de_fundacao: "true" }, tooltip: "Filtrar alunos com Escola de Fundação concluída" })}
       </div>
 
       <!-- Cascading Filters Toolbar -->
@@ -24849,6 +25295,14 @@ function renderAlecScoresAnalyticalView() {
   if (st.status) {
     filtered = filtered.filter((r) => String(r.estado || r.status || "").toLowerCase() === st.status.toLowerCase());
   }
+  if (st.terminou !== undefined && st.terminou !== null && st.terminou !== "") {
+    const wantFinished = st.terminou === true || String(st.terminou).toLowerCase() === "true" || String(st.terminou) === "1";
+    filtered = filtered.filter((r) => !!r.terminou === wantFinished);
+  }
+  if (st.faixa_certificado_pago !== undefined && st.faixa_certificado_pago !== null && st.faixa_certificado_pago !== "") {
+    const wantPaid = st.faixa_certificado_pago === true || String(st.faixa_certificado_pago).toLowerCase() === "true" || String(st.faixa_certificado_pago) === "1";
+    filtered = filtered.filter((r) => !!r.faixa_certificado_pago === wantPaid);
+  }
   if (st.search) {
     const q = st.search.toLowerCase();
     filtered = filtered.filter((r) => {
@@ -24890,12 +25344,12 @@ function renderAlecScoresAnalyticalView() {
 
       <!-- KPI Summary Cards -->
       <div class="row g-3 summary-cards-row mb-4">
-        ${metric("bi-people", "Total Alunos na Pauta", scores.length, "Inscritos")}
-        ${metric("bi-award", L("alecCompleted") || "Concluídos", scores.filter((item) => item.terminou).length, L("certificateIssued") || "Certificados")}
-        ${metric("bi-hourglass-split", "Em Curso", scores.filter((item) => !item.terminou).length, "A decorrer")}
-        ${metric("bi-cash-coin", "Faixas & Cert. Pagos", scores.filter((item) => item.faixa_certificado_pago).length, "Pagamentos confirmados")}
-        ${metric("bi-check2-circle", "Fase 1 Média > 70", scores.filter((item) => alecPhaseAverage(item, 1) >= 70).length, "Aprovados F1")}
-        ${metric("bi-check2-all", "Fase 2 Média > 70", scores.filter((item) => alecPhaseAverage(item, 2) >= 70).length, "Aprovados F2")}
+        ${metric("bi-people", "Total Alunos na Pauta", scores.length, "Inscritos", { isClickable: true, module: "alec", route: "cellAlecScores", filterPayload: { status: "", terminou: "", faixa_certificado_pago: "" }, tooltip: "Ver todos os alunos na pauta" })}
+        ${metric("bi-award", L("alecCompleted") || "Concluídos", scores.filter((item) => item.terminou).length, L("certificateIssued") || "Certificados", { isClickable: true, module: "alec", route: "cellAlecScores", filterPayload: { terminou: "true" }, tooltip: "Filtrar alunos que concluíram" })}
+        ${metric("bi-hourglass-split", "Em Curso", scores.filter((item) => !item.terminou).length, "A decorrer", { isClickable: true, module: "alec", route: "cellAlecScores", filterPayload: { terminou: "false" }, tooltip: "Filtrar alunos em curso" })}
+        ${metric("bi-cash-coin", "Faixas & Cert. Pagos", scores.filter((item) => item.faixa_certificado_pago).length, "Pagamentos confirmados", { isClickable: true, module: "alec", route: "cellAlecScores", filterPayload: { faixa_certificado_pago: "true" }, tooltip: "Filtrar faixas e certificados pagos" })}
+        ${metric("bi-check2-circle", "Fase 1 Média > 70", scores.filter((item) => alecPhaseAverage(item, 1) >= 70).length, "Aprovados F1", { isClickable: true, module: "alec", route: "cellAlecScores", tooltip: "Ver pauta de notas da Fase 1" })}
+        ${metric("bi-check2-all", "Fase 2 Média > 70", scores.filter((item) => alecPhaseAverage(item, 2) >= 70).length, "Aprovados F2", { isClickable: true, module: "alec", route: "cellAlecScores", tooltip: "Ver pauta de notas da Fase 2" })}
       </div>
 
       <!-- Sub-Tab Navigation Bar -->
@@ -26782,12 +27236,12 @@ function renderCellMinistry(activeTab = "alecOverview") {
       ${alecModuleSubnav("overview")}
       ${moduleSection(L("cellAlecSection"), L("cellAlecHint"), "bi-mortarboard", "cellAlecOverview", `
         <div class="row g-3 summary-cards-row">
-          ${metric("bi-mortarboard", L("totalAlecRegistered"), alecRegistrations.length, L("alecFull"))}
-          ${metric("bi-person-badge", L("alreadyLeaders"), alecRegistrations.filter((item) => item.e_lider).length, L("cellLeaders"))}
-          ${metric("bi-book", L("didFoundationSchool"), alecRegistrations.filter((item) => item.fez_escola_de_fundacao).length, L("foundationSchool"))}
-          ${metric("bi-hourglass-split", L("inTraining"), alecRegistrations.filter((item) => item.estado === "Em Formação" || item.estado === "Em Formao").length, L("active"))}
-          ${metric("bi-award", L("alecCompleted"), alecScores.filter((item) => item.terminou).length, L("certificateIssued"))}
-          ${metric("bi-clipboard-check", L("churchReports"), churchReports.length, L("reports"))}
+          ${metric("bi-mortarboard", L("totalAlecRegistered"), alecRegistrations.length, L("alecFull"), { isClickable: true, module: "alec", route: "cellAlecRegistration", filterPayload: { status: "", e_lider: "", fez_escola_de_fundacao: "" }, tooltip: "Ver todos os inscritos na ALEC" })}
+          ${metric("bi-person-badge", L("alreadyLeaders"), alecRegistrations.filter((item) => item.e_lider).length, L("cellLeaders"), { isClickable: true, module: "alec", route: "cellAlecRegistration", filterPayload: { e_lider: "true" }, tooltip: "Ver inscritos que já são líderes" })}
+          ${metric("bi-book", L("didFoundationSchool"), alecRegistrations.filter((item) => item.fez_escola_de_fundacao).length, L("foundationSchool"), { isClickable: true, module: "alec", route: "cellAlecRegistration", filterPayload: { fez_escola_de_fundacao: "true" }, tooltip: "Ver inscritos com Escola de Fundação" })}
+          ${metric("bi-hourglass-split", L("inTraining"), alecRegistrations.filter((item) => item.estado === "Em Formação" || item.estado === "Em Formao").length, L("active"), { isClickable: true, module: "alec", route: "cellAlecRegistration", filterPayload: { status: "Em Formação" }, tooltip: "Ver alunos em formação" })}
+          ${metric("bi-award", L("alecCompleted"), alecScores.filter((item) => item.terminou).length, L("certificateIssued"), { isClickable: true, module: "alec", route: "cellAlecScores", filterPayload: { terminou: "true" }, tooltip: "Ver alunos concluídos na pauta" })}
+          ${metric("bi-clipboard-check", L("churchReports"), churchReports.length, L("reports"), { isClickable: true, module: "cell", route: "cellChurchReports", tooltip: "Ver relatórios consolidados das igrejas" })}
         </div>`)}
       ${moduleSection(L("cellGrowthSection"), L("cellAlecHint"), "bi-graph-up", "", `
         <div class="row g-4">
@@ -26798,19 +27252,19 @@ function renderCellMinistry(activeTab = "alecOverview") {
     bodyHtml = `
       ${moduleSection(L("cellNetworkSection"), L("cellNetworkHint"), "bi-diagram-3", "cellMinistryOverview", `
         <div class="row g-3 summary-cards-row">
-          ${metric("bi-collection", L("totalGroupCells"), groups.length, L("cellGroups"))}
-          ${metric("bi-diagram-3", L("totalCells"), registry.length, L("activeCells"))}
-          ${metric("bi-clipboard-check", L("submittedReports"), cellReports.filter((item) => item.estado !== "Rascunho").length, L("reports"))}
-          ${metric("bi-hourglass-split", L("pendingReportsShort"), cellReports.filter((item) => ["Rascunho", "Submetido", "Em Avaliação", "Em Avaliao"].includes(item.estado)).length, L("needsAction"))}
-          ${metric("bi-lightning-charge", L("explosionCells"), explosionCells, L("readyToSplit"))}
-          ${metric("bi-exclamation-triangle", L("attentionCells"), attentionEvaluations.length, L("leaderSupport"))}
+          ${metric("bi-collection", L("totalGroupCells"), groups.length, L("cellGroups"), { isClickable: true, module: "cell", route: "cellGroups", tooltip: "Ver todos os grupos de célula" })}
+          ${metric("bi-diagram-3", L("totalCells"), registry.length, L("activeCells"), { isClickable: true, module: "cell", route: "cellCellsList", tooltip: "Ver todas as células registradas" })}
+          ${metric("bi-clipboard-check", L("submittedReports"), cellReports.filter((item) => item.estado !== "Rascunho").length, L("reports"), { isClickable: true, module: "cell", route: "cellReceivedReports", filterPayload: { status: "Submetido" }, tooltip: "Ver relatórios submetidos" })}
+          ${metric("bi-hourglass-split", L("pendingReportsShort"), cellReports.filter((item) => ["Rascunho", "Submetido", "Em Avaliação", "Em Avaliao"].includes(item.estado)).length, L("needsAction"), { isClickable: true, module: "cell", route: "cellReceivedReports", filterPayload: { status: "Rascunho" }, tooltip: "Ver relatórios pendentes" })}
+          ${metric("bi-lightning-charge", L("explosionCells"), explosionCells, L("readyToSplit"), { isClickable: true, module: "cell", route: "cellPerformance", tooltip: "Ver células em crescimento/explosão" })}
+          ${metric("bi-exclamation-triangle", L("attentionCells"), attentionEvaluations.length, L("leaderSupport"), { isClickable: true, module: "cell", route: "cellLeadersAttention", tooltip: "Ver células e líderes que precisam de atenção" })}
         </div>`)}
       ${moduleSection(L("cellGrowthSection"), L("cellGrowthHint"), "bi-graph-up-arrow", "", `
         <div class="row g-3 summary-cards-row mb-3">
-          ${metric("bi-people", L("totalAttendance"), totalAttendance, L("attendance"))}
-          ${metric("bi-person-heart", L("totalFirstTime"), totalFt, L("firstTimers"))}
-          ${metric("bi-stars", L("totalNewConverts"), totalNc, L("newConverts"))}
-          ${metric("bi-cash-coin", L("totalOffering"), money(totalOffering), L("finance"))}
+          ${metric("bi-people", L("totalAttendance"), totalAttendance, L("attendance"), { isClickable: true, module: "cell", route: "cellPerformance", tooltip: "Ver desempenho de presença" })}
+          ${metric("bi-person-heart", L("totalFirstTime"), totalFt, L("firstTimers"), { isClickable: true, module: "cell", route: "cellPerformance", tooltip: "Ver métricas de primeiros visitantes" })}
+          ${metric("bi-stars", L("totalNewConverts"), totalNc, L("newConverts"), { isClickable: true, module: "cell", route: "cellPerformance", tooltip: "Ver novos convertidos nas células" })}
+          ${metric("bi-cash-coin", L("totalOffering"), money(totalOffering), L("finance"), { isClickable: true, module: "finance", route: "financeEntriesRoute", tooltip: "Ver ofertas no módulo de finanças" })}
         </div>
         <div class="row g-4">
           <div class="col-xl-4">${chartCard(L("attendanceByWeek"), groupSum(cellReports, "semana", "att"))}</div>
@@ -26853,10 +27307,10 @@ function renderCellMinistry(activeTab = "alecOverview") {
     bodyHtml = `
       ${renderCellMinistryFilterBar("cellPerformance", { view: "card", showWeek: true, showStatus: true, statusOptions: ["Active", "Inactive", "Pending"] })}
       <div class="row g-3 mb-4">
-        ${metric("bi-people", L("totalAttendance"), perfTotalAtt, L("reportWeek"))}
-        ${metric("bi-person-heart", L("totalFirstTime"), perfTotalFt, L("firstTimers"))}
-        ${metric("bi-stars", L("totalNewConverts"), perfTotalNc, L("newConverts"))}
-        ${metric("bi-lightning-charge", L("explosionCells"), perfExplosion, L("readyToSplit"))}
+        ${metric("bi-people", L("totalAttendance"), perfTotalAtt, L("reportWeek"), { isClickable: true, module: "cell", route: "cellReceivedReports", tooltip: "Ver relatórios de frequência" })}
+        ${metric("bi-person-heart", L("totalFirstTime"), perfTotalFt, L("firstTimers"), { isClickable: true, module: "firstTimers", route: "firstTimers", tooltip: "Ir para Primeiros Visitantes" })}
+        ${metric("bi-stars", L("totalNewConverts"), perfTotalNc, L("newConverts"), { isClickable: true, module: "firstTimers", route: "firstTimers", tooltip: "Ir para Novos Convertidos" })}
+        ${metric("bi-lightning-charge", L("explosionCells"), perfExplosion, L("readyToSplit"), { isClickable: true, module: "cell", route: "cellCellsList", tooltip: "Ver células activas" })}
       </div>
       <div class="row g-4">
         <div class="col-xl-4">${chartCard(L("attendanceByWeek"), attByWeek.length ? attByWeek : [["Semana 1", 0]])}</div>
@@ -26910,8 +27364,8 @@ function renderCellMinistry(activeTab = "alecOverview") {
     bodyHtml = `
       ${renderCellMinistryFilterBar("leadersAttention", { view: cellLeadersAttentionPageState.view, showWeek: true, showStatus: true, statusOptions: ["Em Treinamento", "Precisa de Atenção", "Crítico", "Activo"] })}
       <div class="row g-3 mb-4">
-        ${metric("bi-exclamation-triangle", L("leadersAttention"), filteredLeaders.length, L("needsAction"))}
-        ${metric("bi-clipboard-check", L("attentionCells"), filteredEvaluations.length, L("cellEvaluation"))}
+        ${metric("bi-exclamation-triangle", L("leadersAttention"), filteredLeaders.length, L("needsAction"), { isClickable: true, module: "cell", route: "cellLeadersRoute", filterPayload: { status: "Precisa de Atenção" }, tooltip: "Ver líderes que precisam de atenção" })}
+        ${metric("bi-clipboard-check", L("attentionCells"), filteredEvaluations.length, L("cellEvaluation"), { isClickable: true, module: "cell", route: "cellEvaluationRoute", filterPayload: { status: "Precisa de Atenção" }, tooltip: "Ver avaliações que precisam de intervenção" })}
       </div>
       <div class="row g-4">
         <div class="col-12">
@@ -26967,10 +27421,10 @@ function renderCellMinistry(activeTab = "alecOverview") {
     bodyHtml = `
       ${renderCellMinistryFilterBar("actionPlan", { view: cellActionPlanPageState.view, showWeek: true, showStatus: true, statusOptions: ["Planeado", "Em Curso", "Concluído", "Atrasado"] })}
       <div class="row g-3 mb-4">
-        ${metric("bi-clipboard2-check", L("actionPlan") || "Planos de Acção", filteredActionPlans.length, "Total")}
-        ${metric("bi-hourglass-split", "Em Curso", filteredActionPlans.filter(p => p.status === "Em Curso").length, "Activos")}
-        ${metric("bi-calendar-check", "Planeados", filteredActionPlans.filter(p => p.status === "Planeado").length, "Agendados")}
-        ${metric("bi-check2-all", "Concluídos", filteredActionPlans.filter(p => p.status === "Concluído").length, "Finalizados")}
+        ${metric("bi-clipboard2-check", L("actionPlan") || "Planos de Acção", filteredActionPlans.length, "Total", { isClickable: true, module: "cell", route: "cellActionPlanRoute", filterPayload: { status: "" }, tooltip: "Ver todos os planos de acção" })}
+        ${metric("bi-hourglass-split", "Em Curso", filteredActionPlans.filter(p => p.status === "Em Curso").length, "Activos", { isClickable: true, module: "cell", route: "cellActionPlanRoute", filterPayload: { status: "Em Curso" }, tooltip: "Filtrar planos em curso" })}
+        ${metric("bi-calendar-check", "Planeados", filteredActionPlans.filter(p => p.status === "Planeado").length, "Agendados", { isClickable: true, module: "cell", route: "cellActionPlanRoute", filterPayload: { status: "Planeado" }, tooltip: "Filtrar planos planeados" })}
+        ${metric("bi-check2-all", "Concluídos", filteredActionPlans.filter(p => p.status === "Concluído").length, "Finalizados", { isClickable: true, module: "cell", route: "cellActionPlanRoute", filterPayload: { status: "Concluído" }, tooltip: "Filtrar planos concluídos" })}
       </div>
       <div class="row g-4">
         <div class="col-12">
@@ -27000,10 +27454,10 @@ function renderCellMinistry(activeTab = "alecOverview") {
     bodyHtml = `
       ${renderCellMinistryFilterBar("cellEvaluation", { view: cellEvaluationPageState.view, showWeek: true, showStatus: true, statusOptions: ["Excelente", "Bom", "Regular", "Precisa de Atenção", "Crítico", "Pendente", "Aprovado", "Em Análise"] })}
       <div class="row g-3 mb-4">
-        ${metric("bi-clipboard-check", L("cellEvaluation"), filteredEvaluations.length, L("reports"))}
-        ${metric("bi-stars", "Excelente / Bom", filteredEvaluations.filter(e => ["Excelente", "Bom"].includes(e.classificacao)).length, "Destaque")}
-        ${metric("bi-exclamation-triangle", "Precisa de Atenção", filteredEvaluations.filter(e => ["Precisa de Atenção", "Crítico"].includes(e.classificacao)).length, "Intervenção")}
-        ${metric("bi-arrow-repeat", "Follow-up Necessário", filteredEvaluations.filter(e => !!e.precisa_followup).length, "Acompanhamento")}
+        ${metric("bi-clipboard-check", L("cellEvaluation"), filteredEvaluations.length, L("reports"), { isClickable: true, module: "cell", route: "cellEvaluationRoute", filterPayload: { status: "" }, tooltip: "Ver todas as avaliações" })}
+        ${metric("bi-stars", "Excelente / Bom", filteredEvaluations.filter(e => ["Excelente", "Bom"].includes(e.classificacao)).length, "Destaque", { isClickable: true, module: "cell", route: "cellEvaluationRoute", filterPayload: { status: "Excelente" }, tooltip: "Filtrar avaliações com classificação de destaque" })}
+        ${metric("bi-exclamation-triangle", "Precisa de Atenção", filteredEvaluations.filter(e => ["Precisa de Atenção", "Crítico"].includes(e.classificacao)).length, "Intervenção", { isClickable: true, module: "cell", route: "cellEvaluationRoute", filterPayload: { status: "Precisa de Atenção" }, tooltip: "Filtrar avaliações que precisam de atenção" })}
+        ${metric("bi-arrow-repeat", "Follow-up Necessário", filteredEvaluations.filter(e => !!e.precisa_followup).length, "Acompanhamento", { isClickable: true, module: "cell", route: "cellEvaluationRoute", filterPayload: { followup: "true" }, tooltip: "Filtrar avaliações que necessitam de acompanhamento" })}
       </div>
       <div class="row g-4">
         <div class="col-12">
@@ -27041,10 +27495,10 @@ function renderCellMinistry(activeTab = "alecOverview") {
     bodyHtml = `
       ${renderCellMinistryFilterBar(activeTab, { view: cellReportsPageState.view, showWeek: true, showStatus: true, statusOptions: ["Submetido", "Validado", "Em Revisão", "Pendente", "Rejeitado"] })}
       <div class="row g-3 mb-4">
-        ${metric("bi-calendar-week", L("weeklyCellReport") || "Relatórios", filteredReports.length, L("reportWeek"))}
-        ${metric("bi-people", L("totalAttendance"), repTotalAtt, L("attendance"))}
-        ${metric("bi-person-heart", L("totalFirstTime"), repTotalFt, L("firstTimers"))}
-        ${metric("bi-stars", L("totalNewConverts"), repTotalNc, L("newConverts"))}
+        ${metric("bi-calendar-week", L("weeklyCellReport") || "Relatórios", filteredReports.length, L("reportWeek"), { isClickable: true, module: "cell", route: "cellReceivedReports", filterPayload: { status: "" }, tooltip: "Ver todos os relatórios da semana" })}
+        ${metric("bi-people", L("totalAttendance"), repTotalAtt, L("attendance"), { isClickable: true, module: "cell", route: "cellPerformance", tooltip: "Ver análise de presença" })}
+        ${metric("bi-person-heart", L("totalFirstTime"), repTotalFt, L("firstTimers"), { isClickable: true, module: "firstTimers", route: "firstTimers", tooltip: "Ir para módulo de Primeiros Visitantes" })}
+        ${metric("bi-stars", L("totalNewConverts"), repTotalNc, L("newConverts"), { isClickable: true, module: "firstTimers", route: "firstTimers", tooltip: "Ir para novos convertidos" })}
       </div>
       <div class="row g-4">
         <div class="col-12">
@@ -27071,10 +27525,10 @@ function renderCellMinistry(activeTab = "alecOverview") {
     bodyHtml = `
       ${renderCellMinistryFilterBar("consolidation", { view: "card", showWeek: true, showStatus: true, statusOptions: ["Validado", "Submetido", "Pendente", "Em Revisão", "Rejeitado"], showViewToggle: false })}
       <div class="row g-3 mb-4">
-        ${metric("bi-clipboard-check", L("submittedReports"), filteredReports.filter((item) => item.estado !== "Rascunho").length, L("reports"))}
-        ${metric("bi-patch-check", L("validated"), filteredValidations.filter((item) => item.estado_final === "Validado").length, L("finalValidation"))}
-        ${metric("bi-collection", L("totalGroupCells"), filteredGroups.length, L("cellGroups"))}
-        ${metric("bi-diagram-3", L("totalCells"), filteredCells.length, L("activeCells"))}
+        ${metric("bi-clipboard-check", L("submittedReports"), filteredReports.filter((item) => item.estado !== "Rascunho").length, L("reports"), { isClickable: true, module: "cell", route: "cellReceivedReports", filterPayload: { status: "Submetido" }, tooltip: "Ver relatórios submetidos" })}
+        ${metric("bi-patch-check", L("validated"), filteredValidations.filter((item) => item.estado_final === "Validado").length, L("finalValidation"), { isClickable: true, module: "cell", route: "cellValidationRoute", filterPayload: { status: "Validado" }, tooltip: "Ver validações aprovadas" })}
+        ${metric("bi-collection", L("totalGroupCells"), filteredGroups.length, L("cellGroups"), { isClickable: true, module: "cell", route: "cellGroups", tooltip: "Ver grupos de célula" })}
+        ${metric("bi-diagram-3", L("totalCells"), filteredCells.length, L("activeCells"), { isClickable: true, module: "cell", route: "cellCellsList", tooltip: "Ver lista de células" })}
       </div>
       <div class="row g-4">
         <div class="col-xl-6">${chartCard(L("reportsByStatus"), groupCount(filteredReports, "estado"))}</div>
@@ -27117,10 +27571,10 @@ function renderCellMinistry(activeTab = "alecOverview") {
     bodyHtml = `
       ${renderCellMinistryFilterBar("cellLeaders", { view: cellLeadersAttentionPageState.view, showWeek: false, showStatus: true, statusOptions })}
       <div class="row g-3 mb-4">
-        ${metric("bi-person-badge", L("cellLeaders"), filteredLeaders.length, L("all"))}
-        ${metric("bi-person-check", "Líderes Actuais", filteredLeaders.filter(l => l.e_lider_actual).length, "Activos")}
-        ${metric("bi-mortarboard", "Candidatos a Líder", filteredLeaders.filter(l => !l.e_lider_actual || l.estado === "Candidato a Líder").length, "Elegíveis")}
-        ${metric("bi-award", "Graduados ALEC", filteredLeaders.filter(l => l.alec_concluido).length, "Certificados")}
+        ${metric("bi-person-badge", L("cellLeaders"), filteredLeaders.length, L("all"), { isClickable: true, module: "cell", route: "cellLeadersRoute", filterPayload: { status: "" }, tooltip: "Ver todos os líderes de célula" })}
+        ${metric("bi-person-check", "Líderes Actuais", filteredLeaders.filter(l => l.e_lider_actual).length, "Activos", { isClickable: true, module: "cell", route: "cellLeadersRoute", filterPayload: { status: "Activo" }, tooltip: "Filtrar líderes activos" })}
+        ${metric("bi-mortarboard", "Candidatos a Líder", filteredLeaders.filter(l => !l.e_lider_actual || l.estado === "Candidato a Líder").length, "Elegíveis", { isClickable: true, module: "cell", route: "cellLeadersRoute", filterPayload: { status: "Candidato a Líder" }, tooltip: "Filtrar candidatos a líder" })}
+        ${metric("bi-award", "Graduados ALEC", filteredLeaders.filter(l => l.alec_concluido).length, "Certificados", { isClickable: true, module: "alec", route: "cellAlecScores", filterPayload: { terminou: "true" }, tooltip: "Ver formandos graduados na pauta ALEC" })}
       </div>
       <div class="row g-4">
         <div class="col-12">
@@ -27161,10 +27615,10 @@ function renderCellMinistry(activeTab = "alecOverview") {
     bodyHtml = `
       ${renderCellMinistryFilterBar("finalValidation", { view: "table", showWeek: true, showStatus: true, statusOptions, showViewToggle: false })}
       <div class="row g-3 mb-4">
-        ${metric("bi-patch-check", L("finalValidation"), filteredValidations.length, L("reports"))}
-        ${metric("bi-check2-circle", "Validados", filteredValidations.filter(v => v.estado_final === "Validado" || v.decisao === "Validado").length, "Aprovados")}
-        ${metric("bi-hourglass-split", "Pendentes", filteredValidations.filter(v => ["Pendente", "Em Revisão"].includes(v.estado_final) || !v.estado_final).length, "Aguardando")}
-        ${metric("bi-x-circle", "Rejeitados", filteredValidations.filter(v => v.estado_final === "Rejeitado" || v.decisao === "Rejeitado").length, "Revisão")}
+        ${metric("bi-patch-check", L("finalValidation"), filteredValidations.length, L("reports"), { isClickable: true, module: "cell", route: "cellValidationRoute", filterPayload: { status: "" }, tooltip: "Ver todas as validações" })}
+        ${metric("bi-check2-circle", "Validados", filteredValidations.filter(v => v.estado_final === "Validado" || v.decisao === "Validado").length, "Aprovados", { isClickable: true, module: "cell", route: "cellValidationRoute", filterPayload: { status: "Validado" }, tooltip: "Filtrar validações aprovadas" })}
+        ${metric("bi-hourglass-split", "Pendentes", filteredValidations.filter(v => ["Pendente", "Em Revisão"].includes(v.estado_final) || !v.estado_final).length, "Aguardando", { isClickable: true, module: "cell", route: "cellValidationRoute", filterPayload: { status: "Pendente" }, tooltip: "Filtrar validações pendentes" })}
+        ${metric("bi-x-circle", "Rejeitados", filteredValidations.filter(v => v.estado_final === "Rejeitado" || v.decisao === "Rejeitado").length, "Revisão", { isClickable: true, module: "cell", route: "cellValidationRoute", filterPayload: { status: "Rejeitado" }, tooltip: "Filtrar validações rejeitadas" })}
       </div>
       <div class="row g-4">
         <div class="col-12">
@@ -27348,10 +27802,10 @@ function renderCellMembers() {
     <article class="panel glass-panel mb-4">
       <div class="panel-head"><div><h3 class="panel-title">${lang === "pt" ? "Membros nas células" : "Members in cells"}</h3><p class="mb-0 text-secondary">${lang === "pt" ? "A lista usa os membros carregados pelo data source activo. Filtre dinamicamente por igreja, grupo ou célula." : "This list uses members loaded by the active data source. Dynamically filter by church, group, or cell."}</p></div></div>
       <div class="row g-3 summary-cards-row">
-        ${metric("bi-people", L("totalMembers"), filteredMembers.length, L("members"))}
-        ${metric("bi-diagram-3", lang === "pt" ? "Atribuídos a células" : "Assigned to cells", membership.assigned.length, L("cellCellsList"))}
-        ${metric("bi-person-plus", lang === "pt" ? "Aguardam atribuição" : "Awaiting assignment", membership.awaitingAssignment.length, lang === "pt" ? "Revisar e atribuir" : "Review and assign")}
-        ${metric("bi-collection", lang === "pt" ? "Grupos com membros" : "Groups with members", membership.byGroup.size, L("cellGroups"))}
+        ${metric("bi-people", L("totalMembers"), filteredMembers.length, L("members"), { isClickable: true, module: "members", route: "members", tooltip: "Ver todos os membros" })}
+        ${metric("bi-diagram-3", lang === "pt" ? "Atribuídos a células" : "Assigned to cells", membership.assigned.length, L("cellCellsList"), { isClickable: true, module: "cell", route: "cellMembershipRoute", filterPayload: { status: "assigned" }, tooltip: "Ver membros atribuídos a células" })}
+        ${metric("bi-person-plus", lang === "pt" ? "Aguardam atribuição" : "Awaiting assignment", membership.awaitingAssignment.length, lang === "pt" ? "Revisar e atribuir" : "Review and assign", { isClickable: true, module: "cell", route: "cellMembershipRoute", filterPayload: { status: "awaiting" }, tooltip: "Ver membros aguardando atribuição" })}
+        ${metric("bi-collection", lang === "pt" ? "Grupos com membros" : "Groups with members", membership.byGroup.size, L("cellGroups"), { isClickable: true, module: "cell", route: "cellGroups", tooltip: "Ver grupos de células" })}
       </div>
     </article>
     <article class="panel glass-panel">
@@ -27397,11 +27851,11 @@ function renderCellGroups() {
     </div>
     ${renderCellMinistryFilterBar("cellGroups", { view: cellGroupsPageState.view, showWeek: false, showStatus: true, statusOptions, showViewToggle: true, showCell: false })}
     <div class="row g-3 mb-4">
-      ${metric("bi-collection", L("totalGroupCells"), filteredGroups.length, L("cellGroups"))}
-      ${metric("bi-diagram-3", L("totalCells"), filteredRegistry.length, L("activeCells"))}
-      ${metric("bi-people", L("totalMembers"), membership.assigned.length, L("members"))}
-      ${metric("bi-person-plus", lang === "pt" ? "Aguardam atribuição" : "Awaiting assignment", membership.awaitingAssignment.length, lang === "pt" ? "Fila de membros" : "Member queue")}
-      ${metric("bi-flag", L("needsReview"), filteredGroups.filter((item) => item.needs_review).length, L("importReview"))}
+      ${metric("bi-collection", L("totalGroupCells"), filteredGroups.length, L("cellGroups"), { isClickable: true, module: "cell", route: "cellGroups", tooltip: "Ver todos os grupos" })}
+      ${metric("bi-diagram-3", L("totalCells"), filteredRegistry.length, L("activeCells"), { isClickable: true, module: "cell", route: "cellCellsList", tooltip: "Ver todas as células" })}
+      ${metric("bi-people", L("totalMembers"), membership.assigned.length, L("members"), { isClickable: true, module: "cell", route: "cellMembershipRoute", tooltip: "Ver membros nas células" })}
+      ${metric("bi-person-plus", lang === "pt" ? "Aguardam atribuição" : "Awaiting assignment", membership.awaitingAssignment.length, lang === "pt" ? "Fila de membros" : "Member queue", { isClickable: true, module: "cell", route: "cellMembershipRoute", filterPayload: { status: "awaiting" }, tooltip: "Ver membros aguardando atribuição" })}
+      ${metric("bi-flag", L("needsReview"), filteredGroups.filter((item) => item.needs_review).length, L("importReview"), { isClickable: true, module: "cell", route: "cellGroups", filterPayload: { needs_review: true }, tooltip: "Filtrar grupos que precisam de revisão" })}
     </div>
     ${isCardView ? `
       <article class="panel glass-panel">
@@ -27542,11 +27996,11 @@ function renderCellCellsList() {
       showViewToggle: true
     })}
     <div class="row g-3 mb-4">
-      ${metric("bi-diagram-3", L("totalCells"), cells.length, L("all"))}
-      ${metric("bi-people", L("totalMembers"), cells.reduce((sum, item) => sum + (membership.byCell.get(item.id) || []).length, 0), L("members"))}
-      ${metric("bi-people", L("totalAttendance"), cells.reduce((sum, item) => sum + Number(item.attendance || 0), 0), L("reportWeek"))}
-      ${metric("bi-person-heart", L("totalFirstTime"), cells.reduce((sum, item) => sum + Number(item.first_timers || 0), 0), L("firstTimers"))}
-      ${metric("bi-stars", L("totalNewConverts"), cells.reduce((sum, item) => sum + Number(item.new_converts || 0), 0), L("newConverts"))}
+      ${metric("bi-diagram-3", L("totalCells"), cells.length, L("all"), { isClickable: true, module: "cell", route: "cellCellsList", tooltip: "Ver todas as células" })}
+      ${metric("bi-people", L("totalMembers"), cells.reduce((sum, item) => sum + (membership.byCell.get(item.id) || []).length, 0), L("members"), { isClickable: true, module: "cell", route: "cellMembershipRoute", tooltip: "Ver membros das células" })}
+      ${metric("bi-people", L("totalAttendance"), cells.reduce((sum, item) => sum + Number(item.attendance || 0), 0), L("reportWeek"), { isClickable: true, module: "cell", route: "cellPerformance", tooltip: "Ver análise de presença" })}
+      ${metric("bi-person-heart", L("totalFirstTime"), cells.reduce((sum, item) => sum + Number(item.first_timers || 0), 0), L("firstTimers"), { isClickable: true, module: "firstTimers", route: "firstTimers", tooltip: "Ir para Primeiros Visitantes" })}
+      ${metric("bi-stars", L("totalNewConverts"), cells.reduce((sum, item) => sum + Number(item.new_converts || 0), 0), L("newConverts"), { isClickable: true, module: "firstTimers", route: "firstTimers", tooltip: "Ir para Novos Convertidos" })}
     </div>
     <div class="row g-4">
       <div class="col-12">
@@ -28302,10 +28756,10 @@ function fevoActivityPanel(id, title, rows) {
         <button class="btn btn-sm btn-ce-gold" data-open-form="fevoReport"><i class="bi bi-plus-lg me-1"></i>${L("add")}</button>
       </div>
       <div class="row g-3 mb-3">
-        ${metric("bi-collection", L("totalGroups"), rows.length, title)}
-        ${metric("bi-people", L("membersPresent"), rows.reduce((sum, item) => sum + Number(item.members_present || 0), 0), L("members"))}
-        ${metric("bi-person-heart", L("ftInChurch"), rows.reduce((sum, item) => sum + Number(item.ft_in_church || 0), 0), L("firstTimers"))}
-        ${metric("bi-stars", L(activityMetric[0]), rows.reduce((sum, item) => sum + Number(item[activityMetric[1]] || 0), 0), title)}
+        ${metric("bi-collection", L("totalGroups"), rows.length, title, { isClickable: true, module: "fevo", route: "fevo", scrollTo: `panel-${id}`, tooltip: `Ver grupos em ${title}` })}
+        ${metric("bi-people", L("membersPresent"), rows.reduce((sum, item) => sum + Number(item.members_present || 0), 0), L("members"), { isClickable: true, module: "fevo", route: "fevo", scrollTo: `panel-${id}`, tooltip: "Ver membros presentes nos relatórios" })}
+        ${metric("bi-person-heart", L("ftInChurch"), rows.reduce((sum, item) => sum + Number(item.ft_in_church || 0), 0), L("firstTimers"), { isClickable: true, module: "firstTimers", route: "firstTimers", tooltip: "Ir para Primeiros Visitantes" })}
+        ${metric("bi-stars", L(activityMetric[0]), rows.reduce((sum, item) => sum + Number(item[activityMetric[1]] || 0), 0), title, { isClickable: true, module: "fevo", route: "fevo", scrollTo: `panel-${id}`, tooltip: `Ver actividade de ${title}` })}
       </div>
       ${dataTable([L("weekStart"), L("team"), L("groupName"), L("leaderName"), L("leadersPresent"), L("membersPresent"), L(activityMetric[0]), L("status"), L("actions")], rows.map((item) => [
         item.semana_inicio,
@@ -30841,10 +31295,10 @@ function renderMedia(activeTab = "overview") {
         </div>
 
         <div class="row g-3 mb-4">
-          ${metric("bi-calendar2-check", lang === "pt" ? "Escalas Atribuídas" : "Total Scheduled", totalAssigned, L("mediaSchedules"))}
-          ${metric("bi-patch-check", lang === "pt" ? "Deveres Cumpridos" : "Duties Fulfilled", totalFulfilled, L("dutyFulfillment"))}
-          ${metric("bi-percent", lang === "pt" ? "Taxa de Cumprimento" : "Fulfillment Rate", `${ratePct}%`, L("dutyFulfillment"))}
-          ${metric("bi-star-fill", lang === "pt" ? "Média Técnica" : "Average Score", `${avgScore}/100`, L("technicalQuality"))}
+          ${metric("bi-calendar2-check", lang === "pt" ? "Escalas Atribuídas" : "Total Scheduled", totalAssigned, L("mediaSchedules"), { isClickable: true, module: "media", route: "mediaSchedulesRoute", tooltip: "Ver escalas de mídia" })}
+          ${metric("bi-patch-check", lang === "pt" ? "Deveres Cumpridos" : "Duties Fulfilled", totalFulfilled, L("dutyFulfillment"), { isClickable: true, module: "media", route: "mediaPerformanceRoute", tooltip: "Ver avaliação de cumprimento" })}
+          ${metric("bi-percent", lang === "pt" ? "Taxa de Cumprimento" : "Fulfillment Rate", `${ratePct}%`, L("dutyFulfillment"), { isClickable: true, module: "media", route: "mediaPerformanceRoute", tooltip: "Ver taxa de cumprimento" })}
+          ${metric("bi-star-fill", lang === "pt" ? "Média Técnica" : "Average Score", `${avgScore}/100`, L("technicalQuality"), { isClickable: true, module: "media", route: "mediaPerformanceRoute", tooltip: "Ver pontuação técnica" })}
         </div>
 
         <div class="panel glass-panel p-3">
@@ -30901,10 +31355,10 @@ function renderMedia(activeTab = "overview") {
         </div>
 
         <div class="row g-3 mb-4">
-          ${metric("bi-calendar3", lang === "pt" ? "Cultos Realizados" : "Total Services", totalServices, L("mediaSchedules"))}
-          ${metric("bi-clipboard-check", lang === "pt" ? "Avaliações Registadas" : "Reviews Logged", totalEvals, L("mediaPerformanceEvaluation"))}
-          ${metric("bi-trophy", lang === "pt" ? "Pontuação Média Geral" : "Global Avg Score", `${avgScoreGlobal}/100`, L("technicalQuality"))}
-          ${metric("bi-percent", lang === "pt" ? "Cumprimento Global" : "Global Fulfillment", `${fulfillmentRatePct}%`, L("dutyFulfillment"))}
+          ${metric("bi-calendar3", lang === "pt" ? "Cultos Realizados" : "Total Services", totalServices, L("mediaSchedules"), { isClickable: true, module: "media", route: "mediaSchedulesRoute", tooltip: "Ver escalas de culto" })}
+          ${metric("bi-clipboard-check", lang === "pt" ? "Avaliações Registadas" : "Reviews Logged", totalEvals, L("mediaPerformanceEvaluation"), { isClickable: true, module: "media", route: "mediaPerformanceRoute", tooltip: "Ver avaliações registadas" })}
+          ${metric("bi-trophy", lang === "pt" ? "Pontuação Média Geral" : "Global Avg Score", `${avgScoreGlobal}/100`, L("technicalQuality"), { isClickable: true, module: "media", route: "mediaPerformanceRoute", tooltip: "Ver qualidade técnica" })}
+          ${metric("bi-percent", lang === "pt" ? "Cumprimento Global" : "Global Fulfillment", `${fulfillmentRatePct}%`, L("dutyFulfillment"), { isClickable: true, module: "media", route: "mediaPerformanceRoute", tooltip: "Ver taxa global de cumprimento" })}
         </div>
 
         <div class="panel glass-panel p-3">
@@ -31674,10 +32128,10 @@ function renderNotifications() {
   setPageContent(`
     ${sectionHeader(L("notifications"), L("notificationInboxSubtitle"), null, "bi-bell")}
     <div class="row g-3 mb-4">
-      ${metric("bi-bell", L("allNotifications"), list.length, L("notifications"))}
-      ${metric("bi-envelope-exclamation", L("unread"), unread.length, L("markAllRead"))}
-      ${metric("bi-exclamation-triangle", L("urgentPlural"), urgent.length, L("priority"))}
-      ${metric("bi-check2-square", L("actionRequiredPlural"), actionRequired.length, L("actionRequired"))}
+      ${metric("bi-bell", L("allNotifications"), list.length, L("notifications"), { isClickable: true, module: "notifications", route: "notifications", filterPayload: { filter: "all" }, tooltip: "Ver todas as notificações" })}
+      ${metric("bi-envelope-exclamation", L("unread"), unread.length, L("markAllRead"), { isClickable: true, module: "notifications", route: "notifications", filterPayload: { filter: "unread" }, tooltip: "Filtrar não lidas" })}
+      ${metric("bi-exclamation-triangle", L("urgentPlural"), urgent.length, L("priority"), { isClickable: true, module: "notifications", route: "notifications", filterPayload: { filter: "urgent" }, tooltip: "Filtrar urgentes" })}
+      ${metric("bi-check2-square", L("actionRequiredPlural"), actionRequired.length, L("actionRequired"), { isClickable: true, module: "notifications", route: "notifications", filterPayload: { filter: "action" }, tooltip: "Filtrar acções necessárias" })}
     </div>
     <article class="panel glass-panel notification-inbox">
       <div class="notification-page-toolbar">
@@ -35595,7 +36049,23 @@ function buildMemberProfileViewModel(member) {
   const financeAllowed = ["Super Admin", "Finance Head", "Partnership Coordinator"].includes(activeUser?.role);
   const finance = financeAllowed ? getCellMemberFinanceSummary(member.id, ["cell_portal.view_finance_summary"]) : null;
   const adminQuality = ["Super Admin", "Membership Officer", "Church Admin", "Members/Data Officer", "Membership Admin"].includes(activeUser?.role);
-  const legacy = Boolean(member.legacy_source || member.legacy_source_sheet || member.legacy_import_batch_id);
+  const relatedFt = (state.firstTimers || []).find((ft) =>
+    (member.first_timer_id && String(ft.id) === String(member.first_timer_id)) ||
+    (phone && (ft.telefone === phone || ft.phone === phone)) ||
+    (full && fullName(ft) === full)
+  );
+  const inviter = member.convidado_por || member.invited_by || relatedFt?.convidado_por || relatedFt?.invited_by_name || relatedFt?.quem_convidou || "";
+  const originType = member.origem || (relatedFt ? (lang === "en" ? "Cell / First Timers" : "Célula / First Timers") : (lang === "en" ? "Direct Registration" : "Registo Directo"));
+  const originJourneyRows = [
+    [lang === "en" ? "Origin Channel" : "Canal de Origem", originType],
+    [lang === "en" ? "Invited By / Soul Winner" : "Convidado por / Ganhador de Almas", inviter || (lang === "en" ? "Not informed" : "Não informado")],
+    [lang === "en" ? "First Visit Date" : "Data do 1º Culto / Visita", relatedFt?.data_do_culto || relatedFt?.data || relatedFt?.created_at ? String(relatedFt.data_do_culto || relatedFt.data || relatedFt.created_at).slice(0, 10) : ""],
+    [lang === "en" ? "Assigned to Cell Date" : "Data Encaminhado à Célula", relatedFt?.cell_assigned_at ? String(relatedFt.cell_assigned_at).slice(0, 10) : ""],
+    [lang === "en" ? "Received in Cell Date" : "Data Recebido na Célula", (member.cell_received_at || relatedFt?.cell_received_at) ? String(member.cell_received_at || relatedFt?.cell_received_at).slice(0, 10) : ""],
+    [lang === "en" ? "Received in Cell By" : "Recebido na Célula Por", member.cell_received_by || relatedFt?.cell_received_by || ""],
+    [lang === "en" ? "Official Member Since" : "Data de Entrada / Aprovação", member.created_at || member.member_since ? String(member.created_at || member.member_since).slice(0, 10) : ""]
+  ];
+
   return {
     full, initials: full.split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase(),
     status: memberProfileStatus(memberProfileValue(member.membership_status, member.estado, member.status)), church, group, cell,
@@ -35624,6 +36094,7 @@ function buildMemberProfileViewModel(member) {
       [memberProfileText("department"), memberProfileValue(member.departamento, member.department_name)],
       [memberProfileText("origin"), memberSelectOptionLabel("origem", memberProfileValue(member.origem, member.source))]
     ],
+    originJourney: originJourneyRows,
     spiritual: [[memberProfileText("foundationSchool"), memberProfileStatus(memberProfileValue(foundation.status, member.legacy_foundation_status, "Unknown"))], [memberProfileText("baptism"), sacraments.baptized ? memberProfileText("baptized") : memberProfileStatus(memberProfileValue(member.legacy_baptism_status, "Unknown"))], [memberProfileText("sacraments"), `${Number(sacraments.marriages || 0)} ${memberProfileText("marriages")} · ${Number(sacraments.baby_dedications || 0)} ${memberProfileText("dedications")}`], ["ALEC", memberProfileStatus(memberProfileValue(alec?.status, alec?.estado, member.legacy_alec_status, "Unknown"))], [memberProfileText("graduation"), foundation.graduated ? memberProfileStatus("Completed") : ""], [memberProfileText("followUp"), followups ? `${followups} ${memberProfileText("records")}` : ""]],
     stewardship: finance ? [[memberProfileText("partner"), yesNo(finance.is_partner)], [memberProfileText("partnershipArms"), finance.partnership_arms.join(", ")], [memberProfileText("tithe"), finance.is_tither ? memberProfileText("recentActivity") : memberProfileText("noActivity")]] : [],
     souls: [[memberProfileText("peopleInvited"), invited], [memberProfileText("associatedFirstTimers"), invited], [memberProfileText("bornAgain"), (state.firstTimers || []).filter((item) => item.invited_by_member_id === member.id && /sim|yes|true/i.test(String(item.nasceu_de_novo || item.born_again || ""))).length], [memberProfileText("followUp"), followups], [memberProfileText("sentToFoundation"), (state.foundationStudents || []).filter((item) => item.member_id === member.id).length]],
@@ -35635,7 +36106,7 @@ function buildMemberProfileViewModel(member) {
 function memberProfileHtml(member) {
   const vm = buildMemberProfileViewModel(member);
   const section = (title, rows, options) => `<section class="member-profile-section"><h6>${title}</h6>${memberProfileRows(rows, options)}</section>`;
-  return `<article class="member-profile"><header class="member-profile-header"><span class="member-profile-avatar">${escapeAttr(vm.initials)}</span><div><h3>${escapeAttr(vm.full)}</h3><div class="member-profile-badges">${badge(vm.status)}${vm.church ? `<span>${escapeAttr(vm.church)}</span>` : ""}${vm.cell ? `<span>${memberProfileText("cell")}: ${escapeAttr(vm.cell)}</span>` : ""}</div></div></header>${section(memberProfileText("personalDetails"), vm.personal, { core: [memberProfileText("phone"), memberProfileText("email")] })}${section(memberProfileText("churchLife"), vm.churchLife, { core: [memberProfileText("church"), memberProfileText("cell")] })}${section(memberProfileText("spiritualProgress"), vm.spiritual)}${vm.stewardship.length ? section(memberProfileText("stewardship"), vm.stewardship) : ""}${section(memberProfileText("winningSouls"), vm.souls)}<details class="member-profile-history"><summary>${memberProfileText("history")}</summary>${memberProfileRows(vm.history)}</details>${vm.quality.length ? `<details class="member-profile-history"><summary>${memberProfileText("dataQuality")}</summary>${memberProfileRows(vm.quality)}</details>` : ""}</article>`;
+  return `<article class="member-profile"><header class="member-profile-header"><span class="member-profile-avatar">${escapeAttr(vm.initials)}</span><div><h3>${escapeAttr(vm.full)}</h3><div class="member-profile-badges">${badge(vm.status)}${vm.church ? `<span>${escapeAttr(vm.church)}</span>` : ""}${vm.cell ? `<span>${memberProfileText("cell")}: ${escapeAttr(vm.cell)}</span>` : ""}</div></div></header>${section(memberProfileText("personalDetails"), vm.personal, { core: [memberProfileText("phone"), memberProfileText("email")] })}${section(memberProfileText("churchLife"), vm.churchLife, { core: [memberProfileText("church"), memberProfileText("cell")] })}${section(lang === "en" ? "Origin & Cell Journey" : "Origem & Jornada da Célula", vm.originJourney)}${section(memberProfileText("spiritualProgress"), vm.spiritual)}${vm.stewardship.length ? section(memberProfileText("stewardship"), vm.stewardship) : ""}${section(memberProfileText("winningSouls"), vm.souls)}<details class="member-profile-history"><summary>${memberProfileText("history")}</summary>${memberProfileRows(vm.history)}</details>${vm.quality.length ? `<details class="member-profile-history"><summary>${memberProfileText("dataQuality")}</summary>${memberProfileRows(vm.quality)}</details>` : ""}</article>`;
 }
 
 function openMemberProfileView(id) {
@@ -36156,8 +36627,13 @@ async function submitAssignCellModal(form) {
   person.cell_id = data.cell_id;
   person.cell_name = data.cell_name || data.celula || "";
   person.celula = person.cell_name;
+  person.cell_assigned = true;
   person.cell_assigned_at = now;
   person.cell_assigned_by_user_id = activeUser?.id || null;
+  person.cell_assigned_by_name = activeUser?.name || "Reitor / Admin";
+  person.cell_received = false;
+  person.cell_received_at = null;
+  person.cell_received_by = null;
   person.estado_do_seguimento = data.estado_do_seguimento || "Sent to Cell";
   person.follow_up_status = person.estado_do_seguimento;
   person.interesse_em_celula = true;
@@ -37879,7 +38355,8 @@ document.addEventListener("click", async (event) => {
   const removeBtn = event.target.closest("[data-cell-member-remove]");
   if (removeBtn) return openRemoveCellMemberModal(removeBtn.dataset.cellMemberRemove);
   const portalMember = event.target.closest("[data-cell-portal-member]");
-  if (portalMember) return openCellPortalMemberProfile(portalMember.dataset.cellPortalMember);
+  const receiveMemberBtn = event.target.closest("[data-cell-receive-member]");
+  if (receiveMemberBtn) return receiveCellMember(receiveMemberBtn.dataset.cellReceiveMember);
   if (event.target.closest("[data-cell-portal-export]")) return exportCellPortalSummary();
   const portalMemberPageBtn = event.target.closest("[data-cell-portal-member-page]");
   if (portalMemberPageBtn) {
@@ -38227,6 +38704,7 @@ document.addEventListener("click", async (event) => {
       church_id: filterBar?.querySelector('[data-member-filter="church_id"]')?.value || "",
       cell_group: filterBar?.querySelector('[data-member-filter="cell_group"]')?.value || "",
       cell: filterBar?.querySelector('[data-member-filter="cell"]')?.value || "",
+      origin: filterBar?.querySelector('[data-member-filter="origin"]')?.value || "",
       status: filterBar?.querySelector('[data-member-filter="status"]')?.value || ""
     };
     modulePageState.members.page = 1;

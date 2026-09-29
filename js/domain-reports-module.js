@@ -356,18 +356,29 @@
     },
     getList(state, user) {
       const fts = typeof scoped === "function" ? scoped(state.firstTimers || []) : (state.firstTimers || []);
-      return fts.map((p) => ({
-        ...p,
-        person_name: typeof fullName === "function" ? fullName(p) : (p.nome || "—"),
-        church_label: typeof churchName === "function" ? churchName(p.church_id) : p.church_id,
-        funnel_stage: p.estado_do_seguimento || "Pending"
-      }));
+      return fts.map((p) => {
+        const isReceived = Boolean(p.cell_received || p.workflow_status === "CELL_RECEIVED" || p.estado_do_seguimento === "Received in Cell");
+        const hasCell = Boolean(p.cell_id || p.celula || p.cell_name);
+        return {
+          ...p,
+          person_name: typeof fullName === "function" ? fullName(p) : (p.nome || "—"),
+          church_label: typeof churchName === "function" ? churchName(p.church_id) : (p.church_name || p.church_id || "—"),
+          cell_label: p.cell_name || p.celula || "Não atribuída",
+          cell_received_label: isReceived ? "Recebido na Célula" : (hasCell ? "Aguardando Recepção" : "Não Atribuído"),
+          cell_assigned_date: p.cell_assigned_at ? String(p.cell_assigned_at).slice(0, 10) : (hasCell ? (p.data_do_culto || "—") : "—"),
+          funnel_stage: p.estado_do_seguimento || "Pending"
+        };
+      });
     },
     filterRecords(list, filters) {
       let out = fw().applyPeriodFilter(list, filters, "data_do_culto");
       out = fw().applyCommonFilters(out, filters, { status: "funnel_stage" });
       if (filters.card_filter === "foundation") out = out.filter((p) => p.quer_escola_de_fundacao);
-      if (filters.card_filter === "cell") out = out.filter((p) => p.interesse_em_celula);
+      if (filters.card_filter === "cell") out = out.filter((p) => p.interesse_em_celula || p.cell_id || p.celula);
+      if (filters.card_filter === "cell_assigned") out = out.filter((p) => Boolean(p.cell_id || p.celula || p.cell_name));
+      if (filters.card_filter === "cell_received") out = out.filter((p) => Boolean(p.cell_received || p.workflow_status === "CELL_RECEIVED" || p.estado_do_seguimento === "Received in Cell"));
+      if (filters.card_filter === "cell_pending") out = out.filter((p) => Boolean(p.cell_id || p.celula || p.cell_name) && !p.cell_received && p.workflow_status !== "CELL_RECEIVED" && p.estado_do_seguimento !== "Received in Cell");
+      if (filters.card_filter === "cell_not_assigned") out = out.filter((p) => !p.cell_id && !p.celula && !p.cell_name);
       if (filters.card_filter === "born_again") out = out.filter((p) => p.nasceu_de_novo);
       if (filters.card_filter === "pending") out = out.filter((p) => /Pending|Pendente/i.test(p.funnel_stage));
       return out;
@@ -378,38 +389,51 @@
         total: list.length,
         pending: list.filter((p) => stage(p.funnel_stage).includes("pending")).length,
         contacted: list.filter((p) => stage(p.funnel_stage).includes("contact")).length,
-        sentToCell: list.filter((p) => stage(p.funnel_stage).includes("cell")).length,
+        sentToCell: list.filter((p) => Boolean(p.cell_id || p.celula || p.cell_name) || stage(p.funnel_stage).includes("cell")).length,
+        receivedInCell: list.filter((p) => Boolean(p.cell_received || p.workflow_status === "CELL_RECEIVED" || p.estado_do_seguimento === "Received in Cell")).length,
+        pendingCellReception: list.filter((p) => Boolean(p.cell_id || p.celula || p.cell_name) && !p.cell_received && p.workflow_status !== "CELL_RECEIVED" && p.estado_do_seguimento !== "Received in Cell").length,
+        notAssignedToCell: list.filter((p) => !p.cell_id && !p.celula && !p.cell_name).length,
         foundation: list.filter((p) => p.quer_escola_de_fundacao).length,
-        members: list.filter((p) => stage(p.funnel_stage).includes("member")).length,
+        members: list.filter((p) => stage(p.funnel_stage).includes("member") || p.converted_to_member).length,
         bornAgain: list.filter((p) => p.nasceu_de_novo).length
       };
     },
     getSummaryCards(stats, L) {
       return [
         { icon: "bi-person-heart", label: L("totalFirstTimers"), value: stats.total, filter: {} },
-        { icon: "bi-hourglass", label: L("pending"), value: stats.pending, filter: { card_filter: "pending" } },
-        { icon: "bi-telephone", label: L("contacted"), value: stats.contacted, filter: {} },
-        { icon: "bi-diagram-3", label: L("sentToCell"), value: stats.sentToCell, filter: { card_filter: "cell" } },
-        { icon: "bi-mortarboard", label: L("foundationEnrolments"), value: stats.foundation, filter: { card_filter: "foundation" } },
+        { icon: "bi-diagram-3", label: "Encaminhados para Célula", value: stats.sentToCell, filter: { card_filter: "cell_assigned" } },
+        { icon: "bi-check2-circle text-success", label: "Recebidos na Célula", value: stats.receivedInCell, filter: { card_filter: "cell_received" } },
+        { icon: "bi-hourglass-split text-warning", label: "Aguardando Recepção", value: stats.pendingCellReception, filter: { card_filter: "cell_pending" } },
+        { icon: "bi-dash-circle text-secondary", label: "Não Atribuídos", value: stats.notAssignedToCell, filter: { card_filter: "cell_not_assigned" } },
         { icon: "bi-stars", label: L("newConverts"), value: stats.bornAgain, filter: { card_filter: "born_again" } }
       ];
     },
     getCharts(list, stats, L) {
+      const assignedList = list.filter((p) => p.cell_name || p.celula);
       return [
-        { type: "donut", title: L("rptFunnelStages"), data: fw().groupCount(list, "funnel_stage") },
-        { type: "bar", title: L("firstTimersByMonth"), data: fw().groupCount(list, "data_do_culto").slice(0, 8) },
+        { type: "donut", title: "Estágio do Funil Pastoral", data: fw().groupCount(list, "funnel_stage") },
+        { type: "hbar", title: "Encaminhamentos por Célula de Destino", data: fw().groupCount(assignedList, "cell_label").slice(0, 10) },
         { type: "hbar", title: L("rptFunnelByChurch"), data: fw().groupCount(list, "church_label") }
       ];
     },
     getTables(list, stats, L) {
       return [{
-        title: L("rptFunnelDetail"),
-        headers: [L("name"), L("church"), L("followupState"), L("wantFoundation"), L("cellInterest"), L("bornAgain")],
-        rows: list.map((p) => [p.person_name, p.church_label, p.funnel_stage, p.quer_escola_de_fundacao ? "Sim" : "Não", p.interesse_em_celula ? "Sim" : "Não", p.nasceu_de_novo ? "Sim" : "Não"])
+        title: "Relatório Pastoral de Encaminhamentos & Acompanhamento de Célula",
+        headers: [L("name"), "Telefone", L("church"), "Célula de Destino", "Data Encaminhado", "Estado na Célula", "Convidado por / Ganhador", L("followupState")],
+        rows: list.map((p) => [
+          p.person_name,
+          p.telefone || p.phone || "—",
+          p.church_label,
+          p.cell_label,
+          p.cell_assigned_date || "—",
+          p.cell_received_label,
+          p.convidado_por || p.invited_by || "—",
+          p.funnel_stage
+        ])
       }];
     },
-    exportHeaders(L) { return [L("name"), L("church"), L("followupState")]; },
-    exportRow(p) { return [p.person_name, p.church_label, p.funnel_stage]; }
+    exportHeaders(L) { return [L("name"), "Telefone", L("church"), "Célula Destino", "Data Encaminhado", "Estado na Célula", "Convidado por", L("followupState")]; },
+    exportRow(p) { return [p.person_name, p.telefone || p.phone || "", p.church_label, p.cell_label, p.cell_assigned_date || "", p.cell_received_label, p.convidado_por || p.invited_by || "", p.funnel_stage]; }
   });
 
   /* ── Phase 3: Cells / ALEC ── */
