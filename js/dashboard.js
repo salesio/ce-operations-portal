@@ -26498,6 +26498,7 @@ function renderChurchReportsAnalyticalView() {
   }
 
   return `
+    ${alecModuleSubnav("churchReports")}
     <section class="panel glass-panel mb-4">
       <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
         <div>
@@ -26680,6 +26681,7 @@ function renderCellMinistry(activeTab = "alecOverview") {
 
   if (activeTab === "alecOverview") {
     bodyHtml = `
+      ${alecModuleSubnav("overview")}
       ${moduleSection(L("cellAlecSection"), L("cellAlecHint"), "bi-mortarboard", "cellAlecOverview", `
         <div class="row g-3 summary-cards-row">
           ${metric("bi-mortarboard", L("totalAlecRegistered"), alecRegistrations.length, L("alecFull"))}
@@ -44470,10 +44472,94 @@ document.addEventListener("click", (event) => {
     if (activeRoute === "cellAlecScores") renderCellMinistry("alecScores");
     return;
   }
+
+  // ALEC Reports Sub-tab Navigation
+  const alecReportSubtabBtn = event.target.closest("[data-alec-report-subtab]");
+  if (alecReportSubtabBtn) {
+    const tab = alecReportSubtabBtn.dataset.alecReportSubtab;
+    alecReportsPageState.activeTab = tab;
+    localStorage.setItem("ce_alec_report_tab", tab);
+    if (activeRoute === "cellAlecReports") renderCellMinistry("alecReports");
+    return;
+  }
+
+  // ALEC Reports PDF Orientation Toggle
+  const alecOrientationBtn = event.target.closest("[data-alec-report-orientation]");
+  if (alecOrientationBtn) {
+    const orient = alecOrientationBtn.dataset.alecReportOrientation;
+    alecReportsPageState.pdfOrientation = orient;
+    localStorage.setItem("ce_alec_pdf_orientation", orient);
+    document.querySelectorAll("[data-alec-report-orientation]").forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.alecReportOrientation === orient);
+    });
+    return;
+  }
+
+  // ALEC Reports Reset Filters
+  if (event.target.closest("[data-alec-report-filter-reset]")) {
+    alecReportsPageState.period = "all";
+    alecReportsPageState.dateFrom = "";
+    alecReportsPageState.dateTo = "";
+    alecReportsPageState.province = "";
+    alecReportsPageState.churchId = "";
+    alecReportsPageState.cellGroupId = "";
+    alecReportsPageState.cellId = "";
+    alecReportsPageState.status = "";
+    alecReportsPageState.search = "";
+    if (activeRoute === "cellAlecReports") renderCellMinistry("alecReports");
+    return;
+  }
+
+  // ALEC Reports PDF Export Trigger
+  if (event.target.closest("[data-alec-export-pdf]")) {
+    exportAlecReportPdf(alecReportsPageState.pdfOrientation || "portrait");
+    return;
+  }
+
+  // ALEC Reports CSV Export Trigger
+  if (event.target.closest("[data-alec-export-csv]")) {
+    exportAlecReportCsv();
+    return;
+  }
 });
 
 // Dynamic change listener for ALEC Registration Cascading Filters
 document.addEventListener("change", (event) => {
+  if (event.target.closest("[data-alec-reports-filters]")) {
+    const form = event.target.closest("[data-alec-reports-filters]");
+    const changedName = event.target.name;
+    const oldProvince = alecReportsPageState.province;
+    const oldChurchId = alecReportsPageState.churchId;
+    const oldGroupId = alecReportsPageState.cellGroupId;
+
+    alecReportsPageState.period = form.querySelector('[name="period"]')?.value || "all";
+    alecReportsPageState.dateFrom = form.querySelector('[name="dateFrom"]')?.value || "";
+    alecReportsPageState.dateTo = form.querySelector('[name="dateTo"]')?.value || "";
+    alecReportsPageState.province = form.querySelector('[name="province"]')?.value || "";
+    alecReportsPageState.churchId = form.querySelector('[name="churchId"]')?.value || "";
+    alecReportsPageState.cellGroupId = form.querySelector('[name="cellGroupId"]')?.value || "";
+    alecReportsPageState.cellId = form.querySelector('[name="cellId"]')?.value || "";
+    alecReportsPageState.status = form.querySelector('[name="status"]')?.value || "";
+
+    if (changedName === "province" && alecReportsPageState.province !== oldProvince) {
+      alecReportsPageState.churchId = "";
+      alecReportsPageState.cellGroupId = "";
+      alecReportsPageState.cellId = "";
+    }
+
+    if (changedName === "churchId" && alecReportsPageState.churchId !== oldChurchId) {
+      alecReportsPageState.cellGroupId = "";
+      alecReportsPageState.cellId = "";
+    }
+
+    if (changedName === "cellGroupId" && alecReportsPageState.cellGroupId !== oldGroupId) {
+      alecReportsPageState.cellId = "";
+    }
+
+    if (activeRoute === "cellAlecReports") renderCellMinistry("alecReports");
+    return;
+  }
+
   if (event.target.closest("[data-alec-registration-filters]")) {
     const form = event.target.closest("[data-alec-registration-filters]");
     const changedName = event.target.name;
@@ -44544,6 +44630,21 @@ document.addEventListener("change", (event) => {
 });
 
 document.addEventListener("input", (event) => {
+  if (event.target.matches('[data-alec-reports-filters] [name="search"]')) {
+    const val = event.target.value;
+    alecReportsPageState.search = val;
+    if (window.__alecReportSearchDebounce) clearTimeout(window.__alecReportSearchDebounce);
+    window.__alecReportSearchDebounce = setTimeout(() => {
+      if (activeRoute === "cellAlecReports") {
+        renderCellMinistry("alecReports");
+        const inp = document.querySelector('[data-alec-reports-filters] [name="search"]');
+        if (inp) {
+          inp.focus();
+          inp.setSelectionRange(inp.value.length, inp.value.length);
+        }
+      }
+    }, 200);
+  }
   if (event.target.matches('[data-alec-registration-filters] [name="search"]')) {
     const val = event.target.value;
     alecRegistrationPageState.search = val;
