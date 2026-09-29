@@ -9643,13 +9643,83 @@ function requisitionReportTableRows(list) {
   ]);
 }
 
+function exportRequisitionReportCsv(list) {
+  const headers = [
+    L("reqNumber") || "Nº",
+    L("reqTitle") || "Título",
+    L("church") || "Igreja",
+    L("reqDepartment") || "Departamento",
+    L("reqRequester") || "Solicitante",
+    L("reqType") || "Tipo",
+    L("urgency") || "Urgência",
+    L("finApprovedAmount") || "Aprovado",
+    L("finReleasedAmount") || "Liberado",
+    L("reqPendingAmount") || "Pendente",
+    L("finFinanceStatus") || "Estado Financeiro",
+    L("finApprovedAt") || "Data Aprovação"
+  ];
+  const rows = (list || []).map((r) => [
+    `"${cleanDisplayText(r.request_number || "").replace(/"/g, '""')}"`,
+    `"${cleanDisplayText(r.title || "").replace(/"/g, '""')}"`,
+    `"${cleanDisplayText(r.church_name || churchName(r.church_id) || "").replace(/"/g, '""')}"`,
+    `"${cleanDisplayText(r.department_name || "").replace(/"/g, '""')}"`,
+    `"${cleanDisplayText(r.requested_by_name || "").replace(/"/g, '""')}"`,
+    `"${cleanDisplayText(r.requisition_type || "").replace(/"/g, '""')}"`,
+    `"${cleanDisplayText(r.urgency || "").replace(/"/g, '""')}"`,
+    Number(r.approved_amount || 0),
+    Number(r.released_amount || 0),
+    Number(r.pending_amount || 0),
+    `"${cleanDisplayText(r.finance_status || "").replace(/"/g, '""')}"`,
+    `"${formatDateTime(r.approved_at || r.created_at).split(",")[0] || ""}"`
+  ].join(","));
+  const csvContent = "\uFEFF" + [headers.join(","), ...rows].join("\n");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `requisicoes-relatorio-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
 function exportRequisitionReportExcel(list) {
-  const rep = window.CERequisitionReports;
-  if (!rep?.exportCsv) return;
-  rep.exportCsv(list,
-    ["Nº", "Título", "Igreja", "Departamento", "Solicitante", "Tipo", "Aprovado", "Liberado", "Pendente", "Estado Financeiro"],
-    (r) => [r.request_number, r.title, r.church_name, r.department_name, r.requested_by_name, r.requisition_type, r.approved_amount, r.released_amount, r.pending_amount, r.finance_status]
-  );
+  const headers = [
+    L("reqNumber") || "Nº",
+    L("reqTitle") || "Título",
+    L("church") || "Igreja",
+    L("reqDepartment") || "Departamento",
+    L("reqRequester") || "Solicitante",
+    L("reqType") || "Tipo",
+    L("urgency") || "Urgência",
+    L("finApprovedAmount") || "Aprovado (MZN)",
+    L("finReleasedAmount") || "Liberado (MZN)",
+    L("reqPendingAmount") || "Pendente (MZN)",
+    L("finFinanceStatus") || "Estado Financeiro",
+    L("finApprovedAt") || "Data Aprovação"
+  ];
+
+  if (typeof XLSX !== "undefined" && XLSX.utils && XLSX.writeFile) {
+    const dataRows = (list || []).map((r) => ({
+      [headers[0]]: r.request_number || "",
+      [headers[1]]: r.title || "",
+      [headers[2]]: r.church_name || churchName(r.church_id) || "",
+      [headers[3]]: r.department_name || "",
+      [headers[4]]: r.requested_by_name || "",
+      [headers[5]]: r.requisition_type || "",
+      [headers[6]]: r.urgency || "",
+      [headers[7]]: Number(r.approved_amount || 0),
+      [headers[8]]: Number(r.released_amount || 0),
+      [headers[9]]: Number(r.pending_amount || 0),
+      [headers[10]]: r.finance_status || "",
+      [headers[11]]: formatDateTime(r.approved_at || r.created_at).split(",")[0] || ""
+    }));
+    const ws = XLSX.utils.json_to_sheet(dataRows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Requisições");
+    XLSX.writeFile(wb, `requisicoes-relatorio-${new Date().toISOString().slice(0, 10)}.xlsx`);
+    return;
+  }
+
+  exportRequisitionReportCsv(list);
 }
 
 function buildRequisitionReportExportHtml(list, stats) {
@@ -35638,8 +35708,10 @@ async function quickAction(action, type, id) {
     window.open(url, "_blank", "noopener,noreferrer");
     return;
   }
-  if (action === "status" && type === "church") return openChurchDrawer("status", id);
-  if (action === "export" && type === "church") return alert(`${L("exportChurch")}: ${churchName(id)}`);
+  if (action === "export" && type === "church") {
+    exportGenericCollection("church", id);
+    return;
+  }
   if (action === "viewSubmission" && type === "finance") return openPublicSubmissionDrawer("viewSubmission", id);
   if (action === "verifyGroup" && type === "finance") return openPublicSubmissionDrawer("verifyGroup", id);
   if (action === "rejectGroup" && type === "finance") return openPublicSubmissionDrawer("rejectGroup", id);
@@ -35775,7 +35847,16 @@ async function quickAction(action, type, id) {
       window.CEUserExport.openUserExportModal();
       return;
     }
-    return alert(`${L("export")}: ${id}`);
+    if (type === "alecScore") {
+      exportAlecScores(id);
+      return;
+    }
+    if (type === "alecRegistration") {
+      exportAlecRegistrations(id);
+      return;
+    }
+    exportGenericCollection(type, id);
+    return;
   }
   if (action === "export-users") {
     if (window.CEUserExport?.openUserExportModal) {
@@ -35783,6 +35864,262 @@ async function quickAction(action, type, id) {
     }
     return;
   }
+}
+
+function exportAlecScores(id) {
+  state.cellLeadership = state.cellLeadership || {};
+  const allScores = Array.isArray(state.cellLeadership.alecScores) ? state.cellLeadership.alecScores : (state.alecScores || []);
+  let list = scoped(allScores, "cellMinistry");
+  if (id && id !== "alecScore" && id !== "all") {
+    const single = list.find((s) => String(s.id) === String(id));
+    if (single) list = [single];
+  }
+  if (!list.length) {
+    if (typeof showToast === "function") showToast(lang === "pt" ? "Sem notas ALEC para exportar." : "No ALEC scores to export.");
+    return;
+  }
+
+  const isPt = lang === "pt";
+  const headers = isPt ? [
+    "Nome Completo",
+    "Contacto",
+    "Igreja",
+    "Célula",
+    "F1 Aula 1",
+    "F1 Aula 2",
+    "F1 Aula 3",
+    "F1 Aula 4",
+    "Média F1",
+    "F2 Aula 1",
+    "F2 Aula 2",
+    "F2 Aula 3",
+    "Média F2",
+    "Média Final",
+    "Terminou",
+    "Faixa & Certificado Pago",
+    "Estado"
+  ] : [
+    "Full Name",
+    "Contact",
+    "Church",
+    "Cell",
+    "Phase 1 Class 1",
+    "Phase 1 Class 2",
+    "Phase 1 Class 3",
+    "Phase 1 Class 4",
+    "Phase 1 Average",
+    "Phase 2 Class 1",
+    "Phase 2 Class 2",
+    "Phase 2 Class 3",
+    "Phase 2 Average",
+    "Final Average",
+    "Completed",
+    "Sash & Certificate Paid",
+    "Status"
+  ];
+
+  if (typeof XLSX !== "undefined" && XLSX.utils && XLSX.writeFile) {
+    const dataRows = list.map((item) => {
+      const cleanName = formatCleanPersonName(item.nome_completo || "Aluno ALEC");
+      const contact = item.contacto || "—";
+      const cName = churchName(item.church_id || item.igreja);
+      const cell = item.celula || "—";
+      const f1Avg = alecPhaseAverage(item, 1);
+      const f2Avg = alecPhaseAverage(item, 2);
+      const fAvg = alecFinalAverage(item);
+
+      return {
+        [headers[0]]: cleanName,
+        [headers[1]]: contact,
+        [headers[2]]: cName,
+        [headers[3]]: cell,
+        [headers[4]]: item.fase_1_aula_1 != null ? item.fase_1_aula_1 : "",
+        [headers[5]]: item.fase_1_aula_2 != null ? item.fase_1_aula_2 : "",
+        [headers[6]]: item.fase_1_aula_3 != null ? item.fase_1_aula_3 : "",
+        [headers[7]]: item.fase_1_aula_4 != null ? item.fase_1_aula_4 : "",
+        [headers[8]]: f1Avg || "",
+        [headers[9]]: item.fase_2_aula_1 != null ? item.fase_2_aula_1 : "",
+        [headers[10]]: item.fase_2_aula_2 != null ? item.fase_2_aula_2 : "",
+        [headers[11]]: item.fase_2_aula_3 != null ? item.fase_2_aula_3 : "",
+        [headers[12]]: f2Avg || "",
+        [headers[13]]: fAvg || "",
+        [headers[14]]: item.terminou ? (isPt ? "SIM" : "YES") : (isPt ? "NÃO" : "NO"),
+        [headers[15]]: item.faixa_certificado_pago ? (isPt ? "SIM" : "YES") : (isPt ? "NÃO" : "NO"),
+        [headers[16]]: item.estado || "Em Curso"
+      };
+    });
+
+    const ws = XLSX.utils.json_to_sheet(dataRows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Pauta ALEC");
+    XLSX.writeFile(wb, `pauta-alec-${new Date().toISOString().slice(0, 10)}.xlsx`);
+    if (typeof showToast === "function") showToast(isPt ? "Pauta ALEC exportada com sucesso!" : "ALEC Scores exported successfully!");
+    return;
+  }
+
+  const rows = list.map((item) => {
+    const cleanName = formatCleanPersonName(item.nome_completo || "Aluno ALEC");
+    const contact = item.contacto || "";
+    const cName = churchName(item.church_id || item.igreja);
+    const cell = item.celula || "";
+    const f1Avg = alecPhaseAverage(item, 1);
+    const f2Avg = alecPhaseAverage(item, 2);
+    const fAvg = alecFinalAverage(item);
+
+    return [
+      `"${cleanDisplayText(cleanName).replace(/"/g, '""')}"`,
+      `"${cleanDisplayText(contact).replace(/"/g, '""')}"`,
+      `"${cleanDisplayText(cName).replace(/"/g, '""')}"`,
+      `"${cleanDisplayText(cell).replace(/"/g, '""')}"`,
+      item.fase_1_aula_1 != null ? item.fase_1_aula_1 : "",
+      item.fase_1_aula_2 != null ? item.fase_1_aula_2 : "",
+      item.fase_1_aula_3 != null ? item.fase_1_aula_3 : "",
+      item.fase_1_aula_4 != null ? item.fase_1_aula_4 : "",
+      f1Avg || "",
+      item.fase_2_aula_1 != null ? item.fase_2_aula_1 : "",
+      item.fase_2_aula_2 != null ? item.fase_2_aula_2 : "",
+      item.fase_2_aula_3 != null ? item.fase_2_aula_3 : "",
+      f2Avg || "",
+      fAvg || "",
+      item.terminou ? (isPt ? "SIM" : "YES") : (isPt ? "NÃO" : "NO"),
+      item.faixa_certificado_pago ? (isPt ? "SIM" : "YES") : (isPt ? "NÃO" : "NO"),
+      `"${cleanDisplayText(item.estado || "Em Curso").replace(/"/g, '""')}"`
+    ].join(",");
+  });
+
+  const csvContent = "\uFEFF" + [headers.join(","), ...rows].join("\n");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `pauta-alec-${new Date().toISOString().slice(0, 10)}.csv`;
+  link.click();
+  URL.revokeObjectURL(link.href);
+  if (typeof showToast === "function") showToast(isPt ? "Pauta ALEC exportada com sucesso!" : "ALEC Scores exported successfully!");
+}
+
+function exportAlecRegistrations(id) {
+  state.cellLeadership = state.cellLeadership || {};
+  const allRegs = Array.isArray(state.cellLeadership.alecRegistrations) ? state.cellLeadership.alecRegistrations : [];
+  let list = scoped(allRegs, "cellMinistry");
+  if (id && id !== "alecRegistration" && id !== "all") {
+    const single = list.find((s) => String(s.id) === String(id));
+    if (single) list = [single];
+  }
+  if (!list.length) {
+    if (typeof showToast === "function") showToast(lang === "pt" ? "Sem inscrições ALEC para exportar." : "No ALEC registrations to export.");
+    return;
+  }
+
+  const isPt = lang === "pt";
+  const headers = isPt ? [
+    "Nome Completo",
+    "Contacto",
+    "Igreja",
+    "Célula",
+    "Líder da Célula",
+    "Estado",
+    "Data de Inscrição"
+  ] : [
+    "Full Name",
+    "Contact",
+    "Church",
+    "Cell",
+    "Cell Leader",
+    "Status",
+    "Registration Date"
+  ];
+
+  if (typeof XLSX !== "undefined" && XLSX.utils && XLSX.writeFile) {
+    const dataRows = list.map((item) => ({
+      [headers[0]]: formatCleanPersonName(item.nome_completo || item.full_name || "Inscrito ALEC"),
+      [headers[1]]: item.contacto || item.phone || "—",
+      [headers[2]]: churchName(item.church_id || item.igreja),
+      [headers[3]]: item.celula || item.cell_name || "—",
+      [headers[4]]: item.lider_de_celula || item.cell_leader || "—",
+      [headers[5]]: item.estado || item.status || "Inscrito",
+      [headers[6]]: item.created_at || item.data_de_inscricao || ""
+    }));
+    const ws = XLSX.utils.json_to_sheet(dataRows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Inscrições ALEC");
+    XLSX.writeFile(wb, `inscricoes-alec-${new Date().toISOString().slice(0, 10)}.xlsx`);
+    if (typeof showToast === "function") showToast(isPt ? "Inscrições ALEC exportadas com sucesso!" : "ALEC Registrations exported successfully!");
+    return;
+  }
+
+  const rows = list.map((item) => [
+    `"${cleanDisplayText(formatCleanPersonName(item.nome_completo || item.full_name || "Inscrito ALEC")).replace(/"/g, '""')}"`,
+    `"${cleanDisplayText(item.contacto || item.phone || "").replace(/"/g, '""')}"`,
+    `"${cleanDisplayText(churchName(item.church_id || item.igreja)).replace(/"/g, '""')}"`,
+    `"${cleanDisplayText(item.celula || item.cell_name || "").replace(/"/g, '""')}"`,
+    `"${cleanDisplayText(item.lider_de_celula || item.cell_leader || "").replace(/"/g, '""')}"`,
+    `"${cleanDisplayText(item.estado || item.status || "Inscrito").replace(/"/g, '""')}"`,
+    `"${cleanDisplayText(item.created_at || item.data_de_inscricao || "").replace(/"/g, '""')}"`
+  ].join(","));
+
+  const csvContent = "\uFEFF" + [headers.join(","), ...rows].join("\n");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `inscricoes-alec-${new Date().toISOString().slice(0, 10)}.csv`;
+  link.click();
+  URL.revokeObjectURL(link.href);
+  if (typeof showToast === "function") showToast(isPt ? "Inscrições ALEC exportadas com sucesso!" : "ALEC Registrations exported successfully!");
+}
+
+function exportGenericCollection(type, id) {
+  const collection = getCollection(type);
+  if (!Array.isArray(collection) || !collection.length) {
+    if (typeof showToast === "function") showToast(lang === "pt" ? "Sem registos para exportar." : "No records to export.");
+    return;
+  }
+  let list = collection;
+  if (id && id !== type && id !== "all") {
+    const single = collection.find((item) => item && (String(item.id) === String(id) || item.id === id));
+    if (single) list = [single];
+  }
+  if (!list.length) {
+    if (typeof showToast === "function") showToast(lang === "pt" ? "Nenhum registo encontrado." : "No record found.");
+    return;
+  }
+
+  const sample = list[0] || {};
+  const ignoredKeys = new Set(["audit_history", "timeline", "metadata", "raw", "history", "notes_history"]);
+  const keys = Object.keys(sample).filter((k) => !ignoredKeys.has(k) && typeof sample[k] !== "object" && typeof sample[k] !== "function");
+  if (!keys.length) keys.push(...Object.keys(sample).slice(0, 10));
+
+  if (typeof XLSX !== "undefined" && XLSX.utils && XLSX.writeFile) {
+    const dataRows = list.map((item) => {
+      const row = {};
+      keys.forEach((k) => {
+        let val = item[k];
+        if (typeof val === "object" && val !== null) val = JSON.stringify(val);
+        row[k] = val != null ? val : "";
+      });
+      return row;
+    });
+    const ws = XLSX.utils.json_to_sheet(dataRows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, String(type).slice(0, 31));
+    XLSX.writeFile(wb, `${type}-export-${new Date().toISOString().slice(0, 10)}.xlsx`);
+    if (typeof showToast === "function") showToast(lang === "pt" ? "Dados exportados com sucesso!" : "Data exported successfully!");
+    return;
+  }
+
+  const rows = list.map((item) => keys.map((k) => {
+    let val = item[k];
+    if (typeof val === "object" && val !== null) val = JSON.stringify(val);
+    return `"${String(val ?? "").replace(/"/g, '""')}"`;
+  }).join(","));
+
+  const csvContent = "\uFEFF" + [keys.join(","), ...rows].join("\n");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `${type}-export-${new Date().toISOString().slice(0, 10)}.csv`;
+  link.click();
+  URL.revokeObjectURL(link.href);
+  if (typeof showToast === "function") showToast(lang === "pt" ? "Dados exportados com sucesso!" : "Data exported successfully!");
 }
 
 function exportFollowUpCsv() {

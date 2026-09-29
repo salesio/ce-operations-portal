@@ -39,13 +39,40 @@
       exportFinancePrint(html, title);
       return;
     }
-    const win = window.open("", "_blank", "noopener,noreferrer,width=980,height=720");
-    if (!win) return;
-    win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title>
-<style>body{font-family:Segoe UI,Arial,sans-serif;padding:1.5rem;color:#122}h1{font-size:1.35rem}p.meta{color:#556;font-size:.85rem}table{width:100%;border-collapse:collapse;margin-top:1rem;font-size:.82rem}th,td{border:1px solid #ccd;padding:.45rem}th{background:#0b1f3f;color:#fff}.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(9rem,1fr));gap:.65rem;margin:1rem 0}.card{border:1px solid #dde;border-radius:.5rem;padding:.65rem}.card span{display:block;color:#667;font-size:.68rem;text-transform:uppercase}.card strong{font-size:1rem;color:#0b1f3f}</style></head><body>${html}</body></html>`);
-    win.document.close();
-    win.focus();
-    setTimeout(() => win.print(), 350);
+    let win = null;
+    try {
+      win = window.open("", "_blank", "width=980,height=720");
+    } catch (_) {}
+    const fullHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title>
+<style>body{font-family:Segoe UI,Arial,sans-serif;padding:1.5rem;color:#122}h1{font-size:1.35rem}p.meta{color:#556;font-size:.85rem}table{width:100%;border-collapse:collapse;margin-top:1rem;font-size:.82rem}th,td{border:1px solid #ccd;padding:.45rem}th{background:#0b1f3f;color:#fff}.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(9rem,1fr));gap:.65rem;margin:1rem 0}.card{border:1px solid #dde;border-radius:.5rem;padding:.65rem}.card span{display:block;color:#667;font-size:.68rem;text-transform:uppercase}.card strong{font-size:1rem;color:#0b1f3f}</style></head><body>${html}</body></html>`;
+    if (win && win.document) {
+      try {
+        win.document.open();
+        win.document.write(fullHtml);
+        win.document.close();
+        win.focus();
+        setTimeout(() => {
+          try { win.print(); } catch (_) {}
+        }, 350);
+        return;
+      } catch (_) {}
+    }
+    const iframe = document.createElement("iframe");
+    iframe.style.position = "fixed";
+    iframe.style.width = "0";
+    iframe.style.height = "0";
+    iframe.style.border = "0";
+    document.body.appendChild(iframe);
+    try {
+      iframe.contentWindow.document.open();
+      iframe.contentWindow.document.write(fullHtml);
+      iframe.contentWindow.document.close();
+      iframe.contentWindow.focus();
+      setTimeout(() => {
+        try { iframe.contentWindow.print(); } catch (_) {}
+        setTimeout(() => iframe.parentNode?.removeChild(iframe), 60000);
+      }, 350);
+    } catch (_) {}
   }
 
   function buildPrintHtml(options = {}) {

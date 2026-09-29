@@ -1271,12 +1271,7 @@ function buildFinanceA4PrintHtml(records, stats, comparison, churchRows, cellRow
 }
 
 function exportFinancePrint(html, title = "Relatório Financeiro A4") {
-  const win = window.open("", "_blank", "noopener,noreferrer,width=1080,height=850");
-  if (!win) {
-    alert("Por favor, permita pop-ups neste navegador para imprimir o relatório.");
-    return;
-  }
-  win.document.write(`<!DOCTYPE html>
+  const fullHtml = `<!DOCTYPE html>
 <html lang="pt">
 <head>
   <meta charset="utf-8">
@@ -1468,10 +1463,66 @@ function exportFinancePrint(html, title = "Relatório Financeiro A4") {
 <body>
   ${html}
 </body>
-</html>`);
-  win.document.close();
-  win.focus();
-  setTimeout(() => win.print(), 350);
+</html>`;
+
+  // Attempt standard popup without noopener/noreferrer to permit DOM write
+  let win = null;
+  try {
+    win = window.open("", "_blank", "width=1080,height=850");
+  } catch (err) {
+    console.warn("[CE Export] window.open blocked by browser:", err);
+  }
+
+  if (win && win.document) {
+    try {
+      win.document.open();
+      win.document.write(fullHtml);
+      win.document.close();
+      win.focus();
+      setTimeout(() => {
+        try { win.print(); } catch (_) {}
+      }, 400);
+      return;
+    } catch (writeErr) {
+      console.warn("[CE Export] Write to window failed, fallback to iframe:", writeErr);
+    }
+  }
+
+  // Fallback: Invisible iframe inside current DOM (works even if popups are blocked)
+  try {
+    const iframe = document.createElement("iframe");
+    iframe.style.position = "fixed";
+    iframe.style.right = "0";
+    iframe.style.bottom = "0";
+    iframe.style.width = "0";
+    iframe.style.height = "0";
+    iframe.style.border = "0";
+    iframe.style.opacity = "0";
+    iframe.style.pointerEvents = "none";
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentWindow.document;
+    doc.open();
+    doc.write(fullHtml);
+    doc.close();
+    iframe.contentWindow.focus();
+    setTimeout(() => {
+      try { iframe.contentWindow.print(); } catch (_) {}
+      setTimeout(() => {
+        if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+      }, 60000);
+    }, 400);
+  } catch (iframeErr) {
+    console.error("[CE Export] Iframe print fallback failed:", iframeErr);
+    // Last resort: direct download as html file
+    try {
+      const blob = new Blob([fullHtml], { type: "text/html;charset=utf-8;" });
+      const dlLink = document.createElement("a");
+      dlLink.href = URL.createObjectURL(blob);
+      dlLink.download = `${title.toLowerCase().replace(/[^a-z0-9]/g, "-")}.html`;
+      dlLink.click();
+    } catch (_) {}
+  }
 }
 
 function exportFinancePdf(html, title) {
