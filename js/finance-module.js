@@ -1448,126 +1448,126 @@ function financeReportFilterBar(filters, churches, labels) {
   ];
 
   return `
-    <div class="finance-report-filters filter-toolbar filter-bar light-surface mb-3 p-3 glass-panel">
-      <div class="row g-2 align-items-center">
+    <div class="finance-filters-panel p-3 mb-4 rounded-3 shadow-sm light-surface border">
+      <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-funnel-fill text-warning fs-5"></i>
+          <span class="fw-bold text-dark text-uppercase small tracking-wide">Filtros de Pesquisa & Análise</span>
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-finance-report-reset title="Limpar todos os filtros">
+          <i class="bi bi-arrow-counterclockwise me-1"></i>Limpar Filtros
+        </button>
+      </div>
+
+      <div class="row g-3">
         <!-- Period -->
-        <div class="col-sm-6 col-md-3 col-xl-2">
-          <label class="small text-secondary fw-semibold d-block mb-1"><i class="bi bi-calendar3 me-1"></i>${labels.period || "Período"}</label>
-          <select class="form-select form-select-sm" data-finance-report-filter="period" aria-label="${labels.period}">
+        <div class="col-12 col-sm-6 col-md-4 col-xl-3">
+          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-calendar3 me-1 text-primary"></i>${labels.period || "Período"}</label>
+          <select class="form-select" data-finance-report-filter="period" aria-label="${labels.period}">
             ${periodOptions.map(([v, l]) => `<option value="${v}" ${filters.period === v ? "selected" : ""}>${l}</option>`).join("")}
           </select>
         </div>
 
         <!-- Custom Date Range -->
-        <div class="col-sm-6 col-md-3 col-xl-2 ${filters.period === "custom" ? "" : "d-none"}" data-finance-custom-date-container>
-          <label class="small text-secondary fw-semibold d-block mb-1">${labels.from || "De"}</label>
-          <input class="form-control form-control-sm" type="date" data-finance-report-filter="dateFrom" value="${filters.dateFrom || ""}" aria-label="${labels.from}">
+        <div class="col-12 col-sm-6 col-md-4 col-xl-3 ${filters.period === "custom" ? "" : "d-none"}" data-finance-custom-date-container>
+          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-calendar-event me-1 text-primary"></i>${labels.from || "De"}</label>
+          <input class="form-control" type="date" data-finance-report-filter="dateFrom" value="${filters.dateFrom || ""}" aria-label="${labels.from}">
         </div>
-        <div class="col-sm-6 col-md-3 col-xl-2 ${filters.period === "custom" ? "" : "d-none"}" data-finance-custom-date-container>
-          <label class="small text-secondary fw-semibold d-block mb-1">${labels.to || "Até"}</label>
-          <input class="form-control form-control-sm" type="date" data-finance-report-filter="dateTo" value="${filters.dateTo || ""}" aria-label="${labels.to}">
+        <div class="col-12 col-sm-6 col-md-4 col-xl-3 ${filters.period === "custom" ? "" : "d-none"}" data-finance-custom-date-container>
+          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-calendar-event me-1 text-primary"></i>${labels.to || "Até"}</label>
+          <input class="form-control" type="date" data-finance-report-filter="dateTo" value="${filters.dateTo || ""}" aria-label="${labels.to}">
         </div>
 
         <!-- Church -->
-        <div class="col-sm-6 col-md-3 col-xl-2">
-          <label class="small text-secondary fw-semibold d-block mb-1"><i class="bi bi-building me-1"></i>${labels.church || "Igreja"}</label>
-          <select class="form-select form-select-sm" data-finance-report-filter="churchId" aria-label="${labels.church}">
+        <div class="col-12 col-sm-6 col-md-4 col-xl-3">
+          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-building me-1 text-primary"></i>${labels.church || "Igreja"}</label>
+          <select class="form-select" data-finance-report-filter="churchId" aria-label="${labels.church}">
             <option value="">${labels.allChurches || "Todas as Igrejas"}</option>
             ${churches.map((c) => `<option value="${c.id}" ${filters.churchId === c.id ? "selected" : ""}>${c.church_name}</option>`).join("")}
           </select>
         </div>
 
         <!-- Category -->
-        <div class="col-sm-6 col-md-3 col-xl-2">
-          <label class="small text-secondary fw-semibold d-block mb-1"><i class="bi bi-tags me-1"></i>${labels.category || "Categoria"}</label>
-          <select class="form-select form-select-sm" data-finance-report-filter="category" aria-label="${labels.category}">
+        <div class="col-12 col-sm-6 col-md-4 col-xl-3">
+          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-tags me-1 text-primary"></i>${labels.category || "Categoria"}</label>
+          <select class="form-select" data-finance-report-filter="category" aria-label="${labels.category}">
             <option value="">${labels.allCategories || "Todas Categorias"}</option>
             ${allCategories.map((c) => `<option value="${c}" ${filters.category === c ? "selected" : ""}>${c}</option>`).join("")}
           </select>
         </div>
 
         <!-- Contribution Type -->
-        <div class="col-sm-6 col-md-3 col-xl-2">
-          <label class="small text-secondary fw-semibold d-block mb-1"><i class="bi bi-collection me-1"></i>${labels.contributionType || "Tipo"}</label>
-          <select class="form-select form-select-sm" data-finance-report-filter="contributionType" aria-label="${labels.contributionType}">
+        <div class="col-12 col-sm-6 col-md-4 col-xl-3">
+          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-collection me-1 text-primary"></i>${labels.contributionType || "Tipo"}</label>
+          <select class="form-select" data-finance-report-filter="contributionType" aria-label="${labels.contributionType}">
             <option value="">${labels.allTypes || "Todos os Tipos"}</option>
             ${FINANCE_CONTRIBUTION_GROUPS.map((g) => `<option value="${g}" ${filters.contributionType === g ? "selected" : ""}>${g}</option>`).join("")}
           </select>
         </div>
 
         <!-- Partnership Arm -->
-        <div class="col-sm-6 col-md-3 col-xl-2">
-          <label class="small text-secondary fw-semibold d-block mb-1"><i class="bi bi-heart me-1"></i>${labels.partnershipArm || "Braço"}</label>
-          <select class="form-select form-select-sm" data-finance-report-filter="partnershipArm" aria-label="${labels.partnershipArm}">
+        <div class="col-12 col-sm-6 col-md-4 col-xl-3">
+          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-heart me-1 text-danger"></i>${labels.partnershipArm || "Braço de Parceria"}</label>
+          <select class="form-select" data-finance-report-filter="partnershipArm" aria-label="${labels.partnershipArm}">
             <option value="">${labels.allArms || "Todos Braços de Parceria"}</option>
             ${FINANCE_PARTNERSHIP_ARMS.map((a) => `<option value="${a}" ${filters.partnershipArm === a ? "selected" : ""}>${a}</option>`).join("")}
           </select>
         </div>
 
         <!-- Payment Method -->
-        <div class="col-sm-6 col-md-3 col-xl-2">
-          <label class="small text-secondary fw-semibold d-block mb-1"><i class="bi bi-wallet2 me-1"></i>${labels.method || "Método"}</label>
-          <select class="form-select form-select-sm" data-finance-report-filter="method" aria-label="${labels.method}">
+        <div class="col-12 col-sm-6 col-md-4 col-xl-3">
+          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-wallet2 me-1 text-success"></i>${labels.method || "Método de Pagamento"}</label>
+          <select class="form-select" data-finance-report-filter="method" aria-label="${labels.method}">
             <option value="">${labels.allMethods || "Todos Métodos"}</option>
             ${(window.paymentMethods || ["M-Pesa", "E-Mola", "Banco", "Dinheiro", "POS", "Outro"]).map((m) => `<option value="${m}" ${filters.method === m ? "selected" : ""}>${m}</option>`).join("")}
           </select>
         </div>
 
         <!-- Status -->
-        <div class="col-sm-6 col-md-3 col-xl-2">
-          <label class="small text-secondary fw-semibold d-block mb-1"><i class="bi bi-shield-check me-1"></i>${labels.status || "Estado"}</label>
-          <select class="form-select form-select-sm" data-finance-report-filter="status" aria-label="${labels.status}">
+        <div class="col-12 col-sm-6 col-md-4 col-xl-3">
+          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-shield-check me-1 text-info"></i>${labels.status || "Estado de Validação"}</label>
+          <select class="form-select" data-finance-report-filter="status" aria-label="${labels.status}">
             <option value="">${labels.allStatuses || "Todos Estados"}</option>
             ${(window.financeStatuses || ["Verificado", "Pendente de Verificação", "Rejeitado", "Incluído no Relatório"]).map((s) => `<option value="${s}" ${filters.status === s ? "selected" : ""}>${s}</option>`).join("")}
           </select>
         </div>
 
         <!-- Min Value -->
-        <div class="col-sm-6 col-md-3 col-xl-2">
-          <label class="small text-secondary fw-semibold d-block mb-1"><i class="bi bi-cash me-1"></i>${labels.minValue || "Valor Mínimo"}</label>
-          <input class="form-control form-control-sm" type="number" min="0" step="100" data-finance-report-filter="minValue" value="${filters.minValue || ""}" placeholder="Ex: 500" aria-label="${labels.minValue}">
+        <div class="col-12 col-sm-6 col-md-4 col-xl-3">
+          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-cash-stack me-1 text-warning"></i>${labels.minValue || "Valor Mínimo (MTn)"}</label>
+          <input class="form-control" type="number" min="0" step="100" data-finance-report-filter="minValue" value="${filters.minValue || ""}" placeholder="Ex: 500" aria-label="${labels.minValue}">
         </div>
 
         <!-- Contributor Search -->
-        <div class="col-sm-6 col-md-3 col-xl-2">
-          <label class="small text-secondary fw-semibold d-block mb-1"><i class="bi bi-person me-1"></i>${labels.contributor || "Contribuinte / Ref"}</label>
-          <input class="form-control form-control-sm" type="search" data-finance-report-filter="contributor" value="${filters.contributor || ""}" placeholder="${labels.contributorPlaceholder || "Nome, telefone ou ref..."}" aria-label="${labels.contributor}">
+        <div class="col-12 col-sm-6 col-md-4 col-xl-3">
+          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-person-search me-1 text-primary"></i>${labels.contributor || "Contribuinte / Ref"}</label>
+          <input class="form-control" type="search" data-finance-report-filter="contributor" value="${filters.contributor || ""}" placeholder="${labels.contributorPlaceholder || "Nome, telefone ou ref..."}" aria-label="${labels.contributor}">
         </div>
 
         <!-- Cell Group -->
-        <div class="col-sm-6 col-md-3 col-xl-2">
-          <label class="small text-secondary fw-semibold d-block mb-1"><i class="bi bi-diagram-3 me-1"></i>${labels.cellGroup || "Grupo de Célula"}</label>
-          <select class="form-select form-select-sm" data-finance-report-filter="cellGroup" aria-label="${labels.cellGroup}">
+        <div class="col-12 col-sm-6 col-md-4 col-xl-3">
+          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-diagram-3 me-1 text-primary"></i>${labels.cellGroup || "Grupo de Célula"}</label>
+          <select class="form-select" data-finance-report-filter="cellGroup" aria-label="${labels.cellGroup}">
             <option value="">${labels.cellGroup || "Todos Grupos de Célula"}</option>
             ${(window.CECellOptions?.groups?.() || []).map((group) => `<option value="${group.group_name}" ${filters.cellGroup === group.group_name ? "selected" : ""}>${group.group_name}</option>`).join("")}
           </select>
         </div>
 
         <!-- Cell -->
-        <div class="col-sm-6 col-md-3 col-xl-2">
-          <label class="small text-secondary fw-semibold d-block mb-1"><i class="bi bi-people me-1"></i>${labels.cell || "Célula"}</label>
-          <select class="form-select form-select-sm" data-finance-report-filter="cell" aria-label="${labels.cell}">
+        <div class="col-12 col-sm-6 col-md-4 col-xl-3">
+          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-people me-1 text-primary"></i>${labels.cell || "Célula"}</label>
+          <select class="form-select" data-finance-report-filter="cell" aria-label="${labels.cell}">
             <option value="">${labels.cell || "Todas as Células"}</option>
             ${(window.CECellOptions?.cells?.() || []).map((cell) => `<option value="${cell.cell_name}" ${filters.cell === cell.cell_name ? "selected" : ""}>${cell.cell_name}</option>`).join("")}
           </select>
         </div>
 
         <!-- Frequency -->
-        <div class="col-sm-6 col-md-3 col-xl-2">
-          <label class="small text-secondary fw-semibold d-block mb-1"><i class="bi bi-repeat me-1"></i>${labels.frequency || "Frequência"}</label>
-          <select class="form-select form-select-sm" data-finance-report-filter="frequency" aria-label="${labels.frequency}">
+        <div class="col-12 col-sm-6 col-md-4 col-xl-3">
+          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-repeat me-1 text-secondary"></i>${labels.frequency || "Frequência"}</label>
+          <select class="form-select" data-finance-report-filter="frequency" aria-label="${labels.frequency}">
             ${frequencyOptions.map(([v, l]) => `<option value="${v}" ${filters.frequency === v ? "selected" : ""}>${l}</option>`).join("")}
           </select>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="col-12 d-flex flex-wrap gap-2 justify-content-end mt-2 pt-2 border-top border-secondary-subtle">
-          <button type="button" class="btn btn-sm btn-outline-secondary btn-touch" data-finance-report-reset title="Limpar todos os filtros">
-            <i class="bi bi-arrow-counterclockwise me-1"></i>Limpar Filtros
-          </button>
-          <button type="button" class="btn btn-sm btn-ce-gold btn-touch" data-finance-report-apply>
-            <i class="bi bi-search me-1"></i>${labels.search || "Actualizar / Pesquisar"}
-          </button>
         </div>
       </div>
     </div>`;
