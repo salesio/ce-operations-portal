@@ -8601,6 +8601,23 @@ function canManageVenue() {
   return hasPermission("*", "inventory", "venues", "maintenance", "checklists", "venueInventory");
 }
 
+function canManageFinance(user = activeUser) {
+  if (!user) return false;
+  const role = String(user?.role || user?.role_name || "").toLowerCase().trim();
+  if (
+    role.includes("super") ||
+    role.includes("admin") ||
+    role.includes("finance") ||
+    role.includes("pastor") ||
+    role.includes("tesour") ||
+    role.includes("director") ||
+    role.includes("head")
+  ) {
+    return true;
+  }
+  return hasPermission("*", "finance", "financeHead", "financeOfficer", "financeVerify", "financeAdmin");
+}
+
 function canRequestVenueEquipment() {
   return hasPermission("venueInventoryRequests", "requisitions");
 }
@@ -11393,13 +11410,13 @@ function roleWorkspaceRoutes(user = activeUser) {
   } else if (role === "finance head" || role === "finance officer") {
     routes.push("finance", "financeOverviewRoute", "financeEntriesRoute", "financePublicSubmissionsRoute", "financeVerificationRoute", "financeApprovedRequisitionsRoute", "financeReportsRoute", "financePartnersRoute", "financeExportsRoute", "partnership", "partnershipArmsRoute", "partnershipPartnersRoute", "partnershipContributionsRoute", "partnershipHighlightsRoute", "partnershipAnalyticsRoute", "partnershipReportsRoute", "partnershipExportsRoute", "reports", "requisitions");
   } else if (role === "partnership coordinator") {
-    routes.push("partnership", "partnershipArmsRoute", "partnershipPartnersRoute", "partnershipContributionsRoute", "partnershipHighlightsRoute", "partnershipAnalyticsRoute", "partnershipReportsRoute", "partnershipExportsRoute", "finance", "reports");
+    routes.push("partnership", "partnershipArmsRoute", "partnershipPartnersRoute", "partnershipContributionsRoute", "partnershipHighlightsRoute", "partnershipAnalyticsRoute", "partnershipReportsRoute", "partnershipExportsRoute", "finance", "financeOverviewRoute", "financeEntriesRoute", "financePublicSubmissionsRoute", "financeVerificationRoute", "financeApprovedRequisitionsRoute", "financeReportsRoute", "financePartnersRoute", "financeExportsRoute", "reports");
   } else if (role === "hr manager") {
     routes.push("staffHr", "reports");
   } else if (role === "requisition officer") {
     routes.push("requisitions", "reports", "venueInventory");
   } else if (role === "department head") {
-    routes.push("members", "firstTimers", "followUp", "reports", "requisitions", "staffHr", "venueInventory", "fevo", "cell", "cellMinistry", "cellReports", "alec", "media", "programs", "cellPrison", "cellMaterials", "counseling", "sacraments", "foundation", "finance", "partnership");
+    routes.push("members", "firstTimers", "followUp", "reports", "requisitions", "staffHr", "venueInventory", "fevo", "cell", "cellMinistry", "cellReports", "alec", "media", "programs", "cellPrison", "cellMaterials", "counseling", "sacraments", "foundation", "finance", "financeOverviewRoute", "financeEntriesRoute", "financePublicSubmissionsRoute", "financeVerificationRoute", "financeApprovedRequisitionsRoute", "financeReportsRoute", "financePartnersRoute", "financeExportsRoute", "partnership", "partnershipArmsRoute", "partnershipPartnersRoute", "partnershipContributionsRoute", "partnershipHighlightsRoute", "partnershipAnalyticsRoute", "partnershipReportsRoute", "partnershipExportsRoute");
   } else if (role === "staff member") {
     routes.push("requisitions", "venueInventory", "venueInventoryStaff", "staffHr");
   }
@@ -11463,7 +11480,15 @@ function roleWorkspaceRoutes(user = activeUser) {
 
 function isRouteInRoleWorkspace(route, user = activeUser) {
   const allowedRoutes = roleWorkspaceRoutes(user);
-  return !allowedRoutes || allowedRoutes.includes(route);
+  if (!allowedRoutes) return true;
+  if (allowedRoutes.includes(route)) return true;
+  if (route.startsWith("finance") && allowedRoutes.includes("finance")) return true;
+  if (route.startsWith("partnership") && allowedRoutes.includes("partnership")) return true;
+  if (route.startsWith("media") && allowedRoutes.includes("media")) return true;
+  if (route.startsWith("fevo") && allowedRoutes.includes("fevo")) return true;
+  if (route.startsWith("venueInventory") && (allowedRoutes.includes("venueInventory") || allowedRoutes.includes("venueInventoryStaff"))) return true;
+  if ((route.startsWith("cell") || route.startsWith("alec")) && (allowedRoutes.includes("cell") || allowedRoutes.includes("cellMinistry") || allowedRoutes.includes("cellReports") || allowedRoutes.includes("alec"))) return true;
+  return false;
 }
 
 function roleWorkspaceDefaultRoute(user = activeUser) {
