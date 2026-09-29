@@ -257,6 +257,26 @@
   }
 
   function rerenderModule(module, route) {
+    if (module === "finance") {
+      const store = window.financePageState;
+      const tabToRoute = {
+        overview: "financeOverviewRoute",
+        entries: "financeEntriesRoute",
+        public: "financePublicSubmissionsRoute",
+        verification: "financeVerificationRoute",
+        approvedRequisitions: "financeApprovedRequisitionsRoute",
+        reports: "financeReportsRoute",
+        partners: "financePartnersRoute",
+        exports: "financeExportsRoute"
+      };
+      const targetRoute = route || (store?.tab ? tabToRoute[store.tab] : "financeOverviewRoute") || "finance";
+      if (typeof setRoute === "function" && targetRoute) {
+        setRoute(targetRoute);
+      } else if (typeof renderFinance === "function") {
+        renderFinance();
+      }
+      return;
+    }
     const targetRoute = route || {
       staffHr: "staffHr",
       finance: "finance",
@@ -311,29 +331,63 @@
     if (!store) return;
     const filters = payload.filterPayload || {};
     if (payload.targetTab) store.tab = payload.targetTab;
+
+    // Reset old single-card filter state so click targets exact clicked data cleanly
+    store.reportFilters = {
+      period: "",
+      dateFrom: "",
+      dateTo: "",
+      churchId: "",
+      category: "",
+      contributionType: "",
+      partnershipArm: "",
+      method: "",
+      status: "",
+      source: "",
+      minValue: "",
+      search: ""
+    };
+    store.sourceFilter = "";
+    store.approvedReqFilters = {
+      period: "month",
+      department: "",
+      status: "",
+      churchId: "",
+      finance_status: "",
+      search: ""
+    };
+
     if (filters.period) store.reportFilters.period = filters.period;
-    if (filters.date) store.reportFilters.dateFrom = filters.date;
-    if (filters.date) store.reportFilters.dateTo = filters.date;
+    if (filters.date) {
+      store.reportFilters.dateFrom = filters.date;
+      store.reportFilters.dateTo = filters.date;
+    }
+    if (filters.dateFrom) store.reportFilters.dateFrom = filters.dateFrom;
+    if (filters.dateTo) store.reportFilters.dateTo = filters.dateTo;
     if (filters.status) store.reportFilters.status = filters.status;
     if (filters.source) {
       store.sourceFilter = filters.source;
       store.reportFilters.source = filters.source;
-      if (payload.targetTab === "public") store.tab = "public";
     }
-    if (payload.targetTab === "reports" || filters.card_filter) {
-      store.tab = payload.targetTab || store.tab || "reports";
-      store.requisitionReportFilters = store.requisitionReportFilters || {};
-      if (filters.period) store.requisitionReportFilters.period = filters.period;
-      Object.assign(store.requisitionReportFilters, filters);
+    if (payload.targetTab === "public") {
+      store.tab = "public";
+      if (filters.source) store.sourceFilter = filters.source;
     }
-    if (payload.targetTab === "approvedRequisitions" || (filters.finance_status && payload.targetTab !== "reports")) {
-      store.tab = payload.targetTab || "approvedRequisitions";
-      store.approvedReqFilters = store.approvedReqFilters || {};
+    if (payload.targetTab === "verification") {
+      store.tab = "verification";
+    }
+    if (payload.targetTab === "approvedRequisitions" || filters.finance_status) {
+      store.tab = "approvedRequisitions";
       if (filters.finance_status) store.approvedReqFilters.finance_status = filters.finance_status;
       if (filters.period) store.approvedReqFilters.period = filters.period;
       Object.assign(store.approvedReqFilters, filters);
     }
-    Object.assign(store.reportFilters, filters);
+    if (payload.targetTab === "reports" || filters.card_filter) {
+      store.tab = payload.targetTab || "reports";
+      store.requisitionReportFilters = store.requisitionReportFilters || {};
+      if (filters.period) store.requisitionReportFilters.period = filters.period;
+      Object.assign(store.requisitionReportFilters, filters);
+    }
     return true;
   }
 

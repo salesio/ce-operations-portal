@@ -20246,18 +20246,18 @@ function renderFinance() {
       ${moduleSection(L("financeOverviewSection"), L("financeOverviewHint"), "bi-speedometer2", "", `
         <div class="row g-3 summary-cards-row">
           ${sm("bi-calendar-day", L("totalToday"), money(today), "finance", { targetTab: "entries", filterPayload: { period: "today", dateFrom: new Date().toISOString().slice(0, 10), dateTo: new Date().toISOString().slice(0, 10) } })}
-          ${sm("bi-calendar3", L("totalThisMonth"), money(month), "finance", { targetTab: "reports", filterPayload: { period: "month" } })}
+          ${sm("bi-calendar3", L("totalThisMonth"), money(month), "finance", { targetTab: "entries", filterPayload: { period: "month" } })}
           ${sm("bi-hourglass", L("pendingVerification"), pendingList.length, "finance", { targetTab: "verification", filterPayload: { status: FINANCE_STATUS_PENDING } })}
           ${sm("bi-patch-check", L("verified"), allList.filter((f) => statusKey(f.estado) === "verified").length, "finance", { targetTab: "entries", filterPayload: { status: FINANCE_STATUS_VERIFIED } })}
           ${sm("bi-globe2", L("financeTabPublic"), publicRows.filter((row) => statusKey(row.status) === "pendingVerification").length, "finance", { targetTab: "public", filterPayload: { source: "public_website" } })}
           ${sm("bi-x-circle", L("financeTotalRejected"), allList.filter((f) => statusKey(f.estado) === "rejected").length, "finance", { targetTab: "entries", filterPayload: { status: FINANCE_STATUS_REJECTED } })}
         </div>
         <div class="row g-3 summary-cards-row mt-2">
-          ${sm("bi-clipboard-check", L("finApprovedRequisitions"), approvedReqStats.total || 0, "finance", { targetTab: "approvedRequisitions" })}
+          ${sm("bi-clipboard-check", L("finApprovedRequisitions"), approvedReqStats.total || 0, "finance", { targetTab: "approvedRequisitions", filterPayload: {} })}
           ${sm("bi-hourglass-split", L("finAwaitingRelease"), approvedReqStats.awaiting || 0, "finance", { targetTab: "approvedRequisitions", filterPayload: { finance_status: "Aguardando Liberação" } })}
           ${sm("bi-cash-stack", L("finReleasedThisMonth"), approvedReqStats.releasedThisMonth || 0, "finance", { targetTab: "approvedRequisitions", filterPayload: { finance_status: "Recursos Liberados", period: "month" } })}
           ${sm("bi-graph-up", L("finTotalReleasedMonth"), money(approvedReqStats.releasedValueMonth || 0), "finance", { targetTab: "approvedRequisitions", filterPayload: { finance_status: "Recursos Liberados", period: "month" } })}
-          ${sm("bi-clock-history", L("reqRemainingPending"), money(approvedReqStats.pendingTotal || 0), "finance", { targetTab: "reports", filterPayload: { card_filter: "awaiting" } })}
+          ${sm("bi-clock-history", L("reqRemainingPending"), money(approvedReqStats.pendingTotal || 0), "finance", { targetTab: "approvedRequisitions", filterPayload: { finance_status: "Aguardando Liberação" } })}
         </div>`)}
       ${moduleSection(L("financeAnalyticsSection"), L("financeAnalyticsHint"), "bi-pie-chart", "", `
         <div class="row g-4">
