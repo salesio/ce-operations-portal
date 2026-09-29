@@ -2506,6 +2506,7 @@ Object.assign(TEXT.pt, {
   cellMinistryArea: "Ministério de Células",
   cellReportsArea: "Relatórios de Células",
   cellAlecOverview: "Visão Geral ALEC",
+  cellAlecReports: "Relatórios & Analytics ALEC",
   cellMinistryOverview: "Visão Geral",
   receivedReports: "Submissões Semanais",
   cellPerformance: "Desempenho das Células",
@@ -2908,6 +2909,7 @@ Object.assign(TEXT.en, {
   cellMinistryArea: "Cell Ministry",
   cellReportsArea: "Cell Reports",
   cellAlecOverview: "ALEC Overview",
+  cellAlecReports: "ALEC Reports & Analytics",
   cellMinistryOverview: "Overview",
   receivedReports: "Weekly Submissions",
   cellPerformance: "Cell Performance",
@@ -3203,6 +3205,7 @@ const CELL_NAV = {
         ["cellAlecOverview", "cellAlecOverview"],
         ["cellAlecRegistration", "alecRegistration"],
         ["cellAlecScores", "alecScores"],
+        ["cellAlecReports", "cellAlecReports"],
         ["cellChurchReports", "churchReports"]
       ]
     },
@@ -8876,11 +8879,20 @@ function getFinanceRepoSafe() {
 
 async function dualWriteFinanceRecord(mode, record) {
   const repo = getFinanceRepoSafe();
+  const id = record?.id || record;
   if (!repo || !record) return { ok: true, skipped: true };
   try {
     let result = null;
     if (mode === "create" && repo.createFinanceRecord) result = await repo.createFinanceRecord(record);
-    else if (mode === "update" && repo.updateFinanceRecord) result = await repo.updateFinanceRecord(record.id, record);
+    else if (mode === "update" && repo.updateFinanceRecord) result = await repo.updateFinanceRecord(id, record);
+    else if (mode === "delete") {
+      if (repo.deleteFinanceRecord) result = await repo.deleteFinanceRecord(id);
+      else if (repo.deleteRecord) result = await repo.deleteRecord(id);
+      const client = (typeof window !== "undefined" && (window.CESupabase?.getRawClient?.() || window.CESupabase?.getSupabaseFoundationClient?.() || window.CESupabase?.getSupabaseClient?.() || window.supabase));
+      if (client && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(id))) {
+        void client.from("finance_records").delete().eq("id", id);
+      }
+    }
     if (result && result.ok === false) {
       console.warn("[CE Finance] dual-write soft-fail", result);
       return { ok: true, skipped: true, repoError: result };
@@ -8894,11 +8906,20 @@ async function dualWriteFinanceRecord(mode, record) {
 
 async function dualWritePublicGivingSubmission(mode, record) {
   const repo = getFinanceRepoSafe();
+  const id = record?.id || record?.submission_group_id || record;
   if (!repo || !record) return { ok: true, skipped: true };
   try {
     let result = null;
     if (mode === "create" && repo.createPublicGivingSubmission) result = await repo.createPublicGivingSubmission(record);
-    else if (mode === "update" && repo.updatePublicGivingSubmission) result = await repo.updatePublicGivingSubmission(record.id, record);
+    else if (mode === "update" && repo.updatePublicGivingSubmission) result = await repo.updatePublicGivingSubmission(id, record);
+    else if (mode === "delete") {
+      if (repo.deletePublicGivingSubmission) result = await repo.deletePublicGivingSubmission(id);
+      const client = (typeof window !== "undefined" && (window.CESupabase?.getRawClient?.() || window.CESupabase?.getSupabaseFoundationClient?.() || window.CESupabase?.getSupabaseClient?.() || window.supabase));
+      if (client && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(id))) {
+        void client.from("public_giving_submissions").delete().eq("id", id);
+        void client.from("finance_records").delete().eq("submission_group_id", id);
+      }
+    }
     if (result && result.ok === false) {
       console.warn("[CE Finance] public giving dual-write soft-fail", result);
       return { ok: true, skipped: true, repoError: result };
@@ -10019,6 +10040,9 @@ function publicSubmissionActions(submissionGroupId, records, currentStatus) {
   if (isPending) {
     actions.push(["verifyGroup", "finance", submissionGroupId, L("verify")], ["rejectGroup", "finance", submissionGroupId, L("reject")]);
   }
+  if (canManageFinance() || ["Super Admin", "Pastor", "Main Pastor", "Admin", "Finance Head", "Finance Officer"].includes(activeUser?.role)) {
+    actions.push(["deletePublicSubmission", "finance", submissionGroupId, L("delete")]);
+  }
   return actionButtons(actions);
 }
 
@@ -10122,7 +10146,9 @@ function openPublicSubmissionDrawer(mode, submissionGroupId) {
     body.innerHTML = publicSubmissionDetailHtml(submission, records);
     const pending = (submission?.status && statusKey(submission.status) === "pendingVerification") ||
       records.some((record) => statusKey(record.estado) === "pendingVerification");
-    foot.innerHTML = `<button type="button" class="btn btn-outline-glass" data-finance-drawer-close>${L("cancel")}</button>
+    foot.innerHTML = `
+      <button type="button" class="btn btn-outline-danger me-auto" data-action="deletePublicSubmission" data-type="finance" data-id="${submissionGroupId}"><i class="bi bi-trash me-1"></i>${L("delete")}</button>
+      <button type="button" class="btn btn-outline-glass" data-finance-drawer-close>${L("cancel")}</button>
       ${pending ? `<button type="button" class="btn btn-ce-gold" data-action="verifyGroup" data-type="finance" data-id="${submissionGroupId}">${L("verify")}</button>
       <button type="button" class="btn btn-outline-danger" data-action="rejectGroup" data-type="finance" data-id="${submissionGroupId}">${L("reject")}</button>` : ""}`;
   } else if (mode === "verifyGroup") {
@@ -10802,6 +10828,9 @@ function financeActions(id, record) {
       actions.push(["verify", "finance", id, L("verify")], ["reject", "finance", id, L("reject")]);
     }
   }
+  if (access.canCreateEntries || access.canVerifyReject || canManageFinance() || ["Super Admin", "Pastor", "Main Pastor", "Admin", "Finance Head", "Finance Officer"].includes(activeUser?.role)) {
+    actions.push(["delete", "finance", id, L("delete")]);
+  }
   return actions.length ? actionButtons(actions) : `<span class="text-secondary small">-</span>`;
 }
 
@@ -10819,14 +10848,18 @@ function openFinanceDrawer(mode, id = null) {
     byId("financeDrawerEyebrow").textContent = L("financeDetails");
     byId("financeDrawerTitle").textContent = fullName(record) || L("finance");
     body.innerHTML = financeDetailGrid(record);
-    foot.innerHTML = `<button type="button" class="btn btn-outline-glass" data-finance-drawer-close>${L("cancel")}</button>
-      <button type="button" class="btn btn-ce-gold" data-action="edit" data-type="finance" data-id="${record.id}">${L("edit")}</button>`;
+    foot.innerHTML = `
+      <button type="button" class="btn btn-outline-danger me-auto" data-action="delete" data-type="finance" data-id="${record.id}"><i class="bi bi-trash me-1"></i>${L("delete")}</button>
+      <button type="button" class="btn btn-outline-glass" data-finance-drawer-close>${L("cancel")}</button>
+      <button type="button" class="btn btn-ce-gold" data-action="edit" data-type="finance" data-id="${record.id}"><i class="bi bi-pencil me-1"></i>${L("edit")}</button>`;
   } else if (mode === "edit") {
     byId("financeDrawerEyebrow").textContent = L("edit");
     byId("financeDrawerTitle").textContent = fullName(record) || L("finance");
     body.innerHTML = `<form id="financeDrawerForm" class="row g-3">${getFinanceSchema("edit").map((field) => fieldControl(field, record)).join("")}</form>`;
     requestAnimationFrame(() => mountRelationalControls(byId("financeDrawerForm")));
-    foot.innerHTML = `<button type="button" class="btn btn-outline-glass" data-finance-drawer-close>${L("cancel")}</button>
+    foot.innerHTML = `
+      <button type="button" class="btn btn-outline-danger me-auto" data-action="delete" data-type="finance" data-id="${record.id}"><i class="bi bi-trash me-1"></i>${L("delete")}</button>
+      <button type="button" class="btn btn-outline-glass" data-finance-drawer-close>${L("cancel")}</button>
       <button type="submit" form="financeDrawerForm" class="btn btn-ce-gold">${L("save")}</button>`;
   } else if (mode === "verify") {
     byId("financeDrawerEyebrow").textContent = L("verifyFinance");
@@ -11202,6 +11235,7 @@ const FALLBACK_ROUTE_MODULES = {
   cellAlecOverview: "alec",
   cellAlecRegistration: "alec",
   cellAlecScores: "alec",
+  cellAlecReports: "alec",
   cellChurchReports: "alec"
 };
 
@@ -11341,7 +11375,7 @@ function roleWorkspaceRoutes(user = activeUser) {
       "cellPortal"
     );
   } else if (role === "alec_manager" || role === "alec coordinator" || role === "alec manager" || role === "alec_coordinator") {
-    routes.push("cellAlecOverview", "cellAlecRegistration", "cellAlecScores", "cellChurchReports", "cellPortal");
+    routes.push("cellAlecOverview", "cellAlecRegistration", "cellAlecScores", "cellAlecReports", "cellChurchReports", "cellPortal");
   } else if (isPastoralCareRector(user)) {
     routes.push("firstTimers", "followUp", "foundation", "sacraments", "counseling");
   } else if (role === "follow-up coordinator" || role === "follow_up_coordinator" || role === "coordenador de acompanhamento") {
@@ -11379,7 +11413,7 @@ function roleWorkspaceRoutes(user = activeUser) {
       routes.push("cellWeeklyReport", "cellGroups", "cellCellsList", "cellMembers", "cellLeadersRoute", "cellFinalValidation", "cellConsolidation");
     }
     if (grants.includes("alec") || grants.includes("alecRegistration") || grants.includes("alecScores") || grants.includes("alec_manager") || grants.includes("cell")) {
-      routes.push("cellAlecOverview", "cellAlecRegistration", "cellAlecScores", "cellChurchReports");
+      routes.push("cellAlecOverview", "cellAlecRegistration", "cellAlecScores", "cellAlecReports", "cellChurchReports");
     }
     if (grants.includes("cellPortal") || grants.includes("cell_portal")) {
       routes.push("cellPortal", "cellReceivedReports", "cellWeeklyReport");
@@ -12038,6 +12072,7 @@ function getRouteRenderers() {
     cellAlecOverview: () => renderCellMinistry("alecOverview"),
     cellAlecRegistration: () => renderCellMinistry("alecRegistration"),
     cellAlecScores: () => renderCellMinistry("alecScores"),
+    cellAlecReports: () => renderCellMinistry("alecReports"),
     cellChurchReports: () => renderCellMinistry("churchReports"),
     cellMinistryOverview: () => renderCellMinistry("ministryOverview"),
     cellReceivedReports: () => renderCellMinistry("receivedReports"),
@@ -12281,6 +12316,7 @@ function setRoute(route) {
     cellAlecOverview: ["departments", "cellAlecOverview"],
     cellAlecRegistration: ["departments", "alecRegistration"],
     cellAlecScores: ["departments", "alecScores"],
+    cellAlecReports: ["departments", "cellAlecReports"],
     cellChurchReports: ["departments", "churchReports"],
     cellMinistryOverview: ["departments", "cellMinistryOverview"],
     cellReceivedReports: ["departments", "receivedReports"],
@@ -23749,6 +23785,20 @@ const alecScoresPageState = {
   cellReportChurchId: ""
 };
 
+const alecReportsPageState = {
+  activeTab: localStorage.getItem("ce_alec_report_tab") || "summary", // "summary" | "byProvince" | "byChurch" | "byCellGroup" | "byCell" | "allStudents"
+  period: "all", // "all" | "cohort_2026_q1" | "cohort_2026_q2" | "cohort_2026_q3" | "cohort_2026_q4" | "year_2026" | "year_2025" | "custom"
+  dateFrom: "",
+  dateTo: "",
+  province: "",
+  churchId: "",
+  cellGroupId: "",
+  cellId: "",
+  status: "", // "" | "graduated" | "in_training" | "incomplete" | "dropped"
+  search: "",
+  pdfOrientation: localStorage.getItem("ce_alec_pdf_orientation") || "portrait" // "portrait" | "landscape"
+};
+
 const churchReportPageState = {
   level: "church", // "church" | "group" | "cell"
   service: "", // "", "Domingo - 1º Culto", "Domingo - 2º Culto", "Quarta-feira", etc.
@@ -24364,6 +24414,7 @@ function renderAlecRegistrationAnalyticalView() {
   const isCardView = st.view === "card" || st.view === "cards";
 
   return `
+    ${alecModuleSubnav("registration")}
     <section class="panel glass-panel mb-4">
       <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
         <div>
@@ -24787,6 +24838,7 @@ function renderAlecScoresAnalyticalView() {
   const isCardView = st.view === "card" || st.view === "cards";
 
   return `
+    ${alecModuleSubnav("scores")}
     <section class="panel glass-panel mb-4">
       <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
         <div>
@@ -24950,6 +25002,1185 @@ function renderAlecScoresAnalyticalView() {
       `}
     </section>
   `;
+}
+
+// ============================================================================
+// ALEC COMPREHENSIVE REPORTING & ANALYTICS ENGINE
+// ============================================================================
+
+function alecModuleSubnav(activeKey = "reports") {
+  const items = [
+    { key: "overview", route: "cellAlecOverview", icon: "bi-speedometer2", label: lang === "pt" ? "Visão Geral" : "Overview" },
+    { key: "registration", route: "cellAlecRegistration", icon: "bi-person-plus", label: lang === "pt" ? "Inscrições ALEC" : "Registrations" },
+    { key: "scores", route: "cellAlecScores", icon: "bi-journal-check", label: lang === "pt" ? "Pauta & Notas" : "Scores & Grades" },
+    { key: "reports", route: "cellAlecReports", icon: "bi-bar-chart-line-fill", label: lang === "pt" ? "Relatórios & Analytics" : "Reports & Analytics" },
+    { key: "churchReports", route: "cellChurchReports", icon: "bi-building-check", label: lang === "pt" ? "Relatórios das Igrejas" : "Church Reports" }
+  ];
+  return `
+    <nav class="alec-module-pills mb-4" aria-label="ALEC Sub-navigation">
+      ${items.map((item) => `
+        <button type="button" class="alec-subnav-pill ${item.key === activeKey ? "active" : ""}" data-route="${item.route}">
+          <i class="bi ${item.icon} me-2"></i>${escapeAttr(item.label)}
+        </button>
+      `).join("")}
+    </nav>
+  `;
+}
+
+function getProvinceFromChurch(churchId) {
+  const churchesList = typeof relationalChurches === "function" ? relationalChurches() : (state.churches || seedData.churches || []);
+  const ch = churchesList.find((c) => String(c.id || c.church_id) === String(churchId) || String(c.church_name || c.name || "").toLowerCase() === String(churchId || "").toLowerCase());
+  if (ch && (ch.province || ch.provincia)) {
+    return ch.province || ch.provincia;
+  }
+  const name = String(ch?.church_name || ch?.name || churchName(churchId) || churchId || "").toLowerCase();
+  if (name.includes("matola") || name.includes("khongolote") || name.includes("machava") || name.includes("boane")) return "Maputo Província";
+  if (name.includes("beira") || name.includes("dondo") || name.includes("sofala")) return "Sofala";
+  if (name.includes("nampula") || name.includes("nacala")) return "Nampula";
+  if (name.includes("tete") || name.includes("moatize")) return "Tete";
+  if (name.includes("quelimane") || name.includes("zambezia") || name.includes("zambézia")) return "Zambézia";
+  if (name.includes("pemba") || name.includes("cabo delgado")) return "Cabo Delgado";
+  if (name.includes("chimoio") || name.includes("manica")) return "Manica";
+  if (name.includes("inhambane") || name.includes("maxixe")) return "Inhambane";
+  if (name.includes("xai-xai") || name.includes("chokwe") || name.includes("gaza")) return "Gaza";
+  if (name.includes("lichinga") || name.includes("niassa")) return "Niassa";
+  if (name.includes("online")) return "Online";
+  if (name.includes("maputo") || name.includes("choupal") || name.includes("central") || name.includes("sede")) return "Maputo Cidade";
+  return "Maputo Cidade";
+}
+
+function getAlecStudentStatusCategory(item) {
+  if (item.terminou === true) return "graduated";
+  const st = String(item.estado || item.status || "").trim().toLowerCase();
+  if (st.includes("gradu") || st.includes("conclu") || st.includes("termin") || st.includes("complet")) return "graduated";
+  if (st.includes("desist") || st.includes("inactiv") || st.includes("cancel") || st.includes("abandon")) return "dropped";
+  if (st.includes("não") || st.includes("nao") || st.includes("incompl") || st.includes("pendent") || st.includes("reprov")) return "incomplete";
+  return "in_training";
+}
+
+function getAlecStatusBadge(category) {
+  switch (category) {
+    case "graduated":
+      return '<span class="badge bg-success text-white border border-success-subtle"><i class="bi bi-mortarboard-fill me-1"></i>' + (lang === "pt" ? "Graduado" : "Graduated") + '</span>';
+    case "in_training":
+      return '<span class="badge bg-primary text-white border border-primary-subtle"><i class="bi bi-hourglass-split me-1"></i>' + (lang === "pt" ? "Em Formação" : "In Training") + '</span>';
+    case "incomplete":
+      return '<span class="badge bg-warning text-dark border border-warning-subtle"><i class="bi bi-exclamation-circle-fill me-1"></i>' + (lang === "pt" ? "Não Concluiu" : "Incomplete") + '</span>';
+    case "dropped":
+      return '<span class="badge bg-danger text-white border border-danger-subtle"><i class="bi bi-x-circle-fill me-1"></i>' + (lang === "pt" ? "Desistiu" : "Dropped Out") + '</span>';
+    default:
+      return badge(category);
+  }
+}
+
+function getFilteredAlecReportData() {
+  syncAlecRegistrationsWithScores();
+  const leadership = state.cellLeadership || seedData.cellLeadership;
+  const rawRegistrations = leadership.alecRegistrations || [];
+  const rawScores = leadership.alecScores || [];
+  const churchesList = scoped(state.churches || seedData.churches || []);
+  const groupsList = typeof getAllRegisteredCellGroups === "function" ? getAllRegisteredCellGroups() : (state.cellGroups || []);
+  const cellsList = typeof getAllRegisteredCells === "function" ? getAllRegisteredCells() : (state.cellRegistry || state.cells || []);
+
+  const st = alecReportsPageState;
+
+  const unifiedStudents = [];
+  const processedIds = new Set();
+
+  rawScores.forEach((score) => {
+    const reg = rawRegistrations.find((r) => r.id === score.registration_id || (r.nome_completo && r.nome_completo.toLowerCase() === (score.nome_completo || "").toLowerCase()));
+    const id = score.id || (reg ? reg.id : `alec-${Math.random().toString(36).substr(2, 9)}`);
+    processedIds.add(id);
+
+    const chId = score.church_id || score.igreja || (reg ? (reg.church_id || reg.igreja) : "");
+    const cName = churchName(chId);
+    const province = getProvinceFromChurch(chId);
+    const cellName = score.celula || (reg ? reg.celula : "") || "—";
+    const leaderName = score.nome_do_lider_de_celula || (reg ? reg.nome_do_lider_de_celula : "") || "—";
+
+    let groupName = "—";
+    let groupId = "";
+    if (cellName && cellName !== "—") {
+      const foundCell = cellsList.find((c) => (c.cell_name || c.nome_da_celula || c.name || "").toLowerCase() === cellName.toLowerCase());
+      if (foundCell) {
+        groupId = foundCell.cell_group_id || foundCell.group_id || foundCell.group_cell_id || "";
+        const foundGroup = groupsList.find((g) => String(g.id) === String(groupId));
+        if (foundGroup) groupName = foundGroup.name || foundGroup.nome_do_grupo || groupName;
+      }
+    }
+
+    const f1A1 = Number(score.fase_1_aula_1 || 0);
+    const f1A2 = Number(score.fase_1_aula_2 || 0);
+    const f1A3 = Number(score.fase_1_aula_3 || 0);
+    const f1A4 = Number(score.fase_1_aula_4 || 0);
+    const f1Scores = [f1A1, f1A2, f1A3, f1A4].filter((n) => n > 0);
+    const f1Avg = f1Scores.length ? Math.round(f1Scores.reduce((a, b) => a + b, 0) / f1Scores.length) : 0;
+
+    const f2A1 = Number(score.fase_2_aula_1 || 0);
+    const f2A2 = Number(score.fase_2_aula_2 || 0);
+    const f2A3 = Number(score.fase_2_aula_3 || 0);
+    const f2Scores = [f2A1, f2A2, f2A3].filter((n) => n > 0);
+    const f2Avg = f2Scores.length ? Math.round(f2Scores.reduce((a, b) => a + b, 0) / f2Scores.length) : 0;
+
+    const allScores = [...f1Scores, ...f2Scores];
+    const overallAvg = allScores.length ? Math.round(allScores.reduce((a, b) => a + b, 0) / allScores.length) : (f1Avg || f2Avg || 0);
+
+    const studentRecord = {
+      id,
+      scoreId: score.id,
+      regId: reg?.id || "",
+      nome_completo: score.nome_completo || reg?.nome_completo || "Aluno ALEC",
+      contacto: score.contacto || reg?.contacto || "—",
+      church_id: chId,
+      church_name: cName,
+      province,
+      cell_group_id: groupId,
+      cell_group_name: groupName,
+      celula: cellName,
+      nome_do_lider_de_celula: leaderName,
+      fez_escola_de_fundacao: !!(reg ? reg.fez_escola_de_fundacao : false),
+      e_lider: !!(reg ? reg.e_lider : false),
+      motivo_de_fazer_alec: reg?.motivo_de_fazer_alec || "",
+      observacoes: score.observacoes || reg?.observacoes || "",
+      fase_1_aula_1: f1A1,
+      fase_1_aula_2: f1A2,
+      fase_1_aula_3: f1A3,
+      fase_1_aula_4: f1A4,
+      fase_2_aula_1: f2A1,
+      fase_2_aula_2: f2A2,
+      fase_2_aula_3: f2A3,
+      fase_1_media: f1Avg,
+      fase_2_media: f2Avg,
+      media_geral: overallAvg,
+      terminou: score.terminou === true,
+      faixa_certificado_pago: !!score.faixa_certificado_pago,
+      certificado_emitido: !!score.certificado_emitido,
+      estado: score.estado || reg?.estado || "Em Formação",
+      status_category: getAlecStudentStatusCategory({ terminou: score.terminou, estado: score.estado || reg?.estado }),
+      created_at: score.created_at || reg?.created_at || new Date().toISOString()
+    };
+    unifiedStudents.push(studentRecord);
+  });
+
+  rawRegistrations.forEach((reg) => {
+    if (processedIds.has(reg.id)) return;
+    const chId = reg.church_id || reg.igreja || "";
+    const cName = churchName(chId);
+    const province = getProvinceFromChurch(chId);
+    const cellName = reg.celula || "—";
+    const leaderName = reg.nome_do_lider_de_celula || "—";
+
+    let groupName = "—";
+    let groupId = "";
+    if (cellName && cellName !== "—") {
+      const foundCell = cellsList.find((c) => (c.cell_name || c.nome_da_celula || c.name || "").toLowerCase() === cellName.toLowerCase());
+      if (foundCell) {
+        groupId = foundCell.cell_group_id || foundCell.group_id || foundCell.group_cell_id || "";
+        const foundGroup = groupsList.find((g) => String(g.id) === String(groupId));
+        if (foundGroup) groupName = foundGroup.name || foundGroup.nome_do_grupo || groupName;
+      }
+    }
+
+    unifiedStudents.push({
+      id: reg.id,
+      scoreId: "",
+      regId: reg.id,
+      nome_completo: reg.nome_completo || "Aluno ALEC",
+      contacto: reg.contacto || "—",
+      church_id: chId,
+      church_name: cName,
+      province,
+      cell_group_id: groupId,
+      cell_group_name: groupName,
+      celula: cellName,
+      nome_do_lider_de_celula: leaderName,
+      fez_escola_de_fundacao: !!reg.fez_escola_de_fundacao,
+      e_lider: !!reg.e_lider,
+      motivo_de_fazer_alec: reg.motivo_de_fazer_alec || "",
+      observacoes: reg.observacoes || "",
+      fase_1_aula_1: 0,
+      fase_1_aula_2: 0,
+      fase_1_aula_3: 0,
+      fase_1_aula_4: 0,
+      fase_2_aula_1: 0,
+      fase_2_aula_2: 0,
+      fase_2_aula_3: 0,
+      fase_1_media: 0,
+      fase_2_media: 0,
+      media_geral: 0,
+      terminou: ["Concluído", "Graduado", "Completed"].includes(reg.estado),
+      faixa_certificado_pago: false,
+      certificado_emitido: false,
+      estado: reg.estado || "Em Formação",
+      status_category: getAlecStudentStatusCategory({ terminou: ["Concluído", "Graduado"].includes(reg.estado), estado: reg.estado }),
+      created_at: reg.created_at || new Date().toISOString()
+    });
+  });
+
+  const filtered = unifiedStudents.filter((item) => {
+    if (st.province && item.province !== st.province) return false;
+    if (st.churchId && !isRecordFromChurch({ church_id: item.church_id, igreja: item.church_id }, st.churchId)) return false;
+    if (st.cellGroupId && String(item.cell_group_id) !== String(st.cellGroupId)) return false;
+    if (st.cellId) {
+      const targetCell = cellsList.find((c) => String(c.id) === String(st.cellId));
+      const targetCellName = targetCell ? (targetCell.cell_name || targetCell.nome_da_celula || targetCell.name || "") : "";
+      if (targetCellName && item.celula.toLowerCase() !== targetCellName.toLowerCase()) return false;
+    }
+    if (st.status && item.status_category !== st.status) return false;
+
+    if (st.period && st.period !== "all") {
+      const itemYear = (item.created_at || "").slice(0, 4);
+      const itemMonth = parseInt((item.created_at || "").slice(5, 7), 10) || 1;
+      if (st.period === "year_2026" && itemYear !== "2026") return false;
+      if (st.period === "year_2025" && itemYear !== "2025") return false;
+      if (st.period === "cohort_2026_q1" && (itemYear !== "2026" || itemMonth > 3)) return false;
+      if (st.period === "cohort_2026_q2" && (itemYear !== "2026" || itemMonth < 4 || itemMonth > 6)) return false;
+      if (st.period === "cohort_2026_q3" && (itemYear !== "2026" || itemMonth < 7 || itemMonth > 9)) return false;
+      if (st.period === "cohort_2026_q4" && (itemYear !== "2026" || itemMonth < 10)) return false;
+      if (st.period === "custom") {
+        const itemDate = (item.created_at || "").slice(0, 10);
+        if (st.dateFrom && itemDate < st.dateFrom) return false;
+        if (st.dateTo && itemDate > st.dateTo) return false;
+      }
+    }
+
+    if (st.search) {
+      const q = st.search.toLowerCase();
+      const match = (
+        (item.nome_completo || "").toLowerCase().includes(q) ||
+        (item.celula || "").toLowerCase().includes(q) ||
+        (item.nome_do_lider_de_celula || "").toLowerCase().includes(q) ||
+        (item.church_name || "").toLowerCase().includes(q) ||
+        (item.province || "").toLowerCase().includes(q) ||
+        (item.contacto || "").toLowerCase().includes(q)
+      );
+      if (!match) return false;
+    }
+
+    return true;
+  });
+
+  const totalEnrolled = filtered.length;
+  const totalGraduated = filtered.filter((s) => s.status_category === "graduated").length;
+  const totalInTraining = filtered.filter((s) => s.status_category === "in_training").length;
+  const totalIncomplete = filtered.filter((s) => s.status_category === "incomplete").length;
+  const totalDropped = filtered.filter((s) => s.status_category === "dropped").length;
+  const totalFoundationDone = filtered.filter((s) => s.fez_escola_de_fundacao).length;
+  const totalPhase1Started = filtered.filter((s) => s.fase_1_aula_1 > 0 || s.fase_1_media > 0).length;
+  const totalPhase2Started = filtered.filter((s) => s.fase_2_aula_1 > 0 || s.fase_2_media > 0).length;
+  const totalPaid = filtered.filter((s) => s.faixa_certificado_pago).length;
+  const totalIssued = filtered.filter((s) => s.certificado_emitido).length;
+
+  const gradRate = totalEnrolled > 0 ? ((totalGraduated / totalEnrolled) * 100).toFixed(1) : "0.0";
+  const retentionRate = totalEnrolled > 0 ? (((totalEnrolled - totalDropped) / totalEnrolled) * 100).toFixed(1) : "0.0";
+  const dropRate = totalEnrolled > 0 ? ((totalDropped / totalEnrolled) * 100).toFixed(1) : "0.0";
+
+  const studentsWithGrades = filtered.filter((s) => s.media_geral > 0);
+  const avgOverallScore = studentsWithGrades.length ? Math.round(studentsWithGrades.reduce((sum, s) => sum + s.media_geral, 0) / studentsWithGrades.length) : 0;
+  const avgPhase1 = filtered.filter((s) => s.fase_1_media > 0);
+  const avgPhase1Score = avgPhase1.length ? Math.round(avgPhase1.reduce((sum, s) => sum + s.fase_1_media, 0) / avgPhase1.length) : 0;
+  const avgPhase2 = filtered.filter((s) => s.fase_2_media > 0);
+  const avgPhase2Score = avgPhase2.length ? Math.round(avgPhase2.reduce((sum, s) => sum + s.fase_2_media, 0) / avgPhase2.length) : 0;
+
+  function aggregateGroup(keyGetter, labelGetter) {
+    const map = new Map();
+    filtered.forEach((item) => {
+      const k = keyGetter(item) || "Outro";
+      const lbl = labelGetter ? labelGetter(item, k) : k;
+      if (!map.has(k)) {
+        map.set(k, {
+          key: k,
+          label: lbl,
+          province: item.province || "",
+          churchName: item.church_name || "",
+          cellGroupName: item.cell_group_name || "",
+          cellLeaderName: item.nome_do_lider_de_celula || "",
+          total: 0,
+          graduated: 0,
+          inTraining: 0,
+          incomplete: 0,
+          dropped: 0,
+          paid: 0,
+          issued: 0,
+          scoreSum: 0,
+          scoreCount: 0
+        });
+      }
+      const entry = map.get(k);
+      entry.total += 1;
+      if (item.status_category === "graduated") entry.graduated += 1;
+      else if (item.status_category === "in_training") entry.inTraining += 1;
+      else if (item.status_category === "incomplete") entry.incomplete += 1;
+      else if (item.status_category === "dropped") entry.dropped += 1;
+      if (item.faixa_certificado_pago) entry.paid += 1;
+      if (item.certificado_emitido) entry.issued += 1;
+      if (item.media_geral > 0) {
+        entry.scoreSum += item.media_geral;
+        entry.scoreCount += 1;
+      }
+    });
+
+    const list = Array.from(map.values()).map((row) => ({
+      ...row,
+      gradRate: row.total > 0 ? ((row.graduated / row.total) * 100).toFixed(1) : "0.0",
+      dropRate: row.total > 0 ? ((row.dropped / row.total) * 100).toFixed(1) : "0.0",
+      avgScore: row.scoreCount > 0 ? Math.round(row.scoreSum / row.scoreCount) : 0
+    }));
+
+    list.sort((a, b) => b.total - a.total);
+    return list;
+  }
+
+  const byProvince = aggregateGroup((item) => item.province);
+  const byChurch = aggregateGroup((item) => item.church_name || churchName(item.church_id));
+  const byCellGroup = aggregateGroup((item) => item.cell_group_name || "Sem Grupo");
+  const byCell = aggregateGroup((item) => item.celula || "Sem Célula");
+
+  return {
+    filtered,
+    totalEnrolled,
+    totalGraduated,
+    totalInTraining,
+    totalIncomplete,
+    totalDropped,
+    totalFoundationDone,
+    totalPhase1Started,
+    totalPhase2Started,
+    totalPaid,
+    totalIssued,
+    gradRate,
+    retentionRate,
+    dropRate,
+    avgOverallScore,
+    avgPhase1Score,
+    avgPhase2Score,
+    byProvince,
+    byChurch,
+    byCellGroup,
+    byCell
+  };
+}
+
+function renderAlecFunnelCard(summary) {
+  const steps = [
+    { label: lang === "pt" ? "1. Total Inscritos" : "1. Total Enrolled", count: summary.totalEnrolled, color: "#17a2b8", icon: "bi-person-lines-fill" },
+    { label: lang === "pt" ? "2. Escola de Fundação" : "2. Foundation School", count: summary.totalFoundationDone, color: "#0dcaf0", icon: "bi-book" },
+    { label: lang === "pt" ? "3. Cursaram Fase 1" : "3. Phase 1 Attendees", count: summary.totalPhase1Started, color: "#ffc107", icon: "bi-journal-code" },
+    { label: lang === "pt" ? "4. Cursaram Fase 2" : "4. Phase 2 Attendees", count: summary.totalPhase2Started, color: "#fd7e14", icon: "bi-journal-check" },
+    { label: lang === "pt" ? "5. Graduados / Concluintes" : "5. Graduated Leaders", count: summary.totalGraduated, color: "#198754", icon: "bi-mortarboard-fill" }
+  ];
+
+  return `
+    <div class="card bg-dark text-light border border-secondary border-opacity-25 shadow-sm p-4 mb-4 alec-funnel-card">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <div>
+          <h5 class="fw-bold text-gold mb-1"><i class="bi bi-funnel-fill me-2"></i>${lang === "pt" ? "Funil de Formação & Retenção de Líderes" : "Leadership Training & Retention Funnel"}</h5>
+          <p class="text-secondary small mb-0">${lang === "pt" ? "Acompanhe a taxa de conversão desde a inscrição inicial até a graduação final de cada candidato." : "Track conversion rates from enrollment through final graduation."}</p>
+        </div>
+        <div class="d-flex gap-2 align-items-center flex-wrap">
+          <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 fs-6">
+            <i class="bi bi-trophy-fill me-1"></i>${summary.gradRate}% ${lang === "pt" ? "Taxa Graduação" : "Graduation Rate"}
+          </span>
+          <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2 fs-6">
+            <i class="bi bi-arrow-down-right me-1"></i>${summary.dropRate}% ${lang === "pt" ? "Desistência" : "Dropout"}
+          </span>
+        </div>
+      </div>
+      <div class="alec-funnel-steps row g-3">
+        ${steps.map((step) => {
+          const pct = summary.totalEnrolled > 0 ? Math.round((step.count / summary.totalEnrolled) * 100) : 0;
+          return `
+            <div class="col-12 col-md">
+              <div class="p-3 rounded bg-body-tertiary border border-secondary border-opacity-25 h-100 d-flex flex-column justify-content-between">
+                <div>
+                  <div class="d-flex align-items-center justify-content-between mb-1">
+                    <small class="text-secondary fw-semibold"><i class="bi ${step.icon} me-1" style="color: ${step.color};"></i>${escapeAttr(step.label)}</small>
+                    <span class="badge rounded-pill" style="background-color: ${step.color}22; color: ${step.color}; border: 1px solid ${step.color}44;">${pct}%</span>
+                  </div>
+                  <div class="fs-3 fw-bold text-white">${step.count}</div>
+                </div>
+                <div class="progress mt-2" style="height: 6px; background: rgba(255,255,255,0.1);">
+                  <div class="progress-bar" role="progressbar" style="width: ${pct}%; background-color: ${step.color};" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function renderAlecReportTable(groupList, categoryType) {
+  if (!groupList || !groupList.length) {
+    return EmptyState({ compact: true, title: "Sem dados para exibição", description: "Nenhum registo encontrado para a dimensão seleccionada." });
+  }
+
+  const categoryHeaders = {
+    province: lang === "pt" ? "Província" : "Province",
+    church: lang === "pt" ? "Igreja" : "Church",
+    cellGroup: lang === "pt" ? "Grupo de Célula" : "Cell Group",
+    cell: lang === "pt" ? "Célula" : "Cell"
+  };
+
+  const headerLabel = categoryHeaders[categoryType] || "Nome / Unidade";
+
+  return `
+    <div class="table-responsive">
+      <table class="table table-dark table-hover table-striped align-middle mb-0 custom-reports-table">
+        <thead>
+          <tr class="text-secondary small text-uppercase">
+            <th class="py-3 ps-3">${escapeAttr(headerLabel)}</th>
+            ${categoryType === "cellGroup" ? `<th class="py-3">Igreja</th>` : ""}
+            ${categoryType === "cell" ? `<th class="py-3">Líder</th><th class="py-3">Igreja</th>` : ""}
+            <th class="py-3 text-center">Total Inscritos</th>
+            <th class="py-3 text-center text-success"><i class="bi bi-mortarboard me-1"></i>Graduados</th>
+            <th class="py-3 text-center text-info"><i class="bi bi-hourglass-split me-1"></i>Em Formação</th>
+            <th class="py-3 text-center text-warning"><i class="bi bi-exclamation-circle me-1"></i>Incompletos</th>
+            <th class="py-3 text-center text-danger"><i class="bi bi-x-circle me-1"></i>Desistentes</th>
+            <th class="py-3 text-center text-gold">Taxa Graduação</th>
+            <th class="py-3 text-center">Média Geral</th>
+            <th class="py-3 text-center pe-3">Certificados</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${groupList.map((row) => `
+            <tr>
+              <td class="py-3 ps-3 fw-bold text-white">
+                <i class="bi ${categoryType === "province" ? "bi-geo-alt-fill text-gold" : categoryType === "church" ? "bi-building text-info" : categoryType === "cellGroup" ? "bi-collection text-warning" : "bi-diagram-3 text-cyan"} me-2"></i>
+                ${escapeAttr(row.label)}
+              </td>
+              ${categoryType === "cellGroup" ? `<td class="py-3 small text-secondary">${escapeAttr(row.churchName || "—")}</td>` : ""}
+              ${categoryType === "cell" ? `<td class="py-3 small text-secondary">${escapeAttr(row.cellLeaderName || "—")}</td><td class="py-3 small text-secondary">${escapeAttr(row.churchName || "—")}</td>` : ""}
+              <td class="py-3 text-center fw-bold fs-6">${row.total}</td>
+              <td class="py-3 text-center fw-bold text-success">${row.graduated}</td>
+              <td class="py-3 text-center text-info">${row.inTraining}</td>
+              <td class="py-3 text-center text-warning">${row.incomplete}</td>
+              <td class="py-3 text-center text-danger">${row.dropped}</td>
+              <td class="py-3 text-center">
+                <div class="d-flex align-items-center justify-content-center gap-2">
+                  <div class="progress flex-grow-1" style="height: 6px; min-width: 50px; background: rgba(255,255,255,0.1);">
+                    <div class="progress-bar bg-success" style="width: ${row.gradRate}%;"></div>
+                  </div>
+                  <span class="fw-bold text-success small">${row.gradRate}%</span>
+                </div>
+              </td>
+              <td class="py-3 text-center">
+                <span class="badge ${row.avgScore >= 80 ? "bg-success-subtle text-success border border-success-subtle" : row.avgScore >= 50 ? "bg-info-subtle text-info border border-info-subtle" : "bg-warning-subtle text-warning border border-warning-subtle"}">
+                  ${row.avgScore > 0 ? `${row.avgScore}%` : "—"}
+                </span>
+              </td>
+              <td class="py-3 text-center pe-3">
+                <span class="badge bg-secondary-subtle text-light border border-secondary" title="Pagos: ${row.paid} / Emitidos: ${row.issued}">
+                  <i class="bi bi-award me-1 text-gold"></i>${row.issued} / ${row.total}
+                </span>
+              </td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function renderAlecAllStudentsRosterTable(students) {
+  if (!students || !students.length) {
+    return EmptyState({ compact: true, title: "Sem alunos encontrados", description: "Nenhum aluno corresponde aos filtros activos." });
+  }
+
+  return `
+    <div class="table-responsive">
+      <table class="table table-dark table-hover table-striped align-middle mb-0 custom-reports-table">
+        <thead>
+          <tr class="text-secondary small text-uppercase">
+            <th class="py-3 ps-3">Aluno</th>
+            <th class="py-3">Contacto</th>
+            <th class="py-3">Província</th>
+            <th class="py-3">Igreja</th>
+            <th class="py-3">Célula / Líder</th>
+            <th class="py-3 text-center">Fase 1 (Média)</th>
+            <th class="py-3 text-center">Fase 2 (Média)</th>
+            <th class="py-3 text-center text-gold">Média Final</th>
+            <th class="py-3 text-center">Estado</th>
+            <th class="py-3 text-center pe-3">Certificado</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${students.map((st) => `
+            <tr>
+              <td class="py-3 ps-3">
+                <div class="fw-bold text-white">${escapeAttr(formatCleanPersonName(st.nome_completo))}</div>
+                <div class="small text-secondary">
+                  ${st.fez_escola_de_fundacao ? '<span class="badge bg-info-subtle text-info me-1 py-0 px-1"><i class="bi bi-book me-1"></i>Fundação</span>' : ""}
+                  ${st.e_lider ? '<span class="badge bg-warning-subtle text-warning py-0 px-1"><i class="bi bi-person-badge me-1"></i>Líder</span>' : ""}
+                </div>
+              </td>
+              <td class="py-3 font-monospace small text-info">${escapeAttr(st.contacto || "—")}</td>
+              <td class="py-3 small text-secondary"><i class="bi bi-geo-alt me-1 text-gold"></i>${escapeAttr(st.province)}</td>
+              <td class="py-3 small">${escapeAttr(st.church_name)}</td>
+              <td class="py-3 small">
+                <div class="text-light fw-semibold">${escapeAttr(st.celula)}</div>
+                <div class="text-secondary">${escapeAttr(st.nome_do_lider_de_celula !== "—" ? `Líder: ${st.nome_do_lider_de_celula}` : "")}</div>
+              </td>
+              <td class="py-3 text-center">
+                <span class="badge ${st.fase_1_media >= 80 ? "bg-success-subtle text-success" : st.fase_1_media > 0 ? "bg-primary-subtle text-primary" : "bg-dark text-secondary"} border border-secondary border-opacity-25">
+                  ${st.fase_1_media > 0 ? `${st.fase_1_media}%` : "—"}
+                </span>
+              </td>
+              <td class="py-3 text-center">
+                <span class="badge ${st.fase_2_media >= 80 ? "bg-success-subtle text-success" : st.fase_2_media > 0 ? "bg-primary-subtle text-primary" : "bg-dark text-secondary"} border border-secondary border-opacity-25">
+                  ${st.fase_2_media > 0 ? `${st.fase_2_media}%` : "—"}
+                </span>
+              </td>
+              <td class="py-3 text-center">
+                <span class="fw-bold fs-6 ${st.media_geral >= 80 ? "text-success" : st.media_geral >= 50 ? "text-info" : st.media_geral > 0 ? "text-warning" : "text-secondary"}">
+                  ${st.media_geral > 0 ? `${st.media_geral}%` : "—"}
+                </span>
+              </td>
+              <td class="py-3 text-center">
+                ${getAlecStatusBadge(st.status_category)}
+              </td>
+              <td class="py-3 text-center pe-3">
+                ${st.certificado_emitido ? '<span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-award-fill me-1"></i>Emitido</span>' : st.faixa_certificado_pago ? '<span class="badge bg-warning-subtle text-warning border border-warning-subtle"><i class="bi bi-cash-coin me-1"></i>Pago</span>' : '<span class="badge bg-secondary-subtle text-secondary">Pendente</span>'}
+              </td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function renderAlecReportsAnalyticalView() {
+  const summary = getFilteredAlecReportData();
+  const st = alecReportsPageState;
+
+  const churchesList = scoped(state.churches || seedData.churches || []);
+  const groups = typeof getAllRegisteredCellGroups === "function" ? getAllRegisteredCellGroups() : (state.cellGroups || []);
+  const cells = typeof getAllRegisteredCells === "function" ? getAllRegisteredCells() : (state.cellRegistry || state.cells || []);
+
+  const provincesList = [
+    "Maputo Cidade",
+    "Maputo Província",
+    "Gaza",
+    "Inhambane",
+    "Sofala",
+    "Manica",
+    "Tete",
+    "Zambézia",
+    "Nampula",
+    "Cabo Delgado",
+    "Niassa",
+    "Online"
+  ];
+
+  const availableChurches = churchesList.filter((c) => {
+    if (!st.province) return true;
+    return getProvinceFromChurch(c.id || c.church_id) === st.province;
+  });
+
+  const availableGroups = groups.filter((g) => {
+    if (!st.churchId) return true;
+    return isRecordFromChurch(g, st.churchId);
+  });
+
+  const availableCells = cells.filter((c) => {
+    if (st.churchId) {
+      const parentGroup = groups.find((g) => String(g.id) === String(c.group_id || c.cell_group_id || c.group_cell_id || ""));
+      const cellMatchesChurch = isRecordFromChurch(c, st.churchId);
+      const groupMatchesChurch = parentGroup ? isRecordFromChurch(parentGroup, st.churchId) : false;
+      if (!cellMatchesChurch && !groupMatchesChurch) return false;
+    }
+    if (st.cellGroupId) {
+      const cGroupId = String(c.cell_group_id || c.group_id || c.group_cell_id || "");
+      if (cGroupId !== String(st.cellGroupId)) return false;
+    }
+    return true;
+  });
+
+  const activeSubtab = st.activeTab || "summary";
+
+  const subtabs = [
+    { key: "summary", icon: "bi-pie-chart-fill", label: "Resumo & Funil" },
+    { key: "byProvince", icon: "bi-geo-alt-fill", label: `Por Província (${summary.byProvince.length})` },
+    { key: "byChurch", icon: "bi-building", label: `Por Igreja (${summary.byChurch.length})` },
+    { key: "byCellGroup", icon: "bi-collection", label: `Por Grupo (${summary.byCellGroup.length})` },
+    { key: "byCell", icon: "bi-diagram-3", label: `Por Célula (${summary.byCell.length})` },
+    { key: "allStudents", icon: "bi-people-fill", label: `Pauta Geral (${summary.filtered.length})` }
+  ];
+
+  return `
+    <section class="alec-analytical-view" data-alec-reports-container>
+      ${alecModuleSubnav("reports")}
+
+      <!-- Filters & Export Toolbar -->
+      <div class="panel glass-panel mb-4 p-3 alec-filter-container shadow-sm border border-secondary border-opacity-25 rounded-3">
+        <form data-alec-reports-filters onsubmit="return false;" class="row g-3 align-items-end">
+          
+          <!-- Period / Cohort -->
+          <div class="col-12 col-sm-6 col-md-4 col-xl-2">
+            <label class="form-label small text-secondary fw-semibold mb-1"><i class="bi bi-calendar3 me-1 text-gold"></i>Período / Turma</label>
+            <select class="form-select form-select-sm bg-dark text-light border-secondary" name="period">
+              <option value="all"${st.period === "all" ? " selected" : ""}>Todos os Períodos</option>
+              <option value="year_2026"${st.period === "year_2026" ? " selected" : ""}>Ano 2026</option>
+              <option value="year_2025"${st.period === "year_2025" ? " selected" : ""}>Ano 2025</option>
+              <option value="cohort_2026_q1"${st.period === "cohort_2026_q1" ? " selected" : ""}>Turma 2026 - 1º Trimestre</option>
+              <option value="cohort_2026_q2"${st.period === "cohort_2026_q2" ? " selected" : ""}>Turma 2026 - 2º Trimestre</option>
+              <option value="cohort_2026_q3"${st.period === "cohort_2026_q3" ? " selected" : ""}>Turma 2026 - 3º Trimestre</option>
+              <option value="cohort_2026_q4"${st.period === "cohort_2026_q4" ? " selected" : ""}>Turma 2026 - 4º Trimestre</option>
+              <option value="custom"${st.period === "custom" ? " selected" : ""}>Personalizado (Datas)</option>
+            </select>
+          </div>
+
+          ${st.period === "custom" ? `
+            <div class="col-6 col-sm-3 col-md-2 col-xl-1">
+              <label class="form-label small text-secondary mb-1">De</label>
+              <input type="date" class="form-control form-control-sm bg-dark text-light border-secondary" name="dateFrom" value="${escapeAttr(st.dateFrom || "")}">
+            </div>
+            <div class="col-6 col-sm-3 col-md-2 col-xl-1">
+              <label class="form-label small text-secondary mb-1">Até</label>
+              <input type="date" class="form-control form-control-sm bg-dark text-light border-secondary" name="dateTo" value="${escapeAttr(st.dateTo || "")}">
+            </div>
+          ` : ""}
+
+          <!-- Province -->
+          <div class="col-12 col-sm-6 col-md-4 col-xl-2">
+            <label class="form-label small text-secondary fw-semibold mb-1"><i class="bi bi-geo-alt me-1 text-gold"></i>Província</label>
+            <select class="form-select form-select-sm bg-dark text-light border-secondary" name="province">
+              <option value="">Todas as Províncias</option>
+              ${provincesList.map((p) => `<option value="${escapeAttr(p)}"${st.province === p ? " selected" : ""}>${escapeAttr(p)}</option>`).join("")}
+            </select>
+          </div>
+
+          <!-- Church -->
+          <div class="col-12 col-sm-6 col-md-4 col-xl-2">
+            <label class="form-label small text-secondary fw-semibold mb-1"><i class="bi bi-building me-1 text-gold"></i>Igreja</label>
+            <select class="form-select form-select-sm bg-dark text-light border-secondary" name="churchId">
+              <option value="">Todas as Igrejas</option>
+              ${availableChurches.map((c) => `<option value="${escapeAttr(c.id || c.church_id)}"${st.churchId === (c.id || c.church_id) ? " selected" : ""}>${escapeAttr(c.church_name || c.name)}</option>`).join("")}
+            </select>
+          </div>
+
+          <!-- Cell Group -->
+          <div class="col-12 col-sm-6 col-md-4 col-xl-2">
+            <label class="form-label small text-secondary fw-semibold mb-1"><i class="bi bi-collection me-1 text-gold"></i>Grupo de Célula</label>
+            <select class="form-select form-select-sm bg-dark text-light border-secondary" name="cellGroupId">
+              <option value="">Todos os Grupos</option>
+              ${availableGroups.map((g) => `<option value="${escapeAttr(g.id)}"${st.cellGroupId === g.id ? " selected" : ""}>${escapeAttr(g.name || g.nome_do_grupo)}</option>`).join("")}
+            </select>
+          </div>
+
+          <!-- Cell -->
+          <div class="col-12 col-sm-6 col-md-4 col-xl-2">
+            <label class="form-label small text-secondary fw-semibold mb-1"><i class="bi bi-diagram-3 me-1 text-gold"></i>Célula</label>
+            <select class="form-select form-select-sm bg-dark text-light border-secondary" name="cellId">
+              <option value="">Todas as Células</option>
+              ${availableCells.map((c) => `<option value="${escapeAttr(c.id)}"${st.cellId === c.id ? " selected" : ""}>${escapeAttr(c.cell_name || c.nome_da_celula || c.name)}</option>`).join("")}
+            </select>
+          </div>
+
+          <!-- Status -->
+          <div class="col-12 col-sm-6 col-md-4 col-xl-2">
+            <label class="form-label small text-secondary fw-semibold mb-1"><i class="bi bi-flag me-1 text-gold"></i>Progresso / Estado</label>
+            <select class="form-select form-select-sm bg-dark text-light border-secondary" name="status">
+              <option value="">Todos os Estados</option>
+              <option value="graduated"${st.status === "graduated" ? " selected" : ""}>Graduados (Concluído)</option>
+              <option value="in_training"${st.status === "in_training" ? " selected" : ""}>Em Formação (Activo)</option>
+              <option value="incomplete"${st.status === "incomplete" ? " selected" : ""}>Não Concluiu (Incompleto)</option>
+              <option value="dropped"${st.status === "dropped" ? " selected" : ""}>Desistiu (Desistente)</option>
+            </select>
+          </div>
+
+          <!-- Search -->
+          <div class="col-12 col-sm-6 col-md-4 col-xl-2">
+            <label class="form-label small text-secondary fw-semibold mb-1"><i class="bi bi-search me-1 text-gold"></i>Pesquisar</label>
+            <input type="search" class="form-control form-control-sm bg-dark text-light border-secondary" name="search" placeholder="Aluno, telefone, célula..." value="${escapeAttr(st.search || "")}">
+          </div>
+
+          <!-- Action Cluster: Orientation, Reset & Exports -->
+          <div class="col-12 col-xl-auto d-flex gap-2 align-items-center flex-wrap ms-auto mt-2 mt-xl-0">
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-alec-report-filter-reset title="Limpar todos os filtros">
+              <i class="bi bi-arrow-counterclockwise me-1"></i>Limpar
+            </button>
+
+            <!-- PDF Orientation Toggle -->
+            <div class="btn-group btn-group-sm" role="group" aria-label="Orientação do PDF">
+              <button type="button" class="btn btn-outline-secondary alec-orientation-btn ${st.pdfOrientation === "portrait" ? "active" : ""}" data-alec-report-orientation="portrait" title="PDF em Modo Retrato">
+                <i class="bi bi-file-earmark-person me-1"></i>Retrato
+              </button>
+              <button type="button" class="btn btn-outline-secondary alec-orientation-btn ${st.pdfOrientation === "landscape" ? "active" : ""}" data-alec-report-orientation="landscape" title="PDF em Modo Paisagem">
+                <i class="bi bi-file-earmark-easel me-1"></i>Paisagem
+              </button>
+            </div>
+
+            <button type="button" class="btn btn-sm btn-danger shadow-sm" data-alec-export-pdf title="Exportar Relatório Formatado em PDF">
+              <i class="bi bi-file-earmark-pdf-fill me-1"></i>PDF
+            </button>
+
+            <button type="button" class="btn btn-sm btn-success shadow-sm" data-alec-export-csv title="Exportar Base de Dados em CSV / Excel">
+              <i class="bi bi-file-earmark-spreadsheet-fill me-1"></i>CSV
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+      <!-- Executive KPI Cards Grid -->
+      <div class="row g-3 mb-4">
+        ${metric("bi-person-lines-fill", "Total Inscritos", summary.totalEnrolled, "Candidatos")}
+        ${metric("bi-mortarboard-fill", "Graduados", summary.totalGraduated, `${summary.gradRate}% Conclusão`)}
+        ${metric("bi-hourglass-split", "Em Formação", summary.totalInTraining, "Activos")}
+        ${metric("bi-exclamation-circle-fill", "Não Concluíram", summary.totalIncomplete, "Pendentes")}
+        ${metric("bi-x-circle-fill", "Desistiram", summary.totalDropped, `${summary.dropRate}% Desistência`)}
+        ${metric("bi-speedometer", "Média Geral", summary.avgOverallScore > 0 ? `${summary.avgOverallScore}%` : "—", `F1: ${summary.avgPhase1Score}% | F2: ${summary.avgPhase2Score}%`)}
+        ${metric("bi-award-fill", "Certificados", `${summary.totalIssued} / ${summary.totalPaid}`, "Emitidos / Pagos")}
+      </div>
+
+      <!-- Interactive Funnel Card -->
+      ${renderAlecFunnelCard(summary)}
+
+      <!-- Subtabs Navigation -->
+      <div class="panel glass-panel mb-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 border-bottom border-secondary border-opacity-25 pb-3 mb-3">
+          <ul class="nav nav-pills flex-wrap gap-1" role="tablist">
+            ${subtabs.map((tab) => `
+              <li class="nav-item" role="presentation">
+                <button class="nav-link ${activeSubtab === tab.key ? "active" : ""} btn btn-sm py-2 px-3 fw-semibold" data-alec-report-subtab="${tab.key}" type="button">
+                  <i class="bi ${tab.icon} me-2"></i>${escapeAttr(tab.label)}
+                </button>
+              </li>
+            `).join("")}
+          </ul>
+          <span class="badge bg-dark text-warning border border-secondary px-3 py-2">
+            <i class="bi bi-filter-circle me-1"></i>${summary.filtered.length} alunos filtrados
+          </span>
+        </div>
+
+        <!-- Subtab Content Panels -->
+        ${activeSubtab === "summary" ? `
+          <div class="row g-4">
+            <div class="col-12 col-xl-6">
+              <div class="card bg-dark text-light border border-secondary border-opacity-25 p-3 h-100">
+                <h6 class="fw-bold text-gold mb-3"><i class="bi bi-geo-alt-fill me-2"></i>Desempenho por Província (Top)</h6>
+                ${renderAlecReportTable(summary.byProvince.slice(0, 5), "province")}
+              </div>
+            </div>
+            <div class="col-12 col-xl-6">
+              <div class="card bg-dark text-light border border-secondary border-opacity-25 p-3 h-100">
+                <h6 class="fw-bold text-gold mb-3"><i class="bi bi-building me-2"></i>Desempenho por Igreja (Top)</h6>
+                ${renderAlecReportTable(summary.byChurch.slice(0, 5), "church")}
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="card bg-dark text-light border border-secondary border-opacity-25 p-3">
+                <h6 class="fw-bold text-gold mb-3"><i class="bi bi-collection me-2"></i>Desempenho por Grupos de Célula (Top)</h6>
+                ${renderAlecReportTable(summary.byCellGroup.slice(0, 8), "cellGroup")}
+              </div>
+            </div>
+          </div>
+        ` : activeSubtab === "byProvince" ? `
+          <div>
+            <h5 class="fw-bold text-gold mb-3"><i class="bi bi-geo-alt-fill me-2"></i>Relatório Comparativo por Províncias de Moçambique</h5>
+            ${renderAlecReportTable(summary.byProvince, "province")}
+          </div>
+        ` : activeSubtab === "byChurch" ? `
+          <div>
+            <h5 class="fw-bold text-gold mb-3"><i class="bi bi-building me-2"></i>Relatório Comparativo por Igrejas</h5>
+            ${renderAlecReportTable(summary.byChurch, "church")}
+          </div>
+        ` : activeSubtab === "byCellGroup" ? `
+          <div>
+            <h5 class="fw-bold text-gold mb-3"><i class="bi bi-collection me-2"></i>Relatório Comparativo por Grupos de Células</h5>
+            ${renderAlecReportTable(summary.byCellGroup, "cellGroup")}
+          </div>
+        ` : activeSubtab === "byCell" ? `
+          <div>
+            <h5 class="fw-bold text-gold mb-3"><i class="bi bi-diagram-3 me-2"></i>Relatório Comparativo por Células Individuais</h5>
+            ${renderAlecReportTable(summary.byCell, "cell")}
+          </div>
+        ` : `
+          <div>
+            <h5 class="fw-bold text-gold mb-3"><i class="bi bi-people-fill me-2"></i>Pauta Geral Completa dos Alunos ALEC</h5>
+            ${renderAlecAllStudentsRosterTable(summary.filtered)}
+          </div>
+        `}
+      </div>
+    </section>
+  `;
+}
+
+function exportAlecReportPdf(orientation = "portrait") {
+  const summary = getFilteredAlecReportData();
+  const st = alecReportsPageState;
+  const orient = orientation || st.pdfOrientation || "portrait";
+  const now = new Date();
+  const dateStr = now.toLocaleDateString("pt-MZ", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
+
+  const appliedFilters = [];
+  if (st.period && st.period !== "all") appliedFilters.push(`Período: ${st.period}`);
+  if (st.province) appliedFilters.push(`Província: ${st.province}`);
+  if (st.churchId) appliedFilters.push(`Igreja: ${churchName(st.churchId)}`);
+  if (st.cellGroupId) appliedFilters.push(`Grupo: ${cellGroupName(st.cellGroupId)}`);
+  if (st.status) appliedFilters.push(`Estado: ${st.status}`);
+  const filterDesc = appliedFilters.length ? appliedFilters.join(" | ") : "Todos os registos sem filtros";
+
+  const printWindow = window.open("", "_blank");
+  if (!printWindow) {
+    alert("Por favor, permita pop-ups no seu navegador para gerar o PDF.");
+    return;
+  }
+
+  const printHtml = `
+    <!DOCTYPE html>
+    <html lang="pt">
+    <head>
+      <meta charset="UTF-8">
+      <title>Relatório Executivo ALEC - Christ Embassy Moçambique</title>
+      <style>
+        @page {
+          size: ${orient};
+          margin: 10mm 12mm 12mm 12mm;
+        }
+        * {
+          box-sizing: border-box;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+          color: #1a1a1a;
+          background: #fff;
+          margin: 0;
+          padding: 0;
+          font-size: 11pt;
+          line-height: 1.4;
+        }
+        .header-container {
+          border-bottom: 2px solid #0b1e36;
+          padding-bottom: 12px;
+          margin-bottom: 16px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .org-title {
+          font-size: 18pt;
+          font-weight: 800;
+          color: #0b1e36;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          margin: 0;
+        }
+        .doc-title {
+          font-size: 13pt;
+          font-weight: 700;
+          color: #b8860b;
+          margin: 4px 0 0 0;
+        }
+        .meta-info {
+          text-align: right;
+          font-size: 8.5pt;
+          color: #555;
+        }
+        .filter-badge-bar {
+          background: #f4f6f9;
+          border: 1px solid #e2e8f0;
+          border-radius: 4px;
+          padding: 6px 12px;
+          font-size: 9pt;
+          color: #333;
+          margin-bottom: 16px;
+        }
+        .kpi-grid {
+          display: grid;
+          grid-template-columns: repeat(6, 1fr);
+          gap: 10px;
+          margin-bottom: 20px;
+        }
+        .kpi-box {
+          border: 1px solid #cbd5e1;
+          border-radius: 6px;
+          padding: 8px 10px;
+          text-align: center;
+          background: #fafafa;
+        }
+        .kpi-val {
+          font-size: 15pt;
+          font-weight: 800;
+          color: #0b1e36;
+        }
+        .kpi-lbl {
+          font-size: 7.5pt;
+          text-transform: uppercase;
+          color: #64748b;
+          font-weight: 600;
+          margin-top: 2px;
+        }
+        .section-heading {
+          font-size: 11pt;
+          font-weight: 700;
+          color: #0b1e36;
+          border-left: 4px solid #b8860b;
+          padding-left: 8px;
+          margin: 16px 0 10px 0;
+          text-transform: uppercase;
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 9pt;
+          margin-bottom: 16px;
+        }
+        th {
+          background-color: #0b1e36;
+          color: #ffffff;
+          font-weight: 600;
+          text-align: left;
+          padding: 6px 8px;
+          font-size: 8.5pt;
+          border: 1px solid #0b1e36;
+        }
+        td {
+          padding: 5px 8px;
+          border: 1px solid #e2e8f0;
+          color: #2d3748;
+        }
+        tr:nth-child(even) td {
+          background-color: #f8fafc;
+        }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .fw-bold { font-weight: 700; }
+        .signatures-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr 1fr;
+          gap: 30px;
+          margin-top: 40px;
+          page-break-inside: avoid;
+        }
+        .sig-block {
+          text-align: center;
+          border-top: 1px solid #475569;
+          padding-top: 6px;
+          font-size: 8.5pt;
+          color: #334155;
+        }
+        .sig-role {
+          font-weight: 700;
+          color: #0b1e36;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="header-container">
+        <div>
+          <h1 class="org-title">Christ Embassy Moçambique</h1>
+          <div class="doc-title">ALEC — Academia de Liderança & Excelência em Células</div>
+        </div>
+        <div class="meta-info">
+          <div><strong>Data de Emissão:</strong> ${dateStr}</div>
+          <div><strong>Orientação:</strong> ${orient === "landscape" ? "Paisagem (A4)" : "Retrato (A4)"}</div>
+          <div><strong>Coordenação Nacional ALEC</strong></div>
+        </div>
+      </div>
+
+      <div class="filter-badge-bar">
+        <strong>Filtros Aplicados:</strong> ${escapeAttr(filterDesc)}
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-box">
+          <div class="kpi-val">${summary.totalEnrolled}</div>
+          <div class="kpi-lbl">Total Inscritos</div>
+        </div>
+        <div class="kpi-box">
+          <div class="kpi-val" style="color: #16a34a;">${summary.totalGraduated}</div>
+          <div class="kpi-lbl">Graduados (${summary.gradRate}%)</div>
+        </div>
+        <div class="kpi-box">
+          <div class="kpi-val" style="color: #0284c7;">${summary.totalInTraining}</div>
+          <div class="kpi-lbl">Em Formação</div>
+        </div>
+        <div class="kpi-box">
+          <div class="kpi-val" style="color: #d97706;">${summary.totalIncomplete}</div>
+          <div class="kpi-lbl">Não Concluíram</div>
+        </div>
+        <div class="kpi-box">
+          <div class="kpi-val" style="color: #dc2626;">${summary.totalDropped}</div>
+          <div class="kpi-lbl">Desistiram (${summary.dropRate}%)</div>
+        </div>
+        <div class="kpi-box">
+          <div class="kpi-val" style="color: #b8860b;">${summary.avgOverallScore > 0 ? `${summary.avgOverallScore}%` : "—"}</div>
+          <div class="kpi-lbl">Média Geral</div>
+        </div>
+      </div>
+
+      <div class="section-heading">1. Desempenho e Formação por Província</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Província</th>
+            <th class="text-center">Inscritos</th>
+            <th class="text-center">Graduados</th>
+            <th class="text-center">Em Formação</th>
+            <th class="text-center">Não Concluiu</th>
+            <th class="text-center">Desistiu</th>
+            <th class="text-center">Taxa Conclusão</th>
+            <th class="text-center">Média Geral</th>
+            <th class="text-center">Certificados</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${summary.byProvince.map((p) => `
+            <tr>
+              <td class="fw-bold">${escapeAttr(p.label)}</td>
+              <td class="text-center fw-bold">${p.total}</td>
+              <td class="text-center fw-bold" style="color: #16a34a;">${p.graduated}</td>
+              <td class="text-center">${p.inTraining}</td>
+              <td class="text-center">${p.incomplete}</td>
+              <td class="text-center" style="color: #dc2626;">${p.dropped}</td>
+              <td class="text-center fw-bold">${p.gradRate}%</td>
+              <td class="text-center">${p.avgScore > 0 ? `${p.avgScore}%` : "—"}</td>
+              <td class="text-center">${p.issued} / ${p.total}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+
+      <div class="section-heading">2. Desempenho por Igreja</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Igreja</th>
+            <th>Província</th>
+            <th class="text-center">Inscritos</th>
+            <th class="text-center">Graduados</th>
+            <th class="text-center">Em Formação</th>
+            <th class="text-center">Não Concluiu</th>
+            <th class="text-center">Desistiu</th>
+            <th class="text-center">Taxa Conclusão</th>
+            <th class="text-center">Média Geral</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${summary.byChurch.map((c) => `
+            <tr>
+              <td class="fw-bold">${escapeAttr(c.label)}</td>
+              <td>${escapeAttr(c.province)}</td>
+              <td class="text-center fw-bold">${c.total}</td>
+              <td class="text-center fw-bold" style="color: #16a34a;">${c.graduated}</td>
+              <td class="text-center">${c.inTraining}</td>
+              <td class="text-center">${c.incomplete}</td>
+              <td class="text-center" style="color: #dc2626;">${c.dropped}</td>
+              <td class="text-center fw-bold">${c.gradRate}%</td>
+              <td class="text-center">${c.avgScore > 0 ? `${c.avgScore}%` : "—"}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+
+      <div class="signatures-grid">
+        <div class="sig-block">
+          <div class="sig-role">Reitor de Cuidados Pastorais</div>
+          <div>Pastor Valdemiro Machava</div>
+        </div>
+        <div class="sig-block">
+          <div class="sig-role">Coordenadora Nacional ALEC</div>
+          <div>Irmã Angélica Macuacua</div>
+        </div>
+        <div class="sig-block">
+          <div class="sig-role">Secretaria & Administração</div>
+          <div>Christ Embassy Moçambique</div>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  printWindow.document.write(printHtml);
+  printWindow.document.close();
+  printWindow.focus();
+  setTimeout(() => {
+    printWindow.print();
+  }, 500);
+}
+
+function exportAlecReportCsv() {
+  const summary = getFilteredAlecReportData();
+  const students = summary.filtered;
+
+  const headers = [
+    "ID Aluno",
+    "Nome Completo",
+    "Contacto",
+    "Provincia",
+    "Igreja",
+    "Grupo de Celula",
+    "Celula",
+    "Lider de Celula",
+    "Fez Escola de Fundacao",
+    "Ja e Lider",
+    "Estado Geral",
+    "Categoria Estado",
+    "Fase 1 - Aula 1",
+    "Fase 1 - Aula 2",
+    "Fase 1 - Aula 3",
+    "Fase 1 - Aula 4",
+    "Fase 1 - Media",
+    "Fase 2 - Aula 1",
+    "Fase 2 - Aula 2",
+    "Fase 2 - Aula 3",
+    "Fase 2 - Media",
+    "Media Final Geral",
+    "Terminou / Graduado",
+    "Certificado Pago",
+    "Certificado Emitido",
+    "Data de Cadastro",
+    "Observacoes"
+  ];
+
+  const escapeCsv = (str) => `"${String(str ?? "").replace(/"/g, '""')}"`;
+
+  const rows = students.map((s) => [
+    escapeCsv(s.id),
+    escapeCsv(s.nome_completo),
+    escapeCsv(s.contacto),
+    escapeCsv(s.province),
+    escapeCsv(s.church_name),
+    escapeCsv(s.cell_group_name),
+    escapeCsv(s.celula),
+    escapeCsv(s.nome_do_lider_de_celula),
+    escapeCsv(s.fez_escola_de_fundacao ? "Sim" : "Nao"),
+    escapeCsv(s.e_lider ? "Sim" : "Nao"),
+    escapeCsv(s.estado),
+    escapeCsv(s.status_category),
+    s.fase_1_aula_1,
+    s.fase_1_aula_2,
+    s.fase_1_aula_3,
+    s.fase_1_aula_4,
+    s.fase_1_media,
+    s.fase_2_aula_1,
+    s.fase_2_aula_2,
+    s.fase_2_aula_3,
+    s.fase_2_media,
+    s.media_geral,
+    escapeCsv(s.terminou ? "Sim" : "Nao"),
+    escapeCsv(s.faixa_certificado_pago ? "Sim" : "Nao"),
+    escapeCsv(s.certificado_emitido ? "Sim" : "Nao"),
+    escapeCsv((s.created_at || "").slice(0, 10)),
+    escapeCsv(s.observacoes || s.motivo_de_fazer_alec || "")
+  ].join(","));
+
+  const csvContent = "\uFEFF" + [headers.join(","), ...rows].join("\r\n");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `Relatorio_ALEC_Analytics_${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 function renderChurchReportSummaryCard(item) {
@@ -25844,6 +27075,7 @@ function renderCellMinistry(activeTab = "alecOverview") {
     const panels = {
       alecRegistration: () => renderAlecRegistrationAnalyticalView(),
       alecScores: () => renderAlecScoresAnalyticalView(),
+      alecReports: () => renderAlecReportsAnalyticalView(),
       churchReports: () => renderChurchReportsAnalyticalView(),
       receivedReports: () => renderCellMinistry("receivedReports"),
       cellEvaluation: () => renderCellMinistry("cellEvaluation"),
@@ -29964,14 +31196,49 @@ function canRenderAction(action, type) {
       return true;
     }
   }
+  if (module === "finance" && (action === "delete" || action === "deletePublicSubmission")) {
+    const r = String(activeUser?.role || "").toLowerCase();
+    if (r.includes("admin") || r.includes("finance") || r.includes("pastor") || r.includes("head") || r.includes("super") || (activeUser?.department_permissions || []).includes("finance") || (activeUser?.department_permissions || []).includes("*")) {
+      return true;
+    }
+  }
   return window.CEAccessControl?.canPerformAction?.(activeUser, module, action) ?? true;
 }
 
 function actionButtons(buttons) {
   const visible = buttons.filter(([action, type]) => canRenderAction(action, type));
+  const iconMap = {
+    view: "bi-eye",
+    viewSubmission: "bi-file-earmark-text",
+    edit: "bi-pencil-square",
+    delete: "bi-trash3",
+    deletePublicSubmission: "bi-trash3",
+    verify: "bi-check-circle",
+    verifyGroup: "bi-check-all",
+    reject: "bi-x-circle",
+    rejectGroup: "bi-x-octagon",
+    status: "bi-arrow-repeat",
+    export: "bi-download"
+  };
+
+  const classMap = {
+    view: "action-btn--view",
+    viewSubmission: "action-btn--view",
+    edit: "action-btn--edit",
+    delete: "action-btn--danger",
+    deletePublicSubmission: "action-btn--danger",
+    verify: "action-btn--success",
+    verifyGroup: "action-btn--success",
+    reject: "action-btn--danger",
+    rejectGroup: "action-btn--danger",
+    status: "action-btn--status",
+    export: "action-btn--gold"
+  };
+
   return `<div class="action-cluster">${visible.map(([action, type, id, label]) => {
-    const isDanger = ["delete", "reject", "rejectIntake"].includes(action);
-    return `<button type="button" class="action-btn ${isDanger ? "action-btn--danger text-danger border-danger-subtle" : ""}" data-action="${action}" data-type="${type}" data-id="${id}">${label}</button>`;
+    const icon = iconMap[action] ? `<i class="bi ${iconMap[action]} me-1"></i>` : "";
+    const extraClass = classMap[action] || "";
+    return `<button type="button" class="action-btn ${extraClass}" data-action="${action}" data-type="${type}" data-id="${id}">${icon}${label}</button>`;
   }).join("")}</div>`;
 }
 
@@ -35687,9 +36954,18 @@ async function quickAction(action, type, id) {
       const financeBridge = window.CEFinance || window.CEDataLayer?.finance;
       if (financeBridge && previous?.id) {
         try {
-          if (financeBridge.deleteRecord) await financeBridge.deleteRecord(previous.id);
+          if (financeBridge.deleteFinanceRecord) await financeBridge.deleteFinanceRecord(previous.id);
+          else if (financeBridge.deleteRecord) await financeBridge.deleteRecord(previous.id);
         } catch (err) {
           console.warn("[CE Finance] delete sync error", err);
+        }
+      }
+      void dualWriteFinanceRecord("delete", previous || { id });
+      if (previous?.submission_group_id) {
+        const remaining = (state.finance || []).filter((f) => f && f.id !== id && f.submission_group_id === previous.submission_group_id);
+        if (!remaining.length) {
+          state.publicGivingSubmissions = (state.publicGivingSubmissions || []).filter((s) => s && s.id !== previous.submission_group_id && s.submission_group_id !== previous.submission_group_id);
+          void dualWritePublicGivingSubmission("delete", { id: previous.submission_group_id, submission_group_id: previous.submission_group_id });
         }
       }
     }
@@ -35698,6 +36974,33 @@ async function quickAction(action, type, id) {
     saveState(`Deleted ${type} ${id}`);
     if (typeof showToast === "function") {
       showToast(lang === "pt" ? "Item eliminado com sucesso!" : "Item deleted successfully!");
+    }
+    if (activeRoute === "finance" && typeof renderFinance === "function") {
+      renderFinance();
+      return;
+    }
+    return setRoute(activeRoute);
+  }
+  if (action === "deletePublicSubmission") {
+    const subGroupId = id;
+    const title = lang === "pt" ? "esta submissão pública" : "this public submission";
+    const message = lang === "pt"
+      ? `Tem certeza que deseja eliminar ${title} e todos os seus registos associados?`
+      : `Are you sure you want to delete ${title} and all associated records?`;
+    if (!window.confirm(message)) return;
+
+    state.publicGivingSubmissions = (state.publicGivingSubmissions || []).filter((s) => s && s.id !== subGroupId && s.submission_group_id !== subGroupId);
+    state.finance = (state.finance || []).filter((f) => f && f.submission_group_id !== subGroupId && f.public_submission_id !== subGroupId && f.id !== subGroupId);
+
+    saveState(`Deleted public submission ${subGroupId}`);
+    void dualWritePublicGivingSubmission("delete", { id: subGroupId, submission_group_id: subGroupId });
+
+    if (typeof showToast === "function") {
+      showToast(lang === "pt" ? "Submissão eliminada com sucesso!" : "Submission deleted successfully!");
+    }
+    if (activeRoute === "finance" && typeof renderFinance === "function") {
+      renderFinance();
+      return;
     }
     return setRoute(activeRoute);
   }
@@ -41012,6 +42315,7 @@ function updateTopbarBreadcrumbs(route = activeRoute) {
     cellAlecOverview: ["Células & Liderança", "ALEC", "Visão Geral"],
     cellAlecRegistration: ["Células & Liderança", "ALEC", "Registo"],
     cellAlecScores: ["Células & Liderança", "ALEC", "Notas & Exames"],
+    cellAlecReports: ["Células & Liderança", "ALEC", "Relatórios & Analytics"],
     cellChurchReports: ["Células & Liderança", "ALEC", "Relatórios das Igrejas"],
     cellMinistryOverview: ["Células & Liderança", "Visão Geral"],
     cellReceivedReports: ["Células & Liderança", "Submissões Semanais"],

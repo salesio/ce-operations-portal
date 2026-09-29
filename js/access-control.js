@@ -858,10 +858,12 @@
     const access = resolveModuleAccess(user, module);
     const map = {
       view: "can_view",
+      viewSubmission: "can_view",
       add: "can_create",
       create: "can_create",
       edit: "can_edit",
       delete: "can_delete",
+      deletePublicSubmission: "can_delete",
       approve: "can_approve",
       reject: "can_approve",
       verify: "can_verify",
@@ -884,6 +886,11 @@
       if (access.can_delete || access.can_edit || access.can_create || access.can_manage_media_team) return true;
       const r = String(user?.role || "").toLowerCase();
       if (r.includes("admin") || r.includes("media") || r.includes("pastor") || r.includes("head") || r.includes("director") || r.includes("supervisor")) return true;
+    }
+    if (module === "finance" && (action === "delete" || action === "deletePublicSubmission")) {
+      if (access.can_delete || access.can_edit || access.can_create || access.can_verify) return true;
+      const r = String(user?.role || "").toLowerCase();
+      if (r.includes("admin") || r.includes("finance") || r.includes("pastor") || r.includes("head") || r.includes("super")) return true;
     }
     const key = map[action] || "can_view";
     return Boolean(access[key]);
