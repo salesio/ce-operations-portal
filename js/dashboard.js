@@ -25363,45 +25363,41 @@ function getFilteredAlecReportData() {
 
 function renderAlecFunnelCard(summary) {
   const steps = [
-    { label: lang === "pt" ? "1. Total Inscritos" : "1. Total Enrolled", count: summary.totalEnrolled, color: "#17a2b8", icon: "bi-person-lines-fill" },
-    { label: lang === "pt" ? "2. Escola de Fundação" : "2. Foundation School", count: summary.totalFoundationDone, color: "#0dcaf0", icon: "bi-book" },
-    { label: lang === "pt" ? "3. Cursaram Fase 1" : "3. Phase 1 Attendees", count: summary.totalPhase1Started, color: "#ffc107", icon: "bi-journal-code" },
-    { label: lang === "pt" ? "4. Cursaram Fase 2" : "4. Phase 2 Attendees", count: summary.totalPhase2Started, color: "#fd7e14", icon: "bi-journal-check" },
-    { label: lang === "pt" ? "5. Graduados / Concluintes" : "5. Graduated Leaders", count: summary.totalGraduated, color: "#198754", icon: "bi-mortarboard-fill" }
+    { label: lang === "pt" ? "1. Total Inscritos" : "1. Total Enrolled", count: summary.totalEnrolled, color: "#38bdf8", bg: "rgba(56, 189, 248, 0.15)", icon: "bi-person-lines-fill" },
+    { label: lang === "pt" ? "2. Escola de Fundação" : "2. Foundation School", count: summary.totalFoundationDone, color: "#06b6d4", bg: "rgba(6, 182, 212, 0.15)", icon: "bi-book" },
+    { label: lang === "pt" ? "3. Cursaram Fase 1" : "3. Phase 1 Attendees", count: summary.totalPhase1Started, color: "#10b981", bg: "rgba(16, 185, 129, 0.15)", icon: "bi-journal-code" },
+    { label: lang === "pt" ? "4. Cursaram Fase 2" : "4. Phase 2 Attendees", count: summary.totalPhase2Started, color: "#f59e0b", bg: "rgba(245, 158, 11, 0.15)", icon: "bi-journal-check" },
+    { label: lang === "pt" ? "5. Graduados / Concluintes" : "5. Graduated Leaders", count: summary.totalGraduated, color: "#fbbf24", bg: "rgba(251, 191, 36, 0.15)", icon: "bi-mortarboard-fill" }
   ];
 
   return `
-    <div class="card bg-dark text-light border border-secondary border-opacity-25 shadow-sm p-4 mb-4 alec-funnel-card">
-      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <div class="alec-funnel-card">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
         <div>
           <h5 class="fw-bold text-gold mb-1"><i class="bi bi-funnel-fill me-2"></i>${lang === "pt" ? "Funil de Formação & Retenção de Líderes" : "Leadership Training & Retention Funnel"}</h5>
           <p class="text-secondary small mb-0">${lang === "pt" ? "Acompanhe a taxa de conversão desde a inscrição inicial até a graduação final de cada candidato." : "Track conversion rates from enrollment through final graduation."}</p>
         </div>
         <div class="d-flex gap-2 align-items-center flex-wrap">
-          <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 fs-6">
+          <span class="badge px-3 py-2 fs-6" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3);">
             <i class="bi bi-trophy-fill me-1"></i>${summary.gradRate}% ${lang === "pt" ? "Taxa Graduação" : "Graduation Rate"}
           </span>
-          <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2 fs-6">
+          <span class="badge px-3 py-2 fs-6" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3);">
             <i class="bi bi-arrow-down-right me-1"></i>${summary.dropRate}% ${lang === "pt" ? "Desistência" : "Dropout"}
           </span>
         </div>
       </div>
-      <div class="alec-funnel-steps row g-3">
+      <div class="alec-funnel-grid">
         ${steps.map((step) => {
           const pct = summary.totalEnrolled > 0 ? Math.round((step.count / summary.totalEnrolled) * 100) : 0;
           return `
-            <div class="col-12 col-md">
-              <div class="p-3 rounded bg-body-tertiary border border-secondary border-opacity-25 h-100 d-flex flex-column justify-content-between">
-                <div>
-                  <div class="d-flex align-items-center justify-content-between mb-1">
-                    <small class="text-secondary fw-semibold"><i class="bi ${step.icon} me-1" style="color: ${step.color};"></i>${escapeAttr(step.label)}</small>
-                    <span class="badge rounded-pill" style="background-color: ${step.color}22; color: ${step.color}; border: 1px solid ${step.color}44;">${pct}%</span>
-                  </div>
-                  <div class="fs-3 fw-bold text-white">${step.count}</div>
-                </div>
-                <div class="progress mt-2" style="height: 6px; background: rgba(255,255,255,0.1);">
-                  <div class="progress-bar" role="progressbar" style="width: ${pct}%; background-color: ${step.color};" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"></div>
-                </div>
+            <div class="alec-funnel-box">
+              <div class="alec-funnel-box-head">
+                <span class="alec-funnel-box-title"><i class="bi ${step.icon}" style="color: ${step.color};"></i>${escapeAttr(step.label)}</span>
+                <span class="alec-funnel-box-badge" style="background: ${step.bg}; color: ${step.color}; border: 1px solid ${step.color}44;">${pct}%</span>
+              </div>
+              <div class="alec-funnel-box-num">${step.count}</div>
+              <div class="alec-funnel-box-bar">
+                <div class="alec-funnel-box-fill" style="width: ${pct}%; background-color: ${step.color};"></div>
               </div>
             </div>
           `;
@@ -25427,51 +25423,51 @@ function renderAlecReportTable(groupList, categoryType) {
 
   return `
     <div class="table-responsive">
-      <table class="table table-dark table-hover table-striped align-middle mb-0 custom-reports-table">
+      <table class="alec-custom-table">
         <thead>
-          <tr class="text-secondary small text-uppercase">
-            <th class="py-3 ps-3">${escapeAttr(headerLabel)}</th>
-            ${categoryType === "cellGroup" ? `<th class="py-3">Igreja</th>` : ""}
-            ${categoryType === "cell" ? `<th class="py-3">Líder</th><th class="py-3">Igreja</th>` : ""}
-            <th class="py-3 text-center">Total Inscritos</th>
-            <th class="py-3 text-center text-success"><i class="bi bi-mortarboard me-1"></i>Graduados</th>
-            <th class="py-3 text-center text-info"><i class="bi bi-hourglass-split me-1"></i>Em Formação</th>
-            <th class="py-3 text-center text-warning"><i class="bi bi-exclamation-circle me-1"></i>Incompletos</th>
-            <th class="py-3 text-center text-danger"><i class="bi bi-x-circle me-1"></i>Desistentes</th>
-            <th class="py-3 text-center text-gold">Taxa Graduação</th>
-            <th class="py-3 text-center">Média Geral</th>
-            <th class="py-3 text-center pe-3">Certificados</th>
+          <tr>
+            <th class="ps-3">${escapeAttr(headerLabel)}</th>
+            ${categoryType === "cellGroup" ? `<th>Igreja</th>` : ""}
+            ${categoryType === "cell" ? `<th>Líder</th><th>Igreja</th>` : ""}
+            <th class="text-center">Total Inscritos</th>
+            <th class="text-center" style="color: #34d399;"><i class="bi bi-mortarboard me-1"></i>Graduados</th>
+            <th class="text-center" style="color: #38bdf8;"><i class="bi bi-hourglass-split me-1"></i>Em Formação</th>
+            <th class="text-center" style="color: #fbbf24;"><i class="bi bi-exclamation-circle me-1"></i>Incompletos</th>
+            <th class="text-center" style="color: #f87171;"><i class="bi bi-x-circle me-1"></i>Desistentes</th>
+            <th class="text-center text-gold">Taxa Graduação</th>
+            <th class="text-center">Média Geral</th>
+            <th class="text-center pe-3">Certificados</th>
           </tr>
         </thead>
         <tbody>
           ${groupList.map((row) => `
             <tr>
-              <td class="py-3 ps-3 fw-bold text-white">
+              <td class="ps-3 fw-bold text-white">
                 <i class="bi ${categoryType === "province" ? "bi-geo-alt-fill text-gold" : categoryType === "church" ? "bi-building text-info" : categoryType === "cellGroup" ? "bi-collection text-warning" : "bi-diagram-3 text-cyan"} me-2"></i>
                 ${escapeAttr(row.label)}
               </td>
-              ${categoryType === "cellGroup" ? `<td class="py-3 small text-secondary">${escapeAttr(row.churchName || "—")}</td>` : ""}
-              ${categoryType === "cell" ? `<td class="py-3 small text-secondary">${escapeAttr(row.cellLeaderName || "—")}</td><td class="py-3 small text-secondary">${escapeAttr(row.churchName || "—")}</td>` : ""}
-              <td class="py-3 text-center fw-bold fs-6">${row.total}</td>
-              <td class="py-3 text-center fw-bold text-success">${row.graduated}</td>
-              <td class="py-3 text-center text-info">${row.inTraining}</td>
-              <td class="py-3 text-center text-warning">${row.incomplete}</td>
-              <td class="py-3 text-center text-danger">${row.dropped}</td>
-              <td class="py-3 text-center">
+              ${categoryType === "cellGroup" ? `<td class="small text-secondary">${escapeAttr(row.churchName || "—")}</td>` : ""}
+              ${categoryType === "cell" ? `<td class="small text-secondary">${escapeAttr(row.cellLeaderName || "—")}</td><td class="small text-secondary">${escapeAttr(row.churchName || "—")}</td>` : ""}
+              <td class="text-center fw-bold fs-6 text-white">${row.total}</td>
+              <td class="text-center fw-bold" style="color: #34d399;">${row.graduated}</td>
+              <td class="text-center" style="color: #38bdf8;">${row.inTraining}</td>
+              <td class="text-center" style="color: #fbbf24;">${row.incomplete}</td>
+              <td class="text-center" style="color: #f87171;">${row.dropped}</td>
+              <td class="text-center">
                 <div class="d-flex align-items-center justify-content-center gap-2">
-                  <div class="progress flex-grow-1" style="height: 6px; min-width: 50px; background: rgba(255,255,255,0.1);">
-                    <div class="progress-bar bg-success" style="width: ${row.gradRate}%;"></div>
+                  <div class="progress flex-grow-1" style="height: 6px; min-width: 50px; background: rgba(255,255,255,0.1); border-radius: 99px;">
+                    <div class="progress-bar" style="width: ${row.gradRate}%; background-color: #10b981; border-radius: 99px;"></div>
                   </div>
-                  <span class="fw-bold text-success small">${row.gradRate}%</span>
+                  <span class="fw-bold small" style="color: #34d399;">${row.gradRate}%</span>
                 </div>
               </td>
-              <td class="py-3 text-center">
-                <span class="badge ${row.avgScore >= 80 ? "bg-success-subtle text-success border border-success-subtle" : row.avgScore >= 50 ? "bg-info-subtle text-info border border-info-subtle" : "bg-warning-subtle text-warning border border-warning-subtle"}">
+              <td class="text-center">
+                <span class="badge" style="background: ${row.avgScore >= 80 ? "rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3)" : row.avgScore >= 50 ? "rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3)" : "rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3)"};">
                   ${row.avgScore > 0 ? `${row.avgScore}%` : "—"}
                 </span>
               </td>
-              <td class="py-3 text-center pe-3">
-                <span class="badge bg-secondary-subtle text-light border border-secondary" title="Pagos: ${row.paid} / Emitidos: ${row.issued}">
+              <td class="text-center pe-3">
+                <span class="badge bg-dark border border-secondary text-light" title="Pagos: ${row.paid} / Emitidos: ${row.issued}">
                   <i class="bi bi-award me-1 text-gold"></i>${row.issued} / ${row.total}
                 </span>
               </td>
@@ -25490,57 +25486,57 @@ function renderAlecAllStudentsRosterTable(students) {
 
   return `
     <div class="table-responsive">
-      <table class="table table-dark table-hover table-striped align-middle mb-0 custom-reports-table">
+      <table class="alec-custom-table">
         <thead>
-          <tr class="text-secondary small text-uppercase">
-            <th class="py-3 ps-3">Aluno</th>
-            <th class="py-3">Contacto</th>
-            <th class="py-3">Província</th>
-            <th class="py-3">Igreja</th>
-            <th class="py-3">Célula / Líder</th>
-            <th class="py-3 text-center">Fase 1 (Média)</th>
-            <th class="py-3 text-center">Fase 2 (Média)</th>
-            <th class="py-3 text-center text-gold">Média Final</th>
-            <th class="py-3 text-center">Estado</th>
-            <th class="py-3 text-center pe-3">Certificado</th>
+          <tr>
+            <th class="ps-3">Aluno</th>
+            <th>Contacto</th>
+            <th>Província</th>
+            <th>Igreja</th>
+            <th>Célula / Líder</th>
+            <th class="text-center">Fase 1 (Média)</th>
+            <th class="text-center">Fase 2 (Média)</th>
+            <th class="text-center text-gold">Média Final</th>
+            <th class="text-center">Estado</th>
+            <th class="text-center pe-3">Certificado</th>
           </tr>
         </thead>
         <tbody>
           ${students.map((st) => `
             <tr>
-              <td class="py-3 ps-3">
+              <td class="ps-3">
                 <div class="fw-bold text-white">${escapeAttr(formatCleanPersonName(st.nome_completo))}</div>
-                <div class="small text-secondary">
-                  ${st.fez_escola_de_fundacao ? '<span class="badge bg-info-subtle text-info me-1 py-0 px-1"><i class="bi bi-book me-1"></i>Fundação</span>' : ""}
-                  ${st.e_lider ? '<span class="badge bg-warning-subtle text-warning py-0 px-1"><i class="bi bi-person-badge me-1"></i>Líder</span>' : ""}
+                <div class="small text-secondary mt-1">
+                  ${st.fez_escola_de_fundacao ? '<span class="badge bg-info-subtle text-info me-1 py-0 px-1 border border-info-subtle"><i class="bi bi-book me-1"></i>Fundação</span>' : ""}
+                  ${st.e_lider ? '<span class="badge bg-warning-subtle text-warning py-0 px-1 border border-warning-subtle"><i class="bi bi-person-badge me-1"></i>Líder</span>' : ""}
                 </div>
               </td>
-              <td class="py-3 font-monospace small text-info">${escapeAttr(st.contacto || "—")}</td>
-              <td class="py-3 small text-secondary"><i class="bi bi-geo-alt me-1 text-gold"></i>${escapeAttr(st.province)}</td>
-              <td class="py-3 small">${escapeAttr(st.church_name)}</td>
-              <td class="py-3 small">
+              <td class="font-monospace small text-info">${escapeAttr(st.contacto || "—")}</td>
+              <td class="small text-secondary"><i class="bi bi-geo-alt me-1 text-gold"></i>${escapeAttr(st.province)}</td>
+              <td class="small text-light">${escapeAttr(st.church_name)}</td>
+              <td class="small">
                 <div class="text-light fw-semibold">${escapeAttr(st.celula)}</div>
                 <div class="text-secondary">${escapeAttr(st.nome_do_lider_de_celula !== "—" ? `Líder: ${st.nome_do_lider_de_celula}` : "")}</div>
               </td>
-              <td class="py-3 text-center">
-                <span class="badge ${st.fase_1_media >= 80 ? "bg-success-subtle text-success" : st.fase_1_media > 0 ? "bg-primary-subtle text-primary" : "bg-dark text-secondary"} border border-secondary border-opacity-25">
+              <td class="text-center">
+                <span class="badge ${st.fase_1_media >= 80 ? "bg-success-subtle text-success border border-success-subtle" : st.fase_1_media > 0 ? "bg-primary-subtle text-primary border border-primary-subtle" : "bg-dark text-secondary border border-secondary"}">
                   ${st.fase_1_media > 0 ? `${st.fase_1_media}%` : "—"}
                 </span>
               </td>
-              <td class="py-3 text-center">
-                <span class="badge ${st.fase_2_media >= 80 ? "bg-success-subtle text-success" : st.fase_2_media > 0 ? "bg-primary-subtle text-primary" : "bg-dark text-secondary"} border border-secondary border-opacity-25">
+              <td class="text-center">
+                <span class="badge ${st.fase_2_media >= 80 ? "bg-success-subtle text-success border border-success-subtle" : st.fase_2_media > 0 ? "bg-primary-subtle text-primary border border-primary-subtle" : "bg-dark text-secondary border border-secondary"}">
                   ${st.fase_2_media > 0 ? `${st.fase_2_media}%` : "—"}
                 </span>
               </td>
-              <td class="py-3 text-center">
+              <td class="text-center">
                 <span class="fw-bold fs-6 ${st.media_geral >= 80 ? "text-success" : st.media_geral >= 50 ? "text-info" : st.media_geral > 0 ? "text-warning" : "text-secondary"}">
                   ${st.media_geral > 0 ? `${st.media_geral}%` : "—"}
                 </span>
               </td>
-              <td class="py-3 text-center">
+              <td class="text-center">
                 ${getAlecStatusBadge(st.status_category)}
               </td>
-              <td class="py-3 text-center pe-3">
+              <td class="text-center pe-3">
                 ${st.certificado_emitido ? '<span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-award-fill me-1"></i>Emitido</span>' : st.faixa_certificado_pago ? '<span class="badge bg-warning-subtle text-warning border border-warning-subtle"><i class="bi bi-cash-coin me-1"></i>Pago</span>' : '<span class="badge bg-secondary-subtle text-secondary">Pendente</span>'}
               </td>
             </tr>
@@ -25614,13 +25610,13 @@ function renderAlecReportsAnalyticalView() {
       ${alecModuleSubnav("reports")}
 
       <!-- Filters & Export Toolbar -->
-      <div class="panel glass-panel mb-4 p-3 alec-filter-container shadow-sm border border-secondary border-opacity-25 rounded-3">
+      <div class="alec-filter-card">
         <form data-alec-reports-filters onsubmit="return false;" class="row g-3 align-items-end">
           
           <!-- Period / Cohort -->
           <div class="col-12 col-sm-6 col-md-4 col-xl-2">
-            <label class="form-label small text-secondary fw-semibold mb-1"><i class="bi bi-calendar3 me-1 text-gold"></i>Período / Turma</label>
-            <select class="form-select form-select-sm bg-dark text-light border-secondary" name="period">
+            <label class="alec-filter-label"><i class="bi bi-calendar3 text-gold"></i>Período / Turma</label>
+            <select class="form-select form-select-sm alec-select" name="period">
               <option value="all"${st.period === "all" ? " selected" : ""}>Todos os Períodos</option>
               <option value="year_2026"${st.period === "year_2026" ? " selected" : ""}>Ano 2026</option>
               <option value="year_2025"${st.period === "year_2025" ? " selected" : ""}>Ano 2025</option>
@@ -25634,19 +25630,19 @@ function renderAlecReportsAnalyticalView() {
 
           ${st.period === "custom" ? `
             <div class="col-6 col-sm-3 col-md-2 col-xl-1">
-              <label class="form-label small text-secondary mb-1">De</label>
-              <input type="date" class="form-control form-control-sm bg-dark text-light border-secondary" name="dateFrom" value="${escapeAttr(st.dateFrom || "")}">
+              <label class="alec-filter-label">De</label>
+              <input type="date" class="form-control form-control-sm alec-input" name="dateFrom" value="${escapeAttr(st.dateFrom || "")}">
             </div>
             <div class="col-6 col-sm-3 col-md-2 col-xl-1">
-              <label class="form-label small text-secondary mb-1">Até</label>
-              <input type="date" class="form-control form-control-sm bg-dark text-light border-secondary" name="dateTo" value="${escapeAttr(st.dateTo || "")}">
+              <label class="alec-filter-label">Até</label>
+              <input type="date" class="form-control form-control-sm alec-input" name="dateTo" value="${escapeAttr(st.dateTo || "")}">
             </div>
           ` : ""}
 
           <!-- Province -->
           <div class="col-12 col-sm-6 col-md-4 col-xl-2">
-            <label class="form-label small text-secondary fw-semibold mb-1"><i class="bi bi-geo-alt me-1 text-gold"></i>Província</label>
-            <select class="form-select form-select-sm bg-dark text-light border-secondary" name="province">
+            <label class="alec-filter-label"><i class="bi bi-geo-alt text-gold"></i>Província</label>
+            <select class="form-select form-select-sm alec-select" name="province">
               <option value="">Todas as Províncias</option>
               ${provincesList.map((p) => `<option value="${escapeAttr(p)}"${st.province === p ? " selected" : ""}>${escapeAttr(p)}</option>`).join("")}
             </select>
@@ -25654,8 +25650,8 @@ function renderAlecReportsAnalyticalView() {
 
           <!-- Church -->
           <div class="col-12 col-sm-6 col-md-4 col-xl-2">
-            <label class="form-label small text-secondary fw-semibold mb-1"><i class="bi bi-building me-1 text-gold"></i>Igreja</label>
-            <select class="form-select form-select-sm bg-dark text-light border-secondary" name="churchId">
+            <label class="alec-filter-label"><i class="bi bi-building text-gold"></i>Igreja</label>
+            <select class="form-select form-select-sm alec-select" name="churchId">
               <option value="">Todas as Igrejas</option>
               ${availableChurches.map((c) => `<option value="${escapeAttr(c.id || c.church_id)}"${st.churchId === (c.id || c.church_id) ? " selected" : ""}>${escapeAttr(c.church_name || c.name)}</option>`).join("")}
             </select>
@@ -25663,8 +25659,8 @@ function renderAlecReportsAnalyticalView() {
 
           <!-- Cell Group -->
           <div class="col-12 col-sm-6 col-md-4 col-xl-2">
-            <label class="form-label small text-secondary fw-semibold mb-1"><i class="bi bi-collection me-1 text-gold"></i>Grupo de Célula</label>
-            <select class="form-select form-select-sm bg-dark text-light border-secondary" name="cellGroupId">
+            <label class="alec-filter-label"><i class="bi bi-collection text-gold"></i>Grupo de Célula</label>
+            <select class="form-select form-select-sm alec-select" name="cellGroupId">
               <option value="">Todos os Grupos</option>
               ${availableGroups.map((g) => `<option value="${escapeAttr(g.id)}"${st.cellGroupId === g.id ? " selected" : ""}>${escapeAttr(g.name || g.nome_do_grupo)}</option>`).join("")}
             </select>
@@ -25672,8 +25668,8 @@ function renderAlecReportsAnalyticalView() {
 
           <!-- Cell -->
           <div class="col-12 col-sm-6 col-md-4 col-xl-2">
-            <label class="form-label small text-secondary fw-semibold mb-1"><i class="bi bi-diagram-3 me-1 text-gold"></i>Célula</label>
-            <select class="form-select form-select-sm bg-dark text-light border-secondary" name="cellId">
+            <label class="alec-filter-label"><i class="bi bi-diagram-3 text-gold"></i>Célula</label>
+            <select class="form-select form-select-sm alec-select" name="cellId">
               <option value="">Todas as Células</option>
               ${availableCells.map((c) => `<option value="${escapeAttr(c.id)}"${st.cellId === c.id ? " selected" : ""}>${escapeAttr(c.cell_name || c.nome_da_celula || c.name)}</option>`).join("")}
             </select>
@@ -25681,8 +25677,8 @@ function renderAlecReportsAnalyticalView() {
 
           <!-- Status -->
           <div class="col-12 col-sm-6 col-md-4 col-xl-2">
-            <label class="form-label small text-secondary fw-semibold mb-1"><i class="bi bi-flag me-1 text-gold"></i>Progresso / Estado</label>
-            <select class="form-select form-select-sm bg-dark text-light border-secondary" name="status">
+            <label class="alec-filter-label"><i class="bi bi-flag text-gold"></i>Progresso / Estado</label>
+            <select class="form-select form-select-sm alec-select" name="status">
               <option value="">Todos os Estados</option>
               <option value="graduated"${st.status === "graduated" ? " selected" : ""}>Graduados (Concluído)</option>
               <option value="in_training"${st.status === "in_training" ? " selected" : ""}>Em Formação (Activo)</option>
@@ -25693,8 +25689,8 @@ function renderAlecReportsAnalyticalView() {
 
           <!-- Search -->
           <div class="col-12 col-sm-6 col-md-4 col-xl-2">
-            <label class="form-label small text-secondary fw-semibold mb-1"><i class="bi bi-search me-1 text-gold"></i>Pesquisar</label>
-            <input type="search" class="form-control form-control-sm bg-dark text-light border-secondary" name="search" placeholder="Aluno, telefone, célula..." value="${escapeAttr(st.search || "")}">
+            <label class="alec-filter-label"><i class="bi bi-search text-gold"></i>Pesquisar</label>
+            <input type="search" class="form-control form-control-sm alec-input" name="search" placeholder="Aluno, telefone, célula..." value="${escapeAttr(st.search || "")}">
           </div>
 
           <!-- Action Cluster: Orientation, Reset & Exports -->
@@ -25705,19 +25701,19 @@ function renderAlecReportsAnalyticalView() {
 
             <!-- PDF Orientation Toggle -->
             <div class="btn-group btn-group-sm" role="group" aria-label="Orientação do PDF">
-              <button type="button" class="btn btn-outline-secondary alec-orientation-btn ${st.pdfOrientation === "portrait" ? "active" : ""}" data-alec-report-orientation="portrait" title="PDF em Modo Retrato">
+              <button type="button" class="alec-orientation-btn ${st.pdfOrientation === "portrait" ? "active" : ""}" data-alec-report-orientation="portrait" title="PDF em Modo Retrato">
                 <i class="bi bi-file-earmark-person me-1"></i>Retrato
               </button>
-              <button type="button" class="btn btn-outline-secondary alec-orientation-btn ${st.pdfOrientation === "landscape" ? "active" : ""}" data-alec-report-orientation="landscape" title="PDF em Modo Paisagem">
+              <button type="button" class="alec-orientation-btn ${st.pdfOrientation === "landscape" ? "active" : ""}" data-alec-report-orientation="landscape" title="PDF em Modo Paisagem">
                 <i class="bi bi-file-earmark-easel me-1"></i>Paisagem
               </button>
             </div>
 
-            <button type="button" class="btn btn-sm btn-danger shadow-sm" data-alec-export-pdf title="Exportar Relatório Formatado em PDF">
+            <button type="button" class="btn btn-sm text-white shadow-sm" style="background: linear-gradient(135deg, #ef4444, #b91c1c); border: 0; font-weight: 700; border-radius: 8px; padding: 0.45rem 0.9rem;" data-alec-export-pdf title="Exportar Relatório Formatado em PDF">
               <i class="bi bi-file-earmark-pdf-fill me-1"></i>PDF
             </button>
 
-            <button type="button" class="btn btn-sm btn-success shadow-sm" data-alec-export-csv title="Exportar Base de Dados em CSV / Excel">
+            <button type="button" class="btn btn-sm text-white shadow-sm" style="background: linear-gradient(135deg, #10b981, #047857); border: 0; font-weight: 700; border-radius: 8px; padding: 0.45rem 0.9rem;" data-alec-export-csv title="Exportar Base de Dados em CSV / Excel">
               <i class="bi bi-file-earmark-spreadsheet-fill me-1"></i>CSV
             </button>
           </div>
@@ -25726,31 +25722,108 @@ function renderAlecReportsAnalyticalView() {
       </div>
 
       <!-- Executive KPI Cards Grid -->
-      <div class="row g-3 mb-4">
-        ${metric("bi-person-lines-fill", "Total Inscritos", summary.totalEnrolled, "Candidatos")}
-        ${metric("bi-mortarboard-fill", "Graduados", summary.totalGraduated, `${summary.gradRate}% Conclusão`)}
-        ${metric("bi-hourglass-split", "Em Formação", summary.totalInTraining, "Activos")}
-        ${metric("bi-exclamation-circle-fill", "Não Concluíram", summary.totalIncomplete, "Pendentes")}
-        ${metric("bi-x-circle-fill", "Desistiram", summary.totalDropped, `${summary.dropRate}% Desistência`)}
-        ${metric("bi-speedometer", "Média Geral", summary.avgOverallScore > 0 ? `${summary.avgOverallScore}%` : "—", `F1: ${summary.avgPhase1Score}% | F2: ${summary.avgPhase2Score}%`)}
-        ${metric("bi-award-fill", "Certificados", `${summary.totalIssued} / ${summary.totalPaid}`, "Emitidos / Pagos")}
+      <div class="alec-kpis-grid">
+        
+        <!-- Total Enrolled -->
+        <article class="alec-kpi-card">
+          <div class="alec-kpi-head">
+            <span class="alec-kpi-label">Total Inscritos</span>
+            <div class="alec-kpi-icon" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">
+              <i class="bi bi-person-lines-fill"></i>
+            </div>
+          </div>
+          <div class="alec-kpi-val">${summary.totalEnrolled}</div>
+          <div class="alec-kpi-sub"><span class="badge bg-secondary-subtle text-light">Candidatos</span></div>
+        </article>
+
+        <!-- Graduated -->
+        <article class="alec-kpi-card" style="border-color: rgba(16, 185, 129, 0.3);">
+          <div class="alec-kpi-head">
+            <span class="alec-kpi-label" style="color: #34d399;">Graduados</span>
+            <div class="alec-kpi-icon" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">
+              <i class="bi bi-mortarboard-fill"></i>
+            </div>
+          </div>
+          <div class="alec-kpi-val" style="color: #34d399;">${summary.totalGraduated}</div>
+          <div class="alec-kpi-sub"><span class="badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399;">${summary.gradRate}% Conclusão</span></div>
+        </article>
+
+        <!-- In Training -->
+        <article class="alec-kpi-card">
+          <div class="alec-kpi-head">
+            <span class="alec-kpi-label" style="color: #38bdf8;">Em Formação</span>
+            <div class="alec-kpi-icon" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">
+              <i class="bi bi-hourglass-split"></i>
+            </div>
+          </div>
+          <div class="alec-kpi-val" style="color: #38bdf8;">${summary.totalInTraining}</div>
+          <div class="alec-kpi-sub"><span class="badge" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8;">Activos</span></div>
+        </article>
+
+        <!-- Incomplete -->
+        <article class="alec-kpi-card">
+          <div class="alec-kpi-head">
+            <span class="alec-kpi-label" style="color: #fbbf24;">Não Concluíram</span>
+            <div class="alec-kpi-icon" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24;">
+              <i class="bi bi-exclamation-circle-fill"></i>
+            </div>
+          </div>
+          <div class="alec-kpi-val" style="color: #fbbf24;">${summary.totalIncomplete}</div>
+          <div class="alec-kpi-sub"><span class="badge" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24;">Pendentes</span></div>
+        </article>
+
+        <!-- Dropped Out -->
+        <article class="alec-kpi-card" style="border-color: rgba(239, 68, 68, 0.3);">
+          <div class="alec-kpi-head">
+            <span class="alec-kpi-label" style="color: #f87171;">Desistiram</span>
+            <div class="alec-kpi-icon" style="background: rgba(239, 68, 68, 0.15); color: #f87171;">
+              <i class="bi bi-x-circle-fill"></i>
+            </div>
+          </div>
+          <div class="alec-kpi-val" style="color: #f87171;">${summary.totalDropped}</div>
+          <div class="alec-kpi-sub"><span class="badge" style="background: rgba(239, 68, 68, 0.2); color: #f87171;">${summary.dropRate}% Desistência</span></div>
+        </article>
+
+        <!-- Average Score -->
+        <article class="alec-kpi-card" style="border-color: rgba(245, 199, 85, 0.3);">
+          <div class="alec-kpi-head">
+            <span class="alec-kpi-label" style="color: #f5c755;">Média Geral</span>
+            <div class="alec-kpi-icon" style="background: rgba(245, 199, 85, 0.15); color: #f5c755;">
+              <i class="bi bi-speedometer"></i>
+            </div>
+          </div>
+          <div class="alec-kpi-val" style="color: #f5c755;">${summary.avgOverallScore > 0 ? `${summary.avgOverallScore}%` : "—"}</div>
+          <div class="alec-kpi-sub"><span class="badge" style="background: rgba(245, 199, 85, 0.2); color: #f5c755;">F1: ${summary.avgPhase1Score}% | F2: ${summary.avgPhase2Score}%</span></div>
+        </article>
+
+        <!-- Certificates -->
+        <article class="alec-kpi-card">
+          <div class="alec-kpi-head">
+            <span class="alec-kpi-label">Certificados</span>
+            <div class="alec-kpi-icon" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">
+              <i class="bi bi-award-fill"></i>
+            </div>
+          </div>
+          <div class="alec-kpi-val">${summary.totalIssued} <span class="fs-6 text-secondary fw-normal">/ ${summary.totalPaid}</span></div>
+          <div class="alec-kpi-sub"><span class="badge bg-secondary-subtle text-light">Emitidos / Pagos</span></div>
+        </article>
+
       </div>
 
       <!-- Interactive Funnel Card -->
       ${renderAlecFunnelCard(summary)}
 
-      <!-- Subtabs Navigation -->
-      <div class="panel glass-panel mb-4">
+      <!-- Data Panel with Subtabs -->
+      <div class="alec-data-panel">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 border-bottom border-secondary border-opacity-25 pb-3 mb-3">
-          <ul class="nav nav-pills flex-wrap gap-1" role="tablist">
+          <div class="alec-subtab-nav mb-0 border-0 pb-0">
             ${subtabs.map((tab) => `
-              <li class="nav-item" role="presentation">
-                <button class="nav-link ${activeSubtab === tab.key ? "active" : ""} btn btn-sm py-2 px-3 fw-semibold" data-alec-report-subtab="${tab.key}" type="button">
-                  <i class="bi ${tab.icon} me-2"></i>${escapeAttr(tab.label)}
-                </button>
-              </li>
+              <button class="alec-subtab-btn ${activeSubtab === tab.key ? "active" : ""}" data-alec-report-subtab="${tab.key}" type="button">
+                <i class="bi ${tab.icon}"></i>
+                <span>${escapeAttr(tab.label)}</span>
+              </button>
             `).join("")}
-          </ul>
+          </div>
           <span class="badge bg-dark text-warning border border-secondary px-3 py-2">
             <i class="bi bi-filter-circle me-1"></i>${summary.filtered.length} alunos filtrados
           </span>
@@ -25760,19 +25833,19 @@ function renderAlecReportsAnalyticalView() {
         ${activeSubtab === "summary" ? `
           <div class="row g-4">
             <div class="col-12 col-xl-6">
-              <div class="card bg-dark text-light border border-secondary border-opacity-25 p-3 h-100">
+              <div class="p-3 rounded-3" style="background: rgba(3, 10, 24, 0.65); border: 1px solid rgba(255, 255, 255, 0.08);">
                 <h6 class="fw-bold text-gold mb-3"><i class="bi bi-geo-alt-fill me-2"></i>Desempenho por Província (Top)</h6>
                 ${renderAlecReportTable(summary.byProvince.slice(0, 5), "province")}
               </div>
             </div>
             <div class="col-12 col-xl-6">
-              <div class="card bg-dark text-light border border-secondary border-opacity-25 p-3 h-100">
+              <div class="p-3 rounded-3" style="background: rgba(3, 10, 24, 0.65); border: 1px solid rgba(255, 255, 255, 0.08);">
                 <h6 class="fw-bold text-gold mb-3"><i class="bi bi-building me-2"></i>Desempenho por Igreja (Top)</h6>
                 ${renderAlecReportTable(summary.byChurch.slice(0, 5), "church")}
               </div>
             </div>
             <div class="col-12">
-              <div class="card bg-dark text-light border border-secondary border-opacity-25 p-3">
+              <div class="p-3 rounded-3" style="background: rgba(3, 10, 24, 0.65); border: 1px solid rgba(255, 255, 255, 0.08);">
                 <h6 class="fw-bold text-gold mb-3"><i class="bi bi-collection me-2"></i>Desempenho por Grupos de Célula (Top)</h6>
                 ${renderAlecReportTable(summary.byCellGroup.slice(0, 8), "cellGroup")}
               </div>
