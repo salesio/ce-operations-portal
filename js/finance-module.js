@@ -54,6 +54,60 @@ const FINANCE_REPORT_CATEGORY_BUCKETS = [
   { key: "other", labelKey: "financeReportOther", match: ["Outros", "Outros Braços"], groups: ["Outros"] }
 ];
 
+const FINANCE_TRANSLATIONS = {
+  // General Categories
+  "Dízimo": { pt: "Dízimo", en: "Tithe" },
+  "Ofertas": { pt: "Ofertas", en: "Offerings" },
+  "Acção de Graças": { pt: "Acção de Graças", en: "Thanksgiving" },
+  "Primícias": { pt: "Primícias", en: "Firstfruits" },
+  "Semente de Fé": { pt: "Semente de Fé", en: "Seed of Faith" },
+  "Ofertas Especiais": { pt: "Ofertas Especiais", en: "Special Offerings" },
+  "Outros": { pt: "Outros", en: "Other" },
+
+  // Partnership Arms
+  "Escola de Cura": { pt: "Escola de Cura", en: "Healing School" },
+  "Rapsódia de Realidades": { pt: "Rapsódia de Realidades", en: "Rhapsody of Realities" },
+  "Loveworld SAT": { pt: "Loveworld SAT", en: "Loveworld SAT" },
+  "Construtores de Visão": { pt: "Construtores de Visão", en: "Vision Builders" },
+  "Missões de Cidades do Interior": { pt: "Missões de Cidades do Interior", en: "InnerCity Mission" },
+  "Alcançar Moçambique": { pt: "Alcançar Moçambique", en: "ReachOut Mozambique" },
+  "Projecto da Igreja": { pt: "Projecto da Igreja", en: "Church Project" },
+  "Projecto de Construção de Igreja": { pt: "Projecto de Construção de Igreja", en: "Church Building Project" },
+  "Rapsódias das Crianças": { pt: "Rapsódias das Crianças", en: "TeeVo / Kids Rhapsody" },
+  "Mandato de Célula": { pt: "Mandato de Célula", en: "Cell Ministry Outreach" },
+  "Outros Braços": { pt: "Outros Braços", en: "Other Arms" },
+
+  // Contribution Groups
+  "Geral": { pt: "Geral", en: "General" },
+  "Parceria": { pt: "Parceria", en: "Partnership" },
+  "Projecto": { pt: "Projecto", en: "Project" },
+  "Missões": { pt: "Missões", en: "Missions" },
+
+  // Payment Methods
+  "Dinheiro": { pt: "Dinheiro", en: "Cash" },
+  "Banco": { pt: "Banco", en: "Bank Transfer" },
+  "Outro": { pt: "Outro", en: "Other" },
+  "M-Pesa": { pt: "M-Pesa", en: "M-Pesa" },
+  "E-Mola": { pt: "E-Mola", en: "E-Mola" },
+  "POS": { pt: "POS", en: "POS" },
+
+  // Statuses
+  "Verificado": { pt: "Verificado", en: "Verified" },
+  "Pendente de Verificação": { pt: "Pendente de Verificação", en: "Pending Verification" },
+  "Rejeitado": { pt: "Rejeitado", en: "Rejected" },
+  "Incluído no Relatório": { pt: "Incluído no Relatório", en: "Included in Report" },
+  "Verified": { pt: "Verificado", en: "Verified" },
+  "Pending": { pt: "Pendente", en: "Pending" },
+  "Rejected": { pt: "Rejeitado", en: "Rejected" }
+};
+
+function translateFinanceTerm(term, targetLang = (typeof lang !== "undefined" ? lang : "pt")) {
+  if (!term) return "";
+  const entry = FINANCE_TRANSLATIONS[term];
+  if (entry) return entry[targetLang] || entry.pt || term;
+  return term;
+}
+
 function normalizeFinanceCategory(raw) {
   const value = String(raw || "").trim();
   if (!value) return "Outros";
@@ -1424,27 +1478,30 @@ function exportFinancePdf(html, title) {
   exportFinancePrint(html, title);
 }
 
-function financeReportFilterBar(filters, churches, labels) {
+function financeReportFilterBar(filters, churches, labels = {}) {
+  const isEn = (labels.lang === "en" || (typeof lang !== "undefined" && lang === "en"));
+  const currentLang = isEn ? "en" : "pt";
+
   const periodOptions = [
-    ["month", labels.periodMonth || "Este Mês"],
-    ["last_month", "Mês Anterior"],
-    ["week", labels.periodWeek || "Esta Semana"],
-    ["last_week", "Semana Anterior"],
-    ["quarter", labels.periodQuarter || "Este Trimestre"],
-    ["last_quarter", "Trimestre Anterior"],
-    ["year", labels.periodYear || "Este Ano"],
-    ["last_year", "Ano Anterior"],
-    ["today", labels.periodToday || "Hoje"],
-    ["yesterday", "Ontem"],
-    ["custom", labels.periodCustom || "Personalizado (Datas)"],
-    ["all", "Todo o Período"]
+    ["month", labels.periodMonth || (isEn ? "This Month" : "Este Mês")],
+    ["last_month", labels.periodLastMonth || (isEn ? "Previous Month" : "Mês Anterior")],
+    ["week", labels.periodWeek || (isEn ? "This Week" : "Esta Semana")],
+    ["last_week", labels.periodLastWeek || (isEn ? "Previous Week" : "Semana Anterior")],
+    ["quarter", labels.periodQuarter || (isEn ? "This Quarter" : "Este Trimestre")],
+    ["last_quarter", labels.periodLastQuarter || (isEn ? "Previous Quarter" : "Trimestre Anterior")],
+    ["year", labels.periodYear || (isEn ? "This Year" : "Este Ano")],
+    ["last_year", labels.periodLastYear || (isEn ? "Previous Year" : "Ano Anterior")],
+    ["today", labels.periodToday || (isEn ? "Today" : "Hoje")],
+    ["yesterday", labels.periodYesterday || (isEn ? "Yesterday" : "Ontem")],
+    ["custom", labels.periodCustom || (isEn ? "Custom Range" : "Personalizado (Datas)")],
+    ["all", labels.periodAll || (isEn ? "All Time" : "Todo o Período")]
   ];
   const allCategories = [...FINANCE_GENERAL_CATEGORIES, ...FINANCE_PARTNERSHIP_ARMS];
   const frequencyOptions = [
-    ["", labels.allFrequencies || "Todas Frequências"],
-    ["consistent", labels.frequencyConsistent || "Consistente (Mensal)"],
-    ["regular", labels.frequencyRegular || "Regular"],
-    ["occasional", labels.frequencyOccasional || "Ocasional"]
+    ["", labels.allFrequencies || (isEn ? "All Frequencies" : "Todas Frequências")],
+    ["consistent", labels.frequencyConsistent || (isEn ? "Consistent (Monthly)" : "Consistente (Mensal)")],
+    ["regular", labels.frequencyRegular || (isEn ? "Regular" : "Regular")],
+    ["occasional", labels.frequencyOccasional || (isEn ? "Occasional" : "Ocasional")]
   ];
 
   return `
@@ -1452,120 +1509,120 @@ function financeReportFilterBar(filters, churches, labels) {
       <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
         <div class="d-flex align-items-center gap-2">
           <i class="bi bi-funnel-fill text-warning fs-5"></i>
-          <span class="fw-bold text-dark text-uppercase small tracking-wide">Filtros de Pesquisa & Análise</span>
+          <span class="fw-bold text-dark text-uppercase small tracking-wide">${labels.filterTitle || (isEn ? "Search & Analysis Filters" : "Filtros de Pesquisa & Análise")}</span>
         </div>
-        <button type="button" class="btn btn-sm btn-outline-secondary" data-finance-report-reset title="Limpar todos os filtros">
-          <i class="bi bi-arrow-counterclockwise me-1"></i>Limpar Filtros
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-finance-report-reset title="${labels.clearFilters || (isEn ? "Clear Filters" : "Limpar Filtros")}">
+          <i class="bi bi-arrow-counterclockwise me-1"></i>${labels.clearFilters || (isEn ? "Clear Filters" : "Limpar Filtros")}
         </button>
       </div>
 
       <div class="row g-3">
         <!-- Period -->
         <div class="col-12 col-sm-6 col-md-4 col-xl-3">
-          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-calendar3 me-1 text-primary"></i>${labels.period || "Período"}</label>
-          <select class="form-select" data-finance-report-filter="period" aria-label="${labels.period}">
+          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-calendar3 me-1 text-primary"></i>${labels.period || (isEn ? "Date" : "Período")}</label>
+          <select class="form-select" data-finance-report-filter="period" aria-label="${labels.period || (isEn ? "Period" : "Período")}">
             ${periodOptions.map(([v, l]) => `<option value="${v}" ${filters.period === v ? "selected" : ""}>${l}</option>`).join("")}
           </select>
         </div>
 
         <!-- Custom Date Range -->
         <div class="col-12 col-sm-6 col-md-4 col-xl-3 ${filters.period === "custom" ? "" : "d-none"}" data-finance-custom-date-container>
-          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-calendar-event me-1 text-primary"></i>${labels.from || "De"}</label>
-          <input class="form-control" type="date" data-finance-report-filter="dateFrom" value="${filters.dateFrom || ""}" aria-label="${labels.from}">
+          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-calendar-event me-1 text-primary"></i>${labels.from || (isEn ? "From" : "De")}</label>
+          <input class="form-control" type="date" data-finance-report-filter="dateFrom" value="${filters.dateFrom || ""}" aria-label="${labels.from || (isEn ? "From" : "De")}">
         </div>
         <div class="col-12 col-sm-6 col-md-4 col-xl-3 ${filters.period === "custom" ? "" : "d-none"}" data-finance-custom-date-container>
-          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-calendar-event me-1 text-primary"></i>${labels.to || "Até"}</label>
-          <input class="form-control" type="date" data-finance-report-filter="dateTo" value="${filters.dateTo || ""}" aria-label="${labels.to}">
+          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-calendar-event me-1 text-primary"></i>${labels.to || (isEn ? "To" : "Até")}</label>
+          <input class="form-control" type="date" data-finance-report-filter="dateTo" value="${filters.dateTo || ""}" aria-label="${labels.to || (isEn ? "To" : "Até")}">
         </div>
 
         <!-- Church -->
         <div class="col-12 col-sm-6 col-md-4 col-xl-3">
-          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-building me-1 text-primary"></i>${labels.church || "Igreja"}</label>
-          <select class="form-select" data-finance-report-filter="churchId" aria-label="${labels.church}">
-            <option value="">${labels.allChurches || "Todas as Igrejas"}</option>
+          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-building me-1 text-primary"></i>${labels.church || (isEn ? "Church" : "Igreja")}</label>
+          <select class="form-select" data-finance-report-filter="churchId" aria-label="${labels.church || (isEn ? "Church" : "Igreja")}">
+            <option value="">${labels.allChurches || (isEn ? "All Churches" : "Todas as Igrejas")}</option>
             ${churches.map((c) => `<option value="${c.id}" ${filters.churchId === c.id ? "selected" : ""}>${c.church_name}</option>`).join("")}
           </select>
         </div>
 
         <!-- Category -->
         <div class="col-12 col-sm-6 col-md-4 col-xl-3">
-          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-tags me-1 text-primary"></i>${labels.category || "Categoria"}</label>
-          <select class="form-select" data-finance-report-filter="category" aria-label="${labels.category}">
-            <option value="">${labels.allCategories || "Todas Categorias"}</option>
-            ${allCategories.map((c) => `<option value="${c}" ${filters.category === c ? "selected" : ""}>${c}</option>`).join("")}
+          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-tags me-1 text-primary"></i>${labels.category || (isEn ? "Category" : "Categoria")}</label>
+          <select class="form-select" data-finance-report-filter="category" aria-label="${labels.category || (isEn ? "Category" : "Categoria")}">
+            <option value="">${labels.allCategories || (isEn ? "All Categories" : "Todas Categorias")}</option>
+            ${allCategories.map((c) => `<option value="${c}" ${filters.category === c ? "selected" : ""}>${translateFinanceTerm(c, currentLang)}</option>`).join("")}
           </select>
         </div>
 
         <!-- Contribution Type -->
         <div class="col-12 col-sm-6 col-md-4 col-xl-3">
-          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-collection me-1 text-primary"></i>${labels.contributionType || "Tipo"}</label>
-          <select class="form-select" data-finance-report-filter="contributionType" aria-label="${labels.contributionType}">
-            <option value="">${labels.allTypes || "Todos os Tipos"}</option>
-            ${FINANCE_CONTRIBUTION_GROUPS.map((g) => `<option value="${g}" ${filters.contributionType === g ? "selected" : ""}>${g}</option>`).join("")}
+          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-collection me-1 text-primary"></i>${labels.contributionType || (isEn ? "Contribution Type" : "Tipo")}</label>
+          <select class="form-select" data-finance-report-filter="contributionType" aria-label="${labels.contributionType || (isEn ? "Contribution Type" : "Tipo")}">
+            <option value="">${labels.allTypes || (isEn ? "All Types" : "Todos os Tipos")}</option>
+            ${FINANCE_CONTRIBUTION_GROUPS.map((g) => `<option value="${g}" ${filters.contributionType === g ? "selected" : ""}>${translateFinanceTerm(g, currentLang)}</option>`).join("")}
           </select>
         </div>
 
         <!-- Partnership Arm -->
         <div class="col-12 col-sm-6 col-md-4 col-xl-3">
-          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-heart me-1 text-danger"></i>${labels.partnershipArm || "Braço de Parceria"}</label>
-          <select class="form-select" data-finance-report-filter="partnershipArm" aria-label="${labels.partnershipArm}">
-            <option value="">${labels.allArms || "Todos Braços de Parceria"}</option>
-            ${FINANCE_PARTNERSHIP_ARMS.map((a) => `<option value="${a}" ${filters.partnershipArm === a ? "selected" : ""}>${a}</option>`).join("")}
+          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-heart me-1 text-danger"></i>${labels.partnershipArm || (isEn ? "Partnership Arm" : "Braço de Parceria")}</label>
+          <select class="form-select" data-finance-report-filter="partnershipArm" aria-label="${labels.partnershipArm || (isEn ? "Partnership Arm" : "Braço de Parceria")}">
+            <option value="">${labels.allArms || (isEn ? "All Partnership Arms" : "Todos Braços de Parceria")}</option>
+            ${FINANCE_PARTNERSHIP_ARMS.map((a) => `<option value="${a}" ${filters.partnershipArm === a ? "selected" : ""}>${translateFinanceTerm(a, currentLang)}</option>`).join("")}
           </select>
         </div>
 
         <!-- Payment Method -->
         <div class="col-12 col-sm-6 col-md-4 col-xl-3">
-          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-wallet2 me-1 text-success"></i>${labels.method || "Método de Pagamento"}</label>
-          <select class="form-select" data-finance-report-filter="method" aria-label="${labels.method}">
-            <option value="">${labels.allMethods || "Todos Métodos"}</option>
-            ${(window.paymentMethods || ["M-Pesa", "E-Mola", "Banco", "Dinheiro", "POS", "Outro"]).map((m) => `<option value="${m}" ${filters.method === m ? "selected" : ""}>${m}</option>`).join("")}
+          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-wallet2 me-1 text-success"></i>${labels.method || (isEn ? "Payment Method" : "Método de Pagamento")}</label>
+          <select class="form-select" data-finance-report-filter="method" aria-label="${labels.method || (isEn ? "Payment Method" : "Método de Pagamento")}">
+            <option value="">${labels.allMethods || (isEn ? "All Methods" : "Todos Métodos")}</option>
+            ${(window.paymentMethods || ["M-Pesa", "E-Mola", "Banco", "Dinheiro", "POS", "Outro"]).map((m) => `<option value="${m}" ${filters.method === m ? "selected" : ""}>${translateFinanceTerm(m, currentLang)}</option>`).join("")}
           </select>
         </div>
 
         <!-- Status -->
         <div class="col-12 col-sm-6 col-md-4 col-xl-3">
-          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-shield-check me-1 text-info"></i>${labels.status || "Estado de Validação"}</label>
-          <select class="form-select" data-finance-report-filter="status" aria-label="${labels.status}">
-            <option value="">${labels.allStatuses || "Todos Estados"}</option>
-            ${(window.financeStatuses || ["Verificado", "Pendente de Verificação", "Rejeitado", "Incluído no Relatório"]).map((s) => `<option value="${s}" ${filters.status === s ? "selected" : ""}>${s}</option>`).join("")}
+          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-shield-check me-1 text-info"></i>${labels.status || (isEn ? "Status" : "Estado de Validação")}</label>
+          <select class="form-select" data-finance-report-filter="status" aria-label="${labels.status || (isEn ? "Status" : "Estado de Validação")}">
+            <option value="">${labels.allStatuses || (isEn ? "All Statuses" : "Todos Estados")}</option>
+            ${(window.financeStatuses || ["Verificado", "Pendente de Verificação", "Rejeitado", "Incluído no Relatório"]).map((s) => `<option value="${s}" ${filters.status === s ? "selected" : ""}>${translateFinanceTerm(s, currentLang)}</option>`).join("")}
           </select>
         </div>
 
         <!-- Min Value -->
         <div class="col-12 col-sm-6 col-md-4 col-xl-3">
-          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-cash-stack me-1 text-warning"></i>${labels.minValue || "Valor Mínimo (MTn)"}</label>
-          <input class="form-control" type="number" min="0" step="100" data-finance-report-filter="minValue" value="${filters.minValue || ""}" placeholder="Ex: 500" aria-label="${labels.minValue}">
+          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-cash-stack me-1 text-warning"></i>${labels.minValue || (isEn ? "Minimum Value (MTn)" : "Valor Mínimo (MTn)")}</label>
+          <input class="form-control" type="number" min="0" step="100" data-finance-report-filter="minValue" value="${filters.minValue || ""}" placeholder="Ex: 500" aria-label="${labels.minValue || (isEn ? "Minimum value" : "Valor Mínimo")}">
         </div>
 
         <!-- Contributor Search -->
         <div class="col-12 col-sm-6 col-md-4 col-xl-3">
-          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-person-search me-1 text-primary"></i>${labels.contributor || "Contribuinte / Ref"}</label>
-          <input class="form-control" type="search" data-finance-report-filter="contributor" value="${filters.contributor || ""}" placeholder="${labels.contributorPlaceholder || "Nome, telefone ou ref..."}" aria-label="${labels.contributor}">
+          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-person-search me-1 text-primary"></i>${labels.contributor || (isEn ? "Contributor" : "Contribuinte / Ref")}</label>
+          <input class="form-control" type="search" data-finance-report-filter="contributor" value="${filters.contributor || ""}" placeholder="${labels.contributorPlaceholder || (isEn ? "Name, phone or ref..." : "Nome, telefone ou ref...")}" aria-label="${labels.contributor || (isEn ? "Contributor" : "Contribuinte")}">
         </div>
 
         <!-- Cell Group -->
         <div class="col-12 col-sm-6 col-md-4 col-xl-3">
-          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-diagram-3 me-1 text-primary"></i>${labels.cellGroup || "Grupo de Célula"}</label>
-          <select class="form-select" data-finance-report-filter="cellGroup" aria-label="${labels.cellGroup}">
-            <option value="">${labels.cellGroup || "Todos Grupos de Célula"}</option>
+          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-diagram-3 me-1 text-primary"></i>${labels.cellGroup || (isEn ? "Cell Group" : "Grupo de Célula")}</label>
+          <select class="form-select" data-finance-report-filter="cellGroup" aria-label="${labels.cellGroup || (isEn ? "Cell Group" : "Grupo de Célula")}">
+            <option value="">${labels.allCellGroups || (isEn ? "All Cell Groups" : "Todos Grupos de Célula")}</option>
             ${(window.CECellOptions?.groups?.() || []).map((group) => `<option value="${group.group_name}" ${filters.cellGroup === group.group_name ? "selected" : ""}>${group.group_name}</option>`).join("")}
           </select>
         </div>
 
         <!-- Cell -->
         <div class="col-12 col-sm-6 col-md-4 col-xl-3">
-          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-people me-1 text-primary"></i>${labels.cell || "Célula"}</label>
-          <select class="form-select" data-finance-report-filter="cell" aria-label="${labels.cell}">
-            <option value="">${labels.cell || "Todas as Células"}</option>
+          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-people me-1 text-primary"></i>${labels.cell || (isEn ? "Cell" : "Célula")}</label>
+          <select class="form-select" data-finance-report-filter="cell" aria-label="${labels.cell || (isEn ? "Cell" : "Célula")}">
+            <option value="">${labels.allCells || (isEn ? "All Cells" : "Todas as Células")}</option>
             ${(window.CECellOptions?.cells?.() || []).map((cell) => `<option value="${cell.cell_name}" ${filters.cell === cell.cell_name ? "selected" : ""}>${cell.cell_name}</option>`).join("")}
           </select>
         </div>
 
         <!-- Frequency -->
         <div class="col-12 col-sm-6 col-md-4 col-xl-3">
-          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-repeat me-1 text-secondary"></i>${labels.frequency || "Frequência"}</label>
-          <select class="form-select" data-finance-report-filter="frequency" aria-label="${labels.frequency}">
+          <label class="form-label small fw-bold text-secondary mb-1"><i class="bi bi-repeat me-1 text-secondary"></i>${labels.frequency || (isEn ? "Frequency" : "Frequência")}</label>
+          <select class="form-select" data-finance-report-filter="frequency" aria-label="${labels.frequency || (isEn ? "Frequency" : "Frequência")}">
             ${frequencyOptions.map(([v, l]) => `<option value="${v}" ${filters.frequency === v ? "selected" : ""}>${l}</option>`).join("")}
           </select>
         </div>
@@ -1615,3 +1672,5 @@ window.financeLineChart = financeLineChart;
 window.financeHBarChart = financeHBarChart;
 window.financeChurchBarChart = financeChurchBarChart;
 window.financeSemanticBarChart = financeSemanticBarChart;
+window.translateFinanceTerm = translateFinanceTerm;
+window.FINANCE_TRANSLATIONS = FINANCE_TRANSLATIONS;

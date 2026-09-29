@@ -184,17 +184,26 @@ if (!printHtml.includes("EMBAIXADA DE CRISTO MOÇAMBIQUE") || !printHtml.include
 }
 console.log("✓ A4 Print HTML successfully generated with " + printHtml.length + " bytes.");
 
-console.log("6. Testing filter bar HTML rendering...");
-const filterBarHtml = context.financeReportFilterBar(
+console.log("6. Testing filter bar HTML rendering in Portuguese & English...");
+const filterBarPt = context.financeReportFilterBar(
   { period: "month" },
   [{ id: "c1", church_name: "Sede Maputo" }, { id: "c2", church_name: "Matola" }],
-  { period: "Período", church: "Igreja" }
+  { period: "Período", church: "Igreja", filterTitle: "Filtros de Pesquisa & Análise", clearFilters: "Limpar Filtros", lang: "pt" }
 );
-if (!filterBarHtml.includes("data-finance-report-filter=\"period\"") || !filterBarHtml.includes("data-finance-report-reset")) {
-  throw new Error("Filter bar HTML missing essential attributes!");
+if (!filterBarPt.includes("Filtros de Pesquisa & Análise") || !filterBarPt.includes("Limpar Filtros") || !filterBarPt.includes("Dízimo")) {
+  throw new Error("Portuguese Filter bar HTML missing translated strings!");
 }
-console.log("✓ Filter bar HTML generated with all controls.");
+
+const filterBarEn = context.financeReportFilterBar(
+  { period: "month" },
+  [{ id: "c1", church_name: "Sede Maputo" }, { id: "c2", church_name: "Matola" }],
+  { period: "Date", church: "Church", filterTitle: "Search & Analysis Filters", clearFilters: "Clear Filters", lang: "en" }
+);
+if (!filterBarEn.includes("Search & Analysis Filters") || !filterBarEn.includes("Clear Filters") || !filterBarEn.includes("Tithe") || !filterBarEn.includes("Healing School") || !filterBarEn.includes("This Month") || !filterBarEn.includes("Previous Month")) {
+  throw new Error("English Filter bar HTML missing translated strings!");
+}
+console.log("✓ Filter bar HTML generated and verified in both English & Portuguese.");
 
 console.log("\n==========================================");
-console.log("🎉 ALL FINANCE REPORT TESTS PASSED 100%!");
+console.log("🎉 ALL FINANCE REPORT & I18N TESTS PASSED 100%!");
 console.log("==========================================");

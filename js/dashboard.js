@@ -8982,16 +8982,116 @@ function getScopedFinanceList() {
   return scoped(state.finance).map((record) => migrateFinanceRecord(record));
 }
 
+Object.assign(TEXT.pt, {
+  financeFilterTitle: "Filtros de Pesquisa & Análise",
+  clearFilters: "Limpar Filtros",
+  financePeriodToday: "Hoje",
+  financePeriodYesterday: "Ontem",
+  financePeriodWeek: "Esta Semana",
+  financePeriodLastWeek: "Semana Anterior",
+  financePeriodMonth: "Este Mês",
+  financePeriodLastMonth: "Mês Anterior",
+  financePeriodQuarter: "Este Trimestre",
+  financePeriodLastQuarter: "Trimestre Anterior",
+  financePeriodYear: "Este Ano",
+  financePeriodLastYear: "Ano Anterior",
+  financePeriodCustom: "Personalizado (Datas)",
+  financePeriodAll: "Todo o Período",
+  financeAllChurches: "Todas as Igrejas",
+  financeAllCategories: "Todas Categorias",
+  financeAllTypes: "Todos os Tipos",
+  financeAllArms: "Todos Braços de Parceria",
+  financeAllMethods: "Todos Métodos",
+  financeAllStatuses: "Todos Estados",
+  financeAllCellGroups: "Todos Grupos de Célula",
+  financeAllCells: "Todas as Células",
+  financeAllSources: "Todas as Origens",
+  financeContributorSearch: "Nome, telefone ou ref...",
+  financeMinValue: "Valor Mínimo (MTn)",
+  financeFrequency: "Frequência",
+  financeAllFrequencies: "Todas Frequências",
+  financeFrequencyConsistent: "Consistente (Mensal)",
+  financeFrequencyRegular: "Regular",
+  financeFrequencyOccasional: "Ocasional",
+  financeAnalysisDistribution: "Análise Gráfica & Distribuição",
+  financeChurchRanking: "Ranking por Congregação / Igreja",
+  financeCellReportTitle: "Desempenho por Célula & Grupo",
+  financeReportByIndividual: "Perfil Individual do Ofertante",
+  financeReportByPartnershipArm: "Desempenho por Braço de Parceria",
+  financeFilteredTransactions: "Transações do Relatório",
+  financePreviousPeriod: "Período Anterior",
+  financeRecordsFiltered: "registos filtrados",
+  financeRecordFiltered: "registo filtrado",
+  financeTo: "a",
+  financePrintReport: "Imprimir A4 / PDF",
+  financeExportExcel: "Exportar Excel (.xlsx)",
+  financeExportCsv: "Exportar CSV"
+});
+
+Object.assign(TEXT.en, {
+  financeFilterTitle: "Search & Analysis Filters",
+  clearFilters: "Clear Filters",
+  financePeriodToday: "Today",
+  financePeriodYesterday: "Yesterday",
+  financePeriodWeek: "This Week",
+  financePeriodLastWeek: "Previous Week",
+  financePeriodMonth: "This Month",
+  financePeriodLastMonth: "Previous Month",
+  financePeriodQuarter: "This Quarter",
+  financePeriodLastQuarter: "Previous Quarter",
+  financePeriodYear: "This Year",
+  financePeriodLastYear: "Previous Year",
+  financePeriodCustom: "Custom Range",
+  financePeriodAll: "All Time",
+  financeAllChurches: "All Churches",
+  financeAllCategories: "All Categories",
+  financeAllTypes: "All Types",
+  financeAllArms: "All Partnership Arms",
+  financeAllMethods: "All Methods",
+  financeAllStatuses: "All Statuses",
+  financeAllCellGroups: "All Cell Groups",
+  financeAllCells: "All Cells",
+  financeAllSources: "All Sources",
+  financeContributorSearch: "Name, phone or ref...",
+  financeMinValue: "Minimum value (MTn)",
+  financeFrequency: "Frequency",
+  financeAllFrequencies: "All Frequencies",
+  financeFrequencyConsistent: "Consistent (Monthly)",
+  financeFrequencyRegular: "Regular",
+  financeFrequencyOccasional: "Occasional",
+  financeAnalysisDistribution: "Graphical Analysis & Distribution",
+  financeChurchRanking: "Church / Congregation Ranking",
+  financeCellReportTitle: "Cell & Group Performance",
+  financeReportByIndividual: "Individual Contributor Profile",
+  financeReportByPartnershipArm: "Performance by Partnership Arm",
+  financeFilteredTransactions: "Report Transactions",
+  financePreviousPeriod: "Previous Period",
+  financeRecordsFiltered: "filtered records",
+  financeRecordFiltered: "filtered record",
+  financeTo: "to",
+  financePrintReport: "Print A4 / PDF",
+  financeExportExcel: "Export Excel (.xlsx)",
+  financeExportCsv: "Export CSV"
+});
+
 function getFinanceReportLabels() {
   return {
+    filterTitle: L("financeFilterTitle") || (lang === "en" ? "Search & Analysis Filters" : "Filtros de Pesquisa & Análise"),
+    clearFilters: L("clearFilters") || (lang === "en" ? "Clear Filters" : "Limpar Filtros"),
     period: L("date"),
     search: L("search"),
     periodToday: L("financePeriodToday"),
+    periodYesterday: L("financePeriodYesterday"),
     periodWeek: L("financePeriodWeek"),
+    periodLastWeek: L("financePeriodLastWeek"),
     periodMonth: L("financePeriodMonth"),
+    periodLastMonth: L("financePeriodLastMonth"),
     periodQuarter: L("financePeriodQuarter"),
+    periodLastQuarter: L("financePeriodLastQuarter"),
     periodYear: L("financePeriodYear"),
+    periodLastYear: L("financePeriodLastYear"),
     periodCustom: L("financePeriodCustom"),
+    periodAll: L("financePeriodAll"),
     from: L("from"),
     to: L("to"),
     church: L("church"),
@@ -9015,12 +9115,15 @@ function getFinanceReportLabels() {
     contributorPlaceholder: L("financeContributorSearch"),
     cell: L("cell"),
     cellGroup: L("cellGroup"),
+    allCellGroups: L("financeAllCellGroups"),
+    allCells: L("financeAllCells"),
     minValue: L("financeMinValue"),
     frequency: L("financeFrequency"),
     allFrequencies: L("financeAllFrequencies"),
     frequencyConsistent: L("financeFrequencyConsistent"),
     frequencyRegular: L("financeFrequencyRegular"),
-    frequencyOccasional: L("financeFrequencyOccasional")
+    frequencyOccasional: L("financeFrequencyOccasional"),
+    lang: typeof lang !== "undefined" ? lang : "pt"
   };
 }
 
@@ -20076,30 +20179,34 @@ function renderFinance() {
       );
     }
   } else if (financePageState.tab === "reports") {
+    const recordCountText = list.length === 1
+      ? (L("financeRecordFiltered") || (lang === "en" ? "filtered record" : "registo filtrado"))
+      : (L("financeRecordsFiltered") || (lang === "en" ? "filtered records" : "registos filtrados"));
+
     const quickActionsToolbar = `
       <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3 p-2 rounded bg-body-tertiary border">
         <div class="d-flex flex-wrap align-items-center gap-2">
-          <span class="badge bg-primary px-3 py-2 fs-6"><i class="bi bi-funnel me-1"></i>${list.length} ${list.length === 1 ? "registo" : "registos"}</span>
-          ${prevRange.from ? `<span class="badge bg-secondary-subtle text-secondary-emphasis border px-2 py-2"><i class="bi bi-clock-history me-1"></i>Período Anterior: ${prevRange.from} a ${prevRange.to}</span>` : ""}
-          ${filters.category ? `<span class="badge bg-info-subtle text-info-emphasis border px-2 py-2"><i class="bi bi-tag me-1"></i>${filters.category}</span>` : ""}
+          <span class="badge bg-primary px-3 py-2 fs-6"><i class="bi bi-funnel me-1"></i>${list.length} ${recordCountText}</span>
+          ${prevRange.from ? `<span class="badge bg-secondary-subtle text-secondary-emphasis border px-2 py-2"><i class="bi bi-clock-history me-1"></i>${L("financePreviousPeriod") || "Período Anterior"}: ${prevRange.from} ${L("financeTo") || (lang === "en" ? "to" : "a")} ${prevRange.to}</span>` : ""}
+          ${filters.category ? `<span class="badge bg-info-subtle text-info-emphasis border px-2 py-2"><i class="bi bi-tag me-1"></i>${typeof translateFinanceTerm === "function" ? translateFinanceTerm(filters.category, lang) : filters.category}</span>` : ""}
           ${filters.churchId ? `<span class="badge bg-warning-subtle text-warning-emphasis border px-2 py-2"><i class="bi bi-building me-1"></i>${churchName(filters.churchId)}</span>` : ""}
         </div>
         <div class="d-flex flex-wrap gap-2">
-          <button type="button" class="btn btn-sm btn-ce-gold btn-touch fw-semibold" data-finance-quick-print title="Imprimir Relatório A4 / Salvar em PDF">
+          <button type="button" class="btn btn-sm btn-ce-gold btn-touch fw-semibold" data-finance-quick-print title="${L("financePrintReport")}">
             <i class="bi bi-printer me-1"></i>${L("financePrintReport") || "Imprimir A4 / PDF"}
           </button>
-          <button type="button" class="btn btn-sm btn-outline-success btn-touch fw-semibold" data-finance-quick-excel title="Exportar para Excel (.xlsx) com múltiplas folhas analíticas">
+          <button type="button" class="btn btn-sm btn-outline-success btn-touch fw-semibold" data-finance-quick-excel title="${L("financeExportExcel")}">
             <i class="bi bi-file-earmark-excel me-1"></i>${L("financeExportExcel") || "Exportar Excel (.xlsx)"}
           </button>
-          <button type="button" class="btn btn-sm btn-outline-secondary btn-touch" data-finance-quick-csv title="Exportar dados brutos para CSV">
+          <button type="button" class="btn btn-sm btn-outline-secondary btn-touch" data-finance-quick-csv title="${L("financeExportCsv")}">
             <i class="bi bi-filetype-csv me-1"></i>CSV
           </button>
         </div>
       </div>`;
 
     const methodChart = typeof financeBarChart === "function"
-      ? financeBarChart(L("byPaymentMethod") || "Canais de Pagamento", methodRows, L("financeNoChartData"))
-      : chartCard(L("byPaymentMethod") || "Canais de Pagamento", methodRows);
+      ? financeBarChart(L("byPaymentMethod") || (lang === "en" ? "Payment Methods" : "Canais de Pagamento"), methodRows, L("financeNoChartData"))
+      : chartCard(L("byPaymentMethod") || (lang === "en" ? "Payment Methods" : "Canais de Pagamento"), methodRows);
 
     tabContent = `
       ${moduleSection(L("financeReportsSection"), L("financeReportsHint"), "bi-graph-up", "", `
@@ -20108,7 +20215,7 @@ function renderFinance() {
         ${quickActionsToolbar}
         ${financeReportStatsCards(stats, comparison)}
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <h4 class="h6 text-secondary mb-0 fw-bold text-uppercase tracking-wider"><i class="bi bi-bar-chart-line me-2"></i>Análise Gráfica & Distribuição</h4>
+          <h4 class="h6 text-secondary mb-0 fw-bold text-uppercase tracking-wider"><i class="bi bi-bar-chart-line me-2"></i>${L("financeAnalysisDistribution") || (lang === "en" ? "Graphical Analysis & Distribution" : "Análise Gráfica & Distribuição")}</h4>
           ${chartModeToggle}
         </div>
         <div class="row g-4 mb-4">
@@ -20128,9 +20235,9 @@ function renderFinance() {
           </div>
           <div class="col-xl-6">
             <article class="panel glass-panel h-100">
-              <div class="panel-head"><h3 class="panel-title"><i class="bi bi-diagram-3 me-2"></i>Desempenho por Célula & Grupo</h3></div>
+              <div class="panel-head"><h3 class="panel-title"><i class="bi bi-diagram-3 me-2"></i>${L("financeCellReportTitle") || (lang === "en" ? "Cell & Group Performance" : "Desempenho por Célula & Grupo")}</h3></div>
               ${cellRows.length ? dataTable(
-                ["Grupo", "Célula", "Total", "Verificado", "Ofertantes"],
+                [L("cellGroup"), L("cell"), L("total"), L("verified"), lang === "en" ? "Contributors" : "Ofertantes"],
                 cellRows.slice(0, 20).map((c) => [
                   c.cell_group_name || "-",
                   c.cell_name || "-",
@@ -20165,7 +20272,7 @@ function renderFinance() {
           <div class="col-12">
             <article class="panel glass-panel">
               <div class="panel-head d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <h3 class="panel-title mb-0"><i class="bi bi-receipt me-2"></i>Transações do Relatório (${list.length})</h3>
+                <h3 class="panel-title mb-0"><i class="bi bi-receipt me-2"></i>${L("financeFilteredTransactions") || (lang === "en" ? "Report Transactions" : "Transações do Relatório")} (${list.length})</h3>
                 <span class="badge bg-ce-gold text-dark fs-6 px-3 py-1 fw-bold">${money(stats.totalReceived)}</span>
               </div>
               <div class="table-responsive">${entriesTable}</div>
