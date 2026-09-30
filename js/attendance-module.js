@@ -445,114 +445,107 @@
 
     // Build KPI Cards HTML with interactive click triggers
     var kpisHtml = `
-      <div class="row g-3 mb-4" id="attendanceDailyKpis">
-        <div class="col-6 col-md-4 col-xl-2">
-          <div class="att-kpi-card ${attendancePageState.dailyFilter === "all" ? "is-active" : ""}" data-attendance-filter="all" role="button" tabindex="0" title="${t("Ver todos os colaboradores registados", "View all registered staff")}" style="background: linear-gradient(145deg, #10213e 0%, #0a1529 100%) !important; border: 1px solid rgba(255,255,255,0.12) !important; border-radius: 14px; padding: 14px 16px; color: #fff;">
-            <div class="att-kpi-header d-flex align-items-center justify-content-between w-100 mb-2">
-              <div class="att-kpi-icon" style="background: linear-gradient(135deg, #1e3a8a, #0284c7); color: #fff; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
-                <i class="bi bi-people-fill"></i>
-              </div>
-              <span class="badge bg-secondary bg-opacity-25 text-white-50" style="font-size: 0.68rem; font-weight: 600;">${t("Biometria", "Biometrics")}</span>
+      <div class="attendance-kpi-grid" id="attendanceDailyKpis">
+        <div class="att-kpi-card ${attendancePageState.dailyFilter === "all" ? "is-active" : ""}" data-attendance-filter="all" role="button" tabindex="0" title="${t("Ver todos os colaboradores registados", "View all registered staff")}">
+          <div class="att-kpi-header">
+            <div class="att-kpi-icon" style="background: linear-gradient(135deg, #1e3a8a, #0284c7); color: #fff;">
+              <i class="bi bi-people-fill"></i>
             </div>
-            <div class="att-kpi-body w-100">
-              <span class="att-kpi-label d-block text-secondary text-uppercase fw-bold" style="font-size: 0.72rem; letter-spacing: 0.05em; color: #8ea8cc !important;">${t("Total Registados", "Total Registered")}</span>
-              <span class="att-kpi-value d-block text-white fw-bold" style="font-size: 1.7rem; line-height: 1.1; color: #ffffff !important;">${totalRecords}</span>
-            </div>
+            <span class="badge bg-secondary bg-opacity-25 text-secondary" style="font-size: 0.68rem; font-weight: 600;">${t("Biometria", "Biometrics")}</span>
+          </div>
+          <div class="att-kpi-body">
+            <span class="att-kpi-label">${t("Total Registados", "Total Registered")}</span>
+            <span class="att-kpi-value">${totalRecords}</span>
           </div>
         </div>
-        <div class="col-6 col-md-4 col-xl-2">
-          <div class="att-kpi-card" data-attendance-filter="all" role="button" tabindex="0" title="${t("Presentes no local de trabalho", "Present at workplace")}" style="background: linear-gradient(145deg, #10213e 0%, #0a1529 100%) !important; border: 1px solid rgba(255,255,255,0.12) !important; border-radius: 14px; padding: 14px 16px; color: #fff;">
-            <div class="att-kpi-header d-flex align-items-center justify-content-between w-100 mb-2">
-              <div class="att-kpi-icon" style="background: linear-gradient(135deg, #0284c7, #06b6d4); color: #fff; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
-                <i class="bi bi-person-check-fill"></i>
-              </div>
-              <span class="badge bg-info-subtle text-info" style="font-size: 0.68rem; font-weight: 600;">${totalRecords ? Math.round((presentRecords.length / totalRecords) * 100) : 0}% ${t("taxa", "rate")}</span>
+
+        <div class="att-kpi-card" data-attendance-filter="all" role="button" tabindex="0" title="${t("Presentes no local de trabalho", "Present at workplace")}">
+          <div class="att-kpi-header">
+            <div class="att-kpi-icon" style="background: linear-gradient(135deg, #0284c7, #06b6d4); color: #fff;">
+              <i class="bi bi-person-check-fill"></i>
             </div>
-            <div class="att-kpi-body w-100">
-              <span class="att-kpi-label d-block text-secondary text-uppercase fw-bold" style="font-size: 0.72rem; letter-spacing: 0.05em; color: #8ea8cc !important;">${t("Presentes Hoje", "Present Today")}</span>
-              <span class="att-kpi-value d-block text-info fw-bold" style="font-size: 1.7rem; line-height: 1.1; color: #38bdf8 !important;">${presentRecords.length}</span>
-            </div>
+            <span class="badge bg-info-subtle text-info" style="font-size: 0.68rem; font-weight: 600;">${totalRecords ? Math.round((presentRecords.length / totalRecords) * 100) : 0}% ${t("taxa", "rate")}</span>
+          </div>
+          <div class="att-kpi-body">
+            <span class="att-kpi-label">${t("Presentes Hoje", "Present Today")}</span>
+            <span class="att-kpi-value text-info">${presentRecords.length}</span>
           </div>
         </div>
-        <div class="col-6 col-md-4 col-xl-2">
-          <div class="att-kpi-card ${attendancePageState.dailyFilter === "on_time" ? "is-active" : ""}" data-attendance-filter="on_time" role="button" tabindex="0" title="${t("Chegaram antes ou no horário oficial (≤ 08:00)", "Arrived on or before standard time (≤ 08:00)")}" style="background: linear-gradient(145deg, #10213e 0%, #0a1529 100%) !important; border: 1px solid rgba(255,255,255,0.12) !important; border-radius: 14px; padding: 14px 16px; color: #fff;">
-            <div class="att-kpi-header d-flex align-items-center justify-content-between w-100 mb-2">
-              <div class="att-kpi-icon" style="background: linear-gradient(135deg, #15803d, #22c55e); color: #fff; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
-                <i class="bi bi-check-circle-fill"></i>
-              </div>
-              <span class="badge bg-success-subtle text-success" style="font-size: 0.68rem; font-weight: 600;">${t("Pontuais", "On Time")}</span>
+
+        <div class="att-kpi-card ${attendancePageState.dailyFilter === "on_time" ? "is-active" : ""}" data-attendance-filter="on_time" role="button" tabindex="0" title="${t("Chegaram antes ou no horário oficial (≤ 08:00)", "Arrived on or before standard time (≤ 08:00)")}">
+          <div class="att-kpi-header">
+            <div class="att-kpi-icon" style="background: linear-gradient(135deg, #15803d, #22c55e); color: #fff;">
+              <i class="bi bi-check-circle-fill"></i>
             </div>
-            <div class="att-kpi-body w-100">
-              <span class="att-kpi-label d-block text-secondary text-uppercase fw-bold" style="font-size: 0.72rem; letter-spacing: 0.05em; color: #8ea8cc !important;">${t("No Horário (≤08:00)", "On Time (≤08:00)")}</span>
-              <span class="att-kpi-value d-block text-success fw-bold" style="font-size: 1.7rem; line-height: 1.1; color: #22c55e !important;">${onTimeRecords.length}</span>
-            </div>
+            <span class="badge bg-success-subtle text-success" style="font-size: 0.68rem; font-weight: 600;">${t("Pontuais", "On Time")}</span>
+          </div>
+          <div class="att-kpi-body">
+            <span class="att-kpi-label">${t("No Horário (≤08:00)", "On Time (≤08:00)")}</span>
+            <span class="att-kpi-value text-success">${onTimeRecords.length}</span>
           </div>
         </div>
-        <div class="col-6 col-md-4 col-xl-2">
-          <div class="att-kpi-card ${attendancePageState.dailyFilter === "grace_period" ? "is-active" : ""}" data-attendance-filter="grace_period" role="button" tabindex="0" title="${t("Chegaram dentro dos 15 minutos de tolerância", "Arrived within 15 min grace period")}" style="background: linear-gradient(145deg, #10213e 0%, #0a1529 100%) !important; border: 1px solid rgba(255,255,255,0.12) !important; border-radius: 14px; padding: 14px 16px; color: #fff;">
-            <div class="att-kpi-header d-flex align-items-center justify-content-between w-100 mb-2">
-              <div class="att-kpi-icon" style="background: linear-gradient(135deg, #0891b2, #38bdf8); color: #fff; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
-                <i class="bi bi-clock-history"></i>
-              </div>
-              <span class="badge" style="background: rgba(56, 189, 248, 0.18); color: #38bdf8; font-size: 0.68rem; font-weight: 600;">${t("Autorizado", "Authorized")}</span>
+
+        <div class="att-kpi-card ${attendancePageState.dailyFilter === "grace_period" ? "is-active" : ""}" data-attendance-filter="grace_period" role="button" tabindex="0" title="${t("Chegaram dentro dos 15 minutos de tolerância", "Arrived within 15 min grace period")}">
+          <div class="att-kpi-header">
+            <div class="att-kpi-icon" style="background: linear-gradient(135deg, #0891b2, #38bdf8); color: #fff;">
+              <i class="bi bi-clock-history"></i>
             </div>
-            <div class="att-kpi-body w-100">
-              <span class="att-kpi-label d-block text-secondary text-uppercase fw-bold" style="font-size: 0.72rem; letter-spacing: 0.05em; color: #8ea8cc !important;">${t("Tolerância (+15m)", "Grace (+15m)")}</span>
-              <span class="att-kpi-value d-block fw-bold" style="font-size: 1.7rem; line-height: 1.1; color: #38bdf8 !important;">${graceRecords.length}</span>
-            </div>
+            <span class="badge bg-info-subtle text-info" style="font-size: 0.68rem; font-weight: 600;">${t("Autorizado", "Authorized")}</span>
+          </div>
+          <div class="att-kpi-body">
+            <span class="att-kpi-label">${t("Tolerância (+15m)", "Grace (+15m)")}</span>
+            <span class="att-kpi-value text-info">${graceRecords.length}</span>
           </div>
         </div>
-        <div class="col-6 col-md-4 col-xl-2">
-          <div class="att-kpi-card ${attendancePageState.dailyFilter === "late_all" ? "is-active" : ""}" data-attendance-filter="late_all" role="button" tabindex="0" title="${t("Chegaram após a tolerância (> 08:15)", "Arrived after grace period (> 08:15)")}" style="background: linear-gradient(145deg, #10213e 0%, #0a1529 100%) !important; border: 1px solid rgba(255,255,255,0.12) !important; border-radius: 14px; padding: 14px 16px; color: #fff;">
-            <div class="att-kpi-header d-flex align-items-center justify-content-between w-100 mb-2">
-              <div class="att-kpi-icon" style="background: linear-gradient(135deg, #dc2626, #f97316); color: #fff; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
-                <i class="bi bi-exclamation-triangle-fill"></i>
-              </div>
-              <span class="badge bg-danger-subtle text-danger" style="font-size: 0.68rem; font-weight: 600;">${allLateRecords.length > 0 ? t("Atenção RH", "HR Attention") : t("Excelente", "Excellent")}</span>
+
+        <div class="att-kpi-card ${attendancePageState.dailyFilter === "late_all" ? "is-active" : ""}" data-attendance-filter="late_all" role="button" tabindex="0" title="${t("Chegaram após a tolerância (> 08:15)", "Arrived after grace period (> 08:15)")}">
+          <div class="att-kpi-header">
+            <div class="att-kpi-icon" style="background: linear-gradient(135deg, #dc2626, #f97316); color: #fff;">
+              <i class="bi bi-exclamation-triangle-fill"></i>
             </div>
-            <div class="att-kpi-body w-100">
-              <span class="att-kpi-label d-block text-secondary text-uppercase fw-bold" style="font-size: 0.72rem; letter-spacing: 0.05em; color: #8ea8cc !important;">${t("Total em Atraso", "Total Late")}</span>
-              <span class="att-kpi-value d-block text-danger fw-bold" style="font-size: 1.7rem; line-height: 1.1; color: #f87171 !important;">${allLateRecords.length}</span>
-            </div>
+            <span class="badge bg-danger-subtle text-danger" style="font-size: 0.68rem; font-weight: 600;">${allLateRecords.length > 0 ? t("Atenção RH", "HR Attention") : t("Excelente", "Excellent")}</span>
+          </div>
+          <div class="att-kpi-body">
+            <span class="att-kpi-label">${t("Total em Atraso", "Total Late")}</span>
+            <span class="att-kpi-value text-danger">${allLateRecords.length}</span>
           </div>
         </div>
-        <div class="col-6 col-md-4 col-xl-2">
-          <div class="att-kpi-card ${attendancePageState.dailyFilter === "absent" ? "is-active" : ""}" data-attendance-filter="absent" role="button" tabindex="0" title="${t("Sem registo de picagem no terminal", "No biometric punch record")}" style="background: linear-gradient(145deg, #10213e 0%, #0a1529 100%) !important; border: 1px solid rgba(255,255,255,0.12) !important; border-radius: 14px; padding: 14px 16px; color: #fff;">
-            <div class="att-kpi-header d-flex align-items-center justify-content-between w-100 mb-2">
-              <div class="att-kpi-icon" style="background: linear-gradient(135deg, #475569, #64748b); color: #fff; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
-                <i class="bi bi-dash-circle-fill"></i>
-              </div>
-              <span class="badge bg-secondary bg-opacity-25 text-white-50" style="font-size: 0.68rem; font-weight: 600;">${t("Não picou", "No Punch")}</span>
+
+        <div class="att-kpi-card ${attendancePageState.dailyFilter === "absent" ? "is-active" : ""}" data-attendance-filter="absent" role="button" tabindex="0" title="${t("Sem registo de picagem no terminal", "No biometric punch record")}">
+          <div class="att-kpi-header">
+            <div class="att-kpi-icon" style="background: linear-gradient(135deg, #475569, #64748b); color: #fff;">
+              <i class="bi bi-dash-circle-fill"></i>
             </div>
-            <div class="att-kpi-body w-100">
-              <span class="att-kpi-label d-block text-secondary text-uppercase fw-bold" style="font-size: 0.72rem; letter-spacing: 0.05em; color: #8ea8cc !important;">${t("Sem Registo / Falta", "No Record / Absent")}</span>
-              <span class="att-kpi-value d-block text-secondary fw-bold" style="font-size: 1.7rem; line-height: 1.1; color: #94a3b8 !important;">${absentRecords.length}</span>
-            </div>
+            <span class="badge bg-secondary bg-opacity-25 text-secondary" style="font-size: 0.68rem; font-weight: 600;">${t("Não picou", "No Punch")}</span>
+          </div>
+          <div class="att-kpi-body">
+            <span class="att-kpi-label">${t("Sem Registo / Falta", "No Record / Absent")}</span>
+            <span class="att-kpi-value text-secondary">${absentRecords.length}</span>
           </div>
         </div>
       </div>`;
 
     // Filter Chips & Date Toolbar
     var toolbarHtml = `
-      <div class="att-card p-3 mb-4" style="background: linear-gradient(145deg, #0e1c36 0%, #081224 100%) !important; border: 1px solid rgba(255,255,255,0.12) !important; border-radius: 14px;">
+      <div class="att-card p-3 mb-4">
         <div class="row g-3 align-items-center">
           <div class="col-12 col-md-auto d-flex flex-wrap align-items-center gap-2">
-            <span class="text-secondary small fw-bold text-uppercase" style="letter-spacing: 0.05em; font-size: 0.75rem; color: #8ea8cc !important;"><i class="bi bi-calendar-event text-gold me-1"></i>${t("Data do Registo:", "Record Date:")}</span>
-            <input type="date" class="form-control form-control-sm text-white" id="attendanceDatePicker" value="${date}" style="max-width: 155px; background: #071328 !important; border: 1px solid rgba(255,255,255,0.2) !important; color: #fff !important;">
+            <span class="text-secondary small fw-bold text-uppercase" style="letter-spacing: 0.05em; font-size: 0.75rem;"><i class="bi bi-calendar-event text-gold me-1"></i>${t("Data do Registo:", "Record Date:")}</span>
+            <input type="date" class="form-control form-control-sm" id="attendanceDatePicker" value="${date}" style="max-width: 155px;">
             <div class="btn-group btn-group-sm">
-              <button type="button" class="btn btn-outline-secondary text-white-50" id="attendancePrevDayBtn" title="${t("Dia Anterior", "Previous Day")}" style="border-color: rgba(255,255,255,0.2);"><i class="bi bi-chevron-left"></i></button>
-              <button type="button" class="btn btn-outline-secondary text-white" id="attendanceTodayBtn" title="${t("Hoje", "Today")}" style="border-color: rgba(255,255,255,0.2);">${t("Hoje", "Today")}</button>
-              <button type="button" class="btn btn-outline-secondary text-white-50" id="attendanceNextDayBtn" title="${t("Dia Seguinte", "Next Day")}" style="border-color: rgba(255,255,255,0.2);"><i class="bi bi-chevron-right"></i></button>
+              <button type="button" class="btn btn-outline-secondary" id="attendancePrevDayBtn" title="${t("Dia Anterior", "Previous Day")}"><i class="bi bi-chevron-left"></i></button>
+              <button type="button" class="btn btn-outline-secondary" id="attendanceTodayBtn" title="${t("Hoje", "Today")}">${t("Hoje", "Today")}</button>
+              <button type="button" class="btn btn-outline-secondary" id="attendanceNextDayBtn" title="${t("Dia Seguinte", "Next Day")}"><i class="bi bi-chevron-right"></i></button>
             </div>
           </div>
 
           <div class="col-12 col-md d-flex flex-wrap align-items-center justify-content-md-end gap-2">
             <div class="input-group input-group-sm" style="max-width: 250px;">
-              <span class="input-group-text text-secondary" style="background: #071328 !important; border: 1px solid rgba(255,255,255,0.2) !important; border-right: none; color: #8ea8cc !important;"><i class="bi bi-search"></i></span>
-              <input type="text" class="form-control text-white" id="attendanceSearchInput" placeholder="${t("Pesquisar funcionário...", "Search staff...")}" value="${attendancePageState.searchQuery}" style="background: #071328 !important; border: 1px solid rgba(255,255,255,0.2) !important; border-left: none; color: #fff !important;">
+              <span class="input-group-text"><i class="bi bi-search"></i></span>
+              <input type="text" class="form-control" id="attendanceSearchInput" placeholder="${t("Pesquisar funcionário...", "Search staff...")}" value="${attendancePageState.searchQuery}">
             </div>
 
-            <select class="form-select form-select-sm text-white" id="attendanceDeptFilter" style="max-width: 180px; background: #071328 !important; border: 1px solid rgba(255,255,255,0.2) !important; color: #fff !important;">
+            <select class="form-select form-select-sm" id="attendanceDeptFilter" style="max-width: 180px;">
               <option value="all" ${attendancePageState.selectedDepartment === "all" ? "selected" : ""}>${t("Todos Departamentos", "All Departments")}</option>
               <option value="CESTAFF" ${attendancePageState.selectedDepartment === "CESTAFF" ? "selected" : ""}>CESTAFF</option>
             </select>
@@ -564,7 +557,7 @@
         </div>
 
         <div class="d-flex flex-wrap align-items-center gap-2 mt-3 pt-3 border-top border-secondary border-opacity-25">
-          <span class="text-secondary small fw-bold text-uppercase me-1" style="font-size: 0.72rem; letter-spacing: 0.05em; color: #8ea8cc !important;">${t("Filtrar por Status:", "Filter by Status:")}</span>
+          <span class="text-secondary small fw-bold text-uppercase me-1" style="font-size: 0.72rem; letter-spacing: 0.05em;">${t("Filtrar por Status:", "Filter by Status:")}</span>
           <button type="button" class="att-filter-btn ${attendancePageState.dailyFilter === "all" ? "active" : ""}" data-attendance-filter="all">${t("Todos", "All")} (${totalRecords})</button>
           <button type="button" class="att-filter-btn ${attendancePageState.dailyFilter === "on_time" ? "active" : ""}" data-attendance-filter="on_time">${t("Pontual", "On Time")} (${onTimeRecords.length})</button>
           <button type="button" class="att-filter-btn ${attendancePageState.dailyFilter === "grace_period" ? "active" : ""}" data-attendance-filter="grace_period">${t("Tolerância", "Grace")} (${graceRecords.length})</button>
@@ -577,74 +570,74 @@
 
     // Records Table
     var tableHtml = `
-      <div class="att-card overflow-hidden" style="background: linear-gradient(145deg, #0e1c36 0%, #081224 100%) !important; border: 1px solid rgba(255,255,255,0.12) !important; border-radius: 14px;">
-        <div class="att-card-header d-flex flex-wrap align-items-center justify-content-between gap-2" style="background: #081326 !important; border-bottom: 1px solid rgba(197, 160, 89, 0.25) !important; padding: 14px 20px;">
+      <div class="att-card overflow-hidden">
+        <div class="att-card-header d-flex flex-wrap align-items-center justify-content-between gap-2" style="padding: 14px 20px;">
           <div class="d-flex align-items-center gap-2">
             <i class="bi bi-clock-history text-gold fs-5"></i>
-            <h5 class="h6 mb-0 text-white fw-bold" style="color: #ffffff !important;">${t("Registos de Ponto", "Attendance Records")} — ${formatAttendanceDate(date)}</h5>
+            <h5 class="h6 mb-0 fw-bold">${t("Registos de Ponto", "Attendance Records")} — ${formatAttendanceDate(date)}</h5>
             <span class="badge bg-gold-subtle text-gold ms-1">${displayedRecords.length} ${t("colaboradores", "staff")}</span>
           </div>
-          <div class="text-secondary small" style="color: #8ea8cc !important;">
+          <div class="text-secondary small">
             ${t("Hora Média de Entrada:", "Average Check-In Time:")} <strong class="text-gold font-monospace fs-6 ms-1">${avgCheckInStr}</strong>
           </div>
         </div>
 
         <div class="table-responsive">
-          <table class="table att-table align-middle" id="attendanceDailyTable" style="background: transparent !important; color: #fff !important; margin-bottom: 0;">
+          <table class="table att-table align-middle" id="attendanceDailyTable" style="margin-bottom: 0;">
             <thead>
-              <tr style="background: #081326 !important;">
-                <th class="ps-3" style="width: 70px; background: #081326 !important; color: #c5a059 !important; border-bottom: 1px solid rgba(255,255,255,0.15);">ID</th>
-                <th style="background: #081326 !important; color: #c5a059 !important; border-bottom: 1px solid rgba(255,255,255,0.15);">${t("Colaborador / Staff", "Staff Member")}</th>
-                <th style="background: #081326 !important; color: #c5a059 !important; border-bottom: 1px solid rgba(255,255,255,0.15);">${t("Departamento", "Department")}</th>
-                <th class="text-center" style="background: #081326 !important; color: #c5a059 !important; border-bottom: 1px solid rgba(255,255,255,0.15);">${t("Hora de Entrada", "Check-In Time")}</th>
-                <th class="text-center" style="background: #081326 !important; color: #c5a059 !important; border-bottom: 1px solid rgba(255,255,255,0.15);">${t("Classificação", "Status")}</th>
-                <th class="text-center" style="background: #081326 !important; color: #c5a059 !important; border-bottom: 1px solid rgba(255,255,255,0.15);">${t("Tempo de Atraso", "Delay Time")}</th>
-                <th style="background: #081326 !important; color: #c5a059 !important; border-bottom: 1px solid rgba(255,255,255,0.15);">${t("Picagens Brutas", "Raw Punches")}</th>
-                <th class="text-end pe-3" style="background: #081326 !important; color: #c5a059 !important; border-bottom: 1px solid rgba(255,255,255,0.15);">${t("Ações", "Actions")}</th>
+              <tr>
+                <th class="ps-3" style="width: 70px;">ID</th>
+                <th>${t("Colaborador / Staff", "Staff Member")}</th>
+                <th>${t("Departamento", "Department")}</th>
+                <th class="text-center">${t("Hora de Entrada", "Check-In Time")}</th>
+                <th class="text-center">${t("Classificação", "Status")}</th>
+                <th class="text-center">${t("Tempo de Atraso", "Delay Time")}</th>
+                <th>${t("Picagens Brutas", "Raw Punches")}</th>
+                <th class="text-end pe-3">${t("Ações", "Actions")}</th>
               </tr>
             </thead>
-            <tbody style="background: transparent !important;">
+            <tbody>
               ${displayedRecords.length ? displayedRecords.map(function (rec) {
                 var avatarInitial = (rec.employee_name || "?").charAt(0).toUpperCase();
                 return `
-                  <tr style="background: transparent !important; border-bottom: 1px solid rgba(255,255,255,0.06);">
-                    <td class="ps-3" style="background: transparent !important;">
+                  <tr>
+                    <td class="ps-3">
                       <span class="badge bg-dark text-white border border-secondary border-opacity-50 font-monospace">${rec.employee_id}</span>
                     </td>
-                    <td style="background: transparent !important;">
+                    <td>
                       <div class="d-flex align-items-center gap-2.5">
                         <div class="att-avatar">
                           ${avatarInitial}
                         </div>
                         <div>
-                          <div class="text-white fw-bold mb-0" style="color: #ffffff !important; font-size: 0.94rem; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">${rec.employee_name}</div>
-                          ${rec.card_no ? `<span class="text-secondary small" style="font-size: 0.72rem; color: #8ea8cc !important;"><i class="bi bi-credit-card me-1"></i>${rec.card_no}</span>` : ""}
+                          <div class="fw-bold mb-0" style="font-size: 0.94rem;">${rec.employee_name}</div>
+                          ${rec.card_no ? `<span class="text-secondary small" style="font-size: 0.72rem;"><i class="bi bi-credit-card me-1"></i>${rec.card_no}</span>` : ""}
                         </div>
                       </div>
                     </td>
-                    <td style="background: transparent !important;">
-                      <span class="badge bg-dark text-white-50 border border-secondary border-opacity-25">${rec.department || "CESTAFF"}</span>
+                    <td>
+                      <span class="badge bg-secondary-subtle text-secondary border border-secondary border-opacity-25">${rec.department || "CESTAFF"}</span>
                     </td>
-                    <td class="text-center" style="background: transparent !important;">
-                      ${rec.check_in ? `<span class="fs-6 fw-bold font-monospace" style="${rec.is_late ? "color: #f87171 !important;" : "color: #38bdf8 !important;"}">${rec.check_in}</span>` : `<span class="text-secondary font-monospace" style="color: #64748b !important;">--:--</span>`}
+                    <td class="text-center">
+                      ${rec.check_in ? `<span class="fs-6 fw-bold font-monospace ${rec.is_late ? "text-danger" : "text-info"}">${rec.check_in}</span>` : `<span class="text-secondary font-monospace">--:--</span>`}
                     </td>
-                    <td class="text-center" style="background: transparent !important;">
+                    <td class="text-center">
                       ${getStatusBadge(rec.status, rec.delay_minutes)}
                     </td>
-                    <td class="text-center" style="background: transparent !important;">
+                    <td class="text-center">
                       ${formatDelay(rec.delay_minutes)}
                     </td>
-                    <td style="background: transparent !important;">
-                      <span class="text-secondary small font-monospace" style="font-size: 0.76rem; color: #94a3b8 !important;">
+                    <td>
+                      <span class="text-secondary small font-monospace" style="font-size: 0.76rem;">
                         ${(rec.all_punches || "--:--").replace(/\n/g, " | ")}
                       </span>
                     </td>
-                    <td class="text-end pe-3" style="background: transparent !important;">
+                    <td class="text-end pe-3">
                       <div class="btn-group btn-group-sm">
-                        <button type="button" class="btn btn-outline-secondary text-gold border-secondary border-opacity-50" data-view-trajectory="${rec.employee_id}" title="${t("Ver Trajetória Individual", "View Staff Dossier")}">
+                        <button type="button" class="btn btn-outline-secondary text-gold" data-view-trajectory="${rec.employee_id}" title="${t("Ver Trajetória Individual", "View Staff Dossier")}">
                           <i class="bi bi-graph-up-arrow"></i>
                         </button>
-                        <button type="button" class="btn btn-outline-secondary text-secondary border-secondary border-opacity-50" data-edit-attendance="${rec.id || ""}" data-emp-id="${rec.employee_id}" data-date="${rec.attendance_date}" title="${t("Editar / Adicionar Nota", "Edit / Add Note")}">
+                        <button type="button" class="btn btn-outline-secondary" data-edit-attendance="${rec.id || ""}" data-emp-id="${rec.employee_id}" data-date="${rec.attendance_date}" title="${t("Editar / Adicionar Nota", "Edit / Add Note")}">
                           <i class="bi bi-pencil"></i>
                         </button>
                       </div>
@@ -652,7 +645,7 @@
                   </tr>`;
               }).join("") : `
                 <tr>
-                  <td colspan="8" class="text-center py-5 text-muted" style="background: transparent !important; color: #94a3b8 !important;">
+                  <td colspan="8" class="text-center py-5 text-muted">
                     <i class="bi bi-inbox fs-2 d-block mb-2 text-secondary"></i>
                     ${t("Nenhum registo de ponto encontrado para os filtros selecionados", "No attendance records found for selected filters")} (${date}).
                     <div class="mt-2">
@@ -695,18 +688,18 @@
           <div class="col-12 col-md-auto d-flex flex-wrap align-items-center gap-2">
             <span class="text-secondary small fw-bold text-uppercase me-1" style="font-size: 0.75rem; letter-spacing: 0.05em;"><i class="bi bi-calendar-range text-gold me-1"></i>${t("Período de Análise:", "Analysis Period:")}</span>
             <div class="btn-group btn-group-sm" role="group">
-              <button type="button" class="btn ${attendancePageState.monthlyPeriod === "this_month" ? "btn-ce-gold" : "btn-outline-secondary text-white"}" data-period-btn="this_month">${t("Julho 2026", "July 2026")}</button>
-              <button type="button" class="btn ${attendancePageState.monthlyPeriod === "3_months" ? "btn-ce-gold" : "btn-outline-secondary text-white"}" data-period-btn="3_months">${t("Últimos 3 Meses", "Last 3 Months")}</button>
-              <button type="button" class="btn ${attendancePageState.monthlyPeriod === "6_months" ? "btn-ce-gold" : "btn-outline-secondary text-white"}" data-period-btn="6_months">${t("Últimos 6 Meses", "Last 6 Months")}</button>
-              <button type="button" class="btn ${attendancePageState.monthlyPeriod === "year" ? "btn-ce-gold" : "btn-outline-secondary text-white"}" data-period-btn="year">${t("Ano 2026", "Year 2026")}</button>
+              <button type="button" class="btn ${attendancePageState.monthlyPeriod === "this_month" ? "btn-ce-gold" : "btn-outline-secondary"}" data-period-btn="this_month">${t("Julho 2026", "July 2026")}</button>
+              <button type="button" class="btn ${attendancePageState.monthlyPeriod === "3_months" ? "btn-ce-gold" : "btn-outline-secondary"}" data-period-btn="3_months">${t("Últimos 3 Meses", "Last 3 Months")}</button>
+              <button type="button" class="btn ${attendancePageState.monthlyPeriod === "6_months" ? "btn-ce-gold" : "btn-outline-secondary"}" data-period-btn="6_months">${t("Últimos 6 Meses", "Last 6 Months")}</button>
+              <button type="button" class="btn ${attendancePageState.monthlyPeriod === "year" ? "btn-ce-gold" : "btn-outline-secondary"}" data-period-btn="year">${t("Ano 2026", "Year 2026")}</button>
             </div>
           </div>
 
           <div class="col-12 col-md-auto d-flex flex-wrap align-items-center gap-2">
             <span class="text-secondary small">${t("De:", "From:")}</span>
-            <input type="date" class="form-control form-control-sm text-white" id="periodStartDate" value="${start}" style="max-width: 140px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15);">
+            <input type="date" class="form-control form-control-sm" id="periodStartDate" value="${start}" style="max-width: 140px;">
             <span class="text-secondary small">${t("Até:", "To:")}</span>
-            <input type="date" class="form-control form-control-sm text-white" id="periodEndDate" value="${end}" style="max-width: 140px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15);">
+            <input type="date" class="form-control form-control-sm" id="periodEndDate" value="${end}" style="max-width: 140px;">
             <button type="button" class="btn btn-sm btn-outline-warning" id="applyPeriodFilterBtn"><i class="bi bi-funnel me-1"></i>${t("Aplicar", "Apply")}</button>
           </div>
         </div>
@@ -721,8 +714,8 @@
               <span class="text-secondary small fw-bold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.05em;">${t("Taxa de Pontualidade", "Punctuality Rate")}</span>
               <div class="att-avatar" style="width: 28px; height: 28px; font-size: 0.8rem; background: rgba(34, 197, 94, 0.15); border-color: #22c55e; color: #22c55e;"><i class="bi bi-pie-chart-fill"></i></div>
             </div>
-            <h3 class="h2 fw-bold text-white mb-1">${stats.onTimeRate}%</h3>
-            <div class="progress progress-sm bg-dark mb-2" style="height: 6px;">
+            <h3 class="h2 fw-bold mb-1">${stats.onTimeRate}%</h3>
+            <div class="progress progress-sm bg-secondary bg-opacity-25 mb-2" style="height: 6px;">
               <div class="progress-bar bg-success" style="width: ${stats.onTimeRate}%"></div>
             </div>
             <p class="text-secondary small mb-0" style="font-size: 0.76rem;">${stats.onTimeCount + stats.graceCount} ${t("de", "of")} ${stats.totalRecords} ${t("presenças pontuais/tolerância", "punctual / grace attendances")}</p>
@@ -737,7 +730,7 @@
             </div>
             <h3 class="h2 fw-bold text-danger mb-1">${Math.floor(stats.totalDelayMinutes / 60)}h ${stats.totalDelayMinutes % 60}m</h3>
             <div class="text-secondary small mb-0 mt-2" style="font-size: 0.76rem;">
-              ${t("Acumulado em", "Accumulated across")} <strong class="text-white">${stats.allLateCount}</strong> ${t("ocorrências de atraso", "delay occurrences")}
+              ${t("Acumulado em", "Accumulated across")} <strong>${stats.allLateCount}</strong> ${t("ocorrências de atraso", "delay occurrences")}
             </div>
           </div>
         </div>
@@ -750,7 +743,7 @@
             </div>
             <h3 class="h2 fw-bold text-info mb-1">${stats.distinctEmployeesCount}</h3>
             <div class="text-secondary small mb-0 mt-2" style="font-size: 0.76rem;">
-              ${t("Em", "Across")} <strong class="text-white">${stats.distinctDaysCount}</strong> ${t("dias de expediente registados", "recorded working days")}
+              ${t("Em", "Across")} <strong>${stats.distinctDaysCount}</strong> ${t("dias de expediente registados", "recorded working days")}
             </div>
           </div>
         </div>
@@ -778,7 +771,7 @@
             <div class="att-card-header d-flex align-items-center justify-content-between">
               <div class="d-flex align-items-center gap-2">
                 <i class="bi bi-award-fill text-gold fs-5"></i>
-                <h5 class="h6 mb-0 text-white fw-bold">${t("Hall da Pontualidade (Mais Consistentes)", "Punctuality Hall of Fame (Most Consistent)")}</h5>
+                <h5 class="h6 mb-0 fw-bold">${t("Hall da Pontualidade (Mais Consistentes)", "Punctuality Hall of Fame (Most Consistent)")}</h5>
               </div>
               <span class="badge bg-success-subtle text-success">${t("Top Assiduidade", "Top Attendance")}</span>
             </div>
@@ -803,7 +796,7 @@
                           <div class="d-flex align-items-center gap-2">
                             <div class="att-avatar" style="width: 28px; height: 28px; font-size: 0.78rem;">${(emp.employee_name || "?").charAt(0)}</div>
                             <div>
-                              <div class="text-white fw-semibold small" style="color: #ffffff !important;">${emp.employee_name}</div>
+                              <div class="fw-semibold small">${emp.employee_name}</div>
                               <span class="text-secondary" style="font-size: 0.7rem;">ID: ${emp.employee_id}</span>
                             </div>
                           </div>
@@ -827,7 +820,7 @@
             <div class="att-card-header d-flex align-items-center justify-content-between">
               <div class="d-flex align-items-center gap-2">
                 <i class="bi bi-exclamation-triangle-fill text-danger fs-5"></i>
-                <h5 class="h6 mb-0 text-white fw-bold">${t("Atenção RH (Atrasos Recorrentes)", "HR Attention (Recurring Delays)")}</h5>
+                <h5 class="h6 mb-0 fw-bold">${t("Atenção RH (Atrasos Recorrentes)", "HR Attention (Recurring Delays)")}</h5>
               </div>
               <span class="badge bg-danger-subtle text-danger">${t("Necessita Ação", "Action Required")}</span>
             </div>
@@ -854,7 +847,7 @@
                           <div class="d-flex align-items-center gap-2">
                             <div class="att-avatar" style="width: 28px; height: 28px; font-size: 0.78rem; border-color: #ef4444; color: #ef4444;">${(emp.employee_name || "?").charAt(0)}</div>
                             <div>
-                              <div class="text-white fw-semibold small" style="color: #ffffff !important;">${emp.employee_name}</div>
+                              <div class="fw-semibold small">${emp.employee_name}</div>
                               <span class="text-secondary" style="font-size: 0.7rem;">ID: ${emp.employee_id} • ${emp.department}</span>
                             </div>
                           </div>
@@ -882,41 +875,41 @@
     // Distribution of arrival times
     var distributionHtml = `
       <div class="att-card p-4 mb-4">
-        <h5 class="h6 mb-3 text-white fw-bold"><i class="bi bi-bar-chart-fill text-gold me-2"></i>${t("Distribuição dos Horários de Chegada no Período", "Arrival Time Distribution for Period")}</h5>
+        <h5 class="h6 mb-3 fw-bold"><i class="bi bi-bar-chart-fill text-gold me-2"></i>${t("Distribuição dos Horários de Chegada no Período", "Arrival Time Distribution for Period")}</h5>
         
         <div class="row g-3">
           <div class="col-12 col-md">
-            <div class="p-3 rounded border border-secondary border-opacity-25 text-center" style="background: rgba(0,0,0,0.35);">
+            <div class="p-3 rounded border border-secondary border-opacity-25 text-center">
               <span class="text-success small fw-semibold d-block mb-1">${t("Antes das 08:00", "Before 08:00")}</span>
               <h4 class="text-success fw-bold mb-1">${bucket1}</h4>
               <span class="text-secondary small">${Math.round((bucket1 / totalPresentWithTime) * 100)}%</span>
             </div>
           </div>
           <div class="col-12 col-md">
-            <div class="p-3 rounded border border-secondary border-opacity-25 text-center" style="background: rgba(0,0,0,0.35);">
+            <div class="p-3 rounded border border-secondary border-opacity-25 text-center">
               <span class="text-info small fw-semibold d-block mb-1">${t("08:00 – 08:15 (Tolerância)", "08:00 – 08:15 (Grace)")}</span>
               <h4 class="text-info fw-bold mb-1">${bucket2}</h4>
               <span class="text-secondary small">${Math.round((bucket2 / totalPresentWithTime) * 100)}%</span>
             </div>
           </div>
           <div class="col-12 col-md">
-            <div class="p-3 rounded border border-secondary border-opacity-25 text-center" style="background: rgba(0,0,0,0.35);">
+            <div class="p-3 rounded border border-secondary border-opacity-25 text-center">
               <span class="text-warning small fw-semibold d-block mb-1">${t("08:16 – 08:30 (Ligeiro)", "08:16 – 08:30 (Minor)")}</span>
               <h4 class="text-warning fw-bold mb-1">${bucket3}</h4>
               <span class="text-secondary small">${Math.round((bucket3 / totalPresentWithTime) * 100)}%</span>
             </div>
           </div>
           <div class="col-12 col-md">
-            <div class="p-3 rounded border border-secondary border-opacity-25 text-center" style="background: rgba(0,0,0,0.35);">
+            <div class="p-3 rounded border border-secondary border-opacity-25 text-center">
               <span class="text-danger small fw-semibold d-block mb-1">${t("08:31 – 09:00 (Atraso)", "08:31 – 09:00 (Late)")}</span>
               <h4 class="text-danger fw-bold mb-1">${bucket4}</h4>
               <span class="text-secondary small">${Math.round((bucket4 / totalPresentWithTime) * 100)}%</span>
             </div>
           </div>
           <div class="col-12 col-md">
-            <div class="p-3 rounded border border-secondary border-opacity-25 text-center" style="background: rgba(0,0,0,0.35);">
+            <div class="p-3 rounded border border-secondary border-opacity-25 text-center">
               <span class="text-danger fw-bold small d-block mb-1">${t("Após as 09:00 (Grave)", "After 09:00 (Severe)")}</span>
-              <h4 class="text-white fw-bold mb-1">${bucket5}</h4>
+              <h4 class="fw-bold mb-1">${bucket5}</h4>
               <span class="text-secondary small">${Math.round((bucket5 / totalPresentWithTime) * 100)}%</span>
             </div>
           </div>
@@ -949,7 +942,7 @@
         <div class="row g-3 align-items-center justify-content-between">
           <div class="col-12 col-md-6 d-flex align-items-center gap-3">
             <label class="text-secondary small fw-semibold mb-0 text-nowrap"><i class="bi bi-person-bounding-box text-gold me-1"></i>${t("Selecionar Colaborador:", "Select Staff Member:")}</label>
-            <select class="form-select form-select-sm text-white" id="trajectoryStaffSelect" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15);">
+            <select class="form-select form-select-sm" id="trajectoryStaffSelect">
               ${distinctEmployees.map(function (e) {
                 return `<option value="${e.id}" ${e.id === selectedId ? "selected" : ""}>${e.name} (ID: ${e.id}) — ${e.dept}</option>`;
               }).join("")}
@@ -973,23 +966,23 @@
           </div>
           <div class="col-12 col-md">
             <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
-              <h3 class="h4 text-white fw-bold mb-0" style="color: #ffffff !important;">${trajectory.employee_name}</h3>
+              <h3 class="h4 fw-bold mb-0">${trajectory.employee_name}</h3>
               <span class="badge bg-gold-subtle text-gold">ID: ${trajectory.employee_id}</span>
-              <span class="badge bg-dark border border-secondary border-opacity-40 text-secondary">${trajectory.department}</span>
+              <span class="badge bg-secondary-subtle text-secondary border border-secondary border-opacity-40">${trajectory.department}</span>
             </div>
             <p class="text-secondary small mb-0">${t("LoveWorld Christ Embassy Mozambique • Assiduidade e Pontualidade", "LoveWorld Christ Embassy Mozambique • Attendance & Punctuality")}</p>
           </div>
           <div class="col-12 col-md-auto">
             <div class="d-flex flex-wrap gap-2 justify-content-center justify-content-md-end">
-              <div class="px-3 py-2 rounded border border-secondary border-opacity-25 text-center" style="background: rgba(0,0,0,0.35); min-width: 100px;">
+              <div class="px-3 py-2 rounded border border-secondary border-opacity-25 text-center" style="min-width: 100px;">
                 <span class="text-secondary small d-block" style="font-size: 0.7rem; letter-spacing: 0.05em;">${t("TAXA PONTUALIDADE", "PUNCTUALITY RATE")}</span>
                 <span class="fs-5 fw-bold ${trajectory.onTimeRate >= 80 ? "text-success" : trajectory.onTimeRate >= 60 ? "text-warning" : "text-danger"}">${trajectory.onTimeRate}%</span>
               </div>
-              <div class="px-3 py-2 rounded border border-secondary border-opacity-25 text-center" style="background: rgba(0,0,0,0.35); min-width: 100px;">
+              <div class="px-3 py-2 rounded border border-secondary border-opacity-25 text-center" style="min-width: 100px;">
                 <span class="text-secondary small d-block" style="font-size: 0.7rem; letter-spacing: 0.05em;">${t("MÉDIA ENTRADA", "AVG CHECK-IN")}</span>
                 <span class="fs-5 fw-bold text-info font-monospace">${trajectory.avgCheckInTime}</span>
               </div>
-              <div class="px-3 py-2 rounded border border-secondary border-opacity-25 text-center" style="background: rgba(0,0,0,0.35); min-width: 100px;">
+              <div class="px-3 py-2 rounded border border-secondary border-opacity-25 text-center" style="min-width: 100px;">
                 <span class="text-secondary small d-block" style="font-size: 0.7rem; letter-spacing: 0.05em;">${t("TOTAL ATRASO", "TOTAL DELAY")}</span>
                 <span class="fs-5 fw-bold text-danger font-monospace">${trajectory.totalDelayMinutes}m</span>
               </div>
@@ -1003,7 +996,7 @@
         <div class="att-card-header d-flex align-items-center justify-content-between">
           <div class="d-flex align-items-center gap-2">
             <i class="bi bi-clock-history text-gold fs-5"></i>
-            <h5 class="h6 mb-0 text-white fw-bold">${t("Histórico Completo de Picagens de Ponto", "Complete Check-In Punch History")}</h5>
+            <h5 class="h6 mb-0 fw-bold">${t("Histórico Completo de Picagens de Ponto", "Complete Check-In Punch History")}</h5>
           </div>
           <span class="badge bg-gold-subtle text-gold">${trajectory.records.length} ${t("registos no histórico", "records in history")}</span>
         </div>
@@ -1026,9 +1019,9 @@
                 var weekday = getWeekday(rec.attendance_date);
                 return `
                   <tr>
-                    <td class="ps-3 fw-semibold text-white font-monospace">${rec.attendance_date}</td>
+                    <td class="ps-3 fw-semibold font-monospace">${rec.attendance_date}</td>
                     <td class="text-secondary small">${weekday}</td>
-                    <td class="text-center font-monospace fw-bold ${rec.is_late ? "text-danger" : "text-white"}" style="${rec.is_late ? "color: #f87171 !important;" : "color: #ffffff !important;"}">${rec.check_in || "--:--"}</td>
+                    <td class="text-center font-monospace fw-bold ${rec.is_late ? "text-danger" : ""}">${rec.check_in || "--:--"}</td>
                     <td class="text-center">${getStatusBadge(rec.status, rec.delay_minutes)}</td>
                     <td class="text-center">${formatDelay(rec.delay_minutes)}</td>
                     <td class="text-secondary small font-monospace" style="font-size: 0.76rem;">${(rec.all_punches || "--:--").replace(/\n/g, " | ")}</td>
@@ -1060,11 +1053,11 @@
           <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
             <div>
               <span class="badge bg-warning-subtle text-warning mb-1"><i class="bi bi-eye me-1"></i>${t("Pré-visualização da Importação", "Import Preview")}</span>
-              <h4 class="h5 text-white fw-bold mb-0" style="color: #ffffff !important;">${preview.filename}</h4>
-              <p class="text-secondary small mb-0">${t("Criado pelo dispositivo:", "Created by device:")} <strong>${preview.createTime}</strong> • ${t("Total:", "Total:")} <strong class="text-white">${preview.records.length} ${t("registos", "records")}</strong></p>
+              <h4 class="h5 fw-bold mb-0">${preview.filename}</h4>
+              <p class="text-secondary small mb-0">${t("Criado pelo dispositivo:", "Created by device:")} <strong>${preview.createTime}</strong> • ${t("Total:", "Total:")} <strong>${preview.records.length} ${t("registos", "records")}</strong></p>
             </div>
             <div class="d-flex align-items-center gap-2">
-              <button type="button" class="btn btn-outline-secondary btn-sm text-white" id="cancelUploadPreviewBtn">${t("Descartar", "Discard")}</button>
+              <button type="button" class="btn btn-outline-secondary btn-sm" id="cancelUploadPreviewBtn">${t("Descartar", "Discard")}</button>
               <button type="button" class="btn btn-ce-gold btn-sm" id="confirmSaveUploadBtn">
                 <i class="bi bi-check-lg me-1.5"></i>${t("Confirmar e Gravar no Sistema", "Confirm and Save to System")}
               </button>
@@ -1073,25 +1066,25 @@
 
           <div class="row g-2 mb-3">
             <div class="col-6 col-md-3">
-              <div class="p-2.5 rounded border border-secondary border-opacity-25 text-center" style="background: rgba(0,0,0,0.35);">
+              <div class="p-2.5 rounded border border-secondary border-opacity-25 text-center">
                 <span class="text-secondary small d-block" style="font-size: 0.7rem;">${t("PRESENTES", "PRESENT")}</span>
                 <span class="fs-6 fw-bold text-info">${preview.stats.present}</span>
               </div>
             </div>
             <div class="col-6 col-md-3">
-              <div class="p-2.5 rounded border border-secondary border-opacity-25 text-center" style="background: rgba(0,0,0,0.35);">
+              <div class="p-2.5 rounded border border-secondary border-opacity-25 text-center">
                 <span class="text-secondary small d-block" style="font-size: 0.7rem;">${t("NO HORÁRIO", "ON TIME")}</span>
                 <span class="fs-6 fw-bold text-success">${preview.stats.on_time}</span>
               </div>
             </div>
             <div class="col-6 col-md-3">
-              <div class="p-2.5 rounded border border-secondary border-opacity-25 text-center" style="background: rgba(0,0,0,0.35);">
+              <div class="p-2.5 rounded border border-secondary border-opacity-25 text-center">
                 <span class="text-secondary small d-block" style="font-size: 0.7rem;">${t("EM ATRASO", "LATE")}</span>
                 <span class="fs-6 fw-bold text-danger">${preview.stats.minor_delay + preview.stats.late + preview.stats.severe_delay}</span>
               </div>
             </div>
             <div class="col-6 col-md-3">
-              <div class="p-2.5 rounded border border-secondary border-opacity-25 text-center" style="background: rgba(0,0,0,0.35);">
+              <div class="p-2.5 rounded border border-secondary border-opacity-25 text-center">
                 <span class="text-secondary small d-block" style="font-size: 0.7rem;">${t("SEM REGISTO / FALTAS", "NO RECORD / ABSENT")}</span>
                 <span class="fs-6 fw-bold text-secondary">${preview.stats.absent}</span>
               </div>
@@ -1116,9 +1109,9 @@
                   return `
                     <tr>
                       <td class="ps-3 font-monospace text-secondary">${rec.employee_id}</td>
-                      <td class="text-white fw-semibold" style="color: #ffffff !important;">${rec.employee_name}</td>
+                      <td class="fw-semibold">${rec.employee_name}</td>
                       <td class="font-monospace text-secondary">${rec.attendance_date}</td>
-                      <td class="text-center font-monospace ${rec.is_late ? "text-danger fw-bold" : "text-white"}" style="${rec.is_late ? "color: #f87171 !important;" : "color: #ffffff !important;"}">${rec.check_in || "--:--"}</td>
+                      <td class="text-center font-monospace ${rec.is_late ? "text-danger fw-bold" : ""}">${rec.check_in || "--:--"}</td>
                       <td class="text-center">${getStatusBadge(rec.status, rec.delay_minutes)}</td>
                       <td class="text-center">${formatDelay(rec.delay_minutes)}</td>
                       <td class="text-secondary small font-monospace" style="font-size: 0.76rem;">${(rec.all_punches || "--:--").replace(/\n/g, " | ")}</td>
@@ -1133,15 +1126,15 @@
 
     var uploadFormHtml = `
       <div class="att-card p-4 mb-4">
-        <h5 class="h6 text-white fw-bold mb-3"><i class="bi bi-cloud-arrow-up text-gold me-2"></i>${t("Carregar Relatório Diário / Mensal da Máquina Biométrica", "Upload Daily / Monthly Biometric Device File")}</h5>
+        <h5 class="h6 fw-bold mb-3"><i class="bi bi-cloud-arrow-up text-gold me-2"></i>${t("Carregar Relatório Diário / Mensal da Máquina Biométrica", "Upload Daily / Monthly Biometric Device File")}</h5>
         <p class="text-secondary small mb-3">
           ${t("Arraste e solte ou selecione o ficheiro Excel (.xlsx, .xls) ou CSV descarregado diretamente do terminal biométrico de impressões digitais da igreja.", "Drag and drop or select the Excel (.xlsx, .xls) or CSV file downloaded directly from the church fingerprint biometric terminal.")}
         </p>
 
-        <div class="upload-dropzone p-5 text-center rounded border-2 border-dashed border-secondary border-opacity-50" id="biometricDropzone" style="cursor: pointer; transition: all 0.2s; background: rgba(0,0,0,0.35);">
+        <div class="upload-dropzone p-5 text-center rounded border-2 border-dashed border-secondary border-opacity-50" id="biometricDropzone" style="cursor: pointer; transition: all 0.2s;">
           <input type="file" id="biometricFileInput" class="d-none" accept=".xlsx, .xls, .csv, .txt">
           <i class="bi bi-file-earmark-spreadsheet text-gold fs-1 d-block mb-3"></i>
-          <h5 class="text-white fw-semibold mb-1">${t("Clique para selecionar ou arraste o ficheiro Excel aqui", "Click to select or drag Excel file here")}</h5>
+          <h5 class="fw-semibold mb-1">${t("Clique para selecionar ou arraste o ficheiro Excel aqui", "Click to select or drag Excel file here")}</h5>
           <p class="text-muted small mb-0">${t("Suporta relatórios diários e matrizes mensais extraídas dos terminais biométricos", "Supports daily reports and monthly punch sheets extracted from biometric terminals")}</p>
         </div>
       </div>`;
@@ -1149,7 +1142,7 @@
     var historyHtml = `
       <div class="att-card overflow-hidden">
         <div class="att-card-header">
-          <h5 class="h6 mb-0 text-white fw-bold"><i class="bi bi-clock-history text-gold me-2"></i>${t("Histórico de Ficheiros Importados", "Imported Files History")}</h5>
+          <h5 class="h6 mb-0 fw-bold"><i class="bi bi-clock-history text-gold me-2"></i>${t("Histórico de Ficheiros Importados", "Imported Files History")}</h5>
         </div>
         <div class="table-responsive">
           <table class="table att-table align-middle mb-0">
@@ -1170,9 +1163,9 @@
                 return `
                   <tr>
                     <td class="ps-3 font-monospace text-secondary">${u.upload_date || u.created_at?.slice(0, 10)}</td>
-                    <td class="text-white fw-semibold" style="color: #ffffff !important;"><i class="bi bi-file-earmark-excel text-success me-1.5"></i>${u.filename}</td>
+                    <td class="fw-semibold"><i class="bi bi-file-earmark-excel text-success me-1.5"></i>${u.filename}</td>
                     <td class="text-secondary small">${u.device_create_time || "—"}</td>
-                    <td class="text-center"><span class="badge bg-dark text-white border border-secondary border-opacity-25">${u.record_count}</span></td>
+                    <td class="text-center"><span class="badge bg-secondary-subtle text-secondary border border-secondary border-opacity-25">${u.record_count}</span></td>
                     <td class="text-center text-info">${u.present_count}</td>
                     <td class="text-center text-danger fw-bold">${u.late_count}</td>
                     <td class="text-center text-secondary">${u.absent_count}</td>
@@ -1197,7 +1190,7 @@
 
     return `
       <div class="att-card p-4 mb-4" style="max-width: 800px;">
-        <h5 class="h6 text-white fw-bold mb-3"><i class="bi bi-sliders text-gold me-2"></i>${t("Parâmetros de Horário e Regras de Pontualidade", "Schedule Parameters & Punctuality Rules")}</h5>
+        <h5 class="h6 fw-bold mb-3"><i class="bi bi-sliders text-gold me-2"></i>${t("Parâmetros de Horário e Regras de Pontualidade", "Schedule Parameters & Punctuality Rules")}</h5>
         <p class="text-secondary small mb-4">
           ${t("Defina o horário oficial de entrada da igreja, tempo de tolerância e escalões de atraso para classificação automática das picagens biométricas.", "Set church standard arrival time, grace period and delay brackets for automated biometric calculation.")}
         </p>
@@ -1206,31 +1199,31 @@
           <div class="row g-3 mb-3">
             <div class="col-12 col-md-6">
               <label class="form-label text-secondary small fw-semibold">${t("Horário Oficial de Entrada (Padrão: 08:00)", "Standard Check-In Time (Default: 08:00)")}</label>
-              <input type="time" class="form-control text-white" name="standard_start_time" value="${s.standard_start_time || "08:00"}" required style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15);">
+              <input type="time" class="form-control" name="standard_start_time" value="${s.standard_start_time || "08:00"}" required>
               <div class="form-text text-muted small">${t("Chegadas antes ou neste horário são consideradas pontuais.", "Arrivals on or before this time are considered on time.")}</div>
             </div>
 
             <div class="col-12 col-md-6">
               <label class="form-label text-secondary small fw-semibold">${t("Minutos de Tolerância (Grace Period)", "Grace Period Minutes")}</label>
-              <input type="number" class="form-control text-white" name="grace_period_minutes" value="${s.grace_period_minutes || 15}" min="0" max="60" required style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15);">
+              <input type="number" class="form-control" name="grace_period_minutes" value="${s.grace_period_minutes || 15}" min="0" max="60" required>
               <div class="form-text text-muted small">${t("Ex: 15 minutos (até 08:15 é considerado 'Tolerância').", "E.g. 15 minutes (up to 08:15 is considered 'Grace Period').")}</div>
             </div>
 
             <div class="col-12 col-md-6">
               <label class="form-label text-secondary small fw-semibold">${t("Limite Atraso Ligeiro (Minutos)", "Minor Delay Threshold (Minutes)")}</label>
-              <input type="number" class="form-control text-white" name="minor_delay_threshold_minutes" value="${s.minor_delay_threshold_minutes || 30}" min="15" max="120" required style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15);">
+              <input type="number" class="form-control" name="minor_delay_threshold_minutes" value="${s.minor_delay_threshold_minutes || 30}" min="15" max="120" required>
               <div class="form-text text-muted small">${t("Ex: 30 minutos (chegadas entre 08:16 e 08:30).", "E.g. 30 minutes (arrivals between 08:16 and 08:30).")}</div>
             </div>
 
             <div class="col-12 col-md-6">
               <label class="form-label text-secondary small fw-semibold">${t("Limite Atraso Grave (Minutos)", "Severe Delay Threshold (Minutes)")}</label>
-              <input type="number" class="form-control text-white" name="severe_delay_threshold_minutes" value="${s.severe_delay_threshold_minutes || 60}" min="30" max="240" required style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15);">
+              <input type="number" class="form-control" name="severe_delay_threshold_minutes" value="${s.severe_delay_threshold_minutes || 60}" min="30" max="240" required>
               <div class="form-text text-muted small">${t("Chegadas superiores a este limite são marcadas como 'Muito Tarde'.", "Arrivals exceeding this threshold are classified as 'Severe Delay'.")}</div>
             </div>
 
             <div class="col-12 col-md-6">
               <label class="form-label text-secondary small fw-semibold">${t("Horário de Saída Previsto (Padrão: 17:00)", "Expected Departure Time (Default: 17:00)")}</label>
-              <input type="time" class="form-control text-white" name="standard_end_time" value="${s.standard_end_time || "17:00"}" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15);">
+              <input type="time" class="form-control" name="standard_end_time" value="${s.standard_end_time || "17:00"}">
             </div>
           </div>
 
@@ -1260,19 +1253,19 @@
                 <i class="bi bi-file-earmark-pdf"></i>
               </div>
               <div>
-                <h5 class="h6 text-white fw-bold mb-0">${t("Relatório Diário de Assiduidade", "Daily Attendance Report")}</h5>
+                <h5 class="h6 fw-bold mb-0">${t("Relatório Diário de Assiduidade", "Daily Attendance Report")}</h5>
                 <span class="text-secondary small">${t("Dossiê de presenças e atrasos de um dia específico", "Attendance and delay dossier for a specific date")}</span>
               </div>
             </div>
             <div class="mb-3">
               <label class="form-label text-secondary small">${t("Data do Relatório:", "Report Date:")}</label>
-              <input type="date" class="form-control form-control-sm text-white" id="reportDailyDateInput" value="${date}" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15);">
+              <input type="date" class="form-control form-control-sm" id="reportDailyDateInput" value="${date}">
             </div>
             <div class="mt-auto d-flex gap-2">
               <button type="button" class="btn btn-sm btn-ce-gold w-100" id="generateDailyPdfBtn">
                 <i class="bi bi-printer me-1.5"></i>${t("Gerar PDF Oficial", "Generate Official PDF")}
               </button>
-              <button type="button" class="btn btn-sm btn-outline-secondary text-white" id="attendanceExportDailyCsv">
+              <button type="button" class="btn btn-sm btn-outline-secondary" id="attendanceExportDailyCsv">
                 <i class="bi bi-file-earmark-excel text-success me-1"></i>Excel / CSV
               </button>
             </div>
@@ -1287,18 +1280,18 @@
                 <i class="bi bi-file-earmark-bar-graph"></i>
               </div>
               <div>
-                <h5 class="h6 text-white fw-bold mb-0">${t("Relatório Mensal / Periódico Consolidado", "Consolidated Monthly / Periodic Report")}</h5>
+                <h5 class="h6 fw-bold mb-0">${t("Relatório Mensal / Periódico Consolidado", "Consolidated Monthly / Periodic Report")}</h5>
                 <span class="text-secondary small">${t("Taxa de pontualidade, top atrasos e horas acumuladas", "Punctuality rate, top late staff and accumulated delay")}</span>
               </div>
             </div>
             <div class="row g-2 mb-3">
               <div class="col-6">
                 <label class="form-label text-secondary small">${t("Data Inicial:", "Start Date:")}</label>
-                <input type="date" class="form-control form-control-sm text-white" id="reportPeriodStartInput" value="${start}" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15);">
+                <input type="date" class="form-control form-control-sm" id="reportPeriodStartInput" value="${start}">
               </div>
               <div class="col-6">
                 <label class="form-label text-secondary small">${t("Data Final:", "End Date:")}</label>
-                <input type="date" class="form-control form-control-sm text-white" id="reportPeriodEndInput" value="${end}" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15);">
+                <input type="date" class="form-control form-control-sm" id="reportPeriodEndInput" value="${end}">
               </div>
             </div>
             <div class="mt-auto d-flex gap-2">

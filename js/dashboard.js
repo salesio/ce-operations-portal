@@ -3,6 +3,7 @@ if (typeof window !== "undefined") {
   window.STORAGE_KEY = STORAGE_KEY;
 }
 const LANG_KEY = "ce-dashboard-lang";
+const THEME_KEY = "ce-dashboard-theme";
 const SIDEBAR_GROUPS_KEY = "ce-dashboard-sidebar-groups";
 const MODULE_NAV_KEY = "ce-dashboard-module-nav";
 const SIDEBAR_COLLAPSED_KEY = "ce-dashboard-sidebar-collapsed";
@@ -3984,11 +3985,13 @@ function normalizeServiceLabelsInTree(value, seen = new WeakSet()) {
 }
 
 let lang = localStorage.getItem(LANG_KEY) || "pt";
+let theme = localStorage.getItem(THEME_KEY) || localStorage.getItem("ce_theme") || "dark";
 let state = loadState();
 if (typeof window !== "undefined") {
   window.state = state;
   window.getState = () => state;
   window.getLang = () => lang;
+  window.getTheme = () => theme;
 }
 // Older builds cached an entire Supabase members table in the browser. Preserve
 // only local write fallbacks; the live directory is now exclusively paginated.
@@ -12110,6 +12113,7 @@ function applyLanguage(next = lang) {
   renderShell();
   applySidebarCollapse();
   applyBackToTopLabel();
+  applyTheme(theme);
   if (!byId("appView").classList.contains("d-none")) {
     setRoute(activeRoute);
     syncTopbarHeight();
@@ -12124,6 +12128,33 @@ function applyLanguage(next = lang) {
       if (eyebrowEl && modalMode) eyebrowEl.textContent = modalMode === "edit" ? L("edit") : L("add");
     }
   }
+}
+
+function applyTheme(nextTheme = theme) {
+  theme = nextTheme === "light" ? "light" : "dark";
+  try {
+    localStorage.setItem(THEME_KEY, theme);
+    localStorage.setItem("ce_theme", theme);
+  } catch (_) {}
+  if (document.documentElement) {
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.classList.toggle("theme-light", theme === "light");
+    document.documentElement.classList.toggle("theme-dark", theme === "dark");
+  }
+  if (document.body) {
+    document.body.dataset.theme = theme;
+    document.body.classList.toggle("theme-light", theme === "light");
+    document.body.classList.toggle("theme-dark", theme === "dark");
+  }
+  document.querySelectorAll("[data-theme-toggle]").forEach((btn) => {
+    const isTarget = btn.dataset.themeToggle === theme;
+    btn.classList.toggle("active", isTarget);
+    btn.setAttribute("aria-pressed", isTarget ? "true" : "false");
+  });
+}
+if (typeof window !== "undefined") {
+  window.applyTheme = applyTheme;
+  window.setTheme = applyTheme;
 }
 
 function updateBackToTopVisibility() {
@@ -38445,6 +38476,8 @@ document.addEventListener("click", async (event) => {
   }
   const langButton = event.target.closest("[data-lang]");
   if (langButton) return applyLanguage(langButton.dataset.lang);
+  const themeToggleBtn = event.target.closest("[data-theme-toggle]");
+  if (themeToggleBtn) return applyTheme(themeToggleBtn.dataset.themeToggle);
   if (event.target.closest("[data-open-cell-attendance-modal]")) return openCellAttendanceModal();
   if (event.target.closest("[data-open-member-candidate]")) return openMemberCandidateForm();
   if (event.target.closest("[data-candidate-submit-form]")) return submitMemberCandidateForm(byId("entryForm"), { submit: true });
@@ -43026,6 +43059,7 @@ window.CECellOptions = {
 };
 
 applyLanguage(lang);
+applyTheme(theme);
 applySidebarCollapse();
 applyBackToTopLabel();
 updateBackToTopVisibility();
