@@ -9884,4 +9884,218 @@ nav.module-tabs {
   }
 }
 
+/* ============================================================
+   Staff Biometric Attendance Module — Scoped Dark Theme Styling
+   ============================================================ */
+
+.attendance-module-root {
+  display: block;
+  width: 100%;
+  color: #ffffff;
+}
+
+.attendance-module-root .att-nav-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 6px;
+  background: rgba(11, 23, 44, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  list-style: none;
+  margin-bottom: 1.5rem;
+}
+
+.attendance-module-root .att-nav-link {
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #9bb0ce;
+  background: transparent;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.attendance-module-root .att-nav-link:hover {
+  color: #00f0ff;
+  background: rgba(0, 240, 255, 0.08);
+  border-color: rgba(0, 240, 255, 0.25);
+}
+
+.attendance-module-root .att-nav-link.active {
+  background: linear-gradient(135deg, #c5a059 0%, #dfb86c 100%) !important;
+  color: #0b1f3f !important;
+  font-weight: 700 !important;
+  border-color: #c5a059 !important;
+  box-shadow: 0 4px 18px rgba(197, 160, 89, 0.35) !important;
+}
+
+.attendance-module-root .att-kpi-card {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 12px !important;
+  height: 100% !important;
+  padding: 14px 16px !important;
+  border-radius: 14px !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background: linear-gradient(145deg, rgba(16, 30, 58, 0.95) 0%, rgba(9, 18, 38, 0.98) 100%) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28) !important;
+  color: #ffffff !important;
+  cursor: pointer !important;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.attendance-module-root .att-kpi-card:hover {
+  transform: translateY(-3px) !important;
+  border-color: rgba(197, 160, 89, 0.5) !important;
+  box-shadow: 0 12px 30px rgba(197, 160, 89, 0.18) !important;
+}
+
+.attendance-module-root .att-kpi-card.is-active {
+  border: 2px solid #c5a059 !important;
+  box-shadow: 0 0 20px rgba(197, 160, 89, 0.35) !important;
+  background: linear-gradient(145deg, rgba(24, 46, 88, 0.98) 0%, rgba(13, 26, 52, 0.98) 100%) !important;
+}
+
+.attendance-module-root .att-kpi-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.attendance-module-root .att-kpi-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.attendance-module-root .att-kpi-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #8ea8cc;
+  line-height: 1.2;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.attendance-module-root .att-kpi-value {
+  font-size: 1.65rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: #ffffff;
+  font-family: var(--font-ui, 'Segoe UI', system-ui);
+}
+
+.attendance-module-root .att-kpi-delta {
+  font-size: 0.68rem;
+  font-weight: 600;
+  margin-top: 3px;
+  border-radius: 12px;
+  padding: 1px 6px;
+  width: fit-content;
+}
+
+.attendance-module-root .att-card {
+  background: linear-gradient(145deg, rgba(14, 26, 50, 0.92) 0%, rgba(9, 18, 36, 0.96) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 14px !important;
+  color: #ffffff !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25) !important;
+}
+
+.attendance-module-root .att-card-header {
+  background: rgba(11, 23, 44, 0.95) !important;
+  border-bottom: 1px solid rgba(197, 160, 89, 0.25) !important;
+  padding: 14px 20px !important;
+}
+
+.attendance-module-root .att-table {
+  background: transparent !important;
+  color: #ffffff !important;
+  margin-bottom: 0 !important;
+}
+
+.attendance-module-root .att-table thead th {
+  background: rgba(8, 18, 36, 0.95) !important;
+  color: #c5a059 !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+  padding: 12px 14px !important;
+}
+
+.attendance-module-root .att-table tbody td {
+  background: transparent !important;
+  color: #ffffff !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+  padding: 12px 14px !important;
+  vertical-align: middle !important;
+}
+
+.attendance-module-root .att-table tbody tr:hover td {
+  background: rgba(0, 240, 255, 0.05) !important;
+}
+
+.attendance-module-root .att-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #183863, #0b1f3f);
+  border: 1.5px solid #c5a059;
+  color: #dfb86c;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.88rem;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.attendance-module-root .att-filter-btn {
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 4px 12px;
+  transition: all 0.15s ease;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: #9bb0ce;
+}
+
+.attendance-module-root .att-filter-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+.attendance-module-root .att-filter-btn.active {
+  background: linear-gradient(135deg, #c5a059, #dfb86c) !important;
+  color: #0b1f3f !important;
+  border-color: #c5a059 !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 10px rgba(197, 160, 89, 0.3) !important;
+}
+
+
 

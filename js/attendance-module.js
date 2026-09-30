@@ -368,13 +368,13 @@
 
     var tabNavHtml = `
       <div class="dept-nav-wrapper mb-4">
-        <ul class="nav nav-pills custom-dept-tabs" role="tablist">
+        <ul class="att-nav-pills" role="tablist">
           ${tabs.map(function (t) {
             var active = t.id === activeTab ? "active" : "";
             return `
               <li class="nav-item" role="presentation">
-                <button type="button" class="nav-link ${active}" data-attendance-tab="${t.id}">
-                  <i class="bi ${t.icon} me-1.5"></i>${t.label}
+                <button type="button" class="att-nav-link ${active}" data-attendance-tab="${t.id}">
+                  <i class="bi ${t.icon}"></i><span>${t.label}</span>
                 </button>
               </li>`;
           }).join("")}
@@ -514,116 +514,142 @@
     var kpisHtml = `
       <div class="row g-3 mb-4" id="attendanceDailyKpis">
         <div class="col-6 col-md-4 col-xl-2">
-          <div class="metric-card ${attendancePageState.dailyFilter === "all" ? "ring-gold" : ""}" data-attendance-filter="all" role="button" tabindex="0" title="Ver todos os funcionários registados">
-            <div class="metric-icon"><i class="bi bi-people-fill"></i></div>
-            <div class="metric-value">${totalRecords}</div>
-            <div class="metric-label">Total Registados</div>
-            <div class="metric-delta"><span class="delta-neutral">Biometria</span></div>
+          <div class="att-kpi-card ${attendancePageState.dailyFilter === "all" ? "is-active" : ""}" data-attendance-filter="all" role="button" tabindex="0" title="Ver todos os colaboradores registados">
+            <div class="att-kpi-icon" style="background: linear-gradient(135deg, #1e3a8a, #0284c7); color: #fff;">
+              <i class="bi bi-people-fill"></i>
+            </div>
+            <div class="att-kpi-body">
+              <span class="att-kpi-label">Total Registados</span>
+              <span class="att-kpi-value">${totalRecords}</span>
+              <span class="att-kpi-delta badge bg-secondary bg-opacity-25 text-white-50">Biometria</span>
+            </div>
           </div>
         </div>
         <div class="col-6 col-md-4 col-xl-2">
-          <div class="metric-card" data-attendance-filter="all" role="button" tabindex="0" title="Presentes no local de trabalho">
-            <div class="metric-icon text-info"><i class="bi bi-person-check-fill"></i></div>
-            <div class="metric-value text-info">${presentRecords.length}</div>
-            <div class="metric-label">Presentes Hoje</div>
-            <div class="metric-delta"><span class="delta-positive">${totalRecords ? Math.round((presentRecords.length / totalRecords) * 100) : 0}% taxa</span></div>
+          <div class="att-kpi-card" data-attendance-filter="all" role="button" tabindex="0" title="Presentes no local de trabalho">
+            <div class="att-kpi-icon" style="background: linear-gradient(135deg, #0284c7, #06b6d4); color: #fff;">
+              <i class="bi bi-person-check-fill"></i>
+            </div>
+            <div class="att-kpi-body">
+              <span class="att-kpi-label">Presentes Hoje</span>
+              <span class="att-kpi-value text-info">${presentRecords.length}</span>
+              <span class="att-kpi-delta badge bg-info-subtle text-info">${totalRecords ? Math.round((presentRecords.length / totalRecords) * 100) : 0}% taxa</span>
+            </div>
           </div>
         </div>
         <div class="col-6 col-md-4 col-xl-2">
-          <div class="metric-card ${attendancePageState.dailyFilter === "on_time" ? "ring-gold" : ""}" data-attendance-filter="on_time" role="button" tabindex="0" title="Chegaram antes ou no horário oficial (≤ 08:00)">
-            <div class="metric-icon text-success"><i class="bi bi-check-circle-fill"></i></div>
-            <div class="metric-value text-success">${onTimeRecords.length}</div>
-            <div class="metric-label">No Horário (≤08:00)</div>
-            <div class="metric-delta"><span class="delta-positive">Pontuais</span></div>
+          <div class="att-kpi-card ${attendancePageState.dailyFilter === "on_time" ? "is-active" : ""}" data-attendance-filter="on_time" role="button" tabindex="0" title="Chegaram antes ou no horário oficial (≤ 08:00)">
+            <div class="att-kpi-icon" style="background: linear-gradient(135deg, #15803d, #22c55e); color: #fff;">
+              <i class="bi bi-check-circle-fill"></i>
+            </div>
+            <div class="att-kpi-body">
+              <span class="att-kpi-label">No Horário (≤08:00)</span>
+              <span class="att-kpi-value text-success">${onTimeRecords.length}</span>
+              <span class="att-kpi-delta badge bg-success-subtle text-success">Pontuais</span>
+            </div>
           </div>
         </div>
         <div class="col-6 col-md-4 col-xl-2">
-          <div class="metric-card ${attendancePageState.dailyFilter === "grace_period" ? "ring-gold" : ""}" data-attendance-filter="grace_period" role="button" tabindex="0" title="Chegaram dentro dos 15 minutos de tolerância">
-            <div class="metric-icon text-info"><i class="bi bi-clock-history"></i></div>
-            <div class="metric-value text-info">${graceRecords.length}</div>
-            <div class="metric-label">Tolerância (+15m)</div>
-            <div class="metric-delta"><span class="delta-neutral">Autorizado</span></div>
+          <div class="att-kpi-card ${attendancePageState.dailyFilter === "grace_period" ? "is-active" : ""}" data-attendance-filter="grace_period" role="button" tabindex="0" title="Chegaram dentro dos 15 minutos de tolerância">
+            <div class="att-kpi-icon" style="background: linear-gradient(135deg, #0891b2, #38bdf8); color: #fff;">
+              <i class="bi bi-clock-history"></i>
+            </div>
+            <div class="att-kpi-body">
+              <span class="att-kpi-label">Tolerância (+15m)</span>
+              <span class="att-kpi-value" style="color: #38bdf8;">${graceRecords.length}</span>
+              <span class="att-kpi-delta badge" style="background: rgba(56, 189, 248, 0.18); color: #38bdf8;">Autorizado</span>
+            </div>
           </div>
         </div>
         <div class="col-6 col-md-4 col-xl-2">
-          <div class="metric-card ${attendancePageState.dailyFilter === "late_all" ? "ring-gold" : ""}" data-attendance-filter="late_all" role="button" tabindex="0" title="Chegaram após a tolerância (> 08:15)">
-            <div class="metric-icon text-danger"><i class="bi bi-exclamation-triangle-fill"></i></div>
-            <div class="metric-value text-danger">${allLateRecords.length}</div>
-            <div class="metric-label">Total em Atraso</div>
-            <div class="metric-delta"><span class="delta-negative">${allLateRecords.length > 0 ? "Atenção RH" : "Excelente"}</span></div>
+          <div class="att-kpi-card ${attendancePageState.dailyFilter === "late_all" ? "is-active" : ""}" data-attendance-filter="late_all" role="button" tabindex="0" title="Chegaram após a tolerância (> 08:15)">
+            <div class="att-kpi-icon" style="background: linear-gradient(135deg, #dc2626, #f97316); color: #fff;">
+              <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+            <div class="att-kpi-body">
+              <span class="att-kpi-label">Total em Atraso</span>
+              <span class="att-kpi-value text-danger">${allLateRecords.length}</span>
+              <span class="att-kpi-delta badge bg-danger-subtle text-danger">${allLateRecords.length > 0 ? "Atenção RH" : "Excelente"}</span>
+            </div>
           </div>
         </div>
         <div class="col-6 col-md-4 col-xl-2">
-          <div class="metric-card ${attendancePageState.dailyFilter === "absent" ? "ring-gold" : ""}" data-attendance-filter="absent" role="button" tabindex="0" title="Sem registo de picagem no terminal">
-            <div class="metric-icon text-secondary"><i class="bi bi-dash-circle-fill"></i></div>
-            <div class="metric-value text-secondary">${absentRecords.length}</div>
-            <div class="metric-label">Sem Registo / Falta</div>
-            <div class="metric-delta"><span class="delta-neutral">Não picou</span></div>
+          <div class="att-kpi-card ${attendancePageState.dailyFilter === "absent" ? "is-active" : ""}" data-attendance-filter="absent" role="button" tabindex="0" title="Sem registo de picagem no terminal">
+            <div class="att-kpi-icon" style="background: linear-gradient(135deg, #475569, #64748b); color: #fff;">
+              <i class="bi bi-dash-circle-fill"></i>
+            </div>
+            <div class="att-kpi-body">
+              <span class="att-kpi-label">Sem Registo / Falta</span>
+              <span class="att-kpi-value text-secondary">${absentRecords.length}</span>
+              <span class="att-kpi-delta badge bg-secondary bg-opacity-25 text-white-50">Não picou</span>
+            </div>
           </div>
         </div>
       </div>`;
 
     // Filter Chips & Date Toolbar
     var toolbarHtml = `
-      <div class="card bg-surface-dark border-secondary border-opacity-25 mb-4 p-3 shadow-sm">
+      <div class="att-card p-3 mb-4">
         <div class="row g-3 align-items-center">
-          <div class="col-12 col-md-auto d-flex align-items-center gap-2">
-            <label class="text-secondary small fw-semibold mb-0"><i class="bi bi-calendar-event me-1"></i>Data do Registo:</label>
-            <input type="date" class="form-control form-control-sm bg-dark text-white border-secondary" id="attendanceDatePicker" value="${date}" style="max-width: 160px;">
-            <button type="button" class="btn btn-sm btn-outline-secondary" id="attendancePrevDayBtn" title="Dia Anterior"><i class="bi bi-chevron-left"></i></button>
-            <button type="button" class="btn btn-sm btn-outline-secondary" id="attendanceTodayBtn" title="Hoje">Hoje</button>
-            <button type="button" class="btn btn-sm btn-outline-secondary" id="attendanceNextDayBtn" title="Dia Seguinte"><i class="bi bi-chevron-right"></i></button>
+          <div class="col-12 col-md-auto d-flex flex-wrap align-items-center gap-2">
+            <span class="text-secondary small fw-bold text-uppercase" style="letter-spacing: 0.05em; font-size: 0.75rem;"><i class="bi bi-calendar-event text-gold me-1"></i>Data do Registo:</span>
+            <input type="date" class="form-control form-control-sm text-white" id="attendanceDatePicker" value="${date}" style="max-width: 155px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15);">
+            <div class="btn-group btn-group-sm">
+              <button type="button" class="btn btn-outline-secondary text-white-50" id="attendancePrevDayBtn" title="Dia Anterior"><i class="bi bi-chevron-left"></i></button>
+              <button type="button" class="btn btn-outline-secondary text-white" id="attendanceTodayBtn" title="Hoje">Hoje</button>
+              <button type="button" class="btn btn-outline-secondary text-white-50" id="attendanceNextDayBtn" title="Dia Seguinte"><i class="bi bi-chevron-right"></i></button>
+            </div>
           </div>
 
           <div class="col-12 col-md d-flex flex-wrap align-items-center justify-content-md-end gap-2">
-            <div class="input-group input-group-sm" style="max-width: 240px;">
-              <span class="input-group-text bg-dark text-secondary border-secondary"><i class="bi bi-search"></i></span>
-              <input type="text" class="form-control bg-dark text-white border-secondary" id="attendanceSearchInput" placeholder="Procurar funcionário..." value="${attendancePageState.searchQuery}">
+            <div class="input-group input-group-sm" style="max-width: 250px;">
+              <span class="input-group-text text-secondary" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); border-right: none;"><i class="bi bi-search"></i></span>
+              <input type="text" class="form-control text-white" id="attendanceSearchInput" placeholder="Pesquisar funcionário..." value="${attendancePageState.searchQuery}" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); border-left: none;">
             </div>
 
-            <select class="form-select form-select-sm bg-dark text-white border-secondary" id="attendanceDeptFilter" style="max-width: 160px;">
+            <select class="form-select form-select-sm text-white" id="attendanceDeptFilter" style="max-width: 180px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15);">
               <option value="all" ${attendancePageState.selectedDepartment === "all" ? "selected" : ""}>Todos Departamentos</option>
               <option value="CESTAFF" ${attendancePageState.selectedDepartment === "CESTAFF" ? "selected" : ""}>CESTAFF</option>
             </select>
 
-            <button type="button" class="btn btn-sm btn-outline-light" id="attendanceExportDailyCsv" title="Exportar CSV do dia">
+            <button type="button" class="btn btn-sm btn-outline-warning" id="attendanceExportDailyCsv" title="Exportar CSV do dia">
               <i class="bi bi-download me-1"></i>CSV
             </button>
           </div>
         </div>
 
-        <div class="d-flex flex-wrap align-items-center gap-1.5 mt-3 pt-2 border-top border-secondary border-opacity-15">
-          <span class="text-secondary small me-2">Filtrar por Status:</span>
-          <button type="button" class="btn btn-xs ${attendancePageState.dailyFilter === "all" ? "btn-ce-gold" : "btn-outline-secondary text-white"}" data-attendance-filter="all">Todos (${totalRecords})</button>
-          <button type="button" class="btn btn-xs ${attendancePageState.dailyFilter === "on_time" ? "btn-success" : "btn-outline-success"}" data-attendance-filter="on_time">Pontual (${onTimeRecords.length})</button>
-          <button type="button" class="btn btn-xs ${attendancePageState.dailyFilter === "grace_period" ? "btn-info" : "btn-outline-info"}" data-attendance-filter="grace_period">Tolerância (${graceRecords.length})</button>
-          <button type="button" class="btn btn-xs ${attendancePageState.dailyFilter === "minor_delay" ? "btn-warning" : "btn-outline-warning"}" data-attendance-filter="minor_delay">Atraso Ligeiro (${minorDelayRecords.length})</button>
-          <button type="button" class="btn btn-xs ${attendancePageState.dailyFilter === "late" ? "btn-danger" : "btn-outline-danger"}" data-attendance-filter="late">Atrasado (${lateRecords.length})</button>
-          <button type="button" class="btn btn-xs ${attendancePageState.dailyFilter === "severe_delay" ? "btn-danger" : "btn-outline-danger"}" data-attendance-filter="severe_delay">Muito Tarde (${severeDelayRecords.length})</button>
-          <button type="button" class="btn btn-xs ${attendancePageState.dailyFilter === "absent" ? "btn-secondary" : "btn-outline-secondary"}" data-attendance-filter="absent">Sem Registo (${absentRecords.length})</button>
+        <div class="d-flex flex-wrap align-items-center gap-2 mt-3 pt-3 border-top border-secondary border-opacity-25">
+          <span class="text-secondary small fw-bold text-uppercase me-1" style="font-size: 0.72rem; letter-spacing: 0.05em;">Filtrar por Status:</span>
+          <button type="button" class="att-filter-btn ${attendancePageState.dailyFilter === "all" ? "active" : ""}" data-attendance-filter="all">Todos (${totalRecords})</button>
+          <button type="button" class="att-filter-btn ${attendancePageState.dailyFilter === "on_time" ? "active" : ""}" data-attendance-filter="on_time">Pontual (${onTimeRecords.length})</button>
+          <button type="button" class="att-filter-btn ${attendancePageState.dailyFilter === "grace_period" ? "active" : ""}" data-attendance-filter="grace_period">Tolerância (${graceRecords.length})</button>
+          <button type="button" class="att-filter-btn ${attendancePageState.dailyFilter === "minor_delay" ? "active" : ""}" data-attendance-filter="minor_delay">Atraso Ligeiro (${minorDelayRecords.length})</button>
+          <button type="button" class="att-filter-btn ${attendancePageState.dailyFilter === "late" ? "active" : ""}" data-attendance-filter="late">Atrasado (${lateRecords.length})</button>
+          <button type="button" class="att-filter-btn ${attendancePageState.dailyFilter === "severe_delay" ? "active" : ""}" data-attendance-filter="severe_delay">Muito Tarde (${severeDelayRecords.length})</button>
+          <button type="button" class="att-filter-btn ${attendancePageState.dailyFilter === "absent" ? "active" : ""}" data-attendance-filter="absent">Sem Registo (${absentRecords.length})</button>
         </div>
       </div>`;
 
     // Records Table
     var tableHtml = `
-      <div class="card bg-surface-dark border-secondary border-opacity-25 shadow-sm overflow-hidden">
-        <div class="card-header bg-dark bg-opacity-40 border-bottom border-secondary border-opacity-25 py-3 d-flex align-items-center justify-content-between">
+      <div class="att-card overflow-hidden">
+        <div class="att-card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
           <div class="d-flex align-items-center gap-2">
-            <i class="bi bi-clock-history text-gold"></i>
+            <i class="bi bi-clock-history text-gold fs-5"></i>
             <h5 class="h6 mb-0 text-white fw-bold">Registos de Ponto — ${formatDatePt(date)}</h5>
-            <span class="badge bg-secondary-subtle text-secondary ms-2">${displayedRecords.length} pessoas</span>
+            <span class="badge bg-gold-subtle text-gold ms-1">${displayedRecords.length} colaboradores</span>
           </div>
           <div class="text-secondary small">
-            Hora Média de Entrada: <strong class="text-white">${avgCheckInStr}</strong>
+            Hora Média de Entrada: <strong class="text-gold font-monospace fs-6 ms-1">${avgCheckInStr}</strong>
           </div>
         </div>
 
         <div class="table-responsive">
-          <table class="table table-dark table-hover align-middle mb-0" id="attendanceDailyTable">
-            <thead class="text-secondary text-uppercase small" style="font-size: 0.75rem; letter-spacing: 0.04em;">
+          <table class="table att-table align-middle" id="attendanceDailyTable">
+            <thead>
               <tr>
                 <th class="ps-3" style="width: 70px;">ID</th>
-                <th>Funcionário / Staff</th>
+                <th>Colaborador / Staff</th>
                 <th>Departamento</th>
                 <th class="text-center">Hora de Entrada</th>
                 <th class="text-center">Classificação</th>
@@ -638,16 +664,16 @@
                 return `
                   <tr>
                     <td class="ps-3">
-                      <span class="badge bg-dark border border-secondary border-opacity-50 text-secondary font-monospace">${rec.employee_id}</span>
+                      <span class="badge bg-dark text-white-50 border border-secondary border-opacity-50 font-monospace">${rec.employee_id}</span>
                     </td>
                     <td>
                       <div class="d-flex align-items-center gap-2.5">
-                        <div class="avatar-circle-sm bg-gradient-navy text-gold fw-bold">
+                        <div class="att-avatar">
                           ${avatarInitial}
                         </div>
                         <div>
-                          <div class="text-white fw-semibold mb-0">${rec.employee_name}</div>
-                          ${rec.card_no ? `<span class="text-muted small" style="font-size: 0.72rem;"><i class="bi bi-credit-card me-1"></i>${rec.card_no}</span>` : ""}
+                          <div class="text-white fw-semibold mb-0" style="color: #ffffff !important; font-size: 0.92rem;">${rec.employee_name}</div>
+                          ${rec.card_no ? `<span class="text-secondary small" style="font-size: 0.72rem;"><i class="bi bi-credit-card me-1"></i>${rec.card_no}</span>` : ""}
                         </div>
                       </div>
                     </td>
@@ -655,7 +681,7 @@
                       <span class="badge bg-dark text-secondary border border-secondary border-opacity-25">${rec.department || "CESTAFF"}</span>
                     </td>
                     <td class="text-center">
-                      ${rec.check_in ? `<span class="fs-6 fw-bold ${rec.is_late ? "text-danger" : "text-white"} font-monospace">${rec.check_in}</span>` : `<span class="text-muted font-monospace">--:--</span>`}
+                      ${rec.check_in ? `<span class="fs-6 fw-bold ${rec.is_late ? "text-danger" : "text-white"} font-monospace" style="${rec.is_late ? "color: #f87171 !important;" : "color: #ffffff !important;"}">${rec.check_in}</span>` : `<span class="text-secondary font-monospace">--:--</span>`}
                     </td>
                     <td class="text-center">
                       ${getStatusBadge(rec.status, rec.delay_minutes)}
@@ -664,16 +690,16 @@
                       ${formatDelay(rec.delay_minutes)}
                     </td>
                     <td>
-                      <span class="text-muted small font-monospace" style="font-size: 0.75rem;">
+                      <span class="text-secondary small font-monospace" style="font-size: 0.76rem;">
                         ${(rec.all_punches || "--:--").replace(/\n/g, " | ")}
                       </span>
                     </td>
                     <td class="text-end pe-3">
                       <div class="btn-group btn-group-sm">
-                        <button type="button" class="btn btn-outline-secondary text-secondary" data-view-trajectory="${rec.employee_id}" title="Ver Trajetória Individual">
+                        <button type="button" class="btn btn-outline-secondary text-gold border-secondary border-opacity-50" data-view-trajectory="${rec.employee_id}" title="Ver Trajetória Individual">
                           <i class="bi bi-graph-up-arrow"></i>
                         </button>
-                        <button type="button" class="btn btn-outline-secondary text-secondary" data-edit-attendance="${rec.id || ""}" data-emp-id="${rec.employee_id}" data-date="${rec.attendance_date}" title="Editar / Adicionar Nota">
+                        <button type="button" class="btn btn-outline-secondary text-secondary border-secondary border-opacity-50" data-edit-attendance="${rec.id || ""}" data-emp-id="${rec.employee_id}" data-date="${rec.attendance_date}" title="Editar / Adicionar Nota">
                           <i class="bi bi-pencil"></i>
                         </button>
                       </div>
@@ -719,10 +745,10 @@
     var totalPresentWithTime = bucket1 + bucket2 + bucket3 + bucket4 + bucket5 || 1;
 
     var headerPeriodHtml = `
-      <div class="card bg-surface-dark border-secondary border-opacity-25 p-3 mb-4 shadow-sm">
+      <div class="att-card p-3 mb-4">
         <div class="row g-3 align-items-center justify-content-between">
           <div class="col-12 col-md-auto d-flex flex-wrap align-items-center gap-2">
-            <span class="text-secondary small fw-semibold me-1"><i class="bi bi-calendar-range me-1"></i>Período de Análise:</span>
+            <span class="text-secondary small fw-bold text-uppercase me-1" style="font-size: 0.75rem; letter-spacing: 0.05em;"><i class="bi bi-calendar-range text-gold me-1"></i>Período de Análise:</span>
             <div class="btn-group btn-group-sm" role="group">
               <button type="button" class="btn ${attendancePageState.monthlyPeriod === "this_month" ? "btn-ce-gold" : "btn-outline-secondary text-white"}" data-period-btn="this_month">Julho 2026</button>
               <button type="button" class="btn ${attendancePageState.monthlyPeriod === "3_months" ? "btn-ce-gold" : "btn-outline-secondary text-white"}" data-period-btn="3_months">Últimos 3 Meses</button>
@@ -731,12 +757,12 @@
             </div>
           </div>
 
-          <div class="col-12 col-md-auto d-flex align-items-center gap-2">
+          <div class="col-12 col-md-auto d-flex flex-wrap align-items-center gap-2">
             <span class="text-secondary small">De:</span>
-            <input type="date" class="form-control form-control-sm bg-dark text-white border-secondary" id="periodStartDate" value="${start}" style="max-width: 140px;">
+            <input type="date" class="form-control form-control-sm text-white" id="periodStartDate" value="${start}" style="max-width: 140px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15);">
             <span class="text-secondary small">Até:</span>
-            <input type="date" class="form-control form-control-sm bg-dark text-white border-secondary" id="periodEndDate" value="${end}" style="max-width: 140px;">
-            <button type="button" class="btn btn-sm btn-outline-warning" id="applyPeriodFilterBtn"><i class="bi bi-funnel"></i> Aplicar</button>
+            <input type="date" class="form-control form-control-sm text-white" id="periodEndDate" value="${end}" style="max-width: 140px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15);">
+            <button type="button" class="btn btn-sm btn-outline-warning" id="applyPeriodFilterBtn"><i class="bi bi-funnel me-1"></i>Aplicar</button>
           </div>
         </div>
       </div>`;
@@ -745,54 +771,54 @@
     var statsStripHtml = `
       <div class="row g-3 mb-4">
         <div class="col-12 col-md-6 col-xl-3">
-          <div class="card bg-surface-dark border-secondary border-opacity-25 p-3.5 h-100 shadow-sm">
+          <div class="att-card p-3.5 h-100">
             <div class="d-flex align-items-center justify-content-between mb-2">
-              <span class="text-secondary small fw-semibold text-uppercase">Taxa de Pontualidade</span>
-              <div class="avatar-circle-xs bg-success-subtle text-success"><i class="bi bi-pie-chart-fill"></i></div>
+              <span class="text-secondary small fw-bold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.05em;">Taxa de Pontualidade</span>
+              <div class="att-avatar" style="width: 28px; height: 28px; font-size: 0.8rem; background: rgba(34, 197, 94, 0.15); border-color: #22c55e; color: #22c55e;"><i class="bi bi-pie-chart-fill"></i></div>
             </div>
             <h3 class="h2 fw-bold text-white mb-1">${stats.onTimeRate}%</h3>
             <div class="progress progress-sm bg-dark mb-2" style="height: 6px;">
               <div class="progress-bar bg-success" style="width: ${stats.onTimeRate}%"></div>
             </div>
-            <p class="text-muted small mb-0">${stats.onTimeCount + stats.graceCount} de ${stats.totalRecords} presenças pontuais/tolerância</p>
+            <p class="text-secondary small mb-0" style="font-size: 0.76rem;">${stats.onTimeCount + stats.graceCount} de ${stats.totalRecords} presenças pontuais/tolerância</p>
           </div>
         </div>
 
         <div class="col-12 col-md-6 col-xl-3">
-          <div class="card bg-surface-dark border-secondary border-opacity-25 p-3.5 h-100 shadow-sm">
+          <div class="att-card p-3.5 h-100">
             <div class="d-flex align-items-center justify-content-between mb-2">
-              <span class="text-secondary small fw-semibold text-uppercase">Total Horas de Atraso</span>
-              <div class="avatar-circle-xs bg-danger-subtle text-danger"><i class="bi bi-clock-history"></i></div>
+              <span class="text-secondary small fw-bold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.05em;">Horas de Atraso Acumuladas</span>
+              <div class="att-avatar" style="width: 28px; height: 28px; font-size: 0.8rem; background: rgba(239, 68, 68, 0.15); border-color: #ef4444; color: #ef4444;"><i class="bi bi-clock-history"></i></div>
             </div>
             <h3 class="h2 fw-bold text-danger mb-1">${Math.floor(stats.totalDelayMinutes / 60)}h ${stats.totalDelayMinutes % 60}m</h3>
-            <div class="text-secondary small mb-0 mt-2">
+            <div class="text-secondary small mb-0 mt-2" style="font-size: 0.76rem;">
               Acumulado em <strong class="text-white">${stats.allLateCount}</strong> ocorrências de atraso
             </div>
           </div>
         </div>
 
         <div class="col-12 col-md-6 col-xl-3">
-          <div class="card bg-surface-dark border-secondary border-opacity-25 p-3.5 h-100 shadow-sm">
+          <div class="att-card p-3.5 h-100">
             <div class="d-flex align-items-center justify-content-between mb-2">
-              <span class="text-secondary small fw-semibold text-uppercase">Funcionários Monitorados</span>
-              <div class="avatar-circle-xs bg-info-subtle text-info"><i class="bi bi-people-fill"></i></div>
+              <span class="text-secondary small fw-bold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.05em;">Funcionários Monitorados</span>
+              <div class="att-avatar" style="width: 28px; height: 28px; font-size: 0.8rem; background: rgba(56, 189, 248, 0.15); border-color: #38bdf8; color: #38bdf8;"><i class="bi bi-people-fill"></i></div>
             </div>
             <h3 class="h2 fw-bold text-info mb-1">${stats.distinctEmployeesCount}</h3>
-            <div class="text-secondary small mb-0 mt-2">
+            <div class="text-secondary small mb-0 mt-2" style="font-size: 0.76rem;">
               Em <strong class="text-white">${stats.distinctDaysCount}</strong> dias de expediente registados
             </div>
           </div>
         </div>
 
         <div class="col-12 col-md-6 col-xl-3">
-          <div class="card bg-surface-dark border-secondary border-opacity-25 p-3.5 h-100 shadow-sm">
+          <div class="att-card p-3.5 h-100">
             <div class="d-flex align-items-center justify-content-between mb-2">
-              <span class="text-secondary small fw-semibold text-uppercase">Média de Atraso</span>
-              <div class="avatar-circle-xs bg-warning-subtle text-warning"><i class="bi bi-hourglass-split"></i></div>
+              <span class="text-secondary small fw-bold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.05em;">Média de Atraso</span>
+              <div class="att-avatar" style="width: 28px; height: 28px; font-size: 0.8rem; background: rgba(245, 158, 11, 0.15); border-color: #f59e0b; color: #f59e0b;"><i class="bi bi-hourglass-split"></i></div>
             </div>
             <h3 class="h2 fw-bold text-warning mb-1">${stats.allLateCount ? Math.round(stats.totalDelayMinutes / stats.allLateCount) : 0} min</h3>
-            <div class="text-secondary small mb-0 mt-2">
-              Por cada funcionário em atraso
+            <div class="text-secondary small mb-0 mt-2" style="font-size: 0.76rem;">
+              Por cada colaborador em atraso
             </div>
           </div>
         </div>
@@ -803,110 +829,106 @@
       <div class="row g-4 mb-4">
         <!-- Top Mais Pontuais -->
         <div class="col-12 col-lg-6">
-          <div class="card bg-surface-dark border-secondary border-opacity-25 shadow-sm h-100">
-            <div class="card-header bg-dark bg-opacity-40 border-bottom border-secondary border-opacity-25 py-3 d-flex align-items-center justify-content-between">
+          <div class="att-card h-100 overflow-hidden">
+            <div class="att-card-header d-flex align-items-center justify-content-between">
               <div class="d-flex align-items-center gap-2">
                 <i class="bi bi-award-fill text-gold fs-5"></i>
                 <h5 class="h6 mb-0 text-white fw-bold">Hall da Pontualidade (Mais Consistentes)</h5>
               </div>
               <span class="badge bg-success-subtle text-success">Top Assiduidade</span>
             </div>
-            <div class="card-body p-0">
-              <div class="table-responsive">
-                <table class="table table-dark table-hover align-middle mb-0">
-                  <thead class="text-secondary small text-uppercase" style="font-size: 0.72rem;">
-                    <tr>
-                      <th class="ps-3" style="width: 40px;">#</th>
-                      <th>Funcionário</th>
-                      <th class="text-center">Hora Média</th>
-                      <th class="text-center">Pontuais</th>
-                      <th class="text-end pe-3">Taxa</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    ${topPunctualList.length ? topPunctualList.map(function (emp, idx) {
-                      var medal = idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `${idx + 1}º`;
-                      return `
-                        <tr>
-                          <td class="ps-3 fw-bold text-secondary">${medal}</td>
-                          <td>
-                            <div class="d-flex align-items-center gap-2">
-                              <div class="avatar-circle-xs bg-dark text-gold fw-bold">${(emp.employee_name || "?").charAt(0)}</div>
-                              <div>
-                                <div class="text-white fw-semibold small">${emp.employee_name}</div>
-                                <span class="text-muted" style="font-size: 0.7rem;">ID: ${emp.employee_id}</span>
-                              </div>
+            <div class="table-responsive">
+              <table class="table att-table align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th class="ps-3" style="width: 40px;">#</th>
+                    <th>Colaborador</th>
+                    <th class="text-center">Hora Média</th>
+                    <th class="text-center">Pontuais</th>
+                    <th class="text-end pe-3">Taxa</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${topPunctualList.length ? topPunctualList.map(function (emp, idx) {
+                    var medal = idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `${idx + 1}º`;
+                    return `
+                      <tr>
+                        <td class="ps-3 fw-bold text-gold">${medal}</td>
+                        <td>
+                          <div class="d-flex align-items-center gap-2">
+                            <div class="att-avatar" style="width: 28px; height: 28px; font-size: 0.78rem;">${(emp.employee_name || "?").charAt(0)}</div>
+                            <div>
+                              <div class="text-white fw-semibold small" style="color: #ffffff !important;">${emp.employee_name}</div>
+                              <span class="text-secondary" style="font-size: 0.7rem;">ID: ${emp.employee_id}</span>
                             </div>
-                          </td>
-                          <td class="text-center font-monospace text-info small">${emp.avgCheckInTime}</td>
-                          <td class="text-center small"><strong class="text-success">${emp.onTimeDays + emp.graceDays}</strong> / ${emp.totalDays}</td>
-                          <td class="text-end pe-3">
-                            <span class="badge ${emp.onTimeRate >= 80 ? "bg-success" : "bg-warning text-dark"}">${emp.onTimeRate}%</span>
-                          </td>
-                        </tr>`;
-                    }).join("") : `<tr><td colspan="5" class="text-center py-4 text-muted">Sem dados</td></tr>`}
-                  </tbody>
-                </table>
-              </div>
+                          </div>
+                        </td>
+                        <td class="text-center font-monospace text-info small">${emp.avgCheckInTime}</td>
+                        <td class="text-center small"><strong class="text-success">${emp.onTimeDays + emp.graceDays}</strong> / ${emp.totalDays}</td>
+                        <td class="text-end pe-3">
+                          <span class="badge ${emp.onTimeRate >= 80 ? "bg-success" : "bg-warning text-dark"}">${emp.onTimeRate}%</span>
+                        </td>
+                      </tr>`;
+                  }).join("") : `<tr><td colspan="5" class="text-center py-4 text-muted">Sem dados</td></tr>`}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
 
         <!-- Top Atrasos Recorrentes -->
         <div class="col-12 col-lg-6">
-          <div class="card bg-surface-dark border-secondary border-opacity-25 shadow-sm h-100">
-            <div class="card-header bg-dark bg-opacity-40 border-bottom border-secondary border-opacity-25 py-3 d-flex align-items-center justify-content-between">
+          <div class="att-card h-100 overflow-hidden">
+            <div class="att-card-header d-flex align-items-center justify-content-between">
               <div class="d-flex align-items-center gap-2">
                 <i class="bi bi-exclamation-triangle-fill text-danger fs-5"></i>
                 <h5 class="h6 mb-0 text-white fw-bold">Atenção RH (Atrasos Recorrentes)</h5>
               </div>
               <span class="badge bg-danger-subtle text-danger">Necessita Ação</span>
             </div>
-            <div class="card-body p-0">
-              <div class="table-responsive">
-                <table class="table table-dark table-hover align-middle mb-0">
-                  <thead class="text-secondary small text-uppercase" style="font-size: 0.72rem;">
-                    <tr>
-                      <th class="ps-3" style="width: 40px;">#</th>
-                      <th>Funcionário</th>
-                      <th class="text-center">Dias Atraso</th>
-                      <th class="text-center">Tempo Acumulado</th>
-                      <th class="text-end pe-3">Ação</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    ${topLateList.length ? topLateList.map(function (emp, idx) {
-                      var delayH = Math.floor(emp.totalDelayMins / 60);
-                      var delayM = emp.totalDelayMins % 60;
-                      var delayF = delayH > 0 ? `${delayH}h ${delayM}m` : `${delayM} min`;
-                      return `
-                        <tr>
-                          <td class="ps-3 fw-bold text-danger">${idx + 1}º</td>
-                          <td>
-                            <div class="d-flex align-items-center gap-2">
-                              <div class="avatar-circle-xs bg-dark text-danger fw-bold">${(emp.employee_name || "?").charAt(0)}</div>
-                              <div>
-                                <div class="text-white fw-semibold small">${emp.employee_name}</div>
-                                <span class="text-muted" style="font-size: 0.7rem;">ID: ${emp.employee_id} • ${emp.department}</span>
-                              </div>
+            <div class="table-responsive">
+              <table class="table att-table align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th class="ps-3" style="width: 40px;">#</th>
+                    <th>Colaborador</th>
+                    <th class="text-center">Dias Atraso</th>
+                    <th class="text-center">Tempo Acumulado</th>
+                    <th class="text-end pe-3">Ação</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${topLateList.length ? topLateList.map(function (emp, idx) {
+                    var delayH = Math.floor(emp.totalDelayMins / 60);
+                    var delayM = emp.totalDelayMins % 60;
+                    var delayF = delayH > 0 ? `${delayH}h ${delayM}m` : `${delayM} min`;
+                    return `
+                      <tr>
+                        <td class="ps-3 fw-bold text-danger">${idx + 1}º</td>
+                        <td>
+                          <div class="d-flex align-items-center gap-2">
+                            <div class="att-avatar" style="width: 28px; height: 28px; font-size: 0.78rem; border-color: #ef4444; color: #ef4444;">${(emp.employee_name || "?").charAt(0)}</div>
+                            <div>
+                              <div class="text-white fw-semibold small" style="color: #ffffff !important;">${emp.employee_name}</div>
+                              <span class="text-secondary" style="font-size: 0.7rem;">ID: ${emp.employee_id} • ${emp.department}</span>
                             </div>
-                          </td>
-                          <td class="text-center">
-                            <span class="badge bg-danger-subtle text-danger">${emp.lateDays} dias</span>
-                          </td>
-                          <td class="text-center font-monospace fw-bold text-danger small">
-                            ${delayF}
-                          </td>
-                          <td class="text-end pe-3">
-                            <button type="button" class="btn btn-xs btn-outline-warning" data-view-trajectory="${emp.employee_id}" title="Ver Histórico Completo">
-                              <i class="bi bi-eye me-1"></i>Dossiê
-                            </button>
-                          </td>
-                        </tr>`;
-                    }).join("") : `<tr><td colspan="5" class="text-center py-4 text-muted">Nenhum atraso significativo no período.</td></tr>`}
-                  </tbody>
-                </table>
-              </div>
+                          </div>
+                        </td>
+                        <td class="text-center">
+                          <span class="badge bg-danger-subtle text-danger">${emp.lateDays} dias</span>
+                        </td>
+                        <td class="text-center font-monospace fw-bold text-danger small">
+                          ${delayF}
+                        </td>
+                        <td class="text-end pe-3">
+                          <button type="button" class="btn btn-xs btn-outline-warning" data-view-trajectory="${emp.employee_id}" title="Ver Histórico Completo">
+                            <i class="bi bi-eye me-1"></i>Dossiê
+                          </button>
+                        </td>
+                      </tr>`;
+                  }).join("") : `<tr><td colspan="5" class="text-center py-4 text-muted">Nenhum atraso significativo no período.</td></tr>`}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -914,43 +936,43 @@
 
     // Distribution of arrival times
     var distributionHtml = `
-      <div class="card bg-surface-dark border-secondary border-opacity-25 shadow-sm p-4 mb-4">
+      <div class="att-card p-4 mb-4">
         <h5 class="h6 mb-3 text-white fw-bold"><i class="bi bi-bar-chart-fill text-gold me-2"></i>Distribuição dos Horários de Chegada no Período</h5>
         
         <div class="row g-3">
           <div class="col-12 col-md">
-            <div class="p-3 bg-dark bg-opacity-60 rounded border border-secondary border-opacity-20 text-center">
+            <div class="p-3 rounded border border-secondary border-opacity-25 text-center" style="background: rgba(0,0,0,0.35);">
               <span class="text-success small fw-semibold d-block mb-1">Antes das 08:00</span>
               <h4 class="text-success fw-bold mb-1">${bucket1}</h4>
-              <span class="text-muted small">${Math.round((bucket1 / totalPresentWithTime) * 100)}%</span>
+              <span class="text-secondary small">${Math.round((bucket1 / totalPresentWithTime) * 100)}%</span>
             </div>
           </div>
           <div class="col-12 col-md">
-            <div class="p-3 bg-dark bg-opacity-60 rounded border border-secondary border-opacity-20 text-center">
+            <div class="p-3 rounded border border-secondary border-opacity-25 text-center" style="background: rgba(0,0,0,0.35);">
               <span class="text-info small fw-semibold d-block mb-1">08:00 – 08:15 (Tolerância)</span>
               <h4 class="text-info fw-bold mb-1">${bucket2}</h4>
-              <span class="text-muted small">${Math.round((bucket2 / totalPresentWithTime) * 100)}%</span>
+              <span class="text-secondary small">${Math.round((bucket2 / totalPresentWithTime) * 100)}%</span>
             </div>
           </div>
           <div class="col-12 col-md">
-            <div class="p-3 bg-dark bg-opacity-60 rounded border border-secondary border-opacity-20 text-center">
+            <div class="p-3 rounded border border-secondary border-opacity-25 text-center" style="background: rgba(0,0,0,0.35);">
               <span class="text-warning small fw-semibold d-block mb-1">08:16 – 08:30 (Ligeiro)</span>
               <h4 class="text-warning fw-bold mb-1">${bucket3}</h4>
-              <span class="text-muted small">${Math.round((bucket3 / totalPresentWithTime) * 100)}%</span>
+              <span class="text-secondary small">${Math.round((bucket3 / totalPresentWithTime) * 100)}%</span>
             </div>
           </div>
           <div class="col-12 col-md">
-            <div class="p-3 bg-dark bg-opacity-60 rounded border border-secondary border-opacity-20 text-center">
+            <div class="p-3 rounded border border-secondary border-opacity-25 text-center" style="background: rgba(0,0,0,0.35);">
               <span class="text-danger small fw-semibold d-block mb-1">08:31 – 09:00 (Atraso)</span>
               <h4 class="text-danger fw-bold mb-1">${bucket4}</h4>
-              <span class="text-muted small">${Math.round((bucket4 / totalPresentWithTime) * 100)}%</span>
+              <span class="text-secondary small">${Math.round((bucket4 / totalPresentWithTime) * 100)}%</span>
             </div>
           </div>
           <div class="col-12 col-md">
-            <div class="p-3 bg-dark bg-opacity-60 rounded border border-secondary border-opacity-20 text-center">
+            <div class="p-3 rounded border border-secondary border-opacity-25 text-center" style="background: rgba(0,0,0,0.35);">
               <span class="text-danger fw-bold small d-block mb-1">Após as 09:00 (Grave)</span>
               <h4 class="text-white fw-bold mb-1">${bucket5}</h4>
-              <span class="text-muted small">${Math.round((bucket5 / totalPresentWithTime) * 100)}%</span>
+              <span class="text-secondary small">${Math.round((bucket5 / totalPresentWithTime) * 100)}%</span>
             </div>
           </div>
         </div>
@@ -978,11 +1000,11 @@
     var trajectory = await getBridge().getStaffTrajectory(selectedId, "2026-01-01", "2026-12-31");
 
     var selectorHtml = `
-      <div class="card bg-surface-dark border-secondary border-opacity-25 p-3.5 mb-4 shadow-sm">
+      <div class="att-card p-3 mb-4">
         <div class="row g-3 align-items-center justify-content-between">
           <div class="col-12 col-md-6 d-flex align-items-center gap-3">
-            <label class="text-secondary small fw-semibold mb-0 text-nowrap"><i class="bi bi-person-bounding-box me-1"></i>Selecionar Staff:</label>
-            <select class="form-select bg-dark text-white border-secondary" id="trajectoryStaffSelect">
+            <label class="text-secondary small fw-semibold mb-0 text-nowrap"><i class="bi bi-person-bounding-box text-gold me-1"></i>Selecionar Colaborador:</label>
+            <select class="form-select form-select-sm text-white" id="trajectoryStaffSelect" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15);">
               ${distinctEmployees.map(function (e) {
                 return `<option value="${e.id}" ${e.id === selectedId ? "selected" : ""}>${e.name} (ID: ${e.id}) — ${e.dept}</option>`;
               }).join("")}
@@ -990,23 +1012,23 @@
           </div>
           <div class="col-12 col-md-auto d-flex align-items-center gap-2">
             <button type="button" class="btn btn-sm btn-ce-gold" id="exportStaffDossierPdfBtn">
-              <i class="bi bi-file-earmark-pdf-fill me-1.5"></i>Imprimir Dossiê do Funcionário
+              <i class="bi bi-file-earmark-pdf-fill me-1.5"></i>Imprimir Dossiê Individual
             </button>
           </div>
         </div>
       </div>`;
 
     var profileHeaderHtml = `
-      <div class="card bg-surface-dark border-secondary border-opacity-25 p-4 mb-4 shadow-sm">
+      <div class="att-card p-4 mb-4">
         <div class="row g-4 align-items-center">
           <div class="col-12 col-md-auto text-center text-md-start">
-            <div class="avatar-circle-lg bg-gradient-navy text-gold fw-bold mx-auto border border-gold border-opacity-30" style="width: 72px; height: 72px; font-size: 1.8rem;">
+            <div class="att-avatar mx-auto" style="width: 68px; height: 68px; font-size: 1.8rem; border-color: #d4af37; color: #d4af37; background: rgba(212, 175, 55, 0.12);">
               ${(trajectory.employee_name || "?").charAt(0)}
             </div>
           </div>
           <div class="col-12 col-md">
             <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
-              <h3 class="h4 text-white fw-bold mb-0">${trajectory.employee_name}</h3>
+              <h3 class="h4 text-white fw-bold mb-0" style="color: #ffffff !important;">${trajectory.employee_name}</h3>
               <span class="badge bg-gold-subtle text-gold">ID: ${trajectory.employee_id}</span>
               <span class="badge bg-dark border border-secondary border-opacity-40 text-secondary">${trajectory.department}</span>
             </div>
@@ -1014,16 +1036,16 @@
           </div>
           <div class="col-12 col-md-auto">
             <div class="d-flex flex-wrap gap-2 justify-content-center justify-content-md-end">
-              <div class="px-3 py-2 bg-dark rounded border border-secondary border-opacity-25 text-center">
-                <span class="text-secondary small d-block" style="font-size: 0.7rem;">TAXA PONTUALIDADE</span>
+              <div class="px-3 py-2 rounded border border-secondary border-opacity-25 text-center" style="background: rgba(0,0,0,0.35); min-width: 100px;">
+                <span class="text-secondary small d-block" style="font-size: 0.7rem; letter-spacing: 0.05em;">TAXA PONTUALIDADE</span>
                 <span class="fs-5 fw-bold ${trajectory.onTimeRate >= 80 ? "text-success" : trajectory.onTimeRate >= 60 ? "text-warning" : "text-danger"}">${trajectory.onTimeRate}%</span>
               </div>
-              <div class="px-3 py-2 bg-dark rounded border border-secondary border-opacity-25 text-center">
-                <span class="text-secondary small d-block" style="font-size: 0.7rem;">MÉDIA ENTRADA</span>
+              <div class="px-3 py-2 rounded border border-secondary border-opacity-25 text-center" style="background: rgba(0,0,0,0.35); min-width: 100px;">
+                <span class="text-secondary small d-block" style="font-size: 0.7rem; letter-spacing: 0.05em;">MÉDIA ENTRADA</span>
                 <span class="fs-5 fw-bold text-info font-monospace">${trajectory.avgCheckInTime}</span>
               </div>
-              <div class="px-3 py-2 bg-dark rounded border border-secondary border-opacity-25 text-center">
-                <span class="text-secondary small d-block" style="font-size: 0.7rem;">TOTAL ATRASO</span>
+              <div class="px-3 py-2 rounded border border-secondary border-opacity-25 text-center" style="background: rgba(0,0,0,0.35); min-width: 100px;">
+                <span class="text-secondary small d-block" style="font-size: 0.7rem; letter-spacing: 0.05em;">TOTAL ATRASO</span>
                 <span class="fs-5 fw-bold text-danger font-monospace">${trajectory.totalDelayMinutes}m</span>
               </div>
             </div>
@@ -1032,23 +1054,23 @@
       </div>`;
 
     var historyTableHtml = `
-      <div class="card bg-surface-dark border-secondary border-opacity-25 shadow-sm overflow-hidden">
-        <div class="card-header bg-dark bg-opacity-40 border-bottom border-secondary border-opacity-25 py-3 d-flex align-items-center justify-content-between">
+      <div class="att-card overflow-hidden">
+        <div class="att-card-header d-flex align-items-center justify-content-between">
           <div class="d-flex align-items-center gap-2">
-            <i class="bi bi-clock-history text-gold"></i>
-            <h5 class="h6 mb-0 text-white fw-bold">Histórico de Picagens de Ponto</h5>
+            <i class="bi bi-clock-history text-gold fs-5"></i>
+            <h5 class="h6 mb-0 text-white fw-bold">Histórico Completo de Picagens de Ponto</h5>
           </div>
-          <span class="badge bg-secondary-subtle text-secondary">${trajectory.records.length} registos no histórico</span>
+          <span class="badge bg-gold-subtle text-gold">${trajectory.records.length} registos no histórico</span>
         </div>
 
         <div class="table-responsive">
-          <table class="table table-dark table-hover align-middle mb-0">
-            <thead class="text-secondary text-uppercase small" style="font-size: 0.75rem;">
+          <table class="table att-table align-middle mb-0">
+            <thead>
               <tr>
                 <th class="ps-3">Data</th>
                 <th>Dia da Semana</th>
                 <th class="text-center">Entrada (Check-In)</th>
-                <th class="text-center">Status</th>
+                <th class="text-center">Classificação</th>
                 <th class="text-center">Atraso</th>
                 <th>Picagens Completas</th>
                 <th class="text-end pe-3">Observações</th>
@@ -1061,10 +1083,10 @@
                   <tr>
                     <td class="ps-3 fw-semibold text-white font-monospace">${rec.attendance_date}</td>
                     <td class="text-secondary small">${weekday}</td>
-                    <td class="text-center font-monospace fw-bold ${rec.is_late ? "text-danger" : "text-white"}">${rec.check_in || "--:--"}</td>
+                    <td class="text-center font-monospace fw-bold ${rec.is_late ? "text-danger" : "text-white"}" style="${rec.is_late ? "color: #f87171 !important;" : "color: #ffffff !important;"}">${rec.check_in || "--:--"}</td>
                     <td class="text-center">${getStatusBadge(rec.status, rec.delay_minutes)}</td>
                     <td class="text-center">${formatDelay(rec.delay_minutes)}</td>
-                    <td class="text-muted small font-monospace">${(rec.all_punches || "--:--").replace(/\n/g, " | ")}</td>
+                    <td class="text-secondary small font-monospace" style="font-size: 0.76rem;">${(rec.all_punches || "--:--").replace(/\n/g, " | ")}</td>
                     <td class="text-end pe-3 text-secondary small">${rec.notes || "—"}</td>
                   </tr>`;
               }).join("") : `<tr><td colspan="7" class="text-center py-4 text-muted">Sem registos para este funcionário</td></tr>`}
@@ -1089,15 +1111,15 @@
     var previewHtml = "";
     if (preview && preview.records && preview.records.length) {
       previewHtml = `
-        <div class="card bg-surface-dark border-warning border-opacity-40 p-4 mb-4 shadow-lg" id="uploadPreviewSection">
+        <div class="att-card p-4 mb-4 border-warning border-opacity-40" id="uploadPreviewSection">
           <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
             <div>
               <span class="badge bg-warning-subtle text-warning mb-1"><i class="bi bi-eye me-1"></i>Pré-visualização da Importação</span>
-              <h4 class="h5 text-white fw-bold mb-0">${preview.filename}</h4>
+              <h4 class="h5 text-white fw-bold mb-0" style="color: #ffffff !important;">${preview.filename}</h4>
               <p class="text-secondary small mb-0">Criado pelo dispositivo: <strong>${preview.createTime}</strong> • Total: <strong class="text-white">${preview.records.length} registos</strong></p>
             </div>
             <div class="d-flex align-items-center gap-2">
-              <button type="button" class="btn btn-outline-secondary btn-sm" id="cancelUploadPreviewBtn">Descartar</button>
+              <button type="button" class="btn btn-outline-secondary btn-sm text-white" id="cancelUploadPreviewBtn">Descartar</button>
               <button type="button" class="btn btn-ce-gold btn-sm" id="confirmSaveUploadBtn">
                 <i class="bi bi-check-lg me-1.5"></i>Confirmar e Gravar no Sistema
               </button>
@@ -1106,25 +1128,25 @@
 
           <div class="row g-2 mb-3">
             <div class="col-6 col-md-3">
-              <div class="p-2.5 bg-dark rounded border border-secondary border-opacity-25 text-center">
+              <div class="p-2.5 rounded border border-secondary border-opacity-25 text-center" style="background: rgba(0,0,0,0.35);">
                 <span class="text-secondary small d-block" style="font-size: 0.7rem;">PRESENTES</span>
                 <span class="fs-6 fw-bold text-info">${preview.stats.present}</span>
               </div>
             </div>
             <div class="col-6 col-md-3">
-              <div class="p-2.5 bg-dark rounded border border-secondary border-opacity-25 text-center">
+              <div class="p-2.5 rounded border border-secondary border-opacity-25 text-center" style="background: rgba(0,0,0,0.35);">
                 <span class="text-secondary small d-block" style="font-size: 0.7rem;">NO HORÁRIO</span>
                 <span class="fs-6 fw-bold text-success">${preview.stats.on_time}</span>
               </div>
             </div>
             <div class="col-6 col-md-3">
-              <div class="p-2.5 bg-dark rounded border border-secondary border-opacity-25 text-center">
+              <div class="p-2.5 rounded border border-secondary border-opacity-25 text-center" style="background: rgba(0,0,0,0.35);">
                 <span class="text-secondary small d-block" style="font-size: 0.7rem;">EM ATRASO</span>
                 <span class="fs-6 fw-bold text-danger">${preview.stats.minor_delay + preview.stats.late + preview.stats.severe_delay}</span>
               </div>
             </div>
             <div class="col-6 col-md-3">
-              <div class="p-2.5 bg-dark rounded border border-secondary border-opacity-25 text-center">
+              <div class="p-2.5 rounded border border-secondary border-opacity-25 text-center" style="background: rgba(0,0,0,0.35);">
                 <span class="text-secondary small d-block" style="font-size: 0.7rem;">SEM REGISTO / FALTAS</span>
                 <span class="fs-6 fw-bold text-secondary">${preview.stats.absent}</span>
               </div>
@@ -1132,14 +1154,14 @@
           </div>
 
           <div class="table-responsive border border-secondary border-opacity-25 rounded" style="max-height: 380px;">
-            <table class="table table-dark table-sm table-hover align-middle mb-0" style="font-size: 0.8rem;">
-              <thead class="table-dark sticky-top text-secondary text-uppercase small">
+            <table class="table att-table table-sm align-middle mb-0" style="font-size: 0.8rem;">
+              <thead class="sticky-top">
                 <tr>
-                  <th>ID</th>
+                  <th class="ps-3">ID</th>
                   <th>Funcionário</th>
                   <th>Data</th>
                   <th class="text-center">Entrada</th>
-                  <th class="text-center">Status</th>
+                  <th class="text-center">Classificação</th>
                   <th class="text-center">Atraso</th>
                   <th>Picagens</th>
                 </tr>
@@ -1148,13 +1170,13 @@
                 ${preview.records.slice(0, 50).map(function (rec) {
                   return `
                     <tr>
-                      <td class="font-monospace text-secondary">${rec.employee_id}</td>
-                      <td class="text-white fw-semibold">${rec.employee_name}</td>
+                      <td class="ps-3 font-monospace text-secondary">${rec.employee_id}</td>
+                      <td class="text-white fw-semibold" style="color: #ffffff !important;">${rec.employee_name}</td>
                       <td class="font-monospace text-secondary">${rec.attendance_date}</td>
-                      <td class="text-center font-monospace ${rec.is_late ? "text-danger fw-bold" : "text-white"}">${rec.check_in || "--:--"}</td>
+                      <td class="text-center font-monospace ${rec.is_late ? "text-danger fw-bold" : "text-white"}" style="${rec.is_late ? "color: #f87171 !important;" : "color: #ffffff !important;"}">${rec.check_in || "--:--"}</td>
                       <td class="text-center">${getStatusBadge(rec.status, rec.delay_minutes)}</td>
                       <td class="text-center">${formatDelay(rec.delay_minutes)}</td>
-                      <td class="text-muted small font-monospace">${(rec.all_punches || "--:--").replace(/\n/g, " | ")}</td>
+                      <td class="text-secondary small font-monospace" style="font-size: 0.76rem;">${(rec.all_punches || "--:--").replace(/\n/g, " | ")}</td>
                     </tr>`;
                 }).join("")}
               </tbody>
@@ -1165,13 +1187,13 @@
     }
 
     var uploadFormHtml = `
-      <div class="card bg-surface-dark border-secondary border-opacity-25 p-4 mb-4 shadow-sm">
+      <div class="att-card p-4 mb-4">
         <h5 class="h6 text-white fw-bold mb-3"><i class="bi bi-cloud-arrow-up text-gold me-2"></i>Carregar Relatório Diário / Mensal da Máquina Biométrica</h5>
         <p class="text-secondary small mb-3">
           Arraste e solte ou selecione o ficheiro Excel (<code>.xlsx</code>, <code>.xls</code>) ou CSV descarregado diretamente do terminal biométrico de impressões digitais da igreja.
         </p>
 
-        <div class="upload-dropzone p-5 text-center rounded border-2 border-dashed border-secondary border-opacity-50 bg-dark bg-opacity-40" id="biometricDropzone" style="cursor: pointer; transition: all 0.2s;">
+        <div class="upload-dropzone p-5 text-center rounded border-2 border-dashed border-secondary border-opacity-50" id="biometricDropzone" style="cursor: pointer; transition: all 0.2s; background: rgba(0,0,0,0.35);">
           <input type="file" id="biometricFileInput" class="d-none" accept=".xlsx, .xls, .csv, .txt">
           <i class="bi bi-file-earmark-spreadsheet text-gold fs-1 d-block mb-3"></i>
           <h5 class="text-white fw-semibold mb-1">Clique para selecionar ou arraste o ficheiro Excel aqui</h5>
@@ -1180,13 +1202,13 @@
       </div>`;
 
     var historyHtml = `
-      <div class="card bg-surface-dark border-secondary border-opacity-25 shadow-sm overflow-hidden">
-        <div class="card-header bg-dark bg-opacity-40 border-bottom border-secondary border-opacity-25 py-3">
+      <div class="att-card overflow-hidden">
+        <div class="att-card-header">
           <h5 class="h6 mb-0 text-white fw-bold"><i class="bi bi-clock-history text-gold me-2"></i>Histórico de Ficheiros Importados</h5>
         </div>
         <div class="table-responsive">
-          <table class="table table-dark table-hover align-middle mb-0">
-            <thead class="text-secondary small text-uppercase" style="font-size: 0.75rem;">
+          <table class="table att-table align-middle mb-0">
+            <thead>
               <tr>
                 <th class="ps-3">Data de Upload</th>
                 <th>Nome do Ficheiro</th>
@@ -1203,9 +1225,9 @@
                 return `
                   <tr>
                     <td class="ps-3 font-monospace text-secondary">${u.upload_date || u.created_at?.slice(0, 10)}</td>
-                    <td class="text-white fw-semibold"><i class="bi bi-file-earmark-excel text-success me-1.5"></i>${u.filename}</td>
-                    <td class="text-muted small">${u.device_create_time || "—"}</td>
-                    <td class="text-center"><span class="badge bg-dark text-white">${u.record_count}</span></td>
+                    <td class="text-white fw-semibold" style="color: #ffffff !important;"><i class="bi bi-file-earmark-excel text-success me-1.5"></i>${u.filename}</td>
+                    <td class="text-secondary small">${u.device_create_time || "—"}</td>
+                    <td class="text-center"><span class="badge bg-dark text-white border border-secondary border-opacity-25">${u.record_count}</span></td>
                     <td class="text-center text-info">${u.present_count}</td>
                     <td class="text-center text-danger fw-bold">${u.late_count}</td>
                     <td class="text-center text-secondary">${u.absent_count}</td>
@@ -1229,7 +1251,7 @@
     var s = res.data;
 
     return `
-      <div class="card bg-surface-dark border-secondary border-opacity-25 p-4 mb-4 shadow-sm" style="max-width: 800px;">
+      <div class="att-card p-4 mb-4" style="max-width: 800px;">
         <h5 class="h6 text-white fw-bold mb-3"><i class="bi bi-sliders text-gold me-2"></i>Parâmetros de Horário e Regras de Pontualidade</h5>
         <p class="text-secondary small mb-4">
           Defina o horário oficial de entrada da igreja, tempo de tolerância e escalões de atraso para classificação automática das picagens biométricas.
@@ -1239,31 +1261,31 @@
           <div class="row g-3 mb-3">
             <div class="col-12 col-md-6">
               <label class="form-label text-secondary small fw-semibold">Horário Oficial de Entrada (Padrão: 08:00)</label>
-              <input type="time" class="form-control bg-dark text-white border-secondary" name="standard_start_time" value="${s.standard_start_time || "08:00"}" required>
+              <input type="time" class="form-control text-white" name="standard_start_time" value="${s.standard_start_time || "08:00"}" required style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15);">
               <div class="form-text text-muted small">Chegadas antes ou neste horário são consideradas pontuais.</div>
             </div>
 
             <div class="col-12 col-md-6">
               <label class="form-label text-secondary small fw-semibold">Minutos de Tolerância (Grace Period)</label>
-              <input type="number" class="form-control bg-dark text-white border-secondary" name="grace_period_minutes" value="${s.grace_period_minutes || 15}" min="0" max="60" required>
+              <input type="number" class="form-control text-white" name="grace_period_minutes" value="${s.grace_period_minutes || 15}" min="0" max="60" required style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15);">
               <div class="form-text text-muted small">Ex: 15 minutos (até 08:15 é considerado "Tolerância").</div>
             </div>
 
             <div class="col-12 col-md-6">
               <label class="form-label text-secondary small fw-semibold">Limite Atraso Ligeiro (Minutos)</label>
-              <input type="number" class="form-control bg-dark text-white border-secondary" name="minor_delay_threshold_minutes" value="${s.minor_delay_threshold_minutes || 30}" min="15" max="120" required>
+              <input type="number" class="form-control text-white" name="minor_delay_threshold_minutes" value="${s.minor_delay_threshold_minutes || 30}" min="15" max="120" required style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15);">
               <div class="form-text text-muted small">Ex: 30 minutos (chegadas entre 08:16 e 08:30).</div>
             </div>
 
             <div class="col-12 col-md-6">
               <label class="form-label text-secondary small fw-semibold">Limite Atraso Grave (Minutos)</label>
-              <input type="number" class="form-control bg-dark text-white border-secondary" name="severe_delay_threshold_minutes" value="${s.severe_delay_threshold_minutes || 60}" min="30" max="240" required>
+              <input type="number" class="form-control text-white" name="severe_delay_threshold_minutes" value="${s.severe_delay_threshold_minutes || 60}" min="30" max="240" required style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15);">
               <div class="form-text text-muted small">Chegadas superiores a este limite são marcadas como "Muito Tarde".</div>
             </div>
 
             <div class="col-12 col-md-6">
               <label class="form-label text-secondary small fw-semibold">Horário de Saída Previsto (Padrão: 17:00)</label>
-              <input type="time" class="form-control bg-dark text-white border-secondary" name="standard_end_time" value="${s.standard_end_time || "17:00"}">
+              <input type="time" class="form-control text-white" name="standard_end_time" value="${s.standard_end_time || "17:00"}" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15);">
             </div>
           </div>
 
@@ -1287,23 +1309,25 @@
       <div class="row g-4">
         <!-- Relatório Diário -->
         <div class="col-12 col-md-6">
-          <div class="card bg-surface-dark border-secondary border-opacity-25 p-4 shadow-sm h-100">
+          <div class="att-card p-4 h-100 d-flex flex-column">
             <div class="d-flex align-items-center gap-3 mb-3">
-              <div class="avatar-circle-sm bg-gold-subtle text-gold"><i class="bi bi-file-earmark-pdf fs-4"></i></div>
+              <div class="att-avatar" style="width: 44px; height: 44px; font-size: 1.2rem; background: rgba(212, 175, 55, 0.15); border-color: #d4af37; color: #d4af37;">
+                <i class="bi bi-file-earmark-pdf"></i>
+              </div>
               <div>
                 <h5 class="h6 text-white fw-bold mb-0">Relatório Diário de Assiduidade</h5>
-                <span class="text-muted small">Dossiê de presenças e atrasos de um dia específico</span>
+                <span class="text-secondary small">Dossiê de presenças e atrasos de um dia específico</span>
               </div>
             </div>
             <div class="mb-3">
               <label class="form-label text-secondary small">Data do Relatório:</label>
-              <input type="date" class="form-control form-control-sm bg-dark text-white border-secondary" id="reportDailyDateInput" value="${date}">
+              <input type="date" class="form-control form-control-sm text-white" id="reportDailyDateInput" value="${date}" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15);">
             </div>
             <div class="mt-auto d-flex gap-2">
               <button type="button" class="btn btn-sm btn-ce-gold w-100" id="generateDailyPdfBtn">
                 <i class="bi bi-printer me-1.5"></i>Gerar PDF Oficial
               </button>
-              <button type="button" class="btn btn-sm btn-outline-secondary" id="generateDailyExcelBtn">
+              <button type="button" class="btn btn-sm btn-outline-secondary text-white" id="generateDailyExcelBtn">
                 <i class="bi bi-file-earmark-excel text-success me-1"></i>Excel
               </button>
             </div>
@@ -1312,29 +1336,31 @@
 
         <!-- Relatório Periódico / Mensal -->
         <div class="col-12 col-md-6">
-          <div class="card bg-surface-dark border-secondary border-opacity-25 p-4 shadow-sm h-100">
+          <div class="att-card p-4 h-100 d-flex flex-column">
             <div class="d-flex align-items-center gap-3 mb-3">
-              <div class="avatar-circle-sm bg-info-subtle text-info"><i class="bi bi-file-earmark-bar-graph fs-4"></i></div>
+              <div class="att-avatar" style="width: 44px; height: 44px; font-size: 1.2rem; background: rgba(56, 189, 248, 0.15); border-color: #38bdf8; color: #38bdf8;">
+                <i class="bi bi-file-earmark-bar-graph"></i>
+              </div>
               <div>
                 <h5 class="h6 text-white fw-bold mb-0">Relatório Mensal / Periódico Consolidado</h5>
-                <span class="text-muted small">Taxa de pontualidade, top atrasos e horas acumuladas</span>
+                <span class="text-secondary small">Taxa de pontualidade, top atrasos e horas acumuladas</span>
               </div>
             </div>
             <div class="row g-2 mb-3">
               <div class="col-6">
                 <label class="form-label text-secondary small">Data Inicial:</label>
-                <input type="date" class="form-control form-control-sm bg-dark text-white border-secondary" id="reportPeriodStartInput" value="${start}">
+                <input type="date" class="form-control form-control-sm text-white" id="reportPeriodStartInput" value="${start}" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15);">
               </div>
               <div class="col-6">
                 <label class="form-label text-secondary small">Data Final:</label>
-                <input type="date" class="form-control form-control-sm bg-dark text-white border-secondary" id="reportPeriodEndInput" value="${end}">
+                <input type="date" class="form-control form-control-sm text-white" id="reportPeriodEndInput" value="${end}" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15);">
               </div>
             </div>
             <div class="mt-auto d-flex gap-2">
               <button type="button" class="btn btn-sm btn-ce-gold w-100" id="generatePeriodPdfBtn">
                 <i class="bi bi-printer me-1.5"></i>Gerar PDF Mensal
               </button>
-              <button type="button" class="btn btn-sm btn-outline-secondary" id="generatePeriodExcelBtn">
+              <button type="button" class="btn btn-sm btn-outline-secondary text-white" id="generatePeriodExcelBtn">
                 <i class="bi bi-file-earmark-excel text-success me-1"></i>Excel
               </button>
             </div>
