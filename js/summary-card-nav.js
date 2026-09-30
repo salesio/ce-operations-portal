@@ -62,6 +62,7 @@
       sacraments: () => window.sacramentsPageState,
       media: () => window.mediaPageState,
       alec: () => window.alecRegistrationFilterState,
+      attendance: () => window.attendancePageState,
       programs: () => window.programsPageState,
       prisonMinistry: () => window.prisonMinistryPageState,
       ministryMaterials: () => window.ministryMaterialsPageState,
@@ -137,6 +138,13 @@
     }
     if (module === "alec") {
       window.alecRegistrationFilterState = {};
+      return;
+    }
+    if (module === "attendance") {
+      store.dailyFilter = "all";
+      store.searchQuery = "";
+      store.selectedDepartment = "all";
+      store.cardFilters = {};
       return;
     }
     if (module === "programs" || module === "prisonMinistry" || module === "ministryMaterials") {
@@ -643,9 +651,32 @@
     return true;
   }
 
+  function applyAttendance(payload = {}) {
+    const store = window.attendancePageState;
+    if (store) {
+      if (payload.targetTab) store.tab = payload.targetTab;
+      if (payload.filterPayload) {
+        if (payload.filterPayload.dailyFilter) store.dailyFilter = payload.filterPayload.dailyFilter;
+        if (payload.filterPayload.status) store.dailyFilter = payload.filterPayload.status;
+        if (payload.filterPayload.date) store.selectedDate = payload.filterPayload.date;
+        if (payload.filterPayload.department) store.selectedDepartment = payload.filterPayload.department;
+      }
+    }
+    if (typeof setRoute === "function" && payload.route) {
+      setRoute(payload.route);
+      return false;
+    }
+    if (typeof renderAttendance === "function") {
+      renderAttendance(store?.tab || "daily");
+      return false;
+    }
+    return true;
+  }
+
   function applyAction(module, payload = {}) {
     const handlers = {
       staffHr: applyStaffHr,
+      attendance: applyAttendance,
       finance: applyFinance,
       partnership: applyPartnership,
       churches: applyChurches,

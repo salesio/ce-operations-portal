@@ -32,6 +32,7 @@
     media: "media",
     requisitions: "requisitions",
     staffHr: "staffHr",
+    attendance: "attendance",
     users: "usersRoles",
     access: "accessControl",
     settings: "settings",
@@ -97,7 +98,7 @@
     "dashboard", "churches", "members", "firstTimers", "followUp", "reports", "counseling",
     "foundation", "finance", "notifications", "fevo", "venueInventory", "sacraments", "prisonMinistry",
     "ministryMaterials", "programs", "partnership", "media", "cell", "cellMinistry", "cellReports", "alec", "requisitions",
-    "staffHr", "usersRoles", "accessControl", "settings", "auditLogs"
+    "staffHr", "attendance", "usersRoles", "accessControl", "settings", "auditLogs"
   ];
 
   const FULL_ACCESS = {
@@ -582,6 +583,7 @@
     mediaTeam: "media",
     requisitions: "requisitions",
     staffHr: "staffHr",
+    attendance: "attendance",
     users: "usersRoles",
     access: "accessControl"
   };
@@ -783,6 +785,10 @@
 
     if (module === "notifications") {
       return { module, ...VIEW_ONLY, scope: user.can_view_all_churches ? "all" : user.assigned_department ? "department" : "church" };
+    }
+
+    if (module === "attendance") {
+      return { module, ...FULL_ACCESS, can_view: true, can_create: true, can_edit: true, can_delete: true, can_export: true, scope: "all" };
     }
 
     const rawRole = user.role || user.role_name || "";

@@ -139,6 +139,9 @@ const TEXT = {
     requisitionsSubtitle: "Fluxo de requisições departamentais — revisão, aprovação pastoral e liberação de recursos.",
     staffHr: "Staff & Recursos Humanos",
     staffHrSubtitle: "Registo de equipa, funções, salários, desempenho, presenças e equipamentos atribuídos.",
+    attendanceControl: "Assiduidade & Ponto",
+    attendance: "Controlo de Assiduidade",
+    attendanceSubtitle: "Gestão biométrica de entradas, pontualidade, histórico e relatórios de assiduidade do staff.",
     reqTabOverview: "Visão Geral",
     reqTabNew: "Nova Requisição",
     reqTabReceived: "Requisições Recebidas",
@@ -893,6 +896,9 @@ const TEXT = {
     requisitionsSubtitle: "Department requisition workflow — review, pastoral approval and resource release.",
     staffHr: "Staff & Human Resources",
     staffHrSubtitle: "Staff registry, roles, salaries, performance, attendance and assigned equipment.",
+    attendanceControl: "Attendance & Time",
+    attendance: "Attendance & Punctuality",
+    attendanceSubtitle: "Biometric check-in tracking, punctuality, history and staff attendance reports.",
     reqTabOverview: "Overview",
     reqTabNew: "New Requisition",
     reqTabReceived: "Received Requisitions",
@@ -3421,9 +3427,9 @@ function isModuleTabRoute(route) {
 const NAV_GROUPS = [
   { key: "main", items: [["dashboard", "bi-speedometer2", "dashboard"], ["churches", "bi-building", "churches"], ["members", "bi-people", "members"], ["reports", "bi-bar-chart-line", "reports"]] },
   { key: "pastoralCare", items: [["firstTimers", "bi-person-heart", "firstTimers"], ["followUp", "bi-telephone-outbound", "followUp"], ["foundation", "bi-mortarboard", "foundationSchool"], ["sacraments", "bi-droplet", "sacraments"], ["counseling", "bi-chat-heart", "counseling"]] },
-  // Order: Células (subnav) → F.E.V.O (subnav) → Finanças (subnav) → Parcerias (subnav) → Requisições → Inventário → Mídia (subnav) → Programas & Extensão (subnav)
-  { key: "departments", items: [["requisitions", "bi-clipboard-check", "requisitions"], ["venueInventory", "bi-box-seam", "venueInventoryShort"]] },
-  { key: "admin", items: [["staffHr", "bi-people-fill", "staffHr"], ["users", "bi-person-lock", "usersRoles"], ["access", "bi-shield-lock", "accessControl"], ["settings", "bi-gear", "settings"], ["audit", "bi-journal-check", "auditLogs"]] }
+  // Order: Células (subnav) → F.E.V.O (subnav) → Finanças (subnav) → Parcerias (subnav) → Requisições → Inventário → Assiduidade → Mídia (subnav) → Programas & Extensão (subnav)
+  { key: "departments", items: [["requisitions", "bi-clipboard-check", "requisitions"], ["venueInventory", "bi-box-seam", "venueInventoryShort"], ["attendance", "bi-fingerprint", "attendanceControl"]] },
+  { key: "admin", items: [["staffHr", "bi-people-fill", "staffHr"], ["attendance", "bi-fingerprint", "attendanceControl"], ["users", "bi-person-lock", "usersRoles"], ["access", "bi-shield-lock", "accessControl"], ["settings", "bi-gear", "settings"], ["audit", "bi-journal-check", "auditLogs"]] }
 ];
 
 const SIDEBAR_FALLBACK_ICONS = {
@@ -3443,6 +3449,7 @@ const SIDEBAR_FALLBACK_ICONS = {
   media: "bi-camera-reels",
   requisitions: "bi-clipboard-check",
   venueInventory: "bi-box-seam",
+  attendance: "bi-fingerprint",
   cellPrison: "bi-shield-lock",
   cellMaterials: "bi-journal-richtext",
   staffHr: "bi-people-fill",
@@ -11281,6 +11288,7 @@ const FALLBACK_ROUTE_MODULES = {
   media: "media",
   requisitions: "requisitions",
   staffHr: "staffHr",
+  attendance: "attendance",
   users: "usersRoles",
   access: "accessControl",
   settings: "settings",
@@ -11334,7 +11342,7 @@ function fallbackCanViewModule(user = activeUser, module = "dashboard") {
   if (role === "Church Pastor") return !["usersRoles", "accessControl", "auditLogs"].includes(module);
   if (role === "Finance Head" || role === "Finance Officer") return ["finance", "partnership", "reports", "requisitions", "auditLogs"].includes(module);
   if (role === "Partnership Coordinator") return ["partnership", "finance", "reports", "notifications"].includes(module);
-  if (role === "HR Manager") return ["staffHr", "reports"].includes(module);
+  if (role === "HR Manager") return ["staffHr", "attendance", "reports"].includes(module);
   if (role === "Requisition Officer") return ["requisitions", "reports", "venueInventory"].includes(module);
   if (role === "Counseling Head") return ["counseling", "followUp", "firstTimers", "reports", "notifications"].includes(module);
   if (role === "Reitor" || role === "Rector") return ["firstTimers", "followUp", "foundation", "sacraments", "counseling", "notifications"].includes(module);
@@ -11343,13 +11351,14 @@ function fallbackCanViewModule(user = activeUser, module = "dashboard") {
   if (role === "Foundation Teacher" || role === "Foundation Assistant") return ["foundation", "notifications"].includes(module);
   if (role === "Media Director" || role === "Media Supervisor") return ["media", "reports", "venueInventory", "programs", "notifications"].includes(module);
   if (role === "Media Team Member") return ["media", "notifications"].includes(module);
-  if (role === "Department Head") return ["members", "firstTimers", "followUp", "reports", "requisitions", "staffHr", "venueInventory", "cell", "cellMinistry", "cellReports", "alec", "fevo", "media", "programs", "counseling", "sacraments", "foundation", "finance", "partnership"].includes(module);
-  if (role === "Staff Member") return ["requisitions", "venueInventory", "staffHr", "notifications"].includes(module);
+  if (role === "Department Head") return ["members", "firstTimers", "followUp", "reports", "requisitions", "staffHr", "attendance", "venueInventory", "cell", "cellMinistry", "cellReports", "alec", "fevo", "media", "programs", "counseling", "sacraments", "foundation", "finance", "partnership"].includes(module);
+  if (role === "Staff Member") return ["requisitions", "venueInventory", "staffHr", "attendance", "notifications"].includes(module);
   const legacyModuleKeys = {
     foundation: ["foundation", "foundation_teacher", "foundation_assistant", "foundation_rector", "foundation_coordinator"],
     finance: ["finance", "financeHead", "financeOfficer", "financeVerify", "financeViewer"],
     partnership: ["partnership", "partnerships", "partnershipCoordinator"],
-    staffHr: ["staffHr"],
+    staffHr: ["staffHr", "attendance"],
+    attendance: ["attendance", "staffHr"],
     requisitions: ["requisitions"],
     reports: ["reports"],
     cell: ["cell"],
@@ -11461,13 +11470,13 @@ function roleWorkspaceRoutes(user = activeUser) {
   } else if (role === "partnership coordinator") {
     routes.push("partnership", "partnershipArmsRoute", "partnershipPartnersRoute", "partnershipContributionsRoute", "partnershipHighlightsRoute", "partnershipAnalyticsRoute", "partnershipReportsRoute", "partnershipExportsRoute", "finance", "financeOverviewRoute", "financeEntriesRoute", "financePublicSubmissionsRoute", "financeVerificationRoute", "financeApprovedRequisitionsRoute", "financeReportsRoute", "financePartnersRoute", "financeExportsRoute", "reports");
   } else if (role === "hr manager") {
-    routes.push("staffHr", "reports");
+    routes.push("staffHr", "attendance", "reports");
   } else if (role === "requisition officer") {
     routes.push("requisitions", "reports", "venueInventory");
   } else if (role === "department head") {
-    routes.push("members", "firstTimers", "followUp", "reports", "requisitions", "staffHr", "venueInventory", "fevo", "cell", "cellMinistry", "cellReports", "alec", "media", "programs", "cellPrison", "cellMaterials", "counseling", "sacraments", "foundation", "finance", "financeOverviewRoute", "financeEntriesRoute", "financePublicSubmissionsRoute", "financeVerificationRoute", "financeApprovedRequisitionsRoute", "financeReportsRoute", "financePartnersRoute", "financeExportsRoute", "partnership", "partnershipArmsRoute", "partnershipPartnersRoute", "partnershipContributionsRoute", "partnershipHighlightsRoute", "partnershipAnalyticsRoute", "partnershipReportsRoute", "partnershipExportsRoute");
+    routes.push("members", "firstTimers", "followUp", "reports", "requisitions", "staffHr", "attendance", "venueInventory", "fevo", "cell", "cellMinistry", "cellReports", "alec", "media", "programs", "cellPrison", "cellMaterials", "counseling", "sacraments", "foundation", "finance", "financeOverviewRoute", "financeEntriesRoute", "financePublicSubmissionsRoute", "financeVerificationRoute", "financeApprovedRequisitionsRoute", "financeReportsRoute", "financePartnersRoute", "financeExportsRoute", "partnership", "partnershipArmsRoute", "partnershipPartnersRoute", "partnershipContributionsRoute", "partnershipHighlightsRoute", "partnershipAnalyticsRoute", "partnershipReportsRoute", "partnershipExportsRoute");
   } else if (role === "staff member") {
-    routes.push("requisitions", "venueInventory", "venueInventoryStaff", "staffHr");
+    routes.push("requisitions", "venueInventory", "venueInventoryStaff", "staffHr", "attendance");
   }
 
   // 3. Department grants expansion
@@ -11509,7 +11518,8 @@ function roleWorkspaceRoutes(user = activeUser) {
     if (grants.includes("programs")) routes.push("programs");
     if (grants.includes("prisonMinistry") || grants.includes("cellPrison")) routes.push("cellPrison");
     if (grants.includes("ministryMaterials") || grants.includes("cellMaterials")) routes.push("cellMaterials");
-    if (grants.includes("staffHr")) routes.push("staffHr");
+    if (grants.includes("staffHr") || grants.includes("attendance")) routes.push("staffHr", "attendance");
+    if (grants.includes("attendance")) routes.push("attendance");
     if (grants.includes("requisitions")) routes.push("requisitions");
     if (grants.includes("members")) routes.push("members");
     if (grants.includes("churches")) routes.push("churches");
@@ -12238,6 +12248,7 @@ function getRouteRenderers() {
     mediaPerformanceRoute: () => renderMedia("performance"),
     mediaReportsRoute: () => renderMedia("reports"),
     requisitions: renderRequisitions,
+    attendance: () => { if (typeof renderAttendance === "function") renderAttendance(); },
     staffHr: renderStaffHr,
     users: renderUsers,
     access: renderAccess,
@@ -29552,7 +29563,7 @@ function staffHrModuleTabs() {
     ["roles", L("staffTabRoles")],
     ["salaries", L("staffTabSalaries")],
     ["performance", L("staffTabPerformance")],
-    ["attendance", L("staffTabAttendance")],
+    ["attendance", "Assiduidade & Biometria"],
     ["equipment", L("staffTabEquipment")],
     ["documents", L("staffTabDocuments")],
     ["reports", L("staffTabReports")]
@@ -29666,11 +29677,13 @@ function renderStaffHr() {
           actionButtons(actions)];
       })) : noResultsHtml()}`;
   } else if (staffHrPageState.tab === "attendance") {
-    tabContent = dataTable([L("staffFullName"), L("date"), L("church"), L("status"), L("notes")],
-      (state.staffAttendance || []).filter((a) => staffList.some((s) => s.id === a.staff_id)).map((a) => {
-        const staff = staffList.find((s) => s.id === a.staff_id);
-        return [staff?.full_name || "-", a.date, churchName(a.church_id), badge(a.attendance_status), a.notes || "-"];
-      }));
+    tabContent = `<div id="staffHrBiometricAttendanceMount" class="w-100"></div>`;
+    setTimeout(() => {
+      const mount = byId("staffHrBiometricAttendanceMount");
+      if (mount && typeof window.renderAttendance === "function") {
+        window.renderAttendance(attendancePageState.tab || "daily", mount);
+      }
+    }, 20);
   } else if (staffHrPageState.tab === "equipment") {
     const rows = staffList.flatMap((s) => {
       const items = lib.getStaffEquipment(s, state.venueInventory);
