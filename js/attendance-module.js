@@ -345,17 +345,14 @@
   // Main Module Render Dispatcher
   // =========================================================================
 
-  var currentMountContainer = null;
-
   window.renderAttendance = async function (subTab, customMount) {
     if (subTab) attendancePageState.tab = subTab;
-    if (customMount) currentMountContainer = customMount;
 
-    var container = customMount || currentMountContainer || document.getElementById("content");
+    var container = customMount || document.getElementById("content");
     if (!container) return;
 
     var activeTab = attendancePageState.tab || "daily";
-    var isEmbedded = Boolean(customMount || (currentMountContainer && currentMountContainer !== document.getElementById("content")));
+    var isEmbedded = Boolean(customMount && customMount !== document.getElementById("content"));
 
     var tabs = [
       { id: "daily", label: "Visão Diária", icon: "bi-calendar-day" },
@@ -514,74 +511,86 @@
     var kpisHtml = `
       <div class="row g-3 mb-4" id="attendanceDailyKpis">
         <div class="col-6 col-md-4 col-xl-2">
-          <div class="att-kpi-card ${attendancePageState.dailyFilter === "all" ? "is-active" : ""}" data-attendance-filter="all" role="button" tabindex="0" title="Ver todos os colaboradores registados">
-            <div class="att-kpi-icon" style="background: linear-gradient(135deg, #1e3a8a, #0284c7); color: #fff;">
-              <i class="bi bi-people-fill"></i>
+          <div class="att-kpi-card ${attendancePageState.dailyFilter === "all" ? "is-active" : ""}" data-attendance-filter="all" role="button" tabindex="0" title="Ver todos os colaboradores registados" style="background: linear-gradient(145deg, #10213e 0%, #0a1529 100%) !important; border: 1px solid rgba(255,255,255,0.12) !important; border-radius: 14px; padding: 14px 16px; color: #fff;">
+            <div class="att-kpi-header d-flex align-items-center justify-content-between w-100 mb-2">
+              <div class="att-kpi-icon" style="background: linear-gradient(135deg, #1e3a8a, #0284c7); color: #fff; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
+                <i class="bi bi-people-fill"></i>
+              </div>
+              <span class="badge bg-secondary bg-opacity-25 text-white-50" style="font-size: 0.68rem; font-weight: 600;">Biometria</span>
             </div>
-            <div class="att-kpi-body">
-              <span class="att-kpi-label">Total Registados</span>
-              <span class="att-kpi-value">${totalRecords}</span>
-              <span class="att-kpi-delta badge bg-secondary bg-opacity-25 text-white-50">Biometria</span>
-            </div>
-          </div>
-        </div>
-        <div class="col-6 col-md-4 col-xl-2">
-          <div class="att-kpi-card" data-attendance-filter="all" role="button" tabindex="0" title="Presentes no local de trabalho">
-            <div class="att-kpi-icon" style="background: linear-gradient(135deg, #0284c7, #06b6d4); color: #fff;">
-              <i class="bi bi-person-check-fill"></i>
-            </div>
-            <div class="att-kpi-body">
-              <span class="att-kpi-label">Presentes Hoje</span>
-              <span class="att-kpi-value text-info">${presentRecords.length}</span>
-              <span class="att-kpi-delta badge bg-info-subtle text-info">${totalRecords ? Math.round((presentRecords.length / totalRecords) * 100) : 0}% taxa</span>
+            <div class="att-kpi-body w-100">
+              <span class="att-kpi-label d-block text-secondary text-uppercase fw-bold" style="font-size: 0.72rem; letter-spacing: 0.05em; color: #8ea8cc !important;">Total Registados</span>
+              <span class="att-kpi-value d-block text-white fw-bold" style="font-size: 1.7rem; line-height: 1.1; color: #ffffff !important;">${totalRecords}</span>
             </div>
           </div>
         </div>
         <div class="col-6 col-md-4 col-xl-2">
-          <div class="att-kpi-card ${attendancePageState.dailyFilter === "on_time" ? "is-active" : ""}" data-attendance-filter="on_time" role="button" tabindex="0" title="Chegaram antes ou no horário oficial (≤ 08:00)">
-            <div class="att-kpi-icon" style="background: linear-gradient(135deg, #15803d, #22c55e); color: #fff;">
-              <i class="bi bi-check-circle-fill"></i>
+          <div class="att-kpi-card" data-attendance-filter="all" role="button" tabindex="0" title="Presentes no local de trabalho" style="background: linear-gradient(145deg, #10213e 0%, #0a1529 100%) !important; border: 1px solid rgba(255,255,255,0.12) !important; border-radius: 14px; padding: 14px 16px; color: #fff;">
+            <div class="att-kpi-header d-flex align-items-center justify-content-between w-100 mb-2">
+              <div class="att-kpi-icon" style="background: linear-gradient(135deg, #0284c7, #06b6d4); color: #fff; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
+                <i class="bi bi-person-check-fill"></i>
+              </div>
+              <span class="badge bg-info-subtle text-info" style="font-size: 0.68rem; font-weight: 600;">${totalRecords ? Math.round((presentRecords.length / totalRecords) * 100) : 0}% taxa</span>
             </div>
-            <div class="att-kpi-body">
-              <span class="att-kpi-label">No Horário (≤08:00)</span>
-              <span class="att-kpi-value text-success">${onTimeRecords.length}</span>
-              <span class="att-kpi-delta badge bg-success-subtle text-success">Pontuais</span>
-            </div>
-          </div>
-        </div>
-        <div class="col-6 col-md-4 col-xl-2">
-          <div class="att-kpi-card ${attendancePageState.dailyFilter === "grace_period" ? "is-active" : ""}" data-attendance-filter="grace_period" role="button" tabindex="0" title="Chegaram dentro dos 15 minutos de tolerância">
-            <div class="att-kpi-icon" style="background: linear-gradient(135deg, #0891b2, #38bdf8); color: #fff;">
-              <i class="bi bi-clock-history"></i>
-            </div>
-            <div class="att-kpi-body">
-              <span class="att-kpi-label">Tolerância (+15m)</span>
-              <span class="att-kpi-value" style="color: #38bdf8;">${graceRecords.length}</span>
-              <span class="att-kpi-delta badge" style="background: rgba(56, 189, 248, 0.18); color: #38bdf8;">Autorizado</span>
+            <div class="att-kpi-body w-100">
+              <span class="att-kpi-label d-block text-secondary text-uppercase fw-bold" style="font-size: 0.72rem; letter-spacing: 0.05em; color: #8ea8cc !important;">Presentes Hoje</span>
+              <span class="att-kpi-value d-block text-info fw-bold" style="font-size: 1.7rem; line-height: 1.1; color: #38bdf8 !important;">${presentRecords.length}</span>
             </div>
           </div>
         </div>
         <div class="col-6 col-md-4 col-xl-2">
-          <div class="att-kpi-card ${attendancePageState.dailyFilter === "late_all" ? "is-active" : ""}" data-attendance-filter="late_all" role="button" tabindex="0" title="Chegaram após a tolerância (> 08:15)">
-            <div class="att-kpi-icon" style="background: linear-gradient(135deg, #dc2626, #f97316); color: #fff;">
-              <i class="bi bi-exclamation-triangle-fill"></i>
+          <div class="att-kpi-card ${attendancePageState.dailyFilter === "on_time" ? "is-active" : ""}" data-attendance-filter="on_time" role="button" tabindex="0" title="Chegaram antes ou no horário oficial (≤ 08:00)" style="background: linear-gradient(145deg, #10213e 0%, #0a1529 100%) !important; border: 1px solid rgba(255,255,255,0.12) !important; border-radius: 14px; padding: 14px 16px; color: #fff;">
+            <div class="att-kpi-header d-flex align-items-center justify-content-between w-100 mb-2">
+              <div class="att-kpi-icon" style="background: linear-gradient(135deg, #15803d, #22c55e); color: #fff; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
+                <i class="bi bi-check-circle-fill"></i>
+              </div>
+              <span class="badge bg-success-subtle text-success" style="font-size: 0.68rem; font-weight: 600;">Pontuais</span>
             </div>
-            <div class="att-kpi-body">
-              <span class="att-kpi-label">Total em Atraso</span>
-              <span class="att-kpi-value text-danger">${allLateRecords.length}</span>
-              <span class="att-kpi-delta badge bg-danger-subtle text-danger">${allLateRecords.length > 0 ? "Atenção RH" : "Excelente"}</span>
+            <div class="att-kpi-body w-100">
+              <span class="att-kpi-label d-block text-secondary text-uppercase fw-bold" style="font-size: 0.72rem; letter-spacing: 0.05em; color: #8ea8cc !important;">No Horário (≤08:00)</span>
+              <span class="att-kpi-value d-block text-success fw-bold" style="font-size: 1.7rem; line-height: 1.1; color: #22c55e !important;">${onTimeRecords.length}</span>
             </div>
           </div>
         </div>
         <div class="col-6 col-md-4 col-xl-2">
-          <div class="att-kpi-card ${attendancePageState.dailyFilter === "absent" ? "is-active" : ""}" data-attendance-filter="absent" role="button" tabindex="0" title="Sem registo de picagem no terminal">
-            <div class="att-kpi-icon" style="background: linear-gradient(135deg, #475569, #64748b); color: #fff;">
-              <i class="bi bi-dash-circle-fill"></i>
+          <div class="att-kpi-card ${attendancePageState.dailyFilter === "grace_period" ? "is-active" : ""}" data-attendance-filter="grace_period" role="button" tabindex="0" title="Chegaram dentro dos 15 minutos de tolerância" style="background: linear-gradient(145deg, #10213e 0%, #0a1529 100%) !important; border: 1px solid rgba(255,255,255,0.12) !important; border-radius: 14px; padding: 14px 16px; color: #fff;">
+            <div class="att-kpi-header d-flex align-items-center justify-content-between w-100 mb-2">
+              <div class="att-kpi-icon" style="background: linear-gradient(135deg, #0891b2, #38bdf8); color: #fff; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
+                <i class="bi bi-clock-history"></i>
+              </div>
+              <span class="badge" style="background: rgba(56, 189, 248, 0.18); color: #38bdf8; font-size: 0.68rem; font-weight: 600;">Autorizado</span>
             </div>
-            <div class="att-kpi-body">
-              <span class="att-kpi-label">Sem Registo / Falta</span>
-              <span class="att-kpi-value text-secondary">${absentRecords.length}</span>
-              <span class="att-kpi-delta badge bg-secondary bg-opacity-25 text-white-50">Não picou</span>
+            <div class="att-kpi-body w-100">
+              <span class="att-kpi-label d-block text-secondary text-uppercase fw-bold" style="font-size: 0.72rem; letter-spacing: 0.05em; color: #8ea8cc !important;">Tolerância (+15m)</span>
+              <span class="att-kpi-value d-block fw-bold" style="font-size: 1.7rem; line-height: 1.1; color: #38bdf8 !important;">${graceRecords.length}</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+          <div class="att-kpi-card ${attendancePageState.dailyFilter === "late_all" ? "is-active" : ""}" data-attendance-filter="late_all" role="button" tabindex="0" title="Chegaram após a tolerância (> 08:15)" style="background: linear-gradient(145deg, #10213e 0%, #0a1529 100%) !important; border: 1px solid rgba(255,255,255,0.12) !important; border-radius: 14px; padding: 14px 16px; color: #fff;">
+            <div class="att-kpi-header d-flex align-items-center justify-content-between w-100 mb-2">
+              <div class="att-kpi-icon" style="background: linear-gradient(135deg, #dc2626, #f97316); color: #fff; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+              </div>
+              <span class="badge bg-danger-subtle text-danger" style="font-size: 0.68rem; font-weight: 600;">${allLateRecords.length > 0 ? "Atenção RH" : "Excelente"}</span>
+            </div>
+            <div class="att-kpi-body w-100">
+              <span class="att-kpi-label d-block text-secondary text-uppercase fw-bold" style="font-size: 0.72rem; letter-spacing: 0.05em; color: #8ea8cc !important;">Total em Atraso</span>
+              <span class="att-kpi-value d-block text-danger fw-bold" style="font-size: 1.7rem; line-height: 1.1; color: #f87171 !important;">${allLateRecords.length}</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+          <div class="att-kpi-card ${attendancePageState.dailyFilter === "absent" ? "is-active" : ""}" data-attendance-filter="absent" role="button" tabindex="0" title="Sem registo de picagem no terminal" style="background: linear-gradient(145deg, #10213e 0%, #0a1529 100%) !important; border: 1px solid rgba(255,255,255,0.12) !important; border-radius: 14px; padding: 14px 16px; color: #fff;">
+            <div class="att-kpi-header d-flex align-items-center justify-content-between w-100 mb-2">
+              <div class="att-kpi-icon" style="background: linear-gradient(135deg, #475569, #64748b); color: #fff; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
+                <i class="bi bi-dash-circle-fill"></i>
+              </div>
+              <span class="badge bg-secondary bg-opacity-25 text-white-50" style="font-size: 0.68rem; font-weight: 600;">Não picou</span>
+            </div>
+            <div class="att-kpi-body w-100">
+              <span class="att-kpi-label d-block text-secondary text-uppercase fw-bold" style="font-size: 0.72rem; letter-spacing: 0.05em; color: #8ea8cc !important;">Sem Registo / Falta</span>
+              <span class="att-kpi-value d-block text-secondary fw-bold" style="font-size: 1.7rem; line-height: 1.1; color: #94a3b8 !important;">${absentRecords.length}</span>
             </div>
           </div>
         </div>
@@ -589,25 +598,25 @@
 
     // Filter Chips & Date Toolbar
     var toolbarHtml = `
-      <div class="att-card p-3 mb-4">
+      <div class="att-card p-3 mb-4" style="background: linear-gradient(145deg, #0e1c36 0%, #081224 100%) !important; border: 1px solid rgba(255,255,255,0.12) !important; border-radius: 14px;">
         <div class="row g-3 align-items-center">
           <div class="col-12 col-md-auto d-flex flex-wrap align-items-center gap-2">
-            <span class="text-secondary small fw-bold text-uppercase" style="letter-spacing: 0.05em; font-size: 0.75rem;"><i class="bi bi-calendar-event text-gold me-1"></i>Data do Registo:</span>
-            <input type="date" class="form-control form-control-sm text-white" id="attendanceDatePicker" value="${date}" style="max-width: 155px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15);">
+            <span class="text-secondary small fw-bold text-uppercase" style="letter-spacing: 0.05em; font-size: 0.75rem; color: #8ea8cc !important;"><i class="bi bi-calendar-event text-gold me-1"></i>Data do Registo:</span>
+            <input type="date" class="form-control form-control-sm text-white" id="attendanceDatePicker" value="${date}" style="max-width: 155px; background: #071328 !important; border: 1px solid rgba(255,255,255,0.2) !important; color: #fff !important;">
             <div class="btn-group btn-group-sm">
-              <button type="button" class="btn btn-outline-secondary text-white-50" id="attendancePrevDayBtn" title="Dia Anterior"><i class="bi bi-chevron-left"></i></button>
-              <button type="button" class="btn btn-outline-secondary text-white" id="attendanceTodayBtn" title="Hoje">Hoje</button>
-              <button type="button" class="btn btn-outline-secondary text-white-50" id="attendanceNextDayBtn" title="Dia Seguinte"><i class="bi bi-chevron-right"></i></button>
+              <button type="button" class="btn btn-outline-secondary text-white-50" id="attendancePrevDayBtn" title="Dia Anterior" style="border-color: rgba(255,255,255,0.2);"><i class="bi bi-chevron-left"></i></button>
+              <button type="button" class="btn btn-outline-secondary text-white" id="attendanceTodayBtn" title="Hoje" style="border-color: rgba(255,255,255,0.2);">Hoje</button>
+              <button type="button" class="btn btn-outline-secondary text-white-50" id="attendanceNextDayBtn" title="Dia Seguinte" style="border-color: rgba(255,255,255,0.2);"><i class="bi bi-chevron-right"></i></button>
             </div>
           </div>
 
           <div class="col-12 col-md d-flex flex-wrap align-items-center justify-content-md-end gap-2">
             <div class="input-group input-group-sm" style="max-width: 250px;">
-              <span class="input-group-text text-secondary" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); border-right: none;"><i class="bi bi-search"></i></span>
-              <input type="text" class="form-control text-white" id="attendanceSearchInput" placeholder="Pesquisar funcionário..." value="${attendancePageState.searchQuery}" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); border-left: none;">
+              <span class="input-group-text text-secondary" style="background: #071328 !important; border: 1px solid rgba(255,255,255,0.2) !important; border-right: none; color: #8ea8cc !important;"><i class="bi bi-search"></i></span>
+              <input type="text" class="form-control text-white" id="attendanceSearchInput" placeholder="Pesquisar funcionário..." value="${attendancePageState.searchQuery}" style="background: #071328 !important; border: 1px solid rgba(255,255,255,0.2) !important; border-left: none; color: #fff !important;">
             </div>
 
-            <select class="form-select form-select-sm text-white" id="attendanceDeptFilter" style="max-width: 180px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15);">
+            <select class="form-select form-select-sm text-white" id="attendanceDeptFilter" style="max-width: 180px; background: #071328 !important; border: 1px solid rgba(255,255,255,0.2) !important; color: #fff !important;">
               <option value="all" ${attendancePageState.selectedDepartment === "all" ? "selected" : ""}>Todos Departamentos</option>
               <option value="CESTAFF" ${attendancePageState.selectedDepartment === "CESTAFF" ? "selected" : ""}>CESTAFF</option>
             </select>
@@ -619,7 +628,7 @@
         </div>
 
         <div class="d-flex flex-wrap align-items-center gap-2 mt-3 pt-3 border-top border-secondary border-opacity-25">
-          <span class="text-secondary small fw-bold text-uppercase me-1" style="font-size: 0.72rem; letter-spacing: 0.05em;">Filtrar por Status:</span>
+          <span class="text-secondary small fw-bold text-uppercase me-1" style="font-size: 0.72rem; letter-spacing: 0.05em; color: #8ea8cc !important;">Filtrar por Status:</span>
           <button type="button" class="att-filter-btn ${attendancePageState.dailyFilter === "all" ? "active" : ""}" data-attendance-filter="all">Todos (${totalRecords})</button>
           <button type="button" class="att-filter-btn ${attendancePageState.dailyFilter === "on_time" ? "active" : ""}" data-attendance-filter="on_time">Pontual (${onTimeRecords.length})</button>
           <button type="button" class="att-filter-btn ${attendancePageState.dailyFilter === "grace_period" ? "active" : ""}" data-attendance-filter="grace_period">Tolerância (${graceRecords.length})</button>
@@ -632,69 +641,69 @@
 
     // Records Table
     var tableHtml = `
-      <div class="att-card overflow-hidden">
-        <div class="att-card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
+      <div class="att-card overflow-hidden" style="background: linear-gradient(145deg, #0e1c36 0%, #081224 100%) !important; border: 1px solid rgba(255,255,255,0.12) !important; border-radius: 14px;">
+        <div class="att-card-header d-flex flex-wrap align-items-center justify-content-between gap-2" style="background: #081326 !important; border-bottom: 1px solid rgba(197, 160, 89, 0.25) !important; padding: 14px 20px;">
           <div class="d-flex align-items-center gap-2">
             <i class="bi bi-clock-history text-gold fs-5"></i>
-            <h5 class="h6 mb-0 text-white fw-bold">Registos de Ponto — ${formatDatePt(date)}</h5>
+            <h5 class="h6 mb-0 text-white fw-bold" style="color: #ffffff !important;">Registos de Ponto — ${formatDatePt(date)}</h5>
             <span class="badge bg-gold-subtle text-gold ms-1">${displayedRecords.length} colaboradores</span>
           </div>
-          <div class="text-secondary small">
+          <div class="text-secondary small" style="color: #8ea8cc !important;">
             Hora Média de Entrada: <strong class="text-gold font-monospace fs-6 ms-1">${avgCheckInStr}</strong>
           </div>
         </div>
 
         <div class="table-responsive">
-          <table class="table att-table align-middle" id="attendanceDailyTable">
+          <table class="table att-table align-middle" id="attendanceDailyTable" style="background: transparent !important; color: #fff !important; margin-bottom: 0;">
             <thead>
-              <tr>
-                <th class="ps-3" style="width: 70px;">ID</th>
-                <th>Colaborador / Staff</th>
-                <th>Departamento</th>
-                <th class="text-center">Hora de Entrada</th>
-                <th class="text-center">Classificação</th>
-                <th class="text-center">Tempo de Atraso</th>
-                <th>Picagens Brutas</th>
-                <th class="text-end pe-3">Ações</th>
+              <tr style="background: #081326 !important;">
+                <th class="ps-3" style="width: 70px; background: #081326 !important; color: #c5a059 !important; border-bottom: 1px solid rgba(255,255,255,0.15);">ID</th>
+                <th style="background: #081326 !important; color: #c5a059 !important; border-bottom: 1px solid rgba(255,255,255,0.15);">Colaborador / Staff</th>
+                <th style="background: #081326 !important; color: #c5a059 !important; border-bottom: 1px solid rgba(255,255,255,0.15);">Departamento</th>
+                <th class="text-center" style="background: #081326 !important; color: #c5a059 !important; border-bottom: 1px solid rgba(255,255,255,0.15);">Hora de Entrada</th>
+                <th class="text-center" style="background: #081326 !important; color: #c5a059 !important; border-bottom: 1px solid rgba(255,255,255,0.15);">Classificação</th>
+                <th class="text-center" style="background: #081326 !important; color: #c5a059 !important; border-bottom: 1px solid rgba(255,255,255,0.15);">Tempo de Atraso</th>
+                <th style="background: #081326 !important; color: #c5a059 !important; border-bottom: 1px solid rgba(255,255,255,0.15);">Picagens Brutas</th>
+                <th class="text-end pe-3" style="background: #081326 !important; color: #c5a059 !important; border-bottom: 1px solid rgba(255,255,255,0.15);">Ações</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody style="background: transparent !important;">
               ${displayedRecords.length ? displayedRecords.map(function (rec) {
                 var avatarInitial = (rec.employee_name || "?").charAt(0).toUpperCase();
                 return `
-                  <tr>
-                    <td class="ps-3">
-                      <span class="badge bg-dark text-white-50 border border-secondary border-opacity-50 font-monospace">${rec.employee_id}</span>
+                  <tr style="background: transparent !important; border-bottom: 1px solid rgba(255,255,255,0.06);">
+                    <td class="ps-3" style="background: transparent !important;">
+                      <span class="badge bg-dark text-white border border-secondary border-opacity-50 font-monospace">${rec.employee_id}</span>
                     </td>
-                    <td>
+                    <td style="background: transparent !important;">
                       <div class="d-flex align-items-center gap-2.5">
                         <div class="att-avatar">
                           ${avatarInitial}
                         </div>
                         <div>
-                          <div class="text-white fw-semibold mb-0" style="color: #ffffff !important; font-size: 0.92rem;">${rec.employee_name}</div>
-                          ${rec.card_no ? `<span class="text-secondary small" style="font-size: 0.72rem;"><i class="bi bi-credit-card me-1"></i>${rec.card_no}</span>` : ""}
+                          <div class="text-white fw-bold mb-0" style="color: #ffffff !important; font-size: 0.94rem; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">${rec.employee_name}</div>
+                          ${rec.card_no ? `<span class="text-secondary small" style="font-size: 0.72rem; color: #8ea8cc !important;"><i class="bi bi-credit-card me-1"></i>${rec.card_no}</span>` : ""}
                         </div>
                       </div>
                     </td>
-                    <td>
-                      <span class="badge bg-dark text-secondary border border-secondary border-opacity-25">${rec.department || "CESTAFF"}</span>
+                    <td style="background: transparent !important;">
+                      <span class="badge bg-dark text-white-50 border border-secondary border-opacity-25">${rec.department || "CESTAFF"}</span>
                     </td>
-                    <td class="text-center">
-                      ${rec.check_in ? `<span class="fs-6 fw-bold ${rec.is_late ? "text-danger" : "text-white"} font-monospace" style="${rec.is_late ? "color: #f87171 !important;" : "color: #ffffff !important;"}">${rec.check_in}</span>` : `<span class="text-secondary font-monospace">--:--</span>`}
+                    <td class="text-center" style="background: transparent !important;">
+                      ${rec.check_in ? `<span class="fs-6 fw-bold font-monospace" style="${rec.is_late ? "color: #f87171 !important;" : "color: #38bdf8 !important;"}">${rec.check_in}</span>` : `<span class="text-secondary font-monospace" style="color: #64748b !important;">--:--</span>`}
                     </td>
-                    <td class="text-center">
+                    <td class="text-center" style="background: transparent !important;">
                       ${getStatusBadge(rec.status, rec.delay_minutes)}
                     </td>
-                    <td class="text-center">
+                    <td class="text-center" style="background: transparent !important;">
                       ${formatDelay(rec.delay_minutes)}
                     </td>
-                    <td>
-                      <span class="text-secondary small font-monospace" style="font-size: 0.76rem;">
+                    <td style="background: transparent !important;">
+                      <span class="text-secondary small font-monospace" style="font-size: 0.76rem; color: #94a3b8 !important;">
                         ${(rec.all_punches || "--:--").replace(/\n/g, " | ")}
                       </span>
                     </td>
-                    <td class="text-end pe-3">
+                    <td class="text-end pe-3" style="background: transparent !important;">
                       <div class="btn-group btn-group-sm">
                         <button type="button" class="btn btn-outline-secondary text-gold border-secondary border-opacity-50" data-view-trajectory="${rec.employee_id}" title="Ver Trajetória Individual">
                           <i class="bi bi-graph-up-arrow"></i>
@@ -707,7 +716,7 @@
                   </tr>`;
               }).join("") : `
                 <tr>
-                  <td colspan="8" class="text-center py-5 text-muted">
+                  <td colspan="8" class="text-center py-5 text-muted" style="background: transparent !important; color: #94a3b8 !important;">
                     <i class="bi bi-inbox fs-2 d-block mb-2 text-secondary"></i>
                     Nenhum registo de ponto encontrado para os filtros selecionados (${date}).
                     <div class="mt-2">

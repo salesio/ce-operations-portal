@@ -12344,8 +12344,11 @@ function getRouteRenderers() {
     mediaPerformanceRoute: () => renderMedia("performance"),
     mediaReportsRoute: () => renderMedia("reports"),
     requisitions: renderRequisitions,
-    attendance: () => { if (typeof renderAttendance === "function") renderAttendance(); },
-    staffHr: () => { staffHrPageState.tab = "overview"; renderStaffHr(); },
+    attendance: () => {
+      if (typeof window.renderAttendance === "function") {
+        window.renderAttendance(window.attendancePageState?.tab || "daily", byId("content"));
+      }
+    },
     staffHrOverviewRoute: () => { staffHrPageState.tab = "overview"; renderStaffHr(); },
     staffHrStaffRoute: () => { staffHrPageState.tab = "staff"; renderStaffHr(); },
     staffHrBirthdaysRoute: () => { staffHrPageState.tab = "birthdays"; renderStaffHr(); },
