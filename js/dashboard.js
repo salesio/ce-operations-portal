@@ -3354,6 +3354,27 @@ const MEDIA_NAV = {
 
 const MEDIA_TAB_ROUTES = new Set(MEDIA_NAV.routes.map(([route]) => route));
 
+const STAFF_HR_NAV = {
+  parentKey: "staffHrHeader",
+  label: "staffHr",
+  icon: "bi-people-fill",
+  routes: [
+    ["staffHr", "bi-grid-1x2", "staffTabOverview"],
+    ["staffHrStaffRoute", "bi-people", "staffTabStaff"],
+    ["staffHrBirthdaysRoute", "bi-gift", "staffTabBirthdays"],
+    ["staffHrDepartmentsRoute", "bi-diagram-3", "staffTabDepartments"],
+    ["staffHrRolesRoute", "bi-person-badge", "staffTabRoles"],
+    ["staffHrSalariesRoute", "bi-wallet2", "staffTabSalaries"],
+    ["staffHrPerformanceRoute", "bi-graph-up", "staffTabPerformance"],
+    ["staffHrAttendanceRoute", "bi-fingerprint", "staffTabAttendance"],
+    ["staffHrEquipmentRoute", "bi-laptop", "staffTabEquipment"],
+    ["staffHrDocumentsRoute", "bi-folder2", "staffTabDocuments"],
+    ["staffHrReportsRoute", "bi-bar-chart-line", "staffTabReports"]
+  ]
+};
+
+const STAFF_HR_TAB_ROUTES = new Set(STAFF_HR_NAV.routes.map(([route]) => route));
+
 const TAB_PARALLAX_ORDER = {
   cell: CELL_NAV.areas.flatMap((area) => area.routes.map(([route]) => route)),
   fevo: ["fevo", "fevoConfigRoute", "fevoFollowUpRoute", "fevoEvangelismRoute", "fevoVisitationRoute", "fevoPrayerRoute", "fevoNoReportsRoute", "fevoWeeklyReportsRoute", "fevoAnalysisRoute"],
@@ -3361,7 +3382,8 @@ const TAB_PARALLAX_ORDER = {
   partnership: ["partnership", "partnershipArmsRoute", "partnershipPartnersRoute", "partnershipContributionsRoute", "partnershipHighlightsRoute", "partnershipAnalyticsRoute", "partnershipReportsRoute", "partnershipExportsRoute"],
   venue: ["venueInventory", "venueInventoryGeneral", "venueInventoryAcquisitions", "venueInventoryStaff", "venueInventoryMaintenance", "venueInventoryMovements", "venueInventorySpaces", "venueInventoryChecklist", "venueInventoryReports"],
   media: ["media", "mediaTeamRoute", "mediaRolesRoute", "mediaSchedulesRoute", "mediaServicesRoute", "mediaChannelsRoute", "mediaPerformanceRoute", "mediaReportsRoute"],
-  outreach: ["programs", "cellPrison", "cellMaterials"]
+  outreach: ["programs", "cellPrison", "cellMaterials"],
+  staffHr: ["staffHr", "staffHrStaffRoute", "staffHrBirthdaysRoute", "staffHrDepartmentsRoute", "staffHrRolesRoute", "staffHrSalariesRoute", "staffHrPerformanceRoute", "staffHrAttendanceRoute", "staffHrEquipmentRoute", "staffHrDocumentsRoute", "staffHrReportsRoute"]
 };
 
 let tabParallaxState = { family: null, index: -1 };
@@ -3374,6 +3396,7 @@ function tabParallaxFamily(route) {
   if (VENUE_TAB_ROUTES.has(route)) return "venue";
   if (MEDIA_TAB_ROUTES.has(route)) return "media";
   if (OUTREACH_TAB_ROUTES.has(route)) return "outreach";
+  if (STAFF_HR_TAB_ROUTES.has(route) || route === "staffHrOverviewRoute") return "staffHr";
   return null;
 }
 
@@ -3421,7 +3444,7 @@ function triggerScrollTabParallax(targetId) {
 }
 
 function isModuleTabRoute(route) {
-  return CELL_TAB_ROUTES.has(route) || FEVO_TAB_ROUTES.has(route) || FINANCE_TAB_ROUTES.has(route) || PARTNERSHIP_TAB_ROUTES.has(route) || VENUE_TAB_ROUTES.has(route) || OUTREACH_TAB_ROUTES.has(route) || MEDIA_TAB_ROUTES.has(route);
+  return CELL_TAB_ROUTES.has(route) || FEVO_TAB_ROUTES.has(route) || FINANCE_TAB_ROUTES.has(route) || PARTNERSHIP_TAB_ROUTES.has(route) || VENUE_TAB_ROUTES.has(route) || OUTREACH_TAB_ROUTES.has(route) || MEDIA_TAB_ROUTES.has(route) || STAFF_HR_TAB_ROUTES.has(route) || route === "staffHrOverviewRoute";
 }
 
 const NAV_GROUPS = [
@@ -3429,7 +3452,7 @@ const NAV_GROUPS = [
   { key: "pastoralCare", items: [["firstTimers", "bi-person-heart", "firstTimers"], ["followUp", "bi-telephone-outbound", "followUp"], ["foundation", "bi-mortarboard", "foundationSchool"], ["sacraments", "bi-droplet", "sacraments"], ["counseling", "bi-chat-heart", "counseling"]] },
   // Order: Células (subnav) → F.E.V.O (subnav) → Finanças (subnav) → Parcerias (subnav) → Requisições → Inventário → Assiduidade → Mídia (subnav) → Programas & Extensão (subnav)
   { key: "departments", items: [["requisitions", "bi-clipboard-check", "requisitions"], ["venueInventory", "bi-box-seam", "venueInventoryShort"], ["attendance", "bi-fingerprint", "attendanceControl"]] },
-  { key: "admin", items: [["staffHr", "bi-people-fill", "staffHr"], ["attendance", "bi-fingerprint", "attendanceControl"], ["users", "bi-person-lock", "usersRoles"], ["access", "bi-shield-lock", "accessControl"], ["settings", "bi-gear", "settings"], ["audit", "bi-journal-check", "auditLogs"]] }
+  { key: "admin", items: [["attendance", "bi-fingerprint", "attendanceControl"], ["users", "bi-person-lock", "usersRoles"], ["access", "bi-shield-lock", "accessControl"], ["settings", "bi-gear", "settings"], ["audit", "bi-journal-check", "auditLogs"]] }
 ];
 
 const SIDEBAR_FALLBACK_ICONS = {
@@ -3453,6 +3476,17 @@ const SIDEBAR_FALLBACK_ICONS = {
   cellPrison: "bi-shield-lock",
   cellMaterials: "bi-journal-richtext",
   staffHr: "bi-people-fill",
+  staffHrOverviewRoute: "bi-grid-1x2",
+  staffHrStaffRoute: "bi-people",
+  staffHrBirthdaysRoute: "bi-gift",
+  staffHrDepartmentsRoute: "bi-diagram-3",
+  staffHrRolesRoute: "bi-person-badge",
+  staffHrSalariesRoute: "bi-wallet2",
+  staffHrPerformanceRoute: "bi-graph-up",
+  staffHrAttendanceRoute: "bi-fingerprint",
+  staffHrEquipmentRoute: "bi-laptop",
+  staffHrDocumentsRoute: "bi-folder2",
+  staffHrReportsRoute: "bi-bar-chart-line",
   users: "bi-person-lock",
   access: "bi-shield-lock",
   settings: "bi-gear",
@@ -11288,6 +11322,17 @@ const FALLBACK_ROUTE_MODULES = {
   media: "media",
   requisitions: "requisitions",
   staffHr: "staffHr",
+  staffHrOverviewRoute: "staffHr",
+  staffHrStaffRoute: "staffHr",
+  staffHrBirthdaysRoute: "staffHr",
+  staffHrDepartmentsRoute: "staffHr",
+  staffHrRolesRoute: "staffHr",
+  staffHrSalariesRoute: "staffHr",
+  staffHrPerformanceRoute: "staffHr",
+  staffHrAttendanceRoute: "staffHr",
+  staffHrEquipmentRoute: "staffHr",
+  staffHrDocumentsRoute: "staffHr",
+  staffHrReportsRoute: "staffHr",
   attendance: "attendance",
   users: "usersRoles",
   access: "accessControl",
@@ -11315,6 +11360,7 @@ const FALLBACK_ROUTE_MODULES = {
 
 function fallbackRouteModule(route = "dashboard") {
   if (FALLBACK_ROUTE_MODULES[route]) return FALLBACK_ROUTE_MODULES[route];
+  if (route.startsWith("staffHr")) return "staffHr";
   if (route.startsWith("cell")) return "cell";
   if (route.startsWith("fevo")) return "fevo";
   if (route.startsWith("finance")) return "finance";
@@ -11470,13 +11516,13 @@ function roleWorkspaceRoutes(user = activeUser) {
   } else if (role === "partnership coordinator") {
     routes.push("partnership", "partnershipArmsRoute", "partnershipPartnersRoute", "partnershipContributionsRoute", "partnershipHighlightsRoute", "partnershipAnalyticsRoute", "partnershipReportsRoute", "partnershipExportsRoute", "finance", "financeOverviewRoute", "financeEntriesRoute", "financePublicSubmissionsRoute", "financeVerificationRoute", "financeApprovedRequisitionsRoute", "financeReportsRoute", "financePartnersRoute", "financeExportsRoute", "reports");
   } else if (role === "hr manager") {
-    routes.push("staffHr", "attendance", "reports");
+    routes.push("staffHr", "staffHrStaffRoute", "staffHrBirthdaysRoute", "staffHrDepartmentsRoute", "staffHrRolesRoute", "staffHrSalariesRoute", "staffHrPerformanceRoute", "staffHrAttendanceRoute", "staffHrEquipmentRoute", "staffHrDocumentsRoute", "staffHrReportsRoute", "attendance", "reports");
   } else if (role === "requisition officer") {
     routes.push("requisitions", "reports", "venueInventory");
   } else if (role === "department head") {
-    routes.push("members", "firstTimers", "followUp", "reports", "requisitions", "staffHr", "attendance", "venueInventory", "fevo", "cell", "cellMinistry", "cellReports", "alec", "media", "programs", "cellPrison", "cellMaterials", "counseling", "sacraments", "foundation", "finance", "financeOverviewRoute", "financeEntriesRoute", "financePublicSubmissionsRoute", "financeVerificationRoute", "financeApprovedRequisitionsRoute", "financeReportsRoute", "financePartnersRoute", "financeExportsRoute", "partnership", "partnershipArmsRoute", "partnershipPartnersRoute", "partnershipContributionsRoute", "partnershipHighlightsRoute", "partnershipAnalyticsRoute", "partnershipReportsRoute", "partnershipExportsRoute");
+    routes.push("members", "firstTimers", "followUp", "reports", "requisitions", "staffHr", "staffHrStaffRoute", "staffHrBirthdaysRoute", "staffHrDepartmentsRoute", "staffHrRolesRoute", "staffHrSalariesRoute", "staffHrPerformanceRoute", "staffHrAttendanceRoute", "staffHrEquipmentRoute", "staffHrDocumentsRoute", "staffHrReportsRoute", "attendance", "venueInventory", "fevo", "cell", "cellMinistry", "cellReports", "alec", "media", "programs", "cellPrison", "cellMaterials", "counseling", "sacraments", "foundation", "finance", "financeOverviewRoute", "financeEntriesRoute", "financePublicSubmissionsRoute", "financeVerificationRoute", "financeApprovedRequisitionsRoute", "financeReportsRoute", "financePartnersRoute", "financeExportsRoute", "partnership", "partnershipArmsRoute", "partnershipPartnersRoute", "partnershipContributionsRoute", "partnershipHighlightsRoute", "partnershipAnalyticsRoute", "partnershipReportsRoute", "partnershipExportsRoute");
   } else if (role === "staff member") {
-    routes.push("requisitions", "venueInventory", "venueInventoryStaff", "staffHr", "attendance");
+    routes.push("requisitions", "venueInventory", "venueInventoryStaff", "staffHr", "staffHrStaffRoute", "staffHrBirthdaysRoute", "staffHrDepartmentsRoute", "staffHrRolesRoute", "staffHrSalariesRoute", "staffHrPerformanceRoute", "staffHrAttendanceRoute", "staffHrEquipmentRoute", "staffHrDocumentsRoute", "staffHrReportsRoute", "attendance");
   }
 
   // 3. Department grants expansion
@@ -11518,7 +11564,7 @@ function roleWorkspaceRoutes(user = activeUser) {
     if (grants.includes("programs")) routes.push("programs");
     if (grants.includes("prisonMinistry") || grants.includes("cellPrison")) routes.push("cellPrison");
     if (grants.includes("ministryMaterials") || grants.includes("cellMaterials")) routes.push("cellMaterials");
-    if (grants.includes("staffHr") || grants.includes("attendance")) routes.push("staffHr", "attendance");
+    if (grants.includes("staffHr") || grants.includes("attendance")) routes.push("staffHr", "staffHrStaffRoute", "staffHrBirthdaysRoute", "staffHrDepartmentsRoute", "staffHrRolesRoute", "staffHrSalariesRoute", "staffHrPerformanceRoute", "staffHrAttendanceRoute", "staffHrEquipmentRoute", "staffHrDocumentsRoute", "staffHrReportsRoute", "attendance");
     if (grants.includes("attendance")) routes.push("attendance");
     if (grants.includes("requisitions")) routes.push("requisitions");
     if (grants.includes("members")) routes.push("members");
@@ -11541,6 +11587,7 @@ function isRouteInRoleWorkspace(route, user = activeUser) {
   const allowedRoutes = roleWorkspaceRoutes(user);
   if (!allowedRoutes) return true;
   if (allowedRoutes.includes(route)) return true;
+  if (route.startsWith("staffHr") && (allowedRoutes.includes("staffHr") || allowedRoutes.some((r) => STAFF_HR_TAB_ROUTES.has(r)))) return true;
   if (route.startsWith("finance") && allowedRoutes.includes("finance")) return true;
   if (route.startsWith("partnership") && allowedRoutes.includes("partnership")) return true;
   if (route.startsWith("media") && allowedRoutes.includes("media")) return true;
@@ -11886,6 +11933,52 @@ function renderMediaSidebarNav() {
     </div>`;
 }
 
+function renderStaffHrSidebarNav() {
+  const workspaceRoutes = roleWorkspaceRoutes();
+  const parentExpanded = isSidebarGroupExpanded(STAFF_HR_NAV.parentKey);
+  const parentActive = STAFF_HR_TAB_ROUTES.has(activeRoute) || activeRoute === "staffHr" || activeRoute === "staffHrOverviewRoute";
+  const visibleRoutes = STAFF_HR_NAV.routes.filter(([route]) => {
+    if (workspaceRoutes && !workspaceRoutes.includes(route) && !workspaceRoutes.includes("staffHr")) return false;
+    const nav = resolveRouteAccess(route);
+    return nav.visible && !nav.locked;
+  });
+  if (!visibleRoutes.length) return "";
+  return `
+    <div class="nav-cell-branch nav-staff-branch ${parentExpanded ? "is-expanded" : ""} ${parentActive ? "has-active" : ""}" data-nav-group="${STAFF_HR_NAV.parentKey}">
+      <button type="button" class="nav-cell-parent nav-staff-parent" aria-expanded="${parentExpanded}" aria-label="${L("navGroupToggle")}: ${L(STAFF_HR_NAV.label)}">
+        <i class="bi ${STAFF_HR_NAV.icon}" aria-hidden="true"></i>
+        <span>${L(STAFF_HR_NAV.label)}</span>
+        <i class="bi bi-chevron-down nav-cell-chevron" aria-hidden="true"></i>
+      </button>
+      <div class="nav-cell-body">
+        <div class="nav-cell-body-inner">
+          ${visibleRoutes.map(([route, icon, label]) => {
+            const isItemActive = activeRoute === route ||
+              (route === "staffHr" && (activeRoute === "staffHr" || activeRoute === "staffHrOverviewRoute") && staffHrPageState.tab === "overview") ||
+              (activeRoute === "staffHr" && (
+                (route === "staffHrStaffRoute" && staffHrPageState.tab === "staff") ||
+                (route === "staffHrBirthdaysRoute" && staffHrPageState.tab === "birthdays") ||
+                (route === "staffHrDepartmentsRoute" && staffHrPageState.tab === "departments") ||
+                (route === "staffHrRolesRoute" && staffHrPageState.tab === "roles") ||
+                (route === "staffHrSalariesRoute" && staffHrPageState.tab === "salaries") ||
+                (route === "staffHrPerformanceRoute" && staffHrPageState.tab === "performance") ||
+                (route === "staffHrAttendanceRoute" && staffHrPageState.tab === "attendance") ||
+                (route === "staffHrEquipmentRoute" && staffHrPageState.tab === "equipment") ||
+                (route === "staffHrDocumentsRoute" && staffHrPageState.tab === "documents") ||
+                (route === "staffHrReportsRoute" && staffHrPageState.tab === "reports")
+              ));
+            return `
+              <button type="button" class="nav-cell-item nav-staff-item ${isItemActive ? "active" : ""}" data-route="${route}" title="${L(label)}">
+                <i class="bi ${sidebarIcon(icon, route)} me-2" aria-hidden="true"></i>
+                <span>${L(label)}</span>
+              </button>
+            `;
+          }).join("")}
+        </div>
+      </div>
+    </div>`;
+}
+
 function cellModuleHeader(route, { modalType = null } = {}) {
   return moduleNavShell("cellLeadership", {
     title: cellRouteLabel(route),
@@ -11940,12 +12033,13 @@ function renderShell() {
     const partnershipNav = group.key === "departments" && (!workspaceRoutes || workspaceRoutes.some((r) => PARTNERSHIP_TAB_ROUTES.has(r) || r === "partnership")) ? renderPartnershipSidebarNav() : "";
     const mediaNav = group.key === "departments" && (!workspaceRoutes || workspaceRoutes.some((r) => MEDIA_TAB_ROUTES.has(r))) ? renderMediaSidebarNav() : "";
     const outreachNav = group.key === "departments" && (!workspaceRoutes || workspaceRoutes.some((r) => OUTREACH_TAB_ROUTES.has(r))) ? renderOutreachSidebarNav() : "";
+    const staffHrNav = group.key === "admin" && (!workspaceRoutes || workspaceRoutes.some((r) => STAFF_HR_TAB_ROUTES.has(r) || r === "staffHr")) ? renderStaffHrSidebarNav() : "";
     const navItems = items.map(({ route, icon, label }) => `
       <button type="button" class="nav-item-btn" data-route="${route}" title="${L(label)}">
         <i class="bi ${sidebarIcon(icon, route)}"></i><span>${L(label)}</span>
       </button>
     `).join("");
-    if (!navItems && !cellNav && !fevoNav && !financeNav && !partnershipNav && !mediaNav && !outreachNav) return "";
+    if (!navItems && !cellNav && !fevoNav && !financeNav && !partnershipNav && !mediaNav && !outreachNav && !staffHrNav) return "";
     const expanded = isSidebarGroupExpanded(group.key) || (group.key === "departments" && String(activeUser?.role || "").toLowerCase().includes("venue"));
     return `
     <div class="nav-group ${expanded ? "is-expanded" : ""}" data-nav-group="${group.key}">
@@ -11955,6 +12049,7 @@ function renderShell() {
       </button>
       <div class="nav-group-body">
         <div class="nav-group-body-inner">
+          ${staffHrNav}
           ${cellNav}
           ${fevoNav}
           ${financeNav}
@@ -12084,6 +12179,7 @@ let renderSyncDebounceTimeout = null;
 
 function getRouteHydrationKey(route) {
   if (!route) return "dashboard";
+  if (route.startsWith("staffHr")) return "staffHr";
   if (route.startsWith("cell")) return "cell";
   if (route.startsWith("fevo")) return "fevo";
   if (route.startsWith("venueInventory")) return "venueInventory";
@@ -12249,7 +12345,18 @@ function getRouteRenderers() {
     mediaReportsRoute: () => renderMedia("reports"),
     requisitions: renderRequisitions,
     attendance: () => { if (typeof renderAttendance === "function") renderAttendance(); },
-    staffHr: renderStaffHr,
+    staffHr: () => { staffHrPageState.tab = "overview"; renderStaffHr(); },
+    staffHrOverviewRoute: () => { staffHrPageState.tab = "overview"; renderStaffHr(); },
+    staffHrStaffRoute: () => { staffHrPageState.tab = "staff"; renderStaffHr(); },
+    staffHrBirthdaysRoute: () => { staffHrPageState.tab = "birthdays"; renderStaffHr(); },
+    staffHrDepartmentsRoute: () => { staffHrPageState.tab = "departments"; renderStaffHr(); },
+    staffHrRolesRoute: () => { staffHrPageState.tab = "roles"; renderStaffHr(); },
+    staffHrSalariesRoute: () => { staffHrPageState.tab = "salaries"; renderStaffHr(); },
+    staffHrPerformanceRoute: () => { staffHrPageState.tab = "performance"; renderStaffHr(); },
+    staffHrAttendanceRoute: () => { staffHrPageState.tab = "attendance"; renderStaffHr(); },
+    staffHrEquipmentRoute: () => { staffHrPageState.tab = "equipment"; renderStaffHr(); },
+    staffHrDocumentsRoute: () => { staffHrPageState.tab = "documents"; renderStaffHr(); },
+    staffHrReportsRoute: () => { staffHrPageState.tab = "reports"; renderStaffHr(); },
     users: renderUsers,
     access: renderAccess,
     settings: renderSettings,
@@ -12451,10 +12558,22 @@ function setRoute(route) {
     partnershipAnalyticsRoute: ["departments", "partnershipTabAnalytics"],
     partnershipReportsRoute: ["departments", "partnershipTabReports"],
     partnershipExportsRoute: ["departments", "partnershipTabExports"],
+    staffHr: ["admin", "staffHr"],
+    staffHrOverviewRoute: ["admin", "staffTabOverview"],
+    staffHrStaffRoute: ["admin", "staffTabStaff"],
+    staffHrBirthdaysRoute: ["admin", "staffTabBirthdays"],
+    staffHrDepartmentsRoute: ["admin", "staffTabDepartments"],
+    staffHrRolesRoute: ["admin", "staffTabRoles"],
+    staffHrSalariesRoute: ["admin", "staffTabSalaries"],
+    staffHrPerformanceRoute: ["admin", "staffTabPerformance"],
+    staffHrAttendanceRoute: ["admin", "staffTabAttendance"],
+    staffHrEquipmentRoute: ["admin", "staffTabEquipment"],
+    staffHrDocumentsRoute: ["admin", "staffTabDocuments"],
+    staffHrReportsRoute: ["admin", "staffTabReports"],
     notifications: ["main", "notifications"]
   };
   byId("pageTitle").textContent = activeRoute === "cellPortal" ? (lang === "pt" ? "Portal do Líder de Célula" : "Cell Leader Portal") : found ? L(found.item[2]) : isCellRoute(activeRoute) ? cellRouteLabel(activeRoute) : childRoutes[activeRoute] ? L(childRoutes[activeRoute][1]) : L("dashboard");
-  byId("sectionLabel").textContent = found ? L(found.group.key) : isCellRoute(activeRoute) || childRoutes[activeRoute] ? L("departments") : L("main");
+  byId("sectionLabel").textContent = found ? L(found.group.key) : isCellRoute(activeRoute) ? L("departments") : childRoutes[activeRoute] ? L(childRoutes[activeRoute][0]) : L("main");
   document.querySelectorAll("[data-route]").forEach((item) => {
     const route = item.dataset.route;
     const isActive = route === activeRoute ||
@@ -12517,6 +12636,19 @@ function setRoute(route) {
     const outreachGroup = document.querySelector(`[data-nav-group="${OUTREACH_NAV.parentKey}"]`);
     if (outreachGroup && !outreachGroup.classList.contains("is-expanded")) {
       outreachGroup.classList.add("is-expanded");
+    }
+  }
+  if (STAFF_HR_TAB_ROUTES.has(activeRoute) || activeRoute === "staffHr" || activeRoute === "staffHrOverviewRoute") {
+    sidebarGroupState[STAFF_HR_NAV.parentKey] = true;
+    sidebarGroupState.admin = true;
+    localStorage.setItem(SIDEBAR_GROUPS_KEY, JSON.stringify(sidebarGroupState));
+    const adminGroup = document.querySelector('[data-nav-group="admin"]');
+    if (adminGroup && !adminGroup.classList.contains("is-expanded")) {
+      adminGroup.classList.add("is-expanded");
+    }
+    const staffGroup = document.querySelector(`[data-nav-group="${STAFF_HR_NAV.parentKey}"]`);
+    if (staffGroup && !staffGroup.classList.contains("is-expanded")) {
+      staffGroup.classList.add("is-expanded");
     }
   }
   const renderers = getRouteRenderers();
@@ -38972,8 +39104,7 @@ document.addEventListener("click", async (event) => {
     if (metricKey === "birthdays-past") return openStaffBirthdaysModal("past");
     if (metricKey === "birthdays-upcoming") {
       staffHrPageState.tab = "birthdays";
-      if (activeRoute === "staffHr") renderStaffHr();
-      else setRoute("staffHr");
+      setRoute("staffHrBirthdaysRoute");
       return;
     }
     return;
@@ -38986,7 +39117,21 @@ document.addEventListener("click", async (event) => {
       return;
     }
     staffHrPageState.tab = tab;
-    if (activeRoute === "staffHr") renderStaffHr();
+    const staffTabToRoute = {
+      overview: "staffHr",
+      staff: "staffHrStaffRoute",
+      birthdays: "staffHrBirthdaysRoute",
+      departments: "staffHrDepartmentsRoute",
+      roles: "staffHrRolesRoute",
+      salaries: "staffHrSalariesRoute",
+      performance: "staffHrPerformanceRoute",
+      attendance: "staffHrAttendanceRoute",
+      equipment: "staffHrEquipmentRoute",
+      documents: "staffHrDocumentsRoute",
+      reports: "staffHrReportsRoute"
+    };
+    const targetRoute = staffTabToRoute[tab] || "staffHr";
+    setRoute(targetRoute);
     return;
   }
   const financeChartModeBtn = event.target.closest("[data-finance-chart-mode]");

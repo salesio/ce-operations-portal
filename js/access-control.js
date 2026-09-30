@@ -94,6 +94,20 @@
     mediaReportsRoute: "media"
   };
 
+  const STAFF_HR_ROUTE_MODULES = {
+    staffHrOverviewRoute: "staffHr",
+    staffHrStaffRoute: "staffHr",
+    staffHrBirthdaysRoute: "staffHr",
+    staffHrDepartmentsRoute: "staffHr",
+    staffHrRolesRoute: "staffHr",
+    staffHrSalariesRoute: "staffHr",
+    staffHrPerformanceRoute: "staffHr",
+    staffHrAttendanceRoute: "staffHr",
+    staffHrEquipmentRoute: "staffHr",
+    staffHrDocumentsRoute: "staffHr",
+    staffHrReportsRoute: "staffHr"
+  };
+
   const ALL_MODULES = [
     "dashboard", "churches", "members", "firstTimers", "followUp", "reports", "counseling",
     "foundation", "finance", "notifications", "fevo", "venueInventory", "sacraments", "prisonMinistry",
@@ -595,9 +609,11 @@
     if (FEVO_ROUTE_MODULES[route]) return FEVO_ROUTE_MODULES[route];
     if (VENUE_ROUTE_MODULES[route]) return VENUE_ROUTE_MODULES[route];
     if (MEDIA_ROUTE_MODULES[route]) return MEDIA_ROUTE_MODULES[route];
+    if (STAFF_HR_ROUTE_MODULES[route]) return STAFF_HR_ROUTE_MODULES[route];
     if (route.startsWith("venueInventory")) return "venueInventory";
     if (route.startsWith("fevo")) return "fevo";
     if (route.startsWith("media")) return "media";
+    if (route.startsWith("staffHr")) return "staffHr";
     if (route.startsWith("cell")) return "cell";
     if (route.startsWith("finance")) return "finance";
     if (route.startsWith("partnership")) return "partnership";
