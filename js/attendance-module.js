@@ -598,21 +598,15 @@
             </thead>
             <tbody>
               ${displayedRecords.length ? displayedRecords.map(function (rec) {
-                var avatarInitial = (rec.employee_name || "?").charAt(0).toUpperCase();
                 return `
                   <tr>
                     <td class="ps-3">
                       <span class="badge bg-dark text-white border border-secondary border-opacity-50 font-monospace">${rec.employee_id}</span>
                     </td>
                     <td>
-                      <div class="d-flex align-items-center gap-2.5">
-                        <div class="att-avatar">
-                          ${avatarInitial}
-                        </div>
-                        <div>
-                          <div class="fw-bold mb-0" style="font-size: 0.94rem;">${rec.employee_name}</div>
-                          ${rec.card_no ? `<span class="text-secondary small" style="font-size: 0.72rem;"><i class="bi bi-credit-card me-1"></i>${rec.card_no}</span>` : ""}
-                        </div>
+                      <div>
+                        <div class="fw-bold mb-0" style="font-size: 0.94rem;">${rec.employee_name}</div>
+                        ${rec.card_no ? `<span class="text-secondary small" style="font-size: 0.72rem;"><i class="bi bi-credit-card me-1"></i>${rec.card_no}</span>` : ""}
                       </div>
                     </td>
                     <td>
@@ -793,12 +787,9 @@
                       <tr>
                         <td class="ps-3 fw-bold text-gold">${medal}</td>
                         <td>
-                          <div class="d-flex align-items-center gap-2">
-                            <div class="att-avatar" style="width: 28px; height: 28px; font-size: 0.78rem;">${(emp.employee_name || "?").charAt(0)}</div>
-                            <div>
-                              <div class="fw-semibold small">${emp.employee_name}</div>
-                              <span class="text-secondary" style="font-size: 0.7rem;">ID: ${emp.employee_id}</span>
-                            </div>
+                          <div>
+                            <div class="fw-semibold small">${emp.employee_name}</div>
+                            <span class="text-secondary" style="font-size: 0.7rem;">ID: ${emp.employee_id}</span>
                           </div>
                         </td>
                         <td class="text-center font-monospace text-info small">${emp.avgCheckInTime}</td>
@@ -844,12 +835,9 @@
                       <tr>
                         <td class="ps-3 fw-bold text-danger">${idx + 1}º</td>
                         <td>
-                          <div class="d-flex align-items-center gap-2">
-                            <div class="att-avatar" style="width: 28px; height: 28px; font-size: 0.78rem; border-color: #ef4444; color: #ef4444;">${(emp.employee_name || "?").charAt(0)}</div>
-                            <div>
-                              <div class="fw-semibold small">${emp.employee_name}</div>
-                              <span class="text-secondary" style="font-size: 0.7rem;">ID: ${emp.employee_id} • ${emp.department}</span>
-                            </div>
+                          <div>
+                            <div class="fw-semibold small">${emp.employee_name}</div>
+                            <span class="text-secondary" style="font-size: 0.7rem;">ID: ${emp.employee_id} • ${emp.department}</span>
                           </div>
                         </td>
                         <td class="text-center">
@@ -960,8 +948,8 @@
       <div class="att-card p-4 mb-4">
         <div class="row g-4 align-items-center">
           <div class="col-12 col-md-auto text-center text-md-start">
-            <div class="att-avatar mx-auto" style="width: 68px; height: 68px; font-size: 1.8rem; border-color: #d4af37; color: #d4af37; background: rgba(212, 175, 55, 0.12);">
-              ${(trajectory.employee_name || "?").charAt(0)}
+            <div class="d-flex align-items-center justify-content-center mx-auto" style="width: 58px; height: 58px; font-size: 1.6rem; border: 1px solid rgba(212, 175, 55, 0.4); color: #d4af37; background: rgba(212, 175, 55, 0.12); border-radius: 16px;">
+              <i class="bi bi-person-badge"></i>
             </div>
           </div>
           <div class="col-12 col-md">
