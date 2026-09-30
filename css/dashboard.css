@@ -10424,96 +10424,126 @@ nav.module-tabs {
   border-bottom: 1px solid #e2e8f0 !important;
 }
 
-[data-theme="light"] h1,
-[data-theme="light"] h2,
-[data-theme="light"] h3,
-[data-theme="light"] h4,
-[data-theme="light"] h5,
-[data-theme="light"] h6,
-.theme-light h1,
-.theme-light h2,
-.theme-light h3,
-.theme-light h4,
-.theme-light h5,
-.theme-light h6 {
+[data-theme="light"] .ops-main h1,
+[data-theme="light"] .ops-main h2,
+[data-theme="light"] .ops-main h3,
+[data-theme="light"] .ops-main h4,
+[data-theme="light"] .ops-main h5,
+[data-theme="light"] .ops-main h6,
+[data-theme="light"] #appView h1,
+[data-theme="light"] #appView h2,
+[data-theme="light"] #appView h3,
+[data-theme="light"] #appView h4,
+[data-theme="light"] #appView h5,
+[data-theme="light"] #appView h6,
+.theme-light .ops-main h1,
+.theme-light .ops-main h2,
+.theme-light .ops-main h3,
+.theme-light .ops-main h4,
+.theme-light .ops-main h5,
+.theme-light .ops-main h6,
+.theme-light #appView h1,
+.theme-light #appView h2,
+.theme-light #appView h3,
+.theme-light #appView h4,
+.theme-light #appView h5,
+.theme-light #appView h6 {
   color: #0f172a !important;
 }
 
-[data-theme="light"] .text-secondary,
-[data-theme="light"] .meta-text,
-[data-theme="light"] .text-muted,
-.theme-light .text-secondary,
-.theme-light .meta-text,
-.theme-light .text-muted {
+[data-theme="light"] .ops-main .text-secondary,
+[data-theme="light"] .ops-main .meta-text,
+[data-theme="light"] .ops-main .text-muted,
+[data-theme="light"] #appView .text-secondary,
+[data-theme="light"] #appView .meta-text,
+[data-theme="light"] #appView .text-muted,
+.theme-light .ops-main .text-secondary,
+.theme-light .ops-main .meta-text,
+.theme-light .ops-main .text-muted,
+.theme-light #appView .text-secondary,
+.theme-light #appView .meta-text,
+.theme-light #appView .text-muted {
   color: #64748b !important;
 }
 
 /* Light Theme Tables */
-[data-theme="light"] .table,
-[data-theme="light"] table,
-.theme-light .table,
-.theme-light table {
+[data-theme="light"] .ops-main .table,
+[data-theme="light"] .ops-main table,
+.theme-light .ops-main .table,
+.theme-light .ops-main table {
   --bs-table-bg: transparent !important;
   --bs-table-color: #0f172a !important;
   color: #0f172a !important;
 }
 
-[data-theme="light"] thead th,
-[data-theme="light"] .table thead th,
-.theme-light thead th,
-.theme-light .table thead th {
+[data-theme="light"] .ops-main thead th,
+[data-theme="light"] .ops-main .table thead th,
+.theme-light .ops-main thead th,
+.theme-light .ops-main .table thead th {
   background: #f8fafc !important;
   color: #475569 !important;
   border-bottom: 2px solid #e2e8f0 !important;
   font-weight: 700 !important;
 }
 
-[data-theme="light"] tbody tr td,
-[data-theme="light"] .table tbody tr td,
-.theme-light tbody tr td,
-.theme-light .table tbody tr td {
+[data-theme="light"] .ops-main tbody tr td,
+[data-theme="light"] .ops-main .table tbody tr td,
+.theme-light .ops-main tbody tr td,
+.theme-light .ops-main .table tbody tr td {
   background: #ffffff !important;
   color: #1e293b !important;
   border-bottom: 1px solid #f1f5f9 !important;
 }
 
-[data-theme="light"] tbody tr:hover td,
-[data-theme="light"] .table tbody tr:hover td,
-.theme-light tbody tr:hover td,
-.theme-light .table tbody tr:hover td {
+[data-theme="light"] .ops-main tbody tr:hover td,
+[data-theme="light"] .ops-main .table tbody tr:hover td,
+.theme-light .ops-main tbody tr:hover td,
+.theme-light .ops-main .table tbody tr:hover td {
   background: #f8fafc !important;
 }
 
-/* Light Theme Form Controls */
-[data-theme="light"] .form-control,
-[data-theme="light"] .form-select,
-[data-theme="light"] input[type="text"],
-[data-theme="light"] input[type="search"],
-[data-theme="light"] input[type="date"],
-[data-theme="light"] select,
-.theme-light .form-control,
-.theme-light .form-select,
-.theme-light input[type="text"],
-.theme-light input[type="search"],
-.theme-light input[type="date"],
-.theme-light select {
+/* Light Theme Form Controls — Scoped strictly to dashboard main app and modals */
+[data-theme="light"] .ops-main .form-control,
+[data-theme="light"] .ops-main .form-select,
+[data-theme="light"] .ops-main input[type="text"],
+[data-theme="light"] .ops-main input[type="search"],
+[data-theme="light"] .ops-main input[type="date"],
+[data-theme="light"] .ops-main select,
+[data-theme="light"] .ops-modal .form-control,
+[data-theme="light"] .ops-modal .form-select,
+[data-theme="light"] .modal-content .form-control,
+[data-theme="light"] .modal-content .form-select,
+.theme-light .ops-main .form-control,
+.theme-light .ops-main .form-select,
+.theme-light .ops-main input[type="text"],
+.theme-light .ops-main input[type="search"],
+.theme-light .ops-main input[type="date"],
+.theme-light .ops-main select,
+.theme-light .ops-modal .form-control,
+.theme-light .ops-modal .form-select,
+.theme-light .modal-content .form-control,
+.theme-light .modal-content .form-select {
   background-color: #ffffff !important;
   border: 1px solid #cbd5e1 !important;
   color: #0f172a !important;
 }
 
-[data-theme="light"] .form-control:focus,
-[data-theme="light"] .form-select:focus,
-.theme-light .form-control:focus,
-.theme-light .form-select:focus {
+[data-theme="light"] .ops-main .form-control:focus,
+[data-theme="light"] .ops-main .form-select:focus,
+[data-theme="light"] .ops-modal .form-control:focus,
+[data-theme="light"] .ops-modal .form-select:focus,
+.theme-light .ops-main .form-control:focus,
+.theme-light .ops-main .form-select:focus,
+.theme-light .ops-modal .form-control:focus,
+.theme-light .ops-modal .form-select:focus {
   border-color: #2563eb !important;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
   background-color: #ffffff !important;
   color: #0f172a !important;
 }
 
-[data-theme="light"] .input-group-text,
-.theme-light .input-group-text {
+[data-theme="light"] .ops-main .input-group-text,
+.theme-light .ops-main .input-group-text {
   background: #f1f5f9 !important;
   border: 1px solid #cbd5e1 !important;
   color: #64748b !important;
@@ -10712,6 +10742,126 @@ nav.module-tabs {
   border-color: #2563eb !important;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
   color: #0f172a !important;
+}
+
+/* ============================================================
+   Login Page Immunity & Absolute Protection
+   Preserves the original dark glass login page styling identically
+   under all conditions and theme modes.
+   ============================================================ */
+#loginView,
+.login-shell {
+  background-color: #060e1a !important;
+  color: #ffffff !important;
+}
+
+#loginView .login-panel,
+.login-shell .login-panel {
+  background: #0f1c2e !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.04) !important;
+  color: #ffffff !important;
+}
+
+#loginView .login-title,
+.login-shell .login-title,
+#loginView h1,
+.login-shell h1 {
+  color: #ffffff !important;
+  font-family: 'Playfair Display', Georgia, serif !important;
+  font-size: 2.35rem !important;
+  font-weight: 700 !important;
+}
+
+#loginView .login-subtitle,
+.login-shell .login-subtitle {
+  color: rgba(255, 255, 255, 0.65) !important;
+  font-size: 0.92rem !important;
+}
+
+#loginView .login-gold-bar,
+.login-shell .login-gold-bar {
+  background: #e5b342 !important;
+}
+
+#loginView .form-label,
+.login-shell .form-label {
+  color: #ffffff !important;
+  font-size: 0.88rem !important;
+  font-weight: 600 !important;
+}
+
+#loginView .form-control,
+.login-shell .form-control,
+#loginView input[type="text"],
+#loginView input[type="password"],
+.login-shell input[type="text"],
+.login-shell input[type="password"] {
+  background-color: #152238 !important;
+  border: 1px solid #283e5e !important;
+  border-radius: 10px !important;
+  color: #ffffff !important;
+  padding: 0.75rem 1rem !important;
+  font-size: 0.95rem !important;
+}
+
+#loginView .form-control::placeholder,
+.login-shell .form-control::placeholder {
+  color: rgba(255, 255, 255, 0.35) !important;
+  opacity: 1 !important;
+}
+
+#loginView .form-control:focus,
+.login-shell .form-control:focus {
+  border-color: #e5b342 !important;
+  box-shadow: 0 0 0 3px rgba(229, 179, 66, 0.2) !important;
+  background-color: #152238 !important;
+  color: #ffffff !important;
+  outline: none !important;
+}
+
+#loginView .login-submit-btn,
+.login-shell .login-submit-btn {
+  background: linear-gradient(135deg, #f7d070 0%, #e5b342 100%) !important;
+  border: none !important;
+  border-radius: 10px !important;
+  color: #0a1424 !important;
+  font-weight: 700 !important;
+  box-shadow: 0 6px 20px rgba(229, 179, 66, 0.32) !important;
+}
+
+#loginView .login-submit-btn:hover,
+.login-shell .login-submit-btn:hover {
+  background: linear-gradient(135deg, #fae08f 0%, #f0c355 100%) !important;
+  color: #050a12 !important;
+}
+
+#loginView .login-forgot-btn,
+.login-shell .login-forgot-btn {
+  color: #e5b342 !important;
+}
+
+#loginView .login-footer-note,
+.login-shell .login-footer-note {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+#loginView .dash-lang-switch,
+.login-shell .dash-lang-switch {
+  background: #15253b !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+#loginView .dash-lang-switch button,
+.login-shell .dash-lang-switch button {
+  background: transparent !important;
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+#loginView .dash-lang-switch button.active,
+.login-shell .dash-lang-switch button.active {
+  background: #e5b342 !important;
+  color: #0a1424 !important;
 }
 
 
