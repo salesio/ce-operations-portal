@@ -143,6 +143,17 @@ const TEXT = {
     attendanceControl: "Assiduidade & Ponto",
     attendance: "Controlo de Assiduidade",
     attendanceSubtitle: "Gestão biométrica de entradas, pontualidade, histórico e relatórios de assiduidade do staff.",
+    foundationTabOverview: "Visão Geral",
+    foundationTabEnrolments: "Inscrições",
+    foundationTabClasses: "Turmas",
+    foundationTabStudents: "Alunos",
+    foundationTabLessonsAttendance: "Aulas & Presenças",
+    foundationTabOnlineTests: "Testes Online",
+    foundationTabSoulWinning: "Ganho de Almas",
+    foundationTabFinalExam: "Exame Final",
+    foundationTabTeachers: "Professores",
+    foundationTabGraduation: "Graduação",
+    foundationTabReports: "Relatórios",
     reqTabOverview: "Visão Geral",
     reqTabNew: "Nova Requisição",
     reqTabReceived: "Requisições Recebidas",
@@ -900,6 +911,17 @@ const TEXT = {
     attendanceControl: "Attendance & Time",
     attendance: "Attendance & Punctuality",
     attendanceSubtitle: "Biometric check-in tracking, punctuality, history and staff attendance reports.",
+    foundationTabOverview: "Overview",
+    foundationTabEnrolments: "Enrolments",
+    foundationTabClasses: "Classes",
+    foundationTabStudents: "Students",
+    foundationTabLessonsAttendance: "Lessons & Attendance",
+    foundationTabOnlineTests: "Online Tests",
+    foundationTabSoulWinning: "Soul Winning",
+    foundationTabFinalExam: "Final Exam",
+    foundationTabTeachers: "Teachers",
+    foundationTabGraduation: "Graduation",
+    foundationTabReports: "Reports",
     reqTabOverview: "Overview",
     reqTabNew: "New Requisition",
     reqTabReceived: "Received Requisitions",
@@ -3376,6 +3398,27 @@ const STAFF_HR_NAV = {
 
 const STAFF_HR_TAB_ROUTES = new Set(STAFF_HR_NAV.routes.map(([route]) => route));
 
+const FOUNDATION_NAV = {
+  parentKey: "foundationHeader",
+  label: "foundationSchool",
+  icon: "bi-mortarboard",
+  routes: [
+    ["foundation", "bi-grid-1x2", "foundationTabOverview"],
+    ["foundationEnrolmentsRoute", "bi-person-plus", "foundationTabEnrolments"],
+    ["foundationClassesRoute", "bi-collection", "foundationTabClasses"],
+    ["foundationStudentsRoute", "bi-people", "foundationTabStudents"],
+    ["foundationLessonsRoute", "bi-calendar-check", "foundationTabLessonsAttendance"],
+    ["foundationOnlineTestsRoute", "bi-laptop", "foundationTabOnlineTests"],
+    ["foundationSoulWinningRoute", "bi-fire", "foundationTabSoulWinning"],
+    ["foundationFinalExamRoute", "bi-file-earmark-text", "foundationTabFinalExam"],
+    ["foundationTeachersRoute", "bi-person-badge", "foundationTabTeachers"],
+    ["foundationGraduationRoute", "bi-award", "foundationTabGraduation"],
+    ["foundationReportsRoute", "bi-graph-up", "foundationTabReports"]
+  ]
+};
+
+const FOUNDATION_TAB_ROUTES = new Set(FOUNDATION_NAV.routes.map(([route]) => route));
+
 const TAB_PARALLAX_ORDER = {
   cell: CELL_NAV.areas.flatMap((area) => area.routes.map(([route]) => route)),
   fevo: ["fevo", "fevoConfigRoute", "fevoFollowUpRoute", "fevoEvangelismRoute", "fevoVisitationRoute", "fevoPrayerRoute", "fevoNoReportsRoute", "fevoWeeklyReportsRoute", "fevoAnalysisRoute"],
@@ -3384,7 +3427,8 @@ const TAB_PARALLAX_ORDER = {
   venue: ["venueInventory", "venueInventoryGeneral", "venueInventoryAcquisitions", "venueInventoryStaff", "venueInventoryMaintenance", "venueInventoryMovements", "venueInventorySpaces", "venueInventoryChecklist", "venueInventoryReports"],
   media: ["media", "mediaTeamRoute", "mediaRolesRoute", "mediaSchedulesRoute", "mediaServicesRoute", "mediaChannelsRoute", "mediaPerformanceRoute", "mediaReportsRoute"],
   outreach: ["programs", "cellPrison", "cellMaterials"],
-  staffHr: ["staffHr", "staffHrStaffRoute", "staffHrBirthdaysRoute", "staffHrDepartmentsRoute", "staffHrRolesRoute", "staffHrSalariesRoute", "staffHrPerformanceRoute", "staffHrAttendanceRoute", "staffHrEquipmentRoute", "staffHrDocumentsRoute", "staffHrReportsRoute"]
+  staffHr: ["staffHr", "staffHrStaffRoute", "staffHrBirthdaysRoute", "staffHrDepartmentsRoute", "staffHrRolesRoute", "staffHrSalariesRoute", "staffHrPerformanceRoute", "staffHrAttendanceRoute", "staffHrEquipmentRoute", "staffHrDocumentsRoute", "staffHrReportsRoute"],
+  foundation: ["foundation", "foundationEnrolmentsRoute", "foundationClassesRoute", "foundationStudentsRoute", "foundationLessonsRoute", "foundationOnlineTestsRoute", "foundationSoulWinningRoute", "foundationFinalExamRoute", "foundationTeachersRoute", "foundationGraduationRoute", "foundationReportsRoute"]
 };
 
 let tabParallaxState = { family: null, index: -1 };
@@ -3398,6 +3442,7 @@ function tabParallaxFamily(route) {
   if (MEDIA_TAB_ROUTES.has(route)) return "media";
   if (OUTREACH_TAB_ROUTES.has(route)) return "outreach";
   if (STAFF_HR_TAB_ROUTES.has(route) || route === "staffHrOverviewRoute") return "staffHr";
+  if (FOUNDATION_TAB_ROUTES.has(route) || route === "foundation" || route === "foundationOverviewRoute") return "foundation";
   return null;
 }
 
@@ -3445,12 +3490,12 @@ function triggerScrollTabParallax(targetId) {
 }
 
 function isModuleTabRoute(route) {
-  return CELL_TAB_ROUTES.has(route) || FEVO_TAB_ROUTES.has(route) || FINANCE_TAB_ROUTES.has(route) || PARTNERSHIP_TAB_ROUTES.has(route) || VENUE_TAB_ROUTES.has(route) || OUTREACH_TAB_ROUTES.has(route) || MEDIA_TAB_ROUTES.has(route) || STAFF_HR_TAB_ROUTES.has(route) || route === "staffHrOverviewRoute";
+  return CELL_TAB_ROUTES.has(route) || FEVO_TAB_ROUTES.has(route) || FINANCE_TAB_ROUTES.has(route) || PARTNERSHIP_TAB_ROUTES.has(route) || VENUE_TAB_ROUTES.has(route) || OUTREACH_TAB_ROUTES.has(route) || MEDIA_TAB_ROUTES.has(route) || STAFF_HR_TAB_ROUTES.has(route) || FOUNDATION_TAB_ROUTES.has(route) || route === "staffHrOverviewRoute";
 }
 
 const NAV_GROUPS = [
   { key: "main", items: [["dashboard", "bi-speedometer2", "dashboard"], ["churches", "bi-building", "churches"], ["members", "bi-people", "members"], ["reports", "bi-bar-chart-line", "reports"]] },
-  { key: "pastoralCare", items: [["firstTimers", "bi-person-heart", "firstTimers"], ["followUp", "bi-telephone-outbound", "followUp"], ["foundation", "bi-mortarboard", "foundationSchool"], ["sacraments", "bi-droplet", "sacraments"], ["counseling", "bi-chat-heart", "counseling"]] },
+  { key: "pastoralCare", items: [["firstTimers", "bi-person-heart", "firstTimers"], ["followUp", "bi-telephone-outbound", "followUp"], ["sacraments", "bi-droplet", "sacraments"], ["counseling", "bi-chat-heart", "counseling"]] },
   // Order: Células (subnav) → F.E.V.O (subnav) → Finanças (subnav) → Parcerias (subnav) → Requisições → Inventário → Mídia (subnav) → Programas & Extensão (subnav)
   { key: "departments", items: [["requisitions", "bi-clipboard-check", "requisitions"], ["venueInventory", "bi-box-seam", "venueInventoryShort"]] },
   { key: "admin", items: [["attendance", "bi-fingerprint", "attendanceControl"], ["users", "bi-person-lock", "usersRoles"], ["access", "bi-shield-lock", "accessControl"], ["settings", "bi-gear", "settings"], ["audit", "bi-journal-check", "auditLogs"]] }
@@ -3464,6 +3509,17 @@ const SIDEBAR_FALLBACK_ICONS = {
   firstTimers: "bi-person-heart",
   followUp: "bi-telephone-outbound",
   foundation: "bi-mortarboard",
+  foundationOverviewRoute: "bi-grid-1x2",
+  foundationEnrolmentsRoute: "bi-person-plus",
+  foundationClassesRoute: "bi-collection",
+  foundationStudentsRoute: "bi-people",
+  foundationLessonsRoute: "bi-calendar-check",
+  foundationOnlineTestsRoute: "bi-laptop",
+  foundationSoulWinningRoute: "bi-fire",
+  foundationFinalExamRoute: "bi-file-earmark-text",
+  foundationTeachersRoute: "bi-person-badge",
+  foundationGraduationRoute: "bi-award",
+  foundationReportsRoute: "bi-graph-up",
   sacraments: "bi-droplet",
   counseling: "bi-chat-heart",
   fevo: "bi-compass",
@@ -11364,6 +11420,7 @@ const FALLBACK_ROUTE_MODULES = {
 function fallbackRouteModule(route = "dashboard") {
   if (FALLBACK_ROUTE_MODULES[route]) return FALLBACK_ROUTE_MODULES[route];
   if (route.startsWith("staffHr")) return "staffHr";
+  if (route.startsWith("foundation")) return "foundation";
   if (route.startsWith("cell")) return "cell";
   if (route.startsWith("fevo")) return "fevo";
   if (route.startsWith("finance")) return "finance";
@@ -11371,6 +11428,10 @@ function fallbackRouteModule(route = "dashboard") {
   if (route.startsWith("venueInventory")) return "venueInventory";
   if (route.startsWith("media")) return "media";
   return route;
+}
+
+function isFoundationRoute(route = activeRoute) {
+  return FOUNDATION_TAB_ROUTES.has(route) || route === "foundation" || route === "foundationOverviewRoute";
 }
 
 function isFinanceRoute(route = activeRoute) {
@@ -11936,6 +11997,52 @@ function renderMediaSidebarNav() {
     </div>`;
 }
 
+function renderFoundationSidebarNav() {
+  const workspaceRoutes = roleWorkspaceRoutes();
+  const parentExpanded = isSidebarGroupExpanded(FOUNDATION_NAV.parentKey);
+  const parentActive = FOUNDATION_TAB_ROUTES.has(activeRoute) || activeRoute === "foundation" || activeRoute === "foundationOverviewRoute";
+  const visibleRoutes = FOUNDATION_NAV.routes.filter(([route]) => {
+    if (workspaceRoutes && !workspaceRoutes.includes(route) && !workspaceRoutes.includes("foundation")) return false;
+    const nav = resolveRouteAccess(route);
+    return nav.visible && !nav.locked;
+  });
+  if (!visibleRoutes.length) return "";
+  return `
+    <div class="nav-cell-branch nav-foundation-branch ${parentExpanded ? "is-expanded" : ""} ${parentActive ? "has-active" : ""}" data-nav-group="${FOUNDATION_NAV.parentKey}">
+      <button type="button" class="nav-cell-parent nav-foundation-parent" aria-expanded="${parentExpanded}" aria-label="${L("navGroupToggle")}: ${L(FOUNDATION_NAV.label)}">
+        <i class="bi ${FOUNDATION_NAV.icon}" aria-hidden="true"></i>
+        <span>${L(FOUNDATION_NAV.label)}</span>
+        <i class="bi bi-chevron-down nav-cell-chevron" aria-hidden="true"></i>
+      </button>
+      <div class="nav-cell-body">
+        <div class="nav-cell-body-inner">
+          ${visibleRoutes.map(([route, icon, label]) => {
+            const isItemActive = activeRoute === route ||
+              (route === "foundation" && (activeRoute === "foundation" || activeRoute === "foundationOverviewRoute") && (foundationPageState.tab === "overview" || !foundationPageState.tab)) ||
+              ((activeRoute === "foundation" || isFoundationRoute(activeRoute)) && (
+                (route === "foundationEnrolmentsRoute" && foundationPageState.tab === "enrolments") ||
+                (route === "foundationClassesRoute" && foundationPageState.tab === "classes") ||
+                (route === "foundationStudentsRoute" && foundationPageState.tab === "students") ||
+                (route === "foundationLessonsRoute" && foundationPageState.tab === "lessons") ||
+                (route === "foundationOnlineTestsRoute" && foundationPageState.tab === "onlineTests") ||
+                (route === "foundationSoulWinningRoute" && foundationPageState.tab === "soulWinning") ||
+                (route === "foundationFinalExamRoute" && foundationPageState.tab === "finalExam") ||
+                (route === "foundationTeachersRoute" && foundationPageState.tab === "teachers") ||
+                (route === "foundationGraduationRoute" && foundationPageState.tab === "graduation") ||
+                (route === "foundationReportsRoute" && foundationPageState.tab === "reports")
+              ));
+            return `
+              <button type="button" class="nav-cell-item nav-foundation-item ${isItemActive ? "active" : ""}" data-route="${route}" title="${L(label)}">
+                <i class="bi ${sidebarIcon(icon, route)} me-2" aria-hidden="true"></i>
+                <span>${L(label)}</span>
+              </button>
+            `;
+          }).join("")}
+        </div>
+      </div>
+    </div>`;
+}
+
 function renderStaffHrSidebarNav() {
   const workspaceRoutes = roleWorkspaceRoutes();
   const parentExpanded = isSidebarGroupExpanded(STAFF_HR_NAV.parentKey);
@@ -12037,13 +12144,41 @@ function renderShell() {
     const mediaNav = group.key === "departments" && (!workspaceRoutes || workspaceRoutes.some((r) => MEDIA_TAB_ROUTES.has(r))) ? renderMediaSidebarNav() : "";
     const outreachNav = group.key === "departments" && (!workspaceRoutes || workspaceRoutes.some((r) => OUTREACH_TAB_ROUTES.has(r))) ? renderOutreachSidebarNav() : "";
     const staffHrNav = group.key === "admin" && (!workspaceRoutes || workspaceRoutes.some((r) => STAFF_HR_TAB_ROUTES.has(r) || r === "staffHr")) ? renderStaffHrSidebarNav() : "";
+    const foundationNav = group.key === "pastoralCare" && (!workspaceRoutes || workspaceRoutes.some((r) => FOUNDATION_TAB_ROUTES.has(r) || r === "foundation")) ? renderFoundationSidebarNav() : "";
     const navItems = items.map(({ route, icon, label }) => `
       <button type="button" class="nav-item-btn" data-route="${route}" title="${L(label)}">
         <i class="bi ${sidebarIcon(icon, route)}"></i><span>${L(label)}</span>
       </button>
     `).join("");
-    if (!navItems && !cellNav && !fevoNav && !financeNav && !partnershipNav && !mediaNav && !outreachNav && !staffHrNav) return "";
+    if (!navItems && !cellNav && !fevoNav && !financeNav && !partnershipNav && !mediaNav && !outreachNav && !staffHrNav && !foundationNav) return "";
     const expanded = isSidebarGroupExpanded(group.key) || (group.key === "departments" && String(activeUser?.role || "").toLowerCase().includes("venue"));
+
+    let groupBodyInner = "";
+    if (group.key === "pastoralCare") {
+      const ft = items.find(i => i.route === "firstTimers");
+      const fu = items.find(i => i.route === "followUp");
+      const sc = items.find(i => i.route === "sacraments");
+      const cs = items.find(i => i.route === "counseling");
+      groupBodyInner = `
+        ${ft ? `<button type="button" class="nav-item-btn" data-route="${ft.route}" title="${L(ft.label)}"><i class="bi ${ft.icon}"></i><span>${L(ft.label)}</span></button>` : ""}
+        ${fu ? `<button type="button" class="nav-item-btn" data-route="${fu.route}" title="${L(fu.label)}"><i class="bi ${fu.icon}"></i><span>${L(fu.label)}</span></button>` : ""}
+        ${foundationNav}
+        ${sc ? `<button type="button" class="nav-item-btn" data-route="${sc.route}" title="${L(sc.label)}"><i class="bi ${sc.icon}"></i><span>${L(sc.label)}</span></button>` : ""}
+        ${cs ? `<button type="button" class="nav-item-btn" data-route="${cs.route}" title="${L(cs.label)}"><i class="bi ${cs.icon}"></i><span>${L(cs.label)}</span></button>` : ""}
+      `;
+    } else {
+      groupBodyInner = `
+        ${staffHrNav}
+        ${cellNav}
+        ${fevoNav}
+        ${financeNav}
+        ${partnershipNav}
+        ${navItems}
+        ${mediaNav}
+        ${outreachNav}
+      `;
+    }
+
     return `
     <div class="nav-group ${expanded ? "is-expanded" : ""}" data-nav-group="${group.key}">
       <button type="button" class="nav-group-toggle" aria-expanded="${expanded}" aria-label="${L("navGroupToggle")}: ${L(group.key)}">
@@ -12052,14 +12187,7 @@ function renderShell() {
       </button>
       <div class="nav-group-body">
         <div class="nav-group-body-inner">
-          ${staffHrNav}
-          ${cellNav}
-          ${fevoNav}
-          ${financeNav}
-          ${partnershipNav}
-          ${navItems}
-          ${mediaNav}
-          ${outreachNav}
+          ${groupBodyInner}
         </div>
       </div>
     </div>`;
@@ -12270,7 +12398,18 @@ function getRouteRenderers() {
     reports: renderReports,
     notifications: renderNotifications,
     counseling: renderCounseling,
-    foundation: renderFoundation,
+    foundation: () => { foundationPageState.tab = "overview"; renderFoundation(); },
+    foundationOverviewRoute: () => { foundationPageState.tab = "overview"; renderFoundation(); },
+    foundationEnrolmentsRoute: () => { foundationPageState.tab = "enrolments"; renderFoundation(); },
+    foundationClassesRoute: () => { foundationPageState.tab = "classes"; renderFoundation(); },
+    foundationStudentsRoute: () => { foundationPageState.tab = "students"; renderFoundation(); },
+    foundationLessonsRoute: () => { foundationPageState.tab = "lessons"; renderFoundation(); },
+    foundationOnlineTestsRoute: () => { foundationPageState.tab = "onlineTests"; renderFoundation(); },
+    foundationSoulWinningRoute: () => { foundationPageState.tab = "soulWinning"; renderFoundation(); },
+    foundationFinalExamRoute: () => { foundationPageState.tab = "finalExam"; renderFoundation(); },
+    foundationTeachersRoute: () => { foundationPageState.tab = "teachers"; renderFoundation(); },
+    foundationGraduationRoute: () => { foundationPageState.tab = "graduation"; renderFoundation(); },
+    foundationReportsRoute: () => { foundationPageState.tab = "reports"; renderFoundation(); },
     finance: () => { financePageState.tab = "overview"; renderFinance(); },
     financeOverviewRoute: () => { financePageState.tab = "overview"; renderFinance(); },
     financeEntriesRoute: () => { financePageState.tab = "entries"; renderFinance(); },
@@ -12605,6 +12744,18 @@ function setRoute(route) {
     staffHrDocumentsRoute: ["admin", "staffTabDocuments"],
     staffHrReportsRoute: ["admin", "staffTabReports"],
     attendance: ["admin", "attendanceControl"],
+    foundation: ["pastoralCare", "foundationSchool"],
+    foundationOverviewRoute: ["pastoralCare", "foundationTabOverview"],
+    foundationEnrolmentsRoute: ["pastoralCare", "foundationTabEnrolments"],
+    foundationClassesRoute: ["pastoralCare", "foundationTabClasses"],
+    foundationStudentsRoute: ["pastoralCare", "foundationTabStudents"],
+    foundationLessonsRoute: ["pastoralCare", "foundationTabLessonsAttendance"],
+    foundationOnlineTestsRoute: ["pastoralCare", "foundationTabOnlineTests"],
+    foundationSoulWinningRoute: ["pastoralCare", "foundationTabSoulWinning"],
+    foundationFinalExamRoute: ["pastoralCare", "foundationTabFinalExam"],
+    foundationTeachersRoute: ["pastoralCare", "foundationTabTeachers"],
+    foundationGraduationRoute: ["pastoralCare", "foundationTabGraduation"],
+    foundationReportsRoute: ["pastoralCare", "foundationTabReports"],
     notifications: ["main", "notifications"]
   };
   byId("pageTitle").textContent = activeRoute === "cellPortal" ? (lang === "pt" ? "Portal do Líder de Célula" : "Cell Leader Portal") : found ? L(found.item[2]) : isCellRoute(activeRoute) ? cellRouteLabel(activeRoute) : childRoutes[activeRoute] ? L(childRoutes[activeRoute][1]) : L("dashboard");
@@ -12632,6 +12783,19 @@ function setRoute(route) {
     const portalGroup = document.querySelector('[data-nav-group="cellPortalSections"]');
     if (portalGroup && activeRoute === "cellPortal" && !portalGroup.classList.contains("is-expanded")) {
       portalGroup.classList.add("is-expanded");
+    }
+  }
+  if (isFoundationRoute(activeRoute)) {
+    sidebarGroupState[FOUNDATION_NAV.parentKey] = true;
+    sidebarGroupState.pastoralCare = true;
+    localStorage.setItem(SIDEBAR_GROUPS_KEY, JSON.stringify(sidebarGroupState));
+    const pcGroup = document.querySelector('[data-nav-group="pastoralCare"]');
+    if (pcGroup && !pcGroup.classList.contains("is-expanded")) {
+      pcGroup.classList.add("is-expanded");
+    }
+    const foundationGroup = document.querySelector(`[data-nav-group="${FOUNDATION_NAV.parentKey}"]`);
+    if (foundationGroup && !foundationGroup.classList.contains("is-expanded")) {
+      foundationGroup.classList.add("is-expanded");
     }
   }
   if (FINANCE_TAB_ROUTES.has(activeRoute) || activeRoute === "finance") {
@@ -19727,10 +19891,7 @@ function foundationReadyForGraduationStudents() {
 }
 
 function foundationTabNav() {
-  return moduleTabsNav(FOUNDATION_TABS.map(([key, labelKey]) => moduleTabButton(FS(labelKey), {
-    active: foundationPageState.tab === key,
-    attrs: `data-foundation-tab="${key}" onclick="window.setFoundationTab && window.setFoundationTab('${key}'); return false;"`
-  })).join(""));
+  return "";
 }
 
 function foundationSelectOptions(list, valueKey = "id", labelKey = "name", selected = "") {
@@ -20663,7 +20824,7 @@ function renderFoundation() {
   ensureFoundationData();
   const syncToken = ++foundationSupabaseSyncToken;
   Promise.resolve(hydrateFoundationSchoolFromRepository()).then((changed) => {
-    if (changed && syncToken === foundationSupabaseSyncToken && activeRoute === "foundation") {
+    if (changed && syncToken === foundationSupabaseSyncToken && isFoundationRoute(activeRoute)) {
       const pending = foundationPending();
       const students = foundationStudentsForGroup();
       const activePanel = byId("foundation-active-panel");
@@ -20676,7 +20837,7 @@ function renderFoundation() {
   const pending = foundationPending();
   const students = foundationStudentsForGroup();
   setPageContent(`
-    ${moduleNavShell("foundationSchool", { title: L("foundationSchool"), subtitle: L("foundationSubtitle"), icon: "bi-mortarboard" }, foundationTabNav())}
+    ${moduleNavShell("foundationSchool", { title: L("foundationSchool"), subtitle: L("foundationSubtitle"), icon: "bi-mortarboard" }, "")}
     ${summaryFilterChips("foundation")}
     <div id="foundation-active-panel">${renderFoundationActiveTab(students, pending)}</div>
   `);
@@ -20684,7 +20845,25 @@ function renderFoundation() {
 
 window.setFoundationTab = function setFoundationTab(tab) {
   foundationPageState.tab = tab || "overview";
-  renderFoundation();
+  const routeMap = {
+    overview: "foundation",
+    enrolments: "foundationEnrolmentsRoute",
+    classes: "foundationClassesRoute",
+    students: "foundationStudentsRoute",
+    lessons: "foundationLessonsRoute",
+    onlineTests: "foundationOnlineTestsRoute",
+    soulWinning: "foundationSoulWinningRoute",
+    finalExam: "foundationFinalExamRoute",
+    teachers: "foundationTeachersRoute",
+    graduation: "foundationGraduationRoute",
+    reports: "foundationReportsRoute"
+  };
+  const targetRoute = routeMap[tab] || "foundation";
+  if (activeRoute !== targetRoute && typeof setRoute === "function") {
+    setRoute(targetRoute);
+  } else {
+    renderFoundation();
+  }
 };
 
 let financeSupabaseSyncToken = 0;
