@@ -7535,10 +7535,10 @@ section.ops-hero {
 
 .light-surface,
 .surface-light {
-  --tab-inactive-color: #0f172a;
-  --tab-inactive-bg: #F8FBFD;
-  --tab-inactive-border: rgba(34, 211, 238, 0.25);
-  color: #0f172a;
+  --tab-inactive-color: #E6EEF8;
+  --tab-inactive-bg: rgba(255, 255, 255, 0.08);
+  --tab-inactive-border: rgba(56, 189, 248, 0.25);
+  color: var(--text-main, #f8fafc);
 }
 
 #content .glass-panel,
@@ -7583,7 +7583,7 @@ section.ops-hero {
 .light-surface .meta-text,
 .light-surface .text-secondary,
 .surface-light .muted {
-  color: #64748b !important;
+  color: #8ea8cc !important;
 }
 
 #content .glass-panel .text-secondary,
@@ -7604,7 +7604,7 @@ section.ops-hero {
 .light-surface .panel-title,
 .light-surface h3,
 .light-surface strong {
-  color: #0f172a;
+  color: #ffffff;
 }
 
 #content .chart-card .panel-title,
@@ -7614,7 +7614,7 @@ section.ops-hero {
 }
 
 .light-surface .eyebrow {
-  color: #d97706;
+  color: var(--gold, #f59e0b);
 }
 
 #content .module-hero-card .eyebrow,
@@ -8115,7 +8115,7 @@ textarea:focus-visible,
 
 .light-surface,
 .surface-light {
-  color: #0f172a;
+  color: #f8fafc;
 }
 
 .light-surface h1,
@@ -8124,8 +8124,12 @@ textarea:focus-visible,
 .light-surface .card-title,
 .light-surface .chart-title,
 .light-surface .panel-title,
-.light-surface .data-card-title {
-  color: #0f172a !important;
+.light-surface .data-card-title,
+.surface-light h1,
+.surface-light h2,
+.surface-light h3,
+.surface-light .panel-title {
+  color: #ffffff !important;
   opacity: 1 !important;
 }
 
@@ -8136,14 +8140,17 @@ textarea:focus-visible,
 .light-surface .muted,
 .light-surface .subtitle,
 .light-surface .meta-text,
-.light-surface .card-subtitle {
-  color: #64748b !important;
+.light-surface .card-subtitle,
+.surface-light .label,
+.surface-light .muted,
+.surface-light .subtitle {
+  color: #8ea8cc !important;
   opacity: 1 !important;
 }
 
 .light-surface .summary-card-hint,
 .light-surface .subtitle.meta-text {
-  color: #64748b !important;
+  color: #8ea8cc !important;
   opacity: 1 !important;
 }
 
@@ -8154,8 +8161,10 @@ textarea:focus-visible,
 .light-surface .summary-card-value,
 .light-surface .finance-chart-value,
 .light-surface .finance-hbar-value,
-.light-surface .chart-row strong {
-  color: #0f172a !important;
+.light-surface .chart-row strong,
+.surface-light .metric-value,
+.surface-light .summary-card-value {
+  color: #ffffff !important;
   font-weight: 800 !important;
   opacity: 1 !important;
 }
@@ -8164,7 +8173,7 @@ textarea:focus-visible,
 .light-surface .finance-hbar-label,
 .light-surface .chart-row span,
 .light-surface .finance-donut-legend-label {
-  color: #475569 !important;
+  color: #8ea8cc !important;
   opacity: 1 !important;
 }
 
@@ -10817,6 +10826,230 @@ nav.module-tabs {
   border-color: #2563eb !important;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
   color: #0f172a !important;
+}
+
+/* ============================================================
+   Light Theme Comprehensive System Overrides
+   ============================================================ */
+[data-theme="light"] .dashboard-section,
+[data-theme="light"] .module-section,
+[data-theme="light"] .module-hero-card,
+[data-theme="light"] .data-card,
+[data-theme="light"] .church-card,
+[data-theme="light"] .kanban-column,
+[data-theme="light"] .alec-filter-card,
+[data-theme="light"] .chart-card,
+[data-theme="light"] .record-card,
+[data-theme="light"] .filter-toolbar,
+[data-theme="light"] .churches-toolbar,
+[data-theme="light"] .churches-filter-grid,
+[data-theme="light"] .dashboard-overview-label,
+[data-theme="light"] .light-surface,
+[data-theme="light"] .surface-light,
+.theme-light .dashboard-section,
+.theme-light .module-section,
+.theme-light .module-hero-card,
+.theme-light .data-card,
+.theme-light .church-card,
+.theme-light .kanban-column,
+.theme-light .alec-filter-card,
+.theme-light .chart-card,
+.theme-light .record-card,
+.theme-light .filter-toolbar,
+.theme-light .churches-toolbar,
+.theme-light .churches-filter-grid,
+.theme-light .dashboard-overview-label,
+.theme-light .light-surface,
+.theme-light .surface-light {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #0f172a !important;
+  box-shadow: 0 1px 6px rgba(15, 23, 42, 0.05) !important;
+}
+
+[data-theme="light"] .dashboard-section-title,
+[data-theme="light"] .module-section-title,
+[data-theme="light"] .module-hero-card-title,
+[data-theme="light"] .panel-title,
+[data-theme="light"] .card-title,
+[data-theme="light"] .data-card-title,
+[data-theme="light"] .summary-card-value,
+[data-theme="light"] .metric-value,
+[data-theme="light"] .chart-value,
+[data-theme="light"] .finance-chart-value,
+[data-theme="light"] .finance-hbar-value,
+[data-theme="light"] .church-card h3,
+[data-theme="light"] .church-card.light-surface h3,
+.theme-light .dashboard-section-title,
+.theme-light .module-section-title,
+.theme-light .module-hero-card-title,
+.theme-light .panel-title,
+.theme-light .card-title,
+.theme-light .data-card-title,
+.theme-light .summary-card-value,
+.theme-light .metric-value,
+.theme-light .chart-value,
+.theme-light .finance-chart-value,
+.theme-light .finance-hbar-value,
+.theme-light .church-card h3,
+.theme-light .church-card.light-surface h3 {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .dashboard-section-subtitle,
+[data-theme="light"] .module-section-subtitle,
+[data-theme="light"] .module-hero-card-subtitle,
+[data-theme="light"] .summary-card-label,
+[data-theme="light"] .metric-label,
+[data-theme="light"] .chart-label,
+[data-theme="light"] .muted,
+[data-theme="light"] .subtitle,
+[data-theme="light"] .meta-text,
+[data-theme="light"] .card-subtitle,
+[data-theme="light"] .text-secondary,
+[data-theme="light"] .text-muted,
+[data-theme="light"] .summary-card-hint,
+[data-theme="light"] .finance-chart-label,
+[data-theme="light"] .finance-hbar-label,
+[data-theme="light"] .finance-donut-legend-label,
+.theme-light .dashboard-section-subtitle,
+.theme-light .module-section-subtitle,
+.theme-light .module-hero-card-subtitle,
+.theme-light .summary-card-label,
+.theme-light .metric-label,
+.theme-light .chart-label,
+.theme-light .muted,
+.theme-light .subtitle,
+.theme-light .meta-text,
+.theme-light .card-subtitle,
+.theme-light .text-secondary,
+.theme-light .text-muted,
+.theme-light .summary-card-hint,
+.theme-light .finance-chart-label,
+.theme-light .finance-hbar-label,
+.theme-light .finance-donut-legend-label {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .tab-strip button,
+[data-theme="light"] .nav-tabs button,
+[data-theme="light"] .view-toggle button,
+[data-theme="light"] .member-subtabs button,
+.theme-light .tab-strip button,
+.theme-light .nav-tabs button,
+.theme-light .view-toggle button,
+.theme-light .member-subtabs button {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+[data-theme="light"] .tab-strip button.active,
+[data-theme="light"] .tab-strip button.is-active,
+[data-theme="light"] .nav-tabs button.active,
+[data-theme="light"] .view-toggle button.active,
+[data-theme="light"] .member-subtabs button.active,
+.theme-light .tab-strip button.active,
+.theme-light .tab-strip button.is-active,
+.theme-light .nav-tabs button.active,
+.theme-light .view-toggle button.active,
+.theme-light .member-subtabs button.active {
+  background: #0f172a !important;
+  color: #ffffff !important;
+  border-color: #0f172a !important;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15) !important;
+}
+
+[data-theme="light"] select,
+[data-theme="light"] input:not([type="radio"]):not([type="checkbox"]):not([type="submit"]):not([type="button"]),
+[data-theme="light"] .form-select,
+[data-theme="light"] .form-control,
+.theme-light select,
+.theme-light input:not([type="radio"]):not([type="checkbox"]):not([type="submit"]):not([type="button"]),
+.theme-light .form-select,
+.theme-light .form-control {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+[data-theme="light"] .action-btn,
+.theme-light .action-btn {
+  background: #f8fafc !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #334155 !important;
+  border-radius: 6px !important;
+}
+
+[data-theme="light"] .action-btn:hover,
+.theme-light .action-btn:hover {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .action-btn.text-warning,
+[data-theme="light"] .action-btn--edit,
+.theme-light .action-btn.text-warning,
+.theme-light .action-btn--edit {
+  color: #b45309 !important;
+  border-color: #fcd34d !important;
+  background: #fffbeb !important;
+}
+
+[data-theme="light"] .action-btn.text-success,
+[data-theme="light"] .action-btn--success,
+[data-theme="light"] .action-btn--approve,
+.theme-light .action-btn.text-success,
+.theme-light .action-btn--success,
+.theme-light .action-btn--approve {
+  color: #15803d !important;
+  border-color: #86efac !important;
+  background: #f0fdf4 !important;
+}
+
+[data-theme="light"] .action-btn.text-danger,
+[data-theme="light"] .action-btn--danger,
+[data-theme="light"] .action-btn--reject,
+.theme-light .action-btn.text-danger,
+.theme-light .action-btn--danger,
+.theme-light .action-btn--reject {
+  color: #b91c1c !important;
+  border-color: #fca5a5 !important;
+  background: #fef2f2 !important;
+}
+
+[data-theme="light"] .candidate-merge-btn,
+.theme-light .candidate-merge-btn {
+  color: #b45309 !important;
+  border-color: #f59e0b !important;
+  background: #fffbeb !important;
+}
+
+[data-theme="light"] .finance-donut-hole,
+.theme-light .finance-donut-hole {
+  background: #ffffff !important;
+}
+
+[data-theme="light"] .finance-donut-hole strong,
+.theme-light .finance-donut-hole strong {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .finance-hbar-track,
+.theme-light .finance-hbar-track {
+  background: #e2e8f0 !important;
+}
+
+/* Candidate Merge button base dark theme styling */
+.candidate-merge-btn {
+  color: #fcd34d !important;
+  border-color: rgba(245, 158, 11, 0.45) !important;
+  background: rgba(245, 158, 11, 0.12) !important;
+}
+
+.candidate-merge-btn:hover {
+  background: rgba(245, 158, 11, 0.25) !important;
+  color: #ffffff !important;
 }
 
 /* ============================================================

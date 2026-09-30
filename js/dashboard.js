@@ -16397,10 +16397,18 @@ function candidateAdminActions(candidate) {
     ? `<button class="action-btn text-warning fw-bold" onclick="openMergeMemberModal('${id}', '${topDup.member.id}')" title="Fundir com ${escapeAttr(fullName(topDup.member))} (${topDup.reason})"><i class="bi bi-arrows-collapse me-1"></i>Fundir (${topDup.score}%)</button>`
     : `<button class="action-btn text-warning" data-candidate-action="merge" data-candidate-id="${id}" title="Fundir com membro existente na base de dados"><i class="bi bi-arrows-collapse me-1"></i>Fundir</button>`;
   const deleteBtn = `<button class="action-btn text-danger" data-candidate-action="delete" data-candidate-id="${id}" title="Eliminar registo de candidato"><i class="bi bi-trash me-1"></i>Eliminar</button>`;
-  if (candidate.approval_status === "Submitted") return `${view} <button class="action-btn text-success fw-bold" data-candidate-action="approve" data-candidate-id="${id}"><i class="bi bi-check-lg me-1"></i>Aprovar como membro</button> ${mergeBtn} <button class="action-btn" data-candidate-action="startReview" data-candidate-id="${id}">Iniciar revisão</button><button class="action-btn" data-candidate-action="correction" data-candidate-id="${id}">Devolver para correcção</button><button class="action-btn text-danger" data-candidate-action="reject" data-candidate-id="${id}">Rejeitar</button> ${deleteBtn}`;
-  if (candidate.approval_status === "UnderReview") return `${view} <button class="action-btn text-success fw-bold" data-candidate-action="approve" data-candidate-id="${id}"><i class="bi bi-check-lg me-1"></i>Aprovar como membro</button> ${mergeBtn} <button class="action-btn" data-candidate-action="createNew" data-candidate-id="${id}">Criar novo membro</button><button class="action-btn" data-candidate-action="link" data-candidate-id="${id}">Ligar existente</button><button class="action-btn" data-candidate-action="correction" data-candidate-id="${id}">Devolver para correcção</button><button class="action-btn text-danger" data-candidate-action="reject" data-candidate-id="${id}">Rejeitar</button> ${deleteBtn}`;
-  if (candidate.approval_status === "Approved") return `${view} ${deleteBtn}`;
-  return `${view} ${mergeBtn} <button class="action-btn" data-candidate-action="edit" data-candidate-id="${id}">Editar</button> ${deleteBtn}`;
+  
+  let btns = "";
+  if (candidate.approval_status === "Submitted") {
+    btns = `${view} <button class="action-btn text-success fw-bold" data-candidate-action="approve" data-candidate-id="${id}"><i class="bi bi-check-lg me-1"></i>Aprovar como membro</button> ${mergeBtn} <button class="action-btn" data-candidate-action="startReview" data-candidate-id="${id}">Iniciar revisão</button> <button class="action-btn" data-candidate-action="correction" data-candidate-id="${id}">Devolver para correcção</button> <button class="action-btn text-danger" data-candidate-action="reject" data-candidate-id="${id}">Rejeitar</button> ${deleteBtn}`;
+  } else if (candidate.approval_status === "UnderReview") {
+    btns = `${view} <button class="action-btn text-success fw-bold" data-candidate-action="approve" data-candidate-id="${id}"><i class="bi bi-check-lg me-1"></i>Aprovar como membro</button> ${mergeBtn} <button class="action-btn" data-candidate-action="createNew" data-candidate-id="${id}">Criar novo membro</button> <button class="action-btn" data-candidate-action="link" data-candidate-id="${id}">Ligar existente</button> <button class="action-btn" data-candidate-action="correction" data-candidate-id="${id}">Devolver para correcção</button> <button class="action-btn text-danger" data-candidate-action="reject" data-candidate-id="${id}">Rejeitar</button> ${deleteBtn}`;
+  } else if (candidate.approval_status === "Approved") {
+    btns = `${view} ${deleteBtn}`;
+  } else {
+    btns = `${view} ${mergeBtn} <button class="action-btn" data-candidate-action="edit" data-candidate-id="${id}">Editar</button> ${deleteBtn}`;
+  }
+  return `<div class="d-flex flex-wrap gap-1 align-items-center">${btns}</div>`;
 }
 
 function getCandidateRepoSafe() {
@@ -17713,7 +17721,7 @@ function renderMembers() {
       const dups = candidateDuplicates(c);
       const topDup = dups[0];
       const dupBadge = topDup
-        ? `<button type="button" class="btn btn-xs btn-outline-warning text-dark fw-bold" onclick="openMergeMemberModal('${c.id}', '${topDup.member.id}')" title="${topDup.reason}"><i class="bi bi-arrows-collapse me-1"></i>Fundir c/ ${escapeAttr(fullName(topDup.member))} (${topDup.reason})</button>`
+        ? `<button type="button" class="btn btn-xs btn-outline-warning fw-bold candidate-merge-btn" onclick="openMergeMemberModal('${c.id}', '${topDup.member.id}')" title="${topDup.reason}"><i class="bi bi-arrows-collapse me-1"></i>Fundir c/ ${escapeAttr(fullName(topDup.member))} (${topDup.reason})</button>`
         : `<span class="text-muted small">Sem duplicados</span>`;
       const originBadge = c.origin_role || c.origin
         ? `<span class="badge text-bg-secondary small">${escapeAttr(c.origin_role || c.origin)}</span>`
