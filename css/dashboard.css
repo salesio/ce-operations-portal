@@ -10831,6 +10831,21 @@ nav.module-tabs {
 /* ============================================================
    Light Theme Comprehensive System Overrides
    ============================================================ */
+
+/* High-Specificity Surfaces, Panels & Cards in Light Mode */
+[data-theme="light"] #content .glass-panel,
+[data-theme="light"] #content .panel,
+[data-theme="light"] #content .chart-card,
+[data-theme="light"] #content .metric-card,
+[data-theme="light"] #content .summary-card,
+[data-theme="light"] #content .record-card,
+[data-theme="light"] #content .data-card,
+[data-theme="light"] #content .module-hero-card,
+[data-theme="light"] #content .data-table-wrap,
+[data-theme="light"] #content .filter-toolbar,
+[data-theme="light"] #content .churches-toolbar,
+[data-theme="light"] #content .churches-filter-grid,
+[data-theme="light"] #content .kpi-card,
 [data-theme="light"] .dashboard-section,
 [data-theme="light"] .module-section,
 [data-theme="light"] .module-hero-card,
@@ -10846,6 +10861,20 @@ nav.module-tabs {
 [data-theme="light"] .dashboard-overview-label,
 [data-theme="light"] .light-surface,
 [data-theme="light"] .surface-light,
+[data-theme="light"] .kpi-card,
+.theme-light #content .glass-panel,
+.theme-light #content .panel,
+.theme-light #content .chart-card,
+.theme-light #content .metric-card,
+.theme-light #content .summary-card,
+.theme-light #content .record-card,
+.theme-light #content .data-card,
+.theme-light #content .module-hero-card,
+.theme-light #content .data-table-wrap,
+.theme-light #content .filter-toolbar,
+.theme-light #content .churches-toolbar,
+.theme-light #content .churches-filter-grid,
+.theme-light #content .kpi-card,
 .theme-light .dashboard-section,
 .theme-light .module-section,
 .theme-light .module-hero-card,
@@ -10860,13 +10889,277 @@ nav.module-tabs {
 .theme-light .churches-filter-grid,
 .theme-light .dashboard-overview-label,
 .theme-light .light-surface,
-.theme-light .surface-light {
+.theme-light .surface-light,
+.theme-light .kpi-card {
   background: #ffffff !important;
   border: 1px solid #e2e8f0 !important;
   color: #0f172a !important;
   box-shadow: 0 1px 6px rgba(15, 23, 42, 0.05) !important;
 }
 
+/* Light Mode Hero Wrappers & Header Banners */
+[data-theme="light"] .module-nav-panel,
+[data-theme="light"] .module-nav-shell,
+[data-theme="light"] .ops-hero,
+[data-theme="light"] .ops-hero--command,
+[data-theme="light"] .ops-hero--welcome-line,
+[data-theme="light"] section.ops-hero,
+[data-theme="light"] .section-panel,
+.theme-light .module-nav-panel,
+.theme-light .module-nav-shell,
+.theme-light .ops-hero,
+.theme-light .ops-hero--command,
+.theme-light .ops-hero--welcome-line,
+.theme-light section.ops-hero,
+.theme-light .section-panel {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #0f172a !important;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05) !important;
+}
+
+[data-theme="light"] .ops-hero h2,
+[data-theme="light"] .ops-hero.ops-hero--command h2,
+[data-theme="light"] .ops-hero--welcome-line h2,
+.theme-light .ops-hero h2,
+.theme-light .ops-hero.ops-hero--command h2,
+.theme-light .ops-hero--welcome-line h2 {
+  color: #0f172a !important;
+  text-shadow: none !important;
+}
+
+[data-theme="light"] .ops-hero p,
+[data-theme="light"] .ops-hero.ops-hero--command p,
+.theme-light .ops-hero p,
+.theme-light .ops-hero.ops-hero--command p {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .ops-hero .eyebrow,
+[data-theme="light"] .ops-hero.ops-hero--command .eyebrow,
+.theme-light .ops-hero .eyebrow,
+.theme-light .ops-hero.ops-hero--command .eyebrow {
+  color: #d97706 !important;
+}
+
+/* Module Nav Tabs Container at the bottom of hero */
+[data-theme="light"] .module-nav-panel .department-tabs,
+[data-theme="light"] .module-nav-panel .tab-strip.module-tab-strip,
+[data-theme="light"] .module-nav-panel .module-tabs,
+.theme-light .module-nav-panel .department-tabs,
+.theme-light .module-nav-panel .tab-strip.module-tab-strip,
+.theme-light .module-nav-panel .module-tabs {
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  border-top: 1px solid #e2e8f0 !important;
+}
+
+[data-theme="light"] .module-nav-panel .department-tabs button,
+[data-theme="light"] .module-nav-panel .tab-strip.module-tab-strip button,
+.theme-light .module-nav-panel .department-tabs button,
+.theme-light .module-nav-panel .tab-strip.module-tab-strip button {
+  background: #ffffff !important;
+  color: #475569 !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+[data-theme="light"] .module-nav-panel .department-tabs button.active,
+[data-theme="light"] .module-nav-panel .tab-strip.module-tab-strip button.active,
+.theme-light .module-nav-panel .department-tabs button.active,
+.theme-light .module-nav-panel .tab-strip.module-tab-strip button.active {
+  background: #0f172a !important;
+  color: #ffffff !important;
+  border-color: #0f172a !important;
+}
+
+/* ALEC Subnavigation Pills & Module Tabs */
+[data-theme="light"] .alec-module-pills,
+[data-theme="light"] .alec-filter-card,
+[data-theme="light"] .alec-subtab-nav,
+[data-theme="light"] .alec-data-panel,
+.theme-light .alec-module-pills,
+.theme-light .alec-filter-card,
+.theme-light .alec-subtab-nav,
+.theme-light .alec-data-panel {
+  background: #f1f5f9 !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04) !important;
+}
+
+[data-theme="light"] .alec-subnav-pill,
+[data-theme="light"] .alec-module-pill-btn,
+.theme-light .alec-subnav-pill,
+.theme-light .alec-module-pill-btn {
+  background: #ffffff !important;
+  color: #475569 !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+[data-theme="light"] .alec-subnav-pill:hover,
+[data-theme="light"] .alec-module-pill-btn:hover,
+.theme-light .alec-subnav-pill:hover,
+.theme-light .alec-module-pill-btn:hover {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .alec-subnav-pill.active,
+[data-theme="light"] .alec-module-pill-btn.active,
+.theme-light .alec-subnav-pill.active,
+.theme-light .alec-module-pill-btn.active {
+  background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+  color: #ffffff !important;
+  border-color: #d97706 !important;
+  font-weight: 800 !important;
+  box-shadow: 0 2px 8px rgba(217, 119, 6, 0.25) !important;
+}
+
+/* Light Theme High-Specificity Form Controls & Inputs */
+[data-theme="light"] #content .form-control,
+[data-theme="light"] #content .form-select,
+[data-theme="light"] .filter-toolbar .form-control,
+[data-theme="light"] .filter-toolbar .form-select,
+[data-theme="light"] .filter-bar .form-control,
+[data-theme="light"] .filter-bar .form-select,
+[data-theme="light"] .churches-filter-grid .form-control,
+[data-theme="light"] .churches-filter-grid .form-select,
+[data-theme="light"] .finance-report-filters .form-control,
+[data-theme="light"] .finance-report-filters .form-select,
+[data-theme="light"] select,
+[data-theme="light"] input:not([type="radio"]):not([type="checkbox"]):not([type="submit"]):not([type="button"]),
+[data-theme="light"] .form-select,
+[data-theme="light"] .form-control,
+.theme-light #content .form-control,
+.theme-light #content .form-select,
+.theme-light .filter-toolbar .form-control,
+.theme-light .filter-toolbar .form-select,
+.theme-light .filter-bar .form-control,
+.theme-light .filter-bar .form-select,
+.theme-light .churches-filter-grid .form-control,
+.theme-light .churches-filter-grid .form-select,
+.theme-light .finance-report-filters .form-control,
+.theme-light .finance-report-filters .form-select,
+.theme-light select,
+.theme-light input:not([type="radio"]):not([type="checkbox"]):not([type="submit"]):not([type="button"]),
+.theme-light .form-select,
+.theme-light .form-control {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+[data-theme="light"] #content .form-control:focus,
+[data-theme="light"] #content .form-select:focus,
+[data-theme="light"] .filter-toolbar .form-control:focus,
+[data-theme="light"] .filter-toolbar .form-select:focus,
+[data-theme="light"] .filter-bar .form-control:focus,
+[data-theme="light"] .filter-bar .form-select:focus,
+.theme-light #content .form-control:focus,
+.theme-light #content .form-select:focus,
+.theme-light .filter-toolbar .form-control:focus,
+.theme-light .filter-toolbar .form-select:focus,
+.theme-light .filter-bar .form-control:focus,
+.theme-light .filter-bar .form-select:focus {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] select option,
+.theme-light select option {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] #content .form-control::placeholder,
+[data-theme="light"] .filter-toolbar .form-control::placeholder,
+[data-theme="light"] .filter-bar .form-control::placeholder,
+.theme-light #content .form-control::placeholder,
+.theme-light .filter-toolbar .form-control::placeholder,
+.theme-light .filter-bar .form-control::placeholder {
+  color: #94a3b8 !important;
+  opacity: 1 !important;
+}
+
+/* Light Theme Gold, Cyan, and Action Buttons */
+[data-theme="light"] .btn-ce-gold,
+[data-theme="light"] .btn-gold,
+.theme-light .btn-ce-gold,
+.theme-light .btn-gold {
+  background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+  color: #ffffff !important;
+  border: 1px solid #d97706 !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 8px rgba(217, 119, 6, 0.25) !important;
+  text-shadow: none !important;
+}
+
+[data-theme="light"] .btn-ce-gold:hover,
+[data-theme="light"] .btn-gold:hover,
+.theme-light .btn-ce-gold:hover,
+.theme-light .btn-gold:hover {
+  background: linear-gradient(135deg, #d97706, #b45309) !important;
+  color: #ffffff !important;
+  border-color: #b45309 !important;
+}
+
+[data-theme="light"] .btn-outline-cyan,
+.theme-light .btn-outline-cyan {
+  background: #f0f9ff !important;
+  border: 1px solid #0284c7 !important;
+  color: #0284c7 !important;
+  font-weight: 600 !important;
+}
+
+[data-theme="light"] .btn-outline-cyan:hover,
+.theme-light .btn-outline-cyan:hover {
+  background: #0284c7 !important;
+  color: #ffffff !important;
+  border-color: #0284c7 !important;
+}
+
+[data-theme="light"] .btn-outline-primary,
+.theme-light .btn-outline-primary {
+  background: #ffffff !important;
+  border: 1px solid #2563eb !important;
+  color: #2563eb !important;
+}
+
+[data-theme="light"] .btn-outline-primary:hover,
+.theme-light .btn-outline-primary:hover {
+  background: #2563eb !important;
+  color: #ffffff !important;
+}
+
+[data-theme="light"] .btn-primary,
+.theme-light .btn-primary {
+  background: #2563eb !important;
+  border-color: #2563eb !important;
+  color: #ffffff !important;
+}
+
+/* Light Theme View Toggle (Table / Card) */
+[data-theme="light"] .view-toggle,
+.theme-light .view-toggle {
+  background: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+[data-theme="light"] .view-toggle-btn,
+.theme-light .view-toggle-btn {
+  background: transparent !important;
+  color: #64748b !important;
+}
+
+[data-theme="light"] .view-toggle-btn.active,
+.theme-light .view-toggle-btn.active {
+  background: #0f172a !important;
+  color: #ffffff !important;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.2) !important;
+}
+
+/* Light Theme Titles, Headings and Values */
 [data-theme="light"] .dashboard-section-title,
 [data-theme="light"] .module-section-title,
 [data-theme="light"] .module-hero-card-title,
@@ -10880,6 +11173,11 @@ nav.module-tabs {
 [data-theme="light"] .finance-hbar-value,
 [data-theme="light"] .church-card h3,
 [data-theme="light"] .church-card.light-surface h3,
+[data-theme="light"] #content .summary-card-value,
+[data-theme="light"] #content .metric-card strong,
+[data-theme="light"] #content .chart-card .finance-hbar-value,
+[data-theme="light"] #content .chart-card .finance-chart-value,
+[data-theme="light"] #content .chart-card .chart-row strong,
 .theme-light .dashboard-section-title,
 .theme-light .module-section-title,
 .theme-light .module-hero-card-title,
@@ -10892,10 +11190,16 @@ nav.module-tabs {
 .theme-light .finance-chart-value,
 .theme-light .finance-hbar-value,
 .theme-light .church-card h3,
-.theme-light .church-card.light-surface h3 {
+.theme-light .church-card.light-surface h3,
+.theme-light #content .summary-card-value,
+.theme-light #content .metric-card strong,
+.theme-light #content .chart-card .finance-hbar-value,
+.theme-light #content .chart-card .finance-chart-value,
+.theme-light #content .chart-card .chart-row strong {
   color: #0f172a !important;
 }
 
+/* Light Theme Subtitles, Labels, Muted Text */
 [data-theme="light"] .dashboard-section-subtitle,
 [data-theme="light"] .module-section-subtitle,
 [data-theme="light"] .module-hero-card-subtitle,
@@ -10912,6 +11216,13 @@ nav.module-tabs {
 [data-theme="light"] .finance-chart-label,
 [data-theme="light"] .finance-hbar-label,
 [data-theme="light"] .finance-donut-legend-label,
+[data-theme="light"] #content .summary-card-label,
+[data-theme="light"] #content .metric-card span,
+[data-theme="light"] #content .summary-card-hint,
+[data-theme="light"] #content .metric-card small,
+[data-theme="light"] #content .chart-card .finance-hbar-label,
+[data-theme="light"] #content .chart-card .finance-chart-label,
+[data-theme="light"] #content .chart-card .chart-row span,
 .theme-light .dashboard-section-subtitle,
 .theme-light .module-section-subtitle,
 .theme-light .module-hero-card-subtitle,
@@ -10927,10 +11238,18 @@ nav.module-tabs {
 .theme-light .summary-card-hint,
 .theme-light .finance-chart-label,
 .theme-light .finance-hbar-label,
-.theme-light .finance-donut-legend-label {
+.theme-light .finance-donut-legend-label,
+.theme-light #content .summary-card-label,
+.theme-light #content .metric-card span,
+.theme-light #content .summary-card-hint,
+.theme-light #content .metric-card small,
+.theme-light #content .chart-card .finance-hbar-label,
+.theme-light #content .chart-card .finance-chart-label,
+.theme-light #content .chart-card .chart-row span {
   color: #64748b !important;
 }
 
+/* Light Theme Tab Strips */
 [data-theme="light"] .tab-strip button,
 [data-theme="light"] .nav-tabs button,
 [data-theme="light"] .view-toggle button,
@@ -10960,19 +11279,7 @@ nav.module-tabs {
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15) !important;
 }
 
-[data-theme="light"] select,
-[data-theme="light"] input:not([type="radio"]):not([type="checkbox"]):not([type="submit"]):not([type="button"]),
-[data-theme="light"] .form-select,
-[data-theme="light"] .form-control,
-.theme-light select,
-.theme-light input:not([type="radio"]):not([type="checkbox"]):not([type="submit"]):not([type="button"]),
-.theme-light .form-select,
-.theme-light .form-control {
-  background-color: #ffffff !important;
-  color: #0f172a !important;
-  border: 1px solid #cbd5e1 !important;
-}
-
+/* Action Buttons */
 [data-theme="light"] .action-btn,
 .theme-light .action-btn {
   background: #f8fafc !important;
@@ -11025,8 +11332,49 @@ nav.module-tabs {
   background: #fffbeb !important;
 }
 
+/* ALEC Report Table in Light Mode */
+[data-theme="light"] .alec-report-table-wrap,
+.theme-light .alec-report-table-wrap {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+[data-theme="light"] .alec-report-table thead th,
+.theme-light .alec-report-table thead th {
+  background: #f8fafc !important;
+  color: #1e293b !important;
+  border-bottom: 2px solid #cbd5e1 !important;
+}
+
+[data-theme="light"] .alec-report-table tbody td,
+.theme-light .alec-report-table tbody td {
+  color: #1e293b !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+}
+
+[data-theme="light"] .alec-report-table tbody tr:nth-child(even),
+.theme-light .alec-report-table tbody tr:nth-child(even) {
+  background: #f8fafc !important;
+}
+
+[data-theme="light"] .alec-report-table tfoot td,
+.theme-light .alec-report-table tfoot td {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+  border-top: 2px solid #cbd5e1 !important;
+}
+
+[data-theme="light"] .alec-report-total-cell,
+.theme-light .alec-report-total-cell {
+  background: #fef3c7 !important;
+  color: #92400e !important;
+}
+
+/* Charts & Donut Holes */
 [data-theme="light"] .finance-donut-hole,
-.theme-light .finance-donut-hole {
+.theme-light .finance-donut-hole,
+[data-theme="light"] .cell-portal-donut::after,
+.theme-light .cell-portal-donut::after {
   background: #ffffff !important;
 }
 
