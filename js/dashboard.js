@@ -29835,7 +29835,6 @@ function renderStaffHr() {
   setPageContent(`
     ${sectionHeader(L("staffHr"), L("staffHrSubtitle"), "staffProfile", "bi-people-fill")}
     <article class="panel glass-panel module-content-card mb-4">
-      ${staffHrModuleTabs()}
       <div class="tab-content-panel">${tabContent}</div>
     </article>
   `);

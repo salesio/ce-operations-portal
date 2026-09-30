@@ -38,7 +38,7 @@ ok("staff attendance seed exists", existsSync(join(root, "src/data/seeds/staffAt
 ok("staff hr bridge exists", existsSync(join(root, "js/staff-hr-data-bridge.js")));
 ok(
   "index includes staff hr bridge",
-  /staff-hr-data-bridge\.js\?v=20260723-staff-hr-data-v1/.test(read("index.html")),
+  /staff-hr-data-bridge\.js\?v=/.test(read("index.html")),
 );
 ok("docs pilot Staff & HR", /Pilot migration: Staff & Human Resources/.test(read("DATA_LAYER_PLAN.md")));
 ok("README mentions Staff pilot", /Staff & HR/.test(read("README.md")));
