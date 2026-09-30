@@ -6350,7 +6350,7 @@ tr[data-public-cell-report="1"] td:last-child {
 .panel-title,
 .data-card-title,
 .church-card h3 {
-  color: #ffffff !important;
+  color: #ffffff;
 }
 
 .module-hero-card-subtitle,
@@ -6358,13 +6358,13 @@ tr[data-public-cell-report="1"] td:last-child {
 .metric-card span,
 .data-card-meta-row span,
 .church-card-meta span {
-  color: #8ea8cc !important;
+  color: #8ea8cc;
 }
 
 .metric-card strong,
 .data-card-meta-row strong,
 .church-card-meta strong {
-  color: #ffffff !important;
+  color: #ffffff;
 }
 
 /* Dashboard command hero — always dark regardless of shared classes */
@@ -11178,6 +11178,20 @@ nav.module-tabs {
 [data-theme="light"] #content .chart-card .finance-hbar-value,
 [data-theme="light"] #content .chart-card .finance-chart-value,
 [data-theme="light"] #content .chart-card .chart-row strong,
+[data-theme="light"] .church-card-meta strong,
+[data-theme="light"] .data-card-meta strong,
+[data-theme="light"] .data-card-meta-row strong,
+[data-theme="light"] .data-table-mobile-row strong,
+[data-theme="light"] .data-table-mobile-row div,
+[data-theme="light"] .record-card-meta strong,
+[data-theme="light"] .record-card strong,
+[data-theme="light"] .data-card strong,
+[data-theme="light"] .church-card strong,
+[data-theme="light"] #content .church-card-meta strong,
+[data-theme="light"] #content .data-card-meta strong,
+[data-theme="light"] #content .data-card-meta-row strong,
+[data-theme="light"] #content .data-card strong,
+[data-theme="light"] #content .church-card strong,
 .theme-light .dashboard-section-title,
 .theme-light .module-section-title,
 .theme-light .module-hero-card-title,
@@ -11195,7 +11209,21 @@ nav.module-tabs {
 .theme-light #content .metric-card strong,
 .theme-light #content .chart-card .finance-hbar-value,
 .theme-light #content .chart-card .finance-chart-value,
-.theme-light #content .chart-card .chart-row strong {
+.theme-light #content .chart-card .chart-row strong,
+.theme-light .church-card-meta strong,
+.theme-light .data-card-meta strong,
+.theme-light .data-card-meta-row strong,
+.theme-light .data-table-mobile-row strong,
+.theme-light .data-table-mobile-row div,
+.theme-light .record-card-meta strong,
+.theme-light .record-card strong,
+.theme-light .data-card strong,
+.theme-light .church-card strong,
+.theme-light #content .church-card-meta strong,
+.theme-light #content .data-card-meta strong,
+.theme-light #content .data-card-meta-row strong,
+.theme-light #content .data-card strong,
+.theme-light #content .church-card strong {
   color: #0f172a !important;
 }
 
@@ -11223,6 +11251,14 @@ nav.module-tabs {
 [data-theme="light"] #content .chart-card .finance-hbar-label,
 [data-theme="light"] #content .chart-card .finance-chart-label,
 [data-theme="light"] #content .chart-card .chart-row span,
+[data-theme="light"] .church-card-meta span,
+[data-theme="light"] .data-card-meta span,
+[data-theme="light"] .data-card-meta-row span,
+[data-theme="light"] .data-table-mobile-row span,
+[data-theme="light"] .church-card-public,
+[data-theme="light"] #content .church-card-meta span,
+[data-theme="light"] #content .data-card-meta span,
+[data-theme="light"] #content .data-card-meta-row span,
 .theme-light .dashboard-section-subtitle,
 .theme-light .module-section-subtitle,
 .theme-light .module-hero-card-subtitle,
@@ -11245,8 +11281,37 @@ nav.module-tabs {
 .theme-light #content .metric-card small,
 .theme-light #content .chart-card .finance-hbar-label,
 .theme-light #content .chart-card .finance-chart-label,
-.theme-light #content .chart-card .chart-row span {
-  color: #64748b !important;
+.theme-light #content .chart-card .chart-row span,
+.theme-light .church-card-meta span,
+.theme-light .data-card-meta span,
+.theme-light .data-card-meta-row span,
+.theme-light .data-table-mobile-row span,
+.theme-light .church-card-public,
+.theme-light #content .church-card-meta span,
+.theme-light #content .data-card-meta span,
+.theme-light #content .data-card-meta-row span {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .church-card-meta span i,
+[data-theme="light"] .data-card-meta-row i,
+.theme-light .church-card-meta span i,
+.theme-light .data-card-meta-row i {
+  color: #0284c7 !important;
+}
+
+[data-theme="light"] .church-service-chip,
+.theme-light .church-service-chip {
+  background: #e0f2fe !important;
+  color: #0369a1 !important;
+  border: 1px solid #bae6fd !important;
+}
+
+[data-theme="light"] .data-card-pill,
+.theme-light .data-card-pill {
+  background: #f1f5f9 !important;
+  color: #334155 !important;
+  border: 1px solid #cbd5e1 !important;
 }
 
 /* Light Theme Tab Strips */
