@@ -3451,6 +3451,28 @@ const COUNSELING_NAV = {
 
 const COUNSELING_TAB_ROUTES = new Set(COUNSELING_NAV.routes.map(([route]) => route));
 
+const REPORTS_NAV = {
+  parentKey: "reportsHeader",
+  label: "reports",
+  icon: "bi-bar-chart-line",
+  routes: [
+    ["reportsOverviewRoute", "bi-grid-1x2", "rptExecutiveTitle", ""],
+    ["reportsFunnelRoute", "bi-person-heart", "rptFunnelTitle", "funnel"],
+    ["reportsFoundationRoute", "bi-mortarboard", "rptFoundationTitle", "foundation"],
+    ["reportsFinanceRoute", "bi-wallet2", "rptFinanceExpensesTitle", "financeExpenses"],
+    ["reportsRequisitionsRoute", "bi-box-seam", "rptReqInventoryTitle", "reqInventory"],
+    ["reportsStaffRoute", "bi-people-fill", "rptStaffTitle", "staff"],
+    ["reportsCellRoute", "bi-diagram-3", "rptCellTitle", "cell"],
+    ["reportsFevoRoute", "bi-compass", "rptFevoTitle", "fevo"],
+    ["reportsVenueRoute", "bi-box-seam", "rptVenueTitle", "venue"],
+    ["reportsSacramentsRoute", "bi-droplet", "rptSacramentsTitle", "sacraments"],
+    ["reportsPrisonRoute", "bi-shield-lock", "rptPrisonTitle", "prison"],
+    ["reportsMaterialsRoute", "bi-journal-richtext", "rptMaterialsTitle", "materials"]
+  ]
+};
+
+const REPORTS_TAB_ROUTES = new Set(REPORTS_NAV.routes.map(([route]) => route));
+
 const TAB_PARALLAX_ORDER = {
   cell: CELL_NAV.areas.flatMap((area) => area.routes.map(([route]) => route)),
   fevo: ["fevo", "fevoConfigRoute", "fevoFollowUpRoute", "fevoEvangelismRoute", "fevoVisitationRoute", "fevoPrayerRoute", "fevoNoReportsRoute", "fevoWeeklyReportsRoute", "fevoAnalysisRoute"],
@@ -3462,7 +3484,8 @@ const TAB_PARALLAX_ORDER = {
   staffHr: ["staffHr", "staffHrStaffRoute", "staffHrBirthdaysRoute", "staffHrDepartmentsRoute", "staffHrRolesRoute", "staffHrSalariesRoute", "staffHrPerformanceRoute", "staffHrAttendanceRoute", "staffHrEquipmentRoute", "staffHrDocumentsRoute", "staffHrReportsRoute"],
   foundation: ["foundation", "foundationEnrolmentsRoute", "foundationClassesRoute", "foundationStudentsRoute", "foundationLessonsRoute", "foundationOnlineTestsRoute", "foundationSoulWinningRoute", "foundationFinalExamRoute", "foundationTeachersRoute", "foundationGraduationRoute", "foundationReportsRoute"],
   sacraments: ["sacraments", "sacramentsMarriagesRoute", "sacramentsBabyDedicationsRoute"],
-  counseling: ["counseling", "counselingRequestsRoute", "counselingAppointmentsRoute", "counselingActiveCasesRoute", "counselingCounselorsRoute", "counselingReferralsRoute", "counselingFeedbackRoute", "counselingHistoryRoute", "counselingReportsRoute"]
+  counseling: ["counseling", "counselingRequestsRoute", "counselingAppointmentsRoute", "counselingActiveCasesRoute", "counselingCounselorsRoute", "counselingReferralsRoute", "counselingFeedbackRoute", "counselingHistoryRoute", "counselingReportsRoute"],
+  reports: ["reports", "reportsOverviewRoute", "reportsFunnelRoute", "reportsFoundationRoute", "reportsFinanceRoute", "reportsRequisitionsRoute", "reportsStaffRoute", "reportsCellRoute", "reportsFevoRoute", "reportsVenueRoute", "reportsSacramentsRoute", "reportsPrisonRoute", "reportsMaterialsRoute"]
 };
 
 let tabParallaxState = { family: null, index: -1 };
@@ -3479,6 +3502,7 @@ function tabParallaxFamily(route) {
   if (FOUNDATION_TAB_ROUTES.has(route) || route === "foundation" || route === "foundationOverviewRoute") return "foundation";
   if (SACRAMENTS_TAB_ROUTES.has(route) || route === "sacraments" || route === "sacramentsBaptismsRoute" || route === "sacramentsMarriagesRoute" || route === "sacramentsBabyDedicationsRoute" || route === "sacramentsBabiesRoute") return "sacraments";
   if (COUNSELING_TAB_ROUTES.has(route) || route === "counseling" || String(route || "").startsWith("counseling")) return "counseling";
+  if (REPORTS_TAB_ROUTES.has(route) || route === "reports" || route === "reportsOverviewRoute") return "reports";
   return null;
 }
 
@@ -3526,11 +3550,11 @@ function triggerScrollTabParallax(targetId) {
 }
 
 function isModuleTabRoute(route) {
-  return CELL_TAB_ROUTES.has(route) || FEVO_TAB_ROUTES.has(route) || FINANCE_TAB_ROUTES.has(route) || PARTNERSHIP_TAB_ROUTES.has(route) || VENUE_TAB_ROUTES.has(route) || OUTREACH_TAB_ROUTES.has(route) || MEDIA_TAB_ROUTES.has(route) || STAFF_HR_TAB_ROUTES.has(route) || FOUNDATION_TAB_ROUTES.has(route) || SACRAMENTS_TAB_ROUTES.has(route) || COUNSELING_TAB_ROUTES.has(route) || route === "staffHrOverviewRoute";
+  return CELL_TAB_ROUTES.has(route) || FEVO_TAB_ROUTES.has(route) || FINANCE_TAB_ROUTES.has(route) || PARTNERSHIP_TAB_ROUTES.has(route) || VENUE_TAB_ROUTES.has(route) || OUTREACH_TAB_ROUTES.has(route) || MEDIA_TAB_ROUTES.has(route) || STAFF_HR_TAB_ROUTES.has(route) || FOUNDATION_TAB_ROUTES.has(route) || SACRAMENTS_TAB_ROUTES.has(route) || COUNSELING_TAB_ROUTES.has(route) || REPORTS_TAB_ROUTES.has(route) || route === "staffHrOverviewRoute";
 }
 
 const NAV_GROUPS = [
-  { key: "main", items: [["dashboard", "bi-speedometer2", "dashboard"], ["churches", "bi-building", "churches"], ["members", "bi-people", "members"], ["reports", "bi-bar-chart-line", "reports"]] },
+  { key: "main", items: [["dashboard", "bi-speedometer2", "dashboard"], ["churches", "bi-building", "churches"], ["members", "bi-people", "members"]] },
   { key: "pastoralCare", items: [["firstTimers", "bi-person-heart", "firstTimers"], ["followUp", "bi-telephone-outbound", "followUp"]] },
   // Order: Células (subnav) → F.E.V.O (subnav) → Finanças (subnav) → Parcerias (subnav) → Requisições → Inventário → Mídia (subnav) → Programas & Extensão (subnav)
   { key: "departments", items: [["requisitions", "bi-clipboard-check", "requisitions"], ["venueInventory", "bi-box-seam", "venueInventoryShort"]] },
@@ -3542,6 +3566,18 @@ const SIDEBAR_FALLBACK_ICONS = {
   churches: "bi-building",
   members: "bi-people",
   reports: "bi-bar-chart-line",
+  reportsOverviewRoute: "bi-grid-1x2",
+  reportsFunnelRoute: "bi-person-heart",
+  reportsFoundationRoute: "bi-mortarboard",
+  reportsFinanceRoute: "bi-wallet2",
+  reportsRequisitionsRoute: "bi-box-seam",
+  reportsStaffRoute: "bi-people-fill",
+  reportsCellRoute: "bi-diagram-3",
+  reportsFevoRoute: "bi-compass",
+  reportsVenueRoute: "bi-box-seam",
+  reportsSacramentsRoute: "bi-droplet",
+  reportsPrisonRoute: "bi-shield-lock",
+  reportsMaterialsRoute: "bi-journal-richtext",
   firstTimers: "bi-person-heart",
   followUp: "bi-telephone-outbound",
   foundation: "bi-mortarboard",
@@ -11454,7 +11490,12 @@ function fallbackRouteModule(route = "dashboard") {
   if (route.startsWith("partnership")) return "partnership";
   if (route.startsWith("venueInventory")) return "venueInventory";
   if (route.startsWith("media")) return "media";
+  if (route.startsWith("reports")) return "reports";
   return route;
+}
+
+function isReportsRoute(route = activeRoute) {
+  return REPORTS_TAB_ROUTES.has(route) || route === "reports" || route === "reportsOverviewRoute" || String(route || "").startsWith("reports");
 }
 
 function isFoundationRoute(route = activeRoute) {
@@ -12220,6 +12261,61 @@ function renderStaffHrSidebarNav() {
     </div>`;
 }
 
+function renderReportsSidebarNav() {
+  const framework = window.CEReportsFramework;
+  const workspaceRoutes = roleWorkspaceRoutes();
+  const parentExpanded = isSidebarGroupExpanded(REPORTS_NAV.parentKey);
+  const parentActive = isReportsRoute(activeRoute);
+  const visibleRoutes = REPORTS_NAV.routes.filter(([route, , , domainId]) => {
+    if (workspaceRoutes && !workspaceRoutes.includes(route) && !workspaceRoutes.includes("reports")) return false;
+    const nav = resolveRouteAccess(route === "reportsOverviewRoute" ? "reports" : route);
+    if (!nav.visible || nav.locked) return false;
+    if (domainId && framework?.canViewDomain && !framework.canViewDomain(activeUser, domainId)) return false;
+    return true;
+  });
+  if (!visibleRoutes.length) return "";
+  return `
+    <div class="nav-cell-branch nav-reports-branch ${parentExpanded ? "is-expanded" : ""} ${parentActive ? "has-active" : ""}" data-nav-group="${REPORTS_NAV.parentKey}">
+      <button type="button" class="nav-cell-parent nav-reports-parent" aria-expanded="${parentExpanded}" aria-label="${L("navGroupToggle")}: ${L(REPORTS_NAV.label)}">
+        <i class="bi ${REPORTS_NAV.icon}" aria-hidden="true"></i>
+        <span>${L(REPORTS_NAV.label)}</span>
+        <i class="bi bi-chevron-down nav-cell-chevron" aria-hidden="true"></i>
+      </button>
+      <div class="nav-cell-body">
+        <div class="nav-cell-body-inner">
+          ${visibleRoutes.map(([route, icon, label, domainId]) => {
+            const isItemActive = (route === "reportsOverviewRoute" && (activeRoute === "reportsOverviewRoute" || (activeRoute === "reports" && !reportsPageState.domain))) ||
+              (activeRoute === route) ||
+              (isReportsRoute(activeRoute) && domainId && reportsPageState.domain === domainId);
+            return `
+              <button type="button" class="nav-cell-item nav-reports-item ${isItemActive ? "active" : ""}" data-route="${route}" title="${L(label)}">
+                <i class="bi ${sidebarIcon(icon, route)} me-2" aria-hidden="true"></i>
+                <span>${L(label)}</span>
+              </button>
+            `;
+          }).join("")}
+        </div>
+      </div>
+    </div>`;
+}
+
+function syncReportsSidebarNavState() {
+  const activeDom = reportsPageState.domain;
+  document.querySelectorAll(".nav-reports-item").forEach((btn) => {
+    const r = btn.dataset.route;
+    const match = REPORTS_NAV.routes.find(([route]) => route === r);
+    const domainId = match ? match[3] : null;
+    const isActive = (r === "reportsOverviewRoute" && (!activeDom || activeRoute === "reportsOverviewRoute")) ||
+      (domainId && domainId === activeDom) ||
+      (r === activeRoute);
+    btn.classList.toggle("active", Boolean(isActive));
+  });
+  const branch = document.querySelector(".nav-reports-branch");
+  if (branch) {
+    branch.classList.toggle("has-active", isReportsRoute(activeRoute));
+  }
+}
+
 function cellModuleHeader(route, { modalType = null } = {}) {
   return moduleNavShell("cellLeadership", {
     title: cellRouteLabel(route),
@@ -12278,12 +12374,13 @@ function renderShell() {
     const foundationNav = group.key === "pastoralCare" && (!workspaceRoutes || workspaceRoutes.some((r) => FOUNDATION_TAB_ROUTES.has(r) || r === "foundation")) ? renderFoundationSidebarNav() : "";
     const sacramentsNav = group.key === "pastoralCare" && (!workspaceRoutes || workspaceRoutes.some((r) => SACRAMENTS_TAB_ROUTES.has(r) || r === "sacraments")) ? renderSacramentsSidebarNav() : "";
     const counselingNav = group.key === "pastoralCare" && (!workspaceRoutes || workspaceRoutes.some((r) => COUNSELING_TAB_ROUTES.has(r) || r === "counseling")) ? renderCounselingSidebarNav() : "";
+    const reportsNav = group.key === "main" && (!workspaceRoutes || workspaceRoutes.some((r) => r === "reports" || isReportsRoute(r))) ? renderReportsSidebarNav() : "";
     const navItems = items.map(({ route, icon, label }) => `
       <button type="button" class="nav-item-btn" data-route="${route}" title="${L(label)}">
         <i class="bi ${sidebarIcon(icon, route)}"></i><span>${L(label)}</span>
       </button>
     `).join("");
-    if (!navItems && !cellNav && !fevoNav && !financeNav && !partnershipNav && !mediaNav && !outreachNav && !staffHrNav && !foundationNav && !sacramentsNav && !counselingNav) return "";
+    if (!navItems && !cellNav && !fevoNav && !financeNav && !partnershipNav && !mediaNav && !outreachNav && !staffHrNav && !foundationNav && !sacramentsNav && !counselingNav && !reportsNav) return "";
     const expanded = isSidebarGroupExpanded(group.key) || (group.key === "departments" && String(activeUser?.role || "").toLowerCase().includes("venue"));
 
     let groupBodyInner = "";
@@ -12296,6 +12393,11 @@ function renderShell() {
         ${foundationNav}
         ${sacramentsNav}
         ${counselingNav}
+      `;
+    } else if (group.key === "main") {
+      groupBodyInner = `
+        ${navItems}
+        ${reportsNav}
       `;
     } else {
       groupBodyInner = `
@@ -12527,6 +12629,18 @@ function getRouteRenderers() {
     firstTimers: renderFirstTimers,
     followUp: renderFollowUp,
     reports: renderReports,
+    reportsOverviewRoute: () => { reportsPageState.domain = ""; renderReports(); },
+    reportsFunnelRoute: () => { reportsPageState.domain = "funnel"; renderReports(); },
+    reportsFoundationRoute: () => { reportsPageState.domain = "foundation"; renderReports(); },
+    reportsFinanceRoute: () => { reportsPageState.domain = "financeExpenses"; renderReports(); },
+    reportsRequisitionsRoute: () => { reportsPageState.domain = "reqInventory"; renderReports(); },
+    reportsStaffRoute: () => { reportsPageState.domain = "staff"; renderReports(); },
+    reportsCellRoute: () => { reportsPageState.domain = "cell"; renderReports(); },
+    reportsFevoRoute: () => { reportsPageState.domain = "fevo"; renderReports(); },
+    reportsVenueRoute: () => { reportsPageState.domain = "venue"; renderReports(); },
+    reportsSacramentsRoute: () => { reportsPageState.domain = "sacraments"; renderReports(); },
+    reportsPrisonRoute: () => { reportsPageState.domain = "prison"; renderReports(); },
+    reportsMaterialsRoute: () => { reportsPageState.domain = "materials"; renderReports(); },
     notifications: renderNotifications,
     counseling: () => { counselingPageState.tab = "overview"; renderCounseling(); },
     counselingOverviewRoute: () => { counselingPageState.tab = "overview"; renderCounseling(); },
@@ -12915,6 +13029,18 @@ function setRoute(route) {
     counselingFeedbackRoute: ["pastoralCare", "counselingFeedbackReports"],
     counselingHistoryRoute: ["pastoralCare", "counselingHistory"],
     counselingReportsRoute: ["pastoralCare", "counselingReports"],
+    reportsOverviewRoute: ["main", "rptExecutiveTitle"],
+    reportsFunnelRoute: ["main", "rptFunnelTitle"],
+    reportsFoundationRoute: ["main", "rptFoundationTitle"],
+    reportsFinanceRoute: ["main", "rptFinanceExpensesTitle"],
+    reportsRequisitionsRoute: ["main", "rptReqInventoryTitle"],
+    reportsStaffRoute: ["main", "rptStaffTitle"],
+    reportsCellRoute: ["main", "rptCellTitle"],
+    reportsFevoRoute: ["main", "rptFevoTitle"],
+    reportsVenueRoute: ["main", "rptVenueTitle"],
+    reportsSacramentsRoute: ["main", "rptSacramentsTitle"],
+    reportsPrisonRoute: ["main", "rptPrisonTitle"],
+    reportsMaterialsRoute: ["main", "rptMaterialsTitle"],
     notifications: ["main", "notifications"]
   };
   byId("pageTitle").textContent = activeRoute === "cellPortal" ? (lang === "pt" ? "Portal do Líder de Célula" : "Cell Leader Portal") : found ? L(found.item[2]) : isCellRoute(activeRoute) ? cellRouteLabel(activeRoute) : childRoutes[activeRoute] ? L(childRoutes[activeRoute][1]) : L("dashboard");
@@ -12923,9 +13049,23 @@ function setRoute(route) {
     const route = item.dataset.route;
     const isActive = route === activeRoute ||
       (route === "fevo" && activeRoute.startsWith("fevo")) ||
-      (route === "venueInventory" && activeRoute.startsWith("venueInventory"));
+      (route === "venueInventory" && activeRoute.startsWith("venueInventory")) ||
+      (route === "reports" && isReportsRoute(activeRoute));
     item.classList.toggle("active", isActive);
   });
+  if (isReportsRoute(activeRoute)) {
+    sidebarGroupState[REPORTS_NAV.parentKey] = true;
+    sidebarGroupState.main = true;
+    localStorage.setItem(SIDEBAR_GROUPS_KEY, JSON.stringify(sidebarGroupState));
+    const mainGroup = document.querySelector('[data-nav-group="main"]');
+    if (mainGroup && !mainGroup.classList.contains("is-expanded")) {
+      mainGroup.classList.add("is-expanded");
+    }
+    const reportsGroup = document.querySelector(`[data-nav-group="${REPORTS_NAV.parentKey}"]`);
+    if (reportsGroup && !reportsGroup.classList.contains("is-expanded")) {
+      reportsGroup.classList.add("is-expanded");
+    }
+  }
   if (isCellRoute(activeRoute)) {
     sidebarGroupState[CELL_NAV.parentKey] = true;
     sidebarGroupState.departments = true;
@@ -29752,11 +29892,6 @@ function renderReports() {
   const activeDomain = reportsPageState.domain && framework?.canViewDomain(activeUser, reportsPageState.domain)
     ? reportsPageState.domain
     : (visibleDomains[0]?.id || "");
-  reportsPageState.domain = activeDomain;
-  const domainTabs = visibleDomains.map((d) => {
-    const title = L(framework.getAdapter(d.id)?.titleKey || d.id);
-    return `<button type="button" class="tab-button ${reportsPageState.domain === d.id ? "active" : ""}" data-report-domain-tab="${d.id}">${title}</button>`;
-  }).join("");
   const activePanel = activeDomain ? renderDomainReportsPanel(activeDomain, { module: "reports", showTitle: false, formAttr: `data-domain-report-filters-${activeDomain}` }) : "";
   const showReqApproved = window.CERequisitionReports?.canViewReports?.(activeUser)
     && (activeDomain === "financeExpenses" || activeDomain === "reqInventory");
@@ -29773,7 +29908,6 @@ function renderReports() {
     ${sectionHeader(L("rptExecutiveTitle"), L("rptExecutiveHint"), null, "bi-bar-chart-line")}
     <div class="reports-hub">
       <article class="panel glass-panel module-content-card mb-4 reports-hub-main">
-        <div class="tab-strip module-tab-strip reports-hub-tabs mb-3">${domainTabs}</div>
         <div class="row g-3 summary-cards-row reports-hub-executive mb-4">${executiveCards}</div>
         ${summaryFilterChips("reports")}
         <div class="tab-content-panel reports-hub-panel" id="report-domain-${activeDomain}">${activePanel}</div>
@@ -29781,6 +29915,7 @@ function renderReports() {
       ${reqApprovedSection}
     </div>
     `);
+  syncReportsSidebarNavState();
 }
 
 function requisitionsModuleTabs() {

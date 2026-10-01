@@ -619,6 +619,7 @@
     if (route.startsWith("counseling")) return "counseling";
     if (route.startsWith("cell")) return "cell";
     if (route.startsWith("finance")) return "finance";
+    if (route.startsWith("reports")) return "reports";
     if (route.startsWith("partnership")) return "partnership";
     return route;
   }
