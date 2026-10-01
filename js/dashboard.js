@@ -13680,6 +13680,31 @@ window.filterMainAttendanceStatus = function (status) {
   }
 };
 
+window.mainAttendanceState = {
+  selectedDate: "2026-10-01",
+  period: "day", // "day" | "week" | "month" | "last_month" | "year_2025"
+  statusFilter: "all",
+  searchQuery: "",
+};
+
+window.switchMainAttendanceDate = function (dateOrPeriod, periodType) {
+  if (!dateOrPeriod) return;
+  window.mainAttendanceState.selectedDate = dateOrPeriod;
+  if (periodType) window.mainAttendanceState.period = periodType;
+  var container = document.getElementById("mainAttendanceWidgetWrapper");
+  if (container) {
+    container.innerHTML = renderExecutiveAttendanceMainWidgetContent();
+  }
+};
+
+window.filterMainAttendanceStatus = function (status) {
+  window.mainAttendanceState.statusFilter = status || "all";
+  var container = document.getElementById("mainAttendanceWidgetWrapper");
+  if (container) {
+    container.innerHTML = renderExecutiveAttendanceMainWidgetContent();
+  }
+};
+
 window.searchMainAttendanceStaff = function (query) {
   window.mainAttendanceState.searchQuery = (query || "").toLowerCase();
   var container = document.getElementById("mainAttendanceWidgetWrapper");
@@ -13699,8 +13724,8 @@ function renderExecutiveAttendanceMainWidget() {
 function renderExecutiveAttendanceMainWidgetContent() {
   const isPt = (window.lang || "pt") === "pt";
   const bridge = window.CEAttendanceBridge || window.CEDataLayer?.attendance;
-  const stateObj = window.mainAttendanceState || { selectedDate: "2026-07-09", period: "day", statusFilter: "all", searchQuery: "" };
-  const targetDate = stateObj.selectedDate || "2026-07-09";
+  const stateObj = window.mainAttendanceState || { selectedDate: "2026-10-01", period: "day", statusFilter: "all", searchQuery: "" };
+  const targetDate = stateObj.selectedDate || "2026-10-01";
 
   // Fetch all attendance records reliably
   const allRecords = (bridge?.getLocalStore ? bridge.getLocalStore("attendance") : null) || (bridge?.getLocalStore ? bridge.getLocalStore("records") : null) || [];
@@ -13721,12 +13746,15 @@ function renderExecutiveAttendanceMainWidgetContent() {
   // Filter records according to selected period
   let periodRecords = [];
   if (stateObj.period === "week") {
-    // Week from 2026-07-06 to 2026-07-12
-    periodRecords = allRecords.filter((r) => r.attendance_date >= "2026-07-06" && r.attendance_date <= "2026-07-09");
+    // Week from 2026-09-28 to 2026-10-04 or July week
+    periodRecords = allRecords.filter((r) => r.attendance_date >= "2026-09-28" && r.attendance_date <= "2026-10-04");
+    if (!periodRecords.length) {
+      periodRecords = allRecords.filter((r) => r.attendance_date >= "2026-07-06" && r.attendance_date <= "2026-07-09");
+    }
   } else if (stateObj.period === "month") {
     periodRecords = allRecords.filter((r) => r.attendance_date && r.attendance_date.slice(0, 7) === targetDate.slice(0, 7));
   } else if (stateObj.period === "last_month") {
-    periodRecords = allRecords.filter((r) => r.attendance_date && r.attendance_date.slice(0, 7) === "2026-06");
+    periodRecords = allRecords.filter((r) => r.attendance_date && r.attendance_date.slice(0, 7) === "2026-07");
   } else if (stateObj.period === "year_2025") {
     periodRecords = allRecords.filter((r) => r.attendance_date && r.attendance_date.slice(0, 4) === "2025");
   } else {
@@ -13768,7 +13796,7 @@ function renderExecutiveAttendanceMainWidgetContent() {
   // Average check in
   const checkIns = presentRecs.map((r) => bridge?.parseTimeToMinutes ? bridge.parseTimeToMinutes(r.check_in) : null).filter((m) => m != null);
   const avgMins = checkIns.length ? Math.round(checkIns.reduce((a, b) => a + b, 0) / checkIns.length) : null;
-  const avgCheckInStr = avgMins != null && bridge?.minutesToTimeStr ? bridge.minutesToTimeStr(avgMins) : (presentRecs.length ? "08:04" : "--:--");
+  const avgCheckInStr = avgMins != null && bridge?.minutesToTimeStr ? bridge.minutesToTimeStr(avgMins) : (presentRecs.length ? "08:18" : "--:--");
 
   // Filter staff table according to active filter
   let displayedStaff = periodRecords;
@@ -13829,23 +13857,23 @@ function renderExecutiveAttendanceMainWidgetContent() {
         <div class="d-flex flex-wrap align-items-center gap-2">
           <!-- Timeframe buttons -->
           <div class="btn-group btn-group-sm" role="group">
+            <button type="button" class="btn ${stateObj.selectedDate === "2026-10-01" && stateObj.period === "day" ? "btn-ce-gold" : "btn-outline-secondary"}" onclick="window.switchMainAttendanceDate('2026-10-01', 'day')">
+              ${isPt ? "01 Out (Hoje)" : "01 Oct (Today)"}
+            </button>
             <button type="button" class="btn ${stateObj.selectedDate === "2026-07-09" && stateObj.period === "day" ? "btn-ce-gold" : "btn-outline-secondary"}" onclick="window.switchMainAttendanceDate('2026-07-09', 'day')">
-              ${isPt ? "09 Jul (Hoje)" : "09 Jul (Today)"}
+              09 Jul
             </button>
             <button type="button" class="btn ${stateObj.selectedDate === "2026-07-08" && stateObj.period === "day" ? "btn-ce-gold" : "btn-outline-secondary"}" onclick="window.switchMainAttendanceDate('2026-07-08', 'day')">
-              ${isPt ? "08 Jul (Ontem)" : "08 Jul (Yesterday)"}
+              08 Jul
             </button>
-            <button type="button" class="btn ${stateObj.selectedDate === "2026-07-07" && stateObj.period === "day" ? "btn-ce-gold" : "btn-outline-secondary"}" onclick="window.switchMainAttendanceDate('2026-07-07', 'day')">
-              07 Jul
-            </button>
-            <button type="button" class="btn ${stateObj.period === "week" ? "btn-ce-gold" : "btn-outline-secondary"}" onclick="window.switchMainAttendanceDate('2026-07-09', 'week')">
+            <button type="button" class="btn ${stateObj.period === "week" ? "btn-ce-gold" : "btn-outline-secondary"}" onclick="window.switchMainAttendanceDate('2026-10-01', 'week')">
               <i class="bi bi-calendar-week me-1"></i>${isPt ? "Esta Semana" : "This Week"}
             </button>
-            <button type="button" class="btn ${stateObj.period === "month" ? "btn-ce-gold" : "btn-outline-secondary"}" onclick="window.switchMainAttendanceDate('2026-07-09', 'month')">
-              <i class="bi bi-calendar-month me-1"></i>${isPt ? "Julho 2026" : "July 2026"}
+            <button type="button" class="btn ${stateObj.period === "month" ? "btn-ce-gold" : "btn-outline-secondary"}" onclick="window.switchMainAttendanceDate('2026-10-01', 'month')">
+              <i class="bi bi-calendar-month me-1"></i>${isPt ? "Outubro 2026" : "October 2026"}
             </button>
-            <button type="button" class="btn ${stateObj.period === "last_month" ? "btn-ce-gold" : "btn-outline-secondary"}" onclick="window.switchMainAttendanceDate('2026-06-09', 'last_month')">
-              ${isPt ? "Junho 2026" : "June 2026"}
+            <button type="button" class="btn ${stateObj.period === "last_month" ? "btn-ce-gold" : "btn-outline-secondary"}" onclick="window.switchMainAttendanceDate('2026-07-09', 'last_month')">
+              ${isPt ? "Julho 2026" : "July 2026"}
             </button>
           </div>
 
@@ -13853,6 +13881,11 @@ function renderExecutiveAttendanceMainWidgetContent() {
           <div class="d-flex align-items-center gap-1">
             <input type="date" class="form-control form-control-sm" id="mainAttCustomDateInput" value="${targetDate}" style="max-width: 145px;" onchange="window.switchMainAttendanceDate(this.value, 'day')" oninput="window.switchMainAttendanceDate(this.value, 'day')">
           </div>
+
+          <!-- Action Button: Colar WhatsApp / Entrada Rápida -->
+          <button type="button" class="btn btn-sm btn-outline-success" onclick="if(window.navigateTo){ window.navigateTo('attendance'); setTimeout(function(){ if(window.renderAttendance) window.renderAttendance('manual'); }, 50); }" title="${isPt ? "Inserir relatório do WhatsApp" : "Paste WhatsApp Report"}">
+            <i class="bi bi-whatsapp me-1"></i>${isPt ? "Colar WhatsApp" : "WhatsApp"}
+          </button>
 
           <!-- Action Button 1: Print PDF -->
           <button type="button" class="btn btn-sm btn-ce-gold" onclick="if(window.CEAttendanceModule && window.CEAttendanceModule.generateDailyPdf){ window.CEAttendanceModule.generateDailyPdf('${targetDate}'); } else if(window.exportReportsPrint){ window.exportReportsPrint(document.getElementById('mainAttendanceWidgetWrapper')?.innerHTML, 'Relatorio-Assiduidade-${targetDate}'); }">

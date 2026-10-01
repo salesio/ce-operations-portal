@@ -8,25 +8,29 @@
   "use strict";
 
   var attendancePageState = {
-    tab: "daily", // "daily" | "comparison" | "monthly" | "trajectory" | "workflow" | "upload" | "reports" | "settings"
-    selectedDate: "2026-07-09",
+    tab: "daily", // "daily" | "manual" | "comparison" | "monthly" | "trajectory" | "workflow" | "upload" | "reports" | "settings"
+    selectedDate: "2026-10-01",
     dailyFilter: "all", // "all" | "on_time" | "grace_period" | "minor_delay" | "late" | "severe_delay" | "late_all" | "absent"
     searchQuery: "",
     selectedDepartment: "all",
+    // Manual & WhatsApp entry state
+    manualEntryMode: "whatsapp", // "whatsapp" | "grid"
+    manualParsedPreview: null,
+    manualGridDate: "2026-10-01",
     // Comparison tab state
     comparisonMode: "day", // "day" | "week" | "month" | "year"
-    comparisonPeriodA: "2026-07-09",
-    comparisonPeriodB: "2026-07-08",
+    comparisonPeriodA: "2026-10-01",
+    comparisonPeriodB: "2026-07-09",
     comparisonEmployeeId: "all",
     comparisonDepartment: "all",
     // Monthly tab state
     monthlyPeriod: "this_month", // "this_month" | "last_month" | "3_months" | "6_months" | "year" | "custom"
-    monthlySelectedMonth: "2026-07",
-    startDate: "2026-07-01",
-    endDate: "2026-07-31",
+    monthlySelectedMonth: "2026-10",
+    startDate: "2026-10-01",
+    endDate: "2026-10-31",
     // Trajectory & Workflow state
-    selectedStaffId: "1",
-    workflowSelectedDate: "2026-07-09",
+    selectedStaffId: "11",
+    workflowSelectedDate: "2026-10-01",
     trajectoryRange: "1_month",
     uploadPreview: null,
     uploadFileName: "",
@@ -301,6 +305,7 @@
 
     var tabs = [
       { id: "daily", label: t("Visão Diária", "Daily View"), icon: "bi-calendar-day" },
+      { id: "manual", label: t("Entrada Rápida / WhatsApp", "WhatsApp / Quick Entry"), icon: "bi-chat-left-text-fill" },
       { id: "comparison", label: t("Comparador Temporal", "Temporal Comparison"), icon: "bi-arrow-left-right" },
       { id: "monthly", label: t("Relatório Mensal", "Monthly Report"), icon: "bi-bar-chart-steps" },
       { id: "trajectory", label: t("Dossiê Individual", "Individual Dossier"), icon: "bi-person-badge" },
@@ -334,6 +339,9 @@
           <p class="text-secondary small mb-0">${t("Pipeline pastoral: Brother Lio ➔ Pastor Valdemiro ➔ Pastor Kéne", "Pastoral pipeline: Brother Lio ➔ Pastor Valdemiro ➔ Pastor Kéne")}</p>
         </div>
         <div class="d-flex align-items-center gap-2">
+          <button type="button" class="btn btn-sm btn-outline-info" data-attendance-tab="manual">
+            <i class="bi bi-chat-left-text-fill me-1.5"></i>${t("Colar WhatsApp", "Paste WhatsApp")}
+          </button>
           <button type="button" class="btn btn-sm btn-outline-warning" data-attendance-tab="comparison">
             <i class="bi bi-arrow-left-right me-1.5"></i>${t("Comparar Períodos", "Compare Periods")}
           </button>
@@ -357,13 +365,16 @@
           <p class="text-secondary small mb-0 mt-0.5">${t("Extração por Ir. Lio (Paixão à Primeira Vista) ➔ Auditoria por Pr. Valdemiro (Cuidados Pastorais) ➔ Homologação por Pr. Kéne", "Extraction by Br. Lio ➔ Pastoral Audit by Pr. Valdemiro ➔ Homologation by Pr. Kéne")}</p>
         </div>
         <div class="d-flex align-items-center gap-2">
+          <button type="button" class="btn btn-sm btn-ce-gold" data-attendance-tab="manual">
+            <i class="bi bi-whatsapp me-1.5"></i>${t("Registo Rápido WhatsApp", "Quick WhatsApp Entry")}
+          </button>
           <button type="button" class="btn btn-sm btn-outline-info" data-attendance-tab="workflow">
             <i class="bi bi-diagram-3-fill me-1.5"></i>${t("Fluxo de Submissão", "Submission Pipeline")}
           </button>
           <button type="button" class="btn btn-sm btn-outline-warning" data-attendance-tab="comparison">
             <i class="bi bi-arrow-left-right me-1.5"></i>${t("Comparar Períodos", "Compare Periods")}
           </button>
-          <button type="button" class="btn btn-sm btn-ce-gold" data-attendance-quick-export="daily">
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-attendance-quick-export="daily">
             <i class="bi bi-file-earmark-pdf me-1.5"></i>${t("Dossiê PDF", "PDF Dossier")}
           </button>
         </div>
@@ -390,6 +401,8 @@
 
     if (tab === "daily") {
       body.innerHTML = await renderDailyViewHtml();
+    } else if (tab === "manual") {
+      body.innerHTML = await renderManualViewHtml();
     } else if (tab === "comparison") {
       body.innerHTML = await renderComparisonTabHtml();
     } else if (tab === "monthly") {
@@ -1525,6 +1538,315 @@
   }
 
   // =========================================================================
+  // Tab: Manual & WhatsApp Quick Entry (Entrada Rápida / WhatsApp)
+  // =========================================================================
+
+  async function renderManualViewHtml() {
+    var isWhatsApp = attendancePageState.manualEntryMode !== "grid";
+    var defaultText = `Relatório diário de chegada 01/10/2026
+
+Nome: Hora da Chegada
+
+1. Janet Marquel (8:30) 🟢
+2. Leopold Kusi (8:30) 🟢
+3. Deacon Oliver (8:38) 🚨
+4. Angélica Amílcar (7:43) 🟢
+5. Marcelo Panguene (7:43) 🟢
+6. Eduarda Paula (8:25) 🟢
+7. Gilberto Baule (7:50) 🟢
+8. Pastor Valdemiro (8:23) 🟢
+9. Sis. Virgínia Filipe (8:22) 🟢
+10. Junya Clementina (8:49) 🚨
+11. Laiza Chirindza (8:33) 🚨
+12. Pastor Clarissa (8:11) 🟢
+13. Sister Kassandra (8:14) 🟢
+14. Bro Filipe (8:30) 🟢
+
+Thank you for the opportunity Pastor Sir`;
+
+    var parsed = attendancePageState.manualParsedPreview;
+    var rawText = attendancePageState.manualRawText || (parsed ? "" : defaultText);
+    var targetDate = (parsed && parsed.attendance_date) || attendancePageState.manualGridDate || attendancePageState.selectedDate || "2026-10-01";
+
+    var staffList = await getBridge().getStaffList();
+
+    // Mode Toggle Bar
+    var modeToggleHtml = `
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 p-3 rounded bg-dark bg-opacity-40 border border-secondary border-opacity-25">
+        <div>
+          <h4 class="h5 fw-bold text-white mb-1">
+            <i class="bi bi-pencil-square text-gold me-2"></i>${t("Registo Rápido de Assiduidade e Chegadas", "Quick Attendance & Arrival Log")}
+          </h4>
+          <p class="text-secondary small mb-0">
+            ${t("Insira os dados colando o relatório do WhatsApp enviado pelo Ir. Leopold ou preencha a matriz manual.", "Enter data by pasting Brother Leopold's WhatsApp arrival report or filling the manual table.")}
+          </p>
+        </div>
+
+        <div class="btn-group btn-group-sm" role="group">
+          <button type="button" class="btn ${isWhatsApp ? "btn-ce-gold" : "btn-outline-secondary"}" id="switchToWhatsAppModeBtn">
+            <i class="bi bi-whatsapp me-1.5 text-success"></i>${t("Colar Texto do WhatsApp", "Paste WhatsApp Text")}
+          </button>
+          <button type="button" class="btn ${!isWhatsApp ? "btn-ce-gold" : "btn-outline-secondary"}" id="switchToGridModeBtn">
+            <i class="bi bi-table me-1.5"></i>${t("Matriz de Formulário Manual", "Manual Form Grid")}
+          </button>
+        </div>
+      </div>
+    `;
+
+    if (isWhatsApp) {
+      // WhatsApp View
+      var previewSectionHtml = "";
+      if (parsed && parsed.records && parsed.records.length) {
+        var recs = parsed.records;
+        var presentCount = recs.filter(function (r) { return r.is_present; }).length;
+        var onTimeCount = recs.filter(function (r) { return r.status === "on_time"; }).length;
+        var graceCount = recs.filter(function (r) { return r.status === "grace_period"; }).length;
+        var lateCount = recs.filter(function (r) { return r.is_late; }).length;
+        var absentCount = recs.filter(function (r) { return !r.is_present; }).length;
+
+        previewSectionHtml = `
+          <div class="att-card p-4 mb-4 border-gold border-opacity-50" id="manualParsedPreviewCard">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3 pb-3 border-bottom border-secondary border-opacity-25">
+              <div>
+                <span class="badge bg-gold-subtle text-gold mb-1"><i class="bi bi-check2-all me-1"></i>${t("Dados Processados do WhatsApp", "Parsed WhatsApp Data")}</span>
+                <h5 class="fw-bold text-white mb-0">${t("Pré-visualização do Relatório — Data:", "Report Preview — Date:")} <span class="text-gold font-monospace">${parsed.attendance_date}</span></h5>
+                <span class="text-secondary small">${t("Verifique e faça pequenos ajustes antes de gravar no sistema.", "Review and adjust any punch time before saving.")}</span>
+              </div>
+              <div class="d-flex align-items-center gap-2">
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="clearParsedWhatsAppBtn">
+                  <i class="bi bi-trash me-1"></i>${t("Descartar", "Discard")}
+                </button>
+                <button type="button" class="btn btn-sm btn-success" id="confirmSaveParsedWhatsAppBtn">
+                  <i class="bi bi-cloud-check-fill me-1.5"></i>${t("Gravar e Submeter Lote", "Save & Submit Batch")}
+                </button>
+              </div>
+            </div>
+
+            <!-- Stats Chips -->
+            <div class="row g-2 mb-3">
+              <div class="col-6 col-md-2">
+                <div class="p-2 rounded bg-dark text-center border border-secondary border-opacity-25">
+                  <span class="text-secondary small d-block" style="font-size: 0.7rem;">${t("TOTAL", "TOTAL")}</span>
+                  <strong class="fs-5 text-white">${recs.length}</strong>
+                </div>
+              </div>
+              <div class="col-6 col-md-2">
+                <div class="p-2 rounded bg-dark text-center border border-secondary border-opacity-25">
+                  <span class="text-secondary small d-block" style="font-size: 0.7rem;">${t("PRESENTES", "PRESENT")}</span>
+                  <strong class="fs-5 text-info">${presentCount}</strong>
+                </div>
+              </div>
+              <div class="col-6 col-md-2">
+                <div class="p-2 rounded bg-dark text-center border border-secondary border-opacity-25">
+                  <span class="text-secondary small d-block" style="font-size: 0.7rem;">${t("PONTUAIS", "ON TIME")}</span>
+                  <strong class="fs-5 text-success">${onTimeCount}</strong>
+                </div>
+              </div>
+              <div class="col-6 col-md-2">
+                <div class="p-2 rounded bg-dark text-center border border-secondary border-opacity-25">
+                  <span class="text-secondary small d-block" style="font-size: 0.7rem;">${t("TOLERÂNCIA", "GRACE")}</span>
+                  <strong class="fs-5 text-info">${graceCount}</strong>
+                </div>
+              </div>
+              <div class="col-6 col-md-2">
+                <div class="p-2 rounded bg-dark text-center border border-secondary border-opacity-25">
+                  <span class="text-secondary small d-block" style="font-size: 0.7rem;">${t("ATRASADOS", "LATE")}</span>
+                  <strong class="fs-5 text-danger">${lateCount}</strong>
+                </div>
+              </div>
+              <div class="col-6 col-md-2">
+                <div class="p-2 rounded bg-dark text-center border border-secondary border-opacity-25">
+                  <span class="text-secondary small d-block" style="font-size: 0.7rem;">${t("SEM REGISTO", "ABSENT")}</span>
+                  <strong class="fs-5 text-warning">${absentCount}</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- Parsed Records Table -->
+            <div class="table-responsive rounded border border-secondary border-opacity-25">
+              <table class="table att-table align-middle mb-0" style="font-size: 0.84rem;">
+                <thead>
+                  <tr>
+                    <th class="ps-3" style="width: 50px;">#</th>
+                    <th>${t("Colaborador Identificado", "Identified Staff")}</th>
+                    <th>${t("Departamento", "Department")}</th>
+                    <th class="text-center" style="width: 140px;">${t("Hora Chegada", "Arrival Time")}</th>
+                    <th class="text-center">${t("Classificação", "Punctuality Status")}</th>
+                    <th class="text-center">${t("Atraso", "Delay")}</th>
+                    <th>${t("Texto Original", "Raw Text")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${recs.map(function (r, idx) {
+                    return `
+                      <tr class="${r.is_late ? "att-row-late" : ""}">
+                        <td class="ps-3 font-monospace text-secondary">${idx + 1}</td>
+                        <td>
+                          <div class="d-flex align-items-center gap-2">
+                            <div class="att-avatar" style="width: 28px; height: 28px; font-size: 0.75rem; background: rgba(212,175,55,0.15); color: #d4af37; border-color: rgba(212,175,55,0.3);">
+                              ${(r.employee_name || "S").slice(0, 2).toUpperCase()}
+                            </div>
+                            <div>
+                              <div class="fw-semibold text-white">${r.employee_full_name || r.employee_name}</div>
+                              <span class="text-secondary" style="font-size: 0.7rem;">${r.role || "Staff Member"}</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td><span class="badge bg-secondary-subtle text-secondary" style="font-size: 0.7rem;">${r.department || "CESTAFF"}</span></td>
+                        <td class="text-center">
+                          <input type="time" class="form-control form-control-sm text-center font-monospace parsed-checkin-edit" data-record-index="${idx}" value="${r.check_in || ""}" style="max-width: 110px; margin: 0 auto;">
+                        </td>
+                        <td class="text-center" id="statusBadgeCell-${idx}">${getStatusBadge(r.status, r.delay_minutes)}</td>
+                        <td class="text-center font-monospace small" id="delayCell-${idx}">
+                          ${r.delay_minutes > 0 ? `<span class="text-danger fw-bold">+${r.delay_minutes}m</span>` : (r.is_present ? `<span class="text-success"><i class="bi bi-check"></i> 0m</span>` : `<span class="text-secondary">--</span>`)}
+                        </td>
+                        <td><span class="text-secondary small font-monospace" style="font-size: 0.72rem;">${r.raw_line || ""}</span></td>
+                      </tr>
+                    `;
+                  }).join("")}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+      }
+
+      return `
+        ${modeToggleHtml}
+        ${previewSectionHtml}
+
+        <div class="att-card p-4">
+          <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+            <div>
+              <h5 class="h6 fw-bold text-white mb-1"><i class="bi bi-chat-quote-fill text-success me-2"></i>${t("Colar Mensagem do WhatsApp", "Paste WhatsApp Message")}</h5>
+              <span class="text-secondary small">${t("Cole diretamente o texto copiado da conversa do WhatsApp.", "Paste the text directly from the WhatsApp group or chat.")}</span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <button type="button" class="btn btn-xs btn-outline-info" id="insertSampleWhatsAppTextBtn">
+                <i class="bi bi-magic me-1"></i>${t("Carregar Exemplo (01/10/2026)", "Load Sample (01/10/2026)")}
+              </button>
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-12 col-md-4">
+              <label class="form-label text-secondary small fw-semibold">${t("Data do Relatório (Fallback)", "Report Date (Fallback)")}</label>
+              <input type="date" class="form-control form-control-sm" id="whatsAppDateFallbackInput" value="${targetDate}">
+              <div class="form-text text-secondary" style="font-size: 0.7rem;">${t("Se o texto contiver a data (ex: 01/10/2026), ela é detectada automaticamente.", "If text contains a date (e.g. 01/10/2026), it is detected automatically.")}</div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <textarea class="form-control font-monospace" id="whatsAppRawTextInput" rows="10" placeholder="${t("Cole aqui a mensagem do WhatsApp com as chegadas...\nExemplo:\nRelatório diário de chegada 01/10/2026\n1. Janet Marquel (8:30) 🟢\n2. Leopold Kusi (8:30) 🟢\n3. Deacon Oliver (8:38) 🚨\n...", "Paste WhatsApp message here...")}">${rawText}</textarea>
+          </div>
+
+          <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <span class="text-secondary small">
+              <i class="bi bi-info-circle me-1 text-gold"></i>${t("Compatível com emojis 🟢, 🚨, formatos (8:30), (08:30), 8h30 e nomes de todo o corpo de staff.", "Supports emojis, punch formats (8:30) and all staff member names.")}
+            </span>
+            <div class="d-flex align-items-center gap-2">
+              <button type="button" class="btn btn-sm btn-outline-secondary" id="clearWhatsAppRawTextBtn">
+                <i class="bi bi-x-circle me-1"></i>${t("Limpar", "Clear")}
+              </button>
+              <button type="button" class="btn btn-sm btn-ce-gold px-3" id="parseWhatsAppTextBtn">
+                <i class="bi bi-cpu-fill me-1.5"></i>${t("Analisar e Processar Chegadas", "Parse & Process Arrivals")}
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    } else {
+      // Manual Grid View
+      return `
+        ${modeToggleHtml}
+
+        <div class="att-card p-4">
+          <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3 pb-3 border-bottom border-secondary border-opacity-25">
+            <div>
+              <h5 class="h6 fw-bold text-white mb-1"><i class="bi bi-grid-3x3-gap-fill text-gold me-2"></i>${t("Matriz de Marcação Rápida por Colaborador", "Direct Staff Punch Matrix")}</h5>
+              <span class="text-secondary small">${t("Sincronizado dinamicamente com o módulo de Recursos Humanos.", "Dynamically synchronized with the Staff & HR module.")}</span>
+            </div>
+
+            <div class="d-flex flex-wrap align-items-center gap-2">
+              <div class="d-flex align-items-center gap-1">
+                <label class="text-secondary small me-1">${t("Data:", "Date:")}</label>
+                <input type="date" class="form-control form-control-sm" id="manualGridDateInput" value="${targetDate}" style="max-width: 145px;">
+              </div>
+              <button type="button" class="btn btn-xs btn-outline-success" id="fillAllOnTimeGridBtn">
+                <i class="bi bi-clock-fill me-1"></i>${t("Todos Pontuais (08:00)", "All On Time (08:00)")}
+              </button>
+              <button type="button" class="btn btn-xs btn-outline-warning" id="clearAllGridBtn">
+                <i class="bi bi-eraser-fill me-1"></i>${t("Limpar Todos", "Clear All")}
+              </button>
+              <button type="button" class="btn btn-sm btn-success px-3" id="saveManualGridAttendanceBtn">
+                <i class="bi bi-check2-circle me-1.5"></i>${t("Gravar no Sistema", "Save Attendance")}
+              </button>
+            </div>
+          </div>
+
+          <div class="table-responsive rounded border border-secondary border-opacity-25" style="max-height: 520px;">
+            <table class="table att-table align-middle mb-0" style="font-size: 0.84rem;">
+              <thead class="sticky-top">
+                <tr>
+                  <th class="ps-3" style="width: 50px;">#</th>
+                  <th>${t("Colaborador / Cargo", "Staff / Role")}</th>
+                  <th>${t("Departamento", "Department")}</th>
+                  <th class="text-center" style="width: 140px;">${t("Hora de Entrada", "Check-In")}</th>
+                  <th>${t("Predefinições Rápidas", "Quick Presets")}</th>
+                  <th class="text-center" style="width: 110px;">${t("Status", "Status")}</th>
+                  <th class="text-center" style="width: 100px;">${t("Presente?", "Present?")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${staffList.map(function (st, idx) {
+                  return `
+                    <tr class="manual-grid-row" data-staff-id="${st.id}" data-staff-name="${st.name}" data-staff-fullname="${st.fullName}" data-staff-dept="${st.dept}" data-staff-role="${st.role}">
+                      <td class="ps-3 font-monospace text-secondary">${idx + 1}</td>
+                      <td>
+                        <div class="d-flex align-items-center gap-2">
+                          <div class="att-avatar" style="width: 28px; height: 28px; font-size: 0.75rem; background: rgba(212,175,55,0.15); color: #d4af37; border-color: rgba(212,175,55,0.3);">
+                            ${(st.name || "S").slice(0, 2).toUpperCase()}
+                          </div>
+                          <div>
+                            <div class="fw-semibold text-white">${st.fullName || st.name}</div>
+                            <span class="text-secondary" style="font-size: 0.7rem;">${st.role || "Staff Member"}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td><span class="badge bg-secondary-subtle text-secondary" style="font-size: 0.7rem;">${st.dept || "CESTAFF"}</span></td>
+                      <td class="text-center">
+                        <input type="time" class="form-control form-control-sm font-monospace text-center manual-time-input" data-row-index="${idx}" value="08:00" style="max-width: 110px; margin: 0 auto;">
+                      </td>
+                      <td>
+                        <div class="btn-group btn-group-sm">
+                          <button type="button" class="btn btn-xs btn-outline-secondary quick-preset-btn" data-row-index="${idx}" data-time="07:45">07:45</button>
+                          <button type="button" class="btn btn-xs btn-outline-secondary quick-preset-btn" data-row-index="${idx}" data-time="08:00">08:00</button>
+                          <button type="button" class="btn btn-xs btn-outline-secondary quick-preset-btn" data-row-index="${idx}" data-time="08:15">08:15</button>
+                          <button type="button" class="btn btn-xs btn-outline-secondary quick-preset-btn" data-row-index="${idx}" data-time="08:30">08:30</button>
+                          <button type="button" class="btn btn-xs btn-outline-secondary quick-preset-btn" data-row-index="${idx}" data-time="08:45">08:45</button>
+                          <button type="button" class="btn btn-xs btn-outline-secondary quick-preset-btn" data-row-index="${idx}" data-time="09:00">09:00</button>
+                        </div>
+                      </td>
+                      <td class="text-center" id="gridStatusBadge-${idx}">
+                        <span class="badge rounded-pill bg-success-subtle text-success border border-success border-opacity-25 px-2 py-1"><i class="bi bi-check-circle-fill me-1"></i>${t("Pontual", "On Time")}</span>
+                      </td>
+                      <td class="text-center">
+                        <div class="form-check form-switch d-inline-block">
+                          <input class="form-check-input manual-present-toggle" type="checkbox" data-row-index="${idx}" checked>
+                        </div>
+                      </td>
+                    </tr>
+                  `;
+                }).join("")}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  // =========================================================================
   // Tab 6: Upload & Biometric Parser View
   // =========================================================================
 
@@ -2432,6 +2754,243 @@
       dailyCsvBtn.addEventListener("click", async function () {
         var res = await getBridge().listAttendanceRecords({ date: attendancePageState.selectedDate });
         exportRecordsToCsv(res.data, `Attendance-${attendancePageState.selectedDate}.csv`);
+      });
+    }
+
+    // -------------------------------------------------------------------------
+    // Manual & WhatsApp Entry Listeners
+    // -------------------------------------------------------------------------
+    var switchWhatsAppBtn = document.getElementById("switchToWhatsAppModeBtn");
+    var switchGridBtn = document.getElementById("switchToGridModeBtn");
+    if (switchWhatsAppBtn && switchGridBtn) {
+      switchWhatsAppBtn.addEventListener("click", function () {
+        attendancePageState.manualEntryMode = "whatsapp";
+        renderTabContent("manual");
+      });
+      switchGridBtn.addEventListener("click", function () {
+        attendancePageState.manualEntryMode = "grid";
+        renderTabContent("manual");
+      });
+    }
+
+    var insertSampleBtn = document.getElementById("insertSampleWhatsAppTextBtn");
+    var whatsAppTextarea = document.getElementById("whatsAppRawTextInput");
+    if (insertSampleBtn && whatsAppTextarea) {
+      insertSampleBtn.addEventListener("click", function () {
+        whatsAppTextarea.value = `Relatório diário de chegada 01/10/2026\n\nNome: Hora da Chegada\n\n1. Janet Marquel (8:30) 🟢\n2. Leopold Kusi (8:30) 🟢\n3. Deacon Oliver (8:38) 🚨\n4. Angélica Amílcar (7:43) 🟢\n5. Marcelo Panguene (7:43) 🟢\n6. Eduarda Paula (8:25) 🟢\n7. Gilberto Baule (7:50) 🟢\n8. Pastor Valdemiro (8:23) 🟢\n9. Sis. Virgínia Filipe (8:22) 🟢\n10. Junya Clementina (8:49) 🚨\n11. Laiza Chirindza (8:33) 🚨\n12. Pastor Clarissa (8:11) 🟢\n13. Sister Kassandra (8:14) 🟢\n14. Bro Filipe (8:30) 🟢\n\nThank you for the opportunity Pastor Sir`;
+        attendancePageState.manualRawText = whatsAppTextarea.value;
+      });
+    }
+
+    var clearWhatsAppTextBtn = document.getElementById("clearWhatsAppRawTextBtn");
+    if (clearWhatsAppTextBtn && whatsAppTextarea) {
+      clearWhatsAppTextBtn.addEventListener("click", function () {
+        whatsAppTextarea.value = "";
+        attendancePageState.manualRawText = "";
+      });
+    }
+
+    var parseWhatsAppBtn = document.getElementById("parseWhatsAppTextBtn");
+    if (parseWhatsAppBtn && whatsAppTextarea) {
+      parseWhatsAppBtn.addEventListener("click", function () {
+        var rawText = whatsAppTextarea.value;
+        if (!rawText || !rawText.trim()) {
+          alert(t("Por favor, cole o texto do WhatsApp primeiro.", "Please paste the WhatsApp text first."));
+          return;
+        }
+        var fallbackDate = document.getElementById("whatsAppDateFallbackInput")?.value || attendancePageState.selectedDate || "2026-10-01";
+        var parsedResult = getBridge().parseWhatsAppAttendanceText(rawText, fallbackDate);
+        if (!parsedResult.ok || !parsedResult.records || !parsedResult.records.length) {
+          alert(t("Não foi possível extrair registos do texto. Verifique o formato.", "Could not extract attendance records from text. Check format."));
+          return;
+        }
+        attendancePageState.manualRawText = rawText;
+        attendancePageState.manualParsedPreview = parsedResult;
+        renderTabContent("manual");
+      });
+    }
+
+    // Inline edit in parsed preview table
+    root.querySelectorAll(".parsed-checkin-edit").forEach(function (input) {
+      input.addEventListener("input", function () {
+        var idx = parseInt(this.getAttribute("data-record-index"), 10);
+        var preview = attendancePageState.manualParsedPreview;
+        if (preview && preview.records && preview.records[idx]) {
+          var val = this.value;
+          preview.records[idx].check_in = val || null;
+          preview.records[idx].check_out = val ? "17:00" : null;
+          var punct = val ? getBridge().calculatePunctualityStatus(val) : { status: "absent", delay_minutes: 0, is_late: false, is_present: false };
+          preview.records[idx].status = punct.status;
+          preview.records[idx].delay_minutes = punct.delay_minutes;
+          preview.records[idx].is_late = punct.is_late;
+          preview.records[idx].is_present = punct.is_present;
+
+          var badgeCell = document.getElementById("statusBadgeCell-" + idx);
+          if (badgeCell) badgeCell.innerHTML = getStatusBadge(punct.status, punct.delay_minutes);
+
+          var delayCell = document.getElementById("delayCell-" + idx);
+          if (delayCell) {
+            delayCell.innerHTML = punct.delay_minutes > 0 ? `<span class="text-danger fw-bold">+${punct.delay_minutes}m</span>` : (punct.is_present ? `<span class="text-success"><i class="bi bi-check"></i> 0m</span>` : `<span class="text-secondary">--</span>`);
+          }
+        }
+      });
+    });
+
+    var clearParsedBtn = document.getElementById("clearParsedWhatsAppBtn");
+    if (clearParsedBtn) {
+      clearParsedBtn.addEventListener("click", function () {
+        attendancePageState.manualParsedPreview = null;
+        renderTabContent("manual");
+      });
+    }
+
+    var confirmSaveWhatsAppBtn = document.getElementById("confirmSaveParsedWhatsAppBtn");
+    if (confirmSaveWhatsAppBtn) {
+      confirmSaveWhatsAppBtn.addEventListener("click", async function () {
+        var parsed = attendancePageState.manualParsedPreview;
+        if (!parsed || !parsed.records || !parsed.records.length) return;
+
+        this.disabled = true;
+        this.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span>${t("A gravar...", "Saving...")}`;
+
+        var res = await getBridge().saveBatchAttendance(parsed.records, {
+          filename: "WhatsApp-Relatorio-" + parsed.attendance_date + ".txt",
+          upload_date: parsed.attendance_date,
+          uploaded_by: window.activeUser?.name || "Brother Lio",
+          device_create_time: new Date().toISOString(),
+        });
+
+        if (res.ok) {
+          if (typeof window.showToast === "function") {
+            window.showToast(`${res.inserted_count} ${t("registos do WhatsApp guardados e submetidos com sucesso!", "WhatsApp records saved and submitted successfully!")}`, "success");
+          } else {
+            alert(`${res.inserted_count} ${t("registos guardados!", "records saved!")}`);
+          }
+          attendancePageState.selectedDate = parsed.attendance_date;
+          attendancePageState.manualParsedPreview = null;
+          attendancePageState.tab = "daily";
+          window.renderAttendance("daily");
+        } else {
+          alert(t("Erro ao gravar: ", "Error saving: ") + (res.error || "Erro"));
+          this.disabled = false;
+        }
+      });
+    }
+
+    // Grid Matrix actions
+    var fillAllBtn = document.getElementById("fillAllOnTimeGridBtn");
+    if (fillAllBtn) {
+      fillAllBtn.addEventListener("click", function () {
+        root.querySelectorAll(".manual-time-input").forEach(function (inp, idx) {
+          inp.value = "08:00";
+          var badge = document.getElementById("gridStatusBadge-" + idx);
+          if (badge) badge.innerHTML = `<span class="badge rounded-pill bg-success-subtle text-success border border-success border-opacity-25 px-2 py-1"><i class="bi bi-check-circle-fill me-1"></i>${t("Pontual", "On Time")}</span>`;
+        });
+        root.querySelectorAll(".manual-present-toggle").forEach(function (tog) {
+          tog.checked = true;
+        });
+      });
+    }
+
+    var clearAllGridBtn = document.getElementById("clearAllGridBtn");
+    if (clearAllGridBtn) {
+      clearAllGridBtn.addEventListener("click", function () {
+        root.querySelectorAll(".manual-time-input").forEach(function (inp, idx) {
+          inp.value = "";
+          var badge = document.getElementById("gridStatusBadge-" + idx);
+          if (badge) badge.innerHTML = `<span class="badge rounded-pill bg-secondary-subtle text-secondary border border-secondary border-opacity-25 px-2 py-1"><i class="bi bi-dash-circle me-1"></i>${t("Sem Registo", "No Punch")}</span>`;
+        });
+        root.querySelectorAll(".manual-present-toggle").forEach(function (tog) {
+          tog.checked = false;
+        });
+      });
+    }
+
+    root.querySelectorAll(".quick-preset-btn").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var idx = this.getAttribute("data-row-index");
+        var timeVal = this.getAttribute("data-time");
+        var inp = root.querySelector(`.manual-time-input[data-row-index="${idx}"]`);
+        if (inp) {
+          inp.value = timeVal;
+          var punct = getBridge().calculatePunctualityStatus(timeVal);
+          var badge = document.getElementById("gridStatusBadge-" + idx);
+          if (badge) badge.innerHTML = getStatusBadge(punct.status, punct.delay_minutes);
+        }
+      });
+    });
+
+    root.querySelectorAll(".manual-time-input").forEach(function (inp) {
+      inp.addEventListener("input", function () {
+        var idx = this.getAttribute("data-row-index");
+        var timeVal = this.value;
+        var punct = timeVal ? getBridge().calculatePunctualityStatus(timeVal) : { status: "absent", delay_minutes: 0 };
+        var badge = document.getElementById("gridStatusBadge-" + idx);
+        if (badge) badge.innerHTML = getStatusBadge(punct.status, punct.delay_minutes);
+      });
+    });
+
+    var saveGridBtn = document.getElementById("saveManualGridAttendanceBtn");
+    if (saveGridBtn) {
+      saveGridBtn.addEventListener("click", async function () {
+        var gridDate = document.getElementById("manualGridDateInput")?.value || attendancePageState.selectedDate || "2026-10-01";
+        var rows = root.querySelectorAll(".manual-grid-row");
+        var records = [];
+
+        rows.forEach(function (r) {
+          var staffId = r.getAttribute("data-staff-id");
+          var staffName = r.getAttribute("data-staff-name");
+          var staffFullName = r.getAttribute("data-staff-fullname");
+          var staffDept = r.getAttribute("data-staff-dept");
+          var staffRole = r.getAttribute("data-staff-role");
+          var timeInp = r.querySelector(".manual-time-input");
+          var tog = r.querySelector(".manual-present-toggle");
+
+          var isPresent = tog ? tog.checked : Boolean(timeInp?.value);
+          var checkIn = isPresent && timeInp?.value ? timeInp.value : null;
+          var punct = checkIn ? getBridge().calculatePunctualityStatus(checkIn) : { status: "absent", delay_minutes: 0, is_late: false, is_present: false };
+
+          records.push({
+            id: "att-" + gridDate.replace(/-/g, "") + "-" + staffId,
+            attendance_date: gridDate,
+            employee_id: staffId,
+            employee_name: staffName,
+            employee_full_name: staffFullName,
+            department: staffDept,
+            role: staffRole,
+            check_in: checkIn,
+            check_out: checkIn ? "17:00" : null,
+            all_punches: checkIn ? checkIn + " 17:00" : "--:-- --:--",
+            status: punct.status,
+            delay_minutes: punct.delay_minutes,
+            is_late: punct.is_late,
+            is_present: punct.is_present,
+          });
+        });
+
+        this.disabled = true;
+        this.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span>${t("A gravar...", "Saving...")}`;
+
+        var res = await getBridge().saveBatchAttendance(records, {
+          filename: "Manual-Entrada-" + gridDate + ".csv",
+          upload_date: gridDate,
+          uploaded_by: window.activeUser?.name || "Brother Lio",
+          device_create_time: new Date().toISOString(),
+        });
+
+        if (res.ok) {
+          if (typeof window.showToast === "function") {
+            window.showToast(`${res.inserted_count} ${t("registos manuais guardados com sucesso!", "manual records saved successfully!")}`, "success");
+          } else {
+            alert(`${res.inserted_count} ${t("registos guardados!", "records saved!")}`);
+          }
+          attendancePageState.selectedDate = gridDate;
+          attendancePageState.tab = "daily";
+          window.renderAttendance("daily");
+        } else {
+          alert(t("Erro ao gravar: ", "Error saving: ") + (res.error || "Erro"));
+          this.disabled = false;
+        }
       });
     }
   }

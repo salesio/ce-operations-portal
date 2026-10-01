@@ -38,28 +38,28 @@
   };
 
   var STAFF_LIST = [
-    { id: "1", name: "Leo", fullName: "Brother Lio (Leopold Youngpet & Koutou)", dept: "Paixão à Primeira Vista / CESTAFF", role: "Group Leader" },
-    { id: "2", name: "Marcelo", fullName: "Marcelo Machava", dept: "CESTAFF", role: "Staff Member" },
-    { id: "3", name: "Deacon", fullName: "Deacon Rui", dept: "CESTAFF", role: "Deacon" },
-    { id: "4", name: "Flavia", fullName: "Flavia Cossa", dept: "CESTAFF", role: "Staff Member" },
-    { id: "5", name: "Gil", fullName: "Gilberto Tembe", dept: "CESTAFF", role: "Staff Member" },
-    { id: "7", name: "Pk", fullName: "Pastor Kéne (Kenneth)", dept: "Liderança Geral / MAIN", role: "Group Pastor" },
-    { id: "8", name: "Service", fullName: "Service Team Admin", dept: "Operações", role: "Staff Member" },
-    { id: "9", name: "Staff", fullName: "Staff Central", dept: "CESTAFF", role: "Staff Member" },
-    { id: "10", name: "Valdemiro", fullName: "Pastor Valdemiro", dept: "Cuidados Pastorais", role: "Pastoral Care Head" },
-    { id: "11", name: "Janet", fullName: "Janet Sitoe", dept: "CESTAFF", role: "Staff Member" },
-    { id: "13", name: "Pstreina", fullName: "Pastora Reina", dept: "Cuidados Pastorais", role: "Pastor" },
-    { id: "15", name: "Laiza", fullName: "Laiza Nhantumbo", dept: "CESTAFF", role: "Staff Member" },
-    { id: "2025", name: "Claudina", fullName: "Claudina Matsinhe", dept: "CESTAFF", role: "Staff Member" },
-    { id: "10000013", name: "Eduarda", fullName: "Eduarda Mondlane", dept: "CESTAFF", role: "Staff Member" },
-    { id: "10000014", name: "Angelica", fullName: "Angelica Guambe", dept: "CESTAFF", role: "Staff Member" },
-    { id: "10000017", name: "Junia", fullName: "Junia Macuacua", dept: "CESTAFF", role: "Staff Member" },
-    { id: "10000019", name: "Kassandra", fullName: "Kassandra Langa", dept: "CESTAFF", role: "Staff Member" },
-    { id: "10000020", name: "Filipe", fullName: "Filipe Mabunda", dept: "CESTAFF", role: "Staff Member" },
-    { id: "10000021", name: "Virginia", fullName: "Virginia Chissano", dept: "CESTAFF", role: "Staff Member" },
-    { id: "10000022", name: "Kenneth", fullName: "Kenneth (Pastor Kéne)", dept: "Liderança Geral / MAIN", role: "Group Pastor" },
-    { id: "10000023", name: "Salesio", fullName: "Salesio Machava", dept: "Administração Geral", role: "Super Admin" },
-    { id: "10000024", name: "Protocols", fullName: "Protocolos & Recepção", dept: "Operações", role: "Staff Member" },
+    { id: "11", code: "STF-01", name: "Janet", fullName: "Janet Marquel", dept: "CESTAFF", role: "Staff Member", aliases: ["janet", "janet marquel", "janet sitoe"] },
+    { id: "1", code: "STF-02", name: "Leo", fullName: "Leopold Kusi", dept: "Paixão à Primeira Vista / CESTAFF", role: "Group Leader", aliases: ["leopold", "leopold kusi", "lio", "brother lio", "brother leo", "leopold youngpet & koutou"] },
+    { id: "3", code: "STF-03", name: "Oliver", fullName: "Deacon Oliver", dept: "CESTAFF", role: "Deacon", aliases: ["oliver", "deacon oliver", "dc oliver", "deacon", "deacon rui"] },
+    { id: "10000014", code: "STF-04", name: "Angelica", fullName: "Angélica Amílcar", dept: "CESTAFF", role: "Staff Member", aliases: ["angelica", "angélica", "angelica amilcar", "angélica amílcar", "angelica guambe"] },
+    { id: "2", code: "STF-05", name: "Marcelo", fullName: "Marcelo Panguene", dept: "CESTAFF", role: "Staff Member", aliases: ["marcelo", "marcelo panguene", "marcelo machava"] },
+    { id: "10000013", code: "STF-06", name: "Eduarda", fullName: "Eduarda Paula", dept: "CESTAFF", role: "Staff Member", aliases: ["eduarda", "eduarda paula", "eduarda mondlane"] },
+    { id: "5", code: "STF-07", name: "Gil", fullName: "Gilberto Baule", dept: "CESTAFF", role: "Staff Member", aliases: ["gilberto", "gilberto baule", "gil", "gilberto tembe"] },
+    { id: "10", code: "STF-08", name: "Valdemiro", fullName: "Pastor Valdemiro", dept: "Cuidados Pastorais", role: "Pastoral Care Head", aliases: ["valdemiro", "pastor valdemiro", "pr valdemiro", "pr. valdemiro"] },
+    { id: "10000021", code: "STF-09", name: "Virginia", fullName: "Sis. Virgínia Filipe", dept: "CESTAFF", role: "Staff Member", aliases: ["virginia", "virgínia", "sis virginia", "sis. virgínia", "sis virginia filipe", "sis. virgínia filipe", "virginia filipe", "virgínia filipe", "virginia chissano"] },
+    { id: "10000017", code: "STF-10", name: "Junia", fullName: "Junya Clementina", dept: "CESTAFF", role: "Staff Member", aliases: ["junya", "junia", "junya clementina", "junia clementina", "junia macuacua"] },
+    { id: "15", code: "STF-11", name: "Laiza", fullName: "Laiza Chirindza", dept: "CESTAFF", role: "Staff Member", aliases: ["laiza", "laiza chirindza", "laiza nhantumbo"] },
+    { id: "13", code: "STF-12", name: "Clarissa", fullName: "Pastor Clarissa", dept: "Cuidados Pastorais", role: "Pastor", aliases: ["clarissa", "pastor clarissa", "pr clarissa", "pr. clarissa", "pstreina", "reina", "pastora reina"] },
+    { id: "10000019", code: "STF-13", name: "Kassandra", fullName: "Sister Kassandra", dept: "CESTAFF", role: "Staff Member", aliases: ["kassandra", "sister kassandra", "sis kassandra", "sis. kassandra", "kassandra langa"] },
+    { id: "10000020", code: "STF-14", name: "Filipe", fullName: "Bro Filipe", dept: "CESTAFF", role: "Staff Member", aliases: ["filipe", "bro filipe", "bro. filipe", "brother filipe", "filipe mabunda"] },
+    { id: "4", code: "STF-15", name: "Flavia", fullName: "Flavia Cossa", dept: "CESTAFF", role: "Staff Member", aliases: ["flavia", "flávia"] },
+    { id: "7", code: "STF-16", name: "Pk", fullName: "Pastor Kéne (Kenneth)", dept: "Liderança Geral / MAIN", role: "Group Pastor", aliases: ["kene", "kéne", "pastor kene", "pastor kéne"] },
+    { id: "8", code: "STF-17", name: "Service", fullName: "Service Team Admin", dept: "Operações", role: "Staff Member", aliases: ["service"] },
+    { id: "9", code: "STF-18", name: "Staff", fullName: "Staff Central", dept: "CESTAFF", role: "Staff Member", aliases: ["staff"] },
+    { id: "2025", code: "STF-19", name: "Claudina", fullName: "Claudina Matsinhe", dept: "CESTAFF", role: "Staff Member", aliases: ["claudina"] },
+    { id: "10000022", code: "STF-20", name: "Kenneth", fullName: "Kenneth (Pastor Kéne)", dept: "Liderança Geral / MAIN", role: "Group Pastor", aliases: ["kenneth"] },
+    { id: "10000023", code: "STF-21", name: "Salesio", fullName: "Salesio Machava", dept: "Administração Geral", role: "Super Admin", aliases: ["salesio"] },
+    { id: "10000024", code: "STF-22", name: "Protocols", fullName: "Protocolos & Recepção", dept: "Operações", role: "Staff Member", aliases: ["protocols"] },
   ];
 
   // Multi-day sample attendance generation helper
@@ -68,6 +68,31 @@
     var uploadIdBase = "e1111111-1111-4111-8111-1111111111";
 
     var checkInProfiles = {
+      // Real submission from WhatsApp on 01/10/2026
+      "2026-10-01": {
+        "11": { in: "08:30", out: "17:00", card: "" }, // Janet Marquel (8:30) 🟢
+        "1": { in: "08:30", out: "17:00", card: "" }, // Leopold Kusi (8:30) 🟢
+        "3": { in: "08:38", out: "17:00", card: "" }, // Deacon Oliver (8:38) 🚨
+        "10000014": { in: "07:43", out: "17:00", card: "" }, // Angélica Amílcar (7:43) 🟢
+        "2": { in: "07:43", out: "17:00", card: "" }, // Marcelo Panguene (7:43) 🟢
+        "10000013": { in: "08:25", out: "17:00", card: "" }, // Eduarda Paula (8:25) 🟢
+        "5": { in: "07:50", out: "17:00", card: "" }, // Gilberto Baule (7:50) 🟢
+        "10": { in: "08:23", out: "17:00", card: "" }, // Pastor Valdemiro (8:23) 🟢
+        "10000021": { in: "08:22", out: "17:00", card: "" }, // Sis. Virgínia Filipe (8:22) 🟢
+        "10000017": { in: "08:49", out: "17:00", card: "" }, // Junya Clementina (8:49) 🚨
+        "15": { in: "08:33", out: "17:00", card: "" }, // Laiza Chirindza (8:33) 🚨
+        "13": { in: "08:11", out: "17:00", card: "" }, // Pastor Clarissa (8:11) 🟢
+        "10000019": { in: "08:14", out: "17:00", card: "" }, // Sister Kassandra (8:14) 🟢
+        "10000020": { in: "08:30", out: "17:00", card: "" }, // Bro Filipe (8:30) 🟢
+        "4": { in: "08:15", out: "17:00", card: "" },
+        "7": { in: "08:00", out: "17:30", card: "0169895558" },
+        "8": { in: "07:55", out: "17:00", card: "0169672262" },
+        "9": { in: "08:05", out: "17:00", card: "0170207286" },
+        "2025": { in: "08:25", out: "17:00", card: "" },
+        "10000022": { in: "08:00", out: "17:30", card: "" },
+        "10000023": { in: "07:55", out: "18:00", card: "" },
+        "10000024": { in: "07:58", out: "17:00", card: "1512235212" },
+      },
       "2026-07-09": {
         "1": { in: "08:18", out: "17:05", card: "" },
         "2": { in: "08:15", out: "17:00", card: "" },
@@ -562,11 +587,230 @@
     return null;
   }
 
+  function normalizeNameForMatching(str) {
+    if (!str) return "";
+    return String(str)
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/^(pastor|pastora|pr\.|pr|sis\.|sis|sister|bro\.|bro|brother|deacon|dc\.|ir\.|irmao|irma)\s+/i, "")
+      .replace(/[^a-z0-9\s]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function getStaffListSync() {
+    try {
+      var raw = localStorage.getItem("ce-data-layer:staff");
+      if (raw) {
+        var list = JSON.parse(raw);
+        if (Array.isArray(list) && list.length > 0) {
+          return list.map(function (s, idx) {
+            var fullName = s.full_name || s.name || s.employee_name || ("Colaborador " + (idx + 1));
+            var parts = fullName.trim().split(" ");
+            var firstName = parts[0] || fullName;
+            var cleanNorm = normalizeNameForMatching(fullName);
+            return {
+              id: String(s.id || s.staff_code || s.employee_id || ("STF-" + (idx + 1))),
+              code: s.staff_code || s.employee_id || ("STF-" + String(idx + 1).padStart(2, "0")),
+              name: s.first_name || firstName,
+              fullName: fullName,
+              dept: s.department || s.dept || "CESTAFF",
+              role: s.role || s.job_title || "Staff Member",
+              card_no: s.card_no || s.biometric_id || "",
+              email: s.email || "",
+              phone: s.phone || "",
+              aliases: [firstName.toLowerCase(), fullName.toLowerCase(), cleanNorm],
+            };
+          });
+        }
+      }
+    } catch (_) {}
+    return STAFF_LIST;
+  }
+
+  function matchStaffByName(candidateName, staffList) {
+    if (!candidateName) return null;
+    var list = staffList || getStaffListSync();
+    var cleanCand = normalizeNameForMatching(candidateName);
+    var rawCand = String(candidateName).toLowerCase().trim();
+
+    // 1. Direct exact alias or full name match
+    for (var i = 0; i < list.length; i++) {
+      var s = list[i];
+      var sNorm = normalizeNameForMatching(s.fullName || s.name);
+      if (sNorm === cleanCand || (s.fullName && s.fullName.toLowerCase() === rawCand) || (s.name && s.name.toLowerCase() === rawCand)) {
+        return s;
+      }
+      if (s.aliases && Array.isArray(s.aliases)) {
+        for (var a = 0; a < s.aliases.length; a++) {
+          if (normalizeNameForMatching(s.aliases[a]) === cleanCand || s.aliases[a].toLowerCase() === rawCand) {
+            return s;
+          }
+        }
+      }
+    }
+
+    // 2. Token inclusion match
+    var candTokens = cleanCand.split(" ").filter(Boolean);
+    for (var j = 0; j < list.length; j++) {
+      var st = list[j];
+      var stNorm = normalizeNameForMatching(st.fullName || st.name);
+      var stTokens = stNorm.split(" ").filter(Boolean);
+      
+      var matchesAll = candTokens.length > 0 && candTokens.every(function (t) {
+        return stTokens.some(function (stk) { return stk === t || stk.startsWith(t) || t.startsWith(stk); });
+      });
+      if (matchesAll) return st;
+
+      if (candTokens[0] && stTokens[0] && (candTokens[0] === stTokens[0] || candTokens[0] === st.name.toLowerCase())) {
+        return st;
+      }
+    }
+
+    return null;
+  }
+
+  function parseWhatsAppAttendanceText(rawText, fallbackDate, customSettings) {
+    if (!rawText || typeof rawText !== "string") {
+      return { ok: false, error: "Texto vazio fornecido." };
+    }
+
+    var settings = Object.assign({}, DEFAULT_SETTINGS, customSettings || {});
+    var lines = rawText.split(/\r?\n/);
+    var detectedDate = fallbackDate || new Date().toISOString().slice(0, 10);
+
+    // Look for date in header or lines (e.g., 01/10/2026, 01-10-2026, 2026-10-01)
+    for (var l = 0; l < Math.min(10, lines.length); l++) {
+      var line = lines[l];
+      var dMatch = line.match(/\b(\d{1,2})[\/\.-](\d{1,2})[\/\.-](\d{2,4})\b/);
+      if (dMatch) {
+        var day = String(dMatch[1]).padStart(2, "0");
+        var month = String(dMatch[2]).padStart(2, "0");
+        var year = dMatch[3].length === 2 ? "20" + dMatch[3] : dMatch[3];
+        detectedDate = year + "-" + month + "-" + day;
+        break;
+      }
+      var isoMatch = line.match(/\b(\d{4})[\/\.-](\d{1,2})[\/\.-](\d{1,2})\b/);
+      if (isoMatch) {
+        detectedDate = isoMatch[1] + "-" + String(isoMatch[2]).padStart(2, "0") + "-" + String(isoMatch[3]).padStart(2, "0");
+        break;
+      }
+    }
+
+    var staffList = getStaffListSync();
+    var records = [];
+
+    lines.forEach(function (line) {
+      var trimmed = line.trim();
+      if (!trimmed) return;
+      if (/^(relat[oó]rio|nome:|hora da chegada|thank you|obrigado|pastor sir|that's what|data:|chegadas)/i.test(trimmed)) {
+        return;
+      }
+
+      var timeMatch = trimmed.match(/(?:\(|\b)(\d{1,2})[:hH\.](\d{2})(?:\)|\b)?/);
+      var checkIn = null;
+      if (timeMatch) {
+        var hrs = String(timeMatch[1]).padStart(2, "0");
+        var mins = String(timeMatch[2]).padStart(2, "0");
+        checkIn = hrs + ":" + mins;
+      }
+
+      var isSiren = /[🚨🔴⏰⚠️]/.test(trimmed) || /atrasad[oa]|late/i.test(trimmed);
+
+      var cleanName = trimmed
+        .replace(/^\s*(?:\d+[\.\)\-:]*|[-*•])\s*/, "")
+        .replace(/(?:\(|\b)\d{1,2}[:hH\.]\d{2}(?:\)|\b)?/g, "")
+        .replace(/[🟢✅👍🚨🔴⏰⚠️❌⛔]/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+
+      if (!cleanName || cleanName.length < 2) return;
+
+      var matchedStaff = matchStaffByName(cleanName, staffList);
+      var staffId = matchedStaff ? matchedStaff.id : "manual-" + cleanName.toLowerCase().replace(/[^a-z0-9]/g, "-");
+      var staffName = matchedStaff ? matchedStaff.name : cleanName.split(" ")[0];
+      var staffFullName = matchedStaff ? matchedStaff.fullName : cleanName;
+      var dept = matchedStaff ? matchedStaff.dept : "CESTAFF";
+      var role = matchedStaff ? matchedStaff.role : "Staff Member";
+
+      var punct = checkIn ? calculatePunctualityStatus(checkIn, settings) : {
+        status: "absent",
+        delay_minutes: 0,
+        is_late: isSiren,
+        is_present: false,
+        label_pt: isSiren ? "Atrasado / Sem Picagem" : "Sem Registo",
+        label_en: isSiren ? "Late / No Punch" : "No Punch",
+        badge_class: "badge-soft-secondary text-secondary",
+      };
+
+      records.push({
+        id: "att-" + detectedDate.replace(/-/g, "") + "-" + staffId,
+        attendance_date: detectedDate,
+        employee_id: staffId,
+        employee_name: staffName,
+        employee_full_name: staffFullName,
+        department: dept,
+        role: role,
+        check_in: checkIn,
+        check_out: checkIn ? "17:00" : null,
+        all_punches: checkIn ? checkIn + " 17:00" : "--:-- --:--",
+        status: punct.status,
+        delay_minutes: punct.delay_minutes,
+        is_late: punct.is_late,
+        is_present: punct.is_present,
+        raw_line: trimmed,
+        matched: Boolean(matchedStaff),
+      });
+    });
+
+    return {
+      ok: true,
+      attendance_date: detectedDate,
+      record_count: records.length,
+      records: records,
+      present_count: records.filter(function (r) { return r.is_present; }).length,
+      on_time_count: records.filter(function (r) { return r.status === "on_time"; }).length,
+      grace_count: records.filter(function (r) { return r.status === "grace_period"; }).length,
+      late_count: records.filter(function (r) { return r.is_late; }).length,
+      absent_count: records.filter(function (r) { return !r.is_present; }).length,
+    };
+  }
+
   var dataBridge = {
     STAFF_LIST: STAFF_LIST,
+    getStaffListSync: getStaffListSync,
+    getStaffList: async function () {
+      try {
+        var hrBridge = window.CEStaffHR || window.CEDataLayer?.staffHR || window.CESupabase;
+        if (hrBridge && typeof hrBridge.listStaff === "function") {
+          var res = await hrBridge.listStaff();
+          var list = res && res.data ? res.data : (Array.isArray(res) ? res : []);
+          if (list && list.length > 0) {
+            return list.map(function (s, idx) {
+              var fullName = s.full_name || s.name || s.employee_name || ("Colaborador " + (idx + 1));
+              var parts = fullName.trim().split(" ");
+              return {
+                id: String(s.id || s.staff_code || s.employee_id || ("STF-" + (idx + 1))),
+                code: s.staff_code || s.employee_id || ("STF-" + String(idx + 1).padStart(2, "0")),
+                name: s.first_name || parts[0] || fullName,
+                fullName: fullName,
+                dept: s.department || s.dept || "CESTAFF",
+                role: s.role || s.job_title || "Staff Member",
+                card_no: s.card_no || s.biometric_id || "",
+              };
+            });
+          }
+        }
+      } catch (_) {}
+      return getStaffListSync();
+    },
     calculatePunctualityStatus: calculatePunctualityStatus,
     parseTimeToMinutes: parseTimeToMinutes,
     minutesToTimeStr: minutesToTimeStr,
+    normalizeNameForMatching: normalizeNameForMatching,
+    matchStaffByName: matchStaffByName,
+    parseWhatsAppAttendanceText: parseWhatsAppAttendanceText,
 
     getAttendanceSettings: async function () {
       var client = getSupabaseClient();
