@@ -35643,7 +35643,7 @@ async function submitForm(form) {
       } else {
         state.staffProfiles.unshift(enriched);
       }
-      dualWriteStaffHrRecord("staffProfile", "update", enriched);
+      await dualWriteStaffHrRecord("staffProfile", "update", enriched);
     } else {
       state.staffProfiles = state.staffProfiles || [];
       const newId = (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function")
@@ -35676,7 +35676,7 @@ async function submitForm(form) {
       };
       const created = staffLib?.enrichStaffProfile ? staffLib.enrichStaffProfile(createdRaw) : createdRaw;
       state.staffProfiles.unshift(created);
-      dualWriteStaffHrRecord("staffProfile", "create", created);
+      await dualWriteStaffHrRecord("staffProfile", "create", created);
       if (created.full_name || created.name) {
         registerPendingMemberFromExternalRole({
           name: created.full_name || created.name,
@@ -35721,7 +35721,7 @@ async function submitForm(form) {
       const index = state.staffPerformance.findIndex((item) => item.id === modalRecordId);
       if (index >= 0) {
         state.staffPerformance[index] = { ...state.staffPerformance[index], ...data };
-        dualWriteStaffHrRecord("staffPerformance", "update", state.staffPerformance[index]);
+        await dualWriteStaffHrRecord("staffPerformance", "update", state.staffPerformance[index]);
       }
     } else {
       state.staffPerformance = state.staffPerformance || [];
@@ -35734,7 +35734,7 @@ async function submitForm(form) {
         ...data
       };
       state.staffPerformance.unshift(created);
-      dualWriteStaffHrRecord("staffPerformance", "create", created);
+      await dualWriteStaffHrRecord("staffPerformance", "create", created);
     }
     saveState(`${modalMode} staffPerformance`);
     try {
@@ -43201,22 +43201,26 @@ function getStaffHrRepoSafe() {
   );
 }
 
-function dualWriteStaffHrRecord(kind, mode, record) {
+async function dualWriteStaffHrRecord(kind, mode, record) {
   const bridge =
     window.CEStaffHR ||
     window.CEStaffHr ||
     window.CEDataLayer?.staffHR;
   if (!bridge || !record) return;
-  if (typeof bridge.dualWriteRecord === "function") {
-    void bridge.dualWriteRecord(kind, mode, record);
-    return;
-  }
-  if (kind === "staffProfile") {
-    if (mode === "create" && bridge.createStaff) void bridge.createStaff(record);
-    else if (mode === "update" && bridge.updateStaff) void bridge.updateStaff(record.id, record);
-  } else if (kind === "staffPerformance") {
-    if (mode === "create" && bridge.createPerformanceReview) void bridge.createPerformanceReview(record);
-    else if (mode === "update" && bridge.updatePerformanceReview) void bridge.updatePerformanceReview(record.id, record);
+  try {
+    if (typeof bridge.dualWriteRecord === "function") {
+      await bridge.dualWriteRecord(kind, mode, record);
+      return;
+    }
+    if (kind === "staffProfile") {
+      if (mode === "create" && bridge.createStaff) await bridge.createStaff(record);
+      else if (mode === "update" && bridge.updateStaff) await bridge.updateStaff(record.id, record);
+    } else if (kind === "staffPerformance") {
+      if (mode === "create" && bridge.createPerformanceReview) await bridge.createPerformanceReview(record);
+      else if (mode === "update" && bridge.updatePerformanceReview) await bridge.updatePerformanceReview(record.id, record);
+    }
+  } catch (err) {
+    console.warn("[CE StaffHR] dualWrite error:", kind, mode, err);
   }
 }
 
@@ -43244,6 +43248,7 @@ async function hydrateStaffHrFromRepository() {
       const cleanStaff = staffData.filter((r) => !r.metadata?.demo && !r.metadata?.synthetic);
       state.staffProfiles = cleanStaff.map((row) => {
         const full = row.full_name || [row.first_name, row.last_name].filter(Boolean).join(" ");
+        const metaRow = (row.metadata as Record<string, unknown>) || row.metadata || {};
         const merged = {
           ...row,
           id: row.id,
@@ -43252,13 +43257,18 @@ async function hydrateStaffHrFromRepository() {
           date_of_birth: row.date_of_birth || row.data_de_aniversario || null,
           department_name: row.department_name || null,
           role_title: row.role_title || row.role_name || null,
-          employment_type: row.employment_type || "Full Time",
+          employment_type: row.employment_type || "Full-time",
           church_id: row.church_id || null,
           church_name: row.church_name || null,
-          salary_or_allowance: row.salary_or_allowance ?? 0,
-          bank_name: row.bank_name || null,
-          bank_account_number: row.bank_account_number || null,
-          mobile_money_number: row.mobile_money_number || null,
+          salary_or_allowance: row.salary_or_allowance ?? metaRow.salary_or_allowance ?? 0,
+          bank_name: row.bank_name || metaRow.bank_name || null,
+          bank_account_number: row.bank_account_number || metaRow.bank_account_number || null,
+          mobile_money_number: row.mobile_money_number || metaRow.mobile_money_number || null,
+          emergency_contact_name: row.emergency_contact_name || metaRow.emergency_contact_name || null,
+          emergency_contact_phone: row.emergency_contact_phone || metaRow.emergency_contact_phone || null,
+          marital_status: metaRow.marital_status || "Por Confirmar",
+          national_id_number: metaRow.national_id_number || null,
+          nuit: metaRow.nuit || null,
         };
         return lib?.enrichStaffProfile ? lib.enrichStaffProfile(merged) : merged;
       });
