@@ -35614,6 +35614,8 @@ async function submitForm(form) {
       delete data.nuit;
     }
     const today = new Date().toISOString().slice(0, 10);
+    let finalStaffRecord = null;
+
     if (modalMode === "edit") {
       const index = state.staffProfiles.findIndex((item) => item.id === modalRecordId);
       const previous = index >= 0 ? state.staffProfiles[index] : {};
@@ -35629,13 +35631,12 @@ async function submitForm(form) {
         merged.nuit = previous.nuit;
       }
       if (!merged.status) merged.status = "Activo";
-      const enriched = staffLib?.enrichStaffProfile ? staffLib.enrichStaffProfile(merged) : merged;
+      finalStaffRecord = staffLib?.enrichStaffProfile ? staffLib.enrichStaffProfile(merged) : merged;
       if (index >= 0) {
-        state.staffProfiles[index] = enriched;
+        state.staffProfiles[index] = finalStaffRecord;
       } else {
-        state.staffProfiles.unshift(enriched);
+        state.staffProfiles.unshift(finalStaffRecord);
       }
-      await dualWriteStaffHrRecord("staffProfile", "update", enriched);
     } else {
       state.staffProfiles = state.staffProfiles || [];
       const newId = (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function")
@@ -35666,23 +35667,23 @@ async function submitForm(form) {
         created_by: activeUser?.name || "Sistema",
         ...data
       };
-      const created = staffLib?.enrichStaffProfile ? staffLib.enrichStaffProfile(createdRaw) : createdRaw;
-      state.staffProfiles.unshift(created);
-      await dualWriteStaffHrRecord("staffProfile", "create", created);
-      if (created.full_name || created.name) {
+      finalStaffRecord = staffLib?.enrichStaffProfile ? staffLib.enrichStaffProfile(createdRaw) : createdRaw;
+      state.staffProfiles.unshift(finalStaffRecord);
+      if (finalStaffRecord.full_name || finalStaffRecord.name) {
         registerPendingMemberFromExternalRole({
-          name: created.full_name || created.name,
-          phone: created.primary_phone || created.phone || created.contacto,
-          email: created.email,
-          church_id: created.church_id,
-          role_title: `Staff / Colaborador (${created.role || created.department_name || 'Departamento'})`,
+          name: finalStaffRecord.full_name || finalStaffRecord.name,
+          phone: finalStaffRecord.primary_phone || finalStaffRecord.phone || finalStaffRecord.contacto,
+          email: finalStaffRecord.email,
+          church_id: finalStaffRecord.church_id,
+          role_title: `Staff / Colaborador (${finalStaffRecord.role_title || finalStaffRecord.role || finalStaffRecord.department_name || 'Departamento'})`,
           origin: "Auto-Staff",
           entity_type: "staffProfile",
-          entity_id: created.id
+          entity_id: finalStaffRecord.id
         });
       }
     }
-    saveState(`${modalMode} staffProfile`);
+
+    // 1. Immediately reset form and close modal
     try {
       form.reset();
     } catch (_) {}
@@ -35693,8 +35694,22 @@ async function submitForm(form) {
         modalInstance.hide();
       }
     } catch (_) {}
+
+    // 2. Clear filters and ensure visible staff tab
+    if (staffHrPageState.cardFilters) {
+      staffHrPageState.cardFilters.staff = {};
+    }
+    if (staffHrPageState.tab === "overview" || !staffHrPageState.tab) {
+      staffHrPageState.tab = "staff";
+    }
+
+    // 3. Persist local state and immediately re-render view
+    saveState(`${modalMode} staffProfile`);
     showToast(modalMode === "edit" ? "Registo de staff atualizado com sucesso!" : "Novo staff registado com sucesso!", "success");
     if (isStaffHrRoute(activeRoute)) renderStaffHr();
+
+    // 4. Background persistence without blocking UI
+    void dualWriteStaffHrRecord("staffProfile", modalMode === "edit" ? "update" : "create", finalStaffRecord);
     return;
   }
   if (modalType === "staffPerformance") {
@@ -35709,11 +35724,13 @@ async function submitForm(form) {
     data.updated_by = activeUser?.name || "Sistema";
     data.updated_at = data.evaluated_at;
     data.status = data.status || "Reviewed";
+    let finalPerfRecord = null;
+
     if (modalMode === "edit") {
       const index = state.staffPerformance.findIndex((item) => item.id === modalRecordId);
       if (index >= 0) {
         state.staffPerformance[index] = { ...state.staffPerformance[index], ...data };
-        await dualWriteStaffHrRecord("staffPerformance", "update", state.staffPerformance[index]);
+        finalPerfRecord = state.staffPerformance[index];
       }
     } else {
       state.staffPerformance = state.staffPerformance || [];
@@ -35726,9 +35743,10 @@ async function submitForm(form) {
         ...data
       };
       state.staffPerformance.unshift(created);
-      await dualWriteStaffHrRecord("staffPerformance", "create", created);
+      finalPerfRecord = created;
     }
-    saveState(`${modalMode} staffPerformance`);
+
+    // 1. Immediately reset form and close modal
     try {
       form.reset();
     } catch (_) {}
@@ -35739,9 +35757,17 @@ async function submitForm(form) {
         modalInstance.hide();
       }
     } catch (_) {}
+
+    // 2. Persist local state and immediately re-render view
+    saveState(`${modalMode} staffPerformance`);
     showToast(modalMode === "edit" ? "Avaliação atualizada com sucesso!" : "Avaliação registada com sucesso!", "success");
     staffHrPageState.tab = "performance";
     if (isStaffHrRoute(activeRoute)) renderStaffHr();
+
+    // 3. Background persistence without blocking UI
+    if (finalPerfRecord) {
+      void dualWriteStaffHrRecord("staffPerformance", modalMode === "edit" ? "update" : "create", finalPerfRecord);
+    }
     return;
   }
   schema.forEach(([name, , inputType]) => {
@@ -43250,7 +43276,7 @@ async function hydrateStaffHrFromRepository() {
 
     if (Array.isArray(staffData)) {
       const cleanStaff = staffData.filter((r) => !r.metadata?.demo && !r.metadata?.synthetic);
-      state.staffProfiles = cleanStaff.map((row) => {
+      const incomingList = cleanStaff.map((row) => {
         const full = row.full_name || [row.first_name, row.last_name].filter(Boolean).join(" ");
         const metaRow = row.metadata || {};
         const merged = {
@@ -43276,6 +43302,10 @@ async function hydrateStaffHrFromRepository() {
         };
         return lib?.enrichStaffProfile ? lib.enrichStaffProfile(merged) : merged;
       });
+      const incMap = new Map(incomingList.map((item) => [String(item.id), item]));
+      const existingLocal = Array.isArray(state.staffProfiles) ? state.staffProfiles : [];
+      const localOnly = existingLocal.filter((local) => local && local.id && !incMap.has(String(local.id)));
+      state.staffProfiles = [...localOnly, ...incomingList];
       hydrated = true;
       console.info("[CE StaffHR] hydrated staff from Supabase", state.staffProfiles.length);
     }
@@ -43344,6 +43374,9 @@ async function hydrateStaffHrFromRepository() {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       } catch (_) {}
+      if (typeof isStaffHrRoute === "function" && isStaffHrRoute(activeRoute)) {
+        renderStaffHr();
+      }
     }
     return hydrated;
   } catch (error) {

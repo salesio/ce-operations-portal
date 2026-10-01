@@ -328,7 +328,7 @@
     }));
   }
 
-  window.CEStaffHr = {
+  window.CEStaffHr = Object.assign(window.CEStaffHr || {}, {
     EMPLOYMENT_TYPES,
     PAYMENT_FREQUENCIES,
     PAYMENT_METHODS,
@@ -364,5 +364,5 @@
     maskSensitive,
     filterSalaries,
     staffProfileSections
-  };
+  });
 })();
