@@ -13669,31 +13669,6 @@ function renderDashboardActivityList() {
 }
 
 window.mainAttendanceState = {
-  selectedDate: "2026-07-09",
-  period: "day", // "day" | "week" | "month" | "last_month" | "year_2025"
-  statusFilter: "all",
-  searchQuery: "",
-};
-
-window.switchMainAttendanceDate = function (dateOrPeriod, periodType) {
-  if (!dateOrPeriod) return;
-  window.mainAttendanceState.selectedDate = dateOrPeriod;
-  if (periodType) window.mainAttendanceState.period = periodType;
-  var container = document.getElementById("mainAttendanceWidgetWrapper");
-  if (container) {
-    container.innerHTML = renderExecutiveAttendanceMainWidgetContent();
-  }
-};
-
-window.filterMainAttendanceStatus = function (status) {
-  window.mainAttendanceState.statusFilter = status || "all";
-  var container = document.getElementById("mainAttendanceWidgetWrapper");
-  if (container) {
-    container.innerHTML = renderExecutiveAttendanceMainWidgetContent();
-  }
-};
-
-window.mainAttendanceState = {
   selectedDate: "2026-10-01",
   period: "day", // "day" | "week" | "month" | "last_month" | "year_2025"
   statusFilter: "all",
