@@ -29881,17 +29881,57 @@ function renderReports() {
     { id: "materials", icon: "bi-journal-richtext" }
   ];
   const visibleDomains = domains.filter((d) => framework?.canViewDomain?.(activeUser, d.id));
-  const executiveCards = visibleDomains.map((d) => {
-    const adapter = framework.getAdapter(d.id);
-    const { stats } = getDomainReportContext(d.id);
-    const title = adapter?.titleKey ? L(adapter.titleKey) : d.id;
-    const primary = stats.total ?? stats.releasedTotal ?? stats.salesValue ?? 0;
-    const display = typeof primary === "number" && primary > 999 ? money(primary) : primary;
-    return sm(d.icon, title, display, "reports", { route: "reports", scrollTo: `report-domain-${d.id}`, filterPayload: { domain: d.id } });
-  }).join("");
+  const isOverview = activeRoute === "reportsOverviewRoute" || (activeRoute === "reports" && !reportsPageState.domain);
+
+  if (isOverview) {
+    reportsPageState.domain = "";
+    const executiveCards = visibleDomains.map((d) => {
+      const adapter = framework.getAdapter(d.id);
+      const { stats } = getDomainReportContext(d.id);
+      const title = adapter?.titleKey ? L(adapter.titleKey) : d.id;
+      const primary = stats.total ?? stats.releasedTotal ?? stats.salesValue ?? 0;
+      const display = typeof primary === "number" && primary > 999 ? money(primary) : primary;
+      const targetRoute = REPORTS_NAV.routes.find(([, , , domId]) => domId === d.id)?.[0] || "reports";
+      return sm(d.icon, title, display, "reports", { route: targetRoute, scrollTo: `report-domain-${d.id}`, filterPayload: { domain: d.id } });
+    }).join("");
+
+    setPageContent(`
+      ${sectionHeader(L("rptExecutiveTitle"), L("rptExecutiveHint"), null, "bi-bar-chart-line")}
+      <div class="reports-hub">
+        <article class="panel glass-panel module-content-card mb-4 reports-hub-main">
+          <div class="row g-3 summary-cards-row reports-hub-executive mb-4">${executiveCards}</div>
+          ${summaryFilterChips("reports")}
+          <div class="reports-executive-overview-content mt-3">
+            <div class="row g-4">
+              <div class="col-12">
+                <div class="reports-overview-welcome p-4 rounded-3 border border-secondary border-opacity-25" style="background: rgba(255,255,255,0.02);">
+                  <div class="d-flex align-items-center gap-3 mb-2">
+                    <i class="bi bi-info-circle text-cyan fs-4"></i>
+                    <h4 class="mb-0 text-white">${L("rptExecutiveTitle")}</h4>
+                  </div>
+                  <p class="text-secondary mb-0">${L("rptExecutiveHint")}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    `);
+    syncReportsSidebarNavState();
+    return;
+  }
+
   const activeDomain = reportsPageState.domain && framework?.canViewDomain(activeUser, reportsPageState.domain)
     ? reportsPageState.domain
     : (visibleDomains[0]?.id || "");
+  reportsPageState.domain = activeDomain;
+
+  const adapter = framework?.getAdapter(activeDomain);
+  const domainNavEntry = REPORTS_NAV.routes.find(([, , , d]) => d === activeDomain);
+  const title = adapter?.titleKey ? L(adapter.titleKey) : (domainNavEntry ? L(domainNavEntry[2]) : L("reports"));
+  const hint = adapter?.hintKey ? L(adapter.hintKey) : "";
+  const icon = domainNavEntry?.[1] || "bi-bar-chart-line";
+
   const activePanel = activeDomain ? renderDomainReportsPanel(activeDomain, { module: "reports", showTitle: false, formAttr: `data-domain-report-filters-${activeDomain}` }) : "";
   const showReqApproved = window.CERequisitionReports?.canViewReports?.(activeUser)
     && (activeDomain === "financeExpenses" || activeDomain === "reqInventory");
@@ -29904,17 +29944,17 @@ function renderReports() {
         targetTab: "reports"
       })}
     </article>` : "";
+
   setPageContent(`
-    ${sectionHeader(L("rptExecutiveTitle"), L("rptExecutiveHint"), null, "bi-bar-chart-line")}
+    ${sectionHeader(title, hint, null, icon)}
     <div class="reports-hub">
       <article class="panel glass-panel module-content-card mb-4 reports-hub-main">
-        <div class="row g-3 summary-cards-row reports-hub-executive mb-4">${executiveCards}</div>
         ${summaryFilterChips("reports")}
         <div class="tab-content-panel reports-hub-panel" id="report-domain-${activeDomain}">${activePanel}</div>
       </article>
       ${reqApprovedSection}
     </div>
-    `);
+  `);
   syncReportsSidebarNavState();
 }
 
@@ -40082,7 +40122,7 @@ document.addEventListener("click", async (event) => {
     const framework = window.CEReportsFramework;
     if (domainId && domainReportFilters[domainId]) {
       domainReportFilters[domainId] = { ...framework.DEFAULT_FILTERS };
-      if (domainId === reportsPageState.domain && activeRoute === "reports") renderReports();
+      if (domainId === reportsPageState.domain && (activeRoute === "reports" || isReportsRoute(activeRoute))) renderReports();
       else if (isStaffHrRoute(activeRoute)) renderStaffHr();
       else if (activeRoute === "foundation") renderFoundation();
       else if (activeRoute === "firstTimers") renderFirstTimers();
