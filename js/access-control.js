@@ -132,39 +132,7 @@
 
   const ROLE_TEMPLATES = {
     "Super Admin": { modules: Object.fromEntries(ALL_MODULES.map((m) => [m, { ...FULL_ACCESS }])) },
-    "Main Pastor": {
-      modules: {
-        dashboard: { ...FULL_ACCESS, can_delete: false },
-        churches: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: true, can_verify: false, can_export: true, scope: "all" },
-        members: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "all" },
-        firstTimers: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "all" },
-        followUp: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "all" },
-        reports: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "all" },
-        counseling: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "all" },
-        foundation: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: true, can_verify: false, can_export: true, scope: "all" },
-        finance: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_release_resources: false, can_export: true, scope: "all" },
-        fevo: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: true, can_verify: false, can_export: true, scope: "all" },
-        venueInventory: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "all" },
-        sacraments: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: true, can_verify: false, can_export: true, scope: "all" },
-        prisonMinistry: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "all" },
-        ministryMaterials: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "all" },
-        programs: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "all" },
-        partnership: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "all" },
-        media: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "all" },
-        cell: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: true, can_verify: false, can_export: true, scope: "all" },
-        cellMinistry: { can_view: true, can_create: false, can_edit: true, can_delete: false, can_approve: true, can_verify: false, can_export: true, scope: "all" },
-        cellReports: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: true, can_verify: false, can_export: true, scope: "all" },
-        alec: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: true, can_verify: false, can_export: true, scope: "all" },
-        requisitions: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: true, can_verify: false, can_release_resources: false, can_export: true, scope: "all" },
-        staffHr: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "all" },
-        attendance: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "all" },
-        notifications: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: true, can_verify: false, can_export: true, scope: "all" },
-        usersRoles: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "all" },
-        accessControl: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "all" },
-        settings: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "all" },
-        auditLogs: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "all" }
-      }
-    },
+    "Main Pastor": { modules: Object.fromEntries(ALL_MODULES.map((m) => [m, { ...FULL_ACCESS }])) },
     "National Admin": {
       modules: Object.fromEntries(ALL_MODULES.map((m) => [m, m === "usersRoles" || m === "accessControl"
         ? { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "all" }

@@ -5759,9 +5759,13 @@ function scoped(records, module = (typeof activeRoute !== "undefined" && activeR
   const list = Array.isArray(records) ? records : [];
   if (!activeUser) return list;
   const isSuperAdmin = activeUser.role === "Super Admin" ||
+    activeUser.role === "Main Pastor" ||
     (activeUser.department_permissions || []).includes("*") ||
     String(activeUser.role || "").toLowerCase() === "super_admin" ||
-    String(activeUser.role_name || "").toLowerCase() === "super admin";
+    String(activeUser.role || "").toLowerCase() === "main_pastor" ||
+    String(activeUser.role || "").toLowerCase() === "main pastor" ||
+    String(activeUser.role_name || "").toLowerCase() === "super admin" ||
+    String(activeUser.role_name || "").toLowerCase() === "main pastor";
   if (isSuperAdmin || activeUser.can_view_all_churches || activeUser.scope === "all" || activeUser.scope === "national") {
     return list;
   }
@@ -41532,8 +41536,8 @@ function mapAccountToDashboardUser(account) {
     role = "pastoral_care_rector";
   }
 
-  const isSuperAdmin = role === "Super Admin";
-  const isNational = isSuperAdmin || role === "Main Pastor" || role === "National Admin";
+  const isSuperAdmin = role === "Super Admin" || role === "Main Pastor";
+  const isNational = true;
 
   return {
     ...(fromState || {}),
