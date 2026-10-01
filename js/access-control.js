@@ -616,6 +616,7 @@
     if (route.startsWith("staffHr")) return "staffHr";
     if (route.startsWith("foundation")) return "foundation";
     if (route.startsWith("sacraments")) return "sacraments";
+    if (route.startsWith("counseling")) return "counseling";
     if (route.startsWith("cell")) return "cell";
     if (route.startsWith("finance")) return "finance";
     if (route.startsWith("partnership")) return "partnership";

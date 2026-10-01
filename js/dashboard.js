@@ -3432,6 +3432,25 @@ const SACRAMENTS_NAV = {
 
 const SACRAMENTS_TAB_ROUTES = new Set(SACRAMENTS_NAV.routes.map(([route]) => route));
 
+const COUNSELING_NAV = {
+  parentKey: "counselingHeader",
+  label: "counseling",
+  icon: "bi-chat-heart",
+  routes: [
+    ["counseling", "bi-grid-1x2", "counselingOverview"],
+    ["counselingRequestsRoute", "bi-inbox", "counselingRequests"],
+    ["counselingAppointmentsRoute", "bi-calendar-event", "counselingAppointments"],
+    ["counselingActiveCasesRoute", "bi-hourglass-split", "counselingActiveCases"],
+    ["counselingCounselorsRoute", "bi-people", "counselingCounselors"],
+    ["counselingReferralsRoute", "bi-arrow-right-circle", "counselingReferrals"],
+    ["counselingFeedbackRoute", "bi-chat-square-text", "counselingFeedbackReports"],
+    ["counselingHistoryRoute", "bi-clock-history", "counselingHistory"],
+    ["counselingReportsRoute", "bi-graph-up", "counselingReports"]
+  ]
+};
+
+const COUNSELING_TAB_ROUTES = new Set(COUNSELING_NAV.routes.map(([route]) => route));
+
 const TAB_PARALLAX_ORDER = {
   cell: CELL_NAV.areas.flatMap((area) => area.routes.map(([route]) => route)),
   fevo: ["fevo", "fevoConfigRoute", "fevoFollowUpRoute", "fevoEvangelismRoute", "fevoVisitationRoute", "fevoPrayerRoute", "fevoNoReportsRoute", "fevoWeeklyReportsRoute", "fevoAnalysisRoute"],
@@ -3442,7 +3461,8 @@ const TAB_PARALLAX_ORDER = {
   outreach: ["programs", "cellPrison", "cellMaterials"],
   staffHr: ["staffHr", "staffHrStaffRoute", "staffHrBirthdaysRoute", "staffHrDepartmentsRoute", "staffHrRolesRoute", "staffHrSalariesRoute", "staffHrPerformanceRoute", "staffHrAttendanceRoute", "staffHrEquipmentRoute", "staffHrDocumentsRoute", "staffHrReportsRoute"],
   foundation: ["foundation", "foundationEnrolmentsRoute", "foundationClassesRoute", "foundationStudentsRoute", "foundationLessonsRoute", "foundationOnlineTestsRoute", "foundationSoulWinningRoute", "foundationFinalExamRoute", "foundationTeachersRoute", "foundationGraduationRoute", "foundationReportsRoute"],
-  sacraments: ["sacraments", "sacramentsMarriagesRoute", "sacramentsBabyDedicationsRoute"]
+  sacraments: ["sacraments", "sacramentsMarriagesRoute", "sacramentsBabyDedicationsRoute"],
+  counseling: ["counseling", "counselingRequestsRoute", "counselingAppointmentsRoute", "counselingActiveCasesRoute", "counselingCounselorsRoute", "counselingReferralsRoute", "counselingFeedbackRoute", "counselingHistoryRoute", "counselingReportsRoute"]
 };
 
 let tabParallaxState = { family: null, index: -1 };
@@ -3458,6 +3478,7 @@ function tabParallaxFamily(route) {
   if (STAFF_HR_TAB_ROUTES.has(route) || route === "staffHrOverviewRoute") return "staffHr";
   if (FOUNDATION_TAB_ROUTES.has(route) || route === "foundation" || route === "foundationOverviewRoute") return "foundation";
   if (SACRAMENTS_TAB_ROUTES.has(route) || route === "sacraments" || route === "sacramentsBaptismsRoute" || route === "sacramentsMarriagesRoute" || route === "sacramentsBabyDedicationsRoute" || route === "sacramentsBabiesRoute") return "sacraments";
+  if (COUNSELING_TAB_ROUTES.has(route) || route === "counseling" || String(route || "").startsWith("counseling")) return "counseling";
   return null;
 }
 
@@ -3505,12 +3526,12 @@ function triggerScrollTabParallax(targetId) {
 }
 
 function isModuleTabRoute(route) {
-  return CELL_TAB_ROUTES.has(route) || FEVO_TAB_ROUTES.has(route) || FINANCE_TAB_ROUTES.has(route) || PARTNERSHIP_TAB_ROUTES.has(route) || VENUE_TAB_ROUTES.has(route) || OUTREACH_TAB_ROUTES.has(route) || MEDIA_TAB_ROUTES.has(route) || STAFF_HR_TAB_ROUTES.has(route) || FOUNDATION_TAB_ROUTES.has(route) || SACRAMENTS_TAB_ROUTES.has(route) || route === "staffHrOverviewRoute";
+  return CELL_TAB_ROUTES.has(route) || FEVO_TAB_ROUTES.has(route) || FINANCE_TAB_ROUTES.has(route) || PARTNERSHIP_TAB_ROUTES.has(route) || VENUE_TAB_ROUTES.has(route) || OUTREACH_TAB_ROUTES.has(route) || MEDIA_TAB_ROUTES.has(route) || STAFF_HR_TAB_ROUTES.has(route) || FOUNDATION_TAB_ROUTES.has(route) || SACRAMENTS_TAB_ROUTES.has(route) || COUNSELING_TAB_ROUTES.has(route) || route === "staffHrOverviewRoute";
 }
 
 const NAV_GROUPS = [
   { key: "main", items: [["dashboard", "bi-speedometer2", "dashboard"], ["churches", "bi-building", "churches"], ["members", "bi-people", "members"], ["reports", "bi-bar-chart-line", "reports"]] },
-  { key: "pastoralCare", items: [["firstTimers", "bi-person-heart", "firstTimers"], ["followUp", "bi-telephone-outbound", "followUp"], ["counseling", "bi-chat-heart", "counseling"]] },
+  { key: "pastoralCare", items: [["firstTimers", "bi-person-heart", "firstTimers"], ["followUp", "bi-telephone-outbound", "followUp"]] },
   // Order: Células (subnav) → F.E.V.O (subnav) → Finanças (subnav) → Parcerias (subnav) → Requisições → Inventário → Mídia (subnav) → Programas & Extensão (subnav)
   { key: "departments", items: [["requisitions", "bi-clipboard-check", "requisitions"], ["venueInventory", "bi-box-seam", "venueInventoryShort"]] },
   { key: "admin", items: [["attendance", "bi-fingerprint", "attendanceControl"], ["users", "bi-person-lock", "usersRoles"], ["access", "bi-shield-lock", "accessControl"], ["settings", "bi-gear", "settings"], ["audit", "bi-journal-check", "auditLogs"]] }
@@ -3541,6 +3562,15 @@ const SIDEBAR_FALLBACK_ICONS = {
   sacramentsBabyDedicationsRoute: "bi-emoji-smile",
   sacramentsBabiesRoute: "bi-emoji-smile",
   counseling: "bi-chat-heart",
+  counselingOverviewRoute: "bi-grid-1x2",
+  counselingRequestsRoute: "bi-inbox",
+  counselingAppointmentsRoute: "bi-calendar-event",
+  counselingActiveCasesRoute: "bi-hourglass-split",
+  counselingCounselorsRoute: "bi-people",
+  counselingReferralsRoute: "bi-arrow-right-circle",
+  counselingFeedbackRoute: "bi-chat-square-text",
+  counselingHistoryRoute: "bi-clock-history",
+  counselingReportsRoute: "bi-graph-up",
   fevo: "bi-compass",
   finance: "bi-cash-coin",
   partnership: "bi-stars",
@@ -11441,6 +11471,7 @@ function fallbackRouteModule(route = "dashboard") {
   if (route.startsWith("staffHr")) return "staffHr";
   if (route.startsWith("foundation")) return "foundation";
   if (route.startsWith("sacraments")) return "sacraments";
+  if (route.startsWith("counseling")) return "counseling";
   if (route.startsWith("cell")) return "cell";
   if (route.startsWith("fevo")) return "fevo";
   if (route.startsWith("finance")) return "finance";
@@ -11456,6 +11487,10 @@ function isFoundationRoute(route = activeRoute) {
 
 function isSacramentsRoute(route = activeRoute) {
   return SACRAMENTS_TAB_ROUTES.has(route) || route === "sacraments" || route === "sacramentsBaptismsRoute" || route === "sacramentsMarriagesRoute" || route === "sacramentsBabyDedicationsRoute" || route === "sacramentsBabiesRoute";
+}
+
+function isCounselingRoute(route = activeRoute) {
+  return COUNSELING_TAB_ROUTES.has(route) || route === "counseling" || String(route || "").startsWith("counseling");
 }
 
 function isFinanceRoute(route = activeRoute) {
@@ -12106,6 +12141,51 @@ function renderSacramentsSidebarNav() {
     </div>`;
 }
 
+function renderCounselingSidebarNav() {
+  const workspaceRoutes = roleWorkspaceRoutes();
+  const parentExpanded = isSidebarGroupExpanded(COUNSELING_NAV.parentKey);
+  const parentActive = isCounselingRoute(activeRoute);
+  const visibleRoutes = COUNSELING_NAV.routes.filter(([route]) => {
+    if (workspaceRoutes && !workspaceRoutes.includes(route) && !workspaceRoutes.includes("counseling")) return false;
+    const nav = resolveRouteAccess(route);
+    return nav.visible && !nav.locked;
+  });
+  if (!visibleRoutes.length) return "";
+  return `
+    <div class="nav-cell-branch nav-counseling-branch ${parentExpanded ? "is-expanded" : ""} ${parentActive ? "has-active" : ""}" data-nav-group="${COUNSELING_NAV.parentKey}">
+      <button type="button" class="nav-cell-parent nav-counseling-parent" aria-expanded="${parentExpanded}" aria-label="${L("navGroupToggle")}: ${L(COUNSELING_NAV.label)}">
+        <i class="bi ${COUNSELING_NAV.icon}" aria-hidden="true"></i>
+        <span>${L(COUNSELING_NAV.label)}</span>
+        <i class="bi bi-chevron-down nav-cell-chevron" aria-hidden="true"></i>
+      </button>
+      <div class="nav-cell-body">
+        <div class="nav-cell-body-inner">
+          ${visibleRoutes.map(([route, icon, label]) => {
+            const isItemActive = activeRoute === route ||
+              (route === "counseling" && (activeRoute === "counseling" || activeRoute === "counselingOverviewRoute") && (counselingPageState.tab === "overview" || !counselingPageState.tab)) ||
+              (isCounselingRoute(activeRoute) && (
+                ((route === "counseling" || route === "counselingOverviewRoute") && (counselingPageState.tab === "overview" || !counselingPageState.tab)) ||
+                (route === "counselingRequestsRoute" && counselingPageState.tab === "requests") ||
+                (route === "counselingAppointmentsRoute" && counselingPageState.tab === "appointments") ||
+                (route === "counselingActiveCasesRoute" && counselingPageState.tab === "active") ||
+                (route === "counselingCounselorsRoute" && counselingPageState.tab === "counselors") ||
+                (route === "counselingReferralsRoute" && counselingPageState.tab === "referrals") ||
+                (route === "counselingFeedbackRoute" && counselingPageState.tab === "feedback") ||
+                (route === "counselingHistoryRoute" && counselingPageState.tab === "history") ||
+                (route === "counselingReportsRoute" && counselingPageState.tab === "reports")
+              ));
+            return `
+              <button type="button" class="nav-cell-item nav-counseling-item ${isItemActive ? "active" : ""}" data-route="${route}" title="${L(label)}">
+                <i class="bi ${sidebarIcon(icon, route)} me-2" aria-hidden="true"></i>
+                <span>${L(label)}</span>
+              </button>
+            `;
+          }).join("")}
+        </div>
+      </div>
+    </div>`;
+}
+
 function renderStaffHrSidebarNav() {
   const workspaceRoutes = roleWorkspaceRoutes();
   const parentExpanded = isSidebarGroupExpanded(STAFF_HR_NAV.parentKey);
@@ -12209,25 +12289,25 @@ function renderShell() {
     const staffHrNav = group.key === "admin" && (!workspaceRoutes || workspaceRoutes.some((r) => STAFF_HR_TAB_ROUTES.has(r) || r === "staffHr")) ? renderStaffHrSidebarNav() : "";
     const foundationNav = group.key === "pastoralCare" && (!workspaceRoutes || workspaceRoutes.some((r) => FOUNDATION_TAB_ROUTES.has(r) || r === "foundation")) ? renderFoundationSidebarNav() : "";
     const sacramentsNav = group.key === "pastoralCare" && (!workspaceRoutes || workspaceRoutes.some((r) => SACRAMENTS_TAB_ROUTES.has(r) || r === "sacraments")) ? renderSacramentsSidebarNav() : "";
+    const counselingNav = group.key === "pastoralCare" && (!workspaceRoutes || workspaceRoutes.some((r) => COUNSELING_TAB_ROUTES.has(r) || r === "counseling")) ? renderCounselingSidebarNav() : "";
     const navItems = items.map(({ route, icon, label }) => `
       <button type="button" class="nav-item-btn" data-route="${route}" title="${L(label)}">
         <i class="bi ${sidebarIcon(icon, route)}"></i><span>${L(label)}</span>
       </button>
     `).join("");
-    if (!navItems && !cellNav && !fevoNav && !financeNav && !partnershipNav && !mediaNav && !outreachNav && !staffHrNav && !foundationNav && !sacramentsNav) return "";
+    if (!navItems && !cellNav && !fevoNav && !financeNav && !partnershipNav && !mediaNav && !outreachNav && !staffHrNav && !foundationNav && !sacramentsNav && !counselingNav) return "";
     const expanded = isSidebarGroupExpanded(group.key) || (group.key === "departments" && String(activeUser?.role || "").toLowerCase().includes("venue"));
 
     let groupBodyInner = "";
     if (group.key === "pastoralCare") {
       const ft = items.find(i => i.route === "firstTimers");
       const fu = items.find(i => i.route === "followUp");
-      const cs = items.find(i => i.route === "counseling");
       groupBodyInner = `
         ${ft ? `<button type="button" class="nav-item-btn" data-route="${ft.route}" title="${L(ft.label)}"><i class="bi ${ft.icon}"></i><span>${L(ft.label)}</span></button>` : ""}
         ${fu ? `<button type="button" class="nav-item-btn" data-route="${fu.route}" title="${L(fu.label)}"><i class="bi ${fu.icon}"></i><span>${L(fu.label)}</span></button>` : ""}
         ${foundationNav}
         ${sacramentsNav}
-        ${cs ? `<button type="button" class="nav-item-btn" data-route="${cs.route}" title="${L(cs.label)}"><i class="bi ${cs.icon}"></i><span>${L(cs.label)}</span></button>` : ""}
+        ${counselingNav}
       `;
     } else {
       groupBodyInner = `
@@ -12460,7 +12540,16 @@ function getRouteRenderers() {
     followUp: renderFollowUp,
     reports: renderReports,
     notifications: renderNotifications,
-    counseling: renderCounseling,
+    counseling: () => { counselingPageState.tab = "overview"; renderCounseling(); },
+    counselingOverviewRoute: () => { counselingPageState.tab = "overview"; renderCounseling(); },
+    counselingRequestsRoute: () => { counselingPageState.tab = "requests"; renderCounseling(); },
+    counselingAppointmentsRoute: () => { counselingPageState.tab = "appointments"; renderCounseling(); },
+    counselingActiveCasesRoute: () => { counselingPageState.tab = "active"; renderCounseling(); },
+    counselingCounselorsRoute: () => { counselingPageState.tab = "counselors"; renderCounseling(); },
+    counselingReferralsRoute: () => { counselingPageState.tab = "referrals"; renderCounseling(); },
+    counselingFeedbackRoute: () => { counselingPageState.tab = "feedback"; renderCounseling(); },
+    counselingHistoryRoute: () => { counselingPageState.tab = "history"; renderCounseling(); },
+    counselingReportsRoute: () => { counselingPageState.tab = "reports"; renderCounseling(); },
     foundation: () => { foundationPageState.tab = "overview"; renderFoundation(); },
     foundationOverviewRoute: () => { foundationPageState.tab = "overview"; renderFoundation(); },
     foundationEnrolmentsRoute: () => { foundationPageState.tab = "enrolments"; renderFoundation(); },
@@ -12828,6 +12917,16 @@ function setRoute(route) {
     sacramentsMarriagesRoute: ["pastoralCare", "marriageTab"],
     sacramentsBabyDedicationsRoute: ["pastoralCare", "babyTab"],
     sacramentsBabiesRoute: ["pastoralCare", "babyTab"],
+    counseling: ["pastoralCare", "counseling"],
+    counselingOverviewRoute: ["pastoralCare", "counselingOverview"],
+    counselingRequestsRoute: ["pastoralCare", "counselingRequests"],
+    counselingAppointmentsRoute: ["pastoralCare", "counselingAppointments"],
+    counselingActiveCasesRoute: ["pastoralCare", "counselingActiveCases"],
+    counselingCounselorsRoute: ["pastoralCare", "counselingCounselors"],
+    counselingReferralsRoute: ["pastoralCare", "counselingReferrals"],
+    counselingFeedbackRoute: ["pastoralCare", "counselingFeedbackReports"],
+    counselingHistoryRoute: ["pastoralCare", "counselingHistory"],
+    counselingReportsRoute: ["pastoralCare", "counselingReports"],
     notifications: ["main", "notifications"]
   };
   byId("pageTitle").textContent = activeRoute === "cellPortal" ? (lang === "pt" ? "Portal do Líder de Célula" : "Cell Leader Portal") : found ? L(found.item[2]) : isCellRoute(activeRoute) ? cellRouteLabel(activeRoute) : childRoutes[activeRoute] ? L(childRoutes[activeRoute][1]) : L("dashboard");
@@ -12881,6 +12980,19 @@ function setRoute(route) {
     const sacramentsGroup = document.querySelector(`[data-nav-group="${SACRAMENTS_NAV.parentKey}"]`);
     if (sacramentsGroup && !sacramentsGroup.classList.contains("is-expanded")) {
       sacramentsGroup.classList.add("is-expanded");
+    }
+  }
+  if (isCounselingRoute(activeRoute)) {
+    sidebarGroupState[COUNSELING_NAV.parentKey] = true;
+    sidebarGroupState.pastoralCare = true;
+    localStorage.setItem(SIDEBAR_GROUPS_KEY, JSON.stringify(sidebarGroupState));
+    const pcGroup = document.querySelector('[data-nav-group="pastoralCare"]');
+    if (pcGroup && !pcGroup.classList.contains("is-expanded")) {
+      pcGroup.classList.add("is-expanded");
+    }
+    const counselingGroup = document.querySelector(`[data-nav-group="${COUNSELING_NAV.parentKey}"]`);
+    if (counselingGroup && !counselingGroup.classList.contains("is-expanded")) {
+      counselingGroup.classList.add("is-expanded");
     }
   }
   if (FINANCE_TAB_ROUTES.has(activeRoute) || activeRoute === "finance") {
@@ -32103,21 +32215,28 @@ function getCounselingState() {
   return { ...base, ...current };
 }
 
+function setCounselingTab(tabKey) {
+  counselingPageState.tab = tabKey || "overview";
+  counselingPageState.filter = {};
+  const tabToRoute = {
+    overview: "counseling",
+    requests: "counselingRequestsRoute",
+    appointments: "counselingAppointmentsRoute",
+    active: "counselingActiveCasesRoute",
+    counselors: "counselingCounselorsRoute",
+    referrals: "counselingReferralsRoute",
+    feedback: "counselingFeedbackRoute",
+    history: "counselingHistoryRoute",
+    reports: "counselingReportsRoute"
+  };
+  const targetRoute = tabToRoute[tabKey] || "counseling";
+  if (typeof setRoute === "function") setRoute(targetRoute);
+  else renderCounseling();
+}
+window.setCounselingTab = setCounselingTab;
+
 function counselingTabsNav(active) {
-  const tabs = [
-    ["overview", "counselingOverview"],
-    ["requests", "counselingRequests"],
-    ["appointments", "counselingAppointments"],
-    ["active", "counselingActiveCases"],
-    ["counselors", "counselingCounselors"],
-    ["referrals", "counselingReferrals"],
-    ["feedback", "counselingFeedbackReports"],
-    ["history", "counselingHistory"],
-    ["reports", "counselingReports"]
-  ];
-  return moduleTabsNav(tabs.map(([tab, label]) =>
-    moduleTabButton(L(label), { active: active === tab, attrs: `data-counseling-tab="${tab}" onclick="window.counselingPageState.tab='${tab}'; window.counselingPageState.filter={}; window.renderCounseling && window.renderCounseling(); return false;"` })
-  ).join(""), "counseling-module-tabs");
+  return "";
 }
 
 function counselingRecordActions(type, id, extra = []) {
@@ -32172,15 +32291,15 @@ function renderCounseling() {
   if (active === "overview") {
     content = `
       <div class="row g-3 mb-4 summary-cards-row">
-        ${metric("bi-inbox", L("pendingCounselingRequests"), pendingRequests.length, L("counselingRequests"), { isClickable: true, module: "counseling", route: "counseling", targetTab: "requests", filterPayload: { status: "pending" } })}
-        ${metric("bi-calendar-day", L("appointmentsToday"), appointments.filter((item) => item.appointment_date === today).length, L("counselingAppointments"), { isClickable: true, module: "counseling", route: "counseling", targetTab: "appointments", filterPayload: { date: today } })}
-        ${metric("bi-calendar-week", L("appointmentsThisWeek"), appointments.length, L("counselingAppointments"), { isClickable: true, module: "counseling", route: "counseling", targetTab: "appointments" })}
-        ${metric("bi-hourglass-split", L("counselingActiveCases"), activeCases.length, L("needsAction"), { isClickable: true, module: "counseling", route: "counseling", targetTab: "active" })}
-        ${metric("bi-person-badge", L("referredChurchPastor"), pastorReferrals.length, L("counselingReferrals"), { isClickable: true, module: "counseling", route: "counseling", targetTab: "referrals" })}
-        ${metric("bi-shield-check", L("referredMainPastor"), mainPastorReferrals.length, L("counselingReferrals"), { isClickable: true, module: "counseling", route: "counseling", targetTab: "referrals" })}
-        ${metric("bi-chat-square-text", L("pendingFeedbacks"), pendingFeedback.length, L("counselingFeedbackReports"), { isClickable: true, module: "counseling", route: "counseling", targetTab: "feedback" })}
-        ${metric("bi-telephone-outbound", L("casesNeedFollowUp"), needsFollowUp.length, L("createFollowUp"), { isClickable: true, module: "counseling", route: "counseling", targetTab: "feedback" })}
-        ${metric("bi-check2-circle", L("completedThisMonth"), completedMonth.length, L("thisMonth"), { isClickable: true, module: "counseling", route: "counseling", targetTab: "reports" })}
+        ${metric("bi-inbox", L("pendingCounselingRequests"), pendingRequests.length, L("counselingRequests"), { isClickable: true, module: "counseling", route: "counselingRequestsRoute", targetTab: "requests", filterPayload: { status: "pending" } })}
+        ${metric("bi-calendar-day", L("appointmentsToday"), appointments.filter((item) => item.appointment_date === today).length, L("counselingAppointments"), { isClickable: true, module: "counseling", route: "counselingAppointmentsRoute", targetTab: "appointments", filterPayload: { date: today } })}
+        ${metric("bi-calendar-week", L("appointmentsThisWeek"), appointments.length, L("counselingAppointments"), { isClickable: true, module: "counseling", route: "counselingAppointmentsRoute", targetTab: "appointments" })}
+        ${metric("bi-hourglass-split", L("counselingActiveCases"), activeCases.length, L("needsAction"), { isClickable: true, module: "counseling", route: "counselingActiveCasesRoute", targetTab: "active" })}
+        ${metric("bi-person-badge", L("referredChurchPastor"), pastorReferrals.length, L("counselingReferrals"), { isClickable: true, module: "counseling", route: "counselingReferralsRoute", targetTab: "referrals" })}
+        ${metric("bi-shield-check", L("referredMainPastor"), mainPastorReferrals.length, L("counselingReferrals"), { isClickable: true, module: "counseling", route: "counselingReferralsRoute", targetTab: "referrals" })}
+        ${metric("bi-chat-square-text", L("pendingFeedbacks"), pendingFeedback.length, L("counselingFeedbackReports"), { isClickable: true, module: "counseling", route: "counselingFeedbackRoute", targetTab: "feedback" })}
+        ${metric("bi-telephone-outbound", L("casesNeedFollowUp"), needsFollowUp.length, L("createFollowUp"), { isClickable: true, module: "counseling", route: "counselingFeedbackRoute", targetTab: "feedback" })}
+        ${metric("bi-check2-circle", L("completedThisMonth"), completedMonth.length, L("thisMonth"), { isClickable: true, module: "counseling", route: "counselingReportsRoute", targetTab: "reports" })}
       </div>
       <div class="row g-4">
         <div class="col-xl-6">${chartCard(L("counselingCategory"), groupCount(requests, "counseling_category"))}</div>
@@ -32217,7 +32336,7 @@ function renderCounseling() {
   }
 
   setPageContent(`
-    ${moduleNavShell("counseling", { title: L("counseling"), subtitle: L("counselingSubtitle"), modalType: "counselingRequest", icon: "bi-chat-heart" }, counselingTabsNav(active))}
+    ${moduleNavShell("counseling", { title: L("counseling"), subtitle: L("counselingSubtitle"), modalType: "counselingRequest", icon: "bi-chat-heart" }, "")}
     ${summaryFilterChips("counseling")}
     ${content}
   `);
@@ -39010,10 +39129,9 @@ document.addEventListener("click", async (event) => {
   }
   const counselingTab = event.target.closest("[data-counseling-tab]");
   if (counselingTab) {
-    counselingPageState.tab = counselingTab.dataset.counselingTab || "overview";
-    counselingPageState.filter = {};
-    if (activeRoute !== "counseling") return setRoute("counseling");
-    return renderCounseling();
+    const targetTab = counselingTab.dataset.counselingTab || "overview";
+    setCounselingTab(targetTab);
+    return;
   }
   const sacramentTab = event.target.closest("[data-sacrament-tab]");
   if (sacramentTab) {

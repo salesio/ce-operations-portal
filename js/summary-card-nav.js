@@ -315,6 +315,27 @@
       }
       return;
     }
+    if (module === "counseling") {
+      const store = window.counselingPageState;
+      const tabToRoute = {
+        overview: "counseling",
+        requests: "counselingRequestsRoute",
+        appointments: "counselingAppointmentsRoute",
+        active: "counselingActiveCasesRoute",
+        counselors: "counselingCounselorsRoute",
+        referrals: "counselingReferralsRoute",
+        feedback: "counselingFeedbackRoute",
+        history: "counselingHistoryRoute",
+        reports: "counselingReportsRoute"
+      };
+      const targetRoute = route || (store?.tab ? tabToRoute[store.tab] : "counseling") || "counseling";
+      if (typeof setRoute === "function" && targetRoute) {
+        setRoute(targetRoute);
+      } else if (typeof renderCounseling === "function") {
+        renderCounseling();
+      }
+      return;
+    }
     const targetRoute = route || {
       staffHr: "staffHr",
       finance: "finance",
