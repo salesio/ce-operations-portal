@@ -17239,53 +17239,110 @@ function candidatePortalActions(candidate) {
   const isAssistant = activeUser?.role === "Cell Assistant";
   const isLeaderOrAdmin = !isAssistant;
   const canEdit = candidate.registered_by_user_id === activeUser?.id && ["Draft", "ReadyForSubmission", "NeedsCorrection"].includes(status);
-  const deleteBtn = `<button class="action-btn text-danger" data-candidate-action="delete" data-candidate-id="${id}" title="Eliminar este registo de membro"><i class="bi bi-trash me-1"></i>Eliminar</button>`;
 
-  if (status === "Draft") {
-    return `<button class="action-btn" data-candidate-action="view" data-candidate-id="${id}">Ver</button> ${canEdit ? `<button class="action-btn" data-candidate-action="edit" data-candidate-id="${id}">Editar</button><button class="action-btn" data-candidate-action="submit" data-candidate-id="${id}">Submeter</button><button class="action-btn" data-candidate-action="withdraw" data-candidate-id="${id}">Retirar</button>` : ""} ${deleteBtn}`;
+  const viewBtn = `<button type="button" class="action-pill-btn action-pill-btn--view" data-candidate-action="view" data-candidate-id="${id}" title="${status === "NeedsCorrection" ? "Ver motivo da correcção" : "Ver detalhes"}"><i class="bi bi-eye"></i><span>${status === "NeedsCorrection" ? "Ver motivo" : "Ver"}</span></button>`;
+
+  let primaryAction = "";
+  if (status === "ReadyForSubmission" && isLeaderOrAdmin) {
+    primaryAction = `<button type="button" class="action-pill-btn action-pill-btn--approve" data-candidate-action="leaderApprove" data-candidate-id="${id}" title="Aprovar e adicionar à lista da célula"><i class="bi bi-check-circle"></i><span>Aprovar Célula</span></button>`;
+  } else if (status === "Draft" && canEdit) {
+    primaryAction = `<button type="button" class="action-pill-btn action-pill-btn--submit" data-candidate-action="submit" data-candidate-id="${id}" title="Submeter para aprovação"><i class="bi bi-send"></i><span>Submeter</span></button>`;
+  } else if (status === "NeedsCorrection" && canEdit) {
+    primaryAction = `<button type="button" class="action-pill-btn action-pill-btn--submit" data-candidate-action="submit" data-candidate-id="${id}" title="Re-submeter registo"><i class="bi bi-arrow-repeat"></i><span>Re-submeter</span></button>`;
+  } else if (status === "ReadyForSubmission" && !isLeaderOrAdmin) {
+    primaryAction = `<span class="badge bg-warning text-dark">Aguardando Líder</span>`;
+  } else if (status === "Submitted") {
+    primaryAction = `<span class="badge bg-info text-dark">Aguardando Igreja</span>`;
+  } else if (status === "UnderReview") {
+    primaryAction = `<span class="badge bg-primary">Em Revisão</span>`;
   }
-  if (status === "ReadyForSubmission") {
-    if (isLeaderOrAdmin) {
-      return `<button class="action-btn" data-candidate-action="view" data-candidate-id="${id}">Ver</button> <button class="action-btn btn-sm btn-success text-success fw-bold" data-candidate-action="leaderApprove" data-candidate-id="${id}" title="Aprovar e adicionar à lista da célula"><i class="bi bi-check-circle me-1"></i>Aprovar p/ Célula</button> <button class="action-btn" data-candidate-action="edit" data-candidate-id="${id}">Editar</button><button class="action-btn" data-candidate-action="reject" data-candidate-id="${id}">Rejeitar</button> ${deleteBtn}`;
-    }
-    return `<button class="action-btn" data-candidate-action="view" data-candidate-id="${id}">Ver</button> <span class="badge bg-warning text-dark me-1">Aguardando Líder</span> ${canEdit ? `<button class="action-btn" data-candidate-action="edit" data-candidate-id="${id}">Editar</button><button class="action-btn" data-candidate-action="withdraw" data-candidate-id="${id}">Retirar</button>` : ""} ${deleteBtn}`;
+
+  const menuItems = [];
+  if (canEdit) {
+    menuItems.push(`<li><button type="button" class="dropdown-item" data-candidate-action="edit" data-candidate-id="${id}"><i class="bi bi-pencil text-primary"></i><span>Editar registo</span></button></li>`);
   }
-  if (status === "Submitted") {
-    return `<button class="action-btn" data-candidate-action="view" data-candidate-id="${id}">Ver</button> <span class="badge bg-info text-dark">Membro da Célula · Aguardando Igreja</span> ${deleteBtn}`;
+  if (["Draft", "ReadyForSubmission"].includes(status) && candidate.registered_by_user_id === activeUser?.id) {
+    menuItems.push(`<li><button type="button" class="dropdown-item text-warning" data-candidate-action="withdraw" data-candidate-id="${id}"><i class="bi bi-dash-circle text-warning"></i><span>Retirar registo</span></button></li>`);
   }
-  if (status === "UnderReview") {
-    return `<button class="action-btn" data-candidate-action="view" data-candidate-id="${id}">Ver</button> <span class="badge bg-primary">Em Revisão na Igreja</span> ${deleteBtn}`;
+  if (status === "ReadyForSubmission" && isLeaderOrAdmin) {
+    menuItems.push(`<li><button type="button" class="dropdown-item text-danger" data-candidate-action="reject" data-candidate-id="${id}"><i class="bi bi-x-circle text-danger"></i><span>Rejeitar</span></button></li>`);
   }
-  if (status === "NeedsCorrection") {
-    return `<button class="action-btn" data-candidate-action="view" data-candidate-id="${id}">Ver motivo</button> ${canEdit ? `<button class="action-btn" data-candidate-action="edit" data-candidate-id="${id}">Editar</button><button class="action-btn" data-candidate-action="submit" data-candidate-id="${id}">Re-submeter</button>` : ""} ${deleteBtn}`;
-  }
-  if (status === "Approved") {
-    return `<button class="action-btn" data-candidate-action="view" data-candidate-id="${id}">Ver</button> ${deleteBtn}`;
-  }
-  return `<button class="action-btn" data-candidate-action="view" data-candidate-id="${id}">Ver</button> ${deleteBtn}`;
+
+  menuItems.push(`<li><hr class="dropdown-divider"></li>`);
+  menuItems.push(`<li><button type="button" class="dropdown-item text-danger" data-candidate-action="delete" data-candidate-id="${id}"><i class="bi bi-trash text-danger"></i><span>Eliminar registo</span></button></li>`);
+
+  const moreBtn = `
+    <div class="dropdown d-inline-block">
+      <button type="button" class="action-pill-btn action-pill-btn--more" data-bs-toggle="dropdown" aria-expanded="false" title="Mais opções">
+        <i class="bi bi-three-dots-vertical"></i>
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end candidate-actions-dropdown">
+        ${menuItems.join("")}
+      </ul>
+    </div>
+  `;
+
+  return `<div class="candidate-actions-cluster">${viewBtn}${primaryAction}${moreBtn}</div>`;
 }
 
 function candidateAdminActions(candidate) {
   const id = escapeAttr(candidate.id);
-  const view = `<button class="action-btn" data-candidate-action="view" data-candidate-id="${id}">Ver</button>`;
+  const status = candidate.approval_status;
   const dups = candidateDuplicates(candidate);
   const topDup = dups[0];
-  const mergeBtn = topDup
-    ? `<button class="action-btn text-warning fw-bold" onclick="openMergeMemberModal('${id}', '${topDup.member.id}')" title="Fundir com ${escapeAttr(fullName(topDup.member))} (${topDup.reason})"><i class="bi bi-arrows-collapse me-1"></i>Fundir (${topDup.score}%)</button>`
-    : `<button class="action-btn text-warning" data-candidate-action="merge" data-candidate-id="${id}" title="Fundir com membro existente na base de dados"><i class="bi bi-arrows-collapse me-1"></i>Fundir</button>`;
-  const deleteBtn = `<button class="action-btn text-danger" data-candidate-action="delete" data-candidate-id="${id}" title="Eliminar registo de candidato"><i class="bi bi-trash me-1"></i>Eliminar</button>`;
-  
-  let btns = "";
-  if (candidate.approval_status === "Submitted") {
-    btns = `${view} <button class="action-btn text-success fw-bold" data-candidate-action="approve" data-candidate-id="${id}"><i class="bi bi-check-lg me-1"></i>Aprovar como membro</button> ${mergeBtn} <button class="action-btn" data-candidate-action="startReview" data-candidate-id="${id}">Iniciar revisão</button> <button class="action-btn" data-candidate-action="correction" data-candidate-id="${id}">Devolver para correcção</button> <button class="action-btn text-danger" data-candidate-action="reject" data-candidate-id="${id}">Rejeitar</button> ${deleteBtn}`;
-  } else if (candidate.approval_status === "UnderReview") {
-    btns = `${view} <button class="action-btn text-success fw-bold" data-candidate-action="approve" data-candidate-id="${id}"><i class="bi bi-check-lg me-1"></i>Aprovar como membro</button> ${mergeBtn} <button class="action-btn" data-candidate-action="createNew" data-candidate-id="${id}">Criar novo membro</button> <button class="action-btn" data-candidate-action="link" data-candidate-id="${id}">Ligar existente</button> <button class="action-btn" data-candidate-action="correction" data-candidate-id="${id}">Devolver para correcção</button> <button class="action-btn text-danger" data-candidate-action="reject" data-candidate-id="${id}">Rejeitar</button> ${deleteBtn}`;
-  } else if (candidate.approval_status === "Approved") {
-    btns = `${view} ${deleteBtn}`;
-  } else {
-    btns = `${view} ${mergeBtn} <button class="action-btn" data-candidate-action="edit" data-candidate-id="${id}">Editar</button> ${deleteBtn}`;
+
+  // Quick Action 1: View details
+  const viewBtn = `<button type="button" class="action-pill-btn action-pill-btn--view" data-candidate-action="view" data-candidate-id="${id}" title="Ver detalhes do candidato"><i class="bi bi-eye"></i><span>Ver</span></button>`;
+
+  // Quick Action 2: Approve button (prominent when ready to approve)
+  let approveBtn = "";
+  if (status === "Submitted" || status === "UnderReview") {
+    approveBtn = `<button type="button" class="action-pill-btn action-pill-btn--approve" data-candidate-action="approve" data-candidate-id="${id}" title="Aprovar e registar como membro oficial"><i class="bi bi-check-lg"></i><span>Aprovar</span></button>`;
   }
-  return `<div class="d-flex flex-wrap gap-1 align-items-center">${btns}</div>`;
+
+  // Dropdown menu items
+  const menuItems = [];
+
+  if (status === "Submitted") {
+    menuItems.push(`<li><button type="button" class="dropdown-item" data-candidate-action="startReview" data-candidate-id="${id}"><i class="bi bi-search text-info"></i><span>Iniciar revisão</span></button></li>`);
+  }
+
+  if (status === "UnderReview") {
+    menuItems.push(`<li><button type="button" class="dropdown-item" data-candidate-action="createNew" data-candidate-id="${id}"><i class="bi bi-person-plus text-success"></i><span>Criar novo membro</span></button></li>`);
+    menuItems.push(`<li><button type="button" class="dropdown-item" data-candidate-action="link" data-candidate-id="${id}"><i class="bi bi-link-45deg text-info"></i><span>Ligar a membro existente</span></button></li>`);
+  }
+
+  if (topDup) {
+    menuItems.push(`<li><button type="button" class="dropdown-item" onclick="openMergeMemberModal('${id}', '${topDup.member.id}')" title="${escapeAttr(topDup.reason)}"><i class="bi bi-arrows-collapse text-warning"></i><span>Fundir c/ duplicado (${topDup.score}%)</span></button></li>`);
+  } else if (status !== "Approved") {
+    menuItems.push(`<li><button type="button" class="dropdown-item" data-candidate-action="merge" data-candidate-id="${id}"><i class="bi bi-arrows-collapse text-warning"></i><span>Fundir com membro...</span></button></li>`);
+  }
+
+  if (status === "Submitted" || status === "UnderReview") {
+    menuItems.push(`<li><button type="button" class="dropdown-item" data-candidate-action="correction" data-candidate-id="${id}"><i class="bi bi-arrow-return-left text-warning"></i><span>Devolver p/ correcção</span></button></li>`);
+    menuItems.push(`<li><button type="button" class="dropdown-item text-danger" data-candidate-action="reject" data-candidate-id="${id}"><i class="bi bi-x-circle text-danger"></i><span>Rejeitar pedido</span></button></li>`);
+  }
+
+  if (status === "Draft" || status === "NeedsCorrection" || !["Approved", "Submitted", "UnderReview"].includes(status)) {
+    menuItems.push(`<li><button type="button" class="dropdown-item" data-candidate-action="edit" data-candidate-id="${id}"><i class="bi bi-pencil text-primary"></i><span>Editar registo</span></button></li>`);
+  }
+
+  // Delete option
+  menuItems.push(`<li><hr class="dropdown-divider"></li>`);
+  menuItems.push(`<li><button type="button" class="dropdown-item text-danger" data-candidate-action="delete" data-candidate-id="${id}"><i class="bi bi-trash text-danger"></i><span>Eliminar registo</span></button></li>`);
+
+  const moreBtn = `
+    <div class="dropdown d-inline-block">
+      <button type="button" class="action-pill-btn action-pill-btn--more" data-bs-toggle="dropdown" aria-expanded="false" title="Mais opções">
+        <i class="bi bi-three-dots-vertical"></i>
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end candidate-actions-dropdown">
+        ${menuItems.join("")}
+      </ul>
+    </div>
+  `;
+
+  return `<div class="candidate-actions-cluster">${viewBtn}${approveBtn}${moreBtn}</div>`;
 }
 
 function getCandidateRepoSafe() {

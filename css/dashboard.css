@@ -11810,6 +11810,175 @@ nav.module-tabs {
   border-color: #f59e0b !important;
 }
 
+/* Candidate & Action Cluster Buttons */
+.candidate-actions-cluster {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: nowrap;
+}
+
+.action-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.28rem 0.65rem;
+  min-height: 30px;
+  height: 30px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  border: 1px solid transparent;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.action-pill-btn:hover {
+  transform: translateY(-1px);
+}
+
+.action-pill-btn--view {
+  background: rgba(56, 189, 248, 0.1);
+  border-color: rgba(56, 189, 248, 0.3);
+  color: #38bdf8;
+}
+
+.action-pill-btn--view:hover {
+  background: rgba(56, 189, 248, 0.22);
+  border-color: rgba(56, 189, 248, 0.55);
+  color: #ffffff;
+}
+
+.action-pill-btn--approve {
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-color: rgba(16, 185, 129, 0.5);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
+}
+
+.action-pill-btn--approve:hover {
+  background: linear-gradient(135deg, #34d399, #10b981);
+  border-color: #34d399;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.action-pill-btn--submit {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  border-color: rgba(59, 130, 246, 0.5);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.25);
+}
+
+.action-pill-btn--submit:hover {
+  background: linear-gradient(135deg, #60a5fa, #3b82f6);
+  border-color: #60a5fa;
+  color: #ffffff;
+}
+
+.action-pill-btn--more {
+  background: rgba(148, 163, 184, 0.1);
+  border-color: rgba(148, 163, 184, 0.22);
+  color: #94a3b8;
+  padding: 0.28rem 0.55rem;
+}
+
+.action-pill-btn--more:hover,
+.action-pill-btn--more[aria-expanded="true"] {
+  background: rgba(148, 163, 184, 0.25);
+  border-color: rgba(148, 163, 184, 0.5);
+  color: #ffffff;
+}
+
+/* Candidate Actions Dropdown Menu */
+.candidate-actions-dropdown {
+  background: #0f1c36 !important;
+  border: 1px solid rgba(56, 189, 248, 0.22) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 12px 32px rgba(2, 8, 23, 0.75) !important;
+  padding: 0.35rem 0 !important;
+  min-width: 200px !important;
+  z-index: 1060 !important;
+}
+
+.candidate-actions-dropdown .dropdown-item {
+  color: #cbd5e1 !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  padding: 0.45rem 0.9rem !important;
+  background: transparent !important;
+  border: 0;
+  width: 100%;
+  text-align: left;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.candidate-actions-dropdown .dropdown-item:hover,
+.candidate-actions-dropdown .dropdown-item:focus {
+  background: rgba(56, 189, 248, 0.15) !important;
+  color: #ffffff !important;
+}
+
+.candidate-actions-dropdown .dropdown-item.text-danger {
+  color: #f87171 !important;
+}
+
+.candidate-actions-dropdown .dropdown-item.text-danger:hover {
+  background: rgba(239, 68, 68, 0.18) !important;
+  color: #fca5a5 !important;
+}
+
+.candidate-actions-dropdown .dropdown-divider {
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  margin: 0.35rem 0 !important;
+}
+
+/* Light theme overrides */
+[data-theme="light"] .candidate-actions-dropdown,
+.theme-light .candidate-actions-dropdown {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.15) !important;
+}
+
+[data-theme="light"] .candidate-actions-dropdown .dropdown-item,
+.theme-light .candidate-actions-dropdown .dropdown-item {
+  color: #334155 !important;
+}
+
+[data-theme="light"] .candidate-actions-dropdown .dropdown-item:hover,
+.theme-light .candidate-actions-dropdown .dropdown-item:hover {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .candidate-actions-dropdown .dropdown-divider,
+.theme-light .candidate-actions-dropdown .dropdown-divider {
+  border-top-color: #e2e8f0 !important;
+}
+
+[data-theme="light"] .action-pill-btn--view,
+.theme-light .action-pill-btn--view {
+  background: #e0f2fe;
+  border-color: #bae6fd;
+  color: #0284c7;
+}
+
+[data-theme="light"] .action-pill-btn--more,
+.theme-light .action-pill-btn--more {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #64748b;
+}
+
 
 
 
