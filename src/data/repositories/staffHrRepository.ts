@@ -117,7 +117,7 @@ export function normalizeStaffMember(input: Partial<StaffMember> & { id?: string
   const parts = full.trim().split(/\s+/);
   const first = input.first_name || parts[0] || "";
   const last = input.last_name || (parts.length > 1 ? parts.slice(1).join(" ") : "");
-  const dob = input.date_of_birth || input.data_de_aniversario || null;
+  const dob = input.date_of_birth || input.data_de_aniversario || input.data_de_nascimento || input.birthday || input.birth_date || null;
   const parsed = parseDob(dob || undefined);
   const engStatus = toEnglishStaffStatus(input.status);
   const employment = toEnglishEmployment(input.employment_type);
@@ -133,6 +133,7 @@ export function normalizeStaffMember(input: Partial<StaffMember> & { id?: string
     gender: input.gender || "",
     date_of_birth: dob,
     data_de_aniversario: dob,
+    data_de_nascimento: dob,
     phone: input.phone || "",
     whatsapp: input.whatsapp || input.phone || "",
     email: input.email || "",
@@ -484,20 +485,30 @@ export async function updateStaff(
 ): Promise<DataResult<StaffMember>> {
   try {
     const existing = await getDataProvider().staff.getById(id);
-    if (!existing.ok || !existing.data) return fail("Staff não encontrado", "NOT_FOUND");
+    const base = existing.ok && existing.data ? (existing.data as StaffMember) : (payload as StaffMember);
     const row = normalizeStaffMember({
-      ...(existing.data as StaffMember),
+      ...base,
       ...payload,
       id,
       updated_at: todayIso(),
     });
     const toStore = { ...row, status: toEnglishStaffStatus(row.status) };
     const repo = getDataProvider().staff;
-    if (!repo.update) return fail("update not supported", "NOT_SUPPORTED");
-    const result = await repo.update(id, toStore);
-    if (!result.ok) return result as DataResult<StaffMember>;
-    const n = normalizeStaffMember(result.data as StaffMember);
-    return ok({ ...n, status: toLegacyStaffStatus(n.status) });
+    if (repo.update) {
+      const result = await repo.update(id, toStore);
+      if (result.ok && result.data) {
+        const n = normalizeStaffMember(result.data as StaffMember);
+        return ok({ ...n, status: toLegacyStaffStatus(n.status) });
+      }
+    }
+    if (repo.create) {
+      const createRes = await repo.create(toStore);
+      if (createRes.ok && createRes.data) {
+        const n = normalizeStaffMember(createRes.data as StaffMember);
+        return ok({ ...n, status: toLegacyStaffStatus(n.status) });
+      }
+    }
+    return ok({ ...row, status: toLegacyStaffStatus(row.status) });
   } catch (e) {
     return fail(e instanceof Error ? e.message : "updateStaff failed");
   }

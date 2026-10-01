@@ -97,6 +97,7 @@ function meta(row: SupabaseRow): Record<string, unknown> {
 function mapStaffMemberFromRow(row: SupabaseRow | null | undefined): StaffMember | null {
   if (!row) return null;
   const metadata = meta(row);
+  const rawDob = (row.date_of_birth as string) || (row.data_de_aniversario as string) || (metadata.date_of_birth as string) || (metadata.data_de_aniversario as string) || (metadata.data_de_nascimento as string) || (metadata.birthday as string) || null;
   return {
     id: String(row.id || ""),
     staff_code: (row.staff_number as string) || (row.staff_code as string) || null,
@@ -105,8 +106,9 @@ function mapStaffMemberFromRow(row: SupabaseRow | null | undefined): StaffMember
     last_name: (row.last_name as string) || null,
     full_name: (row.full_name as string) || null,
     gender: (row.gender as string) || null,
-    date_of_birth: (row.date_of_birth as string) || null,
-    data_de_aniversario: (row.date_of_birth as string) || null,
+    date_of_birth: rawDob,
+    data_de_aniversario: rawDob,
+    data_de_nascimento: rawDob,
     phone: (row.phone as string) || null,
     whatsapp: (row.whatsapp as string) || null,
     email: (row.email as string) || null,
@@ -158,6 +160,7 @@ function mapStaffMemberFromRow(row: SupabaseRow | null | undefined): StaffMember
 function mapStaffMemberToRow(input: Partial<StaffMember>, forUpdate = false): SupabaseRow {
   const full = input.full_name || [input.first_name, input.last_name].filter(Boolean).join(" ");
   const metaInput = (input.metadata as Record<string, unknown>) || {};
+  const rawDob = input.date_of_birth || input.data_de_aniversario || input.data_de_nascimento || input.birthday || input.birth_date || (metaInput.date_of_birth as string) || null;
   const row: SupabaseRow = {
     user_id: uuidOrNull(input.user_id),
     auth_user_id: uuidOrNull(input.auth_user_id),
@@ -167,7 +170,7 @@ function mapStaffMemberToRow(input: Partial<StaffMember>, forUpdate = false): Su
     last_name: input.last_name || null,
     full_name: full || null,
     gender: input.gender || null,
-    date_of_birth: input.date_of_birth || input.data_de_aniversario || null,
+    date_of_birth: rawDob,
     phone: input.phone || null,
     whatsapp: input.whatsapp || input.phone || null,
     email: input.email || null,
@@ -187,7 +190,6 @@ function mapStaffMemberToRow(input: Partial<StaffMember>, forUpdate = false): Su
     status: input.status || input.employment_status || "Active",
     hire_date: input.hire_date || input.start_date || null,
     supervisor_staff_id: uuidOrNull(input.supervisor_staff_id || input.supervisor_id || input.supervisor_user_id),
-    supervisor_id: uuidOrNull(input.supervisor_id || input.supervisor_staff_id),
     can_access_dashboard: Boolean(input.can_access_dashboard ?? input.has_dashboard_access),
     has_dashboard_access: Boolean(input.has_dashboard_access ?? input.can_access_dashboard),
     access_role_id: uuidOrNull(input.access_role_id),
@@ -199,6 +201,9 @@ function mapStaffMemberToRow(input: Partial<StaffMember>, forUpdate = false): Su
     notes: input.notes || null,
     metadata: {
       ...metaInput,
+      date_of_birth: rawDob,
+      data_de_aniversario: rawDob,
+      data_de_nascimento: rawDob,
       emergency_contact_name: input.emergency_contact_name || metaInput.emergency_contact_name || null,
       emergency_contact_phone: input.emergency_contact_phone || metaInput.emergency_contact_phone || null,
       contract_start_date: input.contract_start_date || metaInput.contract_start_date || null,

@@ -100,11 +100,15 @@
   }
 
   function enrichStaffProfile(record = {}) {
-    const dob = record.date_of_birth || record.data_de_aniversario || "";
-    const parsed = parseDateOnly(dob);
+    const rawDob = record.date_of_birth || record.data_de_aniversario || record.data_de_nascimento || record.birthday || record.birth_date || record.dob || "";
+    const parsed = parseDateOnly(rawDob);
+    const dob = parsed ? `${String(parsed.year).padStart(4, "0")}-${String(parsed.month).padStart(2, "0")}-${String(parsed.day).padStart(2, "0")}` : (rawDob || "");
     return {
       ...record,
       date_of_birth: dob,
+      data_de_aniversario: dob,
+      data_de_nascimento: dob,
+      birthday: dob,
       birthday_month: parsed ? String(parsed.month).padStart(2, "0") : record.birthday_month || "",
       birthday_day: parsed ? String(parsed.day).padStart(2, "0") : record.birthday_day || "",
       age: calculateAge(dob),
@@ -118,7 +122,7 @@
   }
 
   function hasDateOfBirth(staff) {
-    return Boolean(parseDateOnly(staff?.date_of_birth || staff?.data_de_aniversario || ""));
+    return Boolean(parseDateOnly(staff?.date_of_birth || staff?.data_de_aniversario || staff?.data_de_nascimento || staff?.birthday || staff?.birth_date || staff?.dob || ""));
   }
 
   function birthdaysThisMonth(list, refDate = new Date()) {

@@ -5269,6 +5269,7 @@ function loadState() {
 
 function normalizeStaffProfileRecord(seed = {}, saved = {}) {
   const merged = { ...structuredClone(seed || {}), ...saved };
+  const rawDob = merged.date_of_birth || merged.data_de_aniversario || merged.data_de_nascimento || merged.birthday || merged.birth_date || "";
   const withDefaults = {
     marital_status: merged.marital_status || "Por Confirmar",
     address: merged.address || "",
@@ -5284,8 +5285,10 @@ function normalizeStaffProfileRecord(seed = {}, saved = {}) {
     probation_end_date: merged.probation_end_date || "",
     profile_photo: merged.profile_photo || "",
     bank_or_mobile_details: merged.bank_or_mobile_details || "",
-    date_of_birth: merged.date_of_birth || merged.data_de_aniversario || "",
-    ...merged
+    ...merged,
+    date_of_birth: rawDob,
+    data_de_aniversario: rawDob,
+    data_de_nascimento: rawDob
   };
   return window.CEStaffHr?.enrichStaffProfile ? window.CEStaffHr.enrichStaffProfile(withDefaults) : withDefaults;
 }
@@ -36084,14 +36087,25 @@ async function submitForm(form) {
       delete data.national_id_number;
       delete data.nuit;
     }
+    // Normalize date of birth across all possible aliases
+    const rawDob = data.date_of_birth || data.data_de_aniversario || data.data_de_nascimento || data.birthday || data.birth_date || "";
+    data.date_of_birth = rawDob;
+    data.data_de_aniversario = rawDob;
+    data.data_de_nascimento = rawDob;
+    data.birthday = rawDob;
+
     const today = new Date().toISOString().slice(0, 10);
     let finalStaffRecord = null;
 
     if (modalMode === "edit") {
-      const index = state.staffProfiles.findIndex((item) => item.id === modalRecordId);
+      const index = state.staffProfiles.findIndex((item) =>
+        String(item.id) === String(modalRecordId) ||
+        item.staff_code === modalRecordId ||
+        item.staff_number === modalRecordId
+      );
       const previous = index >= 0 ? state.staffProfiles[index] : {};
       // Preserve sensitive fields if user cannot edit salary
-      const merged = { ...previous, ...data, updated_at: today };
+      const merged = { ...previous, ...data, id: previous.id || modalRecordId, updated_at: today };
       if (!canSalary) {
         merged.salary_or_allowance = previous.salary_or_allowance;
         merged.bank_name = previous.bank_name;
@@ -36102,6 +36116,10 @@ async function submitForm(form) {
         merged.nuit = previous.nuit;
       }
       if (!merged.status) merged.status = "Activo";
+      merged.date_of_birth = rawDob || merged.date_of_birth || "";
+      merged.data_de_aniversario = merged.date_of_birth;
+      merged.data_de_nascimento = merged.date_of_birth;
+      merged.birthday = merged.date_of_birth;
       finalStaffRecord = staffLib?.enrichStaffProfile ? staffLib.enrichStaffProfile(merged) : merged;
       if (index >= 0) {
         state.staffProfiles[index] = finalStaffRecord;
@@ -36121,7 +36139,10 @@ async function submitForm(form) {
         updated_at: today,
         status: data.status || "Activo",
         bank_or_mobile_details: "",
-        date_of_birth: "",
+        date_of_birth: rawDob,
+        data_de_aniversario: rawDob,
+        data_de_nascimento: rawDob,
+        birthday: rawDob,
         marital_status: "Por Confirmar",
         address: "",
         emergency_contact_name: "",
@@ -36138,6 +36159,10 @@ async function submitForm(form) {
         created_by: activeUser?.name || "Sistema",
         ...data
       };
+      createdRaw.date_of_birth = rawDob;
+      createdRaw.data_de_aniversario = rawDob;
+      createdRaw.data_de_nascimento = rawDob;
+      createdRaw.birthday = rawDob;
       finalStaffRecord = staffLib?.enrichStaffProfile ? staffLib.enrichStaffProfile(createdRaw) : createdRaw;
       state.staffProfiles.unshift(finalStaffRecord);
       if (finalStaffRecord.full_name || finalStaffRecord.name) {
@@ -36176,7 +36201,10 @@ async function submitForm(form) {
 
     // 3. Persist local state and immediately re-render view
     saveState(`${modalMode} staffProfile`);
-    showToast(modalMode === "edit" ? "Registo de staff atualizado com sucesso!" : "Novo staff registado com sucesso!", "success");
+    try {
+      localStorage.setItem("ce-data-layer:staff", JSON.stringify(state.staffProfiles));
+    } catch (_) {}
+    showToast(modalMode === "edit" ? (lang === "pt" ? "Registo de colaborador actualizado com sucesso!" : "Staff record updated successfully!") : (lang === "pt" ? "Novo colaborador registado com sucesso!" : "New staff registered successfully!"), "success");
     if (isStaffHrRoute(activeRoute)) renderStaffHr();
 
     // 4. Background persistence without blocking UI
@@ -43767,12 +43795,16 @@ async function hydrateStaffHrFromRepository() {
       const incomingList = cleanStaff.map((row) => {
         const full = row.full_name || [row.first_name, row.last_name].filter(Boolean).join(" ");
         const metaRow = row.metadata || {};
+        const rawDob = row.date_of_birth || row.data_de_aniversario || row.data_de_nascimento || metaRow.date_of_birth || metaRow.data_de_aniversario || metaRow.data_de_nascimento || null;
         const merged = {
           ...row,
           id: row.id,
           full_name: full || row.full_name,
           status: row.status || row.employment_status || "Activo",
-          date_of_birth: row.date_of_birth || row.data_de_aniversario || null,
+          date_of_birth: rawDob,
+          data_de_aniversario: rawDob,
+          data_de_nascimento: rawDob,
+          birthday: rawDob,
           department_name: row.department_name || null,
           role_title: row.role_title || row.role_name || null,
           employment_type: row.employment_type || "Full-time",
@@ -43792,8 +43824,21 @@ async function hydrateStaffHrFromRepository() {
       });
       const incMap = new Map(incomingList.map((item) => [String(item.id), item]));
       const existingLocal = Array.isArray(state.staffProfiles) ? state.staffProfiles : [];
+      const mergedList = incomingList.map((inc) => {
+        const local = existingLocal.find((loc) => loc && (String(loc.id) === String(inc.id) || (loc.staff_code && loc.staff_code === inc.staff_number)));
+        if (local) {
+          if (!inc.date_of_birth && local.date_of_birth) {
+            inc.date_of_birth = local.date_of_birth;
+            inc.data_de_aniversario = local.date_of_birth;
+            inc.data_de_nascimento = local.date_of_birth;
+            inc.birthday = local.date_of_birth;
+            if (lib?.enrichStaffProfile) inc = lib.enrichStaffProfile(inc);
+          }
+        }
+        return inc;
+      });
       const localOnly = existingLocal.filter((local) => local && local.id && !incMap.has(String(local.id)));
-      state.staffProfiles = [...localOnly, ...incomingList];
+      state.staffProfiles = [...localOnly, ...mergedList];
       hydrated = true;
       console.info("[CE StaffHR] hydrated staff from Supabase", state.staffProfiles.length);
     }

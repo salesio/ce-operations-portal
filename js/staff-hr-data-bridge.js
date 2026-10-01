@@ -129,10 +129,18 @@
     function update(kind, id, payload) {
       var s = store(kind);
       var i = s.rows.findIndex(function (r) {
-        return r.id === id;
+        return String(r.id) === String(id) || r.staff_code === id || r.staff_number === id;
       });
-      if (i < 0) return fail("Não encontrado", "NOT_FOUND");
-      s.rows[i] = Object.assign({}, s.rows[i], payload, { id: id });
+      if (i < 0) {
+        var created = Object.assign({}, payload, {
+          id: id || idPrefix + Date.now(),
+          updated_at: new Date().toISOString().slice(0, 10),
+        });
+        s.rows.unshift(created);
+        if (s.persist) save(KEYS[kind], s.rows);
+        return ok(created);
+      }
+      s.rows[i] = Object.assign({}, s.rows[i], payload, { id: s.rows[i].id || id, updated_at: new Date().toISOString().slice(0, 10) });
       if (s.persist) save(KEYS[kind], s.rows);
       return ok(s.rows[i]);
     }
@@ -272,7 +280,13 @@
     if (typeof fn !== "function") fn = fallback[method];
     if (typeof fn !== "function") return fail("Método em falta: " + method);
     try {
-      return await Promise.resolve(fn.apply(api, args || []));
+      var res = await Promise.resolve(fn.apply(api, args || []));
+      if (!res || res.ok === false) {
+        if (typeof fallback[method] === "function") {
+          return fallback[method].apply(fallback, args || []);
+        }
+      }
+      return res;
     } catch (error) {
       console.warn("[CE StaffHR] call failed", method, error);
       if (typeof fallback[method] === "function") return fallback[method].apply(fallback, args || []);
