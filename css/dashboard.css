@@ -42,7 +42,7 @@
   --sidebar-width: 316px;
   --sidebar-width-collapsed: 92px;
   --topbar-height: 86px;
-  --font-primary: "Panton", "Urbanist", "Plus Jakarta Sans", "Outfit", "Nexa", "Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-primary: "Barlow", "Barlow Semi Condensed", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-heading: var(--font-primary);
   --font-ui: var(--font-primary);
   --bs-body-font-family: var(--font-primary);
