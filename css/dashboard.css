@@ -2805,25 +2805,25 @@ tr[data-public-cell-report="1"] td:last-child {
 }
 
 .table th {
-  color: var(--muted);
+  color: #94a3b8;
   font-size: 0.72rem;
-  font-weight: 900;
-  letter-spacing: 0.08em;
+  font-weight: 700;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
 .table td {
-  color: var(--ink);
-  padding-top: 0.95rem;
-  padding-bottom: 0.95rem;
+  color: #cbd5e1;
+  padding-top: 0.85rem;
+  padding-bottom: 0.85rem;
 }
 
 .table tbody tr {
-  transition: background 0.18s ease;
+  transition: background 0.15s ease;
 }
 
 .table tbody tr:hover {
-  background: rgba(32, 215, 255, 0.07);
+  background: rgba(56, 189, 248, 0.04);
 }
 
 .filter-bar {
@@ -6689,22 +6689,22 @@ section.ops-hero {
 }
 
 .table th {
-  color: #7dd3fc;
-  font-size: 0.7rem;
-  font-weight: 900;
-  letter-spacing: 0.1em;
+  color: #94a3b8;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+
+.table td {
+  color: #cbd5e1;
   padding-top: 0.85rem;
   padding-bottom: 0.85rem;
 }
 
-.table td {
-  color: #f1f5f9;
-  padding-top: 1rem;
-  padding-bottom: 1rem;
-}
-
 .table tbody tr:hover {
-  background: rgba(56, 189, 248, 0.08);
+  background: rgba(56, 189, 248, 0.04);
 }
 
 .data-table-desktop tbody tr {
@@ -10257,55 +10257,50 @@ nav.module-tabs {
 
 .attendance-module-root .card,
 .attendance-module-root .att-card {
-  background: linear-gradient(145deg, #0e1c36 0%, #081224 100%) !important;
-  --bs-card-bg: #0e1c36 !important;
-  --bs-card-color: #ffffff !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  background: #0d1728 !important;
+  --bs-card-bg: #0d1728 !important;
+  --bs-card-color: #e2e8f0 !important;
+  border: 1px solid rgba(148, 163, 184, 0.12) !important;
   border-radius: 14px !important;
-  color: #ffffff !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+  color: #e2e8f0 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25) !important;
 }
 
 .attendance-module-root .att-card-header {
-  background: rgba(11, 23, 44, 0.95) !important;
-  border-bottom: 1px solid rgba(197, 160, 89, 0.25) !important;
-  padding: 14px 20px !important;
+  background: #0f1c32 !important;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12) !important;
+  padding: 12px 18px !important;
 }
 
 .attendance-module-root .table,
 .attendance-module-root .att-table {
   --bs-table-bg: transparent !important;
-  --bs-table-color: #ffffff !important;
-  --bs-table-hover-bg: rgba(0, 240, 255, 0.08) !important;
-  --bs-table-hover-color: #ffffff !important;
+  --bs-table-color: #cbd5e1 !important;
+  --bs-table-hover-bg: rgba(56, 189, 248, 0.04) !important;
+  --bs-table-hover-color: #e2e8f0 !important;
   --bs-table-striped-bg: transparent !important;
   background-color: transparent !important;
-  color: #ffffff !important;
+  color: #cbd5e1 !important;
   margin-bottom: 0 !important;
   border-collapse: separate !important;
   border-spacing: 0 !important;
 }
 
 .attendance-module-root table > :not(caption) > * > *,
-.attendance-module-root .att-table > :not(caption) > * > *,
-.attendance-module-root .table th,
-.attendance-module-root .table td,
-.attendance-module-root .att-table th,
-.attendance-module-root .att-table td {
+.attendance-module-root .att-table > :not(caption) > * > * {
   background-color: transparent !important;
   box-shadow: none !important;
-  color: #ffffff !important;
 }
 
 .attendance-module-root .att-table thead th {
-  background: #081326 !important;
-  color: #c5a059 !important;
-  font-size: 0.74rem !important;
-  font-weight: 700 !important;
+  background: #0f192b !important;
+  color: #94a3b8 !important;
+  font-size: 0.72rem !important;
+  font-weight: 600 !important;
   text-transform: uppercase !important;
   letter-spacing: 0.05em !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
-  padding: 14px 14px !important;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14) !important;
+  padding: 11px 14px !important;
 }
 
 .attendance-module-root .att-table tbody tr {
@@ -10314,62 +10309,71 @@ nav.module-tabs {
 }
 
 .attendance-module-root .att-table tbody tr:hover {
-  background: rgba(0, 240, 255, 0.06) !important;
+  background: rgba(56, 189, 248, 0.04) !important;
 }
 
 .attendance-module-root .att-table tbody td {
   background: transparent !important;
-  color: #ffffff !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
-  padding: 13px 14px !important;
+  color: #cbd5e1 !important;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.08) !important;
+  padding: 10px 14px !important;
   vertical-align: middle !important;
 }
 
 .attendance-module-root .att-avatar {
-  width: 36px !important;
-  height: 36px !important;
+  width: 32px !important;
+  height: 32px !important;
   border-radius: 50% !important;
-  background: linear-gradient(135deg, #183863, #0b1f3f) !important;
-  border: 1.5px solid #c5a059 !important;
-  color: #dfb86c !important;
-  font-weight: 700 !important;
+  background: rgba(56, 189, 248, 0.08) !important;
+  border: 1px solid rgba(56, 189, 248, 0.22) !important;
+  color: #7dd3fc !important;
+  font-weight: 600 !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  font-size: 0.88rem !important;
+  font-size: 0.8rem !important;
   flex-shrink: 0 !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35) !important;
+  box-shadow: none !important;
 }
 
 .attendance-module-root .att-filter-btn {
   border-radius: 20px !important;
-  font-size: 0.78rem !important;
+  font-size: 0.76rem !important;
   font-weight: 600 !important;
-  padding: 5px 14px !important;
+  padding: 4px 12px !important;
   transition: all 0.15s ease !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  background: rgba(255, 255, 255, 0.05) !important;
-  color: #9bb0ce !important;
+  border: 1px solid rgba(148, 163, 184, 0.16) !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  color: #94a3b8 !important;
 }
 
 .attendance-module-root .att-filter-btn:hover {
-  background: rgba(255, 255, 255, 0.14) !important;
-  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.07) !important;
+  color: #e2e8f0 !important;
+  border-color: rgba(148, 163, 184, 0.25) !important;
 }
 
 .attendance-module-root .att-filter-btn.active {
-  background: linear-gradient(135deg, #c5a059, #dfb86c) !important;
-  color: #071225 !important;
-  border-color: #c5a059 !important;
-  font-weight: 700 !important;
-  box-shadow: 0 2px 10px rgba(197, 160, 89, 0.35) !important;
+  background: rgba(234, 179, 8, 0.14) !important;
+  color: #facc15 !important;
+  border-color: rgba(234, 179, 8, 0.35) !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
 }
 
 .attendance-module-root input.form-control,
 .attendance-module-root select.form-select {
-  background-color: #071328 !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  color: #ffffff !important;
+  background-color: #0b1526 !important;
+  border: 1px solid rgba(148, 163, 184, 0.2) !important;
+  color: #cbd5e1 !important;
+}
+
+.attendance-module-root input.form-control:focus,
+.attendance-module-root select.form-select:focus {
+  background-color: #0d192e !important;
+  border-color: rgba(56, 189, 248, 0.45) !important;
+  color: #f1f5f9 !important;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.12) !important;
 }
 
 .attendance-module-root input.form-control:focus,

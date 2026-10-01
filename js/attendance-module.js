@@ -661,14 +661,14 @@
     // Records Table
     var tableHtml = `
       <div class="att-card overflow-hidden">
-        <div class="att-card-header d-flex flex-wrap align-items-center justify-content-between gap-2" style="padding: 14px 20px;">
+        <div class="att-card-header d-flex flex-wrap align-items-center justify-content-between gap-2" style="padding: 12px 18px;">
           <div class="d-flex align-items-center gap-2">
-            <i class="bi bi-clock-history text-gold fs-5"></i>
-            <h5 class="h6 mb-0 fw-bold">${t("Registos de Ponto", "Attendance Records")} — ${formatAttendanceDate(date)}</h5>
-            <span class="badge bg-gold-subtle text-gold ms-1">${displayedRecords.length} ${t("colaboradores", "staff")}</span>
+            <i class="bi bi-clock-history text-cyan fs-5"></i>
+            <h5 class="h6 mb-0 fw-semibold text-light">${t("Registos de Ponto", "Attendance Records")} — ${formatAttendanceDate(date)}</h5>
+            <span class="badge bg-secondary-subtle text-secondary ms-1">${displayedRecords.length} ${t("colaboradores", "staff")}</span>
           </div>
           <div class="text-secondary small">
-            ${t("Hora Média de Entrada:", "Average Check-In Time:")} <strong class="text-gold font-monospace fs-6 ms-1">${avgCheckInStr}</strong>
+            ${t("Hora Média de Entrada:", "Average Check-In Time:")} <strong class="text-cyan font-monospace fs-6 ms-1">${avgCheckInStr}</strong>
           </div>
         </div>
 
@@ -695,11 +695,11 @@
                     <td class="ps-3 font-monospace text-secondary" style="font-size: 0.82rem;">${rec.employee_id}</td>
                     <td>
                       <div class="d-flex align-items-center gap-2">
-                        <div class="att-avatar" style="width: 30px; height: 30px; font-size: 0.8rem; background: rgba(212, 175, 55, 0.12); color: #d4af37; border-color: rgba(212, 175, 55, 0.3);">
+                        <div class="att-avatar">
                           ${(staffDisplayName || "S").slice(0, 2).toUpperCase()}
                         </div>
                         <div>
-                          <div class="fw-semibold text-white" style="font-size: 0.88rem;">${staffDisplayName}</div>
+                          <div class="fw-semibold text-light" style="font-size: 0.88rem;">${staffDisplayName}</div>
                           ${rec.card_no ? `<span class="text-secondary font-monospace" style="font-size: 0.7rem;">Card: ${rec.card_no}</span>` : ""}
                         </div>
                       </div>
@@ -707,7 +707,7 @@
                     <td>
                       <span class="badge bg-secondary-subtle text-secondary border border-secondary border-opacity-25" style="font-size: 0.72rem;">${rec.department || "CESTAFF"}</span>
                     </td>
-                    <td class="text-center font-monospace fw-bold ${isLate ? "text-danger" : "text-white"}" style="font-size: 0.95rem;">
+                    <td class="text-center font-monospace fw-semibold ${isLate ? "text-danger" : "text-light"}" style="font-size: 0.92rem;">
                       ${rec.check_in ? rec.check_in : '<span class="text-secondary opacity-50">--:--</span>'}
                     </td>
                     <td class="text-center">
@@ -723,7 +723,7 @@
                     </td>
                     <td class="text-end pe-3">
                       <div class="btn-group btn-group-sm">
-                        <button type="button" class="btn btn-outline-secondary text-gold" data-view-trajectory="${rec.employee_id}" title="${t("Ver Trajetória Individual", "View Staff Dossier")}">
+                        <button type="button" class="btn btn-outline-secondary text-cyan" data-view-trajectory="${rec.employee_id}" title="${t("Ver Trajetória Individual", "View Staff Dossier")}">
                           <i class="bi bi-graph-up-arrow"></i>
                         </button>
                         <button type="button" class="btn btn-outline-secondary" data-edit-attendance="${rec.id || ""}" data-emp-id="${rec.employee_id}" data-date="${rec.attendance_date}" title="${t("Editar / Adicionar Nota", "Edit / Add Note")}">
