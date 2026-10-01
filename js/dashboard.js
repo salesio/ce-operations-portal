@@ -40556,7 +40556,7 @@ document.addEventListener("submit", (event) => {
     const domainId = data.domain || event.target.dataset.reportDomain;
     if (domainId && domainReportFilters[domainId]) {
       domainReportFilters[domainId] = { ...domainReportFilters[domainId], ...data };
-      if (activeRoute === "reports") renderReports();
+      if (activeRoute === "reports" || isReportsRoute(activeRoute)) renderReports();
       else setRoute(activeRoute);
     }
     return;
@@ -41618,7 +41618,7 @@ document.addEventListener("change", (event) => {
     const data = Object.fromEntries(new FormData(form).entries());
     financePageState.requisitionReportFilters = { ...financePageState.requisitionReportFilters, ...data };
     if (activeRoute === "finance") renderFinance();
-    else if (activeRoute === "reports") renderReports();
+    else if (activeRoute === "reports" || isReportsRoute(activeRoute)) renderReports();
     return;
   }
   if (event.target.closest("[data-requisition-module-report-filters]")) {
@@ -41634,7 +41634,7 @@ document.addEventListener("change", (event) => {
     const domainId = data.domain || form.dataset.reportDomain;
     if (domainId && domainReportFilters[domainId]) {
       domainReportFilters[domainId] = { ...domainReportFilters[domainId], ...data };
-      if (activeRoute === "reports") renderReports();
+      if (activeRoute === "reports" || isReportsRoute(activeRoute)) renderReports();
       else setRoute(activeRoute);
     }
     return;
