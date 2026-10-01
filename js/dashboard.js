@@ -13837,17 +13837,17 @@ function renderExecutiveAttendanceMainWidgetContent() {
         <div>
           <div class="d-flex align-items-center gap-2 mb-1">
             <span class="badge bg-gold-subtle text-gold text-uppercase px-2.5 py-1 fw-bold" style="font-size: 0.72rem; letter-spacing: 0.04em;">
-              <i class="bi bi-fingerprint me-1"></i>${isPt ? "CENTRO DE ASSIDUIDADE EXECUTIVO — MAIN" : "EXECUTIVE ATTENDANCE HUB — MAIN"}
+              <i class="bi bi-fingerprint me-1"></i>${isPt ? "PAINEL DE ASSIDUIDADE — MAIN" : "ATTENDANCE HUB — MAIN"}
             </span>
-            <span class="badge ${submission.overseer_status === "Acknowledged" ? "bg-success" : "bg-info text-dark"}">
-              <i class="bi bi-shield-check me-1"></i>${submission.overseer_status === "Acknowledged" ? (isPt ? "Homologado pelo Pastor Kéne" : "Homologated by Pastor Kéne") : (isPt ? "Entregue no MAIN ao Pastor Kéne" : "Delivered to Pastor Kéne on MAIN")}
+            <span class="badge bg-success-subtle text-success border border-success border-opacity-25 px-2 py-0.5">
+              <i class="bi bi-shield-check me-1"></i>${isPt ? "Registo Oficial Homologado" : "Official Homologated Record"}
             </span>
           </div>
           <h4 class="h5 fw-bold text-white mb-0">
             ${isPt ? "Supervisão Diária, Comparação e Relatórios de Ponto" : "Daily Oversight, Comparison & Punch Reports"} — <span class="text-gold font-monospace">${targetDate}</span>
           </h4>
           <span class="text-secondary small">
-            ${isPt ? "Origem: Brother Lio (Paixão à Primeira Vista) ➔ Auditoria: Pastor Valdemiro (Cuidados Pastorais) ➔ Homologação: Pastor Kéne (MAIN)" : "Source: Br. Lio (Paixão à Primeira Vista) ➔ Audit: Pr. Valdemiro (Pastoral Care) ➔ Homologation: Pr. Kéne (MAIN)"}
+            ${isPt ? "Registo oficial biométrico consolidado com suporte a comparativos temporais e relatórios." : "Consolidated biometric records with multi-period comparative analysis and reporting."}
           </span>
         </div>
 
@@ -13924,42 +13924,27 @@ function renderExecutiveAttendanceMainWidgetContent() {
           </div>
         </div>
         <div class="col-6 col-md-4 col-xl-2">
-          <div class="p-3 rounded border border-secondary border-opacity-25 text-center bg-dark bg-opacity-30">
-            <span class="text-secondary small d-block mb-1" style="font-size: 0.72rem;">${isPt ? "SUPERVISOR GERAL" : "OVERSEER"}</span>
-            <strong class="fs-5 text-gold">Pr. Kéne</strong>
+          <div class="p-3 rounded border border-secondary border-opacity-25 text-center bg-dark bg-opacity-30 att-card-clickable" role="button" tabindex="0" onclick="window.filterMainAttendanceStatus('absent')" title="${isPt ? "Clique para filtrar ausências" : "Click to view absences"}">
+            <span class="text-secondary small d-block mb-1" style="font-size: 0.72rem;">${isPt ? "SEM REGISTO / AUSENTES" : "UNRECORDED / ABSENT"}</span>
+            <strong class="fs-4 text-warning">${absentRecs.length}</strong>
           </div>
         </div>
       </div>
 
-      <!-- Pastoral Pipeline & Homologation Action Strip -->
-      <div class="p-3 rounded bg-dark bg-opacity-40 border border-secondary border-opacity-20 mb-3">
-        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
-          <div class="d-flex align-items-center gap-3">
-            <div class="att-avatar" style="width: 38px; height: 38px; font-size: 1.1rem; background: rgba(212,175,55,0.18); border-color: #d4af37; color: #ffd700;">
-              <i class="bi bi-award-fill"></i>
-            </div>
-            <div>
-              <div class="d-flex align-items-center gap-2">
-                <strong class="text-white small">${isPt ? "Parecer dos Cuidados Pastorais (Pastor Valdemiro):" : "Pastoral Care Note (Pastor Valdemiro):"}</strong>
-                <span class="text-secondary small"><em>"${submission.pastoral_notes || (isPt ? "Auditado e verificado para homologação." : "Audited and verified.")}"</em></span>
-              </div>
-              <div class="text-secondary small mt-0.5">
-                ${isPt ? "Despacho do Pastor Kéne:" : "Pastor Kéne Direction:"} <strong class="text-gold">"${submission.overseer_notes || (isPt ? "Homologado no Painel Geral." : "Homologated on MAIN.")}"</strong>
-              </div>
-            </div>
-          </div>
+      <!-- Quick Navigation & Comparison Action Bar -->
+      <div class="p-2.5 rounded bg-dark bg-opacity-40 border border-secondary border-opacity-20 mb-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-gold-subtle text-gold px-2 py-1"><i class="bi bi-calendar-check me-1"></i>${isPt ? "Período Selecionado:" : "Selected Period:"}</span>
+          <span class="text-white small fw-bold">${stateObj.period === "week" ? (isPt ? "Semana Atual (06-12 Jul 2026)" : "Current Week (06-12 Jul 2026)") : (stateObj.period === "month" ? (isPt ? "Mês de Julho 2026" : "July 2026") : (stateObj.period === "last_month" ? (isPt ? "Mês de Junho 2026" : "June 2026") : targetDate))}</span>
+        </div>
 
-          <div class="d-flex align-items-center gap-2">
-            <button type="button" class="btn btn-xs btn-outline-success" onclick="if(window.CEAttendanceBridge && window.CEAttendanceBridge.acknowledgeByKene){ window.CEAttendanceBridge.acknowledgeByKene('${targetDate}', 'Homologado no Painel Geral pelo Pastor Kéne.'); if(window.showToast) window.showToast('✅ Assiduidade homologada com sucesso no MAIN pelo Pastor Kéne!', 'success'); window.switchMainAttendanceDate('${targetDate}'); }">
-              <i class="bi bi-patch-check-fill me-1"></i>${isPt ? "Homologar Lote (Pastor Kéne)" : "Homologate Batch (Pastor Kéne)"}
-            </button>
-            <button type="button" class="btn btn-xs btn-outline-warning" onclick="if(window.navigateTo){ window.navigateTo('attendance'); setTimeout(function(){ if(window.renderAttendance) window.renderAttendance('comparison'); }, 50); }">
-              <i class="bi bi-arrow-left-right me-1"></i>${isPt ? "Comparador Multi-Período" : "Temporal Comparison"}
-            </button>
-            <button type="button" class="btn btn-xs btn-outline-info" onclick="if(window.navigateTo){ window.navigateTo('attendance'); setTimeout(function(){ if(window.renderAttendance) window.renderAttendance('monthly'); }, 50); }">
-              <i class="bi bi-file-earmark-bar-graph me-1"></i>${isPt ? "Relatório Mensal Completo" : "Monthly Report"}
-            </button>
-          </div>
+        <div class="d-flex flex-wrap align-items-center gap-2">
+          <button type="button" class="btn btn-xs btn-outline-warning" onclick="if(window.navigateTo){ window.navigateTo('attendance'); setTimeout(function(){ if(window.renderAttendance) window.renderAttendance('comparison'); }, 50); }">
+            <i class="bi bi-arrow-left-right me-1"></i>${isPt ? "Comparador Multi-Período" : "Temporal Comparison"}
+          </button>
+          <button type="button" class="btn btn-xs btn-outline-info" onclick="if(window.navigateTo){ window.navigateTo('attendance'); setTimeout(function(){ if(window.renderAttendance) window.renderAttendance('monthly'); }, 50); }">
+            <i class="bi bi-file-earmark-bar-graph me-1"></i>${isPt ? "Relatório Mensal Completo" : "Monthly Report"}
+          </button>
         </div>
       </div>
 
@@ -15838,8 +15823,8 @@ function renderDashboard() {
       </div>`) : ""}
     ${canDashboardSee("staffHr") || activeUser.role === "Super Admin" || activeUser.role === "Pastor" ? `
       ${dashboardSection(
-        lang === "pt" ? "Assiduidade & Pontualidade de Staff (Supervisão Executiva: Pastor Kéne)" : "Staff Attendance & Punctuality (Executive Oversight: Pastor Kéne)",
-        lang === "pt" ? "Pipeline: Brother Lio (Paixão à Primeira Vista) ➔ Pastor Valdemiro (Cuidados Pastorais) ➔ Pastor Kéne (MAIN)" : "Pipeline: Brother Lio (Paixão à Primeira Vista) ➔ Pastor Valdemiro (Pastoral Care) ➔ Pastor Kéne (MAIN)",
+        lang === "pt" ? "Assiduidade & Pontualidade de Staff" : "Staff Attendance & Punctuality",
+        lang === "pt" ? "Controlo biométrico de presenças, pontualidade, comparativos e relatórios operacionais." : "Biometric presence tracking, punctuality, comparisons, and operational reports.",
         "bi-fingerprint",
         "attendance",
         renderExecutiveAttendanceMainWidget()
