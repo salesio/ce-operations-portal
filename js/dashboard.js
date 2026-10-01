@@ -15917,6 +15917,10 @@ function renderDashboard() {
     renderCellLeaderPortal();
     return;
   }
+  if (byId("pageTitle") && (byId("pageTitle").textContent === L("accessDeniedTitle") || !byId("pageTitle").textContent || activeRoute === "dashboard")) {
+    byId("pageTitle").textContent = L("dashboard");
+    if (byId("sectionLabel")) byId("sectionLabel").textContent = L("main");
+  }
   const firstTimers = scoped(getDashboardFirstTimersList());
   const finance = scoped(state.finance);
   const cells = scoped(state.cells);
