@@ -305,6 +305,16 @@
       }
       return;
     }
+    if (module === "sacraments") {
+      const store = window.sacramentsPageState;
+      const targetRoute = route || (store?.panel === "panel-marriage" ? "sacramentsMarriagesRoute" : (store?.panel === "panel-baby" ? "sacramentsBabyDedicationsRoute" : "sacraments"));
+      if (typeof setRoute === "function" && targetRoute) {
+        setRoute(targetRoute);
+      } else if (typeof renderSacraments === "function") {
+        renderSacraments();
+      }
+      return;
+    }
     const targetRoute = route || {
       staffHr: "staffHr",
       finance: "finance",
