@@ -74,6 +74,8 @@
   }
 
   function seedFor(kind) {
+    var source = resolveDataSource();
+    if (source === "supabase" || source === "api") return [];
     var S = window.CESupabase || {};
     if (kind === "staff") return S.STAFF_SEED || [];
     if (kind === "departments") return S.STAFF_DEPARTMENTS_SEED || [];

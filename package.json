@@ -38,6 +38,7 @@
     "test:finance-public-giving-supabase": "node scripts/smoke-finance-public-giving-storage-supabase.mjs",
     "test:requisitions-inventory-supabase": "node scripts/smoke-requisitions-inventory-supabase.mjs",
     "test:staff-hr-supabase": "node scripts/smoke-staff-hr-supabase.mjs",
+    "test:staff-hr-live-crud": "node scripts/smoke-staff-hr-live-crud.mjs",
     "test:foundation-school-supabase": "node scripts/smoke-foundation-school-supabase.mjs",
     "test:foundation-school-data": "node scripts/smoke-foundation-school-supabase.mjs",
     "test:programs-media-supabase": "node scripts/smoke-programs-media-supabase.mjs",

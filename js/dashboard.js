@@ -3811,39 +3811,14 @@ const seedData = {
     { id: "not-18", title: "Acompanhamento necessário", message: "Um caso de aconselhamento precisa de acompanhamento pastoral.", type: "action_required", module: "counseling", entity_type: "counseling_feedback", entity_id: "cfb-1", priority: "high", recipient_user_id: "", recipient_role: "Follow-Up Coordinator", recipient_department_id: "", recipient_church_id: "church-hq", scope: "role", action_url: "counseling", action_label: "Criar Acompanhamento", is_read: false, read_at: "", created_at: "2026-07-15T08:20:00.000Z", expires_at: "", metadata: {} }
   ],
   requisitions: [],
-  financeDisbursements: [],
-  staffProfiles: [
-    { id: "staff-1", user_id: "u-5", full_name: "Flavia Moneedi Tivane", title: "Pastora", gender: "Feminino", phone: "860000101", whatsapp: "860000101", email: "flavia@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", department_id: "dept-cell", department_name: "Ministério de Células", role_title: "Cell Ministry Head", supervisor_user_id: "u-17", supervisor_name: "Pastor Kene Ume", start_date: "2024-01-15", employment_type: "Full-time", salary_or_allowance: 45000, payment_frequency: "Mensal", payment_method: "Banco", bank_name: "BCI", bank_account_number: "****4521", bank_or_mobile_details: "BCI ****4521", marital_status: "Casado/a", address: "Maputo, KaMpfumo", contract_start_date: "2024-01-15", status: "Activo", date_of_birth: "1990-03-14", notes: "", created_at: "2024-01-15", updated_at: "2026-07-10" },
-    { id: "staff-2", user_id: "u-4", full_name: "Angelica Amilcar Macuacua", title: "Irmã", gender: "Feminino", phone: "860000102", whatsapp: "860000102", email: "angelica@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", department_id: "dept-cell", department_name: "Ministério de Células", role_title: "ALEC Coordinator", supervisor_user_id: "u-5", supervisor_name: "Pastora Flavia", start_date: "2023-06-01", employment_type: "Full-time", salary_or_allowance: 38000, payment_frequency: "Mensal", payment_method: "M-Pesa", mobile_money_number: "860000102", bank_or_mobile_details: "86XXXXXXX", marital_status: "Solteiro/a", address: "Matola, Moçambique", status: "Activo", date_of_birth: "1992-07-22", notes: "", created_at: "2023-06-01", updated_at: "2026-07-10" },
-    { id: "staff-3", user_id: "u-11", full_name: "Marcelo Moises Panguene", title: "Irmão", gender: "Masculino", phone: "860000103", whatsapp: "860000103", email: "marcelo.panguene@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", department_id: "dept-venue", department_name: "Venue Management", role_title: "Venue Manager", supervisor_user_id: "u-17", supervisor_name: "Pastor Kene Ume", start_date: "2022-11-01", employment_type: "Full-time", salary_or_allowance: 52000, payment_frequency: "Mensal", payment_method: "Banco", bank_name: "BCI", bank_account_number: "****8832", bank_or_mobile_details: "BCI ****8832", marital_status: "Casado/a", address: "Maputo, Moçambique", emergency_contact_name: "Maria Panguene", emergency_contact_phone: "860000203", status: "Activo", date_of_birth: "1988-11-05", notes: "", created_at: "2022-11-01", updated_at: "2026-07-10" },
-    { id: "staff-4", user_id: "", full_name: "Laiza Teresa Chirindza", title: "Irmã", gender: "Feminino", phone: "860000104", whatsapp: "860000104", email: "laiza@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", department_id: "dept-finance", department_name: "Finanças", role_title: "Finance Officer", supervisor_user_id: "u-15", supervisor_name: "Finance Head Demo", start_date: "2024-03-01", employment_type: "Full-time", salary_or_allowance: 40000, payment_frequency: "Mensal", payment_method: "E-Mola", bank_or_mobile_details: "87XXXXXXX", status: "Activo", date_of_birth: "1995-01-18", notes: "", created_at: "2024-03-01", updated_at: "2026-07-10" },
-    { id: "staff-5", user_id: "u-6", full_name: "Eduarda Paula Mnganhela", title: "Irmã", gender: "Feminino", phone: "860000105", whatsapp: "860000105", email: "eduarda@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", department_id: "dept-cell", department_name: "Ministério de Células", role_title: "Final Coordinator", supervisor_user_id: "u-5", supervisor_name: "Pastora Flavia", start_date: "2023-09-01", employment_type: "Part-time", salary_or_allowance: 25000, payment_frequency: "Mensal", payment_method: "M-Pesa", bank_or_mobile_details: "86XXXXXXX", bank_name: "M-Pesa", mobile_money_number: "860000105", marital_status: "Solteiro/a", address: "Maputo, Moçambique", emergency_contact_name: "Paula Mnganhela", emergency_contact_phone: "860000199", national_id_number: "BI-****5521", nuit: "NUIT-****882", contract_start_date: "2023-09-01", contract_end_date: "", probation_end_date: "2023-12-01", status: "Activo", date_of_birth: "1993-07-15", notes: "", created_at: "2023-09-01", updated_at: "2026-07-10" },
-    { id: "staff-6", user_id: "u-3", full_name: "Janet Baptista Ngoca", title: "Irmã", gender: "Feminino", phone: "860000106", whatsapp: "860000106", email: "janet.marquele@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", department_id: "dept-programs", department_name: "Programas", role_title: "Ministry Coordinator", supervisor_user_id: "u-17", supervisor_name: "Pastor Kene Ume", start_date: "2022-05-01", employment_type: "Full-time", salary_or_allowance: 42000, payment_frequency: "Mensal", payment_method: "Banco", bank_or_mobile_details: "", status: "Activo", date_of_birth: "1987-12-02", notes: "", created_at: "2022-05-01", updated_at: "2026-07-10" },
-    { id: "staff-7", user_id: "u-18", full_name: "Pastora Responsável Requisições", title: "Pastora", gender: "Feminino", phone: "860000107", whatsapp: "860000107", email: "requisitions@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", department_id: "dept-programs", department_name: "Programas", role_title: "Requisition Officer", supervisor_user_id: "u-17", supervisor_name: "Pastor Kene Ume", start_date: "2024-06-01", employment_type: "Full-time", salary_or_allowance: 36000, payment_frequency: "Mensal", payment_method: "Banco", bank_or_mobile_details: "", status: "Activo", date_of_birth: "1991-05-20", notes: "Responsável por organizar requisições.", created_at: "2024-06-01", updated_at: "2026-07-10" },
-    { id: "staff-8", user_id: "u-7", full_name: "Cell Leader Demo", title: "Irmão", gender: "Masculino", phone: "860000108", whatsapp: "860000108", email: "cellleader@ce-mozambique.org", church_id: "church-hq", church_name: "E.C. Maputo Central - Sede", department_id: "dept-cell", department_name: "Ministério de Células", role_title: "Cell Leader", supervisor_user_id: "u-5", supervisor_name: "Pastora Flavia", start_date: "2025-01-01", employment_type: "Voluntário", salary_or_allowance: 0, payment_frequency: "Nenhum", payment_method: "Nenhum", bank_or_mobile_details: "", status: "Activo", date_of_birth: "1998-08-30", notes: "", created_at: "2025-01-01", updated_at: "2026-07-10" }
-  ],
-  staffSalaries: [
-    { id: "sal-1", staff_id: "staff-1", month: "2026-06", base_amount: 45000, bonus: 5000, deductions: 0, net_amount: 50000, payment_status: "Pago", approved_by: "Finance Head Demo", paid_by: "Finance Head Demo", paid_at: "2026-07-05", notes: "" },
-    { id: "sal-2", staff_id: "staff-3", month: "2026-07", base_amount: 52000, bonus: 0, deductions: 2000, net_amount: 50000, payment_status: "Pendente", approved_by: "", paid_by: "", paid_at: "", notes: "Aguardar aprovação." },
-    { id: "sal-3", staff_id: "staff-4", month: "2026-07", base_amount: 40000, bonus: 0, deductions: 0, net_amount: 40000, payment_status: "Aprovado", approved_by: "Finance Head Demo", paid_by: "", paid_at: "", notes: "" }
-  ],
-  staffPerformance: [
-    { id: "perf-1", staff_id: "staff-1", evaluation_period: "2026-H1", punctuality_score: 9, task_completion_score: 9, report_submission_score: 8, teamwork_score: 9, supervisor_rating: 9, overall_score: 8.8, strengths: "Liderança e organização.", areas_to_improve: "Delegação de tarefas.", action_plan: "Formação de líderes de Área.", evaluated_by: "Pastor Kene Ume", evaluated_at: "2026-07-01" },
-    { id: "perf-2", staff_id: "staff-3", evaluation_period: "2026-H1", punctuality_score: 0, task_completion_score: 0, report_submission_score: 0, teamwork_score: 0, supervisor_rating: 0, overall_score: 0, strengths: "", areas_to_improve: "", action_plan: "", evaluated_by: "", evaluated_at: "" }
-  ],
-  staffAttendance: [
-    { id: "att-1", staff_id: "staff-1", date: "2026-07-10", church_id: "church-hq", department_id: "dept-cell", attendance_status: "Presente", check_in_time: "08:45", check_out_time: "17:30", notes: "" },
-    { id: "att-2", staff_id: "staff-4", date: "2026-07-10", church_id: "church-hq", department_id: "dept-finance", attendance_status: "Presente", check_in_time: "09:00", check_out_time: "18:00", notes: "" },
-    { id: "att-3", staff_id: "staff-3", date: "2026-07-10", church_id: "church-hq", department_id: "dept-venue", attendance_status: "Atrasado", check_in_time: "09:35", check_out_time: "17:00", notes: "Trânsito." }
-  ],
-  staffDocuments: [],
-  notifications: [],
-  requisitions: [],
-  financeDisbursements: [],
   staffProfiles: [],
   staffSalaries: [],
   staffPerformance: [],
   staffAttendance: [],
+  staffDocuments: [],
+  notifications: [],
+  requisitions: [],
+  financeDisbursements: [],
   churches: [
     { id: "a1111111-1111-4111-8111-111111111101", church_id: "a1111111-1111-4111-8111-111111111101", church_name: "E.C. Maputo Central - Sede", public_name: "E.C. Maputo Central - Sede", type: "Sede Nacional", province: "Maputo Cidade", city: "KaMpfumo", district_or_area: "Urbanização", address: "Avenida de Angola, ao lado da CETRACO, Maputo", pastor_in_charge: "Pastor Kene Ume", phone_primary: "+258 86 227 0000", phone_secondary: "", email: "info@embaixadadecristo.org", facebook: "Embaixada de Cristo Moçambique", instagram: "@embaixada_de_cristo_mocambique", youtube: "", service_times: defaultSeedServiceTimes("a1111111-1111-4111-8111-111111111101", "Sede Nacional"), parent_church_id: "", status: "Activa", information_status: "Confirmado", notes: "Sede Nacional", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2024-01-01", updated_at: "2026-07-10", attendance_last_4_weeks: [112, 98, 104, 92] },
     { id: "a1111111-1111-4111-8111-111111111102", church_id: "a1111111-1111-4111-8111-111111111102", church_name: "Christ Embassy Matola", public_name: "E.C. Matola", type: "Igreja Local", province: "Maputo Província", city: "Matola", district_or_area: "Matola", address: "Rua Mário Estêves Coluna, Nr 63B, perto do KFC / DNIC", pastor_in_charge: "", phone_primary: "+258 84 372 2630", phone_secondary: "+258 84 643 5951 / +258 87 780 9005", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("a1111111-1111-4111-8111-111111111102", "Igreja Local"), parent_church_id: "a1111111-1111-4111-8111-111111111101", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [48, 52, 46, 50] },
@@ -43170,63 +43145,110 @@ function dualWriteStaffHrRecord(kind, mode, record) {
 }
 
 async function hydrateStaffHrFromRepository() {
+  const sbClient = window.CESupabase?.getSupabaseFoundationClient?.() || window.CESupabase?.getSupabaseAuthClient?.();
   const repo = getStaffHrRepoSafe();
-  if (!repo?.listStaff) return false;
+  if (!sbClient && !repo) return false;
+
   try {
     let hydrated = false;
-    const list = await repo.listStaff();
-    if (list?.ok && Array.isArray(list.data) && list.data.length) {
-      const prev = new Map((state.staffProfiles || []).map((r) => [r.id, r]));
-      const byId = new Map();
-      const lib = window.CEStaffHr;
-      list.data.forEach((row) => {
-        const previous = prev.get(row.id) || {};
+    const lib = window.CEStaffHr;
+
+    // 1. Staff Members
+    let staffData = null;
+    if (sbClient) {
+      const res = await sbClient.from("staff_members").select("*").order("created_at", { ascending: false });
+      if (res?.data) staffData = res.data;
+    }
+    if (!staffData && typeof repo?.listStaff === "function") {
+      const res = await repo.listStaff();
+      if (res?.ok && Array.isArray(res.data)) staffData = res.data;
+    }
+
+    if (Array.isArray(staffData)) {
+      const cleanStaff = staffData.filter((r) => !r.metadata?.demo && !r.metadata?.synthetic);
+      state.staffProfiles = cleanStaff.map((row) => {
+        const full = row.full_name || [row.first_name, row.last_name].filter(Boolean).join(" ");
         const merged = {
           ...row,
-          ...previous,
           id: row.id,
-          full_name: row.full_name || previous.full_name,
-          status: row.status || previous.status || "Activo",
-          date_of_birth: row.date_of_birth || previous.date_of_birth,
-          department_name: row.department_name || previous.department_name,
-          role_title: row.role_title || previous.role_title,
-          // Prefer previous sensitive fields if hydrate row empty (local edit)
-          salary_or_allowance: previous.salary_or_allowance ?? row.salary_or_allowance,
-          bank_name: previous.bank_name || row.bank_name,
-          bank_account_number: previous.bank_account_number || row.bank_account_number,
-          mobile_money_number: previous.mobile_money_number || row.mobile_money_number,
+          full_name: full || row.full_name,
+          status: row.status || row.employment_status || "Activo",
+          date_of_birth: row.date_of_birth || row.data_de_aniversario || null,
+          department_name: row.department_name || null,
+          role_title: row.role_title || row.role_name || null,
+          employment_type: row.employment_type || "Full Time",
+          church_id: row.church_id || null,
+          church_name: row.church_name || null,
+          salary_or_allowance: row.salary_or_allowance ?? 0,
+          bank_name: row.bank_name || null,
+          bank_account_number: row.bank_account_number || null,
+          mobile_money_number: row.mobile_money_number || null,
         };
-        byId.set(row.id, lib?.enrichStaffProfile ? lib.enrichStaffProfile(merged) : merged);
+        return lib?.enrichStaffProfile ? lib.enrichStaffProfile(merged) : merged;
       });
-      prev.forEach((localRow, id) => {
-        if (!byId.has(id)) byId.set(id, localRow);
-      });
-      state.staffProfiles = [...byId.values()];
       hydrated = true;
-      console.info("[CE StaffHR] hydrated staff", state.staffProfiles.length);
+      console.info("[CE StaffHR] hydrated staff from Supabase", state.staffProfiles.length);
     }
 
-    async function merge(listFn, stateKey) {
-      if (typeof listFn !== "function") return;
-      const result = await listFn();
-      if (!result?.ok || !Array.isArray(result.data) || !result.data.length) return;
-      const prev = new Map((state[stateKey] || []).map((r) => [r.id, r]));
-      const byId = new Map();
-      result.data.forEach((row) => {
-        const previous = prev.get(row.id) || {};
-        byId.set(row.id, { ...row, ...previous, id: row.id });
-      });
-      prev.forEach((localRow, id) => {
-        if (!byId.has(id)) byId.set(id, localRow);
-      });
-      state[stateKey] = [...byId.values()];
+    // 2. Staff Salaries
+    let salData = null;
+    if (sbClient) {
+      const res = await sbClient.from("staff_salaries").select("*").order("effective_from", { ascending: false });
+      if (res?.data) salData = res.data;
+    }
+    if (!salData && typeof repo?.listStaffSalaries === "function") {
+      const res = await repo.listStaffSalaries();
+      if (res?.ok && Array.isArray(res.data)) salData = res.data;
+    }
+    if (Array.isArray(salData)) {
+      state.staffSalaries = salData.filter((r) => !r.metadata?.demo && !r.metadata?.synthetic);
       hydrated = true;
     }
 
-    await merge(repo.listStaffSalaries?.bind(repo), "staffSalaries");
-    await merge(repo.listPerformanceReviews?.bind(repo), "staffPerformance");
-    await merge(repo.listStaffDocuments?.bind(repo), "staffDocuments");
-    await merge(repo.listStaffAttendance?.bind(repo), "staffAttendance");
+    // 3. Performance Reviews
+    let perfData = null;
+    if (sbClient) {
+      const res = await sbClient.from("staff_performance_reviews").select("*").order("review_date", { ascending: false });
+      if (res?.data) perfData = res.data;
+    }
+    if (!perfData && typeof repo?.listPerformanceReviews === "function") {
+      const res = await repo.listPerformanceReviews();
+      if (res?.ok && Array.isArray(res.data)) perfData = res.data;
+    }
+    if (Array.isArray(perfData)) {
+      state.staffPerformance = perfData.filter((r) => !r.metadata?.demo && !r.metadata?.synthetic);
+      hydrated = true;
+    }
+
+    // 4. Staff Documents
+    let docData = null;
+    if (sbClient) {
+      const res = await sbClient.from("staff_documents").select("*").order("created_at", { ascending: false });
+      if (res?.data) docData = res.data;
+    }
+    if (!docData && typeof repo?.listStaffDocuments === "function") {
+      const res = await repo.listStaffDocuments();
+      if (res?.ok && Array.isArray(res.data)) docData = res.data;
+    }
+    if (Array.isArray(docData)) {
+      state.staffDocuments = docData.filter((r) => !r.metadata?.demo && !r.metadata?.synthetic);
+      hydrated = true;
+    }
+
+    // 5. Staff Attendance
+    let attData = null;
+    if (sbClient) {
+      const res = await sbClient.from("staff_attendance").select("*").order("attendance_date", { ascending: false });
+      if (res?.data) attData = res.data;
+    }
+    if (!attData && typeof repo?.listStaffAttendance === "function") {
+      const res = await repo.listStaffAttendance();
+      if (res?.ok && Array.isArray(res.data)) attData = res.data;
+    }
+    if (Array.isArray(attData)) {
+      state.staffAttendance = attData.filter((r) => !r.metadata?.demo && !r.metadata?.synthetic);
+      hydrated = true;
+    }
 
     if (hydrated) {
       try {
