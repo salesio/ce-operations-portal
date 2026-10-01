@@ -52,14 +52,7 @@
     { id: "13", code: "STF-12", name: "Clarissa", fullName: "Pastor Clarissa", dept: "Cuidados Pastorais", role: "Pastor", aliases: ["clarissa", "pastor clarissa", "pr clarissa", "pr. clarissa", "pstreina", "reina", "pastora reina"] },
     { id: "10000019", code: "STF-13", name: "Kassandra", fullName: "Sister Kassandra", dept: "CESTAFF", role: "Staff Member", aliases: ["kassandra", "sister kassandra", "sis kassandra", "sis. kassandra", "kassandra langa"] },
     { id: "10000020", code: "STF-14", name: "Filipe", fullName: "Bro Filipe", dept: "CESTAFF", role: "Staff Member", aliases: ["filipe", "bro filipe", "bro. filipe", "brother filipe", "filipe mabunda"] },
-    { id: "4", code: "STF-15", name: "Flavia", fullName: "Flavia Cossa", dept: "CESTAFF", role: "Staff Member", aliases: ["flavia", "flávia"] },
-    { id: "7", code: "STF-16", name: "Pk", fullName: "Pastor Kéne (Kenneth)", dept: "Liderança Geral / MAIN", role: "Group Pastor", aliases: ["kene", "kéne", "pastor kene", "pastor kéne"] },
-    { id: "8", code: "STF-17", name: "Service", fullName: "Service Team Admin", dept: "Operações", role: "Staff Member", aliases: ["service"] },
-    { id: "9", code: "STF-18", name: "Staff", fullName: "Staff Central", dept: "CESTAFF", role: "Staff Member", aliases: ["staff"] },
-    { id: "2025", code: "STF-19", name: "Claudina", fullName: "Claudina Matsinhe", dept: "CESTAFF", role: "Staff Member", aliases: ["claudina"] },
-    { id: "10000022", code: "STF-20", name: "Kenneth", fullName: "Kenneth (Pastor Kéne)", dept: "Liderança Geral / MAIN", role: "Group Pastor", aliases: ["kenneth"] },
-    { id: "10000023", code: "STF-21", name: "Salesio", fullName: "Salesio Machava", dept: "Administração Geral", role: "Super Admin", aliases: ["salesio"] },
-    { id: "10000024", code: "STF-22", name: "Protocols", fullName: "Protocolos & Recepção", dept: "Operações", role: "Staff Member", aliases: ["protocols"] },
+    { id: "2025", code: "STF-15", name: "Claudina", fullName: "Claudina Matsinhe", dept: "CESTAFF", role: "Staff Member", aliases: ["claudina", "claudina matsinhe"] },
   ];
 
   // Multi-day sample attendance generation helper
@@ -84,160 +77,111 @@
         "13": { in: "08:11", out: "17:00", card: "" }, // Pastor Clarissa (8:11) 🟢
         "10000019": { in: "08:14", out: "17:00", card: "" }, // Sister Kassandra (8:14) 🟢
         "10000020": { in: "08:30", out: "17:00", card: "" }, // Bro Filipe (8:30) 🟢
-        "4": { in: "08:15", out: "17:00", card: "" },
-        "7": { in: "08:00", out: "17:30", card: "0169895558" },
-        "8": { in: "07:55", out: "17:00", card: "0169672262" },
-        "9": { in: "08:05", out: "17:00", card: "0170207286" },
-        "2025": { in: "08:25", out: "17:00", card: "" },
-        "10000022": { in: "08:00", out: "17:30", card: "" },
-        "10000023": { in: "07:55", out: "18:00", card: "" },
-        "10000024": { in: "07:58", out: "17:00", card: "1512235212" },
+        "2025": { in: "08:25", out: "17:00", card: "" }, // Claudina Matsinhe (8:25) 🟢
       },
       "2026-07-09": {
-        "1": { in: "08:18", out: "17:05", card: "" },
-        "2": { in: "08:15", out: "17:00", card: "" },
-        "3": { in: "08:29", out: "17:10", card: "" },
-        "4": { in: "08:31", out: "17:15", card: "" },
-        "5": { in: "08:40", out: "17:30", card: "" },
-        "7": { in: null, out: null, card: "0169895558" },
-        "8": { in: null, out: null, card: "0169672262" },
-        "9": { in: null, out: null, card: "0170207286" },
-        "10": { in: "08:16", out: "17:20", card: "" },
         "11": { in: "09:03", out: "17:00", card: "" },
-        "13": { in: null, out: null, card: "" },
-        "15": { in: null, out: null, card: "" },
-        "2025": { in: "08:57", out: "17:00", card: "" },
-        "10000013": { in: "08:07", out: "17:00", card: "" },
+        "1": { in: "08:18", out: "17:05", card: "" },
+        "3": { in: "08:29", out: "17:10", card: "" },
         "10000014": { in: "08:15", out: "17:05", card: "" },
+        "2": { in: "08:15", out: "17:00", card: "" },
+        "10000013": { in: "08:07", out: "17:00", card: "" },
+        "5": { in: "08:40", out: "17:30", card: "" },
+        "10": { in: "08:16", out: "17:20", card: "" },
+        "10000021": { in: "09:20", out: "17:35", card: "" },
         "10000017": { in: "08:28", out: "17:00", card: "" },
+        "15": { in: null, out: null, card: "" },
+        "13": { in: null, out: null, card: "" },
         "10000019": { in: "08:29", out: "17:10", card: "" },
         "10000020": { in: "07:56", out: "17:00", card: "" },
-        "10000021": { in: "09:20", out: "17:35", card: "" },
-        "10000022": { in: "08:15", out: "17:30", card: "" },
-        "10000023": { in: null, out: null, card: "" },
-        "10000024": { in: null, out: null, card: "1512235212" },
+        "2025": { in: "08:57", out: "17:00", card: "" },
       },
       "2026-07-08": {
-        "1": { in: "08:05", out: "17:10", card: "" },
-        "2": { in: "08:10", out: "17:00", card: "" },
-        "3": { in: "08:12", out: "17:05", card: "" },
-        "4": { in: "08:25", out: "17:00", card: "" },
-        "5": { in: "08:18", out: "17:00", card: "" },
-        "7": { in: "08:00", out: "17:45", card: "0169895558" },
-        "8": { in: "07:55", out: "17:00", card: "0169672262" },
-        "9": { in: "08:14", out: "17:00", card: "0170207286" },
-        "10": { in: "08:08", out: "17:15", card: "" },
         "11": { in: "08:35", out: "17:00", card: "" },
-        "13": { in: "08:02", out: "17:00", card: "" },
-        "15": { in: null, out: null, card: "" },
-        "2025": { in: "08:42", out: "17:00", card: "" },
-        "10000013": { in: "08:00", out: "17:00", card: "" },
+        "1": { in: "08:05", out: "17:10", card: "" },
+        "3": { in: "08:12", out: "17:05", card: "" },
         "10000014": { in: "08:10", out: "17:00", card: "" },
+        "2": { in: "08:10", out: "17:00", card: "" },
+        "10000013": { in: "08:00", out: "17:00", card: "" },
+        "5": { in: "08:18", out: "17:00", card: "" },
+        "10": { in: "08:08", out: "17:15", card: "" },
+        "10000021": { in: "08:45", out: "17:00", card: "" },
         "10000017": { in: "08:15", out: "17:00", card: "" },
+        "15": { in: null, out: null, card: "" },
+        "13": { in: "08:02", out: "17:00", card: "" },
         "10000019": { in: "08:20", out: "17:00", card: "" },
         "10000020": { in: "07:50", out: "17:00", card: "" },
-        "10000021": { in: "08:45", out: "17:00", card: "" },
-        "10000022": { in: "08:00", out: "17:30", card: "" },
-        "10000023": { in: "07:58", out: "18:00", card: "" },
-        "10000024": { in: "07:55", out: "17:00", card: "1512235212" },
+        "2025": { in: "08:42", out: "17:00", card: "" },
       },
       "2026-07-07": {
-        "1": { in: "07:58", out: "17:10", card: "" },
-        "2": { in: "08:02", out: "17:00", card: "" },
-        "3": { in: "08:14", out: "17:00", card: "" },
-        "4": { in: "08:20", out: "17:00", card: "" },
-        "5": { in: "08:15", out: "17:00", card: "" },
-        "7": { in: "08:05", out: "17:30", card: "0169895558" },
-        "8": { in: "07:50", out: "17:00", card: "0169672262" },
-        "9": { in: "08:00", out: "17:00", card: "0170207286" },
-        "10": { in: "08:00", out: "17:10", card: "" },
         "11": { in: "08:40", out: "17:00", card: "" },
-        "13": { in: "08:10", out: "17:00", card: "" },
-        "15": { in: "08:25", out: "17:00", card: "" },
-        "2025": { in: "08:30", out: "17:00", card: "" },
-        "10000013": { in: "07:55", out: "17:00", card: "" },
+        "1": { in: "07:58", out: "17:10", card: "" },
+        "3": { in: "08:14", out: "17:00", card: "" },
         "10000014": { in: "08:05", out: "17:00", card: "" },
+        "2": { in: "08:02", out: "17:00", card: "" },
+        "10000013": { in: "07:55", out: "17:00", card: "" },
+        "5": { in: "08:15", out: "17:00", card: "" },
+        "10": { in: "08:00", out: "17:10", card: "" },
+        "10000021": { in: "09:05", out: "17:00", card: "" },
         "10000017": { in: "08:10", out: "17:00", card: "" },
+        "15": { in: "08:25", out: "17:00", card: "" },
+        "13": { in: "08:10", out: "17:00", card: "" },
         "10000019": { in: "08:15", out: "17:00", card: "" },
         "10000020": { in: "07:52", out: "17:00", card: "" },
-        "10000021": { in: "09:05", out: "17:00", card: "" },
-        "10000022": { in: "08:05", out: "17:30", card: "" },
-        "10000023": { in: "07:55", out: "18:00", card: "" },
-        "10000024": { in: "07:58", out: "17:00", card: "1512235212" },
+        "2025": { in: "08:30", out: "17:00", card: "" },
       },
       "2026-07-06": {
-        "1": { in: "08:12", out: "17:00", card: "" },
-        "2": { in: "08:08", out: "17:00", card: "" },
-        "3": { in: "08:19", out: "17:00", card: "" },
-        "4": { in: "08:22", out: "17:00", card: "" },
-        "5": { in: "08:35", out: "17:00", card: "" },
-        "7": { in: "08:00", out: "17:30", card: "0169895558" },
-        "8": { in: "07:55", out: "17:00", card: "0169672262" },
-        "9": { in: "08:05", out: "17:00", card: "0170207286" },
-        "10": { in: "08:04", out: "17:00", card: "" },
         "11": { in: "08:50", out: "17:00", card: "" },
-        "13": { in: "08:15", out: "17:00", card: "" },
-        "15": { in: null, out: null, card: "" },
-        "2025": { in: "08:45", out: "17:00", card: "" },
-        "10000013": { in: "07:58", out: "17:00", card: "" },
+        "1": { in: "08:12", out: "17:00", card: "" },
+        "3": { in: "08:19", out: "17:00", card: "" },
         "10000014": { in: "08:12", out: "17:00", card: "" },
+        "2": { in: "08:08", out: "17:00", card: "" },
+        "10000013": { in: "07:58", out: "17:00", card: "" },
+        "5": { in: "08:35", out: "17:00", card: "" },
+        "10": { in: "08:04", out: "17:00", card: "" },
+        "10000021": { in: "09:10", out: "17:00", card: "" },
         "10000017": { in: "08:18", out: "17:00", card: "" },
+        "15": { in: null, out: null, card: "" },
+        "13": { in: "08:15", out: "17:00", card: "" },
         "10000019": { in: "08:22", out: "17:00", card: "" },
         "10000020": { in: "07:50", out: "17:00", card: "" },
-        "10000021": { in: "09:10", out: "17:00", card: "" },
-        "10000022": { in: "08:00", out: "17:30", card: "" },
-        "10000023": { in: "07:50", out: "18:00", card: "" },
-        "10000024": { in: "07:56", out: "17:00", card: "1512235212" },
+        "2025": { in: "08:45", out: "17:00", card: "" },
       },
       // June 2026 for month-vs-month comparison
       "2026-06-09": {
-        "1": { in: "08:22", out: "17:00", card: "" },
-        "2": { in: "08:18", out: "17:00", card: "" },
-        "3": { in: "08:35", out: "17:00", card: "" },
-        "4": { in: "08:40", out: "17:00", card: "" },
-        "5": { in: "08:45", out: "17:00", card: "" },
-        "7": { in: "08:10", out: "17:00", card: "0169895558" },
-        "8": { in: "08:00", out: "17:00", card: "0169672262" },
-        "9": { in: null, out: null, card: "0170207286" },
-        "10": { in: "08:20", out: "17:00", card: "" },
         "11": { in: "09:15", out: "17:00", card: "" },
-        "13": { in: null, out: null, card: "" },
-        "15": { in: null, out: null, card: "" },
-        "2025": { in: "09:05", out: "17:00", card: "" },
-        "10000013": { in: "08:10", out: "17:00", card: "" },
+        "1": { in: "08:22", out: "17:00", card: "" },
+        "3": { in: "08:35", out: "17:00", card: "" },
         "10000014": { in: "08:18", out: "17:00", card: "" },
+        "2": { in: "08:18", out: "17:00", card: "" },
+        "10000013": { in: "08:10", out: "17:00", card: "" },
+        "5": { in: "08:45", out: "17:00", card: "" },
+        "10": { in: "08:20", out: "17:00", card: "" },
+        "10000021": { in: "09:30", out: "17:00", card: "" },
         "10000017": { in: "08:30", out: "17:00", card: "" },
+        "15": { in: null, out: null, card: "" },
+        "13": { in: null, out: null, card: "" },
         "10000019": { in: "08:35", out: "17:00", card: "" },
         "10000020": { in: "08:00", out: "17:00", card: "" },
-        "10000021": { in: "09:30", out: "17:00", card: "" },
-        "10000022": { in: "08:10", out: "17:00", card: "" },
-        "10000023": { in: "08:05", out: "18:00", card: "" },
-        "10000024": { in: null, out: null, card: "1512235212" },
+        "2025": { in: "09:05", out: "17:00", card: "" },
       },
       // July 2025 for year-vs-year comparison
       "2025-07-09": {
-        "1": { in: "08:25", out: "17:00", card: "" },
-        "2": { in: "08:20", out: "17:00", card: "" },
-        "3": { in: "08:40", out: "17:00", card: "" },
-        "4": { in: "08:45", out: "17:00", card: "" },
-        "5": { in: "08:50", out: "17:00", card: "" },
-        "7": { in: "08:15", out: "17:00", card: "0169895558" },
-        "8": { in: "08:05", out: "17:00", card: "0169672262" },
-        "9": { in: null, out: null, card: "0170207286" },
-        "10": { in: "08:25", out: "17:00", card: "" },
         "11": { in: "09:20", out: "17:00", card: "" },
-        "13": { in: null, out: null, card: "" },
-        "15": { in: null, out: null, card: "" },
-        "2025": { in: "09:10", out: "17:00", card: "" },
-        "10000013": { in: "08:15", out: "17:00", card: "" },
+        "1": { in: "08:25", out: "17:00", card: "" },
+        "3": { in: "08:40", out: "17:00", card: "" },
         "10000014": { in: "08:22", out: "17:00", card: "" },
+        "2": { in: "08:20", out: "17:00", card: "" },
+        "10000013": { in: "08:15", out: "17:00", card: "" },
+        "5": { in: "08:50", out: "17:00", card: "" },
+        "10": { in: "08:25", out: "17:00", card: "" },
+        "10000021": { in: "09:40", out: "17:00", card: "" },
         "10000017": { in: "08:35", out: "17:00", card: "" },
+        "15": { in: null, out: null, card: "" },
+        "13": { in: null, out: null, card: "" },
         "10000019": { in: "08:40", out: "17:00", card: "" },
         "10000020": { in: "08:05", out: "17:00", card: "" },
-        "10000021": { in: "09:40", out: "17:00", card: "" },
-        "10000022": { in: "08:15", out: "17:00", card: "" },
-        "10000023": { in: "08:10", out: "18:00", card: "" },
-        "10000024": { in: null, out: null, card: "1512235212" },
+        "2025": { in: "09:10", out: "17:00", card: "" },
       }
     };
 
@@ -451,15 +395,40 @@
   function getLocalStore(kind) {
     if (kind === "attendance" || kind === "records") {
       var cached = loadLocal(KEYS.attendance);
+      var validStaffIds = new Set(STAFF_LIST.map(function (s) { return String(s.id); }));
+
       if (!cached || !Array.isArray(cached) || !cached.length) {
         cached = SEED_ATTENDANCE.map(function (x) {
           return Object.assign({}, x);
         });
         saveLocal(KEYS.attendance, cached);
       } else {
+        var updated = false;
+        var initialCount = cached.length;
+
+        // 1. Purge all records belonging to non-submitting accounts (Salesio, Pastor Kene, Service, Protocols, Flavia, etc.)
+        cached = cached.filter(function (r) {
+          var idStr = String(r.employee_id || "");
+          if (!validStaffIds.has(idStr)) return false;
+          var nm = String(r.employee_name || "").toLowerCase();
+          var fnm = String(r.employee_full_name || "").toLowerCase();
+          if (nm.includes("salesio") || fnm.includes("salesio") ||
+              nm.includes("kene") || fnm.includes("kene") ||
+              nm.includes("kenneth") || fnm.includes("kenneth") ||
+              nm.includes("service team") || fnm.includes("service team") ||
+              nm.includes("staff central") || fnm.includes("staff central") ||
+              nm.includes("protocolos") || fnm.includes("protocolos")) {
+            return false;
+          }
+          return true;
+        });
+
+        if (cached.length !== initialCount) {
+          updated = true;
+        }
+
         // Ensure all default seed records (e.g. 2026-10-01) exist and have accurate punch data & official full names
         var attMap = {};
-        var updated = false;
         var staffMap = {};
         STAFF_LIST.forEach(function (s) {
           staffMap[String(s.id)] = s;
@@ -699,32 +668,6 @@
   }
 
   function getStaffListSync() {
-    try {
-      var raw = localStorage.getItem("ce-data-layer:staff");
-      if (raw) {
-        var list = JSON.parse(raw);
-        if (Array.isArray(list) && list.length > 0) {
-          return list.map(function (s, idx) {
-            var fullName = s.full_name || s.name || s.employee_name || ("Colaborador " + (idx + 1));
-            var parts = fullName.trim().split(" ");
-            var firstName = parts[0] || fullName;
-            var cleanNorm = normalizeNameForMatching(fullName);
-            return {
-              id: String(s.id || s.staff_code || s.employee_id || ("STF-" + (idx + 1))),
-              code: s.staff_code || s.employee_id || ("STF-" + String(idx + 1).padStart(2, "0")),
-              name: s.first_name || firstName,
-              fullName: fullName,
-              dept: s.department || s.dept || "CESTAFF",
-              role: s.role || s.job_title || "Staff Member",
-              card_no: s.card_no || s.biometric_id || "",
-              email: s.email || "",
-              phone: s.phone || "",
-              aliases: [firstName.toLowerCase(), fullName.toLowerCase(), cleanNorm],
-            };
-          });
-        }
-      }
-    } catch (_) {}
     return STAFF_LIST;
   }
 
@@ -912,29 +855,7 @@
     getStaffListSync: getStaffListSync,
     resolveOfficialStaffName: resolveOfficialStaffName,
     getStaffList: async function () {
-      try {
-        var hrBridge = window.CEStaffHR || window.CEDataLayer?.staffHR || window.CESupabase;
-        if (hrBridge && typeof hrBridge.listStaff === "function") {
-          var res = await hrBridge.listStaff();
-          var list = res && res.data ? res.data : (Array.isArray(res) ? res : []);
-          if (list && list.length > 0) {
-            return list.map(function (s, idx) {
-              var fullName = s.full_name || s.name || s.employee_name || ("Colaborador " + (idx + 1));
-              var parts = fullName.trim().split(" ");
-              return {
-                id: String(s.id || s.staff_code || s.employee_id || ("STF-" + (idx + 1))),
-                code: s.staff_code || s.employee_id || ("STF-" + String(idx + 1).padStart(2, "0")),
-                name: s.first_name || parts[0] || fullName,
-                fullName: fullName,
-                dept: s.department || s.dept || "CESTAFF",
-                role: s.role || s.job_title || "Staff Member",
-                card_no: s.card_no || s.biometric_id || "",
-              };
-            });
-          }
-        }
-      } catch (_) {}
-      return getStaffListSync();
+      return STAFF_LIST;
     },
     calculatePunctualityStatus: calculatePunctualityStatus,
     parseTimeToMinutes: parseTimeToMinutes,

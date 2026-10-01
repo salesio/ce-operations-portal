@@ -1482,37 +1482,14 @@
 
   async function renderTrajectoryViewHtml() {
     var allStaff = await getBridge().getStaffList();
-    var allStaffRes = await getBridge().listAttendanceRecords({});
-    var distinctEmployees = [];
-    var seen = new Set();
-
-    // 1. First add from registered staff list
-    (allStaff || []).forEach(function (s) {
-      if (!seen.has(String(s.id))) {
-        seen.add(String(s.id));
-        distinctEmployees.push({
-          id: String(s.id),
-          name: s.fullName || s.name,
-          shortName: s.name,
-          dept: s.dept || "CESTAFF",
-          role: s.role || "Staff"
-        });
-      }
-    });
-
-    // 2. Add from attendance records if not already added
-    (allStaffRes.data || []).forEach(function (r) {
-      if (!seen.has(String(r.employee_id))) {
-        seen.add(String(r.employee_id));
-        var officialName = resolveStaffFullName(r, r.employee_full_name || r.employee_name);
-        distinctEmployees.push({
-          id: String(r.employee_id),
-          name: officialName,
-          shortName: r.employee_name || officialName,
-          dept: r.department || "CESTAFF",
-          role: "Staff"
-        });
-      }
+    var distinctEmployees = (allStaff || []).map(function (s) {
+      return {
+        id: String(s.id),
+        name: s.fullName || s.name,
+        shortName: s.name,
+        dept: s.dept || "CESTAFF",
+        role: s.role || "Staff"
+      };
     });
 
     var selectedId = String(attendancePageState.selectedStaffId || (distinctEmployees[0] ? distinctEmployees[0].id : "11"));
