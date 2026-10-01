@@ -2442,5 +2442,6 @@
     generateDailyPdf: generateDailyPdf,
     generatePeriodPdf: generatePeriodPdf,
     generateStaffDossierPdf: generateStaffDossierPdf,
+    exportRecordsToCsv: exportRecordsToCsv,
   };
 })();
