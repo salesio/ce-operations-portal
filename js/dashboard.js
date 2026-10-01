@@ -3816,6 +3816,7 @@ const seedData = {
     { id: "bd91b99f-362f-4eb1-8e5c-c4b125065c8b", auth_user_id: "bd91b99f-362f-4eb1-8e5c-c4b125065c8b", name: "Irmã Angélica Amilcar Macuacua", full_name: "Irmã Angélica Amilcar Macuacua", email: "alec@embaixadadecristo.org", phone: "+258855621609", role: "ALEC Manager", role_name: "Coordenadora ALEC", church_id: "a1111111-1111-4111-8111-111111111101", cell_group_id: "217d9a73-3d57-4979-854d-dc97662a55e5", cell_group_name: "Estrelas de Sião", cell_id: "1e6d6f18-d0e4-4731-8426-de2a73f2076d", cell_name: "ESTRELAS DE SIÃO D", assigned_cells: ["1e6d6f18-d0e4-4731-8426-de2a73f2076d"], assigned_cell_groups: ["217d9a73-3d57-4979-854d-dc97662a55e5"], department_permissions: ["cell", "alecRegistration", "alecScores", "churchReports", "cellReports"], can_view_all_churches: false, status: "Active" },
     { id: "473e4df5-883c-499a-a42e-223495c266d1", auth_user_id: "473e4df5-883c-499a-a42e-223495c266d1", name: "Filipe Chamango", full_name: "Filipe Chamango", email: "diamantes.main@embaixadadecristo.org", role: "Cell Leader", role_name: "Líder de Célula Diamantes Main", church_id: "a1111111-1111-4111-8111-111111111101", cell_id: "d1a00000-d1a0-4000-8000-000000000001", cell_name: "Diamantes main", cell_group_id: "d1a00000-0000-4000-8000-000000000001", cell_group_name: "Diamantes Main", assigned_cells: ["d1a00000-d1a0-4000-8000-000000000001", "d1a00000-d1a0-4000-8000-000000000002", "d1a00000-d1a0-4000-8000-000000000003", "d1a00000-d1a0-4000-8000-000000000004", "d1a00000-d1a0-4000-8000-000000000005", "d1a00000-d1a0-4000-8000-000000000006", "d1a00000-d1a0-4000-8000-000000000007", "d1a00000-d1a0-4000-8000-000000000008", "d1a00000-d1a0-4000-8000-000000000009", "d1a00000-d1a0-4000-8000-000000000010"], assigned_cell_groups: ["d1a00000-0000-4000-8000-000000000001"], assigned_foundation_teacher_id: "ftch-filipe-chamango", department_permissions: ["cellReports", "followUp", "foundation", "foundation_teacher", "reports"], cannot_create_classes: false, permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_portal.view", "cell_portal.edit", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary", "follow_up.view", "follow_up.edit", "follow_up.enroll_foundation", "foundation.view", "foundation.edit_students", "foundation.record_lessons", "foundation.record_tests", "foundation.record_exam", "foundation.reports"], can_view_all_churches: false, status: "Active" },
     { id: "1002af2a-86d0-4654-9aae-351a2dd546e7", auth_user_id: "1002af2a-86d0-4654-9aae-351a2dd546e7", name: "Eduarda Paula Manganhela Paula Manganhela", full_name: "Eduarda Paula Manganhela Paula Manganhela", email: "eduardapaula.jm@gmail.com", phone: "+258849246778", role: "Cell Leader", role_name: "Cell Leader", church_id: "a1111111-1111-4111-8111-111111111101", cell_id: "83336c21-1928-4d0c-8284-fcb88b770048", cell_name: "Visionários Main", cell_group_id: "f9f013c8-346f-4567-8911-762379b97d40", cell_group_name: "Visionários", assigned_cells: ["83336c21-1928-4d0c-8284-fcb88b770048"], assigned_cell_groups: ["f9f013c8-346f-4567-8911-762379b97d40"], department_permissions: ["cellReports"], cannot_create_classes: false, permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_portal.view", "cell_portal.edit", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary"], can_view_all_churches: false, status: "Active" },
+    { id: "leo-kusi-att-user-001", auth_user_id: "leo-kusi-att-user-001", name: "Leopold Kusi", full_name: "Leopold Kusi", email: "leopold.kusi@embaixadadecristo.org", phone: "+258840000002", role: "Attendance & Time Manager", role_name: "Gestor de Assiduidade & Ponto", church_id: "a1111111-1111-4111-8111-111111111101", cell_group_id: "group-paixao-primeira-vista", cell_group_name: "Paixão à Primeira Vista", department_permissions: ["attendance", "cellReports", "staffHr", "reports"], can_view_all_churches: true, status: "Active" },
     { id: "edbcbcdc-f860-4cb7-8997-d667a5331e9c", auth_user_id: "edbcbcdc-f860-4cb7-8997-d667a5331e9c", name: "Test Creation Verify", full_name: "Test Creation Verify", email: "test_creation_verify@embaixadadecristo.org", role: "Cell Leader", role_name: "Cell Leader", church_id: "a1111111-1111-4111-8111-111111111101", assigned_cells: [], assigned_cell_groups: [], department_permissions: ["cellMinistry"], cannot_create_classes: false, permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_portal.view", "cell_portal.edit", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary"], can_view_all_churches: false, status: "Active" }
   ],
   departments: [
@@ -11550,6 +11551,7 @@ function fallbackCanViewModule(user = activeUser, module = "dashboard") {
   if (role === "Media Director" || role === "Media Supervisor") return ["media", "reports", "venueInventory", "programs", "notifications"].includes(module);
   if (role === "Media Team Member") return ["media", "notifications"].includes(module);
   if (role === "Department Head") return ["members", "firstTimers", "followUp", "reports", "requisitions", "staffHr", "attendance", "venueInventory", "cell", "cellMinistry", "cellReports", "alec", "fevo", "media", "programs", "counseling", "sacraments", "foundation", "finance", "partnership"].includes(module);
+  if (role === "Attendance & Time Manager" || role === "Attendance Manager" || role === "Gestor de Assiduidade & Ponto" || role === "Attendance Officer" || role === "Oficial de Assiduidade & Ponto" || rNorm.includes("assiduidade") || rNorm.includes("attendance")) return ["attendance", "staffHr", "reports", "usersRoles", "dashboard", "notifications"].includes(module);
   if (role === "Staff Member") return ["requisitions", "venueInventory", "staffHr", "attendance", "notifications"].includes(module);
   const legacyModuleKeys = {
     foundation: ["foundation", "foundation_teacher", "foundation_assistant", "foundation_rector", "foundation_coordinator"],
@@ -11673,6 +11675,8 @@ function roleWorkspaceRoutes(user = activeUser) {
     routes.push("requisitions", "reports", "venueInventory");
   } else if (role === "department head") {
     routes.push("members", "firstTimers", "followUp", "reports", "requisitions", "staffHr", "staffHrStaffRoute", "staffHrBirthdaysRoute", "staffHrDepartmentsRoute", "staffHrRolesRoute", "staffHrSalariesRoute", "staffHrPerformanceRoute", "staffHrAttendanceRoute", "staffHrEquipmentRoute", "staffHrDocumentsRoute", "staffHrReportsRoute", "attendance", "venueInventory", "fevo", "cell", "cellMinistry", "cellReports", "alec", "media", "programs", "cellPrison", "cellMaterials", "counseling", "sacraments", "foundation", "finance", "financeOverviewRoute", "financeEntriesRoute", "financePublicSubmissionsRoute", "financeVerificationRoute", "financeApprovedRequisitionsRoute", "financeReportsRoute", "financePartnersRoute", "financeExportsRoute", "partnership", "partnershipArmsRoute", "partnershipPartnersRoute", "partnershipContributionsRoute", "partnershipHighlightsRoute", "partnershipAnalyticsRoute", "partnershipReportsRoute", "partnershipExportsRoute");
+  } else if (role === "attendance & time manager" || role === "attendance manager" || role === "gestor de assiduidade & ponto" || role === "gestor de assiduidade e ponto" || role === "attendance officer" || role === "oficial de assiduidade & ponto") {
+    routes.push("attendance", "staffHr", "staffHrStaffRoute", "staffHrBirthdaysRoute", "staffHrDepartmentsRoute", "staffHrRolesRoute", "staffHrAttendanceRoute", "staffHrReportsRoute", "reports", "users", "dashboard");
   } else if (role === "staff member") {
     routes.push("requisitions", "venueInventory", "venueInventoryStaff", "staffHr", "staffHrStaffRoute", "staffHrBirthdaysRoute", "staffHrDepartmentsRoute", "staffHrRolesRoute", "staffHrSalariesRoute", "staffHrPerformanceRoute", "staffHrAttendanceRoute", "staffHrEquipmentRoute", "staffHrDocumentsRoute", "staffHrReportsRoute", "attendance");
   }
@@ -31004,7 +31008,12 @@ function renderUsers() {
     "foundation_rector": "Reitor da Escola de Fundação",
     "Foundation Rector": "Reitor da Escola de Fundação",
     "foundation_teacher": "Professor da Escola de Fundação",
-    "Foundation Teacher": "Professor da Escola de Fundação"
+    "Foundation Teacher": "Professor da Escola de Fundação",
+    "attendance_time_manager": "Gestor de Assiduidade & Ponto",
+    "Attendance & Time Manager": "Gestor de Assiduidade & Ponto",
+    "Attendance Manager": "Gestor de Assiduidade & Ponto",
+    "attendance_officer": "Oficial de Assiduidade & Ponto",
+    "Attendance Officer": "Oficial de Assiduidade & Ponto"
   };
 
   const activeCount = users.filter((u) => !/lock|bloque|suspend|inactiv|inativ/i.test(String(u.status || "Active")) && u.isActive !== false).length;
@@ -33637,7 +33646,7 @@ const formSchemas = {
   user: [
     ["name", "name"],
     ["email", "email", "email"],
-    ["role", "Role", "select", ["Super Admin", "Main Pastor", "National Admin", "Church Admin", "Church Pastor", "Department Head", "Cell Group Leader", "Cell Ministry Head", "Cell Ministry Reviewer", "Cell Leader", "Assistant Cell Leader", "Finance Head", "Finance Officer", "HR Manager", "Requisition Officer", "Venue Manager", "Staff Member", "Viewer"]],
+    ["role", "Role", "select", ["Super Admin", "Main Pastor", "National Admin", "Church Admin", "Church Pastor", "Department Head", "Attendance & Time Manager", "Attendance Officer", "Cell Group Leader", "Cell Ministry Head", "Cell Ministry Reviewer", "Cell Leader", "Assistant Cell Leader", "Finance Head", "Finance Officer", "HR Manager", "Requisition Officer", "Venue Manager", "Staff Member", "Viewer"]],
     ["church_id", "church", "church"],
     ["cell_group_id", "cellGroup", "cellGroupSelect"],
     ["cell_id", "cell", "cellRegistrySelect"],
@@ -33962,6 +33971,8 @@ function renderUserForm(record = {}, modalMode = "create") {
     { value: "Church Pastor", label: "Pastor da Igreja" },
     { value: "Church Admin", label: "Administrador da Igreja" },
     { value: "Department Head", label: "Responsável de Departamento" },
+    { value: "Attendance & Time Manager", label: "Gestor de Assiduidade & Ponto (Biométrico/Presenças)" },
+    { value: "Attendance Officer", label: "Oficial de Assiduidade & Ponto" },
     { value: "Program Coordinator", label: "Coordenador de Programas & Eventos" },
     { value: "Prison Ministry Coordinator", label: "Coordenador do Ministério Prisional" },
     { value: "Ministry Materials Manager", label: "Gestor de Materiais do Ministério" },
@@ -34185,6 +34196,12 @@ function renderUserForm(record = {}, modalMode = "create") {
               <label class="form-check">
                 <input type="checkbox" name="dept_perm" value="staffHr" class="form-check-input" ${deptPerms.has("staffHr") || deptPerms.has("*") ? "checked" : ""}>
                 <span class="form-check-label"><i class="bi bi-people me-1 text-light"></i> Recursos Humanos & Staff</span>
+              </label>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+              <label class="form-check">
+                <input type="checkbox" name="dept_perm" value="attendance" class="form-check-input" ${deptPerms.has("attendance") || deptPerms.has("attendanceControl") || deptPerms.has("*") ? "checked" : ""}>
+                <span class="form-check-label"><i class="bi bi-fingerprint me-1 text-warning"></i> Assiduidade & Ponto</span>
               </label>
             </div>
             <div class="col-sm-6 col-lg-4">

@@ -562,6 +562,25 @@
         venueInventory: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "own" }
       }
     },
+    "Attendance & Time Manager": {
+      modules: {
+        dashboard: { ...VIEW_ONLY, scope: "all" },
+        attendance: { can_view: true, can_create: true, can_edit: true, can_delete: true, can_approve: true, can_verify: true, can_export: true, scope: "all" },
+        staffHr: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "all" },
+        reports: { ...VIEW_ONLY, scope: "all", can_export: true },
+        usersRoles: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "all" },
+        notifications: { ...VIEW_ONLY, scope: "all" }
+      }
+    },
+    "Attendance Officer": {
+      modules: {
+        dashboard: { ...VIEW_ONLY, scope: "church" },
+        attendance: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: true, can_export: true, scope: "church" },
+        staffHr: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "church" },
+        reports: { ...VIEW_ONLY, scope: "church", can_export: true },
+        notifications: { ...VIEW_ONLY, scope: "church" }
+      }
+    },
     Viewer: {
       modules: {
         dashboard: { ...VIEW_ONLY, scope: "all" },
@@ -773,6 +792,8 @@
     if (r === "counseling_head" || r === "counseling head" || r === "head de aconselhamento") return "Counseling Head";
     if (r === "counselor" || r === "conselheiro") return "Counselor";
     if (r === "follow_up_coordinator" || r === "follow-up coordinator" || r === "coordenador de acompanhamento") return "Follow-Up Coordinator";
+    if (r === "attendance & time manager" || r === "attendance_time_manager" || r === "attendance manager" || r === "gestor de assiduidade & ponto" || r === "gestor de assiduidade e ponto" || r === "gestor de assiduidade") return "Attendance & Time Manager";
+    if (r === "attendance officer" || r === "attendance_officer" || r === "oficial de assiduidade & ponto" || r === "oficial de assiduidade e ponto" || r === "oficial de assiduidade") return "Attendance Officer";
     return role;
   }
   const normalizeRole = normalizeRoleKey;
