@@ -893,6 +893,9 @@
     normalizeNameForMatching: normalizeNameForMatching,
     matchStaffByName: matchStaffByName,
     parseWhatsAppAttendanceText: parseWhatsAppAttendanceText,
+    getLocalStore: getLocalStore,
+    saveLocal: saveLocal,
+    KEYS: KEYS,
 
     getAttendanceSettings: async function () {
       var client = getSupabaseClient();
