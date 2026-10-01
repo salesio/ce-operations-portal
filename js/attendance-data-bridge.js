@@ -1409,8 +1409,35 @@
       var all = allRes.data || [];
       var needle = String(employeeIdOrName || "").trim().toLowerCase();
 
+      var staffList = getStaffListSync();
+      var targetStaff = staffList.find(function (s) {
+        if (String(s.id).toLowerCase() === needle) return true;
+        if (String(s.code || "").toLowerCase() === needle) return true;
+        if (String(s.name || "").toLowerCase() === needle) return true;
+        if (String(s.fullName || "").toLowerCase() === needle) return true;
+        if (s.aliases && Array.isArray(s.aliases)) {
+          return s.aliases.some(function (a) { return a.toLowerCase() === needle; });
+        }
+        return false;
+      });
+
       var staffRecords = all.filter(function (r) {
-        return String(r.employee_id).toLowerCase() === needle || String(r.employee_name || "").toLowerCase() === needle;
+        var rId = String(r.employee_id || "").toLowerCase();
+        var rName = String(r.employee_name || "").toLowerCase();
+        var rFullName = String(r.employee_full_name || "").toLowerCase();
+
+        if (rId === needle || rName === needle || rFullName === needle) return true;
+        if (targetStaff) {
+          if (rId === String(targetStaff.id).toLowerCase() || rId === String(targetStaff.code || "").toLowerCase()) return true;
+          if (rName === String(targetStaff.name || "").toLowerCase() || rFullName === String(targetStaff.fullName || "").toLowerCase()) return true;
+          if (targetStaff.aliases && Array.isArray(targetStaff.aliases)) {
+            var matchAlias = targetStaff.aliases.some(function (a) {
+              return rName.includes(a) || a.includes(rName) || rFullName.includes(a);
+            });
+            if (matchAlias) return true;
+          }
+        }
+        return false;
       });
 
       staffRecords.sort(function (a, b) {
@@ -1437,15 +1464,19 @@
         ? Math.round(checkInMinutesList.reduce(function (a, b) { return a + b; }, 0) / checkInMinutesList.length)
         : null;
 
-      var staffObj = STAFF_LIST.find(function (s) { return s.id === (staffRecords[0]?.employee_id || employeeIdOrName); }) || {};
+      var finalEmpId = targetStaff ? targetStaff.id : (staffRecords[0] ? staffRecords[0].employee_id : employeeIdOrName);
+      var finalEmpName = targetStaff ? targetStaff.name : (staffRecords[0] ? staffRecords[0].employee_name : employeeIdOrName);
+      var finalEmpFullName = targetStaff ? targetStaff.fullName : (staffRecords[0]?.employee_full_name || finalEmpName);
+      var finalDept = targetStaff ? targetStaff.dept : (staffRecords[0]?.department || "CESTAFF");
+      var finalRole = targetStaff ? targetStaff.role : "Staff Member";
 
       return {
         ok: true,
-        employee_id: staffRecords[0] ? staffRecords[0].employee_id : employeeIdOrName,
-        employee_name: staffRecords[0] ? staffRecords[0].employee_name : employeeIdOrName,
-        employee_full_name: staffObj.fullName || staffRecords[0]?.employee_name || employeeIdOrName,
-        department: staffRecords[0] ? staffRecords[0].department : "CESTAFF",
-        role: staffObj.role || "Staff",
+        employee_id: finalEmpId,
+        employee_name: finalEmpName,
+        employee_full_name: finalEmpFullName,
+        department: finalDept,
+        role: finalRole,
         totalRecorded: totalRecorded,
         presentCount: presentCount,
         onTimeCount: onTimeCount,
@@ -1455,7 +1486,7 @@
         totalDelayMinutes: totalDelayMinutes,
         avgDelayMinutes: avgDelayMinutes,
         onTimeRate: onTimeRate,
-        avgCheckInTime: minutesToTimeStr(avgCheckInMins),
+        avgCheckInTime: minutesToTimeStr(avgCheckInMins) || "--:--",
         records: staffRecords,
       };
     },

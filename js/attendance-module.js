@@ -418,6 +418,8 @@
     } else if (tab === "settings") {
       body.innerHTML = await renderSettingsViewHtml();
     }
+
+    attachModuleEventListeners();
   }
 
   // =========================================================================
@@ -593,24 +595,36 @@
         <div class="row g-3 align-items-center">
           <div class="col-12 col-md-auto d-flex flex-wrap align-items-center gap-2">
             <span class="text-secondary small fw-bold text-uppercase" style="letter-spacing: 0.05em; font-size: 0.75rem;"><i class="bi bi-calendar-event text-gold me-1"></i>${t("Data do Registo:", "Record Date:")}</span>
-            <input type="date" class="form-control form-control-sm" id="attendanceDatePicker" value="${date}" style="max-width: 155px;">
+            <input type="date" class="form-control form-control-sm" id="attendanceDatePicker" value="${date}" onchange="window.handleAttendanceDateChange(this.value)" style="max-width: 155px;">
             <div class="btn-group btn-group-sm">
               <button type="button" class="btn btn-outline-secondary" id="attendancePrevDayBtn" title="${t("Dia Anterior", "Previous Day")}"><i class="bi bi-chevron-left"></i></button>
               <button type="button" class="btn btn-outline-secondary" id="attendanceTodayBtn" title="${t("Hoje", "Today")}">${t("Hoje", "Today")}</button>
               <button type="button" class="btn btn-outline-secondary" id="attendanceNextDayBtn" title="${t("Dia Seguinte", "Next Day")}"><i class="bi bi-chevron-right"></i></button>
+            </div>
+            <!-- Quick Date Presets -->
+            <div class="d-none d-lg-flex align-items-center gap-1 ms-1">
+              <button type="button" class="btn btn-xs ${date === "2026-10-01" ? "btn-ce-gold fw-bold" : "btn-outline-secondary"}" onclick="window.handleAttendanceDateChange('2026-10-01')">01/10/2026</button>
+              <button type="button" class="btn btn-xs ${date === "2026-07-09" ? "btn-ce-gold fw-bold" : "btn-outline-secondary"}" onclick="window.handleAttendanceDateChange('2026-07-09')">09/07/2026</button>
+              <button type="button" class="btn btn-xs ${date === "2026-07-08" ? "btn-ce-gold fw-bold" : "btn-outline-secondary"}" onclick="window.handleAttendanceDateChange('2026-07-08')">08/07/2026</button>
             </div>
           </div>
 
           <div class="col-12 col-md d-flex flex-wrap align-items-center justify-content-md-end gap-2">
             <div class="input-group input-group-sm" style="max-width: 250px;">
               <span class="input-group-text"><i class="bi bi-search"></i></span>
-              <input type="text" class="form-control" id="attendanceSearchInput" placeholder="${t("Pesquisar funcionário...", "Search staff...")}" value="${attendancePageState.searchQuery}">
+              <input type="text" class="form-control" id="attendanceSearchInput" placeholder="${t("Pesquisar funcionário...", "Search staff...")}" value="${attendancePageState.searchQuery}" oninput="window.handleAttendanceSearch(this.value)">
             </div>
 
-            <select class="form-select form-select-sm" id="attendanceDeptFilter" style="max-width: 180px;">
+            <select class="form-select form-select-sm" id="attendanceDeptFilter" style="max-width: 180px;" onchange="window.handleAttendanceDeptChange(this.value)">
               <option value="all" ${attendancePageState.selectedDepartment === "all" ? "selected" : ""}>${t("Todos Departamentos", "All Departments")}</option>
               <option value="CESTAFF" ${attendancePageState.selectedDepartment === "CESTAFF" ? "selected" : ""}>CESTAFF</option>
+              <option value="Cuidados Pastorais" ${attendancePageState.selectedDepartment === "Cuidados Pastorais" ? "selected" : ""}>Cuidados Pastorais</option>
+              <option value="Paixão à Primeira Vista / CESTAFF" ${attendancePageState.selectedDepartment === "Paixão à Primeira Vista / CESTAFF" ? "selected" : ""}>Paixão à Primeira Vista</option>
             </select>
+
+            <button type="button" class="btn btn-sm btn-ce-gold" onclick="window.generateDailyPreviewModal('${date}')" title="${t("Visualizar / Imprimir PDF do dia", "Preview / Print Daily PDF")}">
+              <i class="bi bi-printer-fill me-1"></i>${t("Imprimir / PDF", "Print / PDF")}
+            </button>
 
             <button type="button" class="btn btn-sm btn-outline-warning" id="attendanceExportDailyCsv" title="${t("Exportar CSV do dia", "Export Daily CSV")}">
               <i class="bi bi-download me-1"></i>CSV
@@ -745,6 +759,8 @@
     var deltas = comp.deltas;
     var staffMatrix = comp.staffMatrix || [];
 
+    var allStaff = await getBridge().getStaffList();
+
     // Mode Selector Toolbar
     var modeSelectorHtml = `
       <div class="att-card p-3 mb-4">
@@ -755,18 +771,23 @@
             </span>
             <h4 class="h5 fw-bold text-white mb-0 mt-1">${t("Comparação de Assiduidade e Pontualidade", "Attendance & Punctuality Comparative Matrix")}</h4>
           </div>
-          <div class="btn-group btn-group-sm" role="group">
-            <button type="button" class="btn ${mode === "day" ? "btn-ce-gold" : "btn-outline-secondary"}" data-comp-mode="day">
-              <i class="bi bi-calendar-day me-1"></i>${t("Dia vs Dia", "Day vs Day")}
-            </button>
-            <button type="button" class="btn ${mode === "week" ? "btn-ce-gold" : "btn-outline-secondary"}" data-comp-mode="week">
-              <i class="bi bi-calendar-week me-1"></i>${t("Semana vs Semana", "Week vs Week")}
-            </button>
-            <button type="button" class="btn ${mode === "month" ? "btn-ce-gold" : "btn-outline-secondary"}" data-comp-mode="month">
-              <i class="bi bi-calendar-month me-1"></i>${t("Mês vs Mês", "Month vs Month")}
-            </button>
-            <button type="button" class="btn ${mode === "year" ? "btn-ce-gold" : "btn-outline-secondary"}" data-comp-mode="year">
-              <i class="bi bi-calendar3 me-1"></i>${t("Ano vs Ano", "Year vs Year")}
+          <div class="d-flex flex-wrap align-items-center gap-2">
+            <div class="btn-group btn-group-sm" role="group">
+              <button type="button" class="btn ${mode === "day" ? "btn-ce-gold fw-bold" : "btn-outline-secondary"}" onclick="window.handleCompModeChange('day')">
+                <i class="bi bi-calendar-day me-1"></i>${t("Dia vs Dia", "Day vs Day")}
+              </button>
+              <button type="button" class="btn ${mode === "week" ? "btn-ce-gold fw-bold" : "btn-outline-secondary"}" onclick="window.handleCompModeChange('week')">
+                <i class="bi bi-calendar-week me-1"></i>${t("Semana vs Semana", "Week vs Week")}
+              </button>
+              <button type="button" class="btn ${mode === "month" ? "btn-ce-gold fw-bold" : "btn-outline-secondary"}" onclick="window.handleCompModeChange('month')">
+                <i class="bi bi-calendar-month me-1"></i>${t("Mês vs Mês", "Month vs Month")}
+              </button>
+              <button type="button" class="btn ${mode === "year" ? "btn-ce-gold fw-bold" : "btn-outline-secondary"}" onclick="window.handleCompModeChange('year')">
+                <i class="bi bi-calendar3 me-1"></i>${t("Ano vs Ano", "Year vs Year")}
+              </button>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-warning" onclick="window.generateComparisonPreviewModal()" title="${t("Visualizar / Imprimir Relatório Comparativo", "Preview / Print Comparative Report")}">
+              <i class="bi bi-printer-fill me-1"></i>${t("Imprimir Comparação", "Print Comparison")}
             </button>
           </div>
         </div>
@@ -774,29 +795,46 @@
         <div class="row g-3 align-items-center">
           <div class="col-12 col-md-3">
             <label class="form-label text-secondary small fw-semibold mb-1">${t("Período A (Atual):", "Period A (Current):")}</label>
-            ${mode === "day" ? `<input type="date" class="form-control form-control-sm" id="compPeriodAInput" value="${pA}">` : mode === "month" ? `<input type="month" class="form-control form-control-sm" id="compPeriodAInput" value="${pA}">` : mode === "year" ? `<input type="number" min="2020" max="2030" class="form-control form-control-sm" id="compPeriodAInput" value="${pA}">` : `<input type="date" class="form-control form-control-sm" id="compPeriodAInput" value="${pA}">`}
+            ${mode === "day" ? `<input type="date" class="form-control form-control-sm" id="compPeriodAInput" value="${pA}" onchange="window.handleCompPeriodChange()">` : mode === "month" ? `<input type="month" class="form-control form-control-sm" id="compPeriodAInput" value="${pA}" onchange="window.handleCompPeriodChange()">` : mode === "year" ? `<input type="number" min="2020" max="2030" class="form-control form-control-sm" id="compPeriodAInput" value="${pA}" onchange="window.handleCompPeriodChange()">` : `<input type="date" class="form-control form-control-sm" id="compPeriodAInput" value="${pA}" onchange="window.handleCompPeriodChange()">`}
           </div>
 
           <div class="col-12 col-md-3">
             <label class="form-label text-secondary small fw-semibold mb-1">${t("Período B (Comparar com):", "Period B (Compare with):")}</label>
-            ${mode === "day" ? `<input type="date" class="form-control form-control-sm" id="compPeriodBInput" value="${pB}">` : mode === "month" ? `<input type="month" class="form-control form-control-sm" id="compPeriodBInput" value="${pB}">` : mode === "year" ? `<input type="number" min="2020" max="2030" class="form-control form-control-sm" id="compPeriodBInput" value="${pB}">` : `<input type="date" class="form-control form-control-sm" id="compPeriodBInput" value="${pB}">`}
+            ${mode === "day" ? `<input type="date" class="form-control form-control-sm" id="compPeriodBInput" value="${pB}" onchange="window.handleCompPeriodChange()">` : mode === "month" ? `<input type="month" class="form-control form-control-sm" id="compPeriodBInput" value="${pB}" onchange="window.handleCompPeriodChange()">` : mode === "year" ? `<input type="number" min="2020" max="2030" class="form-control form-control-sm" id="compPeriodBInput" value="${pB}" onchange="window.handleCompPeriodChange()">` : `<input type="date" class="form-control form-control-sm" id="compPeriodBInput" value="${pB}" onchange="window.handleCompPeriodChange()">`}
           </div>
 
-          <div class="col-12 col-md-3">
+          <div class="col-12 col-md-4">
             <label class="form-label text-secondary small fw-semibold mb-1">${t("Colaborador:", "Staff Member:")}</label>
-            <select class="form-select form-select-sm" id="compEmployeeSelect">
-              <option value="all" ${empId === "all" ? "selected" : ""}>${t("Todos os Colaboradores (Geral)", "All Staff Members (General)")}</option>
-              ${(getBridge().STAFF_LIST || []).map(function (s) {
-                return `<option value="${s.id}" ${empId === s.id ? "selected" : ""}>${s.name} (ID: ${s.id}) — ${s.dept}</option>`;
+            <select class="form-select form-select-sm" id="compEmployeeSelect" onchange="window.handleCompPeriodChange()">
+              <option value="all" ${empId === "all" ? "selected" : ""}>${t("Todos os Colaboradores (Visão Geral)", "All Staff Members (Overview)")}</option>
+              ${(allStaff || []).map(function (s) {
+                return `<option value="${s.id}" ${String(empId) === String(s.id) ? "selected" : ""}>${s.fullName || s.name} (ID: ${s.id}) — ${s.dept}</option>`;
               }).join("")}
             </select>
           </div>
 
-          <div class="col-12 col-md-3 d-flex align-items-end gap-2">
-            <button type="button" class="btn btn-sm btn-ce-gold w-100" id="executeComparisonBtn">
-              <i class="bi bi-arrow-repeat me-1"></i>${t("Atualizar Comparação", "Run Comparison")}
+          <div class="col-12 col-md-2 d-flex align-items-end gap-2">
+            <button type="button" class="btn btn-sm btn-outline-info w-100" onclick="window.swapComparisonPeriods()" title="${t("Inverter Períodos A e B", "Swap Periods A and B")}">
+              <i class="bi bi-arrow-left-right me-1"></i>${t("Inverter ⇄", "Swap ⇄")}
             </button>
           </div>
+        </div>
+
+        <!-- Quick Comparison Presets -->
+        <div class="d-flex flex-wrap align-items-center gap-1.5 mt-2.5 pt-2 border-top border-secondary border-opacity-25">
+          <span class="text-secondary small fw-semibold me-1" style="font-size: 0.72rem;">${t("Atalhos Rápidos:", "Quick Presets:")}</span>
+          <button type="button" class="btn btn-xs ${pA === "2026-10-01" && pB === "2026-07-09" ? "btn-ce-gold fw-bold" : "btn-outline-secondary"}" onclick="window.setComparisonPreset('2026-10-01', '2026-07-09', 'day')">
+            <i class="bi bi-lightning-charge text-warning me-1"></i>01 Out vs 09 Jul (2026)
+          </button>
+          <button type="button" class="btn btn-xs ${pA === "2026-07-09" && pB === "2026-07-08" ? "btn-ce-gold fw-bold" : "btn-outline-secondary"}" onclick="window.setComparisonPreset('2026-07-09', '2026-07-08', 'day')">
+            09 Jul vs 08 Jul (2026)
+          </button>
+          <button type="button" class="btn btn-xs ${mode === "month" && pA === "2026-10" && pB === "2026-07" ? "btn-ce-gold fw-bold" : "btn-outline-secondary"}" onclick="window.setComparisonPreset('2026-10', '2026-07', 'month')">
+            Out/2026 vs Jul/2026
+          </button>
+          <button type="button" class="btn btn-xs ${mode === "year" && pA === "2026" && pB === "2025" ? "btn-ce-gold fw-bold" : "btn-outline-secondary"}" onclick="window.setComparisonPreset('2026', '2025', 'year')">
+            Ano 2026 vs 2025
+          </button>
         </div>
       </div>
     `;
@@ -1425,35 +1463,71 @@
   // =========================================================================
 
   async function renderTrajectoryViewHtml() {
+    var allStaff = await getBridge().getStaffList();
     var allStaffRes = await getBridge().listAttendanceRecords({});
     var distinctEmployees = [];
     var seen = new Set();
-    (allStaffRes.data || []).forEach(function (r) {
-      if (!seen.has(r.employee_id)) {
-        seen.add(r.employee_id);
-        distinctEmployees.push({ id: r.employee_id, name: r.employee_name, dept: r.department });
+
+    // 1. First add from registered staff list
+    (allStaff || []).forEach(function (s) {
+      if (!seen.has(String(s.id))) {
+        seen.add(String(s.id));
+        distinctEmployees.push({
+          id: String(s.id),
+          name: s.fullName || s.name,
+          shortName: s.name,
+          dept: s.dept || "CESTAFF",
+          role: s.role || "Staff"
+        });
       }
     });
 
-    var selectedId = attendancePageState.selectedStaffId || (distinctEmployees[0] ? distinctEmployees[0].id : "1");
+    // 2. Add from attendance records if not already added
+    (allStaffRes.data || []).forEach(function (r) {
+      if (!seen.has(String(r.employee_id))) {
+        seen.add(String(r.employee_id));
+        distinctEmployees.push({
+          id: String(r.employee_id),
+          name: r.employee_name,
+          shortName: r.employee_name,
+          dept: r.department || "CESTAFF",
+          role: "Staff"
+        });
+      }
+    });
+
+    var selectedId = String(attendancePageState.selectedStaffId || (distinctEmployees[0] ? distinctEmployees[0].id : "11"));
     var trajectory = await getBridge().getStaffTrajectory(selectedId, "2026-01-01", "2026-12-31");
 
     var selectorHtml = `
       <div class="att-card p-3 mb-4">
-        <div class="row g-3 align-items-center justify-content-between">
+        <div class="row g-3 align-items-center justify-content-between mb-2">
           <div class="col-12 col-md-6 d-flex align-items-center gap-3">
             <label class="text-secondary small fw-semibold mb-0 text-nowrap"><i class="bi bi-person-bounding-box text-gold me-1"></i>${t("Selecionar Colaborador:", "Select Staff Member:")}</label>
-            <select class="form-select form-select-sm" id="trajectoryStaffSelect">
+            <select class="form-select form-select-sm" id="trajectoryStaffSelect" onchange="window.handleTrajectoryStaffChange(this.value)">
               ${distinctEmployees.map(function (e) {
-                return `<option value="${e.id}" ${e.id === selectedId ? "selected" : ""}>${e.name} (ID: ${e.id}) — ${e.dept}</option>`;
+                return `<option value="${e.id}" ${String(e.id) === String(selectedId) ? "selected" : ""}>${e.name} (ID: ${e.id}) — ${e.dept}</option>`;
               }).join("")}
             </select>
           </div>
           <div class="col-12 col-md-auto d-flex align-items-center gap-2">
-            <button type="button" class="btn btn-sm btn-ce-gold" id="exportStaffDossierPdfBtn">
+            <button type="button" class="btn btn-sm btn-ce-gold fw-semibold px-3" id="exportStaffDossierPdfBtn" onclick="window.generateStaffDossierPreviewModal(document.getElementById('trajectoryStaffSelect') ? document.getElementById('trajectoryStaffSelect').value : '${selectedId}')">
               <i class="bi bi-file-earmark-pdf-fill me-1.5"></i>${t("Imprimir Dossiê Individual", "Print Staff Dossier")}
             </button>
           </div>
+        </div>
+
+        <!-- Quick Staff Chips for Instant Selection -->
+        <div class="d-flex flex-wrap align-items-center gap-1.5 pt-2 border-top border-secondary border-opacity-25">
+          <span class="text-secondary small fw-semibold me-1" style="font-size: 0.72rem;">${t("Acesso Rápido:", "Quick Access:")}</span>
+          ${distinctEmployees.slice(0, 10).map(function (e) {
+            var isCurrent = String(e.id) === String(selectedId);
+            return `
+              <button type="button" class="btn btn-xs ${isCurrent ? "btn-ce-gold fw-bold" : "btn-outline-secondary"}" onclick="window.handleTrajectoryStaffChange('${e.id}')">
+                <i class="bi bi-person-fill me-0.5"></i>${e.shortName || e.name}
+              </button>
+            `;
+          }).join("")}
         </div>
       </div>`;
 
@@ -2140,7 +2214,7 @@ Thank you for the opportunity Pastor Sir`;
     }).join("");
 
     var printHtml = `
-      <div style="font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a1a; padding: 20px;">
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a1a; padding: 10px;">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #c5a059; padding-bottom: 12px; margin-bottom: 15px;">
           <div>
             <h1 style="margin: 0; font-size: 18px; color: #0b1f3f; text-transform: uppercase;">Christ Embassy Mozambique</h1>
@@ -2191,7 +2265,7 @@ Thank you for the opportunity Pastor Sir`;
 
         <div style="display: flex; justify-content: space-between; margin-top: 40px; padding-top: 15px;">
           <div style="text-align: center; width: 220px; border-top: 1px solid #999; padding-top: 5px; font-size: 11px;">
-            ${t("Brother Lio (Extração)", "Brother Lio (Extraction)")}
+            ${t("Brother Leopold Kusi (Extração)", "Brother Leopold Kusi (Extraction)")}
           </div>
           <div style="text-align: center; width: 220px; border-top: 1px solid #999; padding-top: 5px; font-size: 11px;">
             ${t("Pastor Valdemiro (Cuidados Pastorais)", "Pastor Valdemiro (Pastoral Care)")}
@@ -2202,14 +2276,12 @@ Thank you for the opportunity Pastor Sir`;
         </div>
       </div>`;
 
-    if (window.exportReportsPrint) {
-      window.exportReportsPrint(printHtml, `Relatorio-Assiduidade-${date}`);
-    } else {
-      var win = window.open("", "_blank");
-      win.document.write(`<html><head><title>Attendance Report - ${date}</title></head><body>${printHtml}</body></html>`);
-      win.document.close();
-      setTimeout(function () { win.print(); }, 400);
-    }
+    openAttendancePrintModal(
+      `${t("Relatório Diário", "Daily Report")} — ${formatAttendanceDate(date)}`,
+      printHtml,
+      `Relatorio-Assiduidade-${date}`,
+      records
+    );
   }
 
   async function generatePeriodPdf(start, end) {
@@ -2230,7 +2302,7 @@ Thank you for the opportunity Pastor Sir`;
     }).join("");
 
     var printHtml = `
-      <div style="font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a1a; padding: 20px;">
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a1a; padding: 10px;">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #c5a059; padding-bottom: 12px; margin-bottom: 15px;">
           <div>
             <h1 style="margin: 0; font-size: 18px; color: #0b1f3f; text-transform: uppercase;">Christ Embassy Mozambique</h1>
@@ -2261,93 +2333,433 @@ Thank you for the opportunity Pastor Sir`;
         </table>
       </div>`;
 
-    if (window.exportReportsPrint) {
-      window.exportReportsPrint(printHtml, `Relatorio-Periodico-${start}-${end}`);
-    } else {
-      var win = window.open("", "_blank");
-      win.document.write(`<html><head><title>Periodic Attendance Report</title></head><body>${printHtml}</body></html>`);
-      win.document.close();
-      setTimeout(function () { win.print(); }, 400);
-    }
+    openAttendancePrintModal(
+      `${t("Relatório Periódico", "Periodic Report")} (${start} - ${end})`,
+      printHtml,
+      `Relatorio-Periodico-${start}-${end}`,
+      stats.employeesList
+    );
   }
 
   async function generateStaffDossierPdf(staffId) {
     var trajectory = await getBridge().getStaffTrajectory(staffId, "2026-01-01", "2026-12-31");
+    var sName = trajectory.employee_name || "Colaborador";
 
     var rowsHtml = trajectory.records.map(function (rec) {
-      var statusColor = rec.status === "on_time" ? "#198754" : rec.status === "grace_period" ? "#0dcaf0" : rec.is_late ? "#dc3545" : "#6c757d";
+      var statusBadge = rec.status === "on_time" 
+        ? `<span style="color: #198754; font-weight: bold;">● ${t("Pontual", "On Time")}</span>` 
+        : rec.status === "grace_period" 
+        ? `<span style="color: #0dcaf0; font-weight: bold;">● ${t("Tolerância", "Grace")}</span>` 
+        : rec.is_late 
+        ? `<span style="color: #dc3545; font-weight: bold;">● ${t("Atrasado", "Late")}</span>` 
+        : `<span style="color: #6c757d;">— ${t("Sem Registo", "No Record")}</span>`;
+
       return `
         <tr>
-          <td style="padding: 6px 8px; border: 1px solid #ddd; font-family: monospace;">${rec.attendance_date}</td>
-          <td style="padding: 6px 8px; border: 1px solid #ddd;">${getWeekday(rec.attendance_date)}</td>
-          <td style="padding: 6px 8px; border: 1px solid #ddd; text-align: center; font-family: monospace; font-weight: bold;">${rec.check_in || "--:--"}</td>
-          <td style="padding: 6px 8px; border: 1px solid #ddd; text-align: center; color: ${statusColor}; font-weight: bold;">${rec.status}</td>
-          <td style="padding: 6px 8px; border: 1px solid #ddd; text-align: center;">${rec.delay_minutes > 0 ? `+${rec.delay_minutes}m` : "0m"}</td>
-          <td style="padding: 6px 8px; border: 1px solid #ddd; font-size: 10px; font-family: monospace;">${(rec.all_punches || "--:--").replace(/\n/g, " | ")}</td>
-          <td style="padding: 6px 8px; border: 1px solid #ddd;">${rec.notes || ""}</td>
+          <td style="padding: 6px 8px; border: 1px solid #ddd; font-family: monospace; font-weight: 600;">${rec.attendance_date}</td>
+          <td style="padding: 6px 8px; border: 1px solid #ddd; color: #555;">${getWeekday(rec.attendance_date)}</td>
+          <td style="padding: 6px 8px; border: 1px solid #ddd; text-align: center; font-family: monospace; font-weight: bold; ${rec.is_late ? "color: #dc3545;" : ""}">${rec.check_in || "--:--"}</td>
+          <td style="padding: 6px 8px; border: 1px solid #ddd; text-align: center;">${statusBadge}</td>
+          <td style="padding: 6px 8px; border: 1px solid #ddd; text-align: center; font-weight: 600; ${rec.delay_minutes > 0 ? "color: #dc3545;" : "color: #198754;"}">${rec.delay_minutes > 0 ? `+${rec.delay_minutes} min` : "0 min"}</td>
+          <td style="padding: 6px 8px; border: 1px solid #ddd; font-size: 10px; font-family: monospace; color: #444;">${(rec.all_punches || "--:--").replace(/\n/g, " | ")}</td>
+          <td style="padding: 6px 8px; border: 1px solid #ddd; font-size: 10px; color: #666;">${rec.notes || "—"}</td>
         </tr>`;
     }).join("");
 
     var printHtml = `
-      <div style="font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a1a; padding: 20px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #c5a059; padding-bottom: 12px; margin-bottom: 15px;">
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a1a; padding: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #c5a059; padding-bottom: 12px; margin-bottom: 18px;">
           <div>
-            <h1 style="margin: 0; font-size: 18px; color: #0b1f3f; text-transform: uppercase;">Christ Embassy Mozambique</h1>
-            <h2 style="margin: 3px 0 0 0; font-size: 14px; color: #c5a059;">${t("Dossiê Individual de Assiduidade e Pontualidade", "Individual Staff Attendance & Punctuality Dossier")}</h2>
+            <div style="font-size: 11px; font-weight: bold; color: #c5a059; letter-spacing: 0.08em; text-transform: uppercase;">Christ Embassy Mozambique • LoveWorld</div>
+            <h2 style="margin: 3px 0 0 0; font-size: 18px; color: #0b1f3f; font-weight: 800;">${t("DOSSIÊ INDIVIDUAL DE ASSIDUIDADE", "INDIVIDUAL ATTENDANCE DOSSIER")}</h2>
+            <div style="font-size: 12px; color: #555; margin-top: 2px;">${t("Relatório Oficial de Trajetória, Pontualidade & Disciplina Horária", "Official Trajectory, Punctuality & Time Discipline Report")}</div>
           </div>
           <div style="text-align: right; font-size: 11px; color: #666;">
-            <div><strong>${t("Data:", "Date:")}</strong> ${new Date().toLocaleDateString(isEn() ? "en-US" : "pt-PT")}</div>
+            <div><strong>${t("Data de Emissão:", "Issue Date:")}</strong> ${new Date().toLocaleDateString(isEn() ? "en-US" : "pt-PT")}</div>
+            <div><strong>${t("Ano de Referência:", "Reference Year:")}</strong> 2026</div>
+            <div style="color: #198754; font-weight: bold; margin-top: 3px;">✓ ${t("Auditado & Homologado", "Audited & Approved")}</div>
           </div>
         </div>
 
-        <div style="background: #f8f9fa; border: 1px solid #ddd; padding: 15px; border-radius: 4px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+        <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px 18px; margin-bottom: 20px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px;">
           <div>
-            <h3 style="margin: 0 0 4px 0; color: #0b1f3f; font-size: 16px;">${trajectory.employee_name}</h3>
-            <div style="font-size: 12px; color: #666;">${t("ID do Funcionário:", "Staff ID:")} <strong>${trajectory.employee_id}</strong> • ${t("Departamento:", "Department:")} <strong>${trajectory.department}</strong></div>
+            <div style="font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; letter-spacing: 0.05em;">${t("Colaborador Selecionado", "Selected Staff Member")}</div>
+            <h3 style="margin: 2px 0 2px 0; color: #0b1f3f; font-size: 18px; font-weight: 800;">${trajectory.employee_name}</h3>
+            <div style="font-size: 12px; color: #475569;">
+              ${t("ID / Cartão:", "ID / Card:")} <strong style="font-family: monospace; color: #0b1f3f;">${trajectory.employee_id}</strong> • ${t("Departamento:", "Department:")} <strong>${trajectory.department}</strong>
+            </div>
           </div>
-          <div style="display: flex; gap: 15px;">
-            <div style="text-align: center;">
-              <div style="font-size: 10px; color: #888;">${t("TAXA PONTUALIDADE", "PUNCTUALITY RATE")}</div>
-              <div style="font-size: 16px; font-weight: bold; color: ${trajectory.onTimeRate >= 80 ? "#198754" : "#dc3545"};">${trajectory.onTimeRate}%</div>
+          <div style="display: flex; gap: 12px;">
+            <div style="text-align: center; background: white; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px 12px; min-width: 90px;">
+              <div style="font-size: 9px; color: #64748b; font-weight: bold; text-transform: uppercase;">${t("PONTUALIDADE", "PUNCTUALITY")}</div>
+              <div style="font-size: 16px; font-weight: 800; color: ${trajectory.onTimeRate >= 80 ? "#16a34a" : trajectory.onTimeRate >= 60 ? "#d97706" : "#dc2626"};">${trajectory.onTimeRate}%</div>
             </div>
-            <div style="text-align: center;">
-              <div style="font-size: 10px; color: #888;">${t("MÉDIA ENTRADA", "AVG CHECK-IN")}</div>
-              <div style="font-size: 16px; font-weight: bold; color: #0dcaf0; font-family: monospace;">${trajectory.avgCheckInTime}</div>
+            <div style="text-align: center; background: white; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px 12px; min-width: 90px;">
+              <div style="font-size: 9px; color: #64748b; font-weight: bold; text-transform: uppercase;">${t("MÉDIA ENTRADA", "AVG CHECK-IN")}</div>
+              <div style="font-size: 16px; font-weight: 800; color: #0284c7; font-family: monospace;">${trajectory.avgCheckInTime || "--:--"}</div>
             </div>
-            <div style="text-align: center;">
-              <div style="font-size: 10px; color: #888;">${t("TOTAL ATRASO", "TOTAL DELAY")}</div>
-              <div style="font-size: 16px; font-weight: bold; color: #dc3545;">${trajectory.totalDelayMinutes}m</div>
+            <div style="text-align: center; background: white; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px 12px; min-width: 90px;">
+              <div style="font-size: 9px; color: #64748b; font-weight: bold; text-transform: uppercase;">${t("TOTAL ATRASO", "TOTAL DELAY")}</div>
+              <div style="font-size: 16px; font-weight: 800; color: #dc2626; font-family: monospace;">${trajectory.totalDelayMinutes}m</div>
             </div>
           </div>
         </div>
 
-        <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 30px;">
+        <div style="margin-bottom: 8px; font-size: 12px; font-weight: bold; color: #0b1f3f;">
+          <i class="bi bi-table me-1"></i>${t("Registo Histórico de Picagens de Ponto (Total:", "Historical Check-In Punch Record (Total:")} ${trajectory.records.length} ${t("registos)", "records)")}
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 25px;">
           <thead>
             <tr style="background: #0b1f3f; color: white;">
-              <th style="padding: 8px; border: 1px solid #0b1f3f;">${t("Data", "Date")}</th>
-              <th style="padding: 8px; border: 1px solid #0b1f3f;">${t("Dia da Semana", "Weekday")}</th>
-              <th style="padding: 8px; border: 1px solid #0b1f3f;">${t("Entrada", "Check-In")}</th>
-              <th style="padding: 8px; border: 1px solid #0b1f3f;">${t("Status", "Status")}</th>
-              <th style="padding: 8px; border: 1px solid #0b1f3f;">${t("Atraso", "Delay")}</th>
-              <th style="padding: 8px; border: 1px solid #0b1f3f;">${t("Picagens", "Punches")}</th>
-              <th style="padding: 8px; border: 1px solid #0b1f3f;">${t("Observações", "Notes")}</th>
+              <th style="padding: 7px 8px; border: 1px solid #0b1f3f;">${t("Data", "Date")}</th>
+              <th style="padding: 7px 8px; border: 1px solid #0b1f3f;">${t("Dia da Semana", "Weekday")}</th>
+              <th style="padding: 7px 8px; border: 1px solid #0b1f3f; text-align: center;">${t("Entrada", "Check-In")}</th>
+              <th style="padding: 7px 8px; border: 1px solid #0b1f3f; text-align: center;">${t("Classificação", "Status")}</th>
+              <th style="padding: 7px 8px; border: 1px solid #0b1f3f; text-align: center;">${t("Atraso", "Delay")}</th>
+              <th style="padding: 7px 8px; border: 1px solid #0b1f3f;">${t("Picagens Brutas", "Raw Punches")}</th>
+              <th style="padding: 7px 8px; border: 1px solid #0b1f3f;">${t("Observações", "Notes")}</th>
             </tr>
           </thead>
           <tbody>
-            ${rowsHtml}
+            ${rowsHtml || `<tr><td colspan="7" style="text-align: center; padding: 20px; color: #888;">${t("Sem registos de assiduidade encontrados para este colaborador.", "No attendance records found for this staff member.")}</td></tr>`}
+          </tbody>
+        </table>
+
+        <div style="display: flex; justify-content: space-between; margin-top: 35px; padding-top: 15px; font-size: 11px; color: #475569;">
+          <div style="text-align: center; width: 190px; border-top: 1px solid #94a3b8; padding-top: 6px;">
+            <strong>Brother Leopold Kusi</strong><br><span style="font-size: 10px; color: #64748b;">${t("Extração e Verificação", "Extraction & Verification")}</span>
+          </div>
+          <div style="text-align: center; width: 190px; border-top: 1px solid #94a3b8; padding-top: 6px;">
+            <strong>Pastor Valdemiro</strong><br><span style="font-size: 10px; color: #64748b;">${t("Cuidados Pastorais / Auditoria", "Pastoral Care / Audit")}</span>
+          </div>
+          <div style="text-align: center; width: 190px; border-top: 1px solid #94a3b8; padding-top: 6px;">
+            <strong>Pastor Kéne</strong><br><span style="font-size: 10px; color: #64748b;">${t("Pastor do Grupo / Homologação", "Group Pastor / Approval")}</span>
+          </div>
+        </div>
+      </div>`;
+
+    openAttendancePrintModal(
+      `${t("Dossiê Individual", "Staff Dossier")} — ${sName}`,
+      printHtml,
+      `Dossie-Individual-${trajectory.employee_id}-${sName.replace(/\s+/g, "_")}`,
+      trajectory.records
+    );
+  }
+
+  // =========================================================================
+  // Modal Preview & Printable Document Infrastructure
+  // =========================================================================
+
+  function openAttendancePrintModal(title, htmlContent, filename, csvData) {
+    var modalId = "attendancePreviewPrintModal";
+    var existing = document.getElementById("attendancePrintModalWrapper");
+    if (existing) existing.remove();
+
+    var modalHtml = `
+      <div class="modal fade show d-block" id="${modalId}" tabindex="-1" style="background: rgba(3, 7, 18, 0.85); z-index: 1060; backdrop-filter: blur(4px);" aria-modal="true" role="dialog">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" style="max-width: 960px;">
+          <div class="modal-content border-0 shadow-lg" style="background: #0d131f; color: #f3f4f6; border-radius: 14px; overflow: hidden; border: 1px solid rgba(212, 175, 55, 0.4) !important;">
+            <!-- Modal Header -->
+            <div class="modal-header py-3 px-4 border-bottom border-secondary border-opacity-25 d-flex align-items-center justify-content-between" style="background: linear-gradient(90deg, #0b1528, #111e38);">
+              <div class="d-flex align-items-center gap-3">
+                <div class="d-flex align-items-center justify-content-center rounded-circle" style="width: 40px; height: 40px; background: rgba(212, 175, 55, 0.15); color: #d4af37; border: 1px solid rgba(212, 175, 55, 0.3);">
+                  <i class="bi bi-file-earmark-pdf-fill fs-5"></i>
+                </div>
+                <div>
+                  <h6 class="modal-title fw-bold text-white mb-0" style="font-size: 1.05rem;">${title || t("Previsão do Documento para Impressão", "Print Document Preview")}</h6>
+                  <span class="text-secondary small" style="font-size: 0.78rem;">${t("Previsão fiel em alta definição • Pronto para Impressão e PDF", "High definition preview • Ready to print or export PDF")}</span>
+                </div>
+              </div>
+              <div class="d-flex align-items-center gap-2">
+                <button type="button" class="btn btn-sm btn-ce-gold fw-bold px-3 py-1.5 shadow-sm" onclick="window.printAttendanceModalDoc()">
+                  <i class="bi bi-printer-fill me-1.5"></i>${t("Imprimir / Salvar PDF", "Print / Save PDF")}
+                </button>
+                ${csvData ? `
+                <button type="button" class="btn btn-sm btn-outline-light px-2.5 py-1.5" onclick="window.downloadAttendanceModalCsv()" title="${t("Descarregar ficheiro CSV", "Download CSV")}">
+                  <i class="bi bi-filetype-csv me-1"></i>CSV
+                </button>` : ""}
+                <button type="button" class="btn btn-sm btn-secondary px-2.5 py-1.5" onclick="window.closeAttendancePrintModal()" title="${t("Fechar janela", "Close modal")}">
+                  <i class="bi bi-x-lg"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Modal Body (Paper Sheet Preview) -->
+            <div class="modal-body p-3 p-md-4" style="background: #141c2e; overflow-y: auto; max-height: calc(85vh - 130px);">
+              <div class="d-flex justify-content-center">
+                <div id="attendancePrintPaperContent" class="shadow-lg text-dark bg-white rounded p-4 p-md-5" style="width: 100%; max-width: 840px; min-height: 520px; color: #111827; font-family: 'Segoe UI', Arial, sans-serif;">
+                  ${htmlContent}
+                </div>
+              </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="modal-footer py-2.5 px-4 border-top border-secondary border-opacity-25 d-flex justify-content-between align-items-center" style="background: #0b1528;">
+              <span class="text-secondary small"><i class="bi bi-shield-check text-success me-1"></i>${t("LoveWorld Christ Embassy Mozambique • Assiduidade & Pontualidade", "LoveWorld Christ Embassy Mozambique • Attendance & Punctuality")}</span>
+              <button type="button" class="btn btn-sm btn-outline-secondary px-3" onclick="window.closeAttendancePrintModal()">${t("Fechar", "Close")}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    var wrapper = document.createElement("div");
+    wrapper.id = "attendancePrintModalWrapper";
+    wrapper.innerHTML = modalHtml;
+    document.body.appendChild(wrapper);
+
+    window._attendanceCurrentPrintData = {
+      title: title,
+      htmlContent: htmlContent,
+      filename: filename || "attendance-document",
+      csvData: csvData
+    };
+  }
+
+  window.openAttendancePrintModal = openAttendancePrintModal;
+
+  window.closeAttendancePrintModal = function () {
+    var el = document.getElementById("attendancePrintModalWrapper");
+    if (el) el.remove();
+  };
+
+  window.printAttendanceModalDoc = function () {
+    var contentEl = document.getElementById("attendancePrintPaperContent");
+    if (!contentEl) return;
+
+    var iframeId = "__att_print_isolated_iframe";
+    var iframe = document.getElementById(iframeId);
+    if (iframe) iframe.remove();
+
+    iframe = document.createElement("iframe");
+    iframe.id = iframeId;
+    iframe.style.position = "fixed";
+    iframe.style.right = "0";
+    iframe.style.bottom = "0";
+    iframe.style.width = "0";
+    iframe.style.height = "0";
+    iframe.style.border = "0";
+    document.body.appendChild(iframe);
+
+    var doc = iframe.contentWindow.document;
+    doc.open();
+    doc.write(`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>${window._attendanceCurrentPrintData?.title || "Relatório de Assiduidade"}</title>
+  <style>
+    @page { size: A4 portrait; margin: 12mm 15mm; }
+    body { margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; color: #111827; background: #fff; font-size: 11px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    * { box-sizing: border-box; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    th, td { border: 1px solid #d1d5db; padding: 6px 8px; text-align: left; }
+    th { background: #0b1f3f !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-weight: 600; }
+    .text-center { text-align: center !important; }
+    .text-end { text-align: right !important; }
+    .font-monospace { font-family: monospace !important; }
+    @media print {
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+  ${contentEl.innerHTML}
+</body>
+</html>`);
+    doc.close();
+
+    setTimeout(function () {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+    }, 250);
+  };
+
+  window.downloadAttendanceModalCsv = function () {
+    var data = window._attendanceCurrentPrintData;
+    if (data && data.csvData) {
+      exportRecordsToCsv(data.csvData, (data.filename || "attendance") + ".csv");
+    }
+  };
+
+  window.generateStaffDossierPreviewModal = function (staffId) {
+    var sId = staffId || attendancePageState.selectedStaffId || "11";
+    generateStaffDossierPdf(sId);
+  };
+
+  window.generateDailyPreviewModal = function (targetDate) {
+    var d = targetDate || attendancePageState.selectedDate || "2026-10-01";
+    generateDailyPdf(d);
+  };
+
+  window.generateComparisonPreviewModal = async function () {
+    var mode = attendancePageState.comparisonMode || "day";
+    var pA = attendancePageState.comparisonPeriodA || "2026-10-01";
+    var pB = attendancePageState.comparisonPeriodB || "2026-07-09";
+    var empId = attendancePageState.comparisonEmployeeId || "all";
+    var dept = attendancePageState.comparisonDepartment || "all";
+
+    var comp = await getBridge().comparePeriods({
+      mode: mode,
+      periodA: pA,
+      periodB: pB,
+      employeeId: empId,
+      department: dept,
+    });
+
+    var statsA = comp.statsA;
+    var statsB = comp.statsB;
+    var deltas = comp.deltas;
+    var staffMatrix = comp.staffMatrix || [];
+
+    var matrixRows = staffMatrix.map(function (row) {
+      var trendColor = row.trend === "improved" ? "#198754" : row.trend === "declined" ? "#dc3545" : "#6c757d";
+      var trendText = row.trend === "improved" ? "▲ Melhorou" : row.trend === "declined" ? "▼ Piorou" : "— Estável";
+      return `
+        <tr>
+          <td style="padding: 6px 8px; border: 1px solid #ddd; font-family: monospace;">${row.employee_id}</td>
+          <td style="padding: 6px 8px; border: 1px solid #ddd; font-weight: bold;">${row.employee_name}</td>
+          <td style="padding: 6px 8px; border: 1px solid #ddd;">${row.department}</td>
+          <td style="padding: 6px 8px; border: 1px solid #ddd; text-align: center; font-family: monospace;">${row.periodA.checkIn || (row.periodA.onTimeRate + "%")}</td>
+          <td style="padding: 6px 8px; border: 1px solid #ddd; text-align: center; font-family: monospace;">${row.periodB.checkIn || (row.periodB.onTimeRate + "%")}</td>
+          <td style="padding: 6px 8px; border: 1px solid #ddd; text-align: center; font-weight: bold; color: ${row.deltaOnTimeRate >= 0 ? "#198754" : "#dc3545"};">${row.deltaOnTimeRate >= 0 ? "+" : ""}${row.deltaOnTimeRate}%</td>
+          <td style="padding: 6px 8px; border: 1px solid #ddd; text-align: center; font-weight: bold; color: ${trendColor};">${trendText}</td>
+        </tr>`;
+    }).join("");
+
+    var printHtml = `
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a1a; padding: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #c5a059; padding-bottom: 12px; margin-bottom: 18px;">
+          <div>
+            <div style="font-size: 11px; font-weight: bold; color: #c5a059; letter-spacing: 0.08em; text-transform: uppercase;">Christ Embassy Mozambique • LoveWorld</div>
+            <h2 style="margin: 3px 0 0 0; font-size: 18px; color: #0b1f3f; font-weight: 800;">${t("RELATÓRIO COMPARATIVO MULTI-PERÍODO", "MULTI-PERIOD COMPARISON REPORT")}</h2>
+            <div style="font-size: 12px; color: #555; margin-top: 2px;">${t("Matriz Comparativa de Assiduidade e Pontualidade", "Attendance & Punctuality Comparative Matrix")}</div>
+          </div>
+          <div style="text-align: right; font-size: 11px; color: #666;">
+            <div><strong>${t("Modo:", "Mode:")}</strong> ${mode.toUpperCase()}</div>
+            <div><strong>${t("Período A (Atual):", "Period A:")}</strong> ${pA}</div>
+            <div><strong>${t("Período B (Base):", "Period B:")}</strong> ${pB}</div>
+            <div><strong>${t("Gerado em:", "Generated at:")}</strong> ${new Date().toLocaleDateString(isEn() ? "en-US" : "pt-PT")}</div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px;">
+          <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 10px; border-radius: 6px; text-align: center;">
+            <div style="font-size: 10px; color: #64748b; font-weight: bold; text-transform: uppercase;">${t("PONTUALIDADE A vs B", "PUNCTUALITY A vs B")}</div>
+            <div style="font-size: 16px; font-weight: 800; color: #0b1f3f;">${statsA.onTimeRate}% <span style="font-size: 12px; color: #64748b;">vs ${statsB.onTimeRate}%</span></div>
+            <div style="font-size: 11px; font-weight: bold; color: ${deltas.onTimeRateDelta >= 0 ? "#16a34a" : "#dc2626"};">${deltas.onTimeRateDelta >= 0 ? "▲ +" : "▼ "}${deltas.onTimeRateDelta}%</div>
+          </div>
+          <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 10px; border-radius: 6px; text-align: center;">
+            <div style="font-size: 10px; color: #64748b; font-weight: bold; text-transform: uppercase;">${t("PRESENTES A vs B", "PRESENT A vs B")}</div>
+            <div style="font-size: 16px; font-weight: 800; color: #0284c7;">${statsA.present} <span style="font-size: 12px; color: #64748b;">vs ${statsB.present}</span></div>
+            <div style="font-size: 11px; font-weight: bold; color: ${deltas.presentDelta >= 0 ? "#16a34a" : "#dc2626"};">${deltas.presentDelta >= 0 ? "▲ +" : "▼ "}${deltas.presentDelta}</div>
+          </div>
+          <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 10px; border-radius: 6px; text-align: center;">
+            <div style="font-size: 10px; color: #64748b; font-weight: bold; text-transform: uppercase;">${t("ATRASOS A vs B", "LATE A vs B")}</div>
+            <div style="font-size: 16px; font-weight: 800; color: #dc2626;">${statsA.allLate} <span style="font-size: 12px; color: #64748b;">vs ${statsB.allLate}</span></div>
+            <div style="font-size: 11px; font-weight: bold; color: ${deltas.allLateDelta <= 0 ? "#16a34a" : "#dc2626"};">${deltas.allLateDelta > 0 ? "▲ +" : "▼ "}${deltas.allLateDelta}</div>
+          </div>
+          <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 10px; border-radius: 6px; text-align: center;">
+            <div style="font-size: 10px; color: #64748b; font-weight: bold; text-transform: uppercase;">${t("MINUTOS ATRASO A vs B", "DELAY MINS A vs B")}</div>
+            <div style="font-size: 16px; font-weight: 800; color: #d97706;">${statsA.totalDelay}m <span style="font-size: 12px; color: #64748b;">vs ${statsB.totalDelay}m</span></div>
+            <div style="font-size: 11px; font-weight: bold; color: ${deltas.totalDelayDelta <= 0 ? "#16a34a" : "#dc2626"};">${deltas.totalDelayDelta > 0 ? "▲ +" : "▼ "}${deltas.totalDelayDelta}m</div>
+          </div>
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 25px;">
+          <thead>
+            <tr style="background: #0b1f3f; color: white;">
+              <th style="padding: 7px 8px; border: 1px solid #0b1f3f;">ID</th>
+              <th style="padding: 7px 8px; border: 1px solid #0b1f3f;">${t("Colaborador", "Staff")}</th>
+              <th style="padding: 7px 8px; border: 1px solid #0b1f3f;">${t("Departamento", "Department")}</th>
+              <th style="padding: 7px 8px; border: 1px solid #0b1f3f; text-align: center;">${t("Período A", "Period A")} (${pA})</th>
+              <th style="padding: 7px 8px; border: 1px solid #0b1f3f; text-align: center;">${t("Período B", "Period B")} (${pB})</th>
+              <th style="padding: 7px 8px; border: 1px solid #0b1f3f; text-align: center;">${t("Delta Pontualidade", "Punctuality Delta")}</th>
+              <th style="padding: 7px 8px; border: 1px solid #0b1f3f; text-align: center;">${t("Tendência", "Trend")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${matrixRows}
           </tbody>
         </table>
       </div>`;
 
-    if (window.exportReportsPrint) {
-      window.exportReportsPrint(printHtml, `Dossie-Staff-${trajectory.employee_id}`);
-    } else {
-      var win = window.open("", "_blank");
-      win.document.write(`<html><head><title>Dossier - ${trajectory.employee_name}</title></head><body>${printHtml}</body></html>`);
-      win.document.close();
-      setTimeout(function () { win.print(); }, 400);
+    openAttendancePrintModal(
+      `${t("Comparação", "Comparison")} (${pA} vs ${pB})`,
+      printHtml,
+      `Comparacao-${pA}-vs-${pB}`,
+      staffMatrix
+    );
+  };
+
+  // =========================================================================
+  // Real-Time Interaction Handlers (Exposed on window)
+  // =========================================================================
+
+  window.handleTrajectoryStaffChange = async function (staffId) {
+    if (!staffId) return;
+    attendancePageState.selectedStaffId = String(staffId);
+    await renderTabContent("trajectory");
+  };
+
+  window.handleCompModeChange = async function (mode) {
+    attendancePageState.comparisonMode = mode;
+    if (mode === "month") {
+      attendancePageState.comparisonPeriodA = "2026-10";
+      attendancePageState.comparisonPeriodB = "2026-07";
+    } else if (mode === "year") {
+      attendancePageState.comparisonPeriodA = "2026";
+      attendancePageState.comparisonPeriodB = "2025";
+    } else if (mode === "day") {
+      attendancePageState.comparisonPeriodA = "2026-10-01";
+      attendancePageState.comparisonPeriodB = "2026-07-09";
+    } else if (mode === "week") {
+      attendancePageState.comparisonPeriodA = "2026-W40";
+      attendancePageState.comparisonPeriodB = "2026-W28";
     }
-  }
+    await renderTabContent("comparison");
+  };
+
+  window.handleCompPeriodChange = async function () {
+    var pA = document.getElementById("compPeriodAInput")?.value;
+    var pB = document.getElementById("compPeriodBInput")?.value;
+    var emp = document.getElementById("compEmployeeSelect")?.value;
+    if (pA) attendancePageState.comparisonPeriodA = pA;
+    if (pB) attendancePageState.comparisonPeriodB = pB;
+    if (emp) attendancePageState.comparisonEmployeeId = emp;
+    await renderTabContent("comparison");
+  };
+
+  window.swapComparisonPeriods = async function () {
+    var tmp = attendancePageState.comparisonPeriodA;
+    attendancePageState.comparisonPeriodA = attendancePageState.comparisonPeriodB;
+    attendancePageState.comparisonPeriodB = tmp;
+    await renderTabContent("comparison");
+  };
+
+  window.setComparisonPreset = async function (pA, pB, mode) {
+    if (mode) attendancePageState.comparisonMode = mode;
+    attendancePageState.comparisonPeriodA = pA;
+    attendancePageState.comparisonPeriodB = pB;
+    await renderTabContent("comparison");
+  };
+
+  window.handleAttendanceDateChange = async function (date) {
+    if (!date) return;
+    attendancePageState.selectedDate = date;
+    await renderTabContent("daily");
+  };
+
+  window.handleAttendanceDeptChange = async function (dept) {
+    attendancePageState.selectedDepartment = dept || "all";
+    await renderTabContent("daily");
+  };
+
+  window.handleAttendanceSearch = async function (q) {
+    attendancePageState.searchQuery = q || "";
+    await renderTabContent("daily");
+  };
 
   function exportRecordsToCsv(records, filename) {
     var headers = ["ID", "Employee", "Date", "CheckIn", "Status", "DelayMinutes", "Punches", "Department"];
