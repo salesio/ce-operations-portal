@@ -276,7 +276,7 @@
         titleKey: "staffSectionMinisterial",
         fields: [
           ["church_id", "church", "church"],
-          ["department_name", "reqDepartment"],
+          ["department_name", "reqDepartment", "departmentSelect"],
           ["role_title", "staffRoleTitle"],
           ["supervisor_name", "staffSupervisor"],
           ["start_date", "staffStartDate", "date"],

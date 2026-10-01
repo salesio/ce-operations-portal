@@ -3994,7 +3994,7 @@ function ecChurchDisplayName(churchId = "", fallback = "") {
     .replace(/^E\.C\.\s*/i, "")
     .replace(/\s*\/\s*Embaixada\s+de\s+Cristo\s+Mo[cç]ambique/i, "")
     .trim();
-  if (!cleaned) return churchId || "-";
+  if (!cleaned || cleaned === "-") return churchId || "-";
   if (/^(Mo[cç]ambique|Mozambique)$/i.test(cleaned)) return "E.C. Moçambique";
   return `E.C. ${cleaned}`;
 }
@@ -8947,6 +8947,7 @@ function migrateChurchRecord(church) {
 }
 
 function churchNameFromList(id, churches = []) {
+  if (!id || id === "-") return "-";
   const church = churches.find((item) => item.id === id || item.church_id === id);
   return ecChurchDisplayName(id, church?.public_name || church?.church_name || id || "-");
 }
@@ -14035,10 +14036,10 @@ function renderExecutiveAttendanceMainWidgetContent() {
                   </td>
                   <td><span class="badge bg-secondary-subtle text-secondary" style="font-size: 0.7rem;">${rec.department || "CESTAFF"}</span></td>
                   <td class="text-center font-monospace text-secondary small">${rec.attendance_date}</td>
-                  <td class="text-center font-monospace fw-bold ${isLate ? "text-danger" : "text-white"}">${rec.check_in || "--:--"}</td>
+                  <td class="text-center font-monospace fw-bold ${isLate ? "text-danger" : rec.is_present ? "text-white" : "text-secondary"}">${rec.check_in || "--:--"}</td>
                   <td class="text-center">${getStatusBadge(rec.status, rec.delay_minutes)}</td>
                   <td class="text-center">
-                    ${rec.delay_minutes > 0 ? `<span class="text-danger fw-semibold">+${rec.delay_minutes}m</span>` : `<span class="text-success"><i class="bi bi-check me-1"></i>${isPt ? "No Horário" : "On Time"}</span>`}
+                    ${rec.delay_minutes > 0 ? `<span class="text-danger fw-semibold">+${rec.delay_minutes}m</span>` : rec.is_present ? `<span class="text-success"><i class="bi bi-check me-1"></i>${isPt ? "No Horário" : "On Time"}</span>` : `<span class="text-secondary opacity-50 font-monospace">--</span>`}
                   </td>
                   <td><span class="text-secondary small font-monospace" style="font-size: 0.72rem;">${(rec.all_punches || "--:--").replace(/\n/g, " | ")}</span></td>
                   <td class="text-end pe-3">
@@ -30603,8 +30604,14 @@ function renderStaffHr() {
       ${filteredStaff.length ? dataTable([L("staffFullName"), L("staffRoleTitle"), L("church"), L("reqDepartment"), L("staffEmploymentType"), L("status"), L("actions")],
         filteredStaff.map((s) => {
           const enriched = lib.enrichStaffProfile(s);
-          const nameCell = `${s.full_name}${!lib.hasDateOfBirth(enriched) ? ` ${staffMissingDobBadge()}` : ""}`;
-          return [nameCell, s.role_title, churchName(s.church_id), s.department_name, s.employment_type, badge(s.status),
+          const name = s.full_name || s.name || s.staff_name || "-";
+          const nameCell = `${name}${!lib.hasDateOfBirth(enriched) ? ` ${staffMissingDobBadge()}` : ""}`;
+          const roleCell = s.role_title || s.role_name || s.role || "-";
+          const churchCell = s.church_name || (s.church_id ? churchName(s.church_id) : "-");
+          const deptCell = s.department_name || s.department || "-";
+          const empCell = s.employment_type || "-";
+          const statusCell = badge(s.status || "Activo");
+          return [nameCell, roleCell, churchCell, deptCell, empCell, statusCell,
             actionButtons([["view", "staffProfile", s.id, L("viewProfile")], ["edit", "staffProfile", s.id, L("edit")]])];
         })) : noResultsHtml()}`;
   } else if (staffHrPageState.tab === "birthdays") {
@@ -34799,8 +34806,12 @@ function openForm(type, id = null, options = {}) {
     if (type === "staffProfile") {
       modalMode = id ? "edit" : "create";
       modalType = type;
-      modalRecordId = id;
-      const record = id ? getCollection(type).find((item) => item.id === id) : {};
+      modalRecordId = id || null;
+      const record = id ? (getCollection(type).find((item) => item.id === id) || {}) : {
+        church_id: activeUser?.church_id || "",
+        status: "Activo",
+        employment_type: "Tempo Inteiro"
+      };
       byId("modalEyebrow").textContent = modalMode === "edit" ? L("edit") : L("add");
       byId("modalTitle").textContent = formTitle(type);
       byId("modalFields").innerHTML = renderStaffProfileForm(record, modalMode);
@@ -35610,7 +35621,13 @@ async function submitForm(form) {
       if (inputType === "checkbox") data[name] = new FormData(form).has(name);
     });
     enrichRecordChurchFields(data);
-    data.church_name = churchName(data.church_id);
+    data.church_name = data.church_name || (data.church_id ? churchName(data.church_id) : "");
+    data.full_name = String(data.full_name || data.name || "").trim();
+    if (data.role_title) data.role_title = String(data.role_title).trim();
+    if (data.role_name) data.role_name = String(data.role_name).trim();
+    if (!data.role_title && data.role_name) data.role_title = data.role_name;
+    if (!data.role_name && data.role_title) data.role_name = data.role_title;
+    if (data.department_name) data.department_name = String(data.department_name).trim();
     if (canSalary) data.salary_or_allowance = Number(data.salary_or_allowance || 0);
     else delete data.salary_or_allowance;
     if (!canSalary) {
@@ -43202,22 +43219,34 @@ function getStaffHrRepoSafe() {
 }
 
 async function dualWriteStaffHrRecord(kind, mode, record) {
+  const repo = getStaffHrRepoSafe();
   const bridge =
     window.CEStaffHR ||
     window.CEStaffHr ||
-    window.CEDataLayer?.staffHR;
-  if (!bridge || !record) return;
+    window.CEDataLayer?.staffHR ||
+    window.CEDataLayer;
+  if (!record) return;
   try {
-    if (typeof bridge.dualWriteRecord === "function") {
+    if (bridge && typeof bridge.dualWriteRecord === "function") {
       await bridge.dualWriteRecord(kind, mode, record);
       return;
     }
     if (kind === "staffProfile") {
-      if (mode === "create" && bridge.createStaff) await bridge.createStaff(record);
-      else if (mode === "update" && bridge.updateStaff) await bridge.updateStaff(record.id, record);
+      if (mode === "create") {
+        if (bridge?.createStaff) await bridge.createStaff(record);
+        else if (repo?.createStaff) await repo.createStaff(record);
+      } else if (mode === "update") {
+        if (bridge?.updateStaff) await bridge.updateStaff(record.id, record);
+        else if (repo?.updateStaff) await repo.updateStaff(record.id, record);
+      }
     } else if (kind === "staffPerformance") {
-      if (mode === "create" && bridge.createPerformanceReview) await bridge.createPerformanceReview(record);
-      else if (mode === "update" && bridge.updatePerformanceReview) await bridge.updatePerformanceReview(record.id, record);
+      if (mode === "create") {
+        if (bridge?.createPerformanceReview) await bridge.createPerformanceReview(record);
+        else if (repo?.createPerformanceReview) await repo.createPerformanceReview(record);
+      } else if (mode === "update") {
+        if (bridge?.updatePerformanceReview) await bridge.updatePerformanceReview(record.id, record);
+        else if (repo?.updatePerformanceReview) await repo.updatePerformanceReview(record.id, record);
+      }
     }
   } catch (err) {
     console.warn("[CE StaffHR] dualWrite error:", kind, mode, err);

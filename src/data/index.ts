@@ -1299,3 +1299,6 @@ export * as reportsApiAdapter from "./adapters/api/reportsApiAdapter";
 export * as notificationsApiAdapter from "./adapters/api/notificationsApiAdapter";
 export * as auditSystemApiAdapter from "./adapters/api/auditSystemApiAdapter";
 export * as venueInventoryApiAdapter from "./adapters/api/venueInventoryApiAdapter";
+export * as staffHrSupabaseAdapter from "./adapters/supabase/staffHrSupabaseAdapter";
+export * as staffHrApiAdapter from "./adapters/api/staffHrApiAdapter";
+

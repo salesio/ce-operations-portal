@@ -332,6 +332,39 @@
 
   var SEED_WORKFLOW_SUBMISSIONS = [
     {
+      id: "wf-sub-2026-10-01",
+      date: "2026-10-01",
+      period_type: "daily",
+      title: "Registo Biométrico Diário — 01 de Outubro de 2026",
+      group_name: "Paixão à Primeira Vista (Leopold Youngpet & Koutou)",
+      extracted_by: "Brother Lio",
+      extracted_at: "2026-10-01T09:00:00Z",
+      extraction_status: "Completed",
+      
+      // Step 2: Pastoral Care Head Review
+      pastoral_head: "Pastor Valdemiro",
+      pastoral_reviewed_at: "2026-10-01T09:30:00Z",
+      pastoral_status: "Approved",
+      pastoral_notes: "Dados conferidos e auditados pelo Departamento de Cuidados Pastorais. Relatório de 01/10/2026 validado.",
+      
+      // Step 3: Group Pastor / Overall Overseer
+      overseer_name: "Pastor Kéne",
+      overseer_received_at: "2026-10-01T09:45:00Z",
+      overseer_status: "Delivered_Main",
+      overseer_notes: "Homologado no Painel Geral da Igreja (MAIN).",
+      
+      record_count: 22,
+      present_count: 14,
+      on_time_count: 3,
+      grace_count: 2,
+      late_count: 9,
+      absent_count: 8,
+      total_delay_minutes: 279,
+      status: "delivered_to_kene",
+      created_at: "2026-10-01T09:00:00Z",
+      updated_at: "2026-10-01T09:45:00Z",
+    },
+    {
       id: "wf-sub-2026-07-09",
       date: "2026-07-09",
       period_type: "daily",
@@ -423,6 +456,39 @@
           return Object.assign({}, x);
         });
         saveLocal(KEYS.attendance, cached);
+      } else {
+        // Ensure all default seed records (e.g. 2026-10-01) exist and have accurate punch data
+        var attMap = {};
+        var updated = false;
+        cached.forEach(function (r) {
+          if (r.attendance_date && r.employee_id) {
+            attMap[r.attendance_date + "___" + String(r.employee_id)] = r;
+          }
+        });
+        SEED_ATTENDANCE.forEach(function (seed) {
+          var key = seed.attendance_date + "___" + String(seed.employee_id);
+          var existing = attMap[key];
+          if (!existing) {
+            cached.push(Object.assign({}, seed));
+            attMap[key] = seed;
+            updated = true;
+          } else if (!existing.check_in && seed.check_in) {
+            // Upgrade previously empty/unrecorded placeholder with accurate seed punch
+            Object.assign(existing, {
+              check_in: seed.check_in,
+              check_out: seed.check_out,
+              all_punches: seed.all_punches,
+              status: seed.status,
+              delay_minutes: seed.delay_minutes,
+              is_late: seed.is_late,
+              is_present: seed.is_present,
+            });
+            updated = true;
+          }
+        });
+        if (updated) {
+          saveLocal(KEYS.attendance, cached);
+        }
       }
       return cached;
     }
@@ -451,6 +517,22 @@
           return Object.assign({}, x);
         });
         saveLocal(KEYS.submissions, cachedSub);
+      } else {
+        var existingSubKeys = {};
+        var subUpdated = false;
+        cachedSub.forEach(function (s) {
+          if (s.date) existingSubKeys[s.date] = true;
+        });
+        SEED_WORKFLOW_SUBMISSIONS.forEach(function (sub) {
+          if (!existingSubKeys[sub.date]) {
+            cachedSub.unshift(Object.assign({}, sub));
+            existingSubKeys[sub.date] = true;
+            subUpdated = true;
+          }
+        });
+        if (subUpdated) {
+          saveLocal(KEYS.submissions, cachedSub);
+        }
       }
       return cachedSub;
     }
