@@ -43248,7 +43248,7 @@ async function hydrateStaffHrFromRepository() {
       const cleanStaff = staffData.filter((r) => !r.metadata?.demo && !r.metadata?.synthetic);
       state.staffProfiles = cleanStaff.map((row) => {
         const full = row.full_name || [row.first_name, row.last_name].filter(Boolean).join(" ");
-        const metaRow = (row.metadata as Record<string, unknown>) || row.metadata || {};
+        const metaRow = row.metadata || {};
         const merged = {
           ...row,
           id: row.id,
