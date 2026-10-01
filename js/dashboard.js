@@ -11468,6 +11468,18 @@ function isCounselingRoute(route = activeRoute) {
   return COUNSELING_TAB_ROUTES.has(route) || route === "counseling" || String(route || "").startsWith("counseling");
 }
 
+function isStaffHrRoute(route = activeRoute) {
+  return (
+    STAFF_HR_TAB_ROUTES.has(route) ||
+    route === "staffHr" ||
+    route === "staff" ||
+    route === "staff-hr" ||
+    route === "staffHrOverviewRoute" ||
+    String(route || "").startsWith("staffHr") ||
+    String(route || "").startsWith("staff")
+  );
+}
+
 function isFinanceRoute(route = activeRoute) {
   return [
     "finance", "financeOverviewRoute", "financeEntriesRoute", "financePublicSubmissionsRoute",
@@ -35612,7 +35624,7 @@ async function submitForm(form) {
     const today = new Date().toISOString().slice(0, 10);
     if (modalMode === "edit") {
       const index = state.staffProfiles.findIndex((item) => item.id === modalRecordId);
-      const previous = state.staffProfiles[index] || {};
+      const previous = index >= 0 ? state.staffProfiles[index] : {};
       // Preserve sensitive fields if user cannot edit salary
       const merged = { ...previous, ...data, updated_at: today };
       if (!canSalary) {
@@ -35625,12 +35637,20 @@ async function submitForm(form) {
         merged.nuit = previous.nuit;
       }
       if (!merged.status) merged.status = "Activo";
-      state.staffProfiles[index] = staffLib.enrichStaffProfile(merged);
-      dualWriteStaffHrRecord("staffProfile", "update", state.staffProfiles[index]);
+      const enriched = staffLib?.enrichStaffProfile ? staffLib.enrichStaffProfile(merged) : merged;
+      if (index >= 0) {
+        state.staffProfiles[index] = enriched;
+      } else {
+        state.staffProfiles.unshift(enriched);
+      }
+      dualWriteStaffHrRecord("staffProfile", "update", enriched);
     } else {
       state.staffProfiles = state.staffProfiles || [];
-      const created = staffLib.enrichStaffProfile({
-        id: `staff-${Date.now()}`,
+      const newId = (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function")
+        ? crypto.randomUUID()
+        : (window.CESupabase?.newClientUuid ? window.CESupabase.newClientUuid() : `staff-${Date.now()}`);
+      const createdRaw = {
+        id: newId,
         staff_code: `STF-${String(Date.now()).slice(-6)}`,
         user_id: "",
         created_at: today,
@@ -35651,10 +35671,11 @@ async function submitForm(form) {
         contract_end_date: "",
         probation_end_date: "",
         profile_photo: "",
-        created_by: activeUser.name,
+        created_by: activeUser?.name || "Sistema",
         ...data
-      });
-      state.staffProfiles.push(created);
+      };
+      const created = staffLib?.enrichStaffProfile ? staffLib.enrichStaffProfile(createdRaw) : createdRaw;
+      state.staffProfiles.unshift(created);
       dualWriteStaffHrRecord("staffProfile", "create", created);
       if (created.full_name || created.name) {
         registerPendingMemberFromExternalRole({
@@ -35670,8 +35691,18 @@ async function submitForm(form) {
       }
     }
     saveState(`${modalMode} staffProfile`);
-    bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide();
-    if (activeRoute === "staffHr") renderStaffHr();
+    try {
+      form.reset();
+    } catch (_) {}
+    try {
+      const modalEl = byId("entryModal");
+      if (modalEl) {
+        const modalInstance = bootstrap.Modal.getInstance(modalEl) || bootstrap.Modal.getOrCreateInstance(modalEl);
+        modalInstance.hide();
+      }
+    } catch (_) {}
+    showToast(modalMode === "edit" ? "Registo de staff atualizado com sucesso!" : "Novo staff registado com sucesso!", "success");
+    if (isStaffHrRoute(activeRoute)) renderStaffHr();
     return;
   }
   if (modalType === "staffPerformance") {
@@ -35681,9 +35712,9 @@ async function submitForm(form) {
     });
     const total = scoreFields.reduce((sum, field) => sum + Number(data[field] || 0), 0);
     data.overall_score = Number((total / scoreFields.length).toFixed(1));
-    data.evaluated_by = activeUser.name;
+    data.evaluated_by = activeUser?.name || "Sistema";
     data.evaluated_at = new Date().toISOString().slice(0, 10);
-    data.updated_by = activeUser.name;
+    data.updated_by = activeUser?.name || "Sistema";
     data.updated_at = data.evaluated_at;
     data.status = data.status || "Reviewed";
     if (modalMode === "edit") {
@@ -35695,18 +35726,30 @@ async function submitForm(form) {
     } else {
       state.staffPerformance = state.staffPerformance || [];
       const created = {
-        id: `perf-${Date.now()}`,
-        created_by: activeUser.name,
+        id: (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function")
+          ? crypto.randomUUID()
+          : (window.CESupabase?.newClientUuid ? window.CESupabase.newClientUuid() : `perf-${Date.now()}`),
+        created_by: activeUser?.name || "Sistema",
         created_at: data.evaluated_at,
         ...data
       };
-      state.staffPerformance.push(created);
+      state.staffPerformance.unshift(created);
       dualWriteStaffHrRecord("staffPerformance", "create", created);
     }
     saveState(`${modalMode} staffPerformance`);
-    bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide();
+    try {
+      form.reset();
+    } catch (_) {}
+    try {
+      const modalEl = byId("entryModal");
+      if (modalEl) {
+        const modalInstance = bootstrap.Modal.getInstance(modalEl) || bootstrap.Modal.getOrCreateInstance(modalEl);
+        modalInstance.hide();
+      }
+    } catch (_) {}
+    showToast(modalMode === "edit" ? "Avaliação atualizada com sucesso!" : "Avaliação registada com sucesso!", "success");
     staffHrPageState.tab = "performance";
-    if (activeRoute === "staffHr") renderStaffHr();
+    if (isStaffHrRoute(activeRoute)) renderStaffHr();
     return;
   }
   schema.forEach(([name, , inputType]) => {
@@ -39886,7 +39929,7 @@ document.addEventListener("click", async (event) => {
     if (domainId && domainReportFilters[domainId]) {
       domainReportFilters[domainId] = { ...framework.DEFAULT_FILTERS };
       if (domainId === reportsPageState.domain && activeRoute === "reports") renderReports();
-      else if (activeRoute === "staffHr") renderStaffHr();
+      else if (isStaffHrRoute(activeRoute)) renderStaffHr();
       else if (activeRoute === "foundation") renderFoundation();
       else if (activeRoute === "firstTimers") renderFirstTimers();
       else if (activeRoute === "followUp") renderFollowUp();
@@ -40435,7 +40478,7 @@ document.addEventListener("input", (event) => {
     return;
   }
   const birthdaySearchFilter = event.target.dataset?.staffBirthdayFilter;
-  if (birthdaySearchFilter === "search" && activeRoute === "staffHr") {
+  if (birthdaySearchFilter === "search" && isStaffHrRoute(activeRoute)) {
     staffHrPageState.birthdayFilters.search = event.target.value;
     renderStaffHr();
     return;
@@ -40472,7 +40515,7 @@ document.addEventListener("input", (event) => {
     return;
   }
   const birthdayFilterInput = event.target.dataset?.staffBirthdayFilter;
-  if (birthdayFilterInput && activeRoute === "staffHr") {
+  if (birthdayFilterInput && isStaffHrRoute(activeRoute)) {
     staffHrPageState.birthdayFilters[birthdayFilterInput] = event.target.value;
     renderStaffHr();
     return;
@@ -40859,7 +40902,7 @@ document.addEventListener("change", (event) => {
     return;
   }
   const birthdayFilterSelect = event.target.dataset?.staffBirthdayFilter;
-  if (birthdayFilterSelect && activeRoute === "staffHr") {
+  if (birthdayFilterSelect && isStaffHrRoute(activeRoute)) {
     staffHrPageState.birthdayFilters[birthdayFilterSelect] = event.target.value;
     renderStaffHr();
     return;

@@ -41,15 +41,12 @@
   }
 
   function resolveApi() {
-    var layer = window.CEDataLayer && (window.CEDataLayer.staffHR || window.CEDataLayer.staff);
-    if (layer && typeof layer.createStaff === "function") {
-      return { api: layer, via: "CEDataLayer.staffHR" };
-    }
-    if (window.CEStaffHR && typeof window.CEStaffHR.createStaff === "function") {
-      return { api: window.CEStaffHR, via: "CEStaffHR" };
-    }
     if (window.CESupabase && typeof window.CESupabase.createStaff === "function") {
       return { api: window.CESupabase, via: "CESupabase" };
+    }
+    var layer = window.CEDataLayer && (window.CEDataLayer.staffHR || window.CEDataLayer.staff);
+    if (layer && layer !== dataApi && typeof layer.createStaff === "function") {
+      return { api: layer, via: "CEDataLayer.staffHR" };
     }
     return { api: null, via: "none" };
   }
