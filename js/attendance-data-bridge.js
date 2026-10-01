@@ -391,7 +391,7 @@
   }
 
   function getLocalStore(kind) {
-    if (kind === "attendance") {
+    if (kind === "attendance" || kind === "records") {
       var cached = loadLocal(KEYS.attendance);
       if (!cached || !Array.isArray(cached) || !cached.length) {
         cached = SEED_ATTENDANCE.map(function (x) {

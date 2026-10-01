@@ -13688,21 +13688,20 @@ window.mainAttendanceState = {
 };
 
 window.switchMainAttendanceDate = function (dateOrPeriod, periodType) {
+  if (!dateOrPeriod) return;
   window.mainAttendanceState.selectedDate = dateOrPeriod;
   if (periodType) window.mainAttendanceState.period = periodType;
   var container = document.getElementById("mainAttendanceWidgetWrapper");
   if (container) {
     container.innerHTML = renderExecutiveAttendanceMainWidgetContent();
-    attachMainAttendanceWidgetListeners();
   }
 };
 
 window.filterMainAttendanceStatus = function (status) {
-  window.mainAttendanceState.statusFilter = status;
+  window.mainAttendanceState.statusFilter = status || "all";
   var container = document.getElementById("mainAttendanceWidgetWrapper");
   if (container) {
     container.innerHTML = renderExecutiveAttendanceMainWidgetContent();
-    attachMainAttendanceWidgetListeners();
   }
 };
 
@@ -13711,7 +13710,6 @@ window.searchMainAttendanceStaff = function (query) {
   var container = document.getElementById("mainAttendanceWidgetWrapper");
   if (container) {
     container.innerHTML = renderExecutiveAttendanceMainWidgetContent();
-    attachMainAttendanceWidgetListeners();
   }
 };
 
@@ -13729,8 +13727,10 @@ function renderExecutiveAttendanceMainWidgetContent() {
   const stateObj = window.mainAttendanceState || { selectedDate: "2026-07-09", period: "day", statusFilter: "all", searchQuery: "" };
   const targetDate = stateObj.selectedDate || "2026-07-09";
 
-  const allRecords = bridge?.getLocalStore ? bridge.getLocalStore("records") : [];
-  const submissions = bridge?.getLocalStore ? bridge.getLocalStore("submissions") : [];
+  // Fetch all attendance records reliably
+  const allRecords = (bridge?.getLocalStore ? bridge.getLocalStore("attendance") : null) || (bridge?.getLocalStore ? bridge.getLocalStore("records") : null) || [];
+  const submissions = (bridge?.getLocalStore ? bridge.getLocalStore("submissions") : null) || [];
+  
   const submission = submissions.find((s) => s.date === targetDate) || {
     date: targetDate,
     group_name: "Paixão à Primeira Vista (Leopold Youngpet & Koutou)",
@@ -13738,27 +13738,71 @@ function renderExecutiveAttendanceMainWidgetContent() {
     pastoral_head: "Pastor Valdemiro",
     overseer_name: "Pastor Kéne",
     overseer_status: "Delivered_Main",
-    pastoral_notes: "Auditado e verificado para homologação do Pastor do Grupo.",
+    pastoral_notes: isPt ? "Auditado e verificado para homologação do Pastor do Grupo." : "Audited and verified for Group Pastor approval.",
+    overseer_notes: isPt ? "Homologado no Painel Geral da Igreja." : "Homologated on Church Main Dashboard.",
     status: "delivered_to_kene",
   };
 
-  // Filter records by date or range
-  let records = [];
+  // Filter records according to selected period
+  let periodRecords = [];
   if (stateObj.period === "week") {
-    // Week of 2026-07-06 to 2026-07-12
-    records = allRecords.filter((r) => r.attendance_date >= "2026-07-06" && r.attendance_date <= "2026-07-09");
+    // Week from 2026-07-06 to 2026-07-12
+    periodRecords = allRecords.filter((r) => r.attendance_date >= "2026-07-06" && r.attendance_date <= "2026-07-09");
   } else if (stateObj.period === "month") {
-    records = allRecords.filter((r) => r.attendance_date.slice(0, 7) === "2026-07");
+    periodRecords = allRecords.filter((r) => r.attendance_date && r.attendance_date.slice(0, 7) === targetDate.slice(0, 7));
   } else if (stateObj.period === "last_month") {
-    records = allRecords.filter((r) => r.attendance_date.slice(0, 7) === "2026-06");
+    periodRecords = allRecords.filter((r) => r.attendance_date && r.attendance_date.slice(0, 7) === "2026-06");
   } else if (stateObj.period === "year_2025") {
-    records = allRecords.filter((r) => r.attendance_date.slice(0, 4) === "2025");
+    periodRecords = allRecords.filter((r) => r.attendance_date && r.attendance_date.slice(0, 4) === "2025");
   } else {
-    records = allRecords.filter((r) => r.attendance_date === targetDate);
+    periodRecords = allRecords.filter((r) => r.attendance_date === targetDate);
   }
 
-  // Deduplicate for display if multi-day or single day
-  let displayedStaff = records;
+  // If no records found for a date, fallback to all staff list for preview
+  if (!periodRecords.length && bridge?.STAFF_LIST) {
+    periodRecords = bridge.STAFF_LIST.map((s) => ({
+      id: "att-" + targetDate.replace(/-/g, "") + "-" + s.id,
+      attendance_date: targetDate,
+      employee_id: s.id,
+      employee_name: s.name,
+      department: s.dept,
+      role: s.role,
+      check_in: null,
+      status: "absent",
+      delay_minutes: 0,
+      is_late: false,
+      is_present: false,
+      all_punches: "--:-- --:--",
+    }));
+  }
+
+  // Stats calculation
+  const totalExpected = periodRecords.length || 20;
+  const presentRecs = periodRecords.filter((r) => r.is_present);
+  const onTimeRecs = periodRecords.filter((r) => r.status === "on_time");
+  const graceRecs = periodRecords.filter((r) => r.status === "grace_period");
+  const minorRecs = periodRecords.filter((r) => r.status === "minor_delay");
+  const lateRecs = periodRecords.filter((r) => r.status === "late");
+  const severeRecs = periodRecords.filter((r) => r.status === "severe_delay");
+  const allLateRecs = periodRecords.filter((r) => r.is_late);
+  const absentRecs = periodRecords.filter((r) => !r.is_present);
+
+  const onTimeRate = totalExpected > 0 ? Math.round(((onTimeRecs.length + graceRecs.length) / totalExpected) * 100) : 0;
+  const presenceRate = totalExpected > 0 ? Math.round((presentRecs.length / totalExpected) * 100) : 0;
+
+  // Average check in
+  const checkIns = presentRecs.map((r) => bridge?.parseTimeToMinutes ? bridge.parseTimeToMinutes(r.check_in) : null).filter((m) => m != null);
+  const avgMins = checkIns.length ? Math.round(checkIns.reduce((a, b) => a + b, 0) / checkIns.length) : null;
+  const avgCheckInStr = avgMins != null && bridge?.minutesToTimeStr ? bridge.minutesToTimeStr(avgMins) : (presentRecs.length ? "08:04" : "--:--");
+
+  // Filter staff table according to active filter
+  let displayedStaff = periodRecords;
+  if (stateObj.statusFilter === "on_time") displayedStaff = onTimeRecs;
+  else if (stateObj.statusFilter === "grace") displayedStaff = graceRecs;
+  else if (stateObj.statusFilter === "late") displayedStaff = allLateRecs;
+  else if (stateObj.statusFilter === "absent") displayedStaff = absentRecs;
+
+  // Filter by search query
   if (stateObj.searchQuery) {
     const q = stateObj.searchQuery;
     displayedStaff = displayedStaff.filter((r) =>
@@ -13768,31 +13812,6 @@ function renderExecutiveAttendanceMainWidgetContent() {
     );
   }
 
-  // Stats calculation
-  const totalExpected = records.length || 20;
-  const presentRecs = records.filter((r) => r.is_present);
-  const onTimeRecs = records.filter((r) => r.status === "on_time");
-  const graceRecs = records.filter((r) => r.status === "grace_period");
-  const minorRecs = records.filter((r) => r.status === "minor_delay");
-  const lateRecs = records.filter((r) => r.status === "late");
-  const severeRecs = records.filter((r) => r.status === "severe_delay");
-  const allLateRecs = records.filter((r) => r.is_late);
-  const absentRecs = records.filter((r) => !r.is_present);
-
-  const onTimeRate = totalExpected > 0 ? Math.round(((onTimeRecs.length + graceRecs.length) / totalExpected) * 100) : 85;
-  const presenceRate = totalExpected > 0 ? Math.round((presentRecs.length / totalExpected) * 100) : 90;
-
-  // Average check in
-  const checkIns = presentRecs.map((r) => bridge?.parseTimeToMinutes ? bridge.parseTimeToMinutes(r.check_in) : 480).filter((m) => m != null);
-  const avgMins = checkIns.length ? Math.round(checkIns.reduce((a, b) => a + b, 0) / checkIns.length) : 484;
-  const avgCheckInStr = bridge?.minutesToTimeStr ? bridge.minutesToTimeStr(avgMins) : "08:04";
-
-  // Filter table by status chip
-  if (stateObj.statusFilter === "on_time") displayedStaff = onTimeRecs;
-  else if (stateObj.statusFilter === "grace") displayedStaff = graceRecs;
-  else if (stateObj.statusFilter === "late") displayedStaff = allLateRecs;
-  else if (stateObj.statusFilter === "absent") displayedStaff = absentRecs;
-
   const getStatusBadge = (status, delayMins) => {
     switch (status) {
       case "on_time":
@@ -13800,10 +13819,11 @@ function renderExecutiveAttendanceMainWidgetContent() {
       case "grace_period":
         return `<span class="badge bg-info-subtle text-info border border-info border-opacity-25 px-2 py-0.5"><i class="bi bi-clock-history me-1"></i>${isPt ? "Tolerância" : "Grace"} (${delayMins}m)</span>`;
       case "minor_delay":
-        return `<span class="badge bg-warning-subtle text-warning border border-warning border-opacity-25 px-2 py-0.5"><i class="bi bi-clock me-1"></i>${isPt ? "Atraso" : "Delay"} (+${delayMins}m)</span>`;
+        return `<span class="badge bg-warning-subtle text-warning border border-warning border-opacity-25 px-2 py-0.5"><i class="bi bi-clock me-1"></i>${isPt ? "Atraso Ligeiro" : "Minor Delay"} (+${delayMins}m)</span>`;
       case "late":
+        return `<span class="badge bg-danger text-white px-2 py-0.5"><i class="bi bi-exclamation-circle-fill me-1"></i>${isPt ? "Atrasado" : "Late"} (+${delayMins}m)</span>`;
       case "severe_delay":
-        return `<span class="badge bg-danger text-white px-2 py-0.5"><i class="bi bi-exclamation-triangle-fill me-1"></i>${isPt ? "Atrasado" : "Late"} (+${delayMins}m)</span>`;
+        return `<span class="badge bg-danger text-white px-2 py-0.5"><i class="bi bi-fire me-1"></i>${isPt ? "Muito Tarde" : "Severe Delay"} (+${delayMins}m)</span>`;
       case "absent":
       default:
         return `<span class="badge bg-secondary-subtle text-secondary border border-secondary border-opacity-25 px-2 py-0.5"><i class="bi bi-dash-circle me-1"></i>${isPt ? "Sem Registo" : "No Punch"}</span>`;
@@ -13811,12 +13831,12 @@ function renderExecutiveAttendanceMainWidgetContent() {
   };
 
   return `
-    <div class="main-att-executive-card att-card p-3.5 mb-4 border-gold border-opacity-40">
-      <!-- Header with Timeframe Tabs and Date Controls -->
+    <div class="main-att-executive-card att-card p-4 mb-4 border-gold border-opacity-40">
+      <!-- Header with Timeframe Tabs, Custom Date Picker, Print PDF and View Details -->
       <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3 pb-3 border-bottom border-secondary border-opacity-25">
         <div>
           <div class="d-flex align-items-center gap-2 mb-1">
-            <span class="badge bg-gold-subtle text-gold text-uppercase px-2 py-0.5 fw-bold" style="font-size: 0.72rem;">
+            <span class="badge bg-gold-subtle text-gold text-uppercase px-2.5 py-1 fw-bold" style="font-size: 0.72rem; letter-spacing: 0.04em;">
               <i class="bi bi-fingerprint me-1"></i>${isPt ? "CENTRO DE ASSIDUIDADE EXECUTIVO — MAIN" : "EXECUTIVE ATTENDANCE HUB — MAIN"}
             </span>
             <span class="badge ${submission.overseer_status === "Acknowledged" ? "bg-success" : "bg-info text-dark"}">
@@ -13827,7 +13847,7 @@ function renderExecutiveAttendanceMainWidgetContent() {
             ${isPt ? "Supervisão Diária, Comparação e Relatórios de Ponto" : "Daily Oversight, Comparison & Punch Reports"} — <span class="text-gold font-monospace">${targetDate}</span>
           </h4>
           <span class="text-secondary small">
-            ${isPt ? "Origem: Brother Lio (Paixão à Primeira Vista / Leopold Youngpet & Koutou) ➔ Auditoria: Pastor Valdemiro (Cuidados Pastorais) ➔ Homologação: Pastor Kéne" : "Source: Br. Lio (Paixão à Primeira Vista) ➔ Audit: Pr. Valdemiro (Pastoral Care) ➔ Homologation: Pr. Kéne"}
+            ${isPt ? "Origem: Brother Lio (Paixão à Primeira Vista) ➔ Auditoria: Pastor Valdemiro (Cuidados Pastorais) ➔ Homologação: Pastor Kéne (MAIN)" : "Source: Br. Lio (Paixão à Primeira Vista) ➔ Audit: Pr. Valdemiro (Pastoral Care) ➔ Homologation: Pr. Kéne (MAIN)"}
           </span>
         </div>
 
@@ -13847,66 +13867,71 @@ function renderExecutiveAttendanceMainWidgetContent() {
               <i class="bi bi-calendar-week me-1"></i>${isPt ? "Esta Semana" : "This Week"}
             </button>
             <button type="button" class="btn ${stateObj.period === "month" ? "btn-ce-gold" : "btn-outline-secondary"}" onclick="window.switchMainAttendanceDate('2026-07-09', 'month')">
-              <i class="bi bi-calendar-month me-1"></i>${isPt ? "Mês Atual (Julho)" : "Current Month"}
+              <i class="bi bi-calendar-month me-1"></i>${isPt ? "Julho 2026" : "July 2026"}
             </button>
             <button type="button" class="btn ${stateObj.period === "last_month" ? "btn-ce-gold" : "btn-outline-secondary"}" onclick="window.switchMainAttendanceDate('2026-06-09', 'last_month')">
               ${isPt ? "Junho 2026" : "June 2026"}
             </button>
           </div>
 
-          <!-- Date input for arbitrary date -->
+          <!-- Custom Date input -->
           <div class="d-flex align-items-center gap-1">
-            <input type="date" class="form-control form-control-sm" id="mainAttCustomDateInput" value="${targetDate}" style="max-width: 140px;" onchange="window.switchMainAttendanceDate(this.value, 'day')">
+            <input type="date" class="form-control form-control-sm" id="mainAttCustomDateInput" value="${targetDate}" style="max-width: 145px;" onchange="window.switchMainAttendanceDate(this.value, 'day')" oninput="window.switchMainAttendanceDate(this.value, 'day')">
           </div>
 
-          <!-- Direct PDF Print button -->
-          <button type="button" class="btn btn-sm btn-ce-gold" onclick="if(window.CEAttendanceModule && window.CEAttendanceModule.generateDailyPdf){ window.CEAttendanceModule.generateDailyPdf('${targetDate}'); }">
+          <!-- Action Button 1: Print PDF -->
+          <button type="button" class="btn btn-sm btn-ce-gold" onclick="if(window.CEAttendanceModule && window.CEAttendanceModule.generateDailyPdf){ window.CEAttendanceModule.generateDailyPdf('${targetDate}'); } else if(window.exportReportsPrint){ window.exportReportsPrint(document.getElementById('mainAttendanceWidgetWrapper')?.innerHTML, 'Relatorio-Assiduidade-${targetDate}'); }">
             <i class="bi bi-printer-fill me-1"></i>${isPt ? "Imprimir PDF" : "Print PDF"}
+          </button>
+
+          <!-- Action Button 2: View / Visualizar Detalhes -->
+          <button type="button" class="btn btn-sm btn-outline-info" onclick="if(window.navigateTo){ window.navigateTo('attendance'); setTimeout(function(){ if(window.attendancePageState){ window.attendancePageState.selectedDate = '${targetDate}'; window.attendancePageState.tab = '${stateObj.period === 'month' || stateObj.period === 'last_month' ? 'monthly' : 'daily'}'; } if(window.renderAttendance) window.renderAttendance(window.attendancePageState?.tab || 'daily'); }, 50); }" title="${isPt ? "Abrir módulo de Assiduidade completo" : "Open full Attendance module"}">
+            <i class="bi bi-eye-fill me-1"></i>${isPt ? "Visualizar / Ver" : "View Details"}
           </button>
         </div>
       </div>
 
-      <!-- Top KPI Summary Strip -->
+      <!-- Interactive Top KPI Cards (Click to filter table) -->
       <div class="row g-3 mb-3">
         <div class="col-6 col-md-4 col-xl-2">
-          <div class="p-2.5 rounded border border-secondary border-opacity-25 text-center bg-dark bg-opacity-30">
-            <span class="text-secondary small d-block" style="font-size: 0.7rem;">${isPt ? "TOTAL REGISTADOS" : "TOTAL EXPECTED"}</span>
-            <strong class="fs-5 text-white">${totalExpected}</strong>
+          <div class="p-3 rounded border border-secondary border-opacity-25 text-center bg-dark bg-opacity-30 att-card-clickable" role="button" tabindex="0" onclick="window.filterMainAttendanceStatus('all')" title="${isPt ? "Clique para ver todos os colaboradores" : "Click to view all staff"}">
+            <span class="text-secondary small d-block mb-1" style="font-size: 0.72rem;">${isPt ? "TOTAL REGISTADOS" : "TOTAL EXPECTED"}</span>
+            <strong class="fs-4 text-white">${totalExpected}</strong>
           </div>
         </div>
         <div class="col-6 col-md-4 col-xl-2">
-          <div class="p-2.5 rounded border border-secondary border-opacity-25 text-center bg-dark bg-opacity-30">
-            <span class="text-secondary small d-block" style="font-size: 0.7rem;">${isPt ? "PRESENTES NO POSTO" : "PRESENT"}</span>
-            <strong class="fs-5 text-info">${presentRecs.length} <small class="text-secondary fw-normal">(${presenceRate}%)</small></strong>
+          <div class="p-3 rounded border border-secondary border-opacity-25 text-center bg-dark bg-opacity-30 att-card-clickable" role="button" tabindex="0" onclick="window.filterMainAttendanceStatus('on_time')" title="${isPt ? "Clique para filtrar presentes" : "Click to view present staff"}">
+            <span class="text-secondary small d-block mb-1" style="font-size: 0.72rem;">${isPt ? "PRESENTES NO POSTO" : "PRESENT"}</span>
+            <strong class="fs-4 text-info">${presentRecs.length} <small class="text-secondary fw-normal fs-6">(${presenceRate}%)</small></strong>
           </div>
         </div>
         <div class="col-6 col-md-4 col-xl-2">
-          <div class="p-2.5 rounded border border-secondary border-opacity-25 text-center bg-dark bg-opacity-30">
-            <span class="text-secondary small d-block" style="font-size: 0.7rem;">${isPt ? "TAXA PONTUALIDADE" : "PUNCTUALITY RATE"}</span>
-            <strong class="fs-5 text-success">${onTimeRate}%</strong>
+          <div class="p-3 rounded border border-secondary border-opacity-25 text-center bg-dark bg-opacity-30 att-card-clickable" role="button" tabindex="0" onclick="window.filterMainAttendanceStatus('on_time')" title="${isPt ? "Clique para ver pontuais" : "Click to view on-time staff"}">
+            <span class="text-secondary small d-block mb-1" style="font-size: 0.72rem;">${isPt ? "TAXA PONTUALIDADE" : "PUNCTUALITY RATE"}</span>
+            <strong class="fs-4 ${onTimeRate >= 80 ? "text-success" : "text-warning"}">${onTimeRate}%</strong>
           </div>
         </div>
         <div class="col-6 col-md-4 col-xl-2">
-          <div class="p-2.5 rounded border border-secondary border-opacity-25 text-center bg-dark bg-opacity-30">
-            <span class="text-secondary small d-block" style="font-size: 0.7rem;">${isPt ? "EM ATRASO (>08:15)" : "TOTAL LATE"}</span>
-            <strong class="fs-5 text-danger">${allLateRecs.length}</strong>
+          <div class="p-3 rounded border border-secondary border-opacity-25 text-center bg-dark bg-opacity-30 att-card-clickable" role="button" tabindex="0" onclick="window.filterMainAttendanceStatus('late')" title="${isPt ? "Clique para filtrar atrasados" : "Click to view late staff"}">
+            <span class="text-secondary small d-block mb-1" style="font-size: 0.72rem;">${isPt ? "EM ATRASO (>08:15)" : "TOTAL LATE"}</span>
+            <strong class="fs-4 text-danger">${allLateRecs.length}</strong>
           </div>
         </div>
         <div class="col-6 col-md-4 col-xl-2">
-          <div class="p-2.5 rounded border border-secondary border-opacity-25 text-center bg-dark bg-opacity-30">
-            <span class="text-secondary small d-block" style="font-size: 0.7rem;">${isPt ? "HORA MÉDIA ENTRADA" : "AVG CHECK-IN"}</span>
-            <strong class="fs-5 text-warning font-monospace">${avgCheckInStr}</strong>
+          <div class="p-3 rounded border border-secondary border-opacity-25 text-center bg-dark bg-opacity-30">
+            <span class="text-secondary small d-block mb-1" style="font-size: 0.72rem;">${isPt ? "HORA MÉDIA ENTRADA" : "AVG CHECK-IN"}</span>
+            <strong class="fs-4 text-warning font-monospace">${avgCheckInStr}</strong>
           </div>
         </div>
         <div class="col-6 col-md-4 col-xl-2">
-          <div class="p-2.5 rounded border border-secondary border-opacity-25 text-center bg-dark bg-opacity-30">
-            <span class="text-secondary small d-block" style="font-size: 0.7rem;">${isPt ? "SUPERVISOR GERAL" : "OVERSEER"}</span>
-            <strong class="fs-6 text-gold">Pr. Kéne</strong>
+          <div class="p-3 rounded border border-secondary border-opacity-25 text-center bg-dark bg-opacity-30">
+            <span class="text-secondary small d-block mb-1" style="font-size: 0.72rem;">${isPt ? "SUPERVISOR GERAL" : "OVERSEER"}</span>
+            <strong class="fs-5 text-gold">Pr. Kéne</strong>
           </div>
         </div>
       </div>
 
-      <!-- Pastoral Pipeline & Homologation Action Bar -->
+      <!-- Pastoral Pipeline & Homologation Action Strip -->
       <div class="p-3 rounded bg-dark bg-opacity-40 border border-secondary border-opacity-20 mb-3">
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
           <div class="d-flex align-items-center gap-3">
@@ -13939,11 +13964,11 @@ function renderExecutiveAttendanceMainWidgetContent() {
       </div>
 
       <!-- Filter toolbar for table: Search + Status Chips -->
-      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2 pt-2 border-top border-secondary border-opacity-20">
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2.5 pt-2 border-top border-secondary border-opacity-20">
         <div class="d-flex flex-wrap align-items-center gap-2">
           <span class="text-secondary small fw-bold text-uppercase" style="font-size: 0.72rem;">${isPt ? "Filtrar por Status:" : "Filter Status:"}</span>
           <button type="button" class="att-filter-btn ${stateObj.statusFilter === "all" ? "active" : ""}" onclick="window.filterMainAttendanceStatus('all')">
-            ${isPt ? "Todos" : "All"} (${records.length})
+            ${isPt ? "Todos" : "All"} (${periodRecords.length})
           </button>
           <button type="button" class="att-filter-btn ${stateObj.statusFilter === "on_time" ? "active" : ""}" onclick="window.filterMainAttendanceStatus('on_time')">
             ${isPt ? "Pontual" : "On Time"} (${onTimeRecs.length})
@@ -13960,11 +13985,11 @@ function renderExecutiveAttendanceMainWidgetContent() {
         </div>
 
         <div class="d-flex align-items-center gap-2">
-          <div class="input-group input-group-sm" style="max-width: 220px;">
+          <div class="input-group input-group-sm" style="max-width: 230px;">
             <span class="input-group-text"><i class="bi bi-search"></i></span>
             <input type="text" class="form-control" placeholder="${isPt ? "Pesquisar colaborador..." : "Search staff..."}" value="${stateObj.searchQuery || ""}" oninput="window.searchMainAttendanceStaff(this.value)">
           </div>
-          <button type="button" class="btn btn-sm btn-outline-secondary" onclick="if(window.CEAttendanceBridge){ var res = window.CEAttendanceBridge.getLocalStore('records'); var filtered = (res || []).filter(function(r){ return r.attendance_date === '${targetDate}'; }); if(window.CEAttendanceModule && window.CEAttendanceModule.exportRecordsToCsv){ window.CEAttendanceModule.exportRecordsToCsv(filtered, 'Attendance-${targetDate}.csv'); } else { alert('Exportando registos de ${targetDate}...'); } }">
+          <button type="button" class="btn btn-sm btn-outline-secondary" onclick="if(window.CEAttendanceBridge && window.CEAttendanceModule && window.CEAttendanceModule.exportRecordsToCsv){ var res = window.CEAttendanceBridge.getLocalStore('attendance'); var filtered = (res || []).filter(function(r){ return r.attendance_date === '${targetDate}'; }); window.CEAttendanceModule.exportRecordsToCsv(filtered, 'Attendance-${targetDate}.csv'); } else { alert('A exportar CSV de ${targetDate}...'); }">
             <i class="bi bi-download me-1"></i>CSV
           </button>
         </div>
@@ -14038,9 +14063,6 @@ function renderExecutiveAttendanceMainWidgetContent() {
   `;
 }
 
-function attachMainAttendanceWidgetListeners() {
-  // Attached dynamically on each widget render
-}
 
 
 function dashboardToday() {

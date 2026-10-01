@@ -11745,6 +11745,20 @@ nav.module-tabs {
   background: linear-gradient(145deg, rgba(13, 30, 56, 0.95), rgba(7, 19, 38, 0.98)) !important;
   border-radius: 20px !important;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35) !important;
+  margin-bottom: 2rem !important;
+}
+
+.att-card-clickable {
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+.att-card-clickable:hover {
+  transform: translateY(-2px);
+  border-color: rgba(212, 175, 55, 0.6) !important;
+  background: rgba(212, 175, 55, 0.12) !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
 }
 
 [data-theme="light"] .main-att-executive-card,
@@ -11753,6 +11767,19 @@ nav.module-tabs {
   border: 1px solid #cbd5e1 !important;
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08) !important;
 }
+
+[data-theme="light"] .att-card-clickable,
+.theme-light .att-card-clickable {
+  background: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+[data-theme="light"] .att-card-clickable:hover,
+.theme-light .att-card-clickable:hover {
+  background: #fef9c3 !important;
+  border-color: #f59e0b !important;
+}
+
 
 
 
