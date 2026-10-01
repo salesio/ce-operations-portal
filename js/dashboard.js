@@ -13806,36 +13806,36 @@ function renderExecutiveAttendanceMainWidgetContent() {
   const getStatusBadge = (status, delayMins) => {
     switch (status) {
       case "on_time":
-        return `<span class="badge bg-success-subtle text-success border border-success border-opacity-25 px-2 py-0.5"><i class="bi bi-check-circle-fill me-1"></i>${isPt ? "Pontual" : "On Time"}</span>`;
+        return `<span class="badge" style="background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.25); font-weight: 600; padding: 4px 9px; font-size: 0.73rem;"><i class="bi bi-check-circle-fill me-1"></i>${isPt ? "Pontual" : "On Time"}</span>`;
       case "grace_period":
-        return `<span class="badge bg-info-subtle text-info border border-info border-opacity-25 px-2 py-0.5"><i class="bi bi-clock-history me-1"></i>${isPt ? "Tolerância" : "Grace"} (${delayMins}m)</span>`;
+        return `<span class="badge" style="background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.25); font-weight: 600; padding: 4px 9px; font-size: 0.73rem;"><i class="bi bi-clock-history me-1"></i>${isPt ? "Tolerância" : "Grace"} (${delayMins}m)</span>`;
       case "minor_delay":
-        return `<span class="badge bg-warning-subtle text-warning border border-warning border-opacity-25 px-2 py-0.5"><i class="bi bi-clock me-1"></i>${isPt ? "Atraso Ligeiro" : "Minor Delay"} (+${delayMins}m)</span>`;
+        return `<span class="badge" style="background: rgba(245, 158, 11, 0.12); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.25); font-weight: 600; padding: 4px 9px; font-size: 0.73rem;"><i class="bi bi-clock me-1"></i>${isPt ? "Atraso Ligeiro" : "Minor Delay"} (+${delayMins}m)</span>`;
       case "late":
-        return `<span class="badge bg-danger text-white px-2 py-0.5"><i class="bi bi-exclamation-circle-fill me-1"></i>${isPt ? "Atrasado" : "Late"} (+${delayMins}m)</span>`;
+        return `<span class="badge" style="background: rgba(248, 113, 113, 0.12); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.25); font-weight: 600; padding: 4px 9px; font-size: 0.73rem;"><i class="bi bi-exclamation-circle-fill me-1"></i>${isPt ? "Atrasado" : "Late"} (+${delayMins}m)</span>`;
       case "severe_delay":
-        return `<span class="badge bg-danger text-white px-2 py-0.5"><i class="bi bi-fire me-1"></i>${isPt ? "Muito Tarde" : "Severe Delay"} (+${delayMins}m)</span>`;
+        return `<span class="badge" style="background: rgba(248, 113, 113, 0.16); color: #fca5a5; border: 1px solid rgba(248, 113, 113, 0.3); font-weight: 600; padding: 4px 9px; font-size: 0.73rem;"><i class="bi bi-fire me-1"></i>${isPt ? "Muito Tarde" : "Severe Delay"} (+${delayMins}m)</span>`;
       case "absent":
       default:
-        return `<span class="badge bg-secondary-subtle text-secondary border border-secondary border-opacity-25 px-2 py-0.5"><i class="bi bi-dash-circle me-1"></i>${isPt ? "Sem Registo" : "No Punch"}</span>`;
+        return `<span class="badge" style="background: rgba(148, 163, 184, 0.1); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.2); font-weight: 600; padding: 4px 9px; font-size: 0.73rem;"><i class="bi bi-dash-circle me-1"></i>${isPt ? "Sem Registo" : "No Punch"}</span>`;
     }
   };
 
   return `
-    <div class="main-att-executive-card att-card p-4 mb-4 border-gold border-opacity-40">
+    <div class="main-att-executive-card att-card p-3 p-md-4 mb-4">
       <!-- Header with Timeframe Tabs, Custom Date Picker, Print PDF and View Details -->
-      <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3 pb-3 border-bottom border-secondary border-opacity-25">
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3 pb-3 border-bottom border-secondary border-opacity-15">
         <div>
           <div class="d-flex align-items-center gap-2 mb-1">
-            <span class="badge bg-gold-subtle text-gold text-uppercase px-2.5 py-1 fw-bold" style="font-size: 0.72rem; letter-spacing: 0.04em;">
+            <span class="badge" style="background: rgba(234, 179, 8, 0.12); color: #facc15; border: 1px solid rgba(234, 179, 8, 0.25); font-size: 0.72rem; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; padding: 4px 8px;">
               <i class="bi bi-fingerprint me-1"></i>${isPt ? "PAINEL DE ASSIDUIDADE — MAIN" : "ATTENDANCE HUB — MAIN"}
             </span>
-            <span class="badge bg-success-subtle text-success border border-success border-opacity-25 px-2 py-0.5">
+            <span class="badge" style="background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.25); font-size: 0.72rem; padding: 4px 8px;">
               <i class="bi bi-shield-check me-1"></i>${isPt ? "Registo Oficial Homologado" : "Official Homologated Record"}
             </span>
           </div>
           <h4 class="h5 fw-bold text-white mb-0">
-            ${isPt ? "Supervisão Diária, Comparação e Relatórios de Ponto" : "Daily Oversight, Comparison & Punch Reports"} — <span class="text-gold font-monospace">${targetDate}</span>
+            ${isPt ? "Supervisão Diária, Comparação e Relatórios de Ponto" : "Daily Oversight, Comparison & Punch Reports"} — <span style="color: #facc15; font-weight: 600;">${targetDate}</span>
           </h4>
           <span class="text-secondary small">
             ${isPt ? "Registo oficial biométrico consolidado com suporte a comparativos temporais e relatórios." : "Consolidated biometric records with multi-period comparative analysis and reporting."}
@@ -13867,22 +13867,22 @@ function renderExecutiveAttendanceMainWidgetContent() {
 
           <!-- Custom Date input -->
           <div class="d-flex align-items-center gap-1">
-            <input type="date" class="form-control form-control-sm" id="mainAttCustomDateInput" value="${targetDate}" style="max-width: 145px;" onchange="window.switchMainAttendanceDate(this.value, 'day')" oninput="window.switchMainAttendanceDate(this.value, 'day')">
+            <input type="date" class="form-control form-control-sm" id="mainAttCustomDateInput" value="${targetDate}" style="max-width: 145px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); color: #e2e8f0;" onchange="window.switchMainAttendanceDate(this.value, 'day')" oninput="window.switchMainAttendanceDate(this.value, 'day')">
           </div>
 
           <!-- Action Button: Colar WhatsApp / Entrada Rápida -->
-          <button type="button" class="btn btn-sm btn-outline-success" onclick="if(window.navigateTo){ window.navigateTo('attendance'); setTimeout(function(){ if(window.renderAttendance) window.renderAttendance('manual'); }, 50); }" title="${isPt ? "Inserir relatório do WhatsApp" : "Paste WhatsApp Report"}">
+          <button type="button" class="btn btn-sm" style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.28); color: #4ade80; font-weight: 600; font-size: 0.82rem;" onclick="if(window.setRoute){ window.setRoute('attendance'); setTimeout(function(){ if(window.renderAttendance) window.renderAttendance('manual'); }, 50); }" title="${isPt ? "Inserir relatório do WhatsApp" : "Paste WhatsApp Report"}">
             <i class="bi bi-whatsapp me-1"></i>${isPt ? "Colar WhatsApp" : "WhatsApp"}
           </button>
 
           <!-- Action Button 1: Print PDF -->
-          <button type="button" class="btn btn-sm btn-ce-gold" onclick="if(window.CEAttendanceModule && window.CEAttendanceModule.generateDailyPdf){ window.CEAttendanceModule.generateDailyPdf('${targetDate}'); } else if(window.exportReportsPrint){ window.exportReportsPrint(document.getElementById('mainAttendanceWidgetWrapper')?.innerHTML, 'Relatorio-Assiduidade-${targetDate}'); }">
-            <i class="bi bi-printer-fill me-1"></i>${isPt ? "Imprimir PDF" : "Print PDF"}
+          <button type="button" class="btn btn-sm" style="background: rgba(234, 179, 8, 0.1); border: 1px solid rgba(234, 179, 8, 0.28); color: #facc15; font-weight: 600; font-size: 0.82rem;" onclick="if(window.CEAttendanceModule && window.CEAttendanceModule.generateDailyPdf){ window.CEAttendanceModule.generateDailyPdf('${targetDate}'); } else if(window.exportReportsPrint){ window.exportReportsPrint(document.getElementById('mainAttendanceWidgetWrapper')?.innerHTML, 'Relatorio-Assiduidade-${targetDate}'); }">
+            <i class="bi bi-printer me-1"></i>${isPt ? "Imprimir PDF" : "Print PDF"}
           </button>
 
           <!-- Action Button 2: View / Visualizar Detalhes -->
-          <button type="button" class="btn btn-sm btn-outline-info" onclick="if(window.navigateTo){ window.navigateTo('attendance'); setTimeout(function(){ if(window.attendancePageState){ window.attendancePageState.selectedDate = '${targetDate}'; window.attendancePageState.tab = '${stateObj.period === 'month' || stateObj.period === 'last_month' ? 'monthly' : 'daily'}'; } if(window.renderAttendance) window.renderAttendance(window.attendancePageState?.tab || 'daily'); }, 50); }" title="${isPt ? "Abrir módulo de Assiduidade completo" : "Open full Attendance module"}">
-            <i class="bi bi-eye-fill me-1"></i>${isPt ? "Visualizar / Ver" : "View Details"}
+          <button type="button" class="btn btn-sm" style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.28); color: #38bdf8; font-weight: 600; font-size: 0.82rem;" onclick="if(window.setRoute){ window.setRoute('attendance'); setTimeout(function(){ if(window.attendancePageState){ window.attendancePageState.selectedDate = '${targetDate}'; window.attendancePageState.tab = '${stateObj.period === 'month' || stateObj.period === 'last_month' ? 'monthly' : 'daily'}'; } if(window.renderAttendance) window.renderAttendance(window.attendancePageState?.tab || 'daily'); }, 50); }" title="${isPt ? "Abrir módulo de Assiduidade completo" : "Open full Attendance module"}">
+            <i class="bi bi-eye me-1"></i>${isPt ? "Visualizar / Ver" : "View Details"}
           </button>
         </div>
       </div>
@@ -13890,64 +13890,64 @@ function renderExecutiveAttendanceMainWidgetContent() {
       <!-- Interactive Top KPI Cards (Click to filter table) -->
       <div class="row g-3 mb-3">
         <div class="col-6 col-md-4 col-xl-2">
-          <div class="p-3 rounded border border-secondary border-opacity-25 text-center bg-dark bg-opacity-30 att-card-clickable" role="button" tabindex="0" onclick="window.filterMainAttendanceStatus('all')" title="${isPt ? "Clique para ver todos os colaboradores" : "Click to view all staff"}">
-            <span class="text-secondary small d-block mb-1" style="font-size: 0.72rem;">${isPt ? "TOTAL REGISTADOS" : "TOTAL EXPECTED"}</span>
-            <strong class="fs-4 text-white">${totalExpected}</strong>
+          <div class="p-3 rounded att-card-clickable text-center" role="button" tabindex="0" onclick="window.filterMainAttendanceStatus('all')" title="${isPt ? "Clique para ver todos os colaboradores" : "Click to view all staff"}">
+            <span class="text-secondary small d-block mb-1" style="font-size: 0.72rem; letter-spacing: 0.04em;">${isPt ? "TOTAL REGISTADOS" : "TOTAL EXPECTED"}</span>
+            <strong class="fs-4" style="color: #f1f5f9;">${totalExpected}</strong>
           </div>
         </div>
         <div class="col-6 col-md-4 col-xl-2">
-          <div class="p-3 rounded border border-secondary border-opacity-25 text-center bg-dark bg-opacity-30 att-card-clickable" role="button" tabindex="0" onclick="window.filterMainAttendanceStatus('on_time')" title="${isPt ? "Clique para filtrar presentes" : "Click to view present staff"}">
-            <span class="text-secondary small d-block mb-1" style="font-size: 0.72rem;">${isPt ? "PRESENTES NO POSTO" : "PRESENT"}</span>
-            <strong class="fs-4 text-info">${presentRecs.length} <small class="text-secondary fw-normal fs-6">(${presenceRate}%)</small></strong>
+          <div class="p-3 rounded att-card-clickable text-center" role="button" tabindex="0" onclick="window.filterMainAttendanceStatus('on_time')" title="${isPt ? "Clique para filtrar presentes" : "Click to view present staff"}">
+            <span class="text-secondary small d-block mb-1" style="font-size: 0.72rem; letter-spacing: 0.04em;">${isPt ? "PRESENTES NO POSTO" : "PRESENT"}</span>
+            <strong class="fs-4" style="color: #38bdf8;">${presentRecs.length} <small class="text-secondary fw-normal fs-6">(${presenceRate}%)</small></strong>
           </div>
         </div>
         <div class="col-6 col-md-4 col-xl-2">
-          <div class="p-3 rounded border border-secondary border-opacity-25 text-center bg-dark bg-opacity-30 att-card-clickable" role="button" tabindex="0" onclick="window.filterMainAttendanceStatus('on_time')" title="${isPt ? "Clique para ver pontuais" : "Click to view on-time staff"}">
-            <span class="text-secondary small d-block mb-1" style="font-size: 0.72rem;">${isPt ? "TAXA PONTUALIDADE" : "PUNCTUALITY RATE"}</span>
-            <strong class="fs-4 ${onTimeRate >= 80 ? "text-success" : "text-warning"}">${onTimeRate}%</strong>
+          <div class="p-3 rounded att-card-clickable text-center" role="button" tabindex="0" onclick="window.filterMainAttendanceStatus('on_time')" title="${isPt ? "Clique para ver pontuais" : "Click to view on-time staff"}">
+            <span class="text-secondary small d-block mb-1" style="font-size: 0.72rem; letter-spacing: 0.04em;">${isPt ? "TAXA PONTUALIDADE" : "PUNCTUALITY RATE"}</span>
+            <strong class="fs-4" style="color: ${onTimeRate >= 80 ? "#34d399" : "#fbbf24"};">${onTimeRate}%</strong>
           </div>
         </div>
         <div class="col-6 col-md-4 col-xl-2">
-          <div class="p-3 rounded border border-secondary border-opacity-25 text-center bg-dark bg-opacity-30 att-card-clickable" role="button" tabindex="0" onclick="window.filterMainAttendanceStatus('late')" title="${isPt ? "Clique para filtrar atrasados" : "Click to view late staff"}">
-            <span class="text-secondary small d-block mb-1" style="font-size: 0.72rem;">${isPt ? "EM ATRASO (>08:15)" : "TOTAL LATE"}</span>
-            <strong class="fs-4 text-danger">${allLateRecs.length}</strong>
+          <div class="p-3 rounded att-card-clickable text-center" role="button" tabindex="0" onclick="window.filterMainAttendanceStatus('late')" title="${isPt ? "Clique para filtrar atrasados" : "Click to view late staff"}">
+            <span class="text-secondary small d-block mb-1" style="font-size: 0.72rem; letter-spacing: 0.04em;">${isPt ? "EM ATRASO (>08:15)" : "TOTAL LATE"}</span>
+            <strong class="fs-4" style="color: #f87171;">${allLateRecs.length}</strong>
           </div>
         </div>
         <div class="col-6 col-md-4 col-xl-2">
-          <div class="p-3 rounded border border-secondary border-opacity-25 text-center bg-dark bg-opacity-30">
-            <span class="text-secondary small d-block mb-1" style="font-size: 0.72rem;">${isPt ? "HORA MÉDIA ENTRADA" : "AVG CHECK-IN"}</span>
-            <strong class="fs-4 text-warning font-monospace">${avgCheckInStr}</strong>
+          <div class="p-3 rounded att-card-clickable text-center">
+            <span class="text-secondary small d-block mb-1" style="font-size: 0.72rem; letter-spacing: 0.04em;">${isPt ? "HORA MÉDIA ENTRADA" : "AVG CHECK-IN"}</span>
+            <strong class="fs-4" style="color: #facc15; font-variant-numeric: tabular-nums;">${avgCheckInStr}</strong>
           </div>
         </div>
         <div class="col-6 col-md-4 col-xl-2">
-          <div class="p-3 rounded border border-secondary border-opacity-25 text-center bg-dark bg-opacity-30 att-card-clickable" role="button" tabindex="0" onclick="window.filterMainAttendanceStatus('absent')" title="${isPt ? "Clique para filtrar ausências" : "Click to view absences"}">
-            <span class="text-secondary small d-block mb-1" style="font-size: 0.72rem;">${isPt ? "SEM REGISTO / AUSENTES" : "UNRECORDED / ABSENT"}</span>
-            <strong class="fs-4 text-warning">${absentRecs.length}</strong>
+          <div class="p-3 rounded att-card-clickable text-center" role="button" tabindex="0" onclick="window.filterMainAttendanceStatus('absent')" title="${isPt ? "Clique para filtrar ausências" : "Click to view absences"}">
+            <span class="text-secondary small d-block mb-1" style="font-size: 0.72rem; letter-spacing: 0.04em;">${isPt ? "SEM REGISTO / AUSENTES" : "UNRECORDED / ABSENT"}</span>
+            <strong class="fs-4" style="color: #94a3b8;">${absentRecs.length}</strong>
           </div>
         </div>
       </div>
 
       <!-- Quick Navigation & Comparison Action Bar -->
-      <div class="p-2.5 rounded bg-dark bg-opacity-40 border border-secondary border-opacity-20 mb-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+      <div class="p-2.5 rounded mb-3 d-flex flex-wrap align-items-center justify-content-between gap-2" style="background: rgba(255, 255, 255, 0.025); border: 1px solid rgba(255, 255, 255, 0.06);">
         <div class="d-flex align-items-center gap-2">
-          <span class="badge bg-gold-subtle text-gold px-2 py-1"><i class="bi bi-calendar-check me-1"></i>${isPt ? "Período Selecionado:" : "Selected Period:"}</span>
-          <span class="text-white small fw-bold">${stateObj.period === "week" ? (isPt ? "Semana Atual (06-12 Jul 2026)" : "Current Week (06-12 Jul 2026)") : (stateObj.period === "month" ? (isPt ? "Mês de Julho 2026" : "July 2026") : (stateObj.period === "last_month" ? (isPt ? "Mês de Junho 2026" : "June 2026") : targetDate))}</span>
+          <span class="badge" style="background: rgba(234, 179, 8, 0.12); color: #facc15; border: 1px solid rgba(234, 179, 8, 0.25); font-size: 0.72rem;"><i class="bi bi-calendar-check me-1"></i>${isPt ? "Período Selecionado:" : "Selected Period:"}</span>
+          <span class="small fw-semibold" style="color: #e2e8f0;">${stateObj.period === "week" ? (isPt ? "Semana Atual (06-12 Jul 2026)" : "Current Week (06-12 Jul 2026)") : (stateObj.period === "month" ? (isPt ? "Mês de Julho 2026" : "July 2026") : (stateObj.period === "last_month" ? (isPt ? "Mês de Junho 2026" : "June 2026") : targetDate))}</span>
         </div>
 
         <div class="d-flex flex-wrap align-items-center gap-2">
-          <button type="button" class="btn btn-xs btn-outline-warning" onclick="if(window.navigateTo){ window.navigateTo('attendance'); setTimeout(function(){ if(window.renderAttendance) window.renderAttendance('comparison'); }, 50); }">
-            <i class="bi bi-arrow-left-right me-1"></i>${isPt ? "Comparador Multi-Período" : "Temporal Comparison"}
+          <button type="button" class="btn btn-xs" style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.12); color: #cbd5e1; font-weight: 500; padding: 4px 10px;" onclick="if(window.setRoute){ window.setRoute('attendance'); setTimeout(function(){ if(window.renderAttendance) window.renderAttendance('comparison'); }, 50); }">
+            <i class="bi bi-arrow-left-right me-1" style="color: #facc15;"></i>${isPt ? "Comparador Multi-Período" : "Temporal Comparison"}
           </button>
-          <button type="button" class="btn btn-xs btn-outline-info" onclick="if(window.navigateTo){ window.navigateTo('attendance'); setTimeout(function(){ if(window.renderAttendance) window.renderAttendance('monthly'); }, 50); }">
-            <i class="bi bi-file-earmark-bar-graph me-1"></i>${isPt ? "Relatório Mensal Completo" : "Monthly Report"}
+          <button type="button" class="btn btn-xs" style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.12); color: #cbd5e1; font-weight: 500; padding: 4px 10px;" onclick="if(window.setRoute){ window.setRoute('attendance'); setTimeout(function(){ if(window.renderAttendance) window.renderAttendance('monthly'); }, 50); }">
+            <i class="bi bi-file-earmark-bar-graph me-1" style="color: #38bdf8;"></i>${isPt ? "Relatório Mensal Completo" : "Monthly Report"}
           </button>
         </div>
       </div>
 
       <!-- Filter toolbar for table: Search + Status Chips -->
-      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2.5 pt-2 border-top border-secondary border-opacity-20">
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2.5 pt-2 border-top border-secondary border-opacity-15">
         <div class="d-flex flex-wrap align-items-center gap-2">
-          <span class="text-secondary small fw-bold text-uppercase" style="font-size: 0.72rem;">${isPt ? "Filtrar por Status:" : "Filter Status:"}</span>
+          <span class="text-secondary small fw-bold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.04em;">${isPt ? "Filtrar por Status:" : "Filter Status:"}</span>
           <button type="button" class="att-filter-btn ${stateObj.statusFilter === "all" ? "active" : ""}" onclick="window.filterMainAttendanceStatus('all')">
             ${isPt ? "Todos" : "All"} (${periodRecords.length})
           </button>
@@ -13967,17 +13967,17 @@ function renderExecutiveAttendanceMainWidgetContent() {
 
         <div class="d-flex align-items-center gap-2">
           <div class="input-group input-group-sm" style="max-width: 230px;">
-            <span class="input-group-text"><i class="bi bi-search"></i></span>
-            <input type="text" class="form-control" placeholder="${isPt ? "Pesquisar colaborador..." : "Search staff..."}" value="${stateObj.searchQuery || ""}" oninput="window.searchMainAttendanceStaff(this.value)">
+            <span class="input-group-text" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); color: #94a3b8;"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); color: #e2e8f0;" placeholder="${isPt ? "Pesquisar colaborador..." : "Search staff..."}" value="${stateObj.searchQuery || ""}" oninput="window.searchMainAttendanceStaff(this.value)">
           </div>
-          <button type="button" class="btn btn-sm btn-outline-secondary" onclick="if(window.CEAttendanceBridge && window.CEAttendanceModule && window.CEAttendanceModule.exportRecordsToCsv){ var res = window.CEAttendanceBridge.getLocalStore('attendance'); var filtered = (res || []).filter(function(r){ return r.attendance_date === '${targetDate}'; }); window.CEAttendanceModule.exportRecordsToCsv(filtered, 'Attendance-${targetDate}.csv'); } else { alert('A exportar CSV de ${targetDate}...'); }">
+          <button type="button" class="btn btn-sm" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); color: #94a3b8;" onclick="if(window.CEAttendanceBridge && window.CEAttendanceModule && window.CEAttendanceModule.exportRecordsToCsv){ var res = window.CEAttendanceBridge.getLocalStore('attendance'); var filtered = (res || []).filter(function(r){ return r.attendance_date === '${targetDate}'; }); window.CEAttendanceModule.exportRecordsToCsv(filtered, 'Attendance-${targetDate}.csv'); } else { alert('A exportar CSV de ${targetDate}...'); }">
             <i class="bi bi-download me-1"></i>CSV
           </button>
         </div>
       </div>
 
       <!-- Live Staff Attendance Matrix Table on MAIN -->
-      <div class="table-responsive rounded border border-secondary border-opacity-25" style="max-height: 420px;">
+      <div class="table-responsive rounded" style="max-height: 420px; border: 1px solid rgba(255, 255, 255, 0.08);">
         <table class="table att-table align-middle mb-0" style="font-size: 0.84rem;">
           <thead class="sticky-top">
             <tr>
@@ -13995,34 +13995,35 @@ function renderExecutiveAttendanceMainWidgetContent() {
           <tbody>
             ${displayedStaff.length ? displayedStaff.map((rec) => {
               const isLate = rec.is_late;
+              const staffDisplayName = resolveOfficialStaffName(rec, rec.employee_full_name || rec.employee_name);
               return `
                 <tr class="${isLate ? "att-row-late" : ""}">
-                  <td class="ps-3 font-monospace text-secondary" style="font-size: 0.78rem;">${rec.employee_id}</td>
+                  <td class="ps-3 text-secondary" style="font-size: 0.78rem; font-variant-numeric: tabular-nums;">${rec.employee_id}</td>
                   <td>
                     <div class="d-flex align-items-center gap-2">
-                      <div class="att-avatar" style="width: 28px; height: 28px; font-size: 0.76rem; background: rgba(212, 175, 55, 0.15); color: #d4af37; border-color: rgba(212, 175, 55, 0.3);">
-                        ${(rec.employee_name || "S").slice(0, 2).toUpperCase()}
+                      <div class="att-avatar" style="width: 28px; height: 28px; font-size: 0.76rem; background: rgba(234, 179, 8, 0.12); color: #facc15; border: 1px solid rgba(234, 179, 8, 0.25);">
+                        ${(staffDisplayName || "S").slice(0, 2).toUpperCase()}
                       </div>
                       <div>
-                        <div class="fw-semibold text-white">${rec.employee_name}</div>
+                        <div class="fw-semibold" style="color: #f1f5f9;">${staffDisplayName}</div>
                         <span class="text-secondary" style="font-size: 0.7rem;">${rec.role || rec.department}</span>
                       </div>
                     </div>
                   </td>
-                  <td><span class="badge bg-secondary-subtle text-secondary" style="font-size: 0.7rem;">${rec.department || "CESTAFF"}</span></td>
-                  <td class="text-center font-monospace text-secondary small">${rec.attendance_date}</td>
-                  <td class="text-center font-monospace fw-bold ${isLate ? "text-danger" : rec.is_present ? "text-white" : "text-secondary"}">${rec.check_in || "--:--"}</td>
+                  <td><span class="badge" style="background: rgba(255,255,255,0.06); color: #94a3b8; font-size: 0.7rem; font-weight: 600;">${rec.department || "CESTAFF"}</span></td>
+                  <td class="text-center text-secondary small" style="font-variant-numeric: tabular-nums;">${rec.attendance_date}</td>
+                  <td class="text-center fw-bold" style="font-variant-numeric: tabular-nums; color: ${isLate ? "#f87171" : rec.is_present ? "#f1f5f9" : "#64748b"};">${rec.check_in || "--:--"}</td>
                   <td class="text-center">${getStatusBadge(rec.status, rec.delay_minutes)}</td>
                   <td class="text-center">
-                    ${rec.delay_minutes > 0 ? `<span class="text-danger fw-semibold">+${rec.delay_minutes}m</span>` : rec.is_present ? `<span class="text-success"><i class="bi bi-check me-1"></i>${isPt ? "No Horário" : "On Time"}</span>` : `<span class="text-secondary opacity-50 font-monospace">--</span>`}
+                    ${rec.delay_minutes > 0 ? `<span style="color: #f87171; font-weight: 600; font-variant-numeric: tabular-nums;">+${rec.delay_minutes}m</span>` : rec.is_present ? `<span style="color: #34d399; font-weight: 500;"><i class="bi bi-check me-1"></i>${isPt ? "No Horário" : "On Time"}</span>` : `<span class="text-secondary opacity-50">--</span>`}
                   </td>
-                  <td><span class="text-secondary small font-monospace" style="font-size: 0.72rem;">${(rec.all_punches || "--:--").replace(/\n/g, " | ")}</span></td>
+                  <td><span class="text-secondary small" style="font-size: 0.74rem; font-variant-numeric: tabular-nums;">${(rec.all_punches || "--:--").replace(/\n/g, " | ")}</span></td>
                   <td class="text-end pe-3">
                     <div class="btn-group btn-group-sm">
-                      <button type="button" class="btn btn-xs btn-outline-warning" onclick="if(window.navigateTo){ window.navigateTo('attendance'); setTimeout(function(){ if(window.attendancePageState) window.attendancePageState.selectedStaffId = '${rec.employee_id}'; if(window.renderAttendance) window.renderAttendance('trajectory'); }, 50); }" title="${isPt ? "Ver Dossiê Individual" : "View Staff Dossier"}">
+                      <button type="button" class="btn btn-xs" style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.12); color: #facc15;" onclick="if(window.setRoute){ window.setRoute('attendance'); setTimeout(function(){ if(window.attendancePageState) window.attendancePageState.selectedStaffId = '${rec.employee_id}'; if(window.renderAttendance) window.renderAttendance('trajectory'); }, 50); }" title="${isPt ? "Ver Dossiê Individual" : "View Staff Dossier"}">
                         <i class="bi bi-graph-up-arrow"></i>
                       </button>
-                      <button type="button" class="btn btn-xs btn-outline-secondary" onclick="if(window.CEAttendanceModule && window.CEAttendanceModule.generateStaffDossierPdf){ window.CEAttendanceModule.generateStaffDossierPdf('${rec.employee_id}'); }" title="${isPt ? "Imprimir Dossiê" : "Print Dossier"}">
+                      <button type="button" class="btn btn-xs" style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.12); color: #94a3b8;" onclick="if(window.CEAttendanceModule && window.CEAttendanceModule.generateStaffDossierPdf){ window.CEAttendanceModule.generateStaffDossierPdf('${rec.employee_id}'); }" title="${isPt ? "Imprimir Dossiê" : "Print Dossier"}">
                         <i class="bi bi-file-earmark-pdf"></i>
                       </button>
                     </div>

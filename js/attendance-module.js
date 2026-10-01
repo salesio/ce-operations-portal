@@ -54,6 +54,20 @@
     return window.CEAttendanceBridge || window.CEDataLayer?.attendance;
   }
 
+  function resolveStaffFullName(recOrIdOrName, fallback) {
+    var bridge = getBridge();
+    if (bridge && typeof bridge.resolveOfficialStaffName === "function") {
+      return bridge.resolveOfficialStaffName(recOrIdOrName, fallback);
+    }
+    if (window.resolveOfficialStaffName) {
+      return window.resolveOfficialStaffName(recOrIdOrName, fallback);
+    }
+    if (typeof recOrIdOrName === "object" && recOrIdOrName !== null) {
+      return recOrIdOrName.employee_full_name || recOrIdOrName.employee_name || fallback || "Colaborador";
+    }
+    return String(recOrIdOrName || fallback || "Colaborador");
+  }
+
   // Format minutes delay
   function formatDelay(minutes) {
     if (!minutes || minutes <= 0) {
@@ -675,16 +689,17 @@
             <tbody>
               ${displayedRecords.length ? displayedRecords.map(function (rec) {
                 var isLate = rec.is_late;
+                var staffDisplayName = resolveStaffFullName(rec, rec.employee_full_name || rec.employee_name);
                 return `
                   <tr class="${isLate ? "att-row-late" : ""}">
                     <td class="ps-3 font-monospace text-secondary" style="font-size: 0.82rem;">${rec.employee_id}</td>
                     <td>
                       <div class="d-flex align-items-center gap-2">
                         <div class="att-avatar" style="width: 30px; height: 30px; font-size: 0.8rem; background: rgba(212, 175, 55, 0.12); color: #d4af37; border-color: rgba(212, 175, 55, 0.3);">
-                          ${(rec.employee_name || "S").slice(0, 2).toUpperCase()}
+                          ${(staffDisplayName || "S").slice(0, 2).toUpperCase()}
                         </div>
                         <div>
-                          <div class="fw-semibold text-white" style="font-size: 0.88rem;">${rec.employee_name}</div>
+                          <div class="fw-semibold text-white" style="font-size: 0.88rem;">${staffDisplayName}</div>
                           ${rec.card_no ? `<span class="text-secondary font-monospace" style="font-size: 0.7rem;">Card: ${rec.card_no}</span>` : ""}
                         </div>
                       </div>
@@ -980,12 +995,13 @@
                   }
                 };
 
+                var staffDisplayName = resolveStaffFullName(row, row.employee_full_name || row.employee_name);
                 return `
                   <tr>
                     <td class="ps-3 font-monospace text-secondary">${row.employee_id}</td>
                     <td>
                       <div>
-                        <div class="fw-semibold text-white">${row.employee_name}</div>
+                        <div class="fw-semibold text-white">${staffDisplayName}</div>
                         <span class="text-secondary small" style="font-size: 0.72rem;">${row.role || row.department}</span>
                       </div>
                     </td>
@@ -1333,12 +1349,13 @@
                 <tbody>
                   ${topPunctual.length ? topPunctual.map(function (emp, idx) {
                     var medal = idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `${idx + 1}º`;
+                    var staffDisplayName = resolveStaffFullName(emp, emp.employee_full_name || emp.employee_name);
                     return `
                       <tr>
                         <td class="ps-3 fw-bold text-gold">${medal}</td>
                         <td>
                           <div>
-                            <div class="fw-semibold small text-white">${emp.employee_name}</div>
+                            <div class="fw-semibold small text-white">${staffDisplayName}</div>
                             <span class="text-secondary" style="font-size: 0.7rem;">ID: ${emp.employee_id} • ${emp.department}</span>
                           </div>
                         </td>
@@ -1381,12 +1398,13 @@
                     var delayH = Math.floor(emp.totalDelayMins / 60);
                     var delayM = emp.totalDelayMins % 60;
                     var delayF = delayH > 0 ? `${delayH}h ${delayM}m` : `${delayM} min`;
+                    var staffDisplayName = resolveStaffFullName(emp, emp.employee_full_name || emp.employee_name);
                     return `
                       <tr>
                         <td class="ps-3 fw-bold text-danger">${idx + 1}º</td>
                         <td>
                           <div>
-                            <div class="fw-semibold small text-white">${emp.employee_name}</div>
+                            <div class="fw-semibold small text-white">${staffDisplayName}</div>
                             <span class="text-secondary" style="font-size: 0.7rem;">ID: ${emp.employee_id} • ${emp.department}</span>
                           </div>
                         </td>
@@ -1486,10 +1504,11 @@
     (allStaffRes.data || []).forEach(function (r) {
       if (!seen.has(String(r.employee_id))) {
         seen.add(String(r.employee_id));
+        var officialName = resolveStaffFullName(r, r.employee_full_name || r.employee_name);
         distinctEmployees.push({
           id: String(r.employee_id),
-          name: r.employee_name,
-          shortName: r.employee_name,
+          name: officialName,
+          shortName: r.employee_name || officialName,
           dept: r.department || "CESTAFF",
           role: "Staff"
         });
@@ -1498,6 +1517,7 @@
 
     var selectedId = String(attendancePageState.selectedStaffId || (distinctEmployees[0] ? distinctEmployees[0].id : "11"));
     var trajectory = await getBridge().getStaffTrajectory(selectedId, "2026-01-01", "2026-12-31");
+    var trajectoryOfficialName = resolveStaffFullName(trajectory, trajectory.employee_full_name || trajectory.employee_name);
 
     var selectorHtml = `
       <div class="att-card p-3 mb-4">
@@ -1541,7 +1561,7 @@
           </div>
           <div class="col-12 col-md">
             <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
-              <h3 class="h4 fw-bold mb-0 text-white">${trajectory.employee_name}</h3>
+              <h3 class="h4 fw-bold mb-0 text-white">${trajectoryOfficialName}</h3>
               <span class="badge bg-gold-subtle text-gold">ID: ${trajectory.employee_id}</span>
               <span class="badge bg-secondary-subtle text-secondary border border-secondary border-opacity-40">${trajectory.department}</span>
             </div>
@@ -2201,10 +2221,11 @@ Thank you for the opportunity Pastor Sir`;
     var tableRowsHtml = records.map(function (r) {
       var statusText = r.status === "on_time" ? t("Pontual", "On Time") : r.status === "grace_period" ? `${t("Tolerância", "Grace")} (+${r.delay_minutes}m)` : r.is_late ? `${t("Atrasado", "Late")} (+${r.delay_minutes}m)` : t("Sem Registo", "No Record");
       var statusColor = r.status === "on_time" ? "#198754" : r.status === "grace_period" ? "#0dcaf0" : r.is_late ? "#dc3545" : "#6c757d";
+      var staffDisplayName = resolveStaffFullName(r, r.employee_full_name || r.employee_name);
       return `
         <tr>
           <td style="padding: 6px 8px; border: 1px solid #ddd; font-family: monospace;">${r.employee_id}</td>
-          <td style="padding: 6px 8px; border: 1px solid #ddd; font-weight: bold;">${r.employee_name}</td>
+          <td style="padding: 6px 8px; border: 1px solid #ddd; font-weight: bold;">${staffDisplayName}</td>
           <td style="padding: 6px 8px; border: 1px solid #ddd;">${r.department || "CESTAFF"}</td>
           <td style="padding: 6px 8px; border: 1px solid #ddd; text-align: center; font-family: monospace;">${r.check_in || "--:--"}</td>
           <td style="padding: 6px 8px; border: 1px solid #ddd; text-align: center; color: ${statusColor}; font-weight: bold;">${statusText}</td>
@@ -2288,10 +2309,11 @@ Thank you for the opportunity Pastor Sir`;
     var stats = await getBridge().getAggregatePeriodStats(start, end);
 
     var rowsHtml = stats.employeesList.map(function (emp) {
+      var staffDisplayName = resolveStaffFullName(emp, emp.employee_full_name || emp.employee_name);
       return `
         <tr>
           <td style="padding: 6px 8px; border: 1px solid #ddd; font-family: monospace;">${emp.employee_id}</td>
-          <td style="padding: 6px 8px; border: 1px solid #ddd; font-weight: bold;">${emp.employee_name}</td>
+          <td style="padding: 6px 8px; border: 1px solid #ddd; font-weight: bold;">${staffDisplayName}</td>
           <td style="padding: 6px 8px; border: 1px solid #ddd;">${emp.department}</td>
           <td style="padding: 6px 8px; border: 1px solid #ddd; text-align: center;">${emp.presentDays} / ${emp.totalDays}</td>
           <td style="padding: 6px 8px; border: 1px solid #ddd; text-align: center; color: ${emp.onTimeRate >= 80 ? "#198754" : "#dc3545"}; font-weight: bold;">${emp.onTimeRate}%</td>
@@ -2343,7 +2365,7 @@ Thank you for the opportunity Pastor Sir`;
 
   async function generateStaffDossierPdf(staffId) {
     var trajectory = await getBridge().getStaffTrajectory(staffId, "2026-01-01", "2026-12-31");
-    var sName = trajectory.employee_name || "Colaborador";
+    var sName = resolveStaffFullName(trajectory, trajectory.employee_full_name || trajectory.employee_name || "Colaborador");
 
     var rowsHtml = trajectory.records.map(function (rec) {
       var statusBadge = rec.status === "on_time" 
@@ -2384,7 +2406,7 @@ Thank you for the opportunity Pastor Sir`;
         <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px 18px; margin-bottom: 20px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px;">
           <div>
             <div style="font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; letter-spacing: 0.05em;">${t("Colaborador Selecionado", "Selected Staff Member")}</div>
-            <h3 style="margin: 2px 0 2px 0; color: #0b1f3f; font-size: 18px; font-weight: 800;">${trajectory.employee_name}</h3>
+            <h3 style="margin: 2px 0 2px 0; color: #0b1f3f; font-size: 18px; font-weight: 800;">${sName}</h3>
             <div style="font-size: 12px; color: #475569;">
               ${t("ID / Cartão:", "ID / Card:")} <strong style="font-family: monospace; color: #0b1f3f;">${trajectory.employee_id}</strong> • ${t("Departamento:", "Department:")} <strong>${trajectory.department}</strong>
             </div>
@@ -2616,10 +2638,11 @@ Thank you for the opportunity Pastor Sir`;
     var matrixRows = staffMatrix.map(function (row) {
       var trendColor = row.trend === "improved" ? "#198754" : row.trend === "declined" ? "#dc3545" : "#6c757d";
       var trendText = row.trend === "improved" ? "▲ Melhorou" : row.trend === "declined" ? "▼ Piorou" : "— Estável";
+      var staffDisplayName = resolveStaffFullName(row, row.employee_full_name || row.employee_name);
       return `
         <tr>
           <td style="padding: 6px 8px; border: 1px solid #ddd; font-family: monospace;">${row.employee_id}</td>
-          <td style="padding: 6px 8px; border: 1px solid #ddd; font-weight: bold;">${row.employee_name}</td>
+          <td style="padding: 6px 8px; border: 1px solid #ddd; font-weight: bold;">${staffDisplayName}</td>
           <td style="padding: 6px 8px; border: 1px solid #ddd;">${row.department}</td>
           <td style="padding: 6px 8px; border: 1px solid #ddd; text-align: center; font-family: monospace;">${row.periodA.checkIn || (row.periodA.onTimeRate + "%")}</td>
           <td style="padding: 6px 8px; border: 1px solid #ddd; text-align: center; font-family: monospace;">${row.periodB.checkIn || (row.periodB.onTimeRate + "%")}</td>

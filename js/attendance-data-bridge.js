@@ -260,8 +260,8 @@
           id: "att-" + dStr.replace(/-/g, "") + "-" + staff.id,
           attendance_date: dStr,
           employee_id: staff.id,
-          employee_name: staff.name,
-          employee_full_name: staff.fullName,
+          employee_name: staff.fullName || staff.name,
+          employee_full_name: staff.fullName || staff.name,
           card_no: cardNo,
           department: staff.dept,
           role: staff.role,
@@ -457,12 +457,27 @@
         });
         saveLocal(KEYS.attendance, cached);
       } else {
-        // Ensure all default seed records (e.g. 2026-10-01) exist and have accurate punch data
+        // Ensure all default seed records (e.g. 2026-10-01) exist and have accurate punch data & official full names
         var attMap = {};
         var updated = false;
+        var staffMap = {};
+        STAFF_LIST.forEach(function (s) {
+          staffMap[String(s.id)] = s;
+          if (s.code) staffMap[String(s.code)] = s;
+        });
+
         cached.forEach(function (r) {
           if (r.attendance_date && r.employee_id) {
             attMap[r.attendance_date + "___" + String(r.employee_id)] = r;
+          }
+          // Ensure official full name is populated
+          var st = staffMap[String(r.employee_id)] || matchStaffByName(r.employee_full_name || r.employee_name, STAFF_LIST);
+          if (st && st.fullName && (r.employee_name !== st.fullName || r.employee_full_name !== st.fullName)) {
+            r.employee_name = st.fullName;
+            r.employee_full_name = st.fullName;
+            if (!r.department || r.department === "CESTAFF") r.department = st.dept;
+            if (!r.role || r.role === "Staff Member") r.role = st.role;
+            updated = true;
           }
         });
         SEED_ATTENDANCE.forEach(function (seed) {
@@ -482,6 +497,8 @@
               delay_minutes: seed.delay_minutes,
               is_late: seed.is_late,
               is_present: seed.is_present,
+              employee_name: seed.employee_name,
+              employee_full_name: seed.employee_full_name,
             });
             updated = true;
           }
@@ -811,10 +828,10 @@
 
       var matchedStaff = matchStaffByName(cleanName, staffList);
       var staffId = matchedStaff ? matchedStaff.id : "manual-" + cleanName.toLowerCase().replace(/[^a-z0-9]/g, "-");
-      var staffName = matchedStaff ? matchedStaff.name : cleanName.split(" ")[0];
-      var staffFullName = matchedStaff ? matchedStaff.fullName : cleanName;
-      var dept = matchedStaff ? matchedStaff.dept : "CESTAFF";
-      var role = matchedStaff ? matchedStaff.role : "Staff Member";
+      var staffFullName = matchedStaff ? (matchedStaff.fullName || matchedStaff.name) : cleanName;
+      var staffName = staffFullName;
+      var dept = matchedStaff ? (matchedStaff.dept || matchedStaff.department || "CESTAFF") : "CESTAFF";
+      var role = matchedStaff ? (matchedStaff.role || matchedStaff.role_title || "Staff Member") : "Staff Member";
 
       var punct = checkIn ? calculatePunctualityStatus(checkIn, settings) : {
         status: "absent",
@@ -859,9 +876,41 @@
     };
   }
 
+  function resolveOfficialStaffName(recOrIdOrName, fallback) {
+    if (!recOrIdOrName && !fallback) return "Colaborador";
+    var staffList = getStaffListSync();
+
+    // If it's an object record
+    if (typeof recOrIdOrName === "object" && recOrIdOrName !== null) {
+      var rec = recOrIdOrName;
+      if (rec.employee_id) {
+        var byId = staffList.find(function (s) { return String(s.id) === String(rec.employee_id); });
+        if (byId && byId.fullName) return byId.fullName;
+      }
+      if (rec.employee_full_name && rec.employee_full_name.includes(" ") && rec.employee_full_name.length > 3) {
+        return rec.employee_full_name;
+      }
+      var nameCand = rec.employee_full_name || rec.employee_name || fallback || "";
+      var matched = matchStaffByName(nameCand, staffList);
+      if (matched && matched.fullName) return matched.fullName;
+      return nameCand || fallback || "Colaborador";
+    }
+
+    // If it's a string (ID or Name)
+    var str = String(recOrIdOrName || fallback || "").trim();
+    var byIdDirect = staffList.find(function (s) { return String(s.id) === str; });
+    if (byIdDirect && byIdDirect.fullName) return byIdDirect.fullName;
+
+    var matchedStr = matchStaffByName(str, staffList);
+    if (matchedStr && matchedStr.fullName) return matchedStr.fullName;
+
+    return str || fallback || "Colaborador";
+  }
+
   var dataBridge = {
     STAFF_LIST: STAFF_LIST,
     getStaffListSync: getStaffListSync,
+    resolveOfficialStaffName: resolveOfficialStaffName,
     getStaffList: async function () {
       try {
         var hrBridge = window.CEStaffHR || window.CEDataLayer?.staffHR || window.CESupabase;
@@ -1679,6 +1728,8 @@
   };
 
   window.CEAttendanceBridge = dataBridge;
+  window.resolveOfficialStaffName = resolveOfficialStaffName;
+  window.resolveStaffFullName = resolveOfficialStaffName;
   window.CEDataLayer = window.CEDataLayer || {};
   window.CEDataLayer.attendance = dataBridge;
 })();
