@@ -42,9 +42,10 @@
   --sidebar-width: 316px;
   --sidebar-width-collapsed: 92px;
   --topbar-height: 86px;
-  --font-heading: "Playfair Display", "Merriweather", Georgia, serif;
-  --font-ui: "Inter", "Manrope", "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --bs-body-font-family: var(--font-ui);
+  --font-primary: "Nexa", "Montserrat", "Outfit", "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-heading: var(--font-primary);
+  --font-ui: var(--font-primary);
+  --bs-body-font-family: var(--font-primary);
   --page-pad: clamp(1rem, 2.5vw, 2rem);
   --section-gap: 1.5rem;
   --card-pad: clamp(1.15rem, 2vw, 1.5rem);
@@ -54,7 +55,7 @@
 /* Independent Cell Leader Portal */
 .cell-portal-shell { display: grid; gap: 1.25rem; padding-bottom: 5rem; }
 .cell-portal-hero { position: relative; overflow: hidden; display: flex; justify-content: space-between; gap: 2rem; padding: clamp(1.4rem, 3vw, 2.4rem); border: 1px solid rgba(85,214,190,.28); border-radius: 24px; background: radial-gradient(circle at 85% 15%, rgba(85,214,190,.18), transparent 32%), linear-gradient(135deg, #0a1730, #102647); box-shadow: 0 22px 60px rgba(2,8,23,.28); }
-.cell-portal-hero h2 { margin: .3rem 0 .4rem; font-family: Georgia, serif; font-size: clamp(2rem, 5vw, 3.8rem); color: #fff; }
+.cell-portal-hero h2 { margin: .3rem 0 .4rem; font-family: var(--font-primary); font-weight: 800; font-size: clamp(2rem, 5vw, 3.8rem); color: #fff; }
 .cell-portal-hero p { margin: 0; color: #b8c7dc; }
 .cell-portal-identity { display: inline-flex; align-items: center; gap: .7rem; margin-top: 1rem; padding: .4rem .75rem; border-radius: 999px; background: rgba(255,255,255,.08); color: #d7e4f4; }
 .cell-portal-identity span { color: #55d6be; font-weight: 800; text-transform: uppercase; font-size: .72rem; letter-spacing: .08em; }
@@ -372,7 +373,7 @@ table,
   justify-content: center;
   background-color: #060e1a;
   box-sizing: border-box;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--font-primary);
   color: #ffffff;
 }
 
@@ -503,13 +504,13 @@ table,
 }
 
 .login-title {
-  font-family: 'Playfair Display', Georgia, serif;
+  font-family: var(--font-primary);
   font-size: 2.35rem;
-  font-weight: 700;
+  font-weight: 800;
   color: #ffffff;
   line-height: 1.15;
   margin: 0 0 0.45rem;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
 }
 
 .login-subtitle {
@@ -11490,9 +11491,9 @@ nav.module-tabs {
 #loginView h1,
 .login-shell h1 {
   color: #ffffff !important;
-  font-family: 'Playfair Display', Georgia, serif !important;
+  font-family: var(--font-primary) !important;
   font-size: 2.35rem !important;
-  font-weight: 700 !important;
+  font-weight: 800 !important;
 }
 
 #loginView .login-subtitle,
