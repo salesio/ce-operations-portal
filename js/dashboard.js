@@ -13249,6 +13249,23 @@ function toggleModuleNav(key) {
 
 const modulePageState = { members: { view: "cards", filter: {}, candidateTab: "pending", page: 1, pageSize: 50, totalCount: 0, totalPages: 1, items: [], loading: false, loaded: false, error: "", requestId: 0 }, firstTimers: { view: "table" }, followUp: { view: "table" } };
 window.modulePageState = modulePageState;
+const usersPageState = { tab: "users", attendanceDate: "2026-10-01", filter: "all" };
+window.usersPageState = usersPageState;
+
+function openStaffAttendanceTrajectory(staffIdOrName) {
+  if (typeof setRoute === "function") setRoute("attendance");
+  setTimeout(() => {
+    if (window.attendancePageState) {
+      if (staffIdOrName) window.attendancePageState.selectedStaffId = String(staffIdOrName);
+      window.attendancePageState.tab = "trajectory";
+    }
+    if (typeof window.renderAttendance === "function") {
+      window.renderAttendance("trajectory");
+    }
+  }, 60);
+}
+window.openStaffAttendanceTrajectory = openStaffAttendanceTrajectory;
+
 let memberSearchDebounceTimer = null;
 
 function memberPageQuery() {
@@ -30884,6 +30901,44 @@ function renderStaffHr() {
   `);
 }
 
+function renderUserAttendanceBadge(rec) {
+  if (!rec || !rec.is_present) {
+    return `<span class="text-secondary small" title="${lang === "pt" ? "Sem registo de ponto hoje" : "No clock-in logged today"}">—</span>`;
+  }
+  const time = rec.check_in_time || "—";
+  if (rec.status === "on_time") {
+    return `<span class="badge rounded-pill bg-success-subtle text-success border border-success border-opacity-25 px-2 py-1" title="Entrada pontual: ${time}"><i class="bi bi-check-circle-fill me-1"></i>${time} (Pontual)</span>`;
+  }
+  if (rec.status === "grace_period") {
+    return `<span class="badge rounded-pill bg-info-subtle text-info border border-info border-opacity-25 px-2 py-1" title="Entrada com tolerância: ${time} (+${rec.delay_minutes}m)"><i class="bi bi-clock-history me-1"></i>${time} (Tolerância +${rec.delay_minutes}m)</span>`;
+  }
+  if (rec.status === "minor_delay") {
+    return `<span class="badge rounded-pill bg-warning-subtle text-warning border border-warning border-opacity-25 px-2 py-1" title="Atraso ligeiro: ${time} (+${rec.delay_minutes}m)"><i class="bi bi-clock me-1"></i>${time} (+${rec.delay_minutes}m)</span>`;
+  }
+  return `<span class="badge rounded-pill bg-danger-subtle text-danger border border-danger border-opacity-25 px-2 py-1" title="Atrasado: ${time} (+${rec.delay_minutes}m)"><i class="bi bi-exclamation-circle-fill me-1"></i>${time} (Atraso +${rec.delay_minutes}m)</span>`;
+}
+
+function findUserAttendanceRecord(user, attendanceList = []) {
+  if (!user || !Array.isArray(attendanceList)) return null;
+  const uId = String(user.id || "").trim();
+  const uAuthId = String(user.auth_user_id || "").trim();
+  const uName = String(user.name || user.full_name || "").toLowerCase().replace(/[^a-z0-9]/g, " ").trim();
+  const uTokens = uName.split(/\s+/).filter((t) => t.length >= 3);
+
+  for (const rec of attendanceList) {
+    if (String(rec.employee_id) === uId || (uAuthId && String(rec.auth_user_id) === uAuthId)) {
+      return rec;
+    }
+    const rName = String(rec.employee_full_name || rec.employee_name || "").toLowerCase().replace(/[^a-z0-9]/g, " ").trim();
+    if (rName) {
+      if (rName === uName || uName.includes(rName) || rName.includes(uName)) return rec;
+      const rTokens = rName.split(/\s+/).filter((t) => t.length >= 3);
+      if (rTokens.some((rt) => uTokens.includes(rt))) return rec;
+    }
+  }
+  return null;
+}
+
 function renderUsers() {
   if (!canEnterRoute("users")) return renderAccessDenied();
   if (typeof hydrateAccessControlFromRepository === "function" && !window.__usersHydratedOnce) {
@@ -30952,15 +31007,43 @@ function renderUsers() {
   const lockedCount = users.filter((u) => /lock|bloque|suspend|inactiv|inativ/i.test(String(u.status || ""))).length;
   const linkedCount = users.filter((u) => Boolean(u.auth_user_id)).length;
   const pendingAuthCount = users.filter((u) => !u.auth_user_id).length;
-  const exportBtnHtml = `<button type="button" class="btn btn-outline-cyan btn-touch me-2" id="btnOpenUserExportModal" data-action="export-users"><i class="bi bi-file-earmark-arrow-down me-1"></i>${lang === "pt" ? "Exportar" : "Export"}</button>`;
-  setPageContent(`${sectionHeader(L("usersRoles"), L("accessControl"), "user", "bi-person-lock", { actions: exportBtnHtml })}
-    <div class="row g-3 mb-4">
-      ${sm("bi-people", "Total", users.length, "users", {})}
-      ${sm("bi-person-check", "Activos", activeCount, "users", {})}
-      ${sm("bi-shield-check", "Auth Ligado", linkedCount, "users", {})}
-      ${sm("bi-hourglass-split", "Pendente Auth", pendingAuthCount, "users", {})}
+
+  // Retrieve attendance records for today / selected date
+  const targetDate = usersPageState.attendanceDate || "2026-10-01";
+  let attRecords = [];
+  try {
+    const rawAtt = localStorage.getItem("ce-data-layer:biometric-attendance");
+    if (rawAtt) {
+      const parsed = JSON.parse(rawAtt);
+      if (Array.isArray(parsed)) {
+        attRecords = parsed.filter((r) => r.attendance_date === targetDate);
+      }
+    }
+  } catch (_) {}
+
+  const presentCount = attRecords.filter((r) => r.is_present).length;
+  const onTimeCount = attRecords.filter((r) => r.status === "on_time").length;
+  const graceCount = attRecords.filter((r) => r.status === "grace_period").length;
+  const lateCount = attRecords.filter((r) => r.is_late).length;
+  const absentCount = attRecords.filter((r) => !r.is_present).length;
+
+  const currentTab = usersPageState.tab || "users";
+
+  const exportBtnHtml = `
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+      <button type="button" class="btn btn-outline-warning btn-touch" onclick="setRoute('attendance')" title="${lang === "pt" ? "Abrir módulo completo de Assiduidade & Ponto" : "Open full Attendance & Timesheet module"}">
+        <i class="bi bi-fingerprint me-1"></i>${lang === "pt" ? "Módulo Assiduidade" : "Attendance Module"}
+      </button>
+      <button type="button" class="btn btn-outline-cyan btn-touch" id="btnOpenUserExportModal" data-action="export-users">
+        <i class="bi bi-file-earmark-arrow-down me-1"></i>${lang === "pt" ? "Exportar" : "Export"}
+      </button>
     </div>
-    <article class="panel glass-panel">
+  `;
+
+  let tabBodyHtml = "";
+
+  if (currentTab === "users") {
+    tabBodyHtml = `
       <div class="panel-head mb-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
         <div class="d-flex align-items-center gap-2">
           <h3 class="panel-title mb-0"><i class="bi bi-people me-2"></i>${L("usersRoles")}</h3>
@@ -30973,7 +31056,18 @@ function renderUsers() {
         </div>
       </div>
       ${dataTable(
-        [L("name"), L("email"), L("Role"), "Auth Link", L("status"), L("church"), L("cellGroup") || (lang === "pt" ? "Grupo de Célula" : "Cell Group"), L("cell") || (lang === "pt" ? "Célula" : "Cell"), L("actions")],
+        [
+          L("name"),
+          L("email"),
+          L("Role"),
+          lang === "pt" ? "Ponto (Hoje)" : "Clock-in (Today)",
+          "Auth Link",
+          L("status"),
+          L("church"),
+          L("cellGroup") || (lang === "pt" ? "Grupo de Célula" : "Cell Group"),
+          L("cell") || (lang === "pt" ? "Célula" : "Cell"),
+          L("actions")
+        ],
         users.map((u) => {
           const linkedCell = (state.cellRegistry || state.cells || window.REAL_CELLS_REGISTRY || []).find((c) => String(c.id) === String(u.cell_id) || c.cell_name === u.cell_id || c.name === u.cell_id);
           const linkedGroup = (state.cellGroups || window.REAL_CELL_GROUPS || []).find((g) => String(g.id) === String(u.cell_group_id) || g.group_name === u.cell_group_id || g.name === u.cell_group_id || (linkedCell && String(g.id) === String(linkedCell.group_id)));
@@ -30982,20 +31076,139 @@ function renderUsers() {
           const authBadge = u.auth_user_id ? `<span class="badge bg-success"><i class="bi bi-link me-1"></i>Linked</span>` : `<span class="badge bg-warning text-dark"><i class="bi bi-clock me-1"></i>Pending Setup</span>`;
           const rawRole = u.role || u.role_name || "Cell Leader";
           const displayRole = roleLabels[rawRole] || rawRole;
+          const userAtt = findUserAttendanceRecord(u, attRecords);
+          const attBadge = renderUserAttendanceBadge(userAtt);
+
+          const staffTrajectoryBtn = `<button type="button" class="action-btn" onclick="openStaffAttendanceTrajectory('${u.id}')" title="${lang === "pt" ? "Ver assiduidade e histórico de ponto" : "View attendance & timesheet"}"><i class="bi bi-clock-history me-1 text-warning"></i>${lang === "pt" ? "Ponto" : "Time"}</button>`;
+
           return [
             u.name || u.full_name,
             u.email,
             displayRole,
+            attBadge,
             authBadge,
             badge(u.status || "Active"),
             churchName(u.church_id),
             cellGroupNameStr,
             cellNameStr,
-            actionButtons([["view", "user", u.id, L("view")], ["edit", "user", u.id, L("edit")], ["delete", "user", u.id, L("delete")]]),
+            `<div class="d-flex align-items-center gap-1 flex-nowrap">
+              ${actionButtons([["view", "user", u.id, L("view")], ["edit", "user", u.id, L("edit")]])}
+              ${staffTrajectoryBtn}
+              ${actionButtons([["delete", "user", u.id, L("delete")]])}
+            </div>`
           ];
         }),
       )}
-    </article>`);
+    `;
+  } else if (currentTab === "attendance") {
+    const filterKey = usersPageState.filter || "all";
+    let filteredAtt = attRecords;
+    if (filterKey === "on_time") filteredAtt = attRecords.filter((r) => r.status === "on_time");
+    else if (filterKey === "grace_period") filteredAtt = attRecords.filter((r) => r.status === "grace_period");
+    else if (filterKey === "late") filteredAtt = attRecords.filter((r) => r.is_late);
+    else if (filterKey === "absent") filteredAtt = attRecords.filter((r) => !r.is_present);
+
+    tabBodyHtml = `
+      <div class="panel-head mb-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div class="d-flex align-items-center gap-2">
+          <h3 class="panel-title mb-0"><i class="bi bi-fingerprint me-2 text-warning"></i>${lang === "pt" ? "Registo de Ponto & Assiduidade" : "Clock-in & Attendance"}</h3>
+          <span class="badge text-bg-warning">${presentCount} ${lang === "pt" ? "presentes" : "present"}</span>
+        </div>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <input type="date" class="form-control form-control-sm" style="max-width: 160px; background: rgba(15,28,54,0.8); color: #fff; border-color: rgba(56,189,248,0.3);" value="${targetDate}" data-users-attendance-date title="${lang === "pt" ? "Selecionar data do ponto" : "Select date"}">
+          <button type="button" class="btn btn-sm btn-success fw-bold" onclick="if(window.setRoute){ setRoute('attendance'); setTimeout(() => { if(window.renderAttendance) window.renderAttendance('manual'); }, 60); }">
+            <i class="bi bi-whatsapp me-1"></i>${lang === "pt" ? "Colar WhatsApp" : "Paste WhatsApp"}
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-cyan" onclick="if(window.setRoute){ setRoute('attendance'); setTimeout(() => { if(window.renderAttendance) window.renderAttendance('upload'); }, 60); }">
+            <i class="bi bi-upload me-1"></i>Upload XLSX
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-warning" onclick="setRoute('attendance')">
+            <i class="bi bi-box-arrow-up-right me-1"></i>${lang === "pt" ? "Módulo Completo" : "Full Module"}
+          </button>
+        </div>
+      </div>
+
+      <div class="d-flex flex-wrap gap-2 mb-3">
+        <button type="button" class="action-btn ${filterKey === "all" ? "active" : ""}" data-users-attendance-filter="all">Todos <span class="badge text-bg-secondary">${attRecords.length}</span></button>
+        <button type="button" class="action-btn ${filterKey === "on_time" ? "active" : ""}" data-users-attendance-filter="on_time">🟢 Pontuais <span class="badge text-bg-secondary">${onTimeCount}</span></button>
+        <button type="button" class="action-btn ${filterKey === "grace_period" ? "active" : ""}" data-users-attendance-filter="grace_period">🟡 Tolerância <span class="badge text-bg-secondary">${graceCount}</span></button>
+        <button type="button" class="action-btn ${filterKey === "late" ? "active" : ""}" data-users-attendance-filter="late">🔴 Atrasados <span class="badge text-bg-secondary">${lateCount}</span></button>
+        <button type="button" class="action-btn ${filterKey === "absent" ? "active" : ""}" data-users-attendance-filter="absent">⚪ Ausentes <span class="badge text-bg-secondary">${absentCount}</span></button>
+      </div>
+
+      ${filteredAtt.length ? dataTable(
+        [
+          lang === "pt" ? "Colaborador" : "Staff",
+          lang === "pt" ? "Departamento" : "Department",
+          lang === "pt" ? "Entrada" : "Check-in",
+          lang === "pt" ? "Saída" : "Check-out",
+          lang === "pt" ? "Estado / Atraso" : "Status / Delay",
+          lang === "pt" ? "Observações" : "Notes",
+          lang === "pt" ? "Acções" : "Actions"
+        ],
+        filteredAtt.map((r) => {
+          const badgeHtml = renderUserAttendanceBadge(r);
+          return [
+            `<strong>${escapeAttr(r.employee_full_name || r.employee_name || "—")}</strong>`,
+            r.department || "CESTAFF",
+            r.check_in_time ? `<span class="fw-bold text-light"><i class="bi bi-box-arrow-in-right me-1 text-success"></i>${r.check_in_time}</span>` : "—",
+            r.check_out_time ? `<span class="text-secondary"><i class="bi bi-box-arrow-right me-1"></i>${r.check_out_time}</span>` : "—",
+            badgeHtml,
+            r.notes ? `<small class="text-info"><i class="bi bi-chat-left-text me-1"></i>${escapeAttr(r.notes)}</small>` : '<span class="text-secondary small">—</span>',
+            `<button type="button" class="action-btn" onclick="openStaffAttendanceTrajectory('${r.employee_id}')" title="Ver histórico completo"><i class="bi bi-person-badge me-1"></i>${lang === "pt" ? "Dossiê" : "Dossier"}</button>`
+          ];
+        })
+      ) : `<div class="p-4 text-center text-secondary">${lang === "pt" ? "Nenhum registo de ponto encontrado para esta data ou filtro." : "No attendance records found for this date or filter."}</div>`}
+    `;
+  } else if (currentTab === "access") {
+    const moduleLabels = {
+      dashboard: "dashboard", churches: "churches", members: "members", firstTimers: "firstTimers",
+      followUp: "followUp", reports: "reports", counseling: "counseling", foundation: "foundationSchool",
+      finance: "finance", fevo: "fevo", venueInventory: "venueInventoryShort", sacraments: "sacraments",
+      prisonMinistry: "prisonMinistry", ministryMaterials: "ministryMaterials", programs: "programs",
+      partnership: "partnership", media: "media", cell: "cellMinistry", requisitions: "requisitions",
+      staffHr: "staffHr", attendance: "attendanceControl", usersRoles: "usersRoles", accessControl: "accessControl", settings: "settings", auditLogs: "auditLogs"
+    };
+    const modules = window.CEAccessControl?.ALL_MODULES || [];
+    const canUser = window.CEAccessControl?.canUser;
+    const rows = modules.map((mod) => {
+      const access = window.CEAccessControl.resolveModuleAccess(activeUser, mod);
+      return [L(moduleLabels[mod] || mod), access.can_view ? L("yes") : L("no"), access.can_create ? L("yes") : L("no"), access.can_edit ? L("yes") : L("no"), access.can_approve ? L("yes") : L("no"), access.scope || "-"];
+    });
+
+    tabBodyHtml = `
+      <div class="panel-head mb-3"><h3 class="panel-title">${L("accessControl")}</h3></div>
+      <article class="panel glass-panel mb-3">${dataTable([L("Role"), L("Scope"), L("Permissions")], (state.users || []).map((u) => [u.role, u.can_view_all_churches ? L("all") : churchName(u.church_id), (u.department_permissions || []).join(", ")]))}</article>
+      <article class="panel glass-panel">${dataTable([L("accessMatrixModule"), L("accessMatrixView"), L("accessMatrixCreate"), L("accessMatrixEdit"), L("accessMatrixApprove"), L("accessMatrixScope")], rows)}</article>
+    `;
+  }
+
+  setPageContent(`${sectionHeader(L("usersRoles"), L("accessControl"), "user", "bi-person-lock", { actions: exportBtnHtml })}
+    <div class="row g-3 mb-4">
+      ${sm("bi-people", "Total", users.length, "users", {})}
+      ${sm("bi-person-check", "Activos", activeCount, "users", {})}
+      ${sm("bi-fingerprint", lang === "pt" ? "Ponto Hoje" : "Attendance Today", `${presentCount} / ${attRecords.length || 15}`, "attendance", {})}
+      ${sm("bi-clock-history", lang === "pt" ? "Atrasos Hoje" : "Delays Today", lateCount, "attendance", {})}
+    </div>
+    
+    <div class="d-flex flex-wrap gap-2 mb-3">
+      <button type="button" class="action-btn ${currentTab === "users" ? "active" : ""}" data-users-tab="users">
+        <i class="bi bi-people me-1"></i>${lang === "pt" ? "Utilizadores & Perfis" : "Users & Profiles"}
+        <span class="badge text-bg-secondary">${users.length}</span>
+      </button>
+      <button type="button" class="action-btn ${currentTab === "attendance" ? "active" : ""}" data-users-tab="attendance">
+        <i class="bi bi-fingerprint me-1"></i>${lang === "pt" ? "Assiduidade & Ponto Hoje" : "Attendance & Timesheet"}
+        <span class="badge ${lateCount > 0 ? "text-bg-warning" : "text-bg-success"}">${presentCount} / ${attRecords.length || 15}</span>
+      </button>
+      <button type="button" class="action-btn ${currentTab === "access" ? "active" : ""}" data-users-tab="access">
+        <i class="bi bi-shield-lock me-1"></i>${lang === "pt" ? "Matriz de Acessos" : "Access Matrix"}
+      </button>
+    </div>
+
+    <article class="panel glass-panel">
+      ${tabBodyHtml}
+    </article>
+  `);
 }
 
 function renderAccess() {
@@ -39583,6 +39796,18 @@ document.addEventListener("click", async (event) => {
     modulePageState.members.activeTab = membersMainTabBtn.dataset.membersMainTab || "all";
     return renderMembers();
   }
+  const usersTabBtn = event.target.closest("[data-users-tab]");
+  if (usersTabBtn) {
+    if (!window.usersPageState) window.usersPageState = { tab: "users", attendanceDate: "2026-10-01", filter: "all" };
+    window.usersPageState.tab = usersTabBtn.dataset.usersTab || "users";
+    return renderUsers();
+  }
+  const usersAttFilterBtn = event.target.closest("[data-users-attendance-filter]");
+  if (usersAttFilterBtn) {
+    if (!window.usersPageState) window.usersPageState = { tab: "attendance", attendanceDate: "2026-10-01", filter: "all" };
+    window.usersPageState.filter = usersAttFilterBtn.dataset.usersAttendanceFilter || "all";
+    return renderUsers();
+  }
   const memberProfileEdit = event.target.closest("[data-member-profile-edit]");
   if (memberProfileEdit) {
     return openForm("member", memberProfileEdit.dataset.memberProfileEdit);
@@ -41702,6 +41927,11 @@ document.addEventListener("change", (event) => {
     financePageState.approvedReqFilters = { ...financePageState.approvedReqFilters, ...data };
     if (activeRoute === "finance") renderFinance();
     return;
+  }
+  if (event.target.matches("[data-users-attendance-date]")) {
+    if (!window.usersPageState) window.usersPageState = { tab: "attendance", attendanceDate: event.target.value, filter: "all" };
+    window.usersPageState.attendanceDate = event.target.value;
+    return renderUsers();
   }
 
   // Generic .filter-toolbar (First Timers, Follow-Up, Sacraments, Foundation, Programs, etc.)
