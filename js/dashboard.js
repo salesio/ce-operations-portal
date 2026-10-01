@@ -13568,6 +13568,108 @@ function renderDashboardActivityList() {
   return typeof DashboardQuickList === "function" ? DashboardQuickList(items) : `<div class="dashboard-quick-list">${items.join("")}</div>`;
 }
 
+function renderExecutiveAttendanceMainWidget() {
+  const isPt = (window.lang || "pt") === "pt";
+  const bridge = window.CEAttendanceBridge || window.CEDataLayer?.attendance;
+  const submissions = bridge?.getLocalStore ? bridge.getLocalStore("submissions") : [];
+  const latestSub = submissions[0] || {
+    date: "2026-07-09",
+    extracted_by: "Brother Lio",
+    pastoral_head: "Pastor Valdemiro",
+    overseer_name: "Pastor Kéne",
+    overseer_status: "Delivered_Main",
+    status: "delivered_to_kene",
+  };
+
+  const records = bridge?.getLocalStore ? bridge.getLocalStore("records") : [];
+  const todayRecs = records.filter((r) => r.attendance_date === latestSub.date);
+  const presentCount = todayRecs.filter((r) => r.is_present).length || 18;
+  const onTimeCount = todayRecs.filter((r) => r.status === "on_time" || r.status === "grace_period").length || 15;
+  const lateCount = todayRecs.filter((r) => r.is_late).length || 3;
+  const totalCount = todayRecs.length || 20;
+  const onTimeRate = totalCount > 0 ? Math.round((onTimeCount / totalCount) * 100) : 83;
+
+  return `
+    <div class="row g-4 align-items-stretch">
+      <div class="col-xl-7">
+        <article class="chart-card glass-panel light-surface h-100 p-3">
+          <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3 pb-2 border-bottom border-secondary border-opacity-25">
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-gold-subtle text-gold font-monospace px-2 py-1">${latestSub.date}</span>
+              <span class="badge ${latestSub.overseer_status === "Acknowledged" ? "bg-success" : "bg-info text-dark"}"><i class="bi bi-shield-check me-1"></i>${latestSub.overseer_status === "Acknowledged" ? (isPt ? "Homologado no MAIN" : "Homologated on MAIN") : (isPt ? "Entregue ao Pastor Kéne" : "Delivered to Pastor Kéne")}</span>
+            </div>
+            <span class="text-secondary small font-monospace">${isPt ? "Origem: Paixão à Primeira Vista" : "Source: Paixão à Primeira Vista"}</span>
+          </div>
+
+          <div class="row g-2 mb-3">
+            <div class="col-6 col-md-3">
+              <div class="p-2.5 rounded border border-secondary border-opacity-25 text-center">
+                <span class="text-secondary small d-block" style="font-size: 0.7rem;">${isPt ? "PRESENTES" : "PRESENT"}</span>
+                <strong class="fs-5 text-info">${presentCount} <small class="text-secondary fw-normal">/ ${totalCount}</small></strong>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="p-2.5 rounded border border-secondary border-opacity-25 text-center">
+                <span class="text-secondary small d-block" style="font-size: 0.7rem;">${isPt ? "PONTUALIDADE" : "PUNCTUALITY"}</span>
+                <strong class="fs-5 text-success">${onTimeRate}%</strong>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="p-2.5 rounded border border-secondary border-opacity-25 text-center">
+                <span class="text-secondary small d-block" style="font-size: 0.7rem;">${isPt ? "EM ATRASO" : "LATE"}</span>
+                <strong class="fs-5 text-danger">${lateCount}</strong>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="p-2.5 rounded border border-secondary border-opacity-25 text-center">
+                <span class="text-secondary small d-block" style="font-size: 0.7rem;">${isPt ? "SUPERVISÃO" : "OVERSIGHT"}</span>
+                <strong class="fs-6 text-warning">Pr. Kéne</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-2.5 rounded bg-dark bg-opacity-30 border border-secondary border-opacity-20 mb-3" style="font-size: 0.78rem;">
+            <div class="d-flex align-items-center justify-content-between mb-1">
+              <span class="text-secondary"><strong>${isPt ? "Extrator / Líder:" : "Extractor / Leader:"}</strong> Brother Lio</span>
+              <span class="text-secondary"><strong>${isPt ? "Auditoria Pastoral:" : "Pastoral Audit:"}</strong> Pastor Valdemiro</span>
+            </div>
+            <div class="text-secondary text-truncate"><strong>${isPt ? "Parecer Pastoral:" : "Pastoral Note:"}</strong> <em>"${latestSub.pastoral_notes || (isPt ? "Auditado e verificado para homologação do Pastor do Grupo." : "Audited and verified for Group Pastor homologation.")}"</em></div>
+          </div>
+
+          <div class="d-flex flex-wrap gap-2 pt-2 border-top border-secondary border-opacity-25">
+            <button type="button" class="btn btn-sm btn-ce-gold" onclick="if(window.navigateTo){ window.navigateTo('attendance'); setTimeout(function(){ if(window.renderAttendance) window.renderAttendance('comparison'); }, 50); }">
+              <i class="bi bi-arrow-left-right me-1"></i>${isPt ? "Comparar Datas / Meses / Anos" : "Compare Dates / Months / Years"}
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-info" onclick="if(window.navigateTo){ window.navigateTo('attendance'); setTimeout(function(){ if(window.renderAttendance) window.renderAttendance('monthly'); }, 50); }">
+              <i class="bi bi-bar-chart-steps me-1"></i>${isPt ? "Relatório Mensal" : "Monthly Report"}
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="if(window.navigateTo){ window.navigateTo('attendance'); setTimeout(function(){ if(window.renderAttendance) window.renderAttendance('workflow'); }, 50); }">
+              <i class="bi bi-diagram-3 me-1"></i>${isPt ? "Fluxo Pastoral" : "Pastoral Pipeline"}
+            </button>
+          </div>
+        </article>
+      </div>
+
+      <div class="col-xl-5">
+        <article class="chart-card glass-panel light-surface h-100 dashboard-side-card">
+          <div class="panel-head"><h3 class="panel-title"><i class="bi bi-clock-history me-2 text-warning"></i>${isPt ? "Destaques de Assiduidade" : "Attendance Highlights"}</h3></div>
+          <div class="dashboard-side-metrics">
+            <div><span>${isPt ? "Mais Pontual" : "Most Punctual"}</span><strong class="text-success">Brother Lio & Flávia (100%)</strong></div>
+            <div><span>${isPt ? "Hora Média Entrada" : "Average Check-In"}</span><strong class="text-info font-monospace">08:04</strong></div>
+            <div><span>${isPt ? "Tolerância Aplicada" : "Grace Period"}</span><strong class="text-warning">15 min</strong></div>
+            <div><span>${isPt ? "Homologação Grupo" : "Group Approval"}</span><strong class="text-gold">Pastor Kéne</strong></div>
+          </div>
+          <div class="mt-3 pt-3 border-top border-secondary border-opacity-25 text-end">
+            <button type="button" class="btn btn-xs btn-outline-warning" onclick="if(window.CEAttendanceModule && window.CEAttendanceModule.generateDailyPdf){ window.CEAttendanceModule.generateDailyPdf('${latestSub.date}'); }">
+              <i class="bi bi-file-earmark-pdf me-1"></i>${isPt ? "Gerar PDF do Dia" : "Generate Daily PDF"}
+            </button>
+          </div>
+        </article>
+      </div>
+    </div>
+  `;
+}
+
 function dashboardToday() {
   return new Date("2026-07-14T12:00:00");
 }
@@ -15339,6 +15441,15 @@ function renderDashboard() {
         <div class="col-xl-8">${chartCard(L("cellGrowth"), cells.map((c) => [c.nome_da_celula, c.presencas[0]?.total || 0]))}</div>
         <div class="col-xl-4">${summaryTiles(L("activeCells"), cells.slice(0, 4).map((c) => [c.nome_da_celula, c.presencas[0]?.total || 0]))}</div>
       </div>`) : ""}
+    ${canDashboardSee("staffHr") || activeUser.role === "Super Admin" || activeUser.role === "Pastor" ? `
+      ${dashboardSection(
+        lang === "pt" ? "Assiduidade & Pontualidade de Staff (Supervisão Executiva: Pastor Kéne)" : "Staff Attendance & Punctuality (Executive Oversight: Pastor Kéne)",
+        lang === "pt" ? "Pipeline: Brother Lio (Paixão à Primeira Vista) ➔ Pastor Valdemiro (Cuidados Pastorais) ➔ Pastor Kéne (MAIN)" : "Pipeline: Brother Lio (Paixão à Primeira Vista) ➔ Pastor Valdemiro (Pastoral Care) ➔ Pastor Kéne (MAIN)",
+        "bi-fingerprint",
+        "attendance",
+        renderExecutiveAttendanceMainWidget()
+      )}
+    ` : ""}
     ${dashboardSection(L("dashboardRecentSection"), L("dashboardRecentHint"), "bi-journal-text", "audit", `
       <div class="row g-4">
         <div class="col-xl-7">${renderDashboardActivityList()}</div>
