@@ -3816,7 +3816,7 @@ const seedData = {
     { id: "bd91b99f-362f-4eb1-8e5c-c4b125065c8b", auth_user_id: "bd91b99f-362f-4eb1-8e5c-c4b125065c8b", name: "Irmã Angélica Amilcar Macuacua", full_name: "Irmã Angélica Amilcar Macuacua", email: "alec@embaixadadecristo.org", phone: "+258855621609", role: "ALEC Manager", role_name: "Coordenadora ALEC", church_id: "a1111111-1111-4111-8111-111111111101", cell_group_id: "217d9a73-3d57-4979-854d-dc97662a55e5", cell_group_name: "Estrelas de Sião", cell_id: "1e6d6f18-d0e4-4731-8426-de2a73f2076d", cell_name: "ESTRELAS DE SIÃO D", assigned_cells: ["1e6d6f18-d0e4-4731-8426-de2a73f2076d"], assigned_cell_groups: ["217d9a73-3d57-4979-854d-dc97662a55e5"], department_permissions: ["cell", "alecRegistration", "alecScores", "churchReports", "cellReports"], can_view_all_churches: false, status: "Active" },
     { id: "473e4df5-883c-499a-a42e-223495c266d1", auth_user_id: "473e4df5-883c-499a-a42e-223495c266d1", name: "Filipe Chamango", full_name: "Filipe Chamango", email: "diamantes.main@embaixadadecristo.org", role: "Cell Leader", role_name: "Líder de Célula Diamantes Main", church_id: "a1111111-1111-4111-8111-111111111101", cell_id: "d1a00000-d1a0-4000-8000-000000000001", cell_name: "Diamantes main", cell_group_id: "d1a00000-0000-4000-8000-000000000001", cell_group_name: "Diamantes Main", assigned_cells: ["d1a00000-d1a0-4000-8000-000000000001", "d1a00000-d1a0-4000-8000-000000000002", "d1a00000-d1a0-4000-8000-000000000003", "d1a00000-d1a0-4000-8000-000000000004", "d1a00000-d1a0-4000-8000-000000000005", "d1a00000-d1a0-4000-8000-000000000006", "d1a00000-d1a0-4000-8000-000000000007", "d1a00000-d1a0-4000-8000-000000000008", "d1a00000-d1a0-4000-8000-000000000009", "d1a00000-d1a0-4000-8000-000000000010"], assigned_cell_groups: ["d1a00000-0000-4000-8000-000000000001"], assigned_foundation_teacher_id: "ftch-filipe-chamango", department_permissions: ["cellReports", "followUp", "foundation", "foundation_teacher", "reports"], cannot_create_classes: false, permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_portal.view", "cell_portal.edit", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary", "follow_up.view", "follow_up.edit", "follow_up.enroll_foundation", "foundation.view", "foundation.edit_students", "foundation.record_lessons", "foundation.record_tests", "foundation.record_exam", "foundation.reports"], can_view_all_churches: false, status: "Active" },
     { id: "1002af2a-86d0-4654-9aae-351a2dd546e7", auth_user_id: "1002af2a-86d0-4654-9aae-351a2dd546e7", name: "Eduarda Paula Manganhela Paula Manganhela", full_name: "Eduarda Paula Manganhela Paula Manganhela", email: "eduardapaula.jm@gmail.com", phone: "+258849246778", role: "Cell Leader", role_name: "Cell Leader", church_id: "a1111111-1111-4111-8111-111111111101", cell_id: "83336c21-1928-4d0c-8284-fcb88b770048", cell_name: "Visionários Main", cell_group_id: "f9f013c8-346f-4567-8911-762379b97d40", cell_group_name: "Visionários", assigned_cells: ["83336c21-1928-4d0c-8284-fcb88b770048"], assigned_cell_groups: ["f9f013c8-346f-4567-8911-762379b97d40"], department_permissions: ["cellReports"], cannot_create_classes: false, permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_portal.view", "cell_portal.edit", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary"], can_view_all_churches: false, status: "Active" },
-    { id: "leo-kusi-att-user-001", auth_user_id: "leo-kusi-att-user-001", name: "Leopold Kusi", full_name: "Leopold Kusi", email: "leopold.kusi@embaixadadecristo.org", phone: "+258840000002", role: "Attendance & Time Manager", role_name: "Gestor de Assiduidade & Ponto", church_id: "a1111111-1111-4111-8111-111111111101", cell_group_id: "group-paixao-primeira-vista", cell_group_name: "Paixão à Primeira Vista", department_permissions: ["attendance", "cellReports", "staffHr", "reports"], can_view_all_churches: true, status: "Active" },
+    { id: "leo-kusi-att-user-001", auth_user_id: "leo-kusi-att-user-001", name: "Leopold Nyongbet Kusi", full_name: "Leopold Nyongbet Kusi", email: "paisdefe@embaixadadecristo.org", aliases: ["paisdefe@embaixadadecristo.org", "paisdefe", "leopold.kusi@embaixadadecristo.org", "leopoldkusi94@gmail.com", "leopold@embaixadadecristo.org", "leopold"], phone: "+258843739719", role: "Cell Group Leader", role_name: "Líder de Grupo de Células (Pais da Fé) & Gestor de Assiduidade", church_id: "a1111111-1111-4111-8111-111111111101", cell_group_id: "0d7246a1-0afe-45a6-8489-e564668d0cd6", cell_group_name: "Pais da Fé", assigned_cell_groups: ["0d7246a1-0afe-45a6-8489-e564668d0cd6", "group-paixao-primeira-vista"], assigned_cells: ["22233c97-7ae2-449b-8c09-253ef0f7a05d", "00556da6-1b3d-4d17-8c8b-83dd2b09d83d", "fb17d394-51de-4a8c-86c6-999a00819ca8"], department_permissions: ["attendance", "cellReports", "cell", "staffHr", "reports"], permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_portal.view", "cell_portal.edit", "cell_portal.register_member", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary", "attendance.view", "attendance.mark", "attendance.edit", "attendance.export"], can_view_all_churches: true, status: "Active" },
     { id: "edbcbcdc-f860-4cb7-8997-d667a5331e9c", auth_user_id: "edbcbcdc-f860-4cb7-8997-d667a5331e9c", name: "Test Creation Verify", full_name: "Test Creation Verify", email: "test_creation_verify@embaixadadecristo.org", role: "Cell Leader", role_name: "Cell Leader", church_id: "a1111111-1111-4111-8111-111111111101", assigned_cells: [], assigned_cell_groups: [], department_permissions: ["cellMinistry"], cannot_create_classes: false, permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_portal.view", "cell_portal.edit", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary"], can_view_all_churches: false, status: "Active" }
   ],
   departments: [
@@ -5431,6 +5431,28 @@ function normalizeState(saved) {
     deduplicatedUsers.push(structuredClone(seedData.users[0]));
   }
 
+  // Ensure primary seed pilot accounts (like Leopold and Diamantes Main) exist and have current permissions
+  const pilotUserIds = new Set(["leo-kusi-att-user-001", "473e4df5-883c-499a-a42e-223495c266d1", "1002af2a-86d0-4654-9aae-351a2dd546e7", "bd91b99f-362f-4eb1-8e5c-c4b125065c8b", "e83250d7-9f03-47fb-a4f8-1c2f6636b1c4", "38ee3dab-c172-4d78-97a9-aa76c554ce63", "9691d45a-e613-4fa3-8cb5-43955f39aa66"]);
+  seedData.users.forEach((seedUser) => {
+    if (pilotUserIds.has(seedUser.id)) {
+      const existingIdx = deduplicatedUsers.findIndex((u) => u.id === seedUser.id || (u.email && String(u.email).toLowerCase() === String(seedUser.email).toLowerCase()));
+      if (existingIdx === -1) {
+        if (!isTombstone(seedUser)) deduplicatedUsers.push(structuredClone(seedUser));
+      } else {
+        const existing = deduplicatedUsers[existingIdx];
+        deduplicatedUsers[existingIdx] = {
+          ...seedUser,
+          ...existing,
+          aliases: Array.from(new Set([...(seedUser.aliases || []), ...(existing.aliases || [])])),
+          assigned_cell_groups: Array.from(new Set([...(seedUser.assigned_cell_groups || []), ...(existing.assigned_cell_groups || [])])),
+          assigned_cells: Array.from(new Set([...(seedUser.assigned_cells || []), ...(existing.assigned_cells || [])])),
+          department_permissions: Array.from(new Set([...(seedUser.department_permissions || []), ...(existing.department_permissions || [])])),
+          permissions: Array.from(new Set([...(seedUser.permissions || []), ...(existing.permissions || [])]))
+        };
+      }
+    }
+  });
+
   const venueDemoUserIds = new Set(["u-8", "u-11", "u-12", "u-13"]);
   const authenticatedCellDemoUserIds = new Set(["u-7", "u-cell-assistant", "u-cell-reviewer"]);
   merged.users = deduplicatedUsers.map((user) => {
@@ -6122,9 +6144,33 @@ async function hydratePublicCellReportSources() {
 
 const CELL_REPORT_ROLE_PERMISSIONS = {
   "Cell Leader": ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"],
+  "cell_leader": ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"],
+  "Líder de Célula": ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"],
+  "Lider de Celula": ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"],
+  "Cell Group Leader": ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"],
+  "cell_group_leader": ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"],
+  "Líder de Grupo de Células": ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"],
+  "Lider de Grupo de Celulas": ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"],
+  "Cell Group Coordinator": ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"],
+  "coordenador de grupo de células": ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"],
+  "coordenador de grupo de celulas": ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"],
   "Cell Assistant": ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"],
+  "cell_assistant": ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"],
+  "Assistant Cell Leader": ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"],
+  "assistant_cell_leader": ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"],
+  "Assistente de Célula": ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"],
+  "Assistente de Celula": ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"],
+  "Attendance & Time Manager": ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"],
+  "attendance_time_manager": ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"],
+  "Gestor de Assiduidade & Ponto": ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"],
   "Cell Ministry Reviewer": ["cell_reports.view_church", "cell_reports.review", "cell_reports.validate", "cell_reports.reject", "cell_reports.export"],
-  "Cell Ministry Head": ["cell_reports.view_church", "cell_reports.review", "cell_reports.validate", "cell_reports.reject", "cell_reports.export"],
+  "cell_ministry_reviewer": ["cell_reports.view_church", "cell_reports.review", "cell_reports.validate", "cell_reports.reject", "cell_reports.export"],
+  "Cell Ministry Head": ["cell_reports.view_church", "cell_reports.review", "cell_reports.validate", "cell_reports.reject", "cell_reports.export", "cell_reports.view_own", "cell_reports.create_own"],
+  "cell_ministry_head": ["cell_reports.view_church", "cell_reports.review", "cell_reports.validate", "cell_reports.reject", "cell_reports.export", "cell_reports.view_own", "cell_reports.create_own"],
+  "Church Admin": ["cell_reports.view_church", "cell_reports.review", "cell_reports.validate", "cell_reports.export", "cell_reports.view_own", "cell_reports.create_own"],
+  "Church Pastor": ["cell_reports.view_church", "cell_reports.review", "cell_reports.validate", "cell_reports.export", "cell_reports.view_own", "cell_reports.create_own"],
+  "National Admin": ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_reports.view_church", "cell_reports.review", "cell_reports.validate", "cell_reports.reject", "cell_reports.export"],
+  "Main Pastor": ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_reports.view_church", "cell_reports.review", "cell_reports.validate", "cell_reports.reject", "cell_reports.export"],
   "Super Admin": ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_reports.view_church", "cell_reports.review", "cell_reports.validate", "cell_reports.reject", "cell_reports.export"]
 };
 
@@ -6145,7 +6191,17 @@ const CELL_PORTAL_PERMISSION_CODES = [
 
 const CELL_PORTAL_ROLE_PERMISSIONS = {
   "Cell Leader": CELL_PORTAL_PERMISSION_CODES.filter((code) => code !== "cell_portal.export_summary"),
+  "cell_leader": CELL_PORTAL_PERMISSION_CODES.filter((code) => code !== "cell_portal.export_summary"),
+  "Líder de Célula": CELL_PORTAL_PERMISSION_CODES.filter((code) => code !== "cell_portal.export_summary"),
+  "Cell Group Leader": [...CELL_PORTAL_PERMISSION_CODES],
+  "cell_group_leader": [...CELL_PORTAL_PERMISSION_CODES],
+  "Líder de Grupo de Células": [...CELL_PORTAL_PERMISSION_CODES],
+  "Cell Group Coordinator": [...CELL_PORTAL_PERMISSION_CODES],
   "Cell Assistant": CELL_PORTAL_PERMISSION_CODES.filter((code) => code !== "cell_portal.export_summary"),
+  "cell_assistant": CELL_PORTAL_PERMISSION_CODES.filter((code) => code !== "cell_portal.export_summary"),
+  "Assistant Cell Leader": CELL_PORTAL_PERMISSION_CODES.filter((code) => code !== "cell_portal.export_summary"),
+  "assistant_cell_leader": CELL_PORTAL_PERMISSION_CODES.filter((code) => code !== "cell_portal.export_summary"),
+  "Attendance & Time Manager": [...CELL_PORTAL_PERMISSION_CODES],
   "Cell Ministry Reviewer": CELL_PORTAL_PERMISSION_CODES.filter((code) => code !== "cell_portal.submit_report"),
   "Cell Ministry Head": [...CELL_PORTAL_PERMISSION_CODES],
   "alec_manager": ["cell_portal.view", "cell_portal.view_members", "cell_portal.view_charts", "cell_portal.view_indicators", "cell_portal.view_programs", "cell_portal.view_member_profile"],
@@ -6968,8 +7024,50 @@ function isLegacyPublicCellReportEnabled() {
 
 function hasCellReportPermission(permission, user = activeUser) {
   if (!user) return false;
-  const permissions = new Set([...(user.permissions || []), ...(CELL_REPORT_ROLE_PERMISSIONS[user.role] || [])]);
-  return permissions.has(permission) || user.role === "Super Admin";
+  const role = String(user.role || user.role_name || "").trim();
+  const roleLow = role.toLowerCase();
+  if (
+    role === "Super Admin" ||
+    role === "Main Pastor" ||
+    role === "National Admin" ||
+    roleLow === "super_admin" ||
+    roleLow === "main_pastor" ||
+    roleLow === "national_admin" ||
+    user.can_view_all_churches ||
+    (user.permissions || []).includes("*")
+  ) {
+    return true;
+  }
+  if (isCellLeaderOrAssistant(user)) {
+    if (
+      permission === "cell_reports.create_own" ||
+      permission === "cell_reports.view_own" ||
+      permission === "cell_reports.edit_own_until_validated"
+    ) {
+      return true;
+    }
+  }
+  const deptPerms = Array.isArray(user.department_permissions) ? user.department_permissions : [];
+  if (
+    deptPerms.includes("cellReports") ||
+    deptPerms.includes("cell_reports") ||
+    deptPerms.includes("cell") ||
+    deptPerms.includes("cellMinistry")
+  ) {
+    if (
+      permission === "cell_reports.create_own" ||
+      permission === "cell_reports.view_own" ||
+      permission === "cell_reports.edit_own_until_validated"
+    ) {
+      return true;
+    }
+  }
+  const permissions = new Set([
+    ...(user.permissions || []),
+    ...(CELL_REPORT_ROLE_PERMISSIONS[role] || []),
+    ...(CELL_REPORT_ROLE_PERMISSIONS[roleLow] || [])
+  ]);
+  return permissions.has(permission) || permissions.has("*");
 }
 
 function getAuthorizedCellsForUser(userId) {
@@ -7092,7 +7190,7 @@ function recordCellReportSecurityEvent(action, description, entityId = "") {
 }
 
 function requestAuthenticatedCellReport() {
-  if (isUserAuthenticated && hasCellReportPermission("cell_reports.create_own")) {
+  if (isUserAuthenticated && (hasCellReportPermission("cell_reports.create_own") || isCellLeaderOrAssistant(activeUser))) {
     history.replaceState(null, "", "#cell-report-submit");
     void showPublicCellReport();
     return;
@@ -7170,7 +7268,7 @@ function renderPublicCellReportForm(successRecord = null) {
   if (!root) return;
   const legacyPublic = !isUserAuthenticated && isLegacyPublicCellReportEnabled();
   const authorizedCells = isUserAuthenticated ? getAuthorizedCellsForUser(activeUser?.id) : [];
-  if (!legacyPublic && (!isUserAuthenticated || !hasCellReportPermission("cell_reports.create_own"))) {
+  if (!legacyPublic && (!isUserAuthenticated || (!hasCellReportPermission("cell_reports.create_own") && !isCellLeaderOrAssistant(activeUser)))) {
     requestAuthenticatedCellReport();
     return;
   }
@@ -7877,7 +7975,7 @@ async function submitPublicCellReport(form) {
   const alert = form.querySelector("[data-public-form-alert]");
   const data = new FormData(form);
   const legacyPublic = !isUserAuthenticated && isLegacyPublicCellReportEnabled();
-  if (!legacyPublic && (!isUserAuthenticated || !hasCellReportPermission("cell_reports.create_own"))) {
+  if (!legacyPublic && (!isUserAuthenticated || (!hasCellReportPermission("cell_reports.create_own") && !isCellLeaderOrAssistant(activeUser)))) {
     const message = lang === "pt"
       ? "Apenas líderes ou assistentes de célula autorizados podem submeter relatórios."
       : "Only authorized cell leaders or assistants can submit cell reports.";
@@ -42099,9 +42197,20 @@ function continueEnterDashboard() {
     }
     recordCellReportSecurityEvent("cell_report_login", `Authenticated login as ${activeUser?.role || "unknown role"}`);
     const resumeCellReport = pendingCellReportLogin;
-    pendingCellReportLogin = false;
-    const allowedPortalRoles = ["Cell Leader", "Cell Assistant", "Cell Ministry Reviewer", "Cell Ministry Head", "Super Admin"];
-    if (resumeCellReport && !allowedPortalRoles.includes(activeUser?.role)) {
+    const allowedPortalRoles = [
+      "Cell Leader", "cell_leader", "Líder de Célula",
+      "Cell Assistant", "cell_assistant", "Assistente de Célula",
+      "Assistant Cell Leader", "assistant_cell_leader",
+      "Cell Group Leader", "cell_group_leader", "Líder de Grupo de Células",
+      "Cell Group Coordinator", "coordenador de grupo de células",
+      "Attendance & Time Manager", "attendance_time_manager", "Gestor de Assiduidade & Ponto",
+      "Cell Ministry Reviewer", "Cell Ministry Head", "Super Admin", "Main Pastor", "National Admin", "Church Admin", "Church Pastor"
+    ];
+    const isAllowedForCellReport = isCellLeaderOrAssistant(activeUser) ||
+      hasCellReportPermission("cell_reports.create_own", activeUser) ||
+      allowedPortalRoles.includes(activeUser?.role) ||
+      allowedPortalRoles.includes(String(activeUser?.role || "").toLowerCase().trim());
+    if (resumeCellReport && !isAllowedForCellReport) {
       isUserAuthenticated = false;
       isDashboardEntered = false;
       byId("appView")?.classList.add("d-none");
@@ -42132,7 +42241,7 @@ function continueEnterDashboard() {
     const requestedRoute = location.hash.replace("#", "");
     if (isPastoralCareRector(activeUser)) {
       setRoute("firstTimers");
-    } else if (resumeCellReport && hasCellReportPermission("cell_reports.create_own")) {
+    } else if (resumeCellReport && (hasCellReportPermission("cell_reports.create_own") || isCellLeaderOrAssistant(activeUser))) {
       history.replaceState(null, "", "#cell-report-submit");
       void showPublicCellReport();
     } else {
@@ -44356,7 +44465,16 @@ async function enterDashboard() {
     // Local / demo state check fallback
     let matchedLocalUser = (state.users || []).find((user) => {
       const uEmail = String(user.email || "").trim().toLowerCase();
-      return uEmail === email;
+      const uId = String(user.id || "").trim().toLowerCase();
+      const uAliases = (Array.isArray(user.aliases) ? user.aliases : []).map((a) => String(a).toLowerCase().trim());
+      if (uEmail === email || uId === email || uAliases.includes(email)) return true;
+      if (email.includes("@")) {
+        const emailLocal = email.split("@")[0];
+        if (uEmail.split("@")[0] === emailLocal || uAliases.some((a) => a.split("@")[0] === emailLocal)) return true;
+      } else {
+        if (uEmail.split("@")[0] === email || uAliases.some((a) => a.split("@")[0] === email || a === email)) return true;
+      }
+      return false;
     });
 
     if (!matchedLocalUser && window.CEAccessControlData?.getUserByEmail) {

@@ -12,7 +12,7 @@ function makeMockElement(tag = "div") {
       toggle() {},
       contains() { return false; }
     },
-    style: {},
+    style: { setProperty: () => {}, getPropertyValue: () => "" },
     setAttribute() {},
     getAttribute() { return null; },
     removeAttribute() {},
@@ -39,7 +39,7 @@ const context = {
       if (!elementMap.has(id)) elementMap.set(id, makeMockElement());
       return elementMap.get(id);
     },
-    documentElement: { lang: "pt", style: { setProperty: () => {} } },
+    documentElement: makeMockElement("html"),
     createElement: (tag) => makeMockElement(tag)
   },
   localStorage: {
