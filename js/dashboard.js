@@ -71,6 +71,7 @@ const TEXT = {
     actions: "Acções",
     status: "Estado",
     search: "Pesquisar",
+    topSearch: "Pesquisar...",
     from: "De",
     to: "Até",
     all: "Todos",
@@ -839,6 +840,7 @@ const TEXT = {
     actions: "Actions",
     status: "Status",
     search: "Search",
+    topSearch: "Search...",
     from: "From",
     to: "To",
     all: "All",
@@ -2077,7 +2079,13 @@ const CHURCH_TYPE_LABELS = {
   "Igreja Local": "churchTypeLocal",
   "Igreja Online": "churchTypeOnline",
   "Igreja Virtual": "churchTypeVirtual",
-  "Grupo / Missão": "churchTypeMission"
+  "Grupo / Missão": "churchTypeMission",
+  "National HQ": "churchTypeNational",
+  "Church Branch": "churchTypeLocal",
+  "Virtual Church": "churchTypeVirtual",
+  "Online Church": "churchTypeOnline",
+  "Local Church": "churchTypeLocal",
+  "Group / Mission": "churchTypeMission"
 };
 
 const DAYS_OF_WEEK = ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
@@ -11461,7 +11469,7 @@ function statusKey(status) {
 
 function statusText(status) {
   if (lang === "en") {
-    const foundationLabels = {
+    const enLabels = {
       "Inscrito": "Enrolled",
       "Em Curso": "In Progress",
       "Aulas Concluídas": "Lessons Completed",
@@ -11472,16 +11480,40 @@ function statusText(status) {
       "Graduado": "Graduated",
       "Certificado Emitido": "Certificate Issued",
       "Inactivo": "Inactive",
+      "Inactiva": "Inactive",
       "Reprovado": "Failed",
       "Pendente": "Pending",
       "Confirmado": "Confirmed",
+      "Por Confirmar": "To Confirm",
+      "Incompleto": "Incomplete",
       "Reportado": "Reported",
       "Rejeitado": "Rejected",
       "Precisa Rever": "Needs Review",
+      "Precisa de Correcção": "Needs Correction",
       "Activo": "Active",
-      "Em Treinamento": "In Training"
+      "Activa": "Active",
+      "Em Treinamento": "In Training",
+      "Rascunho": "Draft",
+      "Submetido": "Submitted",
+      "Em Revisão": "Under Review",
+      "Em Revisão na Igreja": "Under Church Review",
+      "Aguardando Aprovação do Líder": "Awaiting Leader Approval",
+      "Aprovado na Célula (Aguardando Igreja)": "Approved in Cell (Awaiting Church)",
+      "Aprovado (Membro Oficial)": "Approved (Official Member)",
+      "Retirado": "Withdrawn",
+      "active": "Active",
+      "inProgress": "In Progress",
+      "transferred": "Transferred",
+      "Draft": "Draft",
+      "ReadyForSubmission": "Awaiting Leader Approval",
+      "Submitted": "Approved in Cell (Awaiting Church)",
+      "UnderReview": "Under Church Review",
+      "NeedsCorrection": "Needs Correction",
+      "Approved": "Approved",
+      "Rejected": "Rejected",
+      "Withdrawn": "Withdrawn"
     };
-    if (foundationLabels[status]) return foundationLabels[status];
+    if (enLabels[status]) return enLabels[status];
   }
   if (status === "Activa") return lang === "pt" ? "Activa" : "Active";
   if (status === "Inactiva") return lang === "pt" ? "Inactiva" : "Inactive";
@@ -11971,7 +12003,7 @@ function toggleSidebarGroup(key) {
   const group = document.querySelector(`[data-nav-group="${key}"]`);
   if (!group) return;
   group.classList.toggle("is-expanded", expanded);
-  group.querySelector(".nav-group-toggle, .nav-cell-parent, .nav-cell-area-toggle")?.setAttribute("aria-expanded", String(expanded));
+  group.querySelector(".nav-group-toggle, .nav-cell-parent, .nav-cell-area-toggle, .nav-cell-portal-toggle")?.setAttribute("aria-expanded", String(expanded));
 }
 
 function isCellRoute(route) {
@@ -12007,14 +12039,17 @@ function renderCellPortalSidebarSubnav() {
     { id: "cell-portal-history", icon: "bi-clock-history", labelPt: "Histórico", labelEn: "History" }
   ];
 
+  const isGroup = ["cell group leader", "cell_group_leader", "líder de grupo de células", "lider de grupo de celulas", "cell group coordinator", "coordenador de grupo de células"].includes(String(activeUser?.role || "").toLowerCase().trim()) || (Array.isArray(activeUser?.assigned_cell_groups) && activeUser.assigned_cell_groups.length > 0);
+  const portalTitle = isGroup ? (lang === "pt" ? "Meu Grupo de Células" : "My Cell Group") : (lang === "pt" ? "Minha Célula" : "My Cell");
+  const portalIcon = isGroup ? "bi-diagram-3" : "bi-person-badge";
   const isExpanded = isSidebarGroupExpanded("cellPortalSections");
 
   return `
     <div class="nav-cell-portal-area ${isExpanded ? "is-expanded" : ""} ${activeRoute === "cellPortal" ? "has-active" : ""}" data-nav-group="cellPortalSections">
-      <button type="button" class="nav-cell-portal-toggle" data-portal-dropdown-toggle aria-expanded="${isExpanded}" aria-label="Portal do Líder de Célula">
+      <button type="button" class="nav-cell-portal-toggle" data-portal-dropdown-toggle aria-expanded="${isExpanded}" aria-label="${escapeAttr(portalTitle)}">
         <div class="d-flex align-items-center gap-2">
-          <i class="bi bi-person-badge nav-cell-area-icon" aria-hidden="true"></i>
-          <span>${lang === "pt" ? "Portal do Líder de Célula" : "Cell Leader Portal"}</span>
+          <i class="bi ${portalIcon} nav-cell-area-icon" aria-hidden="true"></i>
+          <span>${portalTitle}</span>
         </div>
         <i class="bi bi-chevron-down nav-cell-area-chevron" aria-hidden="true"></i>
       </button>
@@ -12507,11 +12542,9 @@ function applySidebarCollapse(collapsed = isSidebarCollapsed()) {
 function renderShell() {
   const isCellPortalOnly = isCellLeaderOrAssistant(activeUser) && !userHasExtendedCellPerms(activeUser);
   if (isCellPortalOnly) {
-    const isGroup = ["cell group leader", "cell_group_leader", "líder de grupo de células", "lider de grupo de celulas", "cell group coordinator"].includes(String(activeUser?.role || "").toLowerCase().trim()) || (Array.isArray(activeUser?.assigned_cell_groups) && activeUser.assigned_cell_groups.length > 0);
-    const portalTitle = isGroup ? (lang === "pt" ? "Meu Grupo de Células" : "My Cell Group") : (lang === "pt" ? "Minha Célula" : "My Cell");
     const hasAttendanceAccess = (activeUser?.department_permissions || []).includes("attendance") || ["attendance & time manager", "attendance manager", "gestor de assiduidade & ponto", "attendance officer"].includes(String(activeUser?.role || "").toLowerCase().trim());
     byId("sidebarNav").innerHTML = `<div class="nav-group is-expanded"><div class="nav-group-body"><div class="nav-group-body-inner">
-      <button type="button" class="nav-item-btn ${["dashboard", "cellPortal"].includes(activeRoute) ? "active" : ""}" data-route="cellPortal"><i class="bi bi-grid-1x2"></i><span>${portalTitle}</span></button>
+      ${renderCellPortalSidebarSubnav()}
       <button type="button" class="nav-item-btn ${activeRoute === "cellReceivedReports" ? "active" : ""}" data-route="cellReceivedReports"><i class="bi bi-clock-history"></i><span>${lang === "pt" ? "Relatórios Submetidos" : "Submitted Reports"}</span></button>
       <button type="button" class="nav-item-btn" data-public-cell-report><i class="bi bi-clipboard-plus"></i><span>${lang === "pt" ? "Submeter Relatório" : "Submit Report"}</span></button>
       ${hasAttendanceAccess ? `<button type="button" class="nav-item-btn ${activeRoute === "attendance" ? "active" : ""}" data-route="attendance"><i class="bi bi-person-check"></i><span>${lang === "pt" ? "Ponto & Assiduidade" : "Attendance & Time"}</span></button>` : ""}
@@ -12600,6 +12633,7 @@ function renderShell() {
 
 function applyLanguage(next = lang) {
   lang = next;
+  if (typeof window !== "undefined") window.lang = lang;
   localStorage.setItem(LANG_KEY, lang);
   document.documentElement.lang = lang;
   document.querySelectorAll("[data-i18n]").forEach((el) => {
@@ -12617,6 +12651,7 @@ function applyLanguage(next = lang) {
       key === "top.refresh" ? (lang === "en" ? "Refresh" : "Actualizar") :
       key === "top.site" ? L("viewSite") :
       key === "top.logout" ? L("logout") :
+      key === "topSearch" ? (lang === "en" ? "Search..." : "Pesquisar...") :
       key === "cancel" ? L("cancel") :
       key === "close" ? L("close") :
       key === "edit" ? L("edit") :
@@ -12630,6 +12665,15 @@ function applyLanguage(next = lang) {
   const passInput = byId("loginPassword");
   if (passInput) {
     passInput.placeholder = lang === "en" ? "Enter your password" : "Introduza a sua senha";
+  }
+  const searchBtn = byId("universalSearchBtn");
+  if (searchBtn) {
+    searchBtn.setAttribute("title", lang === "en" ? "Search" : "Pesquisar");
+    searchBtn.setAttribute("aria-label", lang === "en" ? "Global Search (Ctrl+K)" : "Pesquisa Global (Ctrl+K)");
+  }
+  const universalSearchInp = byId("universalSearchInput");
+  if (universalSearchInp) {
+    universalSearchInp.placeholder = lang === "en" ? "Search Members, Cells, Leaders, Churches or Requisitions..." : "Pesquisar Membros, Células, Lideres, Igrejas ou Requisições...";
   }
   document.querySelectorAll("[data-lang]").forEach((button) => button.classList.toggle("active", button.dataset.lang === lang));
   const brandOps = byId("brandOps");
@@ -16205,22 +16249,22 @@ function firstTimerActions(id) {
   const row = (state.firstTimers || []).find((item) => item.id === id) || {};
   const workflow = row.workflow_status || "DRAFT";
   const actions = [["view", "firstTimer", id, L("view")], ["edit", "firstTimer", id, L("edit")]];
-  if (["DRAFT", "READY_FOR_REVIEW", "NEEDS_CORRECTION"].includes(workflow)) actions.push(["submitIntake", "firstTimer", id, "Submeter ao Reitor"]);
-  if (workflow === "SUBMITTED_TO_RECTOR") actions.push(["approveAndAssignCell", "firstTimer", id, "Aprovar & Atribuir Célula"], ["approveIntake", "firstTimer", id, "Aprovar"], ["returnIntake", "firstTimer", id, "Devolver"], ["rejectIntake", "firstTimer", id, "Rejeitar"]);
-  actions.push(["assignCell", "firstTimer", id, (row.cell_id || row.celula) ? "Alterar Célula" : "Atribuir Célula"]);
-  if (workflow === "RECTOR_APPROVED") actions.push(["handoffFollowup", "firstTimer", id, "Encaminhar Follow-Up"]);
-  if (workflow === "SENT_TO_FOLLOWUP") actions.push(["receiveFollowup", "firstTimer", id, "Confirmar recepção"]);
-  if (workflow === "FOLLOWUP_RECEIVED") actions.push(["createExplicitFollowup", "firstTimer", id, "Criar Follow-Up"]);
+  if (["DRAFT", "READY_FOR_REVIEW", "NEEDS_CORRECTION"].includes(workflow)) actions.push(["submitIntake", "firstTimer", id, lang === "pt" ? "Submeter ao Reitor" : "Submit to Rector"]);
+  if (workflow === "SUBMITTED_TO_RECTOR") actions.push(["approveAndAssignCell", "firstTimer", id, lang === "pt" ? "Aprovar & Atribuir Célula" : "Approve & Assign Cell"], ["approveIntake", "firstTimer", id, L("approve") || "Approve"], ["returnIntake", "firstTimer", id, lang === "pt" ? "Devolver" : "Return"], ["rejectIntake", "firstTimer", id, L("reject") || "Reject"]);
+  actions.push(["assignCell", "firstTimer", id, (row.cell_id || row.celula) ? (lang === "pt" ? "Alterar Célula" : "Change Cell") : (lang === "pt" ? "Atribuir Célula" : "Assign Cell")]);
+  if (workflow === "RECTOR_APPROVED") actions.push(["handoffFollowup", "firstTimer", id, lang === "pt" ? "Encaminhar Follow-Up" : "Forward to Follow-Up"]);
+  if (workflow === "SENT_TO_FOLLOWUP") actions.push(["receiveFollowup", "firstTimer", id, lang === "pt" ? "Confirmar recepção" : "Confirm Receipt"]);
+  if (workflow === "FOLLOWUP_RECEIVED") actions.push(["createExplicitFollowup", "firstTimer", id, lang === "pt" ? "Criar Follow-Up" : "Create Follow-Up"]);
 
   // Downstream flows
   const isEnrolledFS = (state.foundationStudents || []).some((s) => s.first_timer_id === id || (s.phone && s.phone === (row.telefone || row.phone)));
   if (!isEnrolledFS) {
-    actions.push(["enrollFoundation", "firstTimer", id, "Enroll FS / Matricular na ESF"]);
+    actions.push(["enrollFoundation", "firstTimer", id, lang === "pt" ? "Matricular na ESF" : "Enroll in FS"]);
   }
 
   const isConvertedMember = row.converted_to_member || (state.members || []).some((m) => m.first_timer_id === id || (m.telefone && m.telefone === (row.telefone || row.phone)));
   if (!isConvertedMember && ["RECTOR_APPROVED", "FOLLOWUP_RECEIVED", "FOLLOWUP_IN_PROGRESS", "COMPLETED"].includes(workflow)) {
-    actions.push(["convertToMember", "firstTimer", id, "Converter em Membro"]);
+    actions.push(["convertToMember", "firstTimer", id, lang === "pt" ? "Converter em Membro" : "Convert to Member"]);
   }
 
   actions.push(["delete", "firstTimer", id, L("delete")]);
@@ -16228,7 +16272,34 @@ function firstTimerActions(id) {
 }
 
 function firstTimerWorkflowLabel(status) {
-  return ({ DRAFT: "Rascunho", READY_FOR_REVIEW: "Pronto para revisão", SUBMITTED_TO_RECTOR: "Submetido ao Reitor", NEEDS_CORRECTION: "Precisa de correcção", RECTOR_APPROVED: "Aprovado pelo Reitor", RECTOR_REJECTED: "Rejeitado pelo Reitor", SENT_TO_FOLLOWUP: "Enviado para Follow-Up", FOLLOWUP_RECEIVED: "Recebido por Follow-Up", FOLLOWUP_IN_PROGRESS: "Follow-Up em curso", COMPLETED: "Concluído", ARCHIVED: "Arquivado" }[status] || status || "Rascunho");
+  if (lang === "en") {
+    return ({
+      DRAFT: "Draft",
+      READY_FOR_REVIEW: "Ready for Review",
+      SUBMITTED_TO_RECTOR: "Submitted to Rector",
+      NEEDS_CORRECTION: "Needs Correction",
+      RECTOR_APPROVED: "Rector Approved",
+      RECTOR_REJECTED: "Rector Rejected",
+      SENT_TO_FOLLOWUP: "Sent to Follow-Up",
+      FOLLOWUP_RECEIVED: "Follow-Up Received",
+      FOLLOWUP_IN_PROGRESS: "Follow-Up in Progress",
+      COMPLETED: "Completed",
+      ARCHIVED: "Archived"
+    }[status] || status || "Draft");
+  }
+  return ({
+    DRAFT: "Rascunho",
+    READY_FOR_REVIEW: "Pronto para revisão",
+    SUBMITTED_TO_RECTOR: "Submetido ao Reitor",
+    NEEDS_CORRECTION: "Precisa de correcção",
+    RECTOR_APPROVED: "Aprovado pelo Reitor",
+    RECTOR_REJECTED: "Rejeitado pelo Reitor",
+    SENT_TO_FOLLOWUP: "Enviado para Follow-Up",
+    FOLLOWUP_RECEIVED: "Recebido por Follow-Up",
+    FOLLOWUP_IN_PROGRESS: "Follow-Up em curso",
+    COMPLETED: "Concluído",
+    ARCHIVED: "Arquivado"
+  }[status] || status || "Rascunho");
 }
 
 function canReviewFirstTimerIntake() {
@@ -16239,11 +16310,11 @@ function renderFirstTimerRectorPanel(list) {
   if (!canReviewFirstTimerIntake()) return "";
   const reviewRows = list.filter((person) => ["READY_FOR_REVIEW", "SUBMITTED_TO_RECTOR"].includes(person.workflow_status));
   const submittedRows = reviewRows.filter((person) => person.workflow_status === "SUBMITTED_TO_RECTOR");
-  const bulkActions = submittedRows.length ? `<div class="d-flex gap-2 flex-wrap mt-2 justify-content-end"><button type="button" class="btn btn-sm btn-success" data-first-timer-bulk="approve">Aprovar todos (${submittedRows.length})</button><button type="button" class="btn btn-sm btn-outline-warning" data-first-timer-bulk="return">Devolver todos (${submittedRows.length})</button><button type="button" class="btn btn-sm btn-outline-danger" data-first-timer-bulk="reject">Rejeitar todos (${submittedRows.length})</button></div>` : "";
-  return `<article class="panel glass-panel mb-4" id="first-timer-rector-review"><div class="panel-head"><div><h3 class="panel-title"><i class="bi bi-person-check me-2 text-warning"></i>Painel do Reitor</h3><p class="text-secondary mb-0">Registos prontos ou submetidos para revisão pastoral.</p></div><div class="text-end"><span class="badge bg-warning text-dark">${reviewRows.length} pendente(s)</span>${bulkActions}</div></div>${reviewRows.length ? dataTable(["Nº", "Nome", "Igreja", "Célula", "Estado", "Decisão"], reviewRows.map((person) => [person.first_timer_number || "—", fullName(person), churchName(person.church_id), person.cell_name || person.celula ? `<span class="badge bg-secondary-subtle text-body"><i class="bi bi-diagram-3 me-1"></i>${escapeAttr(person.cell_name || person.celula)}</span>` : `<span class="text-secondary small">Não atribuída</span>`, badge(firstTimerWorkflowLabel(person.workflow_status)), actionButtons([
-    ...(person.workflow_status === "READY_FOR_REVIEW" ? [["receiveForRectorReview", "firstTimer", person.id, "Lançar para Aprovação"]] : []),
-    ...(person.workflow_status === "SUBMITTED_TO_RECTOR" ? [["approveAndAssignCell", "firstTimer", person.id, "Aprovar & Atribuir Célula"], ["approveIntake", "firstTimer", person.id, "Aprovar"], ["returnIntake", "firstTimer", person.id, "Devolver"], ["rejectIntake", "firstTimer", person.id, "Rejeitar"]] : [])
-  ])])) : `<p class="text-secondary mb-0">Não há registos a aguardar decisão do Reitor.</p>`}</article>`;
+  const bulkActions = submittedRows.length ? `<div class="d-flex gap-2 flex-wrap mt-2 justify-content-end"><button type="button" class="btn btn-sm btn-success" data-first-timer-bulk="approve">${lang === "pt" ? `Aprovar todos (${submittedRows.length})` : `Approve all (${submittedRows.length})`}</button><button type="button" class="btn btn-sm btn-outline-warning" data-first-timer-bulk="return">${lang === "pt" ? `Devolver todos (${submittedRows.length})` : `Return all (${submittedRows.length})`}</button><button type="button" class="btn btn-sm btn-outline-danger" data-first-timer-bulk="reject">${lang === "pt" ? `Rejeitar todos (${submittedRows.length})` : `Reject all (${submittedRows.length})`}</button></div>` : "";
+  return `<article class="panel glass-panel mb-4" id="first-timer-rector-review"><div class="panel-head"><div><h3 class="panel-title"><i class="bi bi-person-check me-2 text-warning"></i>${lang === "pt" ? "Painel do Reitor" : "Rector's Panel"}</h3><p class="text-secondary mb-0">${lang === "pt" ? "Registos prontos ou submetidos para revisão pastoral." : "Records ready or submitted for pastoral review."}</p></div><div class="text-end"><span class="badge bg-warning text-dark">${reviewRows.length} ${lang === "pt" ? "pendente(s)" : "pending"}</span>${bulkActions}</div></div>${reviewRows.length ? dataTable([lang === "pt" ? "Nº" : "No.", L("name"), L("church"), L("cell"), L("status"), lang === "pt" ? "Decisão" : "Decision"], reviewRows.map((person) => [person.first_timer_number || "—", fullName(person), churchName(person.church_id), person.cell_name || person.celula ? `<span class="badge bg-secondary-subtle text-body"><i class="bi bi-diagram-3 me-1"></i>${escapeAttr(person.cell_name || person.celula)}</span>` : `<span class="text-secondary small">${lang === "pt" ? "Não atribuída" : "Unassigned"}</span>`, badge(firstTimerWorkflowLabel(person.workflow_status)), actionButtons([
+    ...(person.workflow_status === "READY_FOR_REVIEW" ? [["receiveForRectorReview", "firstTimer", person.id, lang === "pt" ? "Lançar para Aprovação" : "Submit for Approval"]] : []),
+    ...(person.workflow_status === "SUBMITTED_TO_RECTOR" ? [["approveAndAssignCell", "firstTimer", person.id, lang === "pt" ? "Aprovar & Atribuir Célula" : "Approve & Assign Cell"], ["approveIntake", "firstTimer", person.id, L("approve") || (lang === "pt" ? "Aprovar" : "Approve")], ["returnIntake", "firstTimer", person.id, lang === "pt" ? "Devolver" : "Return"], ["rejectIntake", "firstTimer", person.id, L("reject") || (lang === "pt" ? "Rejeitar" : "Reject")]] : [])
+  ])])) : `<p class="text-secondary mb-0">${lang === "pt" ? "Não há registos a aguardar decisão do Reitor." : "No records awaiting Rector's decision."}</p>`}</article>`;
 }
 
 function processFirstTimerBulkReview(decision) {
@@ -17122,9 +17193,9 @@ function renderMembersFilterBar(list, filters = {}, view = "table") {
   const groupHtml = groupOptions.map(([value, label]) => `<option value="${escapeAttr(value)}"${selected("cell_group", value)}>${escapeAttr(label)}</option>`).join("");
   const cellHtml = cellOptions.map(([value, label]) => `<option value="${escapeAttr(value)}"${selected("cell", value)}>${escapeAttr(label)}</option>`).join("");
   return `<div class="filter-toolbar filter-bar mb-3" data-member-filter-bar>
-    <div class="filter-toolbar-search"><i class="bi bi-search"></i><input class="form-control" type="search" data-member-filter="search" value="${escapeAttr(filters.search || "")}" placeholder="${L("search")}: nome, telefone, grupo ou célula"></div>
+    <div class="filter-toolbar-search"><i class="bi bi-search"></i><input class="form-control" type="search" data-member-filter="search" value="${escapeAttr(filters.search || "")}" placeholder="${lang === "pt" ? "Pesquisar: nome, telefone, grupo ou célula" : "Search: name, phone, group or cell"}"></div>
     <select class="form-select" data-member-filter="church_id"><option value="">${L("filterChurch")}</option>${churchOptions}</select>
-    <select class="form-select" data-member-filter="cell_group"><option value="">Grupo de Célula</option>${groupHtml}</select>
+    <select class="form-select" data-member-filter="cell_group"><option value="">${L("cellGroup")}</option>${groupHtml}</select>
     <select class="form-select" data-member-filter="cell"><option value="">${L("cell")}</option>${cellHtml}</select>
     <select class="form-select" data-member-filter="origin"><option value="">${lang === "pt" ? "Todas as Origens" : "All Origins"}</option><option value="cell"${selected("origin", "cell")}>${lang === "pt" ? "Vindos de Célula" : "From Cells"}</option><option value="first_timer"${selected("origin", "first_timer")}>${lang === "pt" ? "First Timers" : "First Timers"}</option><option value="direct"${selected("origin", "direct")}>${lang === "pt" ? "Registo Directo" : "Direct Registration"}</option></select>
     <select class="form-select" data-member-filter="status"><option value="">${L("filterStatus")}</option>${["active", "inProgress", "transferred"].map((status) => `<option value="${status}"${selected("status", status)}>${statusText(status)}</option>`).join("")}</select>
@@ -17238,6 +17309,18 @@ function canReviewMemberCandidates(user = activeUser) {
 }
 
 function candidateStatusLabel(status) {
+  if (lang === "en") {
+    return ({
+      Draft: "Draft",
+      ReadyForSubmission: "Awaiting Leader Approval",
+      Submitted: "Approved in Cell (Awaiting Church)",
+      UnderReview: "Under Church Review",
+      NeedsCorrection: "Needs Correction",
+      Approved: "Approved (Official Member)",
+      Rejected: "Rejected",
+      Withdrawn: "Withdrawn"
+    })[status] || status || "Draft";
+  }
   return ({
     Draft: "Rascunho",
     ReadyForSubmission: "Aguardando Aprovação do Líder",
@@ -17434,40 +17517,40 @@ function candidatePortalActions(candidate) {
   const isLeaderOrAdmin = !isAssistant;
   const canEdit = candidate.registered_by_user_id === activeUser?.id && ["Draft", "ReadyForSubmission", "NeedsCorrection"].includes(status);
 
-  const viewBtn = `<button type="button" class="action-pill-btn action-pill-btn--view" data-candidate-action="view" data-candidate-id="${id}" title="${status === "NeedsCorrection" ? "Ver motivo da correcção" : "Ver detalhes"}"><i class="bi bi-eye"></i><span>${status === "NeedsCorrection" ? "Ver motivo" : "Ver"}</span></button>`;
+  const viewBtn = `<button type="button" class="action-pill-btn action-pill-btn--view" data-candidate-action="view" data-candidate-id="${id}" title="${status === "NeedsCorrection" ? (lang === "pt" ? "Ver motivo da correcção" : "View correction reason") : (lang === "pt" ? "Ver detalhes" : "View details")}"><i class="bi bi-eye"></i><span>${status === "NeedsCorrection" ? (lang === "pt" ? "Ver motivo" : "View reason") : (lang === "pt" ? "Ver" : "View")}</span></button>`;
 
   let primaryAction = "";
   if (status === "ReadyForSubmission" && isLeaderOrAdmin) {
-    primaryAction = `<button type="button" class="action-pill-btn action-pill-btn--approve" data-candidate-action="leaderApprove" data-candidate-id="${id}" title="Aprovar e adicionar à lista da célula"><i class="bi bi-check-circle"></i><span>Aprovar Célula</span></button>`;
+    primaryAction = `<button type="button" class="action-pill-btn action-pill-btn--approve" data-candidate-action="leaderApprove" data-candidate-id="${id}" title="${lang === "pt" ? "Aprovar e adicionar à lista da célula" : "Approve and add to cell roster"}"><i class="bi bi-check-circle"></i><span>${lang === "pt" ? "Aprovar Célula" : "Approve Cell"}</span></button>`;
   } else if (status === "Draft" && canEdit) {
-    primaryAction = `<button type="button" class="action-pill-btn action-pill-btn--submit" data-candidate-action="submit" data-candidate-id="${id}" title="Submeter para aprovação"><i class="bi bi-send"></i><span>Submeter</span></button>`;
+    primaryAction = `<button type="button" class="action-pill-btn action-pill-btn--submit" data-candidate-action="submit" data-candidate-id="${id}" title="${lang === "pt" ? "Submeter para aprovação" : "Submit for approval"}"><i class="bi bi-send"></i><span>${lang === "pt" ? "Submeter" : "Submit"}</span></button>`;
   } else if (status === "NeedsCorrection" && canEdit) {
-    primaryAction = `<button type="button" class="action-pill-btn action-pill-btn--submit" data-candidate-action="submit" data-candidate-id="${id}" title="Re-submeter registo"><i class="bi bi-arrow-repeat"></i><span>Re-submeter</span></button>`;
+    primaryAction = `<button type="button" class="action-pill-btn action-pill-btn--submit" data-candidate-action="submit" data-candidate-id="${id}" title="${lang === "pt" ? "Re-submeter registo" : "Re-submit record"}"><i class="bi bi-arrow-repeat"></i><span>${lang === "pt" ? "Re-submeter" : "Re-submit"}</span></button>`;
   } else if (status === "ReadyForSubmission" && !isLeaderOrAdmin) {
-    primaryAction = `<span class="badge bg-warning text-dark">Aguardando Líder</span>`;
+    primaryAction = `<span class="badge bg-warning text-dark">${lang === "pt" ? "Aguardando Líder" : "Awaiting Leader"}</span>`;
   } else if (status === "Submitted") {
-    primaryAction = `<span class="badge bg-info text-dark">Aguardando Igreja</span>`;
+    primaryAction = `<span class="badge bg-info text-dark">${lang === "pt" ? "Aguardando Igreja" : "Awaiting Church"}</span>`;
   } else if (status === "UnderReview") {
-    primaryAction = `<span class="badge bg-primary">Em Revisão</span>`;
+    primaryAction = `<span class="badge bg-primary">${lang === "pt" ? "Em Revisão" : "Under Review"}</span>`;
   }
 
   const menuItems = [];
   if (canEdit) {
-    menuItems.push(`<li><button type="button" class="dropdown-item" data-candidate-action="edit" data-candidate-id="${id}"><i class="bi bi-pencil text-primary"></i><span>Editar registo</span></button></li>`);
+    menuItems.push(`<li><button type="button" class="dropdown-item" data-candidate-action="edit" data-candidate-id="${id}"><i class="bi bi-pencil text-primary"></i><span>${lang === "pt" ? "Editar registo" : "Edit record"}</span></button></li>`);
   }
   if (["Draft", "ReadyForSubmission"].includes(status) && candidate.registered_by_user_id === activeUser?.id) {
-    menuItems.push(`<li><button type="button" class="dropdown-item text-warning" data-candidate-action="withdraw" data-candidate-id="${id}"><i class="bi bi-dash-circle text-warning"></i><span>Retirar registo</span></button></li>`);
+    menuItems.push(`<li><button type="button" class="dropdown-item text-warning" data-candidate-action="withdraw" data-candidate-id="${id}"><i class="bi bi-dash-circle text-warning"></i><span>${lang === "pt" ? "Retirar registo" : "Withdraw record"}</span></button></li>`);
   }
   if (status === "ReadyForSubmission" && isLeaderOrAdmin) {
-    menuItems.push(`<li><button type="button" class="dropdown-item text-danger" data-candidate-action="reject" data-candidate-id="${id}"><i class="bi bi-x-circle text-danger"></i><span>Rejeitar</span></button></li>`);
+    menuItems.push(`<li><button type="button" class="dropdown-item text-danger" data-candidate-action="reject" data-candidate-id="${id}"><i class="bi bi-x-circle text-danger"></i><span>${lang === "pt" ? "Rejeitar" : "Reject"}</span></button></li>`);
   }
 
   menuItems.push(`<li><hr class="dropdown-divider"></li>`);
-  menuItems.push(`<li><button type="button" class="dropdown-item text-danger" data-candidate-action="delete" data-candidate-id="${id}"><i class="bi bi-trash text-danger"></i><span>Eliminar registo</span></button></li>`);
+  menuItems.push(`<li><button type="button" class="dropdown-item text-danger" data-candidate-action="delete" data-candidate-id="${id}"><i class="bi bi-trash text-danger"></i><span>${lang === "pt" ? "Eliminar registo" : "Delete record"}</span></button></li>`);
 
   const moreBtn = `
     <div class="dropdown d-inline-block">
-      <button type="button" class="action-pill-btn action-pill-btn--more" data-bs-toggle="dropdown" aria-expanded="false" title="Mais opções">
+      <button type="button" class="action-pill-btn action-pill-btn--more" data-bs-toggle="dropdown" aria-expanded="false" title="${lang === "pt" ? "Mais opções" : "More options"}">
         <i class="bi bi-three-dots-vertical"></i>
       </button>
       <ul class="dropdown-menu dropdown-menu-end candidate-actions-dropdown">
@@ -17486,48 +17569,48 @@ function candidateAdminActions(candidate) {
   const topDup = dups[0];
 
   // Quick Action 1: View details
-  const viewBtn = `<button type="button" class="action-pill-btn action-pill-btn--view" data-candidate-action="view" data-candidate-id="${id}" title="Ver detalhes do candidato"><i class="bi bi-eye"></i><span>Ver</span></button>`;
+  const viewBtn = `<button type="button" class="action-pill-btn action-pill-btn--view" data-candidate-action="view" data-candidate-id="${id}" title="${lang === "pt" ? "Ver detalhes do candidato" : "View candidate details"}"><i class="bi bi-eye"></i><span>${lang === "pt" ? "Ver" : "View"}</span></button>`;
 
   // Quick Action 2: Approve button (prominent when ready to approve)
   let approveBtn = "";
   if (status === "Submitted" || status === "UnderReview") {
-    approveBtn = `<button type="button" class="action-pill-btn action-pill-btn--approve" data-candidate-action="approve" data-candidate-id="${id}" title="Aprovar e registar como membro oficial"><i class="bi bi-check-lg"></i><span>Aprovar</span></button>`;
+    approveBtn = `<button type="button" class="action-pill-btn action-pill-btn--approve" data-candidate-action="approve" data-candidate-id="${id}" title="${lang === "pt" ? "Aprovar e registar como membro oficial" : "Approve and register as official member"}"><i class="bi bi-check-lg"></i><span>${lang === "pt" ? "Aprovar" : "Approve"}</span></button>`;
   }
 
   // Dropdown menu items
   const menuItems = [];
 
   if (status === "Submitted") {
-    menuItems.push(`<li><button type="button" class="dropdown-item" data-candidate-action="startReview" data-candidate-id="${id}"><i class="bi bi-search text-info"></i><span>Iniciar revisão</span></button></li>`);
+    menuItems.push(`<li><button type="button" class="dropdown-item" data-candidate-action="startReview" data-candidate-id="${id}"><i class="bi bi-search text-info"></i><span>${lang === "pt" ? "Iniciar revisão" : "Start review"}</span></button></li>`);
   }
 
   if (status === "UnderReview") {
-    menuItems.push(`<li><button type="button" class="dropdown-item" data-candidate-action="createNew" data-candidate-id="${id}"><i class="bi bi-person-plus text-success"></i><span>Criar novo membro</span></button></li>`);
-    menuItems.push(`<li><button type="button" class="dropdown-item" data-candidate-action="link" data-candidate-id="${id}"><i class="bi bi-link-45deg text-info"></i><span>Ligar a membro existente</span></button></li>`);
+    menuItems.push(`<li><button type="button" class="dropdown-item" data-candidate-action="createNew" data-candidate-id="${id}"><i class="bi bi-person-plus text-success"></i><span>${lang === "pt" ? "Criar novo membro" : "Create new member"}</span></button></li>`);
+    menuItems.push(`<li><button type="button" class="dropdown-item" data-candidate-action="link" data-candidate-id="${id}"><i class="bi bi-link-45deg text-info"></i><span>${lang === "pt" ? "Ligar a membro existente" : "Link to existing member"}</span></button></li>`);
   }
 
   if (topDup) {
-    menuItems.push(`<li><button type="button" class="dropdown-item" onclick="openMergeMemberModal('${id}', '${topDup.member.id}')" title="${escapeAttr(topDup.reason)}"><i class="bi bi-arrows-collapse text-warning"></i><span>Fundir c/ duplicado (${topDup.score}%)</span></button></li>`);
+    menuItems.push(`<li><button type="button" class="dropdown-item" onclick="openMergeMemberModal('${id}', '${topDup.member.id}')" title="${escapeAttr(topDup.reason)}"><i class="bi bi-arrows-collapse text-warning"></i><span>${lang === "pt" ? `Fundir c/ duplicado (${topDup.score}%)` : `Merge w/ duplicate (${topDup.score}%)`}</span></button></li>`);
   } else if (status !== "Approved") {
-    menuItems.push(`<li><button type="button" class="dropdown-item" data-candidate-action="merge" data-candidate-id="${id}"><i class="bi bi-arrows-collapse text-warning"></i><span>Fundir com membro...</span></button></li>`);
+    menuItems.push(`<li><button type="button" class="dropdown-item" data-candidate-action="merge" data-candidate-id="${id}"><i class="bi bi-arrows-collapse text-warning"></i><span>${lang === "pt" ? "Fundir com membro..." : "Merge with member..."}</span></button></li>`);
   }
 
   if (status === "Submitted" || status === "UnderReview") {
-    menuItems.push(`<li><button type="button" class="dropdown-item" data-candidate-action="correction" data-candidate-id="${id}"><i class="bi bi-arrow-return-left text-warning"></i><span>Devolver p/ correcção</span></button></li>`);
-    menuItems.push(`<li><button type="button" class="dropdown-item text-danger" data-candidate-action="reject" data-candidate-id="${id}"><i class="bi bi-x-circle text-danger"></i><span>Rejeitar pedido</span></button></li>`);
+    menuItems.push(`<li><button type="button" class="dropdown-item" data-candidate-action="correction" data-candidate-id="${id}"><i class="bi bi-arrow-return-left text-warning"></i><span>${lang === "pt" ? "Devolver p/ correcção" : "Return for correction"}</span></button></li>`);
+    menuItems.push(`<li><button type="button" class="dropdown-item text-danger" data-candidate-action="reject" data-candidate-id="${id}"><i class="bi bi-x-circle text-danger"></i><span>${lang === "pt" ? "Rejeitar pedido" : "Reject request"}</span></button></li>`);
   }
 
   if (status === "Draft" || status === "NeedsCorrection" || !["Approved", "Submitted", "UnderReview"].includes(status)) {
-    menuItems.push(`<li><button type="button" class="dropdown-item" data-candidate-action="edit" data-candidate-id="${id}"><i class="bi bi-pencil text-primary"></i><span>Editar registo</span></button></li>`);
+    menuItems.push(`<li><button type="button" class="dropdown-item" data-candidate-action="edit" data-candidate-id="${id}"><i class="bi bi-pencil text-primary"></i><span>${lang === "pt" ? "Editar registo" : "Edit record"}</span></button></li>`);
   }
 
   // Delete option
   menuItems.push(`<li><hr class="dropdown-divider"></li>`);
-  menuItems.push(`<li><button type="button" class="dropdown-item text-danger" data-candidate-action="delete" data-candidate-id="${id}"><i class="bi bi-trash text-danger"></i><span>Eliminar registo</span></button></li>`);
+  menuItems.push(`<li><button type="button" class="dropdown-item text-danger" data-candidate-action="delete" data-candidate-id="${id}"><i class="bi bi-trash text-danger"></i><span>${lang === "pt" ? "Eliminar registo" : "Delete record"}</span></button></li>`);
 
   const moreBtn = `
     <div class="dropdown d-inline-block">
-      <button type="button" class="action-pill-btn action-pill-btn--more" data-bs-toggle="dropdown" aria-expanded="false" title="Mais opções">
+      <button type="button" class="action-pill-btn action-pill-btn--more" data-bs-toggle="dropdown" aria-expanded="false" title="${lang === "pt" ? "Mais opções" : "More options"}">
         <i class="bi bi-three-dots-vertical"></i>
       </button>
       <ul class="dropdown-menu dropdown-menu-end candidate-actions-dropdown">
@@ -18619,7 +18702,7 @@ function renderMembersResultsOnly() {
     const isFromCell = m.origem === "Cell" || m.origem === "CellLeader" || m.registration_source === "CellLeader" || m.first_timer_id;
     const nameCell = `<div class="d-flex flex-column">
       <strong>${escapeAttr(fullName(m))}</strong>
-      ${isFromCell ? `<span class="badge text-bg-info text-dark small mt-1" style="width: fit-content;"><i class="bi bi-diagram-3-fill me-1"></i>Célula${inviter ? ` · Conv: ${escapeAttr(inviter)}` : ''}</span>` : (inviter ? `<small class="text-secondary"><i class="bi bi-person-heart me-1"></i>${escapeAttr(inviter)}</small>` : '')}
+      ${isFromCell ? `<span class="badge text-bg-info text-dark small mt-1" style="width: fit-content;"><i class="bi bi-diagram-3-fill me-1"></i>${lang === "pt" ? "Célula" : "Cell"}${inviter ? ` · ${lang === "pt" ? "Conv" : "Inv"}: ${escapeAttr(inviter)}` : ''}</span>` : (inviter ? `<small class="text-secondary"><i class="bi bi-person-heart me-1"></i>${escapeAttr(inviter)}</small>` : '')}
     </div>`;
     return [
       nameCell, m.telefone || m.primary_phone || "—", churchName(m.church_id), memberCellGroupLabel(m) || "—", memberCellLabel(m) || "—", m.departamento || "—", badge(m.estado), memberActions(m.id)
@@ -18631,15 +18714,15 @@ function renderMembersResultsOnly() {
     const dups = candidateDuplicates(c);
     const topDup = dups[0];
     const dupPill = topDup
-      ? `<br><small class="text-warning"><i class="bi bi-magic me-1"></i>Duplicado: ${escapeAttr(fullName(topDup.member))} (${topDup.reason})</small>`
+      ? `<br><small class="text-warning"><i class="bi bi-magic me-1"></i>${lang === "pt" ? "Duplicado" : "Duplicate"}: ${escapeAttr(fullName(topDup.member))} (${topDup.reason})</small>`
       : "";
     const originLabel = c.origin_role || c.origin
       ? `<span class="badge text-bg-info text-dark small me-1"><i class="bi bi-tag-fill me-1"></i>${escapeAttr(c.origin_role || c.origin)}</span>`
       : "";
 
     return [
-      `<div class="d-flex flex-column"><div class="d-flex align-items-center gap-2"><strong class="text-warning">${escapeAttr(candidateFullName(c))}</strong> <span class="badge text-bg-warning text-dark small">Lista de Espera</span></div><div>${originLabel}${dupPill}</div></div>`,
-      c.primary_phone || "Não informado",
+      `<div class="d-flex flex-column"><div class="d-flex align-items-center gap-2"><strong class="text-warning">${escapeAttr(candidateFullName(c))}</strong> <span class="badge text-bg-warning text-dark small">${lang === "pt" ? "Lista de Espera" : "Waiting List"}</span></div><div>${originLabel}${dupPill}</div></div>`,
+      c.primary_phone || (lang === "pt" ? "Não informado" : "Not provided"),
       c.church_name || churchName(c.church_id) || "—",
       c.cell_group_name || "—",
       c.cell_name || "—",
@@ -18674,7 +18757,7 @@ function renderMembersResultsOnly() {
         ? (typeof EmptyState === "function" ? EmptyState({ icon: "bi-people", title: lang === "pt" ? "Nenhum membro encontrado" : "No members found", subtitle: lang === "pt" ? "Verifique os filtros aplicados ou efectue uma nova pesquisa." : "Check applied filters or try another search." }) : `<div class="p-4 text-center text-secondary">${lang === "pt" ? "Nenhum membro encontrado." : "No members found."}</div>`)
         : view === "cards" && activeMainTab !== "candidates"
           ? DataCardsGrid(filtered.map((m) => renderMemberCard(m)).join(""))
-          : dataTable([L("name"), L("phone"), L("church"), "Grupo de Célula", L("cell"), L("department"), L("status"), L("actions")], tableRows, { rowAttrs });
+          : dataTable([L("name"), L("phone"), L("church"), L("cellGroup"), L("cell"), L("department"), L("status"), L("actions")], tableRows, { rowAttrs });
 
   const paginationEls = document.querySelectorAll("[data-members-pagination]");
   paginationEls.forEach((paginationEl) => {
@@ -18696,12 +18779,12 @@ function renderMembers() {
   const candidateTab = modulePageState.members.candidateTab || "pending";
   const activeMainTab = modulePageState.members.activeTab || "all";
   const candidateTabs = [
-    ["draft", "Aguardando submissão", ["Draft", "ReadyForSubmission"]],
-    ["pending", "Por aprovar", ["Submitted"]],
-    ["review", "Em revisão", ["UnderReview"]],
-    ["correction", "Precisa correcção", ["NeedsCorrection"]],
-    ["approved", "Aprovados", ["Approved"]],
-    ["rejected", "Rejeitados", ["Rejected"]],
+    ["draft", lang === "pt" ? "Aguardando submissão" : "Awaiting submission", ["Draft", "ReadyForSubmission"]],
+    ["pending", lang === "pt" ? "Por aprovar" : "To approve", ["Submitted"]],
+    ["review", lang === "pt" ? "Em revisão" : "Under review", ["UnderReview"]],
+    ["correction", lang === "pt" ? "Precisa correcção" : "Needs correction", ["NeedsCorrection"]],
+    ["approved", lang === "pt" ? "Aprovados" : "Approved", ["Approved"]],
+    ["rejected", lang === "pt" ? "Rejeitados" : "Rejected", ["Rejected"]],
   ];
   const candidateRows = candidates.filter((item) => (candidateTabs.find(([key]) => key === candidateTab)?.[2] || ["Submitted"]).includes(item.approval_status));
 
@@ -18743,7 +18826,7 @@ function renderMembers() {
     const isFromCell = m.origem === "Cell" || m.origem === "CellLeader" || m.registration_source === "CellLeader" || m.first_timer_id;
     const nameCell = `<div class="d-flex flex-column">
       <strong>${escapeAttr(fullName(m))}</strong>
-      ${isFromCell ? `<span class="badge text-bg-info text-dark small mt-1" style="width: fit-content;"><i class="bi bi-diagram-3-fill me-1"></i>Célula${inviter ? ` · Conv: ${escapeAttr(inviter)}` : ''}</span>` : (inviter ? `<small class="text-secondary"><i class="bi bi-person-heart me-1"></i>${escapeAttr(inviter)}</small>` : '')}
+      ${isFromCell ? `<span class="badge text-bg-info text-dark small mt-1" style="width: fit-content;"><i class="bi bi-diagram-3-fill me-1"></i>${lang === "pt" ? "Célula" : "Cell"}${inviter ? ` · ${lang === "pt" ? "Conv" : "Inv"}: ${escapeAttr(inviter)}` : ''}</span>` : (inviter ? `<small class="text-secondary"><i class="bi bi-person-heart me-1"></i>${escapeAttr(inviter)}</small>` : '')}
     </div>`;
     return [
       nameCell, m.telefone || m.primary_phone || "—", churchName(m.church_id), memberCellGroupLabel(m) || "—", memberCellLabel(m) || "—", m.departamento || "—", badge(m.estado), memberActions(m.id)
@@ -18755,15 +18838,15 @@ function renderMembers() {
     const dups = candidateDuplicates(c);
     const topDup = dups[0];
     const dupPill = topDup
-      ? `<br><small class="text-warning"><i class="bi bi-magic me-1"></i>Duplicado: ${escapeAttr(fullName(topDup.member))} (${topDup.reason})</small>`
+      ? `<br><small class="text-warning"><i class="bi bi-magic me-1"></i>${lang === "pt" ? "Duplicado" : "Duplicate"}: ${escapeAttr(fullName(topDup.member))} (${topDup.reason})</small>`
       : "";
     const originLabel = c.origin_role || c.origin
       ? `<span class="badge text-bg-info text-dark small me-1"><i class="bi bi-tag-fill me-1"></i>${escapeAttr(c.origin_role || c.origin)}</span>`
       : "";
 
     return [
-      `<div class="d-flex flex-column"><div class="d-flex align-items-center gap-2"><strong class="text-warning">${escapeAttr(candidateFullName(c))}</strong> <span class="badge text-bg-warning text-dark small">Lista de Espera</span></div><div>${originLabel}${dupPill}</div></div>`,
-      c.primary_phone || "Não informado",
+      `<div class="d-flex flex-column"><div class="d-flex align-items-center gap-2"><strong class="text-warning">${escapeAttr(candidateFullName(c))}</strong> <span class="badge text-bg-warning text-dark small">${lang === "pt" ? "Lista de Espera" : "Waiting List"}</span></div><div>${originLabel}${dupPill}</div></div>`,
+      c.primary_phone || (lang === "pt" ? "Não informado" : "Not provided"),
       c.church_name || churchName(c.church_id) || "—",
       c.cell_group_name || "—",
       c.cell_name || "—",
@@ -18806,9 +18889,9 @@ function renderMembers() {
       ${sm("bi-hourglass", L("inProgress"), "—", "members", { scrollTo: "members-results", filterPayload: { status: "inProgress" } })}
       ${sm("bi-arrow-left-right", L("transferred"), "—", "members", { scrollTo: "members-results", filterPayload: { status: "transferred" } })}
       ${sm("bi-building", L("membersByChurch"), churchDisplay, "members", { scrollTo: "members-results", filterPayload: {} })}
-      ${canReviewMemberCandidates() ? sm("bi-person-exclamation", "Lista de Espera", reviewQueue.length, "members", { scrollTo: "member-candidate-queue" }) : ""}
+      ${canReviewMemberCandidates() ? sm("bi-person-exclamation", lang === "pt" ? "Lista de Espera" : "Waiting List", reviewQueue.length, "members", { scrollTo: "member-candidate-queue" }) : ""}
     </div>
-    ${candidateDupsCount > 0 ? `<div class="alert alert-warning border-start border-4 border-warning d-flex align-items-center justify-content-between mb-3 py-2"><div><i class="bi bi-magic me-2 fs-5"></i><strong>${candidateDupsCount} registo(s) na Lista de Espera possuem possíveis duplicados na Base de Membros.</strong><span class="small d-block text-secondary">O sistema detetou coincidências por nome, e-mail ou telefone. Clique em "Fundir" para unificar registos.</span></div><button type="button" class="btn btn-sm btn-warning fw-bold" onclick="modulePageState.members.activeTab = 'candidates'; renderMembers();">Ver Lista de Espera</button></div>` : ""}
+    ${candidateDupsCount > 0 ? `<div class="alert alert-warning border-start border-4 border-warning d-flex align-items-center justify-content-between mb-3 py-2"><div><i class="bi bi-magic me-2 fs-5"></i><strong>${candidateDupsCount} ${lang === "pt" ? "registo(s) na Lista de Espera possuem possíveis duplicados na Base de Membros." : "record(s) on the Waiting List have possible duplicates in the Members Database."}</strong><span class="small d-block text-secondary">${lang === "pt" ? "O sistema detetou coincidências por nome, e-mail ou telefone. Clique em \"Fundir\" para unificar registos." : "The system detected matches by name, email or phone. Click \"Merge\" to unify records."}</span></div><button type="button" class="btn btn-sm btn-warning fw-bold" onclick="modulePageState.members.activeTab = 'candidates'; renderMembers();">${lang === "pt" ? "Ver Lista de Espera" : "View Waiting List"}</button></div>` : ""}
     ${summaryFilterChips("members")}
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
       <div class="btn-group" role="group" aria-label="Member view tabs">
@@ -18841,16 +18924,16 @@ function renderMembers() {
               ? (typeof EmptyState === "function" ? EmptyState({ icon: "bi-people", title: lang === "pt" ? "Nenhum membro encontrado" : "No members found", subtitle: lang === "pt" ? "Verifique os filtros aplicados ou efectue uma nova pesquisa." : "Check applied filters or try another search." }) : `<div class="p-4 text-center text-secondary">${lang === "pt" ? "Nenhum membro encontrado." : "No members found."}</div>`)
               : view === "cards" && activeMainTab !== "candidates"
                 ? DataCardsGrid(filtered.map((m) => renderMemberCard(m)).join(""))
-                : dataTable([L("name"), L("phone"), L("church"), "Grupo de Célula", L("cell"), L("department"), L("status"), L("actions")], tableRows, { rowAttrs })}
+                : dataTable([L("name"), L("phone"), L("church"), L("cellGroup"), L("cell"), L("department"), L("status"), L("actions")], tableRows, { rowAttrs })}
       </div>
       ${memberPaginationBar}
     </article>
-    ${canReviewMemberCandidates() ? `<article id="member-candidate-queue" class="panel glass-panel mb-4"><div class="d-flex justify-content-between align-items-center mb-3"><div><h3 class="h5 mb-1">Lista de Espera / Registos por Aprovar</h3><p class="mb-0 text-secondary">Apenas registos submetidos entram na fila de aprovação de membros da Igreja.</p></div><span class="badge text-bg-warning">${reviewQueue.length} em fila</span></div><div class="d-flex flex-wrap gap-2 mb-3">${candidateTabs.map(([key,label,statuses]) => `<button type="button" class="action-btn ${candidateTab === key ? "active" : ""}" data-member-candidate-tab="${key}">${label} <span class="badge text-bg-secondary">${candidates.filter((item) => statuses.includes(item.approval_status)).length}</span></button>`).join("")}</div>${candidateRows.length ? dataTable(["Candidato", "Igreja / célula", "Origem / Função", "Telefone", "Deteção de Duplicados", "Estado", "Acções"], candidateRows.map((c) => {
+    ${canReviewMemberCandidates() ? `<article id="member-candidate-queue" class="panel glass-panel mb-4"><div class="d-flex justify-content-between align-items-center mb-3"><div><h3 class="h5 mb-1">${lang === "pt" ? "Lista de Espera / Registos por Aprovar" : "Waiting List / Records to Approve"}</h3><p class="mb-0 text-secondary">${lang === "pt" ? "Apenas registos submetidos entram na fila de aprovação de membros da Igreja." : "Only submitted records enter the church membership approval queue."}</p></div><span class="badge text-bg-warning">${reviewQueue.length} ${lang === "pt" ? "em fila" : "in queue"}</span></div><div class="d-flex flex-wrap gap-2 mb-3">${candidateTabs.map(([key,label,statuses]) => `<button type="button" class="action-btn ${candidateTab === key ? "active" : ""}" data-member-candidate-tab="${key}">${label} <span class="badge text-bg-secondary">${candidates.filter((item) => statuses.includes(item.approval_status)).length}</span></button>`).join("")}</div>${candidateRows.length ? dataTable([lang === "pt" ? "Candidato" : "Candidate", lang === "pt" ? "Igreja / célula" : "Church / cell", lang === "pt" ? "Origem / Função" : "Origin / Role", L("phone"), lang === "pt" ? "Deteção de Duplicados" : "Duplicate Detection", L("status"), L("actions")], candidateRows.map((c) => {
       const dups = candidateDuplicates(c);
       const topDup = dups[0];
       const dupBadge = topDup
-        ? `<button type="button" class="btn btn-xs btn-outline-warning fw-bold candidate-merge-btn" onclick="openMergeMemberModal('${c.id}', '${topDup.member.id}')" title="${topDup.reason}"><i class="bi bi-arrows-collapse me-1"></i>Fundir c/ ${escapeAttr(fullName(topDup.member))} (${topDup.reason})</button>`
-        : `<span class="text-muted small">Sem duplicados</span>`;
+        ? `<button type="button" class="btn btn-xs btn-outline-warning fw-bold candidate-merge-btn" onclick="openMergeMemberModal('${c.id}', '${topDup.member.id}')" title="${topDup.reason}"><i class="bi bi-arrows-collapse me-1"></i>${lang === "pt" ? `Fundir c/ ${escapeAttr(fullName(topDup.member))} (${topDup.reason})` : `Merge w/ ${escapeAttr(fullName(topDup.member))} (${topDup.reason})`}</button>`
+        : `<span class="text-muted small">${lang === "pt" ? "Sem duplicados" : "No duplicates"}</span>`;
       const originBadge = c.origin_role || c.origin
         ? `<span class="badge text-bg-secondary small">${escapeAttr(c.origin_role || c.origin)}</span>`
         : `<span class="text-muted small">${c.registered_by_name || "—"}</span>`;
@@ -18859,7 +18942,7 @@ function renderMembers() {
         `<strong>${escapeAttr(candidateFullName(c))}</strong>`,
         `${c.church_name || "—"}<br><small class="text-secondary">${c.cell_name || "—"}</small>`,
         originBadge,
-        c.primary_phone || "Não informado",
+        c.primary_phone || (lang === "pt" ? "Não informado" : "Not provided"),
         dupBadge,
         badge(candidateStatusLabel(c.approval_status)),
         candidateAdminActions(c)
