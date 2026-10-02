@@ -14046,8 +14046,21 @@ function renderDashboardActivityList() {
   return typeof DashboardQuickList === "function" ? DashboardQuickList(items) : `<div class="dashboard-quick-list">${items.join("")}</div>`;
 }
 
+function getAttendanceTodayIso() {
+  try {
+    var d = new Date();
+    if (!isNaN(d.getTime())) {
+      var y = d.getFullYear();
+      var m = String(d.getMonth() + 1).padStart(2, "0");
+      var day = String(d.getDate()).padStart(2, "0");
+      return y + "-" + m + "-" + day;
+    }
+  } catch (_) {}
+  return "2026-10-02";
+}
+
 window.mainAttendanceState = {
-  selectedDate: "2026-10-01",
+  selectedDate: getAttendanceTodayIso(),
   period: "day", // "day" | "week" | "month" | "last_month" | "year_2025"
   statusFilter: "all",
   searchQuery: "",
@@ -14055,8 +14068,12 @@ window.mainAttendanceState = {
 
 window.switchMainAttendanceDate = function (dateOrPeriod, periodType) {
   if (!dateOrPeriod) return;
-  window.mainAttendanceState.selectedDate = dateOrPeriod;
-  if (periodType) window.mainAttendanceState.period = periodType;
+  if (!window.mainAttendanceState) {
+    window.mainAttendanceState = { selectedDate: dateOrPeriod, period: periodType || "day", statusFilter: "all", searchQuery: "" };
+  } else {
+    window.mainAttendanceState.selectedDate = dateOrPeriod;
+    if (periodType) window.mainAttendanceState.period = periodType;
+  }
   var container = document.getElementById("mainAttendanceWidgetWrapper");
   if (container) {
     container.innerHTML = renderExecutiveAttendanceMainWidgetContent();
@@ -14090,8 +14107,34 @@ function renderExecutiveAttendanceMainWidget() {
 function renderExecutiveAttendanceMainWidgetContent() {
   const isPt = (window.lang || "pt") === "pt";
   const bridge = window.CEAttendanceBridge || window.CEDataLayer?.attendance;
-  const stateObj = window.mainAttendanceState || { selectedDate: "2026-10-01", period: "day", statusFilter: "all", searchQuery: "" };
-  const targetDate = stateObj.selectedDate || "2026-10-01";
+  const todayIso = getAttendanceTodayIso();
+
+  const getYesterdayIso = () => {
+    try {
+      const d = new Date();
+      d.setDate(d.getDate() - 1);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    } catch (_) {}
+    return "2026-10-01";
+  };
+  const yesterdayIso = getYesterdayIso();
+
+  const stateObj = window.mainAttendanceState || { selectedDate: todayIso, period: "day", statusFilter: "all", searchQuery: "" };
+  if (!stateObj.selectedDate) stateObj.selectedDate = todayIso;
+  const targetDate = stateObj.selectedDate;
+
+  const formatMonthLabel = (isoDate, short = false) => {
+    const ptMonths = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+    const enMonths = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const ptShort = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+    const enShort = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const m = parseInt(isoDate.slice(5, 7), 10) - 1;
+    if (short) return isPt ? ptShort[m] : enShort[m];
+    return isPt ? ptMonths[m] : enMonths[m];
+  };
 
   // Fetch all attendance records reliably
   const allRecords = (bridge?.getLocalStore ? bridge.getLocalStore("attendance") : null) || (bridge?.getLocalStore ? bridge.getLocalStore("records") : null) || [];
@@ -14112,10 +14155,18 @@ function renderExecutiveAttendanceMainWidgetContent() {
   // Filter records according to selected period
   let periodRecords = [];
   if (stateObj.period === "week") {
-    // Week from 2026-09-28 to 2026-10-04 or July week
-    periodRecords = allRecords.filter((r) => r.attendance_date >= "2026-09-28" && r.attendance_date <= "2026-10-04");
+    let d = new Date(targetDate);
+    let dayOfWeek = d.getDay();
+    let diffToMon = (dayOfWeek === 0 ? -6 : 1) - dayOfWeek;
+    let monday = new Date(d);
+    monday.setDate(d.getDate() + diffToMon);
+    let sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    let monIso = monday.toISOString().slice(0, 10);
+    let sunIso = sunday.toISOString().slice(0, 10);
+    periodRecords = allRecords.filter((r) => r.attendance_date >= monIso && r.attendance_date <= sunIso);
     if (!periodRecords.length) {
-      periodRecords = allRecords.filter((r) => r.attendance_date >= "2026-07-06" && r.attendance_date <= "2026-07-09");
+      periodRecords = allRecords.filter((r) => r.attendance_date >= "2026-09-28" && r.attendance_date <= "2026-10-04");
     }
   } else if (stateObj.period === "month") {
     periodRecords = allRecords.filter((r) => r.attendance_date && r.attendance_date.slice(0, 7) === targetDate.slice(0, 7));
@@ -14134,6 +14185,7 @@ function renderExecutiveAttendanceMainWidgetContent() {
       attendance_date: targetDate,
       employee_id: s.id,
       employee_name: s.name,
+      employee_full_name: s.fullName || s.name,
       department: s.dept,
       role: s.role,
       check_in: null,
@@ -14146,7 +14198,7 @@ function renderExecutiveAttendanceMainWidgetContent() {
   }
 
   // Stats calculation
-  const totalExpected = periodRecords.length || 20;
+  const totalExpected = periodRecords.length || 15;
   const presentRecs = periodRecords.filter((r) => r.is_present);
   const onTimeRecs = periodRecords.filter((r) => r.status === "on_time");
   const graceRecs = periodRecords.filter((r) => r.status === "grace_period");
@@ -14156,13 +14208,13 @@ function renderExecutiveAttendanceMainWidgetContent() {
   const allLateRecs = periodRecords.filter((r) => r.is_late);
   const absentRecs = periodRecords.filter((r) => !r.is_present);
 
-  const onTimeRate = totalExpected > 0 ? Math.round(((onTimeRecs.length + graceRecs.length) / totalExpected) * 100) : 0;
+  const onTimeRate = presentRecs.length > 0 ? Math.round(((onTimeRecs.length + graceRecs.length) / presentRecs.length) * 100) : (totalExpected > 0 ? Math.round(((onTimeRecs.length + graceRecs.length) / totalExpected) * 100) : 0);
   const presenceRate = totalExpected > 0 ? Math.round((presentRecs.length / totalExpected) * 100) : 0;
 
   // Average check in
   const checkIns = presentRecs.map((r) => bridge?.parseTimeToMinutes ? bridge.parseTimeToMinutes(r.check_in) : null).filter((m) => m != null);
   const avgMins = checkIns.length ? Math.round(checkIns.reduce((a, b) => a + b, 0) / checkIns.length) : null;
-  const avgCheckInStr = avgMins != null && bridge?.minutesToTimeStr ? bridge.minutesToTimeStr(avgMins) : (presentRecs.length ? "08:18" : "--:--");
+  const avgCheckInStr = avgMins != null && bridge?.minutesToTimeStr ? bridge.minutesToTimeStr(avgMins) : (presentRecs.length ? "08:21" : "--:--");
 
   // Filter staff table according to active filter
   let displayedStaff = periodRecords;
@@ -14176,6 +14228,7 @@ function renderExecutiveAttendanceMainWidgetContent() {
     const q = stateObj.searchQuery;
     displayedStaff = displayedStaff.filter((r) =>
       String(r.employee_name || "").toLowerCase().includes(q) ||
+      String(r.employee_full_name || "").toLowerCase().includes(q) ||
       String(r.employee_id || "").toLowerCase().includes(q) ||
       String(r.department || "").toLowerCase().includes(q)
     );
@@ -14184,7 +14237,7 @@ function renderExecutiveAttendanceMainWidgetContent() {
   const getStatusBadge = (status, delayMins) => {
     switch (status) {
       case "on_time":
-        return `<span class="badge" style="background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.25); font-weight: 600; padding: 4px 9px; font-size: 0.73rem;"><i class="bi bi-check-circle-fill me-1"></i>${isPt ? "Pontual" : "On Time"}</span>`;
+        return `<span class="badge" style="background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.25); font-weight: 600; padding: 4px 9px; font-size: 0.73rem;"><i class="bi bi-check-circle-fill me-1"></i>${isPt ? "No Horário" : "On Time"}</span>`;
       case "grace_period":
         return `<span class="badge" style="background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.25); font-weight: 600; padding: 4px 9px; font-size: 0.73rem;"><i class="bi bi-clock-history me-1"></i>${isPt ? "Tolerância" : "Grace"} (${delayMins}m)</span>`;
       case "minor_delay":
@@ -14192,12 +14245,15 @@ function renderExecutiveAttendanceMainWidgetContent() {
       case "late":
         return `<span class="badge" style="background: rgba(248, 113, 113, 0.12); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.25); font-weight: 600; padding: 4px 9px; font-size: 0.73rem;"><i class="bi bi-exclamation-circle-fill me-1"></i>${isPt ? "Atrasado" : "Late"} (+${delayMins}m)</span>`;
       case "severe_delay":
-        return `<span class="badge" style="background: rgba(248, 113, 113, 0.16); color: #fca5a5; border: 1px solid rgba(248, 113, 113, 0.3); font-weight: 600; padding: 4px 9px; font-size: 0.73rem;"><i class="bi bi-fire me-1"></i>${isPt ? "Muito Tarde" : "Severe Delay"} (+${delayMins}m)</span>`;
+        return `<span class="badge" style="background: rgba(248, 113, 113, 0.16); color: #fca5a5; border: 1px solid rgba(248, 113, 113, 0.3); font-weight: 600; padding: 4px 9px; font-size: 0.73rem;"><i class="bi bi-fire me-1"></i>${isPt ? "Atraso Grave" : "Severe Delay"} (+${delayMins}m)</span>`;
       case "absent":
       default:
         return `<span class="badge" style="background: rgba(148, 163, 184, 0.1); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.2); font-weight: 600; padding: 4px 9px; font-size: 0.73rem;"><i class="bi bi-dash-circle me-1"></i>${isPt ? "Sem Registo" : "No Punch"}</span>`;
     }
   };
+
+  const isTodaySelected = stateObj.selectedDate === todayIso && stateObj.period === "day";
+  const isYesterdaySelected = stateObj.selectedDate === yesterdayIso && stateObj.period === "day";
 
   return `
     <div class="main-att-executive-card att-card p-3 p-md-4 mb-4">
@@ -14209,34 +14265,31 @@ function renderExecutiveAttendanceMainWidgetContent() {
               <i class="bi bi-fingerprint me-1"></i>${isPt ? "PAINEL DE ASSIDUIDADE — MAIN" : "ATTENDANCE HUB — MAIN"}
             </span>
             <span class="badge" style="background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.25); font-size: 0.72rem; padding: 4px 8px;">
-              <i class="bi bi-shield-check me-1"></i>${isPt ? "Registo Oficial Homologado" : "Official Homologated Record"}
+              <i class="bi bi-shield-check me-1"></i>${isPt ? "Horário Oficial: 08:30" : "Standard Arrival: 08:30"}
             </span>
           </div>
           <h4 class="h5 fw-bold text-white mb-0">
             ${isPt ? "Supervisão Diária, Comparação e Relatórios de Ponto" : "Daily Oversight, Comparison & Punch Reports"} — <span style="color: #facc15; font-weight: 600;">${targetDate}</span>
           </h4>
           <span class="text-secondary small">
-            ${isPt ? "Registo oficial biométrico consolidado com suporte a comparativos temporais e relatórios." : "Consolidated biometric records with multi-period comparative analysis and reporting."}
+            ${isPt ? "Registo oficial biométrico consolidado com entrada às 08:30 e comparativos temporais." : "Consolidated biometric records with 08:30 arrival baseline and comparative reporting."}
           </span>
         </div>
 
         <div class="d-flex flex-wrap align-items-center gap-2">
           <!-- Timeframe buttons -->
           <div class="btn-group btn-group-sm" role="group">
-            <button type="button" class="btn ${stateObj.selectedDate === "2026-10-01" && stateObj.period === "day" ? "btn-ce-gold" : "btn-outline-secondary"}" onclick="window.switchMainAttendanceDate('2026-10-01', 'day')">
-              ${isPt ? "01 Out (Hoje)" : "01 Oct (Today)"}
+            <button type="button" class="btn ${isTodaySelected ? "btn-ce-gold" : "btn-outline-secondary"}" onclick="window.switchMainAttendanceDate('${todayIso}', 'day')">
+              ${todayIso.slice(8, 10)} ${formatMonthLabel(todayIso, true)} (${isPt ? "Hoje" : "Today"})
             </button>
-            <button type="button" class="btn ${stateObj.selectedDate === "2026-07-09" && stateObj.period === "day" ? "btn-ce-gold" : "btn-outline-secondary"}" onclick="window.switchMainAttendanceDate('2026-07-09', 'day')">
-              09 Jul
+            <button type="button" class="btn ${isYesterdaySelected ? "btn-ce-gold" : "btn-outline-secondary"}" onclick="window.switchMainAttendanceDate('${yesterdayIso}', 'day')">
+              ${yesterdayIso.slice(8, 10)} ${formatMonthLabel(yesterdayIso, true)}
             </button>
-            <button type="button" class="btn ${stateObj.selectedDate === "2026-07-08" && stateObj.period === "day" ? "btn-ce-gold" : "btn-outline-secondary"}" onclick="window.switchMainAttendanceDate('2026-07-08', 'day')">
-              08 Jul
-            </button>
-            <button type="button" class="btn ${stateObj.period === "week" ? "btn-ce-gold" : "btn-outline-secondary"}" onclick="window.switchMainAttendanceDate('2026-10-01', 'week')">
+            <button type="button" class="btn ${stateObj.period === "week" ? "btn-ce-gold" : "btn-outline-secondary"}" onclick="window.switchMainAttendanceDate('${todayIso}', 'week')">
               <i class="bi bi-calendar-week me-1"></i>${isPt ? "Esta Semana" : "This Week"}
             </button>
-            <button type="button" class="btn ${stateObj.period === "month" ? "btn-ce-gold" : "btn-outline-secondary"}" onclick="window.switchMainAttendanceDate('2026-10-01', 'month')">
-              <i class="bi bi-calendar-month me-1"></i>${isPt ? "Outubro 2026" : "October 2026"}
+            <button type="button" class="btn ${stateObj.period === "month" ? "btn-ce-gold" : "btn-outline-secondary"}" onclick="window.switchMainAttendanceDate('${todayIso}', 'month')">
+              <i class="bi bi-calendar-month me-1"></i>${formatMonthLabel(todayIso)} ${todayIso.slice(0, 4)}
             </button>
             <button type="button" class="btn ${stateObj.period === "last_month" ? "btn-ce-gold" : "btn-outline-secondary"}" onclick="window.switchMainAttendanceDate('2026-07-09', 'last_month')">
               ${isPt ? "Julho 2026" : "July 2026"}
@@ -14287,7 +14340,7 @@ function renderExecutiveAttendanceMainWidgetContent() {
         </div>
         <div class="col-6 col-md-4 col-xl-2">
           <div class="p-3 rounded att-card-clickable text-center" role="button" tabindex="0" onclick="window.filterMainAttendanceStatus('late')" title="${isPt ? "Clique para filtrar atrasados" : "Click to view late staff"}">
-            <span class="text-secondary small d-block mb-1" style="font-size: 0.72rem; letter-spacing: 0.04em;">${isPt ? "EM ATRASO (>08:15)" : "TOTAL LATE"}</span>
+            <span class="text-secondary small d-block mb-1" style="font-size: 0.72rem; letter-spacing: 0.04em;">${isPt ? "EM ATRASO (>08:30)" : "TOTAL LATE (>08:30)"}</span>
             <strong class="fs-4" style="color: #f87171;">${allLateRecs.length}</strong>
           </div>
         </div>
@@ -14309,7 +14362,7 @@ function renderExecutiveAttendanceMainWidgetContent() {
       <div class="p-2.5 rounded mb-3 d-flex flex-wrap align-items-center justify-content-between gap-2" style="background: rgba(255, 255, 255, 0.025); border: 1px solid rgba(255, 255, 255, 0.06);">
         <div class="d-flex align-items-center gap-2">
           <span class="badge" style="background: rgba(234, 179, 8, 0.12); color: #facc15; border: 1px solid rgba(234, 179, 8, 0.25); font-size: 0.72rem;"><i class="bi bi-calendar-check me-1"></i>${isPt ? "Período Selecionado:" : "Selected Period:"}</span>
-          <span class="small fw-semibold" style="color: #e2e8f0;">${stateObj.period === "week" ? (isPt ? "Semana Atual (06-12 Jul 2026)" : "Current Week (06-12 Jul 2026)") : (stateObj.period === "month" ? (isPt ? "Mês de Julho 2026" : "July 2026") : (stateObj.period === "last_month" ? (isPt ? "Mês de Junho 2026" : "June 2026") : targetDate))}</span>
+          <span class="small fw-semibold" style="color: #e2e8f0;">${stateObj.period === "week" ? (isPt ? "Semana Atual (" + targetDate + ")" : "Current Week (" + targetDate + ")") : (stateObj.period === "month" ? (formatMonthLabel(targetDate) + " " + targetDate.slice(0, 4)) : (stateObj.period === "last_month" ? (isPt ? "Mês de Julho 2026" : "July 2026") : targetDate))}</span>
         </div>
 
         <div class="d-flex flex-wrap align-items-center gap-2">
@@ -14330,7 +14383,7 @@ function renderExecutiveAttendanceMainWidgetContent() {
             ${isPt ? "Todos" : "All"} (${periodRecords.length})
           </button>
           <button type="button" class="att-filter-btn ${stateObj.statusFilter === "on_time" ? "active" : ""}" onclick="window.filterMainAttendanceStatus('on_time')">
-            ${isPt ? "Pontual" : "On Time"} (${onTimeRecs.length})
+            ${isPt ? "No Horário" : "On Time"} (${onTimeRecs.length})
           </button>
           <button type="button" class="att-filter-btn ${stateObj.statusFilter === "grace" ? "active" : ""}" onclick="window.filterMainAttendanceStatus('grace')">
             ${isPt ? "Tolerância" : "Grace"} (${graceRecs.length})
@@ -14373,7 +14426,11 @@ function renderExecutiveAttendanceMainWidgetContent() {
           <tbody>
             ${displayedStaff.length ? displayedStaff.map((rec) => {
               const isLate = rec.is_late;
-              const staffDisplayName = resolveOfficialStaffName(rec, rec.employee_full_name || rec.employee_name);
+              const staffDisplayName = typeof resolveOfficialStaffName === "function"
+                ? resolveOfficialStaffName(rec, rec.employee_full_name || rec.employee_name)
+                : (bridge?.resolveOfficialStaffName
+                    ? bridge.resolveOfficialStaffName(rec, rec.employee_full_name || rec.employee_name)
+                    : (rec.employee_full_name || rec.employee_name || "Colaborador"));
               return `
                 <tr class="${isLate ? "att-row-late" : ""}">
                   <td class="ps-3 text-secondary" style="font-size: 0.78rem; font-variant-numeric: tabular-nums;">${rec.employee_id}</td>
@@ -16174,21 +16231,6 @@ function renderDashboard() {
       <div class="row g-4">
         <div class="col-xl-6">${chartCard(L("firstTimersByMonth"), groupCount(firstTimers, "data_do_culto", true))}</div>
         <div class="col-xl-6">${chartCard(L("foundationProgress"), students.map((s) => [fullName(s), foundationProgress(s)]))}</div>
-      </div>`) : ""}
-    ${canDashboardSee("followUp") ? dashboardSection(L("dashboardPendingSection"), L("dashboardPendingHint"), "bi-telephone-outbound", "followUp", `
-      <div class="row g-4 align-items-stretch">
-        <div class="col-xl-7">${renderDashboardPendingList(firstTimers)}</div>
-        <div class="col-xl-5">
-          <article class="chart-card glass-panel h-100 dashboard-side-card">
-            <div class="panel-head"><h3 class="panel-title"><i class="bi bi-lightning-charge me-2 text-info"></i>${L("needsAction")}</h3></div>
-            <div class="dashboard-side-metrics">
-              <div><span>${L("pending")}</span><strong>${firstTimers.filter((p) => statusKey(p.estado_do_seguimento) === "pending").length}</strong></div>
-              <div><span>${L("contacted")}</span><strong>${firstTimers.filter((p) => statusKey(p.estado_do_seguimento) === "contacted").length}</strong></div>
-              <div><span>${L("sentToCell")}</span><strong>${firstTimers.filter((p) => statusKey(p.estado_do_seguimento) === "sentToCell").length}</strong></div>
-              <div><span>${L("becameMember")}</span><strong>${firstTimers.filter((p) => statusKey(p.estado_do_seguimento) === "becameMember").length}</strong></div>
-            </div>
-          </article>
-        </div>
       </div>`) : ""}
     ${canDashboardSee("finance") ? dashboardSection(L("dashboardFinanceSection"), L("dashboardFinanceHint"), "bi-cash-stack", "finance", `
       <div class="row g-4">

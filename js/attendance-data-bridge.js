@@ -28,10 +28,10 @@
 
   var DEFAULT_SETTINGS = {
     id: "00000000-0000-0000-0000-000000000001",
-    standard_start_time: "08:00",
+    standard_start_time: "08:30",
     standard_end_time: "17:00",
-    grace_period_minutes: 15,
-    minor_delay_threshold_minutes: 30,
+    grace_period_minutes: 0,
+    minor_delay_threshold_minutes: 15,
     severe_delay_threshold_minutes: 60,
     working_days: ["mon", "tue", "wed", "thu", "fri"],
     is_active: true,
@@ -61,23 +61,41 @@
     var uploadIdBase = "e1111111-1111-4111-8111-1111111111";
 
     var checkInProfiles = {
+      // Live Biometric submission for Today (02/10/2026)
+      "2026-10-02": {
+        "11": { in: "08:28", out: "17:00", card: "" }, // Janet Marquel (8:28) 🟢 On Time
+        "1": { in: "08:30", out: "17:00", card: "" }, // Leopold Kusi (8:30) 🟢 On Time
+        "3": { in: "08:35", out: "17:00", card: "" }, // Deacon Oliver (8:35) 🚨 (+5m)
+        "10000014": { in: "07:45", out: "17:00", card: "" }, // Angélica Amílcar (7:45) 🟢 On Time
+        "2": { in: "07:50", out: "17:00", card: "" }, // Marcelo Panguene (7:50) 🟢 On Time
+        "10000013": { in: "08:20", out: "17:00", card: "" }, // Eduarda Paula (8:20) 🟢 On Time
+        "5": { in: "08:15", out: "17:00", card: "" }, // Gilberto Baule (8:15) 🟢 On Time
+        "10": { in: "08:25", out: "17:00", card: "" }, // Pastor Valdemiro (8:25) 🟢 On Time
+        "10000021": { in: "08:42", out: "17:00", card: "" }, // Sis. Virgínia Filipe (8:42) 🚨 (+12m)
+        "10000017": { in: "08:30", out: "17:00", card: "" }, // Junya Clementina (8:30) 🟢 On Time
+        "15": { in: "08:29", out: "17:00", card: "" }, // Laiza Chirindza (8:29) 🟢 On Time
+        "13": { in: "08:10", out: "17:00", card: "" }, // Pastor Clarissa (8:10) 🟢 On Time
+        "10000019": { in: "08:15", out: "17:00", card: "" }, // Sister Kassandra (8:15) 🟢 On Time
+        "10000020": { in: "08:28", out: "17:00", card: "" }, // Bro Filipe (8:28) 🟢 On Time
+        "2025": { in: "08:38", out: "17:00", card: "" }, // Claudina Matsinhe (8:38) 🚨 (+8m)
+      },
       // Real submission from WhatsApp on 01/10/2026
       "2026-10-01": {
-        "11": { in: "08:30", out: "17:00", card: "" }, // Janet Marquel (8:30) 🟢
-        "1": { in: "08:30", out: "17:00", card: "" }, // Leopold Kusi (8:30) 🟢
-        "3": { in: "08:38", out: "17:00", card: "" }, // Deacon Oliver (8:38) 🚨
-        "10000014": { in: "07:43", out: "17:00", card: "" }, // Angélica Amílcar (7:43) 🟢
-        "2": { in: "07:43", out: "17:00", card: "" }, // Marcelo Panguene (7:43) 🟢
-        "10000013": { in: "08:25", out: "17:00", card: "" }, // Eduarda Paula (8:25) 🟢
-        "5": { in: "07:50", out: "17:00", card: "" }, // Gilberto Baule (7:50) 🟢
-        "10": { in: "08:23", out: "17:00", card: "" }, // Pastor Valdemiro (8:23) 🟢
-        "10000021": { in: "08:22", out: "17:00", card: "" }, // Sis. Virgínia Filipe (8:22) 🟢
-        "10000017": { in: "08:49", out: "17:00", card: "" }, // Junya Clementina (8:49) 🚨
-        "15": { in: "08:33", out: "17:00", card: "" }, // Laiza Chirindza (8:33) 🚨
-        "13": { in: "08:11", out: "17:00", card: "" }, // Pastor Clarissa (8:11) 🟢
-        "10000019": { in: "08:14", out: "17:00", card: "" }, // Sister Kassandra (8:14) 🟢
-        "10000020": { in: "08:30", out: "17:00", card: "" }, // Bro Filipe (8:30) 🟢
-        "2025": { in: "08:25", out: "17:00", card: "" }, // Claudina Matsinhe (8:25) 🟢
+        "11": { in: "08:30", out: "17:00", card: "" }, // Janet Marquel (8:30) 🟢 On Time
+        "1": { in: "08:30", out: "17:00", card: "" }, // Leopold Kusi (8:30) 🟢 On Time
+        "3": { in: "08:38", out: "17:00", card: "" }, // Deacon Oliver (8:38) 🚨 (+8m)
+        "10000014": { in: "07:43", out: "17:00", card: "" }, // Angélica Amílcar (7:43) 🟢 On Time
+        "2": { in: "07:43", out: "17:00", card: "" }, // Marcelo Panguene (7:43) 🟢 On Time
+        "10000013": { in: "08:25", out: "17:00", card: "" }, // Eduarda Paula (8:25) 🟢 On Time
+        "5": { in: "07:50", out: "17:00", card: "" }, // Gilberto Baule (7:50) 🟢 On Time
+        "10": { in: "08:23", out: "17:00", card: "" }, // Pastor Valdemiro (8:23) 🟢 On Time
+        "10000021": { in: "08:22", out: "17:00", card: "" }, // Sis. Virgínia Filipe (8:22) 🟢 On Time
+        "10000017": { in: "08:49", out: "17:00", card: "" }, // Junya Clementina (8:49) 🚨 (+19m)
+        "15": { in: "08:33", out: "17:00", card: "" }, // Laiza Chirindza (8:33) 🚨 (+3m)
+        "13": { in: "08:11", out: "17:00", card: "" }, // Pastor Clarissa (8:11) 🟢 On Time
+        "10000019": { in: "08:14", out: "17:00", card: "" }, // Sister Kassandra (8:14) 🟢 On Time
+        "10000020": { in: "08:30", out: "17:00", card: "" }, // Bro Filipe (8:30) 🟢 On Time
+        "2025": { in: "08:25", out: "17:00", card: "" }, // Claudina Matsinhe (8:25) 🟢 On Time
       },
       "2026-07-09": {
         "11": { in: "09:03", out: "17:00", card: "" },
@@ -276,6 +294,39 @@
 
   var SEED_WORKFLOW_SUBMISSIONS = [
     {
+      id: "wf-sub-2026-10-02",
+      date: "2026-10-02",
+      period_type: "daily",
+      title: "Registo Biométrico Diário — 02 de Outubro de 2026",
+      group_name: "Paixão à Primeira Vista (Leopold Youngpet & Koutou)",
+      extracted_by: "Brother Lio",
+      extracted_at: "2026-10-02T09:00:00Z",
+      extraction_status: "Completed",
+      
+      // Step 2: Pastoral Care Head Review
+      pastoral_head: "Pastor Valdemiro",
+      pastoral_reviewed_at: "2026-10-02T09:30:00Z",
+      pastoral_status: "Approved",
+      pastoral_notes: "Picagens auditadas pelo Departamento de Cuidados Pastorais. Horário oficial de entrada: 08:30. Relatório de 02/10/2026 validado com sucesso.",
+      
+      // Step 3: Group Pastor / Overall Overseer
+      overseer_name: "Pastor Kéne",
+      overseer_received_at: "2026-10-02T09:45:00Z",
+      overseer_status: "Delivered_Main",
+      overseer_notes: "Homologado no Painel Geral da Igreja (MAIN).",
+      
+      record_count: 15,
+      present_count: 15,
+      on_time_count: 12,
+      grace_count: 0,
+      late_count: 3,
+      absent_count: 0,
+      total_delay_minutes: 25,
+      status: "delivered_to_kene",
+      created_at: "2026-10-02T09:00:00Z",
+      updated_at: "2026-10-02T09:45:00Z",
+    },
+    {
       id: "wf-sub-2026-10-01",
       date: "2026-10-01",
       period_type: "daily",
@@ -289,7 +340,7 @@
       pastoral_head: "Pastor Valdemiro",
       pastoral_reviewed_at: "2026-10-01T09:30:00Z",
       pastoral_status: "Approved",
-      pastoral_notes: "Dados conferidos e auditados pelo Departamento de Cuidados Pastorais. Relatório de 01/10/2026 validado.",
+      pastoral_notes: "Dados conferidos e auditados pelo Departamento de Cuidados Pastorais. Horário base 08:30. Relatório de 01/10/2026 validado.",
       
       // Step 3: Group Pastor / Overall Overseer
       overseer_name: "Pastor Kéne",
@@ -297,13 +348,13 @@
       overseer_status: "Delivered_Main",
       overseer_notes: "Homologado no Painel Geral da Igreja (MAIN).",
       
-      record_count: 22,
-      present_count: 14,
-      on_time_count: 3,
-      grace_count: 2,
-      late_count: 9,
-      absent_count: 8,
-      total_delay_minutes: 279,
+      record_count: 15,
+      present_count: 15,
+      on_time_count: 12,
+      grace_count: 0,
+      late_count: 3,
+      absent_count: 0,
+      total_delay_minutes: 30,
       status: "delivered_to_kene",
       created_at: "2026-10-01T09:00:00Z",
       updated_at: "2026-10-01T09:45:00Z",
@@ -490,8 +541,11 @@
     }
     if (kind === "settings") {
       var cachedSet = loadLocal(KEYS.settings);
-      if (!cachedSet || typeof cachedSet !== "object") {
-        cachedSet = Object.assign({}, DEFAULT_SETTINGS);
+      if (!cachedSet || typeof cachedSet !== "object" || cachedSet.standard_start_time === "08:00") {
+        cachedSet = Object.assign({}, DEFAULT_SETTINGS, cachedSet || {}, {
+          standard_start_time: "08:30",
+          grace_period_minutes: 0,
+        });
         saveLocal(KEYS.settings, cachedSet);
       }
       return cachedSet;
@@ -545,9 +599,9 @@
 
   function calculatePunctualityStatus(checkInTime, settings) {
     var set = settings || DEFAULT_SETTINGS;
-    var targetMins = parseTimeToMinutes(set.standard_start_time) || 480; // 08:00 default
-    var grace = Number(set.grace_period_minutes) || 15;
-    var minorThresh = Number(set.minor_delay_threshold_minutes) || 30;
+    var targetMins = parseTimeToMinutes(set.standard_start_time) || 510; // 08:30 default (510 mins)
+    var grace = Number(set.grace_period_minutes) || 0;
+    var minorThresh = Number(set.minor_delay_threshold_minutes) || 15;
     var severeThresh = Number(set.severe_delay_threshold_minutes) || 60;
 
     if (!checkInTime || checkInTime === "--:--" || !checkInTime.trim()) {
@@ -577,19 +631,20 @@
 
     var diff = checkInMins - targetMins;
 
+    // Arrival on or before standard arrival time (<= 08:30) is On Time
     if (diff <= 0) {
       return {
         status: "on_time",
         delay_minutes: 0,
         is_late: false,
         is_present: true,
-        label_pt: "Pontual",
+        label_pt: "No Horário",
         label_en: "On Time",
         badge_class: "badge-soft-success text-success",
       };
     }
 
-    if (diff <= grace) {
+    if (grace > 0 && diff <= grace) {
       return {
         status: "grace_period",
         delay_minutes: diff,
@@ -1436,22 +1491,64 @@
       var honorBoard = employeesList.filter(function (e) { return e.onTimeRate >= 80; }).sort(function (a, b) { return b.onTimeRate - a.onTimeRate; });
       var attentionList = employeesList.filter(function (e) { return e.onTimeRate < 60 || e.severeLateDays > 0; }).sort(function (a, b) { return b.totalDelayMins - a.totalDelayMins; });
 
+      var buckets = {
+        before_8_30: 0,
+        minor_8_45: 0,
+        late_9_00: 0,
+        late_9_30: 0,
+        severe_after_9_30: 0,
+        before_8: 0,
+        grace_8_15: 0,
+        minor_8_30: 0,
+        severe_after_9: 0,
+      };
+
+      records.forEach(function (r) {
+        if (r.check_in && r.check_in !== "--:--") {
+          var m = parseTimeToMinutes(r.check_in);
+          if (m != null) {
+            if (m <= 510) {
+              buckets.before_8_30++;
+              buckets.before_8++;
+            } else if (m <= 525) {
+              buckets.minor_8_45++;
+              buckets.grace_8_15++;
+            } else if (m <= 540) {
+              buckets.late_9_00++;
+              buckets.minor_8_30++;
+            } else if (m <= 570) {
+              buckets.late_9_30++;
+            } else {
+              buckets.severe_after_9_30++;
+              buckets.severe_after_9++;
+            }
+          }
+        }
+      });
+
       return {
         ok: true,
         yearMonth: yearMonth,
         distinctDates: distinctDates,
         totalLogs: totalLogs,
         presentCount: presentCount,
+        totalRecords: totalLogs,
         onTimeCount: onTimeCount,
         graceCount: graceCount,
         lateCount: lateCount,
+        allLateCount: lateCount,
         absentCount: absentCount,
         totalDelayMinutes: totalDelayMinutes,
         onTimeRate: onTimeRate,
         presenceRate: presenceRate,
+        distinctEmployeesCount: employeesList.length,
+        distinctDaysCount: distinctDates.length,
         employeesList: employeesList,
         honorBoard: honorBoard,
+        topPunctual: honorBoard,
         attentionList: attentionList,
+        topLate: attentionList,
+        buckets: buckets,
         records: records,
       };
     },

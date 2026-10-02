@@ -7,30 +7,45 @@
 (function () {
   "use strict";
 
+  var getTodayStr = function () {
+    try {
+      var d = new Date();
+      if (!isNaN(d.getTime())) {
+        var y = d.getFullYear();
+        var m = String(d.getMonth() + 1).padStart(2, "0");
+        var day = String(d.getDate()).padStart(2, "0");
+        return y + "-" + m + "-" + day;
+      }
+    } catch (_) {}
+    return "2026-10-02";
+  };
+
+  var todayDateStr = getTodayStr();
+
   var attendancePageState = {
     tab: "daily", // "daily" | "manual" | "comparison" | "monthly" | "trajectory" | "workflow" | "upload" | "reports" | "settings"
-    selectedDate: "2026-10-01",
+    selectedDate: todayDateStr,
     dailyFilter: "all", // "all" | "on_time" | "grace_period" | "minor_delay" | "late" | "severe_delay" | "late_all" | "absent"
     searchQuery: "",
     selectedDepartment: "all",
     // Manual & WhatsApp entry state
     manualEntryMode: "whatsapp", // "whatsapp" | "grid"
     manualParsedPreview: null,
-    manualGridDate: "2026-10-01",
+    manualGridDate: todayDateStr,
     // Comparison tab state
     comparisonMode: "day", // "day" | "week" | "month" | "year"
-    comparisonPeriodA: "2026-10-01",
-    comparisonPeriodB: "2026-07-09",
+    comparisonPeriodA: todayDateStr,
+    comparisonPeriodB: "2026-10-01",
     comparisonEmployeeId: "all",
     comparisonDepartment: "all",
     // Monthly tab state
     monthlyPeriod: "this_month", // "this_month" | "last_month" | "3_months" | "6_months" | "year" | "custom"
-    monthlySelectedMonth: "2026-10",
-    startDate: "2026-10-01",
-    endDate: "2026-10-31",
+    monthlySelectedMonth: todayDateStr.slice(0, 7),
+    startDate: todayDateStr.slice(0, 7) + "-01",
+    endDate: todayDateStr,
     // Trajectory & Workflow state
     selectedStaffId: "11",
-    workflowSelectedDate: "2026-10-01",
+    workflowSelectedDate: todayDateStr,
     trajectoryRange: "1_month",
     uploadPreview: null,
     uploadFileName: "",
@@ -1400,37 +1415,37 @@
         <div class="row g-3">
           <div class="col-12 col-md">
             <div class="p-3 rounded border border-secondary border-opacity-25 text-center">
-              <span class="text-success small fw-semibold d-block mb-1">${t("Antes das 08:00 (Pontual)", "Before 08:00 (On Time)")}</span>
-              <h4 class="text-success fw-bold mb-1">${buckets.before_8 || 0}</h4>
-              <span class="text-secondary small">${Math.round(((buckets.before_8 || 0) / totalPresentWithTime) * 100)}%</span>
+              <span class="text-success small fw-semibold d-block mb-1">${t("Até 08:30 (No Horário)", "Up to 08:30 (On Time)")}</span>
+              <h4 class="text-success fw-bold mb-1">${buckets.before_8_30 || buckets.before_8 || 0}</h4>
+              <span class="text-secondary small">${Math.round(((buckets.before_8_30 || buckets.before_8 || 0) / totalPresentWithTime) * 100)}%</span>
             </div>
           </div>
           <div class="col-12 col-md">
             <div class="p-3 rounded border border-secondary border-opacity-25 text-center">
-              <span class="text-info small fw-semibold d-block mb-1">${t("08:00 – 08:15 (Tolerância)", "08:00 – 08:15 (Grace)")}</span>
-              <h4 class="text-info fw-bold mb-1">${buckets.grace_8_15 || 0}</h4>
-              <span class="text-secondary small">${Math.round(((buckets.grace_8_15 || 0) / totalPresentWithTime) * 100)}%</span>
+              <span class="text-info small fw-semibold d-block mb-1">${t("08:31 – 08:45 (Atraso Ligeiro)", "08:31 – 08:45 (Minor Delay)")}</span>
+              <h4 class="text-info fw-bold mb-1">${buckets.minor_8_45 || buckets.grace_8_15 || 0}</h4>
+              <span class="text-secondary small">${Math.round(((buckets.minor_8_45 || buckets.grace_8_15 || 0) / totalPresentWithTime) * 100)}%</span>
             </div>
           </div>
           <div class="col-12 col-md">
             <div class="p-3 rounded border border-secondary border-opacity-25 text-center">
-              <span class="text-warning small fw-semibold d-block mb-1">${t("08:16 – 08:30 (Ligeiro)", "08:16 – 08:30 (Minor)")}</span>
-              <h4 class="text-warning fw-bold mb-1">${buckets.minor_8_30 || 0}</h4>
-              <span class="text-secondary small">${Math.round(((buckets.minor_8_30 || 0) / totalPresentWithTime) * 100)}%</span>
-            </div>
-          </div>
-          <div class="col-12 col-md">
-            <div class="p-3 rounded border border-secondary border-opacity-25 text-center">
-              <span class="text-danger small fw-semibold d-block mb-1">${t("08:31 – 09:00 (Atraso)", "08:31 – 09:00 (Late)")}</span>
-              <h4 class="text-danger fw-bold mb-1">${buckets.late_9_00 || 0}</h4>
+              <span class="text-warning small fw-semibold d-block mb-1">${t("08:46 – 09:00 (Atrasado)", "08:46 – 09:00 (Late)")}</span>
+              <h4 class="text-warning fw-bold mb-1">${buckets.late_9_00 || 0}</h4>
               <span class="text-secondary small">${Math.round(((buckets.late_9_00 || 0) / totalPresentWithTime) * 100)}%</span>
             </div>
           </div>
           <div class="col-12 col-md">
             <div class="p-3 rounded border border-secondary border-opacity-25 text-center">
-              <span class="text-danger fw-bold small d-block mb-1">${t("Após as 09:00 (Grave)", "After 09:00 (Severe)")}</span>
-              <h4 class="fw-bold mb-1 text-danger">${buckets.severe_after_9 || 0}</h4>
-              <span class="text-secondary small">${Math.round(((buckets.severe_after_9 || 0) / totalPresentWithTime) * 100)}%</span>
+              <span class="text-danger small fw-semibold d-block mb-1">${t("09:01 – 09:30 (Atraso +60m)", "09:01 – 09:30 (Late +60m)")}</span>
+              <h4 class="text-danger fw-bold mb-1">${buckets.late_9_30 || 0}</h4>
+              <span class="text-secondary small">${Math.round(((buckets.late_9_30 || 0) / totalPresentWithTime) * 100)}%</span>
+            </div>
+          </div>
+          <div class="col-12 col-md">
+            <div class="p-3 rounded border border-secondary border-opacity-25 text-center">
+              <span class="text-danger fw-bold small d-block mb-1">${t("Após 09:30 (Atraso Grave)", "After 09:30 (Severe Delay)")}</span>
+              <h4 class="fw-bold mb-1 text-danger">${buckets.severe_after_9_30 || buckets.severe_after_9 || 0}</h4>
+              <span class="text-secondary small">${Math.round(((buckets.severe_after_9_30 || buckets.severe_after_9 || 0) / totalPresentWithTime) * 100)}%</span>
             </div>
           </div>
         </div>
@@ -2111,13 +2126,13 @@ Thank you for the opportunity Pastor Sir`;
         <form id="attendanceSettingsForm">
           <div class="row g-3 mb-3">
             <div class="col-12 col-md-6">
-              <label class="form-label text-secondary small fw-semibold">${t("Horário Oficial de Entrada (Padrão: 08:00)", "Standard Check-In Time (Default: 08:00)")}</label>
-              <input type="time" class="form-control" name="standard_start_time" value="${s.standard_start_time || "08:00"}" required>
+              <label class="form-label text-secondary small fw-semibold">${t("Horário Oficial de Entrada (Padrão: 08:30)", "Standard Check-In Time (Default: 08:30)")}</label>
+              <input type="time" class="form-control" name="standard_start_time" value="${s.standard_start_time || "08:30"}" required>
             </div>
 
             <div class="col-12 col-md-6">
               <label class="form-label text-secondary small fw-semibold">${t("Minutos de Tolerância (Grace Period)", "Grace Period Minutes")}</label>
-              <input type="number" class="form-control" name="grace_period_minutes" value="${s.grace_period_minutes || 15}" min="0" max="60" required>
+              <input type="number" class="form-control" name="grace_period_minutes" value="${s.grace_period_minutes != null ? s.grace_period_minutes : 0}" min="0" max="60" required>
             </div>
 
             <div class="col-12 col-md-6">
