@@ -16448,6 +16448,138 @@ if (typeof window !== "undefined") {
   };
 }
 
+async function hydrateDashboardRealData() {
+  if (window._dashboardHydrating) return;
+  window._dashboardHydrating = true;
+  let didUpdate = false;
+
+  try {
+    const sbClient = window.CESupabase?.getRawClient?.() ||
+      window.CESupabase?.getSupabaseFoundationClient?.() ||
+      window.CESupabase?.getSupabaseClient?.() ||
+      (typeof supabase !== "undefined" ? supabase : null);
+
+    const membersRepo = typeof getMembersRepoSafe === "function" ? getMembersRepoSafe() : null;
+    const promises = [];
+
+    // 1. Members
+    if (sbClient) {
+      promises.push(
+        sbClient.from("members").select("id, full_name, nome, apelido, church_id, church_name, cell_id, cell_name, celula, status").then(({ data, error }) => {
+          if (!error && Array.isArray(data) && data.length > 0) {
+            state.members = data;
+            if (window.modulePageState?.members) {
+              modulePageState.members.items = data;
+              modulePageState.members.totalCount = data.length;
+              modulePageState.members.loaded = true;
+            }
+            didUpdate = true;
+          }
+        }).catch((e) => console.warn("[CE Dashboard] members fetch error", e))
+      );
+    } else if (membersRepo?.listMembersPage) {
+      promises.push(
+        membersRepo.listMembersPage({ page: 1, pageSize: 2000 }).then((res) => {
+          if (res?.ok && Array.isArray(res.data?.items) && res.data.items.length > 0) {
+            state.members = res.data.items;
+            if (window.modulePageState?.members) {
+              modulePageState.members.items = res.data.items;
+              modulePageState.members.totalCount = res.data.totalCount || res.data.items.length;
+              modulePageState.members.loaded = true;
+            }
+            didUpdate = true;
+          }
+        }).catch((e) => console.warn("[CE Dashboard] membersRepo fetch error", e))
+      );
+    }
+
+    // 2. First Timers
+    if (sbClient) {
+      promises.push(
+        sbClient.from("first_timers").select("*").then(({ data, error }) => {
+          if (!error && Array.isArray(data) && data.length > 0) {
+            state.firstTimers = data;
+            didUpdate = true;
+          }
+        }).catch(() => {})
+      );
+    }
+
+    // 3. Finance
+    if (sbClient) {
+      promises.push(
+        sbClient.from("finance_records").select("*").then(({ data, error }) => {
+          if (!error && Array.isArray(data) && data.length > 0) {
+            state.finance = data;
+            didUpdate = true;
+          }
+        }).catch(() => {})
+      );
+    }
+
+    // 4. Foundation Students
+    if (sbClient) {
+      promises.push(
+        sbClient.from("foundation_students").select("*").then(({ data, error }) => {
+          if (!error && Array.isArray(data) && data.length > 0) {
+            state.foundationStudents = data;
+            didUpdate = true;
+          }
+        }).catch(() => {})
+      );
+    }
+
+    // 5. Cells
+    if (sbClient) {
+      promises.push(
+        sbClient.from("cells").select("*").then(({ data, error }) => {
+          if (!error && Array.isArray(data) && data.length > 0) {
+            state.cells = data;
+            didUpdate = true;
+          }
+        }).catch(() => {})
+      );
+    }
+
+    // 6. Requisitions
+    if (sbClient) {
+      promises.push(
+        sbClient.from("requisitions").select("*").then(({ data, error }) => {
+          if (!error && Array.isArray(data) && data.length > 0) {
+            state.requisitions = data;
+            didUpdate = true;
+          }
+        }).catch(() => {})
+      );
+    }
+
+    // 7. Baptisms / Sacraments
+    if (sbClient) {
+      promises.push(
+        sbClient.from("baptisms").select("*").then(({ data, error }) => {
+          if (!error && Array.isArray(data) && data.length > 0) {
+            if (!state.sacraments) state.sacraments = {};
+            state.sacraments.baptisms = data;
+            didUpdate = true;
+          }
+        }).catch(() => {})
+      );
+    }
+
+    await Promise.all(promises);
+
+    if (didUpdate && activeRoute === "dashboard") {
+      renderDashboard();
+    }
+  } catch (err) {
+    console.warn("[CE Dashboard] Live hydration error:", err);
+  } finally {
+    window._dashboardHydrating = false;
+  }
+}
+
+window.hydrateDashboardRealData = hydrateDashboardRealData;
+
 function renderDashboard() {
   if (isCellLeaderOrAssistant(activeUser)) {
     renderCellLeaderPortal();
@@ -16456,6 +16588,14 @@ function renderDashboard() {
   if (byId("pageTitle") && (byId("pageTitle").textContent === L("accessDeniedTitle") || !byId("pageTitle").textContent || activeRoute === "dashboard")) {
     byId("pageTitle").textContent = L("dashboard");
     if (byId("sectionLabel")) byId("sectionLabel").textContent = L("main");
+  }
+
+  // Trigger live database sync in background if needed
+  if (typeof window !== "undefined" && !window._dashboardHydratedOnce) {
+    window._dashboardHydratedOnce = true;
+    setTimeout(() => {
+      void hydrateDashboardRealData();
+    }, 20);
   }
 
   const isPt = lang === "pt";
@@ -16476,24 +16616,35 @@ function renderDashboard() {
   const programs = scoped(state.programs || []);
 
   // Members real count and distribution by church
-  const membersList = (state.members && state.members.length > 0)
+  const membersList = (Array.isArray(state.members) && state.members.length > 0)
     ? state.members
-    : (modulePageState?.members?.items || []);
+    : (Array.isArray(modulePageState?.members?.items) && modulePageState.members.items.length > 0)
+      ? modulePageState.members.items
+      : (Array.isArray(state.memberRegistrationCandidates) && state.memberRegistrationCandidates.length > 0)
+        ? state.memberRegistrationCandidates
+        : [];
   const scopedMembers = scoped(membersList);
 
   const churchCounts = {};
   scopedMembers.forEach((m) => {
-    const cName = m.church_name || m.igreja || (typeof churchName === "function" ? churchName(m.church_id) : "") || (isPt ? "Maputo Central" : "Maputo Central");
-    if (cName) {
-      churchCounts[cName] = (churchCounts[cName] || 0) + 1;
-    }
+    let cName = m.church_name || m.igreja || (typeof churchName === "function" ? churchName(m.church_id) : "") || "Maputo Central – Sede";
+    if (/maputo/i.test(cName)) cName = "Maputo Central – Sede";
+    else if (/matola/i.test(cName)) cName = "Matola";
+    else if (/zimpeto/i.test(cName)) cName = "Zimpeto";
+    else if (/boane/i.test(cName)) cName = "Boane";
+    
+    churchCounts[cName] = (churchCounts[cName] || 0) + 1;
   });
+
+  let totalRealMembers = scopedMembers.length;
+  if (totalRealMembers === 0 && modulePageState?.members?.totalCount > 0) {
+    totalRealMembers = modulePageState.members.totalCount;
+    churchCounts["Maputo Central – Sede"] = totalRealMembers;
+  }
 
   const activeChurchEntries = Object.entries(churchCounts)
     .filter(([_, count]) => count > 0)
     .sort((a, b) => b[1] - a[1]);
-
-  const totalRealMembers = scopedMembers.length;
 
   // Real KPI Metrics
   const totalFt = firstTimers.length;
