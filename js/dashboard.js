@@ -3741,8 +3741,16 @@ const MEMBER_SELECT_OPTION_LABELS = {
     Active: ["Activo", "Active"], Inactive: ["Inactivo", "Inactive"], Transferred: ["Transferido", "Transferred"], Pending: ["Pendente", "Pending"]
   },
   origem: {
-    "Primeira Vez": ["Primeira Vez", "First Timer"], "Escola de Fundação": ["Escola de Fundação", "Foundation School"],
-    "Transferência": ["Transferência", "Transfer"], Manual: ["Manual", "Manual"]
+    "Primeira Vez": ["Primeira Vez", "First Timer"],
+    "FirstTimer": ["Primeira Vez", "First Timer"],
+    "Escola de Fundação": ["Escola de Fundação", "Foundation School"],
+    "Transferência": ["Transferência", "Transfer"],
+    "Manual": ["Registo Manual", "Manual Registration"],
+    "Cell": ["Célula", "Cell"],
+    "CellLeader": ["Portal de Células", "Cell Portal"],
+    "excel_official_november": ["Base de Dados Oficial", "Official Database Import"],
+    "Excel Import": ["Importação Excel", "Excel Import"],
+    "Direct Registration": ["Registo Directo", "Direct Registration"]
   },
   legacy_foundation_status: {
     Unknown: ["Não informado", "Not specified"], NotStarted: ["Não iniciado", "Not started"], InterestedOrRegistered: ["Interessado ou registado", "Interested or registered"],
@@ -3762,6 +3770,10 @@ function normalizeMemberMaritalStatus(value) {
 }
 
 function memberSelectOptionLabel(fieldName, value) {
+  if (!value) return "";
+  if (fieldName === "origem" && String(value).toLowerCase().startsWith("excel")) {
+    return lang === "en" ? "Official Database Import" : "Base de Dados Oficial";
+  }
   const labels = MEMBER_SELECT_OPTION_LABELS[fieldName]?.[value];
   if (labels) return labels[lang === "en" ? 1 : 0];
   if (STATUS_KEYS[value]) return statusText(value);
@@ -16853,20 +16865,20 @@ function renderFirstTimers() {
     ${sectionHeader(L("firstTimers"), L("firstTimerSubtitle"), "firstTimer", "bi-person-heart")}
     <div class="row g-3 mb-4 summary-cards-row">
       ${sm("bi-person-heart", L("totalFirstTimers"), list.length, "firstTimers", { scrollTo: "first-timers-results", filterPayload: {} })}
-      ${sm("bi-diagram-3 text-cyan", "Atribuídos à Célula", list.filter((p) => Boolean(p.cell_id || p.celula || p.cell_name)).length, "firstTimers", { scrollTo: "first-timers-results", filterPayload: { cell_assignment: "assigned" } })}
-      ${sm("bi-check2-circle text-success", "Recebidos na Célula", list.filter((p) => Boolean(p.cell_received || p.workflow_status === "CELL_RECEIVED" || p.estado_do_seguimento === "Received in Cell")).length, "firstTimers", { scrollTo: "first-timers-results", filterPayload: { cell_assignment: "received" } })}
-      ${sm("bi-dash-circle text-secondary", "Não Atribuídos", list.filter((p) => !p.cell_id && !p.celula && !p.cell_name).length, "firstTimers", { scrollTo: "first-timers-results", filterPayload: { cell_assignment: "not_assigned" } })}
-      ${sm("bi-hourglass-split", "Em revisão", list.filter((p) => ["SUBMITTED_TO_RECTOR", "READY_FOR_REVIEW"].includes(p.workflow_status)).length, "firstTimers", { scrollTo: "first-timers-results", filterPayload: { workflow_statuses: ["SUBMITTED_TO_RECTOR", "READY_FOR_REVIEW"] } })}
-      ${sm("bi-mortarboard", "Interesse ESF", list.filter((p) => p.foundation_school_interest || p.quer_escola_de_fundacao).length, "firstTimers", { scrollTo: "first-timers-results", filterPayload: { wants_foundation_school: true } })}
+      ${sm("bi-diagram-3 text-cyan", lang === "pt" ? "Atribuídos à Célula" : "Assigned to Cell", list.filter((p) => Boolean(p.cell_id || p.celula || p.cell_name)).length, "firstTimers", { scrollTo: "first-timers-results", filterPayload: { cell_assignment: "assigned" } })}
+      ${sm("bi-check2-circle text-success", lang === "pt" ? "Recebidos na Célula" : "Received in Cell", list.filter((p) => Boolean(p.cell_received || p.workflow_status === "CELL_RECEIVED" || p.estado_do_seguimento === "Received in Cell")).length, "firstTimers", { scrollTo: "first-timers-results", filterPayload: { cell_assignment: "received" } })}
+      ${sm("bi-dash-circle text-secondary", lang === "pt" ? "Não Atribuídos" : "Unassigned", list.filter((p) => !p.cell_id && !p.celula && !p.cell_name).length, "firstTimers", { scrollTo: "first-timers-results", filterPayload: { cell_assignment: "not_assigned" } })}
+      ${sm("bi-hourglass-split", lang === "pt" ? "Em revisão" : "Under Review", list.filter((p) => ["SUBMITTED_TO_RECTOR", "READY_FOR_REVIEW"].includes(p.workflow_status)).length, "firstTimers", { scrollTo: "first-timers-results", filterPayload: { workflow_statuses: ["SUBMITTED_TO_RECTOR", "READY_FOR_REVIEW"] } })}
+      ${sm("bi-mortarboard", lang === "pt" ? "Interesse ESF" : "FS Interest", list.filter((p) => p.foundation_school_interest || p.quer_escola_de_fundacao).length, "firstTimers", { scrollTo: "first-timers-results", filterPayload: { wants_foundation_school: true } })}
     </div>
     ${summaryFilterChips("firstTimers")}
     ${renderFirstTimerRectorPanel(list)}
     <article id="first-timers-results" class="panel glass-panel">
       <div class="d-flex gap-2 flex-wrap mb-3 align-items-center">
-        <button class="btn btn-primary" type="button" data-first-timer-new-entry><i class="bi bi-person-plus me-1"></i>Novo Registo (Manual)</button>
-        <button class="btn btn-outline-cyan" type="button" data-first-timer-csv-template><i class="bi bi-download me-1"></i>Baixar Modelo Excel</button>
-        <label class="btn btn-outline-success mb-0"><i class="bi bi-file-earmark-excel me-1"></i>Importar Excel (.xlsx / .csv)<input type="file" accept=".xlsx,.xls,.csv,.tsv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" data-first-timer-import hidden></label>
-        <span class="small text-secondary align-self-center">Compatível com Excel (.xlsx / .xls) e CSV; pré-visualização antes de gravar.</span>
+        <button class="btn btn-primary" type="button" data-first-timer-new-entry><i class="bi bi-person-plus me-1"></i>${lang === "pt" ? "Novo Registo (Manual)" : "New Record (Manual)"}</button>
+        <button class="btn btn-outline-cyan" type="button" data-first-timer-csv-template><i class="bi bi-download me-1"></i>${lang === "pt" ? "Baixar Modelo Excel" : "Download Excel Template"}</button>
+        <label class="btn btn-outline-success mb-0"><i class="bi bi-file-earmark-excel me-1"></i>${lang === "pt" ? "Importar Excel (.xlsx / .csv)" : "Import Excel (.xlsx / .csv)"}<input type="file" accept=".xlsx,.xls,.csv,.tsv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" data-first-timer-import hidden></label>
+        <span class="small text-secondary align-self-center">${lang === "pt" ? "Compatível com Excel (.xlsx / .xls) e CSV; pré-visualização antes de gravar." : "Compatible with Excel (.xlsx / .xls) and CSV; preview before saving."}</span>
       </div>
       ${filterBar({ viewToggle: ViewToggle(view), statusOptions: followupStatuses })}
       ${(() => {
@@ -16875,10 +16887,10 @@ function renderFirstTimers() {
           const isReceived = Boolean(p.cell_received || p.workflow_status === "CELL_RECEIVED" || p.estado_do_seguimento === "Received in Cell");
           const hasCell = Boolean(p.cell_id || p.celula || p.cell_name);
           const cellBadge = isReceived
-            ? `<span class="badge bg-success-subtle text-success"><i class="bi bi-check-circle-fill me-1"></i>Recebido na Célula</span>`
+            ? `<span class="badge bg-success-subtle text-success"><i class="bi bi-check-circle-fill me-1"></i>${lang === "pt" ? "Recebido na Célula" : "Received in Cell"}</span>`
             : (hasCell
-              ? `<span class="badge bg-info-subtle text-cyan"><i class="bi bi-clock-history me-1"></i>Atribuído à Célula</span>`
-              : `<span class="badge bg-secondary-subtle text-secondary"><i class="bi bi-dash-circle me-1"></i>Não Atribuído</span>`);
+              ? `<span class="badge bg-info-subtle text-cyan"><i class="bi bi-clock-history me-1"></i>${lang === "pt" ? "Atribuído à Célula" : "Assigned to Cell"}</span>`
+              : `<span class="badge bg-secondary-subtle text-secondary"><i class="bi bi-dash-circle me-1"></i>${lang === "pt" ? "Não Atribuído" : "Unassigned"}</span>`);
           const cellNameStr = cleanDisplayText(p.cell_name || p.celula || "");
           const cellDisplay = cellNameStr && cellNameStr !== "—" && cellNameStr !== "-"
             ? `<span class="badge bg-secondary-subtle text-light"><i class="bi bi-diagram-3 me-1 text-cyan"></i>${escapeAttr(cellNameStr)}</span>`
@@ -16900,7 +16912,7 @@ function renderFirstTimers() {
         const fCardsHtml = filtered.map((p) => renderFirstTimerCard(p)).join("");
         return view === "cards"
           ? (filtered.length ? DataCardsGrid(fCardsHtml) : noResultsHtml())
-          : (filtered.length ? dataTable(["Nº", L("name"), L("phone"), L("church"), "Estado Célula", L("cell"), "Convidado por", L("bornAgain"), "ESF", "Workflow", L("actions")], fTableRows) : noResultsHtml());
+          : (filtered.length ? dataTable([lang === "pt" ? "Nº" : "No.", L("name"), L("phone"), L("church"), lang === "pt" ? "Estado Célula" : "Cell Status", L("cell"), lang === "pt" ? "Convidado por" : "Invited by", L("bornAgain"), lang === "pt" ? "ESF" : "FS", "Workflow", L("actions")], fTableRows) : noResultsHtml());
       })()}
     </article>
     ${moduleSection(L("rptFunnelTitle"), L("rptFunnelHint"), "bi-funnel", "", renderDomainReportsPanel("funnel", { module: "firstTimers", showTitle: false }))}
@@ -17042,22 +17054,37 @@ function memberActions(id) {
 function renderMemberCard(member) {
   if (typeof DataCard !== "function") return "";
   const inviter = member.convidado_por || member.invited_by;
-  const isFromCell = member.origem === "Cell" || member.origem === "CellLeader" || member.registration_source === "CellLeader" || member.first_timer_id;
-  const originBadge = isFromCell
-    ? `<span class="badge bg-info text-dark small"><i class="bi bi-diagram-3-fill me-1"></i>Célula</span>`
-    : (member.origem ? `<span class="badge bg-secondary small">${escapeAttr(member.origem)}</span>` : "");
+  const isFromCell = member.origem === "Cell" || member.origem === "CellLeader" || member.registration_source === "CellLeader" || member.first_timer_id || Boolean(member.cell_id);
+  const isFirstTimer = member.origem === "FirstTimer" || Boolean(member.first_timer_id);
+
+  let originBadge = "";
+  if (isFromCell) {
+    originBadge = `<span class="badge bg-info text-dark small"><i class="bi bi-diagram-3-fill me-1"></i>${lang === "pt" ? "Célula" : "Cell"}</span>`;
+  } else if (isFirstTimer) {
+    originBadge = `<span class="badge bg-success text-white small"><i class="bi bi-person-heart me-1"></i>First Timer</span>`;
+  }
+
+  const groupLabel = memberCellGroupLabel(member);
+  const pills = [];
+  if (groupLabel) {
+    pills.push(`<i class="bi bi-diagram-3 me-1"></i>${escapeAttr(groupLabel)}`);
+  } else if (isFromCell) {
+    pills.push(lang === "pt" ? "Célula" : "Cell");
+  }
+
+  const subtitle = member.departamento || (inviter ? `${lang === "pt" ? "Convidado por" : "Invited by"}: ${escapeAttr(inviter)}` : "");
 
   return DataCard({
     title: fullName(member),
-    subtitle: member.departamento || (inviter ? `Convidado por: ${inviter}` : L("department")),
+    subtitle: subtitle,
     badges: [badge(member.estado), originBadge].filter(Boolean),
     meta: [
       [L("phone"), member.telefone || member.primary_phone || "—", "bi-telephone"],
       [L("church"), churchName(member.church_id), "bi-building"],
       [L("cell"), memberCellLabel(member) || "-", "bi-diagram-3"],
-      ...(inviter ? [["Convidado por", inviter, "bi-person-heart"]] : [])
+      ...(inviter ? [[lang === "pt" ? "Convidado por" : "Invited by", inviter, "bi-person-heart"]] : [])
     ],
-    pills: [member.origem || (isFromCell ? "Célula" : L("origin"))],
+    pills: pills,
     actions: memberActions(member.id)
   });
 }
@@ -26358,12 +26385,12 @@ function renderAlecRegistrationAnalyticalView() {
         </select>
 
         <select class="form-select" name="status" data-alec-filter-field>
-          <option value="">Todos os Estados</option>
+          <option value="">${lang === "pt" ? "Todos os Estados" : "All Statuses"}</option>
           ${alecRegistrationStatuses.map((s) => `<option value="${s}" ${st.status === s ? "selected" : ""}>${s}</option>`).join("")}
         </select>
 
-        <input type="text" class="form-control" name="search" placeholder="Pesquisar aluno, líder ou contacto..." value="${st.search || ""}" data-alec-filter-field>
-        <button type="button" class="btn btn-outline-cyan btn-touch" data-alec-filter-reset><i class="bi bi-arrow-counterclockwise me-1"></i>Limpar</button>
+        <input type="text" class="form-control" name="search" placeholder="${lang === "pt" ? "Pesquisar aluno, líder ou contacto..." : "Search student, leader or contact..."}" value="${st.search || ""}" data-alec-filter-field>
+        <button type="button" class="btn btn-outline-cyan btn-touch" data-alec-filter-reset><i class="bi bi-arrow-counterclockwise me-1"></i>${lang === "pt" ? "Limpar" : "Clear"}</button>
       </form>
 
       <!-- Content Area: Cards or Table -->
@@ -26373,9 +26400,9 @@ function renderAlecRegistrationAnalyticalView() {
             <div class="col-12 col-md-6 col-xl-4">
               ${renderAlecRegistrationCard(item)}
             </div>
-          `).join("")}</div>` : `<div class="p-4 text-center text-secondary">${L("noResultsFound") || "Nenhum aluno encontrado com os filtros actuais."}</div>`
+          `).join("")}</div>` : `<div class="p-4 text-center text-secondary">${L("noResultsFound") || (lang === "pt" ? "Nenhum aluno encontrado com os filtros actuais." : "No students found with current filters.")}</div>`
         ) : (
-          filtered.length ? dataTable([L("fullName") || "Nome Completo", L("contact") || "Contacto", L("church") || "Igreja", L("cell") || "Célula", L("cellLeaderName") || "Líder de Célula", L("didFoundation") || "Escola de Fundação", L("isLeader") || "É Líder", L("status") || "Estado", L("actions") || "Acções"], filtered.map((item) => [
+          filtered.length ? dataTable([L("fullName") || (lang === "pt" ? "Nome Completo" : "Full Name"), L("contact") || (lang === "pt" ? "Contacto" : "Contact"), L("church") || (lang === "pt" ? "Igreja" : "Church"), L("cell") || (lang === "pt" ? "Célula" : "Cell"), L("cellLeaderName") || (lang === "pt" ? "Líder de Célula" : "Cell Leader"), L("didFoundation") || (lang === "pt" ? "Escola de Fundação" : "Foundation School"), L("isLeader") || (lang === "pt" ? "É Líder" : "Is Leader"), L("status") || (lang === "pt" ? "Estado" : "Status"), L("actions") || (lang === "pt" ? "Acções" : "Actions")], filtered.map((item) => [
             `<strong>${escapeAttr(formatCleanPersonName(item.nome_completo || "—"))}</strong>`,
             item.contacto || "—",
             churchName(item.igreja || item.church_id),
@@ -26383,9 +26410,9 @@ function renderAlecRegistrationAnalyticalView() {
             item.nome_do_lider_de_celula || "—",
             yesNo(item.fez_escola_de_fundacao),
             yesNo(item.e_lider),
-            badge(item.estado || "Em Formação"),
+            badge(item.estado || (lang === "pt" ? "Em Formação" : "In Training")),
             backendActions("alecRegistration", item.id)
-          ])) : EmptyState({ compact: true, title: "Sem inscrições ALEC", description: "Nenhuma inscrição encontrada para os filtros seleccionados." })
+          ])) : EmptyState({ compact: true, title: lang === "pt" ? "Sem inscrições ALEC" : "No ALEC Enrolments", description: lang === "pt" ? "Nenhuma inscrição encontrada para os filtros seleccionados." : "No enrolments found for the selected filters." })
         )}
       </div>
     </section>
@@ -26800,22 +26827,22 @@ function renderAlecScoresAnalyticalView() {
           </select>
 
           <select class="form-select" name="cellGroupId" data-alec-score-filter-field>
-            <option value="">Todos os Grupos de Célula</option>
-            ${availableGroups.map((g) => `<option value="${g.id}" ${String(st.cellGroupId) === String(g.id) ? "selected" : ""}>${g.group_name || g.name || "Grupo"}</option>`).join("")}
+            <option value="">${lang === "pt" ? "Todos os Grupos de Célula" : "All Cell Groups"}</option>
+            ${availableGroups.map((g) => `<option value="${g.id}" ${String(st.cellGroupId) === String(g.id) ? "selected" : ""}>${g.group_name || g.name || (lang === "pt" ? "Grupo" : "Group")}</option>`).join("")}
           </select>
 
           <select class="form-select" name="cellId" data-alec-score-filter-field>
-            <option value="">Todas as Células Individuais</option>
-            ${availableCells.map((c) => `<option value="${c.id}" ${String(st.cellId) === String(c.id) ? "selected" : ""}>${c.cell_name || c.name || "Célula"}</option>`).join("")}
+            <option value="">${lang === "pt" ? "Todas as Células Individuais" : "All Individual Cells"}</option>
+            ${availableCells.map((c) => `<option value="${c.id}" ${String(st.cellId) === String(c.id) ? "selected" : ""}>${c.cell_name || c.name || (lang === "pt" ? "Célula" : "Cell")}</option>`).join("")}
           </select>
 
           <select class="form-select" name="status" data-alec-score-filter-field>
-            <option value="">Todos os Estados</option>
+            <option value="">${lang === "pt" ? "Todos os Estados" : "All Statuses"}</option>
             ${alecScoreStatuses.map((s) => `<option value="${s}" ${st.status === s ? "selected" : ""}>${s}</option>`).join("")}
           </select>
 
-          <input type="text" class="form-control" name="search" placeholder="Pesquisar aluno, contacto ou célula..." value="${st.search || ""}" data-alec-score-filter-field>
-          <button type="button" class="btn btn-outline-cyan btn-touch" data-alec-score-filter-reset><i class="bi bi-arrow-counterclockwise me-1"></i>Limpar</button>
+          <input type="text" class="form-control" name="search" placeholder="${lang === "pt" ? "Pesquisar aluno, contacto ou célula..." : "Search student, contact or cell..."}" value="${st.search || ""}" data-alec-score-filter-field>
+          <button type="button" class="btn btn-outline-cyan btn-touch" data-alec-score-filter-reset><i class="bi bi-arrow-counterclockwise me-1"></i>${lang === "pt" ? "Limpar" : "Clear"}</button>
         </form>
 
         <!-- Content Area: Pauta Table or Card View -->
@@ -28423,44 +28450,44 @@ function renderChurchReportsAnalyticalView() {
   } else {
     if (st.level === "church") {
       dataGridHtml = filteredChurch.length
-        ? dataTable([L("week") || "Semana", "Relatório de Culto", L("serviceDate") || "Data do Culto", L("worshipService") || "Culto", L("church") || "Igreja", "Células Reportadas", "ATT Total", "FT", "NC", "RS", L("status") || "Estado", L("actions") || "Acções"], filteredChurch.map((item) => [
+        ? dataTable([L("week") || (lang === "pt" ? "Semana" : "Week"), lang === "pt" ? "Relatório de Culto" : "Service Report", L("serviceDate") || (lang === "pt" ? "Data do Culto" : "Service Date"), L("worshipService") || (lang === "pt" ? "Culto" : "Service"), L("church") || (lang === "pt" ? "Igreja" : "Church"), lang === "pt" ? "Células Reportadas" : "Cells Reported", lang === "pt" ? "ATT Total" : "Total ATT", "FT", "NC", "RS", L("status") || (lang === "pt" ? "Estado" : "Status"), L("actions") || (lang === "pt" ? "Acções" : "Actions")], filteredChurch.map((item) => [
             item.semana || "—",
-            `<strong>${item.titulo_do_relatorio || item.nome || `${item.culto || "Culto"} (${item.data_do_culto || item.data_inicio || item.data || "—"})`}</strong>`,
+            `<strong>${item.titulo_do_relatorio || item.nome || `${item.culto || (lang === "pt" ? "Culto" : "Service")} (${item.data_do_culto || item.data_inicio || item.data || "—"})`}</strong>`,
             item.data_do_culto || item.data_inicio || item.data || "—",
-            badge(item.culto || "Domingo"),
+            badge(item.culto || (lang === "pt" ? "Domingo" : "Sunday")),
             churchName(item.church_id || item.igreja),
-            `<span class="badge bg-secondary">${item.total_cells_reported || 1} célula(s)</span>`,
+            `<span class="badge bg-secondary">${item.total_cells_reported || 1} ${lang === "pt" ? "célula(s)" : "cell(s)"}</span>`,
             `<strong>${item.att || 0}</strong>`,
             item.ft || 0,
             item.nc || 0,
             item.rs || 0,
-            badge(item.estado || item.status || "Submetido"),
+            badge(item.estado || item.status || (lang === "pt" ? "Submetido" : "Submitted")),
             actionButtons([["view", "churchReport", item.id, L("view")], ["edit", "churchReport", item.id, L("edit")], ["delete", "churchReport", item.id, L("delete")], ["export", "churchReport", item.id, L("export")]])
           ]))
-        : EmptyState({ compact: true, title: "Sem relatórios de igreja", description: "Os relatórios submetidos pelas células serão consolidados aqui automaticamente." });
+        : EmptyState({ compact: true, title: lang === "pt" ? "Sem relatórios de igreja" : "No church reports", description: lang === "pt" ? "Os relatórios submetidos pelas células serão consolidados aqui automaticamente." : "Reports submitted by cells will be consolidated here automatically." });
     } else if (st.level === "group") {
       dataGridHtml = groupRows.length
-        ? dataTable(["Grupo de Célula", L("week") || "Semana", L("serviceDate") || "Data", L("worshipService") || "Culto", "Células Reportadas", "ATT Total", "FT Total", "NC Total", "RS Total", L("actions") || "Acções"], groupRows.map((g) => [
+        ? dataTable([L("cellGroup") || (lang === "pt" ? "Grupo de Célula" : "Cell Group"), L("week") || (lang === "pt" ? "Semana" : "Week"), L("serviceDate") || (lang === "pt" ? "Data" : "Date"), L("worshipService") || (lang === "pt" ? "Culto" : "Service"), lang === "pt" ? "Células Reportadas" : "Cells Reported", lang === "pt" ? "ATT Total" : "Total ATT", lang === "pt" ? "FT Total" : "Total FT", lang === "pt" ? "NC Total" : "Total NC", lang === "pt" ? "RS Total" : "Total RS", L("actions") || (lang === "pt" ? "Acções" : "Actions")], groupRows.map((g) => [
             `<strong>${g.gname}</strong>`,
             g.semana || "—",
             g.data || "—",
-            badge(g.culto || "Domingo"),
-            `<span class="badge bg-secondary">${g.cellCount} célula(s)</span>`,
+            badge(g.culto || (lang === "pt" ? "Domingo" : "Sunday")),
+            `<span class="badge bg-secondary">${g.cellCount} ${lang === "pt" ? "célula(s)" : "cell(s)"}</span>`,
             `<strong>${g.att}</strong>`,
             g.ft,
             g.nc,
             g.rs,
-            `<button type="button" class="btn btn-sm btn-outline-cyan" data-church-report-filter-group="${g.gid}">Ver Células</button>`
+            `<button type="button" class="btn btn-sm btn-outline-cyan" data-church-report-filter-group="${g.gid}">${lang === "pt" ? "Ver Células" : "View Cells"}</button>`
           ]))
-        : EmptyState({ compact: true, title: "Sem dados por grupo", description: "Nenhum relatório de grupo disponível para os filtros seleccionados." });
+        : EmptyState({ compact: true, title: lang === "pt" ? "Sem dados por grupo" : "No group data", description: lang === "pt" ? "Nenhum relatório de grupo disponível para os filtros seleccionados." : "No group reports available for the selected filters." });
     } else {
       dataGridHtml = filteredCells.length
-        ? dataTable([L("cell") || "Célula", "Grupo", L("week") || "Semana", L("serviceDate") || "Data", L("worshipService") || "Culto", "Presentes", "FT", "NC", "RS", L("status") || "Estado", L("actions") || "Acções"], filteredCells.map((item) => [
-            `<strong>${item.celula || "Célula"}</strong><small class="d-block text-secondary">${item.nome_do_lider || item.submetido_por || ""}</small>`,
+        ? dataTable([L("cell") || (lang === "pt" ? "Célula" : "Cell"), lang === "pt" ? "Grupo" : "Group", L("week") || (lang === "pt" ? "Semana" : "Week"), L("serviceDate") || (lang === "pt" ? "Data" : "Date"), L("worshipService") || (lang === "pt" ? "Culto" : "Service"), lang === "pt" ? "Presentes" : "Present", "FT", "NC", "RS", L("status") || (lang === "pt" ? "Estado" : "Status"), L("actions") || (lang === "pt" ? "Acções" : "Actions")], filteredCells.map((item) => [
+            `<strong>${item.celula || (lang === "pt" ? "Célula" : "Cell")}</strong><small class="d-block text-secondary">${item.nome_do_lider || item.submetido_por || ""}</small>`,
             item.cell_group_name || "—",
             item.semana || "—",
             item.data_do_culto || item.data_inicio || item.data || "—",
-            badge(item.culto || "Domingo"),
+            badge(item.culto || (lang === "pt" ? "Domingo" : "Sunday")),
             `<strong>${item.att || item.members_present_count || 0}</strong>`,
             item.ft || 0,
             item.nc || 0,
@@ -28468,7 +28495,7 @@ function renderChurchReportsAnalyticalView() {
             badge(cellReportStatusLabel(item)),
             actionButtons([["view", "cellReport", item.id, L("view")], ["edit", "cellReport", item.id, L("edit")], ["export", "cellReport", item.id, L("export")]])
           ]))
-        : EmptyState({ compact: true, title: "Sem relatórios de célula", description: "Nenhum relatório de célula submetido para este período." });
+        : EmptyState({ compact: true, title: lang === "pt" ? "Sem relatórios de célula" : "No cell reports", description: lang === "pt" ? "Nenhum relatório de célula submetido para este período." : "No cell reports submitted for this period." });
     }
   }
 
@@ -28477,112 +28504,112 @@ function renderChurchReportsAnalyticalView() {
     <section class="panel glass-panel mb-4">
       <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
         <div>
-          <h3 class="panel-title mb-1"><i class="bi bi-diagram-3-fill me-2 text-info"></i>Relatórios de Igreja & Células</h3>
-          <p class="text-secondary mb-0">Consolidação de presenças, visitantes (FT) e novos convertidos (NC) de todas as células e cultos.</p>
+          <h3 class="panel-title mb-1"><i class="bi bi-diagram-3-fill me-2 text-info"></i>${lang === "pt" ? "Relatórios de Igreja & Células" : "Church & Cell Reports"}</h3>
+          <p class="text-secondary mb-0">${lang === "pt" ? "Consolidação de presenças, visitantes (FT) e novos convertidos (NC) de todas as células e cultos." : "Consolidation of attendance, first timers (FT), and new converts (NC) across all cells and services."}</p>
         </div>
         <div class="d-flex gap-2 flex-wrap align-items-center">
-          <div class="view-toggle light-surface" role="group" aria-label="Modo de Visualização">
+          <div class="view-toggle light-surface" role="group" aria-label="${lang === "pt" ? "Modo de Visualização" : "View Mode"}">
             <button type="button" class="view-toggle-btn ${!isCardView ? "active" : ""}" data-church-report-view-mode="table">
               <i class="bi bi-table"></i>
-              <span>${cleanDisplayText(L("tableView") || "Tabela")}</span>
+              <span>${cleanDisplayText(L("tableView") || (lang === "pt" ? "Tabela" : "Table"))}</span>
             </button>
             <button type="button" class="view-toggle-btn ${isCardView ? "active" : ""}" data-church-report-view-mode="card">
               <i class="bi bi-grid-fill"></i>
               <span>${cleanDisplayText(lang === "pt" ? "Modo Card" : "Card View")}</span>
             </button>
           </div>
-          <button type="button" class="btn btn-ce-gold btn-touch" data-open-form="churchReport"><i class="bi bi-plus-lg me-1"></i>Adicionar Relatório Manual</button>
-          <button type="button" class="btn btn-outline-cyan btn-touch" data-export-church-reports><i class="bi bi-download me-1"></i>Exportar Relatórios</button>
+          <button type="button" class="btn btn-ce-gold btn-touch" data-open-form="churchReport"><i class="bi bi-plus-lg me-1"></i>${lang === "pt" ? "Adicionar Relatório Manual" : "Add Manual Report"}</button>
+          <button type="button" class="btn btn-outline-cyan btn-touch" data-export-church-reports><i class="bi bi-download me-1"></i>${lang === "pt" ? "Exportar Relatórios" : "Export Reports"}</button>
         </div>
       </div>
 
       <!-- Level Selector Tabs -->
-      <div class="btn-group w-100 mb-3" role="group" aria-label="Nível de Relatório">
-        <button type="button" class="btn ${st.level === "church" ? "btn-primary" : "btn-outline-primary"}" data-church-report-level="church"><i class="bi bi-building me-1"></i>Relatório Geral de Igreja</button>
-        <button type="button" class="btn ${st.level === "group" ? "btn-primary" : "btn-outline-primary"}" data-church-report-level="group"><i class="bi bi-collection me-1"></i>Por Grupo de Célula</button>
-        <button type="button" class="btn ${st.level === "cell" ? "btn-primary" : "btn-outline-primary"}" data-church-report-level="cell"><i class="bi bi-diagram-3 me-1"></i>Por Célula Individual</button>
+      <div class="btn-group w-100 mb-3" role="group" aria-label="${lang === "pt" ? "Nível de Relatório" : "Report Level"}">
+        <button type="button" class="btn ${st.level === "church" ? "btn-primary" : "btn-outline-primary"}" data-church-report-level="church"><i class="bi bi-building me-1"></i>${lang === "pt" ? "Relatório Geral de Igreja" : "General Church Report"}</button>
+        <button type="button" class="btn ${st.level === "group" ? "btn-primary" : "btn-outline-primary"}" data-church-report-level="group"><i class="bi bi-collection me-1"></i>${lang === "pt" ? "Por Grupo de Célula" : "By Cell Group"}</button>
+        <button type="button" class="btn ${st.level === "cell" ? "btn-primary" : "btn-outline-primary"}" data-church-report-level="cell"><i class="bi bi-diagram-3 me-1"></i>${lang === "pt" ? "Por Célula Individual" : "By Individual Cell"}</button>
       </div>
 
       <!-- Filters Toolbar -->
       <form class="filter-toolbar filter-bar mb-4" data-church-report-filters>
         <select class="form-select" name="churchId" data-church-filter-field>
-          <option value="">Todas as Igrejas</option>
-          ${churchesList.map((ch) => `<option value="${ch.id}" ${String(st.churchId) === String(ch.id) ? "selected" : ""}>${ch.public_name || ch.church_name || ch.name || churchName(ch.id) || "Igreja"}</option>`).join("")}
+          <option value="">${lang === "pt" ? "Todas as Igrejas" : "All Churches"}</option>
+          ${churchesList.map((ch) => `<option value="${ch.id}" ${String(st.churchId) === String(ch.id) ? "selected" : ""}>${ch.public_name || ch.church_name || ch.name || churchName(ch.id) || (lang === "pt" ? "Igreja" : "Church")}</option>`).join("")}
         </select>
 
         <select class="form-select" name="service" data-church-filter-field>
-          <option value="">Todos os Cultos</option>
+          <option value="">${lang === "pt" ? "Todos os Cultos" : "All Services"}</option>
           ${servicesList.map((svc) => `<option value="${svc}" ${st.service === svc ? "selected" : ""}>${svc}</option>`).join("")}
         </select>
 
         <select class="form-select" name="period" data-church-filter-field>
-          <option value="week" ${st.period === "week" ? "selected" : ""}>Esta Semana (Últimos 7 dias)</option>
-          <option value="month" ${st.period === "month" ? "selected" : ""}>Este Mês</option>
-          <option value="quarter" ${st.period === "quarter" ? "selected" : ""}>Trimestre</option>
-          <option value="semester" ${st.period === "semester" ? "selected" : ""}>Semestre</option>
-          <option value="year" ${st.period === "year" ? "selected" : ""}>Este Ano</option>
-          <option value="custom" ${st.period === "custom" ? "selected" : ""}>Personalizado</option>
+          <option value="week" ${st.period === "week" ? "selected" : ""}>${lang === "pt" ? "Esta Semana (Últimos 7 dias)" : "This Week (Last 7 days)"}</option>
+          <option value="month" ${st.period === "month" ? "selected" : ""}>${lang === "pt" ? "Este Mês" : "This Month"}</option>
+          <option value="quarter" ${st.period === "quarter" ? "selected" : ""}>${lang === "pt" ? "Trimestre" : "Quarter"}</option>
+          <option value="semester" ${st.period === "semester" ? "selected" : ""}>${lang === "pt" ? "Semestre" : "Semester"}</option>
+          <option value="year" ${st.period === "year" ? "selected" : ""}>${lang === "pt" ? "Este Ano" : "This Year"}</option>
+          <option value="custom" ${st.period === "custom" ? "selected" : ""}>${lang === "pt" ? "Personalizado" : "Custom"}</option>
         </select>
 
         ${st.period === "custom" ? `
-          <input type="date" class="form-control" name="dateFrom" value="${st.dateFrom || ""}" data-church-filter-field title="Data Início">
-          <input type="date" class="form-control" name="dateTo" value="${st.dateTo || ""}" data-church-filter-field title="Data Fim">
+          <input type="date" class="form-control" name="dateFrom" value="${st.dateFrom || ""}" data-church-filter-field title="${lang === "pt" ? "Data Início" : "Start Date"}">
+          <input type="date" class="form-control" name="dateTo" value="${st.dateTo || ""}" data-church-filter-field title="${lang === "pt" ? "Data Fim" : "End Date"}">
         ` : ""}
 
         ${st.level !== "church" ? `
           <select class="form-select" name="cellGroupId" data-church-filter-field>
-            <option value="">Todos os Grupos</option>
-            ${availableGroups.map((g) => `<option value="${g.id}" ${String(st.cellGroupId) === String(g.id) ? "selected" : ""}>${g.group_name || g.name || "Grupo"}</option>`).join("")}
+            <option value="">${lang === "pt" ? "Todos os Grupos" : "All Groups"}</option>
+            ${availableGroups.map((g) => `<option value="${g.id}" ${String(st.cellGroupId) === String(g.id) ? "selected" : ""}>${g.group_name || g.name || (lang === "pt" ? "Grupo" : "Group")}</option>`).join("")}
           </select>
         ` : ""}
 
         ${st.level === "cell" ? `
           <select class="form-select" name="cellId" data-church-filter-field>
-            <option value="">Todas as Células</option>
-            ${availableCells.map((c) => `<option value="${c.id}" ${String(st.cellId) === String(c.id) ? "selected" : ""}>${c.cell_name || c.name || "Célula"}</option>`).join("")}
+            <option value="">${lang === "pt" ? "Todas as Células" : "All Cells"}</option>
+            ${availableCells.map((c) => `<option value="${c.id}" ${String(st.cellId) === String(c.id) ? "selected" : ""}>${c.cell_name || c.name || (lang === "pt" ? "Célula" : "Cell")}</option>`).join("")}
           </select>
         ` : ""}
 
-        <input type="text" class="form-control" name="search" placeholder="Pesquisar..." value="${st.search || ""}" data-church-filter-field>
-        <button type="button" class="btn btn-outline-cyan btn-touch" data-church-filter-reset><i class="bi bi-arrow-counterclockwise me-1"></i>Limpar</button>
+        <input type="text" class="form-control" name="search" placeholder="${lang === "pt" ? "Pesquisar..." : "Search..."}" value="${st.search || ""}" data-church-filter-field>
+        <button type="button" class="btn btn-outline-cyan btn-touch" data-church-filter-reset><i class="bi bi-arrow-counterclockwise me-1"></i>${lang === "pt" ? "Limpar" : "Clear"}</button>
       </form>
 
       <!-- KPI Summary Cards with Peaks & Lows -->
       <div class="row g-3 summary-cards-row mb-4">
         <div class="col-sm-6 col-xl-2">
           <div class="kpi-card glass-panel text-center p-3">
-            <span class="text-secondary small d-block mb-1"><i class="bi bi-people me-1"></i>Total Presentes</span>
+            <span class="text-secondary small d-block mb-1"><i class="bi bi-people me-1"></i>${lang === "pt" ? "Total Presentes" : "Total Attendance"}</span>
             <h3 class="mb-0 text-info font-weight-bold">${totalAtt}</h3>
           </div>
         </div>
         <div class="col-sm-6 col-xl-2">
           <div class="kpi-card glass-panel text-center p-3">
-            <span class="text-secondary small d-block mb-1"><i class="bi bi-person-heart me-1"></i>Primeira Vez (FT)</span>
+            <span class="text-secondary small d-block mb-1"><i class="bi bi-person-heart me-1"></i>${lang === "pt" ? "Primeira Vez (FT)" : "First Timers (FT)"}</span>
             <h3 class="mb-0 text-warning font-weight-bold">${totalFt}</h3>
           </div>
         </div>
         <div class="col-sm-6 col-xl-2">
           <div class="kpi-card glass-panel text-center p-3">
-            <span class="text-secondary small d-block mb-1"><i class="bi bi-stars me-1"></i>Novos Convertidos</span>
+            <span class="text-secondary small d-block mb-1"><i class="bi bi-stars me-1"></i>${lang === "pt" ? "Novos Convertidos" : "New Converts"}</span>
             <h3 class="mb-0 text-success font-weight-bold">${totalNc}</h3>
           </div>
         </div>
         <div class="col-sm-6 col-xl-2">
           <div class="kpi-card glass-panel text-center p-3">
-            <span class="text-secondary small d-block mb-1"><i class="bi bi-book me-1"></i>Rapsódia (RS)</span>
+            <span class="text-secondary small d-block mb-1"><i class="bi bi-book me-1"></i>${lang === "pt" ? "Rapsódia (RS)" : "Rhapsody (RS)"}</span>
             <h3 class="mb-0 text-primary font-weight-bold">${totalRs}</h3>
           </div>
         </div>
         <div class="col-sm-6 col-xl-2">
           <div class="kpi-card glass-panel text-center p-3" style="border-left: 3px solid #10b981;">
-            <span class="text-success small d-block mb-1"><i class="bi bi-arrow-up-circle-fill me-1"></i>Pico Máximo</span>
+            <span class="text-success small d-block mb-1"><i class="bi bi-arrow-up-circle-fill me-1"></i>${lang === "pt" ? "Pico Máximo" : "Maximum Peak"}</span>
             <h3 class="mb-0 text-success font-weight-bold">${peakPoint.val}</h3>
             <small class="text-secondary d-block text-truncate" title="${peakPoint.date}">${peakPoint.date || "—"}</small>
           </div>
         </div>
         <div class="col-sm-6 col-xl-2">
           <div class="kpi-card glass-panel text-center p-3" style="border-left: 3px solid #ef4444;">
-            <span class="text-danger small d-block mb-1"><i class="bi bi-arrow-down-circle-fill me-1"></i>Baixa Mínima</span>
+            <span class="text-danger small d-block mb-1"><i class="bi bi-arrow-down-circle-fill me-1"></i>${lang === "pt" ? "Baixa Mínima" : "Minimum Low"}</span>
             <h3 class="mb-0 text-danger font-weight-bold">${lowPoint.val}</h3>
             <small class="text-secondary d-block text-truncate" title="${lowPoint.date}">${lowPoint.date || "—"}</small>
           </div>
@@ -28594,7 +28621,7 @@ function renderChurchReportsAnalyticalView() {
         <div class="col-xl-7">
           <article class="chart-card glass-panel light-surface h-100 p-3">
             <div class="d-flex justify-content-between align-items-center mb-2">
-              <h4 class="panel-title mb-0 fs-6"><i class="bi bi-graph-up-arrow me-2 text-info"></i>Tendência Temporal com Picos & Baixas</h4>
+              <h4 class="panel-title mb-0 fs-6"><i class="bi bi-graph-up-arrow me-2 text-info"></i>${lang === "pt" ? "Tendência Temporal com Picos & Baixas" : "Temporal Trend with Peaks & Lows"}</h4>
               <span class="badge bg-dark-subtle text-info">${st.period.toUpperCase()}</span>
             </div>
             ${renderPeakLowChartSvg(chartDataPoints)}
@@ -34289,13 +34316,13 @@ function renderUserForm(record = {}, modalMode = "create") {
     <div class="row g-3">
       <div class="col-md-6 position-relative">
         <div class="d-flex justify-content-between align-items-center mb-1">
-          <label class="form-label mb-0">Nome Completo *</label>
-          <small class="text-cyan" style="font-size: 0.75rem;"><i class="bi bi-search me-1"></i>Pesquisa na base de dados</small>
+          <label class="form-label mb-0">${L("fullName") || (lang === "pt" ? "Nome Completo" : "Full Name")} *</label>
+          <small class="text-cyan" style="font-size: 0.75rem;"><i class="bi bi-search me-1"></i>${lang === "pt" ? "Pesquisa na base de dados" : "Database search"}</small>
         </div>
         <div class="input-group">
           <span class="input-group-text bg-dark border-secondary text-secondary"><i class="bi bi-person-search"></i></span>
-          <input name="name" id="userFormNameInput" type="text" class="form-control" value="${escapeAttr(name)}" required placeholder="Digite o nome ou contacto para pesquisar..." autocomplete="off">
-          <button class="btn btn-outline-secondary ${name ? "" : "d-none"}" type="button" id="btnClearUserName" title="Limpar">
+          <input name="name" id="userFormNameInput" type="text" class="form-control" value="${escapeAttr(name)}" required placeholder="${lang === "pt" ? "Digite o nome ou contacto para pesquisar..." : "Type name or contact to search..."}" autocomplete="off">
+          <button class="btn btn-outline-secondary ${name ? "" : "d-none"}" type="button" id="btnClearUserName" title="${L("clear") || (lang === "pt" ? "Limpar" : "Clear")}">
             <i class="bi bi-x-lg"></i>
           </button>
         </div>
@@ -34303,12 +34330,12 @@ function renderUserForm(record = {}, modalMode = "create") {
         <div class="person-autocomplete-badge small text-success d-none mt-1 fw-semibold"></div>
       </div>
       <div class="col-md-6">
-        <label class="form-label">E-mail *</label>
+        <label class="form-label">${L("email") || "Email"} *</label>
         <input name="email" id="userFormEmailInput" type="email" class="form-control" value="${escapeAttr(email)}" required placeholder="utilizador@embaixadadecristo.org">
       </div>
 
       <div class="col-md-6">
-        <label class="form-label">Telefone</label>
+        <label class="form-label">${L("phone") || (lang === "pt" ? "Telefone" : "Phone")}</label>
         <input name="phone" id="userFormPhoneInput" type="tel" class="form-control" value="${escapeAttr(phone)}" placeholder="+258 84 000 0000">
       </div>
 
@@ -46007,7 +46034,7 @@ function renderMemberMergeContent(source, target) {
           <p class="text-secondary small mb-2">${label}</p>
           <div class="input-group">
             <span class="input-group-text bg-dark border-secondary text-secondary"><i class="bi bi-search"></i></span>
-            <input type="text" class="form-control" data-merge-search="${roleClass}" placeholder="Pesquisar por nome ou telefone...">
+            <input type="text" class="form-control" data-merge-search="${roleClass}" placeholder="${lang === "pt" ? "Pesquisar por nome ou telefone..." : "Search by name or phone..."}">
           </div>
           <div class="list-group position-relative mt-2 d-none" data-merge-suggestions="${roleClass}" style="max-height: 180px; overflow-y: auto; z-index: 1055;"></div>
         </div>
@@ -46021,12 +46048,12 @@ function renderMemberMergeContent(source, target) {
       <div class="p-3 rounded border ${roleClass === 'primary' ? 'border-success' : 'border-warning'} bg-dark position-relative">
         <div class="d-flex justify-content-between align-items-center mb-2">
           <span class="badge ${roleBadge}">${label}</span>
-          <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" data-merge-clear="${roleClass}">Alterar</button>
+          <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" data-merge-clear="${roleClass}">${lang === "pt" ? "Alterar" : "Change"}</button>
         </div>
-        <h5 class="text-light mb-1">${escapeAttr(fullName(m) || m.full_name || m.name || m.nome || "Membro")}</h5>
+        <h5 class="text-light mb-1">${escapeAttr(fullName(m) || m.full_name || m.name || m.nome || (L("member") || (lang === "pt" ? "Membro" : "Member")))}</h5>
         <div class="small text-secondary mb-2">
-          <div><i class="bi bi-telephone me-1"></i>${escapeAttr(m.primary_phone || m.phone || m.telefone || "Sem telefone")}</div>
-          <div><i class="bi bi-building me-1"></i>${escapeAttr(churchName(m.church_id) || m.church_name || "Igreja")}</div>
+          <div><i class="bi bi-telephone me-1"></i>${escapeAttr(m.primary_phone || m.phone || m.telefone || (lang === "pt" ? "Sem telefone" : "No phone"))}</div>
+          <div><i class="bi bi-building me-1"></i>${escapeAttr(churchName(m.church_id) || m.church_name || (L("church") || (lang === "pt" ? "Igreja" : "Church")))}</div>
           <div><i class="bi bi-diagram-3 me-1"></i>${escapeAttr(cGroup)} · ${escapeAttr(cCell)}</div>
           ${m.email ? `<div><i class="bi bi-envelope me-1"></i>${escapeAttr(m.email)}</div>` : ""}
         </div>
