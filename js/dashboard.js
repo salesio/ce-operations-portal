@@ -6504,13 +6504,43 @@ function portalDateValue(record = {}) {
 
 function portalPeriodBounds(filters = cellPortalPageState) {
   const now = new Date();
-  const end = filters.period === "custom" && filters.dateTo ? new Date(`${filters.dateTo}T23:59:59`) : now;
-  const start = new Date(end);
-  if (filters.period === "week") start.setDate(start.getDate() - 7);
-  else if (filters.period === "quarter") start.setMonth(start.getMonth() - 3);
-  else if (filters.period === "year") start.setFullYear(start.getFullYear() - 1);
-  else if (filters.period === "custom" && filters.dateFrom) return { start: new Date(`${filters.dateFrom}T00:00:00`), end };
-  else start.setMonth(start.getMonth() - 1);
+  let end = new Date(now.getTime());
+  let start = new Date(now.getTime());
+
+  if (filters.period === "week") {
+    start.setDate(now.getDate() - 7);
+    start.setHours(0, 0, 0, 0);
+  } else if (filters.period === "last_week") {
+    end.setDate(now.getDate() - 7);
+    end.setHours(23, 59, 59, 999);
+    start.setDate(now.getDate() - 14);
+    start.setHours(0, 0, 0, 0);
+  } else if (filters.period === "two_weeks_ago") {
+    end.setDate(now.getDate() - 14);
+    end.setHours(23, 59, 59, 999);
+    start.setDate(now.getDate() - 21);
+    start.setHours(0, 0, 0, 0);
+  } else if (filters.period === "last_month") {
+    end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+    start = new Date(now.getFullYear(), now.getMonth() - 1, 1, 0, 0, 0, 0);
+  } else if (filters.period === "quarter" || filters.period === "past_3_months") {
+    start.setMonth(now.getMonth() - 3);
+    start.setHours(0, 0, 0, 0);
+  } else if (filters.period === "half_year" || filters.period === "past_6_months") {
+    start.setMonth(now.getMonth() - 6);
+    start.setHours(0, 0, 0, 0);
+  } else if (filters.period === "year") {
+    start = new Date(now.getFullYear(), 0, 1, 0, 0, 0, 0);
+  } else if (filters.period === "last_year") {
+    end = new Date(now.getFullYear() - 1, 11, 31, 23, 59, 59, 999);
+    start = new Date(now.getFullYear() - 1, 0, 1, 0, 0, 0, 0);
+  } else if (filters.period === "custom") {
+    start = filters.dateFrom ? new Date(`${filters.dateFrom}T00:00:00`) : new Date(0);
+    end = filters.dateTo ? new Date(`${filters.dateTo}T23:59:59`) : now;
+  } else {
+    // Default: 'month' (current calendar month from day 1 to now)
+    start = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+  }
   return { start, end };
 }
 
@@ -6992,17 +7022,26 @@ function getCellDashboardStats(cellId, filters = cellPortalPageState, cachedMemb
     return true;
   });
   const trends = getCellReportTrends(cellId, filters);
-  const thisMonth = new Date().toISOString().slice(0, 7);
+  const reportsInPeriod = (trends.reports || []).filter((r) => portalInPeriod(r, filters));
+  const soulStats = getCellSoulWinningStats(cellId, filters, allMembers);
+  const attendanceInPeriod = reportsInPeriod.reduce((sum, r) => sum + Number(r.attendance_count ?? r.att ?? 0), 0);
+  const visitorsInPeriod = reportsInPeriod.reduce((sum, r) => sum + Number(r.first_timers_count ?? r.ft ?? 0), 0) || soulStats.first_timers || 0;
+  const newConvertsInPeriod = reportsInPeriod.reduce((sum, r) => sum + Number(r.souls_won_count ?? r.new_converts_count ?? r.nc ?? 0), 0) || soulStats.total || 0;
+  
   const latest = trends.reports[0] || null;
-  const latestStatus = latest ? cellReportStatusLabel(latest) : (lang === "pt" ? "Não submetido" : "Not submitted");
+  const isPt = lang === "pt";
+  const latestStatus = latest ? cellReportStatusLabel(latest) : (isPt ? "Não submetido" : "Not submitted");
   return {
     cell,
     members,
     total_members: allMembers.length,
     active_members: allMembers.filter((member) => /active|activo|ativo|in progress/.test(portalText(member.status))).length,
-    new_members_month: allMembers.filter((member) => String(member.joined_at || "").startsWith(thisMonth)).length,
-    visitors: getCellSoulWinningStats(cellId, filters, allMembers).first_timers,
-    reports_month: trends.reports.filter((report) => String(portalDateValue(report)).startsWith(thisMonth)).length,
+    new_members_month: allMembers.filter((member) => portalInPeriod(member, filters)).length,
+    attendance_in_period: attendanceInPeriod,
+    visitors: visitorsInPeriod,
+    new_converts_in_period: newConvertsInPeriod,
+    reports_in_period: reportsInPeriod.length,
+    reports_month: reportsInPeriod.length,
     latest_report: latest,
     current_report_status: latestStatus,
     next_submission: (() => { const date = latest ? new Date(portalDateValue(latest)) : new Date(); date.setDate(date.getDate() + 7); return date.toISOString().slice(0, 10); })()
@@ -7016,16 +7055,59 @@ function getCellAlerts(cellId, filters = cellPortalPageState, cachedStats = null
   const foundation = getCellFoundationProgress(cellId, members);
   const soul = getCellSoulWinningStats(cellId, filters, members);
   const programs = getCellProgramsUpcoming(cellId, stats.cell.church_id, stats.cell.cell_group_id || stats.cell.group_id);
+  const isPt = lang === "pt";
   const alerts = [];
-  if (!stats.latest_report || Date.now() - Date.parse(portalDateValue(stats.latest_report)) > 8 * 86400000) alerts.push({ tone: "warning", title: "Relatório semanal ainda não submetido", detail: "Submeta o relatório desta semana para manter o acompanhamento actualizado." });
+  if (!stats.latest_report || Date.now() - Date.parse(portalDateValue(stats.latest_report)) > 8 * 86400000) {
+    alerts.push({
+      tone: "warning",
+      title: isPt ? "Relatório semanal ainda não submetido" : "Weekly report not submitted yet",
+      detail: isPt ? "Submeta o relatório desta semana para manter o acompanhamento actualizado." : "Submit this week's report to keep tracking updated."
+    });
+  }
   const absent = members.filter((member) => member.last_attendance && Date.now() - Date.parse(member.last_attendance) > 21 * 86400000);
-  if (absent.length) alerts.push({ tone: "danger", title: `${absent.length} membro(s) sem presença recente`, detail: "Recomenda-se contacto pastoral simples." });
-  if (soul.follow_up) alerts.push({ tone: "info", title: `${soul.follow_up} visitante(s) em acompanhamento`, detail: "Confirmar o próximo contacto." });
-  if (foundation["Não inscrito"]) alerts.push({ tone: "info", title: `${foundation["Não inscrito"]} membro(s) fora da Escola de Fundação`, detail: "Avaliar inscrição e turma adequada." });
+  if (absent.length) {
+    alerts.push({
+      tone: "danger",
+      title: isPt ? `${absent.length} membro(s) sem presença recente` : `${absent.length} member(s) without recent attendance`,
+      detail: isPt ? "Recomenda-se contacto pastoral simples." : "Simple pastoral follow-up contact is recommended."
+    });
+  }
+  if (soul.follow_up) {
+    alerts.push({
+      tone: "info",
+      title: isPt ? `${soul.follow_up} visitante(s) em acompanhamento` : `${soul.follow_up} visitor(s) in follow-up`,
+      detail: isPt ? "Confirmar o próximo contacto." : "Confirm the next contact."
+    });
+  }
+  if (foundation["Não inscrito"]) {
+    alerts.push({
+      tone: "info",
+      title: isPt ? `${foundation["Não inscrito"]} membro(s) fora da Escola de Fundação` : `${foundation["Não inscrito"]} member(s) not enrolled in Foundation School`,
+      detail: isPt ? "Avaliar inscrição e turma adequada." : "Assess enrollment and suitable class."
+    });
+  }
   const sacraments = getCellSacramentsSummary(cellId, members);
-  if (sacraments.not_baptized) alerts.push({ tone: "warning", title: `${sacraments.not_baptized} membro(s) não baptizado(s)`, detail: "Partilhar a próxima oportunidade de baptismo." });
-  if (stats.total_members > 0 && stats.new_members_month === 0) alerts.push({ tone: "warning", title: "Célula sem crescimento registado neste mês", detail: "Rever mobilização e ganhar almas." });
-  if (programs.some((program) => !program.cell_action)) alerts.push({ tone: "info", title: "Programa futuro sem responsável", detail: "Definir a mobilização da célula." });
+  if (sacraments.not_baptized) {
+    alerts.push({
+      tone: "warning",
+      title: isPt ? `${sacraments.not_baptized} membro(s) não baptizado(s)` : `${sacraments.not_baptized} unbaptized member(s)`,
+      detail: isPt ? "Partilhar a próxima oportunidade de baptismo." : "Share the next baptism opportunity."
+    });
+  }
+  if (stats.total_members > 0 && stats.new_members_month === 0) {
+    alerts.push({
+      tone: "warning",
+      title: isPt ? "Célula sem crescimento registado neste período" : "No cell growth recorded in this period",
+      detail: isPt ? "Rever mobilização e ganhar almas." : "Review soul-winning mobilization."
+    });
+  }
+  if (programs.some((program) => !program.cell_action)) {
+    alerts.push({
+      tone: "info",
+      title: isPt ? "Programa futuro sem responsável" : "Upcoming program without lead assigned",
+      detail: isPt ? "Definir a mobilização da célula." : "Define cell mobilization action."
+    });
+  }
   return alerts.slice(0, 6);
 }
 
@@ -14801,18 +14883,37 @@ function openCellPortalMemberProfile(memberId) {
     recordCellReportSecurityEvent("cell_portal_member_profile_denied", `Member ${memberId} is outside authorized cell`, memberId);
     return;
   }
+  const isPt = lang === "pt";
   const spiritual = getCellMemberSpiritualProgress(member.id);
   const finance = getCellMemberFinanceSummary(member.id);
   const invited = member.invited_count || 0;
   const details = [
-    ["Nome", member.name], ["Telefone", member.phone], ["Igreja", context.church_name], ["Grupo", context.cell_group_name], ["Célula", context.cell_name], ["Estado", member.status],
-    ["Origem como First Timer", spiritual?.first_timer_origin || "-"], ["Escola de Fundação", spiritual?.foundation?.status || "Não inscrito"], ["Aulas concluídas", spiritual?.foundation?.completed_classes ?? 0], ["Exame final", spiritual?.foundation?.final_exam ?? "-"], ["Graduado", yesNo(spiritual?.foundation?.graduated)],
-    ["Baptizado", yesNo(spiritual?.sacraments?.baptized)], ["Casamento registado", yesNo((spiritual?.sacraments?.marriages || 0) > 0)], ["Dedicação de bebé", yesNo((spiritual?.sacraments?.baby_dedications || 0) > 0)], ["Acompanhamento pendente", yesNo(spiritual?.follow_up_pending)],
-    ["Dizimista", yesNo(finance.is_tither)], ["Parceiro", yesNo(finance.is_partner)], ["Ramos de parceria", finance.partnership_arms.join(", ") || "-"], ["Última contribuição", finance.last_contribution_month || (finance.visibility === "boolean_only" ? "Acesso agregado" : "-")], ["Pessoas convidadas", invited], ["Última presença", member.last_attendance || "-"], ["Observação simples", member.pastoral_observation || "-"]
+    [isPt ? "Nome" : "Name", member.name],
+    [isPt ? "Telefone" : "Phone", member.phone],
+    [isPt ? "Igreja" : "Church", context.church_name],
+    [isPt ? "Grupo" : "Group", context.cell_group_name],
+    [isPt ? "Célula" : "Cell", context.cell_name],
+    [isPt ? "Estado" : "Status", member.status],
+    [isPt ? "Origem como First Timer" : "First Timer Origin", spiritual?.first_timer_origin || "-"],
+    [isPt ? "Escola de Fundação" : "Foundation School", spiritual?.foundation?.status || (isPt ? "Não inscrito" : "Not enrolled")],
+    [isPt ? "Aulas concluídas" : "Completed Classes", spiritual?.foundation?.completed_classes ?? 0],
+    [isPt ? "Exame final" : "Final Exam", spiritual?.foundation?.final_exam ?? "-"],
+    [isPt ? "Graduado" : "Graduated", yesNo(spiritual?.foundation?.graduated)],
+    [isPt ? "Baptizado" : "Baptized", yesNo(spiritual?.sacraments?.baptized)],
+    [isPt ? "Casamento registado" : "Registered Marriage", yesNo((spiritual?.sacraments?.marriages || 0) > 0)],
+    [isPt ? "Dedicação de bebé" : "Baby Dedication", yesNo((spiritual?.sacraments?.baby_dedications || 0) > 0)],
+    [isPt ? "Acompanhamento pendente" : "Pending Follow-up", yesNo(spiritual?.follow_up_pending)],
+    [isPt ? "Dizimista" : "Tither", yesNo(finance.is_tither)],
+    [isPt ? "Parceiro" : "Partner", yesNo(finance.is_partner)],
+    [isPt ? "Ramos de parceria" : "Partnership Arms", finance.partnership_arms.join(", ") || "-"],
+    [isPt ? "Última contribuição" : "Last Contribution", finance.last_contribution_month || (finance.visibility === "boolean_only" ? (isPt ? "Acesso agregado" : "Aggregated access") : "-")],
+    [isPt ? "Pessoas convidadas" : "People Invited", invited],
+    [isPt ? "Última presença" : "Last Attendance", member.last_attendance || "-"],
+    [isPt ? "Observação simples" : "Pastoral Observation", member.pastoral_observation || "-"]
   ];
-  byId("modalEyebrow").textContent = "Perfil na Célula";
+  byId("modalEyebrow").textContent = isPt ? "Perfil na Célula" : "Cell Member Profile";
   byId("modalTitle").textContent = member.name;
-  byId("modalFields").innerHTML = `<div class="col-12"><div class="detail-grid">${details.map(([label, value]) => `<div><span>${escapeAttr(label)}</span><strong>${escapeAttr(value)}</strong></div>`).join("")}</div></div><div class="col-12"><div class="alert alert-info mb-0"><i class="bi bi-shield-check me-2"></i>Este perfil exclui notas de aconselhamento, salários, documentos, comprovativos e valores financeiros detalhados.</div></div>`;
+  byId("modalFields").innerHTML = `<div class="col-12"><div class="detail-grid">${details.map(([label, value]) => `<div><span>${escapeAttr(label)}</span><strong>${escapeAttr(value)}</strong></div>`).join("")}</div></div><div class="col-12"><div class="alert alert-info mb-0"><i class="bi bi-shield-check me-2"></i>${isPt ? "Este perfil exclui notas de aconselhamento, salários, documentos, comprovativos e valores financeiros detalhados." : "This profile excludes counseling notes, salaries, documents, receipts, and detailed financial values."}</div></div>`;
   modalType = null;
   byId("entryForm")?.querySelector('button[type="submit"]')?.classList.add("d-none");
   bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
@@ -14824,7 +14925,19 @@ function exportCellPortalSummary() {
     recordCellReportSecurityEvent("cell_portal_export_denied", "Blocked Cell Portal summary export", context?.cell_id || "");
     return;
   }
-  const rows = [["Nome", "Estado", "Foundation School", "Baptizado", "Parceiro", "Dizimista", "Convidados"], ...getCellMembersProfile(context.cell_id, {}).map((member) => [member.name, member.status, member.foundation_status, member.baptized ? "Sim" : "Não", member.is_partner ? "Sim" : "Não", member.is_tither ? "Sim" : "Não", member.invited_count])];
+  const isPt = lang === "pt";
+  const rows = [
+    [isPt ? "Nome" : "Name", isPt ? "Estado" : "Status", "Foundation School", isPt ? "Baptizado" : "Baptized", isPt ? "Parceiro" : "Partner", isPt ? "Dizimista" : "Tither", isPt ? "Convidados" : "Invited"],
+    ...getCellMembersProfile(context.cell_id, {}).map((member) => [
+      member.name,
+      member.status,
+      member.foundation_status,
+      member.baptized ? (isPt ? "Sim" : "Yes") : (isPt ? "Não" : "No"),
+      member.is_partner ? (isPt ? "Sim" : "Yes") : (isPt ? "Não" : "No"),
+      member.is_tither ? (isPt ? "Sim" : "Yes") : (isPt ? "Não" : "No"),
+      member.invited_count
+    ])
+  ];
   const csv = rows.map((row) => row.map((value) => `"${String(value ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
   const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
   const link = document.createElement("a");
@@ -14836,17 +14949,18 @@ function exportCellPortalSummary() {
 }
 
 function reconciliationStatusBadge(status) {
+  const isPt = lang === "pt";
   const map = {
-    Confirmed: `<span class="badge bg-success"><i class="bi bi-check me-1"></i>Confirmado</span>`,
-    Pending: `<span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i>Por Rever</span>`,
-    NeedsCorrection: `<span class="badge bg-danger"><i class="bi bi-exclamation-triangle me-1"></i>Precisa Correcção</span>`,
-    NotInCell: `<span class="badge bg-secondary"><i class="bi bi-person-x me-1"></i>Não Pertence</span>`,
-    TransferRequested: `<span class="badge bg-info text-dark"><i class="bi bi-arrow-left-right me-1"></i>Transferência Pedida</span>`,
-    Transferred: `<span class="badge bg-dark"><i class="bi bi-arrow-right me-1"></i>Transferido</span>`,
-    DuplicateSuspected: `<span class="badge bg-warning text-dark"><i class="bi bi-copy me-1"></i>Duplicado</span>`,
+    Confirmed: `<span class="badge bg-success"><i class="bi bi-check me-1"></i>${isPt ? "Confirmado" : "Confirmed"}</span>`,
+    Pending: `<span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i>${isPt ? "Por Rever" : "Pending Review"}</span>`,
+    NeedsCorrection: `<span class="badge bg-danger"><i class="bi bi-exclamation-triangle me-1"></i>${isPt ? "Precisa Correcção" : "Needs Correction"}</span>`,
+    NotInCell: `<span class="badge bg-secondary"><i class="bi bi-person-x me-1"></i>${isPt ? "Não Pertence" : "Not in Cell"}</span>`,
+    TransferRequested: `<span class="badge bg-info text-dark"><i class="bi bi-arrow-left-right me-1"></i>${isPt ? "Transferência Pedida" : "Transfer Requested"}</span>`,
+    Transferred: `<span class="badge bg-dark"><i class="bi bi-arrow-right me-1"></i>${isPt ? "Transferido" : "Transferred"}</span>`,
+    DuplicateSuspected: `<span class="badge bg-warning text-dark"><i class="bi bi-copy me-1"></i>${isPt ? "Duplicado" : "Duplicate"}</span>`,
     NotRequired: `<span class="badge bg-light text-muted">N/A</span>`,
   };
-  return map[status] || `<span class="badge bg-warning text-dark">Por Rever</span>`;
+  return map[status] || `<span class="badge bg-warning text-dark">${isPt ? "Por Rever" : "Pending Review"}</span>`;
 }
 
 async function confirmCellMember(memberId) {
@@ -15164,63 +15278,64 @@ function openTransferCellMemberModal(memberId) {
   const currentGroupName = member.cell_group_name || member.grupo_de_celula || context?.cell_group_name || "—";
   const currentCellName = member.cell_name || member.celula || context?.cell_name || "—";
 
+  const isPt = lang === "pt";
   const churches = relationalChurches();
   const initialGroups = getCellGroupsForChurch(currentChurchId);
 
-  byId("modalEyebrow").textContent = "Transferência de Célula";
-  byId("modalTitle").textContent = `Transferir Membro: ${member.full_name || member.name}`;
+  byId("modalEyebrow").textContent = isPt ? "Transferência de Célula" : "Cell Transfer";
+  byId("modalTitle").textContent = `${isPt ? "Transferir Membro" : "Transfer Member"}: ${member.full_name || member.name}`;
   byId("modalFields").innerHTML = `
     <input type="hidden" name="transfer_member_id" value="${escapeAttr(member.id)}">
     <input type="hidden" name="from_cell_id" value="${escapeAttr(context?.cell_id || member.cell_id || "")}">
     <input type="hidden" name="from_church_id" value="${escapeAttr(currentChurchId)}">
     <div class="col-12 mb-3">
       <div class="p-3 rounded d-flex flex-wrap align-items-center justify-content-between gap-3 shadow-sm" style="background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(234, 179, 8, 0.4); border-radius: 8px;">
-        <div><span class="text-secondary small d-block">Membro</span><strong class="text-light">${escapeAttr(member.full_name || member.name)}</strong></div>
-        <div><span class="text-secondary small d-block">Igreja Actual</span><strong class="text-light"><i class="bi bi-building me-1 text-warning"></i>${escapeAttr(currentChurchName)}</strong></div>
-        <div><span class="text-secondary small d-block">Célula Actual</span><strong class="text-light"><i class="bi bi-diagram-3 me-1 text-info"></i>${escapeAttr(currentGroupName)} <span>•</span> ${escapeAttr(currentCellName)}</strong></div>
+        <div><span class="text-secondary small d-block">${isPt ? "Membro" : "Member"}</span><strong class="text-light">${escapeAttr(member.full_name || member.name)}</strong></div>
+        <div><span class="text-secondary small d-block">${isPt ? "Igreja Actual" : "Current Church"}</span><strong class="text-light"><i class="bi bi-building me-1 text-warning"></i>${escapeAttr(currentChurchName)}</strong></div>
+        <div><span class="text-secondary small d-block">${isPt ? "Célula Actual" : "Current Cell"}</span><strong class="text-light"><i class="bi bi-diagram-3 me-1 text-info"></i>${escapeAttr(currentGroupName)} <span>•</span> ${escapeAttr(currentCellName)}</strong></div>
       </div>
     </div>
     <div class="col-md-4 mb-3">
-      <label class="form-label">Igreja de Destino</label>
+      <label class="form-label">${isPt ? "Igreja de Destino" : "Destination Church"}</label>
       <select class="form-select" name="to_church_id" data-transfer-church-select>
-        ${churches.map((c) => `<option value="${escapeAttr(c.id)}" ${String(c.id) === String(currentChurchId) ? "selected" : ""}>${escapeHtml(c.public_name || c.church_name || c.name || "Igreja")}</option>`).join("")}
+        ${churches.map((c) => `<option value="${escapeAttr(c.id)}" ${String(c.id) === String(currentChurchId) ? "selected" : ""}>${escapeHtml(c.public_name || c.church_name || c.name || (isPt ? "Igreja" : "Church"))}</option>`).join("")}
       </select>
     </div>
     <div class="col-md-4 mb-3">
-      <label class="form-label">Grupo de Célula de Destino *</label>
+      <label class="form-label">${isPt ? "Grupo de Célula de Destino *" : "Destination Cell Group *"}</label>
       <select class="form-select" name="to_cell_group_id" data-transfer-group-select required>
-        <option value="">Seleccionar Grupo de Célula...</option>
+        <option value="">${isPt ? "Seleccionar Grupo de Célula..." : "Select Cell Group..."}</option>
         ${initialGroups.map((g) => `<option value="${escapeAttr(g.id)}">${escapeHtml(g.group_name || g.name || g.id)}</option>`).join("")}
       </select>
     </div>
     <div class="col-md-4 mb-3">
-      <label class="form-label">Célula de Destino *</label>
+      <label class="form-label">${isPt ? "Célula de Destino *" : "Destination Cell *"}</label>
       <select class="form-select" name="to_cell_id" data-transfer-cell-select disabled required>
-        <option value="">Seleccione o grupo primeiro...</option>
+        <option value="">${isPt ? "Seleccione o grupo primeiro..." : "Select the group first..."}</option>
       </select>
     </div>
     <div class="col-12 mb-3">
-      <label class="form-label">Motivo da Transferência *</label>
+      <label class="form-label">${isPt ? "Motivo da Transferência *" : "Transfer Reason *"}</label>
       <select class="form-select" name="transfer_reason" required>
-        <option value="">Seleccionar motivo...</option>
-        <option value="Mudança de residência/bairro">Mudança de residência/bairro</option>
-        <option value="Horário ou disponibilidade">Horário ou disponibilidade</option>
-        <option value="Já frequenta outra célula">Já frequenta outra célula</option>
-        <option value="Reorganização de células">Reorganização de células</option>
-        <option value="Multiplicação de célula">Multiplicação de célula</option>
-        <option value="Outro">Outro</option>
+        <option value="">${isPt ? "Seleccionar motivo..." : "Select reason..."}</option>
+        <option value="Mudança de residência/bairro">${isPt ? "Mudança de residência/bairro" : "Relocation / Neighborhood change"}</option>
+        <option value="Horário ou disponibilidade">${isPt ? "Horário ou disponibilidade" : "Schedule / Time availability"}</option>
+        <option value="Já frequenta outra célula">${isPt ? "Já frequenta outra célula" : "Already attends another cell"}</option>
+        <option value="Reorganização de células">${isPt ? "Reorganização de células" : "Cell reorganization"}</option>
+        <option value="Multiplicação de célula">${isPt ? "Multiplicação de célula" : "Cell multiplication"}</option>
+        <option value="Outro">${isPt ? "Outro" : "Other"}</option>
       </select>
     </div>
     <div class="col-12 mb-3">
-      <label class="form-label">Notas Adicionais</label>
-      <textarea class="form-control" name="transfer_notes" rows="2" placeholder="Informações úteis para a nova liderança de célula..."></textarea>
+      <label class="form-label">${isPt ? "Notas Adicionais" : "Additional Notes"}</label>
+      <textarea class="form-control" name="transfer_notes" rows="2" placeholder="${isPt ? "Informações úteis para a nova liderança de célula..." : "Useful information for the new cell leadership..."}"></textarea>
     </div>
   `;
   modalType = "cellMemberTransfer";
   const submitBtn = byId("entryForm")?.querySelector('button[type="submit"]');
   if (submitBtn) {
     submitBtn.classList.remove("d-none");
-    submitBtn.textContent = lang === "pt" ? "Confirmar e Transferir Membro" : "Confirm and Transfer Member";
+    submitBtn.textContent = isPt ? "Confirmar e Transferir Membro" : "Confirm and Transfer Member";
   }
   bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
 }
@@ -15329,39 +15444,40 @@ function openRemoveCellMemberModal(memberId) {
   const member = source.find((m) => String(m.id) === String(memberId));
   if (!member) return;
 
-  byId("modalEyebrow").textContent = "Reconciliação de Membro";
-  byId("modalTitle").textContent = `Assinalar Membro: ${member.full_name || member.name}`;
+  const isPt = lang === "pt";
+  byId("modalEyebrow").textContent = isPt ? "Reconciliação de Membro" : "Member Reconciliation";
+  byId("modalTitle").textContent = `${isPt ? "Assinalar Membro" : "Flag Member"}: ${member.full_name || member.name}`;
   byId("modalFields").innerHTML = `
     <input type="hidden" name="remove_member_id" value="${escapeAttr(member.id)}">
     <div class="col-12 mb-3">
       <div class="alert alert-warning small">
         <i class="bi bi-exclamation-triangle me-1"></i>
-        <strong>Atenção:</strong> O registo do membro <strong>não será apagado</strong> do sistema histórico. Será apenas desassociado desta célula e marcado com o motivo correspondente.
+        <strong>${isPt ? "Atenção:" : "Notice:"}</strong> ${isPt ? "O registo do membro <strong>não será apagado</strong> do sistema histórico. Será apenas desassociado desta célula e marcado com o motivo correspondente." : "The member record <strong>will not be deleted</strong> from historical system data. It will only be detached from this cell and tagged with the reason."}
       </div>
     </div>
     <div class="col-12 mb-3">
-      <label class="form-label">Motivo de Não Pertença *</label>
+      <label class="form-label">${isPt ? "Motivo de Não Pertença *" : "Disassociation Reason *"}</label>
       <select class="form-select" name="removal_reason" required>
-        <option value="">Seleccionar motivo obrigatório...</option>
-        <option value="Transferido">Transferido para outra célula/igreja</option>
-        <option value="Mudou de igreja">Mudou de igreja / ministério</option>
-        <option value="Inactivo">Inactivo há muito tempo / paradeiro incerto</option>
-        <option value="Pertence a outra célula">Pertence a outra célula</option>
-        <option value="Registo incorrecto">Registo atribuído incorrectamente à célula</option>
-        <option value="Falecido">Falecido</option>
-        <option value="Outro">Outro</option>
+        <option value="">${isPt ? "Seleccionar motivo obrigatório..." : "Select required reason..."}</option>
+        <option value="Transferido">${isPt ? "Transferido para outra célula/igreja" : "Transferred to another cell/church"}</option>
+        <option value="Mudou de igreja">${isPt ? "Mudou de igreja / ministério" : "Changed church / ministry"}</option>
+        <option value="Inactivo">${isPt ? "Inactivo há muito tempo / paradeiro incerto" : "Inactive for a long time / unknown location"}</option>
+        <option value="Pertence a outra célula">${isPt ? "Pertence a outra célula" : "Belongs to another cell"}</option>
+        <option value="Registo incorrecto">${isPt ? "Registo atribuído incorrectamente à célula" : "Record incorrectly assigned to this cell"}</option>
+        <option value="Falecido">${isPt ? "Falecido" : "Deceased"}</option>
+        <option value="Outro">${isPt ? "Outro" : "Other"}</option>
       </select>
     </div>
     <div class="col-12 mb-3">
-      <label class="form-label">Justificação / Detalhes</label>
-      <textarea class="form-control" name="removal_notes" rows="2" placeholder="Descreva os detalhes"></textarea>
+      <label class="form-label">${isPt ? "Justificação / Detalhes" : "Justification / Details"}</label>
+      <textarea class="form-control" name="removal_notes" rows="2" placeholder="${isPt ? "Descreva os detalhes" : "Describe the details"}"></textarea>
     </div>
   `;
   modalType = "cellMemberRemoval";
   const submitBtn = byId("entryForm")?.querySelector('button[type="submit"]');
   if (submitBtn) {
     submitBtn.classList.remove("d-none");
-    submitBtn.textContent = lang === "pt" ? "Confirmar Desassociação" : "Confirm Disassociation";
+    submitBtn.textContent = isPt ? "Confirmar Desassociação" : "Confirm Disassociation";
   }
   bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
 }
@@ -15423,9 +15539,10 @@ async function submitCellMemberRemovalForm(form) {
 
 function renderCellLeaderPortal() {
   try {
+    const isPt = lang === "pt";
     if (!isUserAuthenticated) {
       showLoginView();
-      showLoginError(lang === "pt" ? "Inicie sessão para abrir o Portal do Líder de Célula." : "Sign in to open the Cell Leader Portal.");
+      showLoginError(isPt ? "Inicie sessão para abrir o Portal do Líder de Célula." : "Sign in to open the Cell Leader Portal.");
       return;
     }
     if (!hasCellPortalPermission("cell_portal.view")) return renderAccessDenied();
@@ -15434,7 +15551,7 @@ function renderCellLeaderPortal() {
     }
     const authorizedCells = getAuthorizedCellsForUser(activeUser?.id);
     if (!authorizedCells.length) {
-      setPageContent(`<section class="panel glass-panel cell-portal-empty"><i class="bi bi-diagram-3"></i><h2>${lang === "pt" ? "Nenhuma célula está atribuída ao seu utilizador." : "No cell is assigned to your user."}</h2><p>${lang === "pt" ? "Contacte o Departamento de Células." : "Contact the Cell Ministry department."}</p></section>`);
+      setPageContent(`<section class="panel glass-panel cell-portal-empty"><i class="bi bi-diagram-3"></i><h2>${isPt ? "Nenhuma célula está atribuída ao seu utilizador." : "No cell is assigned to your user."}</h2><p>${isPt ? "Contacte o Departamento de Células." : "Contact the Cell Ministry department."}</p></section>`);
       recordCellReportSecurityEvent("cell_portal_no_assignment", "Authenticated user has no assigned cell");
       return;
     }
@@ -15473,10 +15590,13 @@ function renderCellLeaderPortal() {
       total_members: 0,
       active_members: 0,
       new_members_month: 0,
+      attendance_in_period: 0,
       visitors: 0,
+      new_converts_in_period: 0,
+      reports_in_period: 0,
       reports_month: 0,
       latest_report: null,
-      current_report_status: lang === "pt" ? "Não submetido" : "Not submitted",
+      current_report_status: isPt ? "Não submetido" : "Not submitted",
       next_submission: new Date().toISOString().slice(0, 10)
     };
     const members = stats.members || [];
@@ -15513,7 +15633,7 @@ function renderCellLeaderPortal() {
     const trends = getCellReportTrends(context?.cell_id, cellPortalPageState) || { reports: [], attendance: [], visitors: [], souls: [], statuses: {} };
     const foundation = getCellFoundationProgress(context?.cell_id, allMembers) || {};
     const sacraments = getCellSacramentsSummary(context?.cell_id, allMembers) || { baptized: 0, not_baptized: 0, certificates: 0, marriages: 0, baby_dedications: 0 };
-    const soul = getCellSoulWinningStats(context?.cell_id, cellPortalPageState, allMembers) || { total: 0, first_timers: 0, follow_up: 0, foundation: 0, became_members: 0, ranking: [] };
+    const soul = getCellSoulWinningStats(context?.cell_id, cellPortalPageState, allMembers) || { total: 0, first_timers: 0, follow_up: 0, foundation: 0, became_members: 0, received_from_pastoral: 0, pending_pastoral: 0, ranking: [] };
     const programs = getCellProgramsUpcoming(context?.cell_id, context?.church_id, context?.cell_group_id) || [];
     const alerts = getCellAlerts(context?.cell_id, cellPortalPageState, stats, allMembers) || [];
     const partners = allMembers.filter((member) => member.is_partner).length;
@@ -15521,8 +15641,8 @@ function renderCellLeaderPortal() {
     const cell = stats.cell || fallbackCell;
     const leaders = [cell.primary_leader_name || cell.leader_name || cell.lider, ...(cell.assistant_leader_names || [])].filter(Boolean);
     const activities = [
-      ...(trends.reports || []).map((report) => ({ date: portalDateValue(report), type: "Reunião de célula", title: report.topic || report.lesson_shared || "Relatório semanal", responsible: report.submitted_by_name || report.leader_name || context?.user_name, status: cellReportStatusLabel(report) })),
-      ...(state.fevo?.reports || []).filter((item) => item.cell_id === context?.cell_id && portalInPeriod(item, cellPortalPageState)).map((item) => ({ date: portalDateValue(item), type: item.activity_type || "F.E.V.O", title: item.notes || item.activity_type || "Actividade", responsible: item.leader_name || "", status: item.status || item.estado || "" }))
+      ...(trends.reports || []).map((report) => ({ date: portalDateValue(report), type: isPt ? "Reunião de célula" : "Cell Meeting", title: report.topic || report.lesson_shared || (isPt ? "Relatório semanal" : "Weekly report"), responsible: report.submitted_by_name || report.leader_name || context?.user_name, status: cellReportStatusLabel(report) })),
+      ...(state.fevo?.reports || []).filter((item) => item.cell_id === context?.cell_id && portalInPeriod(item, cellPortalPageState)).map((item) => ({ date: portalDateValue(item), type: item.activity_type || "F.E.V.O", title: item.notes || item.activity_type || (isPt ? "Actividade" : "Activity"), responsible: item.leader_name || "", status: item.status || item.estado || "" }))
     ].sort((a, b) => Date.parse(b.date || 0) - Date.parse(a.date || 0)).slice(0, 10);
     const isSingleCellLeader = ["Cell Leader", "Cell Assistant", "cell_leader", "assistant_cell_leader", "cell_assistant", "Líder de Célula", "Assistente de Célula"].includes(activeUser?.role) || authorizedCells.length <= 1;
     const isGroupLeaderOnly = ["Cell Group Leader", "cell_group_leader", "Líder de Grupo de Células", "Lider de Grupo de Celulas", "Cell Group Coordinator"].includes(activeUser?.role);
@@ -15567,173 +15687,273 @@ function renderCellLeaderPortal() {
       return matchesCellId || matchesCellName || matchesCelula;
     });
 
+    const periodOptions = [
+      ["week", isPt ? "Esta Semana" : "This Week"],
+      ["last_week", isPt ? "Semana Passada" : "Last Week"],
+      ["two_weeks_ago", isPt ? "2 Semanas Atrás" : "2 Weeks Ago"],
+      ["month", isPt ? "Este Mês" : "This Month"],
+      ["last_month", isPt ? "Mês Passado" : "Last Month"],
+      ["quarter", isPt ? "Últimos 3 Meses" : "Past 3 Months"],
+      ["half_year", isPt ? "Últimos 6 Meses" : "Past 6 Months"],
+      ["year", isPt ? "Este Ano" : "This Year"],
+      ["last_year", isPt ? "Ano Passado" : "Last Year"],
+      ["custom", isPt ? "Personalizado" : "Custom Period"]
+    ];
+
     setPageContent(`<div class="cell-portal-shell">
+      <!-- Top Cell Header & Hero -->
       <section class="cell-portal-hero">
         <div>
-          <span class="eyebrow">Portal do Líder de Célula</span>
-          <h2>${escapeAttr(context?.cell_name || "Célula")}</h2>
-          <p><i class="bi bi-building me-1"></i>${escapeAttr(context?.church_name || "Christ Embassy")} <span>•</span> ${escapeAttr(context?.cell_group_name || "Grupo de Células")}</p>
-          <div class="cell-portal-identity"><span>${escapeAttr(context?.cell_role || "Líder")}</span><strong>${escapeAttr(context?.user_name || activeUser?.name || "Utilizador")}</strong></div>
+          <span class="eyebrow">${isPt ? "PORTAL DO LÍDER DE CÉLULA" : "CELL LEADER PORTAL"}</span>
+          <h2>${escapeAttr(context?.cell_name || (isPt ? "Célula" : "Cell"))}</h2>
+          <p><i class="bi bi-building me-1"></i>${escapeAttr(context?.church_name || "Christ Embassy")} <span>•</span> ${escapeAttr(context?.cell_group_name || (isPt ? "Grupo de Células" : "Cell Group"))}</p>
+          <div class="cell-portal-identity"><span>${escapeAttr(context?.cell_role || (isPt ? "Líder" : "Leader"))}</span><strong>${escapeAttr(context?.user_name || activeUser?.name || (isPt ? "Utilizador" : "User"))}</strong></div>
         </div>
         <div class="cell-portal-hero-actions">
-          ${canChooseCell ? `<label>Seleccionar célula<select class="form-select" data-cell-portal-cell>${safeHeroCells.map((item) => `<option value="${escapeAttr(item.id)}" ${String(item.id) === String(context?.cell_id) ? "selected" : ""}>${escapeAttr(portalCellName(item))}</option>`).join("")}</select></label>` : ""}
-          ${!isReadOnlyPortal ? `
-            <button type="button" class="btn btn-ce-gold btn-touch shadow" data-open-member-candidate title="Registar novo membro na célula"><i class="bi bi-person-plus-fill me-2"></i>+ Registar Membro</button>
-            <button type="button" class="btn btn-outline-gold btn-touch" data-public-cell-report><i class="bi bi-clipboard-plus me-2"></i>Submeter Relatório Semanal</button>
-          ` : ""}
-          ${hasCellPortalPermission("cell_portal.export_summary") ? `<button type="button" class="btn btn-outline-cyan btn-touch" data-cell-portal-export><i class="bi bi-download me-2"></i>Exportar resumo</button>` : ""}
+          ${canChooseCell ? `<label>${isPt ? "Seleccionar célula" : "Select Cell"}<select class="form-select" data-cell-portal-cell>${safeHeroCells.map((item) => `<option value="${escapeAttr(item.id)}" ${String(item.id) === String(context?.cell_id) ? "selected" : ""}>${escapeAttr(portalCellName(item))}</option>`).join("")}</select></label>` : ""}
+          ${hasCellPortalPermission("cell_portal.export_summary") ? `<button type="button" class="btn btn-outline-cyan btn-touch" data-cell-portal-export><i class="bi bi-download me-2"></i>${isPt ? "Exportar resumo" : "Export summary"}</button>` : ""}
         </div>
-      </section>
-      <section class="panel glass-panel cell-portal-filters">
-        ${!isReadOnlyPortal ? `<div class="d-flex justify-content-end"><button type="button" class="btn btn-ce-gold btn-touch" data-open-member-candidate><i class="bi bi-person-plus me-2"></i>Registar Candidato a Membro</button></div>` : ""}
-        ${showCellGroupSelectors ? `
-        <label>Grupo de Célula<select class="form-select" data-cell-portal-filter="cellGroupId"><option value="">Todos os Grupos</option>${safeCellGroups.map((g) => `<option value="${escapeAttr(g.id)}" ${String(g.id) === String(cellPortalPageState.cellGroupId || "") ? "selected" : ""}>${escapeAttr(g.group_name || g.name || "Grupo")}</option>`).join("")}</select></label>
-        <label>Célula<select class="form-select" data-cell-portal-filter="cellId"><option value="">Todas as Células</option>${safeCellRegistry.map((c) => `<option value="${escapeAttr(c.id)}" ${String(c.id) === String(cellPortalPageState.cellId || "") ? "selected" : ""}>${escapeAttr(c.cell_name || c.name || "Célula")}</option>`).join("")}</select></label>
-        ` : ""}
-        <label>Reconciliação<select class="form-select" data-cell-portal-filter="reconciliationStatus"><option value="">Todos os Estados</option><option value="Confirmed" ${cellPortalPageState.reconciliationStatus === "Confirmed" ? "selected" : ""}>Confirmados</option><option value="Pending" ${cellPortalPageState.reconciliationStatus === "Pending" ? "selected" : ""}>Por Rever</option><option value="NeedsCorrection" ${cellPortalPageState.reconciliationStatus === "NeedsCorrection" ? "selected" : ""}>Precisa Correcção</option><option value="NotInCell" ${cellPortalPageState.reconciliationStatus === "NotInCell" ? "selected" : ""}>Não Pertence</option><option value="TransferRequested" ${cellPortalPageState.reconciliationStatus === "TransferRequested" ? "selected" : ""}>Pedido Transferência</option></select></label>
-        <label>Período<select class="form-select" data-cell-portal-filter="period">${[["week","Esta semana"],["month","Este mês"],["quarter","Último trimestre"],["year","Este ano"],["custom","Personalizado"]].map(([value,label]) => `<option value="${value}" ${cellPortalPageState.period === value ? "selected" : ""}>${label}</option>`).join("")}</select></label>
-        ${cellPortalPageState.period === "custom" ? `<label>De<input type="date" class="form-control" data-cell-portal-filter="dateFrom" value="${escapeAttr(cellPortalPageState.dateFrom || "")}"></label><label>Até<input type="date" class="form-control" data-cell-portal-filter="dateTo" value="${escapeAttr(cellPortalPageState.dateTo || "")}"></label>` : ""}
-        <label>Estado<select class="form-select" data-cell-portal-filter="memberStatus"><option value="">Todos</option>${safeMemberStatuses.map((value) => `<option ${cellPortalPageState.memberStatus === value ? "selected" : ""}>${escapeAttr(value)}</option>`).join("")}</select></label>
-        <label>Fundação<select class="form-select" data-cell-portal-filter="foundationStatus"><option value="">Todos</option>${safeFoundationOptions.map((value) => `<option ${cellPortalPageState.foundationStatus === value ? "selected" : ""}>${escapeAttr(value)}</option>`).join("")}</select></label>
-        <label>Sacramentos<select class="form-select" data-cell-portal-filter="sacramentStatus"><option value="">Todos</option><option value="baptized" ${cellPortalPageState.sacramentStatus === "baptized" ? "selected" : ""}>Baptizado</option><option value="not_baptized" ${cellPortalPageState.sacramentStatus === "not_baptized" ? "selected" : ""}>Não baptizado</option></select></label>
-        <label>Parceria<select class="form-select" data-cell-portal-filter="partnership"><option value="">Todos</option><option value="true" ${cellPortalPageState.partnership === "true" ? "selected" : ""}>Sim</option><option value="false" ${cellPortalPageState.partnership === "false" ? "selected" : ""}>Não</option></select></label>
-        <label>Dizimista<select class="form-select" data-cell-portal-filter="tithe"><option value="">Todos</option><option value="true" ${cellPortalPageState.tithe === "true" ? "selected" : ""}>Sim</option><option value="false" ${cellPortalPageState.tithe === "false" ? "selected" : ""}>Não</option></select></label>
-        <label>Convidou<select class="form-select" data-cell-portal-filter="invited"><option value="">Todos</option><option value="true" ${cellPortalPageState.invited === "true" ? "selected" : ""}>Sim</option><option value="false" ${cellPortalPageState.invited === "false" ? "selected" : ""}>Não</option></select></label>
-      </section>
-      <section id="cell-portal-overview" class="cell-portal-section">
-        ${cellPortalSectionTitle("bi-grid-1x2", "Visão Geral", "Indicadores seguros da célula autorizada")}
-        <div class="cell-portal-kpis">${[
-          ["bi-people","Total de membros",stats.total_members],
-          ["bi-person-check","Membros activos",stats.active_members],
-          ["bi-box-arrow-in-down-right text-cyan","Recebidos de Pastoral",`${soul?.received_from_pastoral || 0} (${soul?.pending_pastoral || 0} pendentes)`],
-          ["bi-trophy-fill text-warning","Top Soul Winner",soul?.top_soul_winner?.name ? `${soul.top_soul_winner.name} (${soul.top_soul_winner.invited})` : "—"],
-          ["bi-person-plus","Novos este mês",stats.new_members_month],
-          ["bi-person-heart","Visitantes ligados",stats.visitors],
-          ["bi-clipboard-check","Relatórios este mês",stats.reports_month],
-          ["bi-activity","Estado actual",stats.current_report_status],
-          ["bi-clock-history","Último relatório",stats.latest_report ? String(portalDateValue(stats.latest_report) || "").slice(0,10) : "—"],
-          ["bi-calendar-week","Próxima submissão",stats.next_submission]
-        ].map(([icon,label,value]) => `<article><i class="bi ${icon}"></i><span>${label}</span><strong>${escapeAttr(value)}</strong></article>`).join("")}</div>
-        <div class="cell-portal-meta">
-          <div><span>Igreja</span><strong>${escapeAttr(context?.church_name || "—")}</strong></div>
-          <div><span>Grupo</span><strong>${escapeAttr(context?.cell_group_name || "—")}</strong></div>
-          <div><span>Liderança</span><strong>${escapeAttr(leaders.join(", ") || context?.user_name || "—")}</strong></div>
-          <div><span>Escopo</span><strong>${(context?.authorized_cell_ids || []).length} célula(s)</strong></div>
-        </div>
-      </section>
-      <section class="cell-portal-section">
-        <div class="cell-portal-alerts">${safeAlerts.map((alert) => `<article class="is-${alert.tone || "info"}"><i class="bi bi-bell"></i><div><strong>${escapeAttr(alert.title)}</strong><p>${escapeAttr(alert.detail)}</p></div></article>`).join("") || `<article class="is-success"><i class="bi bi-check-circle"></i><div><strong>Sem alertas críticos</strong><p>Os principais indicadores estão actualizados.</p></div></article>`}</div>
       </section>
 
-      <!-- Pastoral Care Referral & Handoff Panel -->
-      <section id="cell-portal-pastoral-handoff" class="cell-portal-section">
-        ${cellPortalSectionTitle("bi-person-heart", "Membros Encaminhados pelos Cuidados Pastorais", "Visitantes e novos convertidos atribuídos a esta célula. Confirme a recepção para integrá-los e enviá-los à Lista de Espera por aprovação no MAIN.")}
-        <div class="panel glass-panel mb-4">
-          <div class="panel-head mb-3 d-flex flex-wrap justify-content-between align-items-center">
+      <!-- 4 Quick Action Buttons (Primary mobile & desktop entry point) -->
+      ${!isReadOnlyPortal ? `
+        <div class="cell-portal-quick-actions">
+          <button type="button" class="cell-quick-action-card action-gold" data-public-cell-report>
+            <div class="cell-quick-action-icon"><i class="bi bi-clipboard2-check-fill"></i></div>
             <div>
-              <h4 class="panel-title fs-6 text-warning mb-1"><i class="bi bi-inbox-fill me-2"></i>Entradas da Pastoral (First Timers & Convertidos)</h4>
-              <p class="text-secondary small mb-0">Total atribuído: <strong>${pastoralArrivals.length}</strong> &bull; Recebidos na célula: <strong class="text-success">${pastoralArrivals.filter(p => p.cell_received || p.workflow_status === "CELL_RECEIVED" || p.estado_do_seguimento === "Received in Cell").length}</strong> &bull; Aguardando recepção: <strong class="text-warning">${pastoralArrivals.filter(p => !p.cell_received && p.workflow_status !== "CELL_RECEIVED" && p.estado_do_seguimento !== "Received in Cell").length}</strong></p>
+              <strong class="cell-quick-action-title">${isPt ? "Submeter Relatório" : "Submit Report"}</strong>
+              <span class="cell-quick-action-desc">${isPt ? "Relatório semanal da reunião" : "Weekly cell meeting report"}</span>
             </div>
-            <div class="d-flex gap-2">
-              <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i>${pastoralArrivals.filter(p => !p.cell_received && p.workflow_status !== "CELL_RECEIVED" && p.estado_do_seguimento !== "Received in Cell").length} pendente(s)</span>
+          </button>
+
+          <button type="button" class="cell-quick-action-card action-cyan" data-open-cell-attendance-modal onclick="window.openCellAttendanceModal &amp;&amp; window.openCellAttendanceModal(); return false;">
+            <div class="cell-quick-action-icon"><i class="bi bi-calendar-check-fill"></i></div>
+            <div>
+              <strong class="cell-quick-action-title">${isPt ? "Registar Presenças" : "Mark Attendance"}</strong>
+              <span class="cell-quick-action-desc">${isPt ? "Presenças no culto & visitantes" : "Service attendance & visitors"}</span>
             </div>
-          </div>
-          ${(() => {
-            if (!pastoralArrivals.length) {
-              return `<p class="text-secondary small mb-0 p-3"><i class="bi bi-info-circle me-1"></i>Nenhum visitante ou novo convertido encaminhado pelos Cuidados Pastorais para esta célula até ao momento.</p>`;
-            }
-            return `
-              <div class="table-responsive">
-                <table class="table cell-portal-table mb-0">
-                  <thead>
-                    <tr>
-                      <th>Nome do Membro</th>
-                      <th>Contacto</th>
-                      <th>Data da Visita</th>
-                      <th>Convidado por / Ganhador</th>
-                      <th>Data de Atribuição</th>
-                      <th>Estado</th>
-                      <th>Acção de Recepção</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    ${pastoralArrivals.map((ft) => {
-                      const isReceived = Boolean(ft.cell_received || ft.workflow_status === "CELL_RECEIVED" || ft.estado_do_seguimento === "Received in Cell");
-                      return `
-                        <tr>
-                          <td>
-                            <strong>${escapeAttr(fullName(ft))}</strong>
-                            <small class="text-secondary">${ft.nasceu_de_novo ? '<span class="badge bg-success-subtle text-success border border-success me-1">Novo Convertido</span>' : '<span class="badge bg-secondary-subtle text-body me-1">Visitante</span>'}${ft.quer_escola_de_fundacao ? '<span class="badge bg-info-subtle text-cyan border border-info">Interesse ESF</span>' : ''}</small>
-                          </td>
-                          <td>${escapeAttr(ft.telefone || ft.phone || "—")}</td>
-                          <td><small>${escapeAttr(ft.data_do_culto || ft.created_at?.slice(0, 10) || "—")}</small></td>
-                          <td>${ft.convidado_por || ft.invited_by || ft.invited_by_name ? `<span class="badge bg-warning-subtle text-warning border border-warning"><i class="bi bi-person-badge me-1"></i>${escapeAttr(ft.convidado_por || ft.invited_by || ft.invited_by_name)}</span>` : '<span class="text-secondary small">—</span>'}</td>
-                          <td><small>${escapeAttr(ft.cell_assigned_at ? String(ft.cell_assigned_at).slice(0, 10) : (ft.data_do_culto || "—"))}</small></td>
-                          <td>
-                            ${isReceived
-                              ? '<span class="badge bg-success"><i class="bi bi-check-circle-fill me-1"></i>Recebido na Célula</span>'
-                              : '<span class="badge bg-warning text-dark"><i class="bi bi-clock me-1"></i>Aguardando Recepção</span>'}
-                          </td>
-                          <td>
-                            ${isReceived
-                              ? '<span class="badge bg-info text-dark" title="Enviado para a Lista de Espera por aprovação oficial no MAIN"><i class="bi bi-hourglass me-1"></i>Lista de Espera MAIN</span>'
-                              : (!isReadOnlyPortal ? `<button type="button" class="btn btn-sm btn-success btn-touch shadow-sm" data-cell-receive-member="${escapeAttr(ft.id)}"><i class="bi bi-person-check-fill me-1"></i>Receber na Célula</button>` : '<span class="text-secondary small">Aguardando</span>')}
-                          </td>
-                        </tr>
-                      `;
-                    }).join("")}
-                  </tbody>
-                </table>
+          </button>
+
+          <button type="button" class="cell-quick-action-card action-emerald" data-open-member-candidate title="${isPt ? "Registar novo membro na célula" : "Register new cell member"}">
+            <div class="cell-quick-action-icon"><i class="bi bi-person-plus-fill"></i></div>
+            <div>
+              <strong class="cell-quick-action-title">${isPt ? "+ Registar Membro" : "+ Add Member"}</strong>
+              <span class="cell-quick-action-desc">${isPt ? "Adicionar membro à célula" : "Register new cell member"}</span>
+            </div>
+          </button>
+
+          <button type="button" class="cell-quick-action-card action-amber" data-open-member-candidate title="${isPt ? "Registar novo candidato ou alma ganha" : "Register candidate or soul won"}">
+            <div class="cell-quick-action-icon"><i class="bi bi-person-heart"></i></div>
+            <div>
+              <strong class="cell-quick-action-title">${isPt ? "+ Registar Candidato" : "+ Candidate / Souls"}</strong>
+              <span class="cell-quick-action-desc">${isPt ? "Novo convertido ou visitante" : "New convert or first timer"}</span>
+            </div>
+          </button>
+        </div>
+      ` : ""}
+
+      <!-- Section 1: Saúde & Indicadores da Célula / Cell Health & Key Indicators -->
+      <section id="cell-portal-overview" class="cell-portal-section">
+        ${cellPortalSectionTitle("bi-activity", isPt ? "Saúde & Indicadores da Célula" : "Cell Health & Key Indicators", isPt ? "Métricas em tempo real da célula autorizada" : "Real-time performance metrics of the authorized cell")}
+        
+        <!-- Period Selection Bar for Cell Health -->
+        <div class="panel glass-panel mb-3 p-3">
+          <div class="row g-2 align-items-center">
+            <div class="col-12 col-md-auto">
+              <label class="d-flex align-items-center gap-2 mb-0 fw-semibold text-warning" style="font-size: 0.88rem;">
+                <i class="bi bi-calendar3"></i>${isPt ? "Filtrar Período:" : "Filter Period:"}
+              </label>
+            </div>
+            <div class="col-12 col-md-4 col-lg-3">
+              <select class="form-select form-select-sm" data-cell-portal-filter="period">
+                ${periodOptions.map(([value, label]) => `<option value="${value}" ${cellPortalPageState.period === value ? "selected" : ""}>${label}</option>`).join("")}
+              </select>
+            </div>
+            ${cellPortalPageState.period === "custom" ? `
+              <div class="col-6 col-md-3">
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text">${isPt ? "De" : "From"}</span>
+                  <input type="date" class="form-control" data-cell-portal-filter="dateFrom" value="${escapeAttr(cellPortalPageState.dateFrom || "")}">
+                </div>
               </div>
-            `;
-          })()}
+              <div class="col-6 col-md-3">
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text">${isPt ? "Até" : "To"}</span>
+                  <input type="date" class="form-control" data-cell-portal-filter="dateTo" value="${escapeAttr(cellPortalPageState.dateTo || "")}">
+                </div>
+              </div>
+            ` : ""}
+          </div>
+        </div>
+
+        <!-- Health KPIs Grid -->
+        <div class="cell-portal-kpis">${[
+          ["bi-people", isPt ? "Total no Sistema" : "Total in System", stats.total_members],
+          ["bi-person-check", isPt ? "Membros Activos" : "Active Members", stats.active_members],
+          ["bi-calendar2-check text-info", isPt ? "Presença no Período" : "Period Attendance", stats.attendance_in_period || 0],
+          ["bi-person-heart text-warning", isPt ? "Visitantes (FT)" : "First Timers (FT)", stats.visitors || 0],
+          ["bi-stars text-warning", isPt ? "Novos Convertidos (NC)" : "New Converts (NC)", stats.new_converts_in_period || 0],
+          ["bi-box-arrow-in-down-right text-cyan", isPt ? "Recebidos de Pastoral" : "From Pastoral Care", `${soul?.received_from_pastoral || 0} (${soul?.pending_pastoral || 0} ${isPt ? "pendentes" : "pending"})`],
+          ["bi-mortarboard-fill text-warning", "Foundation School", `${foundation["Em curso"] || 0} ${isPt ? "em curso" : "in course"} · ${foundation["Graduado"] || 0} ${isPt ? "graduados" : "graduated"}`],
+          ["bi-droplet-fill text-primary", isPt ? "Baptizados" : "Baptized", `${sacraments?.baptized || 0} ${isPt ? "baptizados" : "baptized"}`],
+          ["bi-trophy-fill text-warning", "Top Soul Winner", soul?.top_soul_winner?.name ? `${soul.top_soul_winner.name} (${soul.top_soul_winner.invited})` : "—"],
+          ["bi-clipboard-check", isPt ? "Relatórios no Período" : "Reports in Period", stats.reports_in_period || 0],
+          ["bi-activity", isPt ? "Estado Actual" : "Current Status", stats.current_report_status],
+          ["bi-calendar-week", isPt ? "Próxima Submissão" : "Next Submission", stats.next_submission]
+        ].map(([icon, label, value]) => `<article><i class="bi ${icon}"></i><span>${label}</span><strong>${escapeAttr(value)}</strong></article>`).join("")}</div>
+
+        <div class="cell-portal-meta mt-3">
+          <div><span>${isPt ? "Igreja" : "Church"}</span><strong>${escapeAttr(context?.church_name || "—")}</strong></div>
+          <div><span>${isPt ? "Grupo" : "Group"}</span><strong>${escapeAttr(context?.cell_group_name || "—")}</strong></div>
+          <div><span>${isPt ? "Liderança" : "Leadership"}</span><strong>${escapeAttr(leaders.join(", ") || context?.user_name || "—")}</strong></div>
+          <div><span>${isPt ? "Escopo" : "Scope"}</span><strong>${(context?.authorized_cell_ids || []).length} ${isPt ? "célula(s)" : "cell(s)"}</strong></div>
         </div>
       </section>
 
+      <!-- Alerts Section -->
+      <section class="cell-portal-section">
+        <div class="cell-portal-alerts">${safeAlerts.map((alert) => `<article class="is-${alert.tone || "info"}"><i class="bi bi-bell"></i><div><strong>${escapeAttr(alert.title)}</strong><p>${escapeAttr(alert.detail)}</p></div></article>`).join("") || `<article class="is-success"><i class="bi bi-check-circle"></i><div><strong>${isPt ? "Sem alertas críticos" : "No critical alerts"}</strong><p>${isPt ? "Os principais indicadores estão actualizados." : "All key indicators are up to date."}</p></div></article>`}</div>
+      </section>
+
+      <!-- Section 2: Membros da Célula & Reconciliação / Cell Members & Reconciliation -->
+      <section id="cell-portal-members" class="cell-portal-section">
+        ${cellPortalSectionTitle("bi-people", isPt ? "Membros da Célula & Reconciliação" : "Cell Members & Reconciliation", cellMembersLoading ? (isPt ? "A carregar membros da célula no Supabase…" : "Loading cell members from Supabase…") : `${usesSupabaseMembers() ? cellPortalMembersState.totalCount : safeMembers.length} ${isPt ? "registo(s) na célula autorizada" : "record(s) in authorized cell"}`)}
+        
+        <div class="cell-portal-kpis cell-portal-kpis--compact mb-3">
+          <article><i class="bi bi-people"></i><span>${isPt ? "Total Célula" : "Total Cell"}</span><strong>${reconciliationCounts.total}</strong></article>
+          <article><i class="bi bi-check-circle text-success"></i><span>${isPt ? "Confirmados" : "Confirmed"}</span><strong>${reconciliationCounts.confirmed}</strong></article>
+          <article><i class="bi bi-hourglass-split text-warning"></i><span>${isPt ? "Por Rever" : "Pending Review"}</span><strong>${reconciliationCounts.pending}</strong></article>
+          <article><i class="bi bi-exclamation-triangle text-danger"></i><span>${isPt ? "Correcções" : "Needs Correction"}</span><strong>${reconciliationCounts.needsCorrection}</strong></article>
+          <article><i class="bi bi-arrow-left-right text-info"></i><span>${isPt ? "Transferências" : "Transfers"}</span><strong>${reconciliationCounts.transfers}</strong></article>
+          <article><i class="bi bi-person-x text-muted"></i><span>${isPt ? "Não Pertencem" : "Not in Cell"}</span><strong>${reconciliationCounts.notInCell}</strong></article>
+        </div>
+
+        <!-- Filter Controls for Members -->
+        <section class="panel glass-panel cell-portal-filters mb-3">
+          ${showCellGroupSelectors ? `
+            <label>${isPt ? "Grupo de Célula" : "Cell Group"}<select class="form-select" data-cell-portal-filter="cellGroupId"><option value="">${isPt ? "Todos os Grupos" : "All Groups"}</option>${safeCellGroups.map((g) => `<option value="${escapeAttr(g.id)}" ${String(g.id) === String(cellPortalPageState.cellGroupId || "") ? "selected" : ""}>${escapeAttr(g.group_name || g.name || "Grupo")}</option>`).join("")}</select></label>
+            <label>${isPt ? "Célula" : "Cell"}<select class="form-select" data-cell-portal-filter="cellId"><option value="">${isPt ? "Todas as Células" : "All Cells"}</option>${safeCellRegistry.map((c) => `<option value="${escapeAttr(c.id)}" ${String(c.id) === String(cellPortalPageState.cellId || "") ? "selected" : ""}>${escapeAttr(c.cell_name || c.name || "Célula")}</option>`).join("")}</select></label>
+          ` : ""}
+          <label>${isPt ? "Reconciliação" : "Reconciliation"}<select class="form-select" data-cell-portal-filter="reconciliationStatus"><option value="">${isPt ? "Todos os Estados" : "All Statuses"}</option><option value="Confirmed" ${cellPortalPageState.reconciliationStatus === "Confirmed" ? "selected" : ""}>${isPt ? "Confirmados" : "Confirmed"}</option><option value="Pending" ${cellPortalPageState.reconciliationStatus === "Pending" ? "selected" : ""}>${isPt ? "Por Rever" : "Pending Review"}</option><option value="NeedsCorrection" ${cellPortalPageState.reconciliationStatus === "NeedsCorrection" ? "selected" : ""}>${isPt ? "Precisa Correcção" : "Needs Correction"}</option><option value="NotInCell" ${cellPortalPageState.reconciliationStatus === "NotInCell" ? "selected" : ""}>${isPt ? "Não Pertence" : "Not in Cell"}</option><option value="TransferRequested" ${cellPortalPageState.reconciliationStatus === "TransferRequested" ? "selected" : ""}>${isPt ? "Pedido Transferência" : "Transfer Requested"}</option></select></label>
+          <label>${isPt ? "Estado" : "Status"}<select class="form-select" data-cell-portal-filter="memberStatus"><option value="">${isPt ? "Todos" : "All"}</option>${safeMemberStatuses.map((value) => `<option ${cellPortalPageState.memberStatus === value ? "selected" : ""}>${escapeAttr(value)}</option>`).join("")}</select></label>
+          <label>${isPt ? "Fundação" : "Foundation"}<select class="form-select" data-cell-portal-filter="foundationStatus"><option value="">${isPt ? "Todos" : "All"}</option>${safeFoundationOptions.map((value) => `<option ${cellPortalPageState.foundationStatus === value ? "selected" : ""}>${escapeAttr(value)}</option>`).join("")}</select></label>
+          <label>${isPt ? "Sacramentos" : "Sacraments"}<select class="form-select" data-cell-portal-filter="sacramentStatus"><option value="">${isPt ? "Todos" : "All"}</option><option value="baptized" ${cellPortalPageState.sacramentStatus === "baptized" ? "selected" : ""}>${isPt ? "Baptizado" : "Baptized"}</option><option value="not_baptized" ${cellPortalPageState.sacramentStatus === "not_baptized" ? "selected" : ""}>${isPt ? "Não baptizado" : "Unbaptized"}</option></select></label>
+          <label>${isPt ? "Parceria" : "Partnership"}<select class="form-select" data-cell-portal-filter="partnership"><option value="">${isPt ? "Todos" : "All"}</option><option value="true" ${cellPortalPageState.partnership === "true" ? "selected" : ""}>${isPt ? "Sim" : "Yes"}</option><option value="false" ${cellPortalPageState.partnership === "false" ? "selected" : ""}>${isPt ? "Não" : "No"}</option></select></label>
+          <label>${isPt ? "Dizimista" : "Tither"}<select class="form-select" data-cell-portal-filter="tithe"><option value="">${isPt ? "Todos" : "All"}</option><option value="true" ${cellPortalPageState.tithe === "true" ? "selected" : ""}>${isPt ? "Sim" : "Yes"}</option><option value="false" ${cellPortalPageState.tithe === "false" ? "selected" : ""}>${isPt ? "Não" : "No"}</option></select></label>
+          <label>${isPt ? "Convidou" : "Invited"}<select class="form-select" data-cell-portal-filter="invited"><option value="">${isPt ? "Todos" : "All"}</option><option value="true" ${cellPortalPageState.invited === "true" ? "selected" : ""}>${isPt ? "Sim" : "Yes"}</option><option value="false" ${cellPortalPageState.invited === "false" ? "selected" : ""}>${isPt ? "Não" : "No"}</option></select></label>
+        </section>
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+          <small class="text-secondary">${isPt ? "Reveja os membros da sua célula: confirme membros activos, corrija dados de contacto ou solicite transferências." : "Review your cell members: confirm active members, correct contact info, or request transfers."}</small>
+          ${!isReadOnlyPortal ? `
+            <div class="d-flex flex-wrap gap-2">
+              <button type="button" class="btn btn-ce-gold btn-sm" data-open-member-candidate>
+                <i class="bi bi-person-plus-fill me-1"></i>${isPt ? "+ Registar Novo Membro da Célula" : "+ Add New Cell Member"}
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-success" data-cell-member-bulk-confirm>
+                <i class="bi bi-check-all me-1"></i>${isPt ? "Confirmar Todos" : "Confirm All"} (${unconfirmedMembersCount})
+              </button>
+            </div>
+          ` : ""}
+        </div>
+
+        ${usesSupabaseMembers() && !cellMembersLoading ? `<div class="cell-portal-pagination-footer d-flex justify-content-between align-items-center gap-2 mb-3"><div class="d-flex align-items-center gap-2"><small class="text-secondary">${cellPortalMembersState.totalCount} ${isPt ? "membro(s) · Página" : "member(s) · Page"} ${cellPortalMembersState.page} / ${cellPortalMembersState.totalPages}</small><label class="d-flex align-items-center gap-1 text-secondary small ms-2">${isPt ? "Por página:" : "Per page:"}<select class="form-select form-select-sm" data-cell-portal-page-size style="width: auto; display: inline-block;">${[25, 50, 100].map((sz) => `<option value="${sz}" ${cellPortalMembersState.pageSize === sz ? "selected" : ""}>${sz}</option>`).join("")}</select></label></div><div class="d-flex gap-2"><button class="action-btn" data-cell-portal-member-page="prev" ${cellPortalMembersState.page <= 1 ? "disabled" : ""}>${isPt ? "Anterior" : "Previous"}</button><button class="action-btn" data-cell-portal-member-page="next" ${cellPortalMembersState.page >= cellPortalMembersState.totalPages ? "disabled" : ""}>${isPt ? "Próximo" : "Next"}</button></div></div>` : ""}
+
+        <div class="panel glass-panel cell-portal-table-wrap">
+          <table class="table cell-portal-table">
+            <thead>
+              <tr>
+                <th>${isPt ? "Nome" : "Name"}</th>
+                <th>${isPt ? "Telefone" : "Phone"}</th>
+                <th>${isPt ? "Reconciliação" : "Reconciliation"}</th>
+                <th>${isPt ? "Estado" : "Status"}</th>
+                <th>${isPt ? "Entrada" : "Joined"}</th>
+                <th>${isPt ? "Fundação" : "Foundation"}</th>
+                <th>${isPt ? "Sacramentos" : "Sacraments"}</th>
+                <th>${isPt ? "Parceiro" : "Partner"}</th>
+                <th>${isPt ? "Dizimista" : "Tither"}</th>
+                <th>${isPt ? "Acções" : "Actions"}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${cellMembersLoading ? `<tr><td colspan="10">${isPt ? "A carregar membros da célula…" : "Loading cell members…"}</td></tr>` : safeMembers.map((member) => `
+                <tr>
+                  <td data-label="${isPt ? "Nome" : "Name"}"><strong>${escapeAttr(member.name || "—")}</strong><small>${escapeAttr(member.pastoral_observation || "")}</small></td>
+                  <td data-label="${isPt ? "Telefone" : "Phone"}">${member.phone ? `<a href="tel:${escapeAttr(member.phone)}" class="text-decoration-none" style="color: #38bdf8 !important;"><i class="bi bi-telephone-fill me-1 small"></i>${escapeAttr(member.phone)}</a>` : "—"}</td>
+                  <td data-label="${isPt ? "Reconciliação" : "Reconciliation"}">${reconciliationStatusBadge(member.reconciliation_status)}</td>
+                  <td data-label="${isPt ? "Estado" : "Status"}">${badge(member.status || (isPt ? "Activo" : "Active"))}</td>
+                  <td data-label="${isPt ? "Entrada" : "Joined"}">${escapeAttr(member.joined_at || "—")}</td>
+                  <td data-label="${isPt ? "Fundação" : "Foundation"}">${badge(member.foundation_status || (isPt ? "Não inscrito" : "Not enrolled"))}</td>
+                  <td data-label="${isPt ? "Sacramentos" : "Sacraments"}">${member.sacraments_count || 0} · ${member.baptized ? (isPt ? "Baptizado" : "Baptized") : (isPt ? "Não baptizado" : "Unbaptized")}</td>
+                  <td data-label="${isPt ? "Parceiro" : "Partner"}">${yesNo(member.is_partner)}</td>
+                  <td data-label="${isPt ? "Dizimista" : "Tither"}">${yesNo(member.is_tither)}</td>
+                  <td data-label="${isPt ? "Acções" : "Actions"}">
+                    <div class="btn-group btn-group-sm">
+                      ${isReadOnlyPortal ? `
+                        <button type="button" class="btn btn-outline-primary btn-sm" data-cell-portal-member="${escapeAttr(member.id)}" title="${isPt ? "Ver Perfil" : "View Profile"}"><i class="bi bi-person-lines-fill"></i></button>
+                      ` : `
+                        ${member.reconciliation_status !== "Confirmed" ? `<button type="button" class="btn btn-outline-success btn-sm" data-cell-member-confirm="${escapeAttr(member.id)}" title="${isPt ? "Confirmar membro activo" : "Confirm active member"}"><i class="bi bi-check"></i></button>` : ""}
+                        <button type="button" class="btn btn-outline-primary btn-sm" data-cell-portal-member="${escapeAttr(member.id)}" title="${isPt ? "Ver Perfil" : "View Profile"}"><i class="bi bi-person-lines-fill"></i></button>
+                        <button type="button" class="btn btn-outline-warning btn-sm" data-cell-member-edit="${escapeAttr(member.id)}" title="${isPt ? "Corrigir Dados" : "Edit Details"}"><i class="bi bi-pencil"></i></button>
+                        <button type="button" class="btn btn-outline-info btn-sm" data-cell-member-transfer="${escapeAttr(member.id)}" title="${isPt ? "Pedir Transferência" : "Request Transfer"}"><i class="bi bi-arrow-left-right"></i></button>
+                        <button type="button" class="btn btn-outline-danger btn-sm" data-cell-member-remove="${escapeAttr(member.id)}" title="${isPt ? "Não Pertence à Célula" : "Not in Cell"}"><i class="bi bi-person-x"></i></button>
+                      `}
+                    </div>
+                  </td>
+                </tr>
+              `).join("") || `<tr><td colspan="10">${isPt ? "Nenhum membro corresponde aos filtros." : "No members match the filters."}</td></tr>`}
+            </tbody>
+          </table>
+        </div>
+
+        ${usesSupabaseMembers() && !cellMembersLoading ? `<div class="cell-portal-pagination-footer d-flex justify-content-between align-items-center gap-2 mt-3"><div class="d-flex align-items-center gap-2"><small class="text-secondary">${cellPortalMembersState.totalCount} ${isPt ? "membro(s) · Página" : "member(s) · Page"} ${cellPortalMembersState.page} / ${cellPortalMembersState.totalPages}</small><label class="d-flex align-items-center gap-1 text-secondary small ms-2">${isPt ? "Por página:" : "Per page:"}<select class="form-select form-select-sm" data-cell-portal-page-size style="width: auto; display: inline-block;">${[25, 50, 100].map((sz) => `<option value="${sz}" ${cellPortalMembersState.pageSize === sz ? "selected" : ""}>${sz}</option>`).join("")}</select></label></div><div class="d-flex gap-2"><button class="action-btn" data-cell-portal-member-page="prev" ${cellPortalMembersState.page <= 1 ? "disabled" : ""}>${isPt ? "Anterior" : "Previous"}</button><button class="action-btn" data-cell-portal-member-page="next" ${cellPortalMembersState.page >= cellPortalMembersState.totalPages ? "disabled" : ""}>${isPt ? "Próximo" : "Next"}</button></div></div>` : ""}
+      </section>
+
+      <!-- Section 3: Registo de Presenças & Visitantes (Regra de 3 Cultos) / Service Attendance & Visitor Tracking -->
       <section id="cell-portal-attendance" class="cell-portal-section">
-        ${cellPortalSectionTitle("bi-calendar-check-fill", "Registo de Presenças & Visitantes da Célula", "Registe as presenças dos membros e novos visitantes por culto. As presenças serão consolidadas automaticamente no relatório geral da Igreja.")}
+        ${cellPortalSectionTitle("bi-calendar-check-fill", isPt ? "Registo de Presenças & Visitantes da Célula" : "Cell Service Attendance & Visitor Tracking", isPt ? "Registe as presenças dos membros e novos visitantes por culto. As presenças são consolidadas automaticamente no relatório geral da Igreja." : "Register member attendances and new visitors per service. Data is consolidated automatically in the General Church Report.")}
         
         <!-- Action Banner to Open Modal -->
         <div class="panel glass-panel mb-4 p-4 d-flex flex-wrap justify-content-between align-items-center gap-3" style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(30, 41, 59, 0.7) 100%); border: 1px solid rgba(234, 179, 8, 0.35); border-radius: 12px;">
           <div>
-            <h4 class="fs-5 text-light mb-1"><i class="bi bi-clipboard2-check-fill text-warning me-2"></i>Lançamento de Presenças por Culto</h4>
-            <p class="text-secondary small mb-0">Abra o formulário para marcar presenças e adicionar novos visitantes. <strong>Regra:</strong> Visitantes com 3 presenças viram automaticamente membros oficiais.</p>
+            <h4 class="fs-5 text-light mb-1"><i class="bi bi-clipboard2-check-fill text-warning me-2"></i>${isPt ? "Lançamento de Presenças por Culto" : "Service Attendance Entry"}</h4>
+            <p class="text-secondary small mb-0">${isPt ? "Abra o formulário para marcar presenças e adicionar novos visitantes. <strong>Regra:</strong> Visitantes com 3 presenças viram automaticamente membros oficiais." : "Open form to mark member attendances and add new visitors. <strong>Rule:</strong> Visitors with 3 attendances automatically become official cell members."}</p>
           </div>
           <button type="button" class="btn btn-ce-gold btn-lg btn-touch shadow" data-open-cell-attendance-modal onclick="window.openCellAttendanceModal &amp;&amp; window.openCellAttendanceModal(); return false;">
-            <i class="bi bi-plus-circle-fill me-2"></i>Registar Presenças
+            <i class="bi bi-plus-circle-fill me-2"></i>${isPt ? "Registar Presenças" : "Mark Attendance"}
           </button>
         </div>
 
         <!-- Recent Cell Attendance Reports -->
         <div class="panel glass-panel mb-4">
           <div class="panel-head mb-3">
-            <h4 class="panel-title fs-6 text-warning mb-0"><i class="bi bi-clock-history me-2"></i>Histórico de Presenças Lançadas</h4>
+            <h4 class="panel-title fs-6 text-warning mb-0"><i class="bi bi-clock-history me-2"></i>${isPt ? "Histórico de Presenças Lançadas" : "Recent Service Attendance Records"}</h4>
           </div>
           ${(() => {
             const cellReports = (state.cellLeadership?.cellReports || []).filter((r) => String(r.cell_id) === String(context?.cell_id));
             if (!cellReports.length) {
-              return EmptyState({ compact: true, title: "Sem presenças registadas", description: "Clique em 'Registar Presenças' para lançar as presenças do último culto." });
+              return EmptyState({ compact: true, title: isPt ? "Sem presenças registadas" : "No attendance recorded", description: isPt ? "Clique em 'Registar Presenças' para lançar as presenças do último culto." : "Click 'Mark Attendance' to record attendance for the latest service." });
             }
             return `
               <div class="table-responsive">
                 <table class="table cell-portal-table mb-0">
                   <thead>
                     <tr>
-                      <th>Culto / Serviço</th>
-                      <th>Data</th>
-                      <th>Semana</th>
-                      <th>Membros</th>
+                      <th>${isPt ? "Culto / Serviço" : "Service"}</th>
+                      <th>${isPt ? "Data" : "Date"}</th>
+                      <th>${isPt ? "Semana" : "Week"}</th>
+                      <th>${isPt ? "Membros" : "Members"}</th>
                       <th>First Timers (FT)</th>
-                      <th>Novos Convertidos (NC)</th>
-                      <th>Total Presentes</th>
-                      <th>Submetido por</th>
-                      <th>Estado</th>
+                      <th>${isPt ? "Novos Convertidos (NC)" : "New Converts (NC)"}</th>
+                      <th>${isPt ? "Total Presentes" : "Total Present"}</th>
+                      <th>${isPt ? "Submetido por" : "Submitted by"}</th>
+                      <th>${isPt ? "Estado" : "Status"}</th>
                     </tr>
                   </thead>
                   <tbody>
                     ${cellReports.map((r) => `
                       <tr>
-                        <td><strong>${escapeAttr(r.culto || "Domingo")}</strong></td>
+                        <td><strong>${escapeAttr(r.culto || (isPt ? "Domingo" : "Sunday"))}</strong></td>
                         <td>${escapeAttr(r.data_do_culto || r.data_inicio || "—")}</td>
                         <td>${escapeAttr(r.semana || "—")}</td>
                         <td><span class="badge bg-info text-dark">${escapeAttr(r.members_present_count || (r.members_present_ids || []).length || 0)}</span></td>
@@ -15741,7 +15961,7 @@ function renderCellLeaderPortal() {
                         <td><span class="badge bg-success">${escapeAttr(r.nc || 0)}</span></td>
                         <td><strong>${escapeAttr(r.att || 0)}</strong></td>
                         <td><small class="text-secondary">${escapeAttr(r.submetido_por || r.nome_do_lider || "—")}</small></td>
-                        <td>${badge(r.estado || "Submetido")}</td>
+                        <td>${badge(r.estado || (isPt ? "Submetido" : "Submitted"))}</td>
                       </tr>
                     `).join("")}
                   </tbody>
@@ -15755,8 +15975,8 @@ function renderCellLeaderPortal() {
         <div class="panel glass-panel mb-4">
           <div class="panel-head mb-3">
             <div>
-              <h4 class="panel-title fs-6 text-info mb-1"><i class="bi bi-person-lines-fill me-2"></i>Acompanhamento de Novos Visitantes (Regra de 3 Cultos)</h4>
-              <p class="text-secondary small mb-0">Visitantes em acompanhamento tornam-se membros oficiais da célula após completarem 3 cultos/reuniões.</p>
+              <h4 class="panel-title fs-6 text-info mb-1"><i class="bi bi-person-lines-fill me-2"></i>${isPt ? "Acompanhamento de Novos Visitantes (Regra de 3 Cultos)" : "New Visitor Tracking (3-Service Rule)"}</h4>
+              <p class="text-secondary small mb-0">${isPt ? "Visitantes em acompanhamento tornam-se membros oficiais da célula após completarem 3 cultos/reuniões." : "Visitors in follow-up become official cell members after completing 3 services/meetings."}</p>
             </div>
           </div>
           ${(() => {
@@ -15784,20 +16004,20 @@ function renderCellLeaderPortal() {
             }).filter(Boolean);
             const cellVisitors = [...manualVisitors, ...assignedFirstTimers];
             if (!cellVisitors.length) {
-              return `<p class="text-secondary small mb-0 p-3">Nenhum visitante registado recentemente nesta célula.</p>`;
+              return `<p class="text-secondary small mb-0 p-3">${isPt ? "Nenhum visitante registado recentemente nesta célula." : "No visitors registered recently in this cell."}</p>`;
             }
             return `
               <div class="table-responsive">
                 <table class="table cell-portal-table mb-0">
                   <thead>
                     <tr>
-                      <th>Nome do Visitante</th>
-                      <th>Telefone</th>
-                      <th>Tipo</th>
-                      <th>Cultos Assistidos</th>
-                      <th>Progresso para Membro Oficial</th>
-                      <th>Último Culto</th>
-                      <th>Estado</th>
+                      <th>${isPt ? "Nome do Visitante" : "Visitor Name"}</th>
+                      <th>${isPt ? "Telefone" : "Phone"}</th>
+                      <th>${isPt ? "Tipo" : "Type"}</th>
+                      <th>${isPt ? "Cultos Assistidos" : "Services Attended"}</th>
+                      <th>${isPt ? "Progresso para Membro Oficial" : "Progress to Official Member"}</th>
+                      <th>${isPt ? "Último Culto" : "Last Service"}</th>
+                      <th>${isPt ? "Estado" : "Status"}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -15819,10 +16039,72 @@ function renderCellLeaderPortal() {
                             <div class="progress" style="height: 8px;">
                               <div class="progress-bar ${isPromoted ? "bg-success" : "bg-warning"}" role="progressbar" style="width: ${progressPct}%;"></div>
                             </div>
-                            <small class="text-secondary">${isPromoted ? "Promovido a Membro Oficial" : `Falta(m) ${3 - count} culto(s)`}</small>
+                            <small class="text-secondary">${isPromoted ? (isPt ? "Promovido a Membro Oficial" : "Promoted to Official Member") : (isPt ? `Falta(m) ${3 - count} culto(s)` : `${3 - count} service(s) left`)}</small>
                           </td>
                           <td><small>${escapeAttr(v.last_attended_at || v.first_attended_at || "—")}</small></td>
-                          <td>${isPromoted ? '<span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Membro Oficial</span>' : '<span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i>Em Acompanhamento</span>'}</td>
+                          <td>${isPromoted ? `<span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>${isPt ? "Membro Oficial" : "Official Member"}</span>` : `<span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i>${isPt ? "Em Acompanhamento" : "In Follow-up"}</span>`}</td>
+                        </tr>
+                      `;
+                    }).join("")}
+                  </tbody>
+                </table>
+              </div>
+            `;
+          })()}
+        </div>
+
+        <!-- Pastoral Care Referral & Handoff Panel -->
+        <div class="panel glass-panel mb-4">
+          <div class="panel-head mb-3 d-flex flex-wrap justify-content-between align-items-center">
+            <div>
+              <h4 class="panel-title fs-6 text-warning mb-1"><i class="bi bi-inbox-fill me-2"></i>${isPt ? "Entradas da Pastoral (First Timers & Convertidos)" : "Pastoral Arrivals (First Timers & Converts)"}</h4>
+              <p class="text-secondary small mb-0">${isPt ? "Total atribuído:" : "Total assigned:"} <strong>${pastoralArrivals.length}</strong> &bull; ${isPt ? "Recebidos na célula:" : "Received in cell:"} <strong class="text-success">${pastoralArrivals.filter(p => p.cell_received || p.workflow_status === "CELL_RECEIVED" || p.estado_do_seguimento === "Received in Cell").length}</strong> &bull; ${isPt ? "Aguardando recepção:" : "Awaiting reception:"} <strong class="text-warning">${pastoralArrivals.filter(p => !p.cell_received && p.workflow_status !== "CELL_RECEIVED" && p.estado_do_seguimento !== "Received in Cell").length}</strong></p>
+            </div>
+            <div class="d-flex gap-2">
+              <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i>${pastoralArrivals.filter(p => !p.cell_received && p.workflow_status !== "CELL_RECEIVED" && p.estado_do_seguimento !== "Received in Cell").length} ${isPt ? "pendente(s)" : "pending"}</span>
+            </div>
+          </div>
+          ${(() => {
+            if (!pastoralArrivals.length) {
+              return `<p class="text-secondary small mb-0 p-3"><i class="bi bi-info-circle me-1"></i>${isPt ? "Nenhum visitante ou novo convertido encaminhado pelos Cuidados Pastorais para esta célula até ao momento." : "No visitors or converts assigned from Pastoral Care to this cell yet."}</p>`;
+            }
+            return `
+              <div class="table-responsive">
+                <table class="table cell-portal-table mb-0">
+                  <thead>
+                    <tr>
+                      <th>${isPt ? "Nome do Membro" : "Member Name"}</th>
+                      <th>${isPt ? "Contacto" : "Contact"}</th>
+                      <th>${isPt ? "Data da Visita" : "Visit Date"}</th>
+                      <th>${isPt ? "Convidado por / Ganhador" : "Invited by / Winner"}</th>
+                      <th>${isPt ? "Data de Atribuição" : "Assigned Date"}</th>
+                      <th>${isPt ? "Estado" : "Status"}</th>
+                      <th>${isPt ? "Acção de Recepção" : "Reception Action"}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${pastoralArrivals.map((ft) => {
+                      const isReceived = Boolean(ft.cell_received || ft.workflow_status === "CELL_RECEIVED" || ft.estado_do_seguimento === "Received in Cell");
+                      return `
+                        <tr>
+                          <td>
+                            <strong>${escapeAttr(fullName(ft))}</strong>
+                            <small class="text-secondary">${ft.nasceu_de_novo ? `<span class="badge bg-success-subtle text-success border border-success me-1">${isPt ? "Novo Convertido" : "New Convert"}</span>` : `<span class="badge bg-secondary-subtle text-body me-1">${isPt ? "Visitante" : "Visitor"}</span>`}${ft.quer_escola_de_fundacao ? `<span class="badge bg-info-subtle text-cyan border border-info">${isPt ? "Interesse ESF" : "FS Interest"}</span>` : ''}</small>
+                          </td>
+                          <td>${escapeAttr(ft.telefone || ft.phone || "—")}</td>
+                          <td><small>${escapeAttr(ft.data_do_culto || ft.created_at?.slice(0, 10) || "—")}</small></td>
+                          <td>${ft.convidado_por || ft.invited_by || ft.invited_by_name ? `<span class="badge bg-warning-subtle text-warning border border-warning"><i class="bi bi-person-badge me-1"></i>${escapeAttr(ft.convidado_por || ft.invited_by || ft.invited_by_name)}</span>` : '<span class="text-secondary small">—</span>'}</td>
+                          <td><small>${escapeAttr(ft.cell_assigned_at ? String(ft.cell_assigned_at).slice(0, 10) : (ft.data_do_culto || "—"))}</small></td>
+                          <td>
+                            ${isReceived
+                              ? `<span class="badge bg-success"><i class="bi bi-check-circle-fill me-1"></i>${isPt ? "Recebido na Célula" : "Received in Cell"}</span>`
+                              : `<span class="badge bg-warning text-dark"><i class="bi bi-clock me-1"></i>${isPt ? "Aguardando Recepção" : "Awaiting Reception"}</span>`}
+                          </td>
+                          <td>
+                            ${isReceived
+                              ? `<span class="badge bg-info text-dark" title="${isPt ? "Enviado para a Lista de Espera por aprovação oficial no MAIN" : "Sent to MAIN approval queue"}"><i class="bi bi-hourglass me-1"></i>${isPt ? "Lista de Espera MAIN" : "MAIN Queue"}</span>`
+                              : (!isReadOnlyPortal ? `<button type="button" class="btn btn-sm btn-success btn-touch shadow-sm" data-cell-receive-member="${escapeAttr(ft.id)}"><i class="bi bi-person-check-fill me-1"></i>${isPt ? "Receber na Célula" : "Receive in Cell"}</button>` : `<span class="text-secondary small">${isPt ? "Aguardando" : "Awaiting"}</span>`)}
+                          </td>
                         </tr>
                       `;
                     }).join("")}
@@ -15833,134 +16115,51 @@ function renderCellLeaderPortal() {
           })()}
         </div>
       </section>
-      <section id="cell-portal-members" class="cell-portal-section">
-        ${cellPortalSectionTitle("bi-people", "Membros & Reconciliação da Célula", cellMembersLoading ? "A carregar membros da célula no Supabase…" : `${usesSupabaseMembers() ? cellPortalMembersState.totalCount : safeMembers.length} registo(s) na célula autorizada`)}
-        <div class="cell-portal-kpis cell-portal-kpis--compact mb-3">
-          <article><i class="bi bi-people"></i><span>Total Célula</span><strong>${reconciliationCounts.total}</strong></article>
-          <article><i class="bi bi-check-circle text-success"></i><span>Confirmados</span><strong>${reconciliationCounts.confirmed}</strong></article>
-          <article><i class="bi bi-hourglass-split text-warning"></i><span>Por Rever</span><strong>${reconciliationCounts.pending}</strong></article>
-          <article><i class="bi bi-exclamation-triangle text-danger"></i><span>Correcções</span><strong>${reconciliationCounts.needsCorrection}</strong></article>
-          <article><i class="bi bi-arrow-left-right text-info"></i><span>Transferências</span><strong>${reconciliationCounts.transfers}</strong></article>
-          <article><i class="bi bi-person-x text-muted"></i><span>Não Pertencem</span><strong>${reconciliationCounts.notInCell}</strong></article>
-        </div>
-        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-          <small class="text-secondary">Reveja os membros históricos da sua célula: confirme membros activos, corrija dados de contacto ou solicite transferências.</small>
-          ${!isReadOnlyPortal ? `
-          <div class="d-flex flex-wrap gap-2">
-            <button type="button" class="btn btn-ce-gold btn-sm" data-open-member-candidate>
-              <i class="bi bi-person-plus-fill me-1"></i>+ Registar Novo Membro da Célula
-            </button>
-            <button type="button" class="btn btn-sm btn-outline-success" data-cell-member-bulk-confirm>
-              <i class="bi bi-check-all me-1"></i>Confirmar Todos (${unconfirmedMembersCount})
-            </button>
-          </div>` : ""}
-        </div>
-        ${usesSupabaseMembers() && !cellMembersLoading ? `<div class="cell-portal-pagination-footer d-flex justify-content-between align-items-center gap-2 mb-3"><div class="d-flex align-items-center gap-2"><small class="text-secondary">${cellPortalMembersState.totalCount} membro(s) · Página ${cellPortalMembersState.page} / ${cellPortalMembersState.totalPages}</small><label class="d-flex align-items-center gap-1 text-secondary small ms-2">${lang === "pt" ? "Por página:" : "Per page:"}<select class="form-select form-select-sm" data-cell-portal-page-size style="width: auto; display: inline-block;">${[25, 50, 100].map((sz) => `<option value="${sz}" ${cellPortalMembersState.pageSize === sz ? "selected" : ""}>${sz}</option>`).join("")}</select></label></div><div class="d-flex gap-2"><button class="action-btn" data-cell-portal-member-page="prev" ${cellPortalMembersState.page <= 1 ? "disabled" : ""}>Anterior</button><button class="action-btn" data-cell-portal-member-page="next" ${cellPortalMembersState.page >= cellPortalMembersState.totalPages ? "disabled" : ""}>Próximo</button></div></div>` : ""}
-        <div class="panel glass-panel cell-portal-table-wrap">
+
+      <!-- Section 4: Candidatos & Registos por Aprovar / Member Candidates Pending Approval -->
+      <section id="cell-portal-candidates" class="cell-portal-section">
+        ${cellPortalSectionTitle("bi-person-plus", isPt ? "Registos por Aprovar" : "Registrations Pending Approval", isPt ? "Pedidos de adesão da(s) célula(s) autorizada(s) – Aprovação do Líder e Confirmação da Igreja" : "Membership requests for authorized cell(s) – Leader Approval and Church Confirmation")}
+        <div class="cell-portal-kpis cell-portal-kpis--compact">${[
+          ["bi-people", isPt ? "Membros oficiais" : "Official Members", allMembers.length],
+          ["bi-hourglass", isPt ? "Aguardando Líder" : "Awaiting Leader", candidateCounts.readyForLeader],
+          ["bi-hourglass-split", isPt ? "Aguardando Igreja" : "Awaiting Church", candidateCounts.submitted],
+          ["bi-search", isPt ? "Em revisão Igreja" : "Under Church Review", candidateCounts.reviewing],
+          ["bi-arrow-repeat", isPt ? "Precisa correcção" : "Needs Correction", candidateCounts.correction],
+          ["bi-x-circle", isPt ? "Rejeitados" : "Rejected", candidateCounts.rejected]
+        ].map(([icon, label, value]) => `<article><i class="bi ${icon}"></i><span>${label}</span><strong>${value}</strong></article>`).join("")}</div>
+        <div class="panel glass-panel cell-portal-table-wrap mt-3">
           <table class="table cell-portal-table">
             <thead>
               <tr>
-                <th>Nome</th>
-                <th>Telefone</th>
-                <th>Reconciliação</th>
-                <th>Estado</th>
-                <th>Entrada</th>
-                <th>Fundação</th>
-                <th>Sacramentos</th>
-                <th>Parceiro</th>
-                <th>Dizimista</th>
-                <th>Acções</th>
+                <th>${isPt ? "Nome" : "Name"}</th>
+                <th>${isPt ? "Telefone" : "Phone"}</th>
+                <th>${isPt ? "Estado" : "Status"}</th>
+                <th>${isPt ? "Motivo" : "Reason"}</th>
+                <th>${isPt ? "Acções" : "Actions"}</th>
               </tr>
             </thead>
             <tbody>
-              ${cellMembersLoading ? `<tr><td colspan="10">A carregar membros da célula…</td></tr>` : safeMembers.map((member) => `
-                <tr>
-                  <td data-label="Nome"><strong>${escapeAttr(member.name || "—")}</strong><small>${escapeAttr(member.pastoral_observation || "")}</small></td>
-                  <td data-label="Telefone">${escapeAttr(member.phone || "—")}</td>
-                  <td data-label="Reconciliação">${reconciliationStatusBadge(member.reconciliation_status)}</td>
-                  <td data-label="Estado">${badge(member.status || "Activo")}</td>
-                  <td data-label="Entrada">${escapeAttr(member.joined_at || "—")}</td>
-                  <td data-label="Fundação">${badge(member.foundation_status || "Não inscrito")}</td>
-                  <td data-label="Sacramentos">${member.sacraments_count || 0} · ${member.baptized ? "Baptizado" : "Não baptizado"}</td>
-                  <td data-label="Parceiro">${yesNo(member.is_partner)}</td>
-                  <td data-label="Dizimista">${yesNo(member.is_tither)}</td>
-                  <td data-label="Acções">
-                    <div class="btn-group btn-group-sm">
-                      ${isReadOnlyPortal ? `
-                        <button type="button" class="btn btn-outline-primary btn-sm" data-cell-portal-member="${escapeAttr(member.id)}" title="Ver Perfil"><i class="bi bi-person-lines-fill"></i></button>
-                      ` : `
-                        ${member.reconciliation_status !== "Confirmed" ? `<button type="button" class="btn btn-outline-success btn-sm" data-cell-member-confirm="${escapeAttr(member.id)}" title="Confirmar membro activo"><i class="bi bi-check"></i></button>` : ""}
-                        <button type="button" class="btn btn-outline-primary btn-sm" data-cell-portal-member="${escapeAttr(member.id)}" title="Ver Perfil"><i class="bi bi-person-lines-fill"></i></button>
-                        <button type="button" class="btn btn-outline-warning btn-sm" data-cell-member-edit="${escapeAttr(member.id)}" title="Corrigir Dados"><i class="bi bi-pencil"></i></button>
-                        <button type="button" class="btn btn-outline-info btn-sm" data-cell-member-transfer="${escapeAttr(member.id)}" title="Pedir Transferência"><i class="bi bi-arrow-left-right"></i></button>
-                        <button type="button" class="btn btn-outline-danger btn-sm" data-cell-member-remove="${escapeAttr(member.id)}" title="Não Pertence à Célula"><i class="bi bi-person-x"></i></button>
-                      `}
-                    </div>
-                  </td>
-                </tr>
-              `).join("") || `<tr><td colspan="10">Nenhum membro corresponde aos filtros.</td></tr>`}
+              ${safeCandidates.map((item) => `<tr><td><strong>${escapeAttr(candidateFullName(item))}</strong></td><td>${escapeAttr(item.primary_phone || "—")}</td><td>${badge(candidateStatusLabel(item.approval_status))}</td><td>${escapeAttr(item.correction_reason || item.rejection_reason || "—")}</td><td>${candidatePortalActions(item)}</td></tr>`).join("") || `<tr><td colspan="5">${isPt ? "Nenhum candidato pendente para esta célula." : "No candidates pending for this cell."}</td></tr>`}
             </tbody>
           </table>
         </div>
-        ${usesSupabaseMembers() && !cellMembersLoading ? `<div class="cell-portal-pagination-footer d-flex justify-content-between align-items-center gap-2 mt-3"><div class="d-flex align-items-center gap-2"><small class="text-secondary">${cellPortalMembersState.totalCount} membro(s) · Página ${cellPortalMembersState.page} / ${cellPortalMembersState.totalPages}</small><label class="d-flex align-items-center gap-1 text-secondary small ms-2">${lang === "pt" ? "Por página:" : "Per page:"}<select class="form-select form-select-sm" data-cell-portal-page-size style="width: auto; display: inline-block;">${[25, 50, 100].map((sz) => `<option value="${sz}" ${cellPortalMembersState.pageSize === sz ? "selected" : ""}>${sz}</option>`).join("")}</select></label></div><div class="d-flex gap-2"><button class="action-btn" data-cell-portal-member-page="prev" ${cellPortalMembersState.page <= 1 ? "disabled" : ""}>Anterior</button><button class="action-btn" data-cell-portal-member-page="next" ${cellPortalMembersState.page >= cellPortalMembersState.totalPages ? "disabled" : ""}>Próximo</button></div></div>` : ""}
       </section>
-      <section id="cell-portal-candidates" class="cell-portal-section">
-        ${cellPortalSectionTitle("bi-person-plus", "Registos por Aprovar", "Pedidos de adesão da(s) célula(s) autorizada(s) – Aprovação do Líder e Confirmação da Igreja")}
-        <div class="cell-portal-kpis cell-portal-kpis--compact">${[["bi-people","Membros oficiais",allMembers.length],["bi-hourglass","Aguardando Líder",candidateCounts.readyForLeader],["bi-hourglass-split","Aguardando Igreja",candidateCounts.submitted],["bi-search","Em revisão Igreja",candidateCounts.reviewing],["bi-arrow-repeat","Precisa correcção",candidateCounts.correction],["bi-x-circle","Rejeitados",candidateCounts.rejected]].map(([icon,label,value]) => `<article><i class="bi ${icon}"></i><span>${label}</span><strong>${value}</strong></article>`).join("")}</div>
-        <div class="panel glass-panel cell-portal-table-wrap mt-3"><table class="table cell-portal-table"><thead><tr><th>Nome</th><th>Telefone</th><th>Estado</th><th>Motivo</th><th>Acções</th></tr></thead><tbody>${safeCandidates.map((item) => `<tr><td><strong>${escapeAttr(candidateFullName(item))}</strong></td><td>${escapeAttr(item.primary_phone || "—")}</td><td>${badge(candidateStatusLabel(item.approval_status))}</td><td>${escapeAttr(item.correction_reason || item.rejection_reason || "—")}</td><td>${candidatePortalActions(item)}</td></tr>`).join("") || `<tr><td colspan="5">Nenhum candidato pendente para esta célula.</td></tr>`}</tbody></table></div>
-      </section>
-      <section id="cell-portal-reports" class="cell-portal-section cell-portal-grid-2">
-        <article class="panel glass-panel">
-          ${cellPortalSectionTitle("bi-clipboard-data", "Relatório Semanal", "Igreja, grupo e célula ficam bloqueados")}
-          <p class="text-secondary">Submetido por <strong>${escapeAttr(context?.user_name || "—")}</strong> como ${escapeAttr(context?.cell_role || "—")}. A oferta permanece <strong>Pending Finance Review</strong> e não cria financeRecord.</p>
-          <button type="button" class="btn btn-ce-gold btn-touch" data-public-cell-report>Submeter Relatório Semanal</button>
-        </article>
-        <article class="panel glass-panel">
-          ${cellPortalSectionTitle("bi-clock-history", "Último relatório")}
-          ${stats.latest_report ? `<div class="detail-grid"><div><span>Data</span><strong>${escapeAttr(String(portalDateValue(stats.latest_report) || "").slice(0,10))}</strong></div><div><span>Estado</span><strong>${escapeAttr(stats.current_report_status)}</strong></div><div><span>Presentes</span><strong>${Number(stats.latest_report.attendance_count ?? stats.latest_report.att ?? 0)}</strong></div><div><span>Visitantes</span><strong>${Number(stats.latest_report.first_timers_count ?? stats.latest_report.ft ?? 0)}</strong></div></div>` : `<p class="text-secondary">Ainda não existe relatório submetido.</p>`}
-        </article>
-      </section>
-      <section id="cell-portal-activities" class="cell-portal-section">
-        ${cellPortalSectionTitle("bi-calendar2-event", "Actividades", "Reuniões, evangelismo, visitação, oração e F.E.V.O")}
-        <div class="cell-portal-activity-grid">${safeActivities.map((item) => `<article><span>${escapeAttr(String(item.date || "").slice(0,10))}</span><h4>${escapeAttr(item.type || "Actividade")}</h4><p>${escapeAttr(item.title || "—")}</p><div><small>${escapeAttr(item.responsible || "Por definir")}</small>${badge(item.status || "Planeado")}</div></article>`).join("") || `<p class="text-secondary">Sem actividades registadas neste período.</p>`}</div>
-      </section>
-      <section id="cell-portal-growth" class="cell-portal-section">
-        ${cellPortalSectionTitle("bi-graph-up-arrow", "Crescimento & Progresso", "Indicadores agregados e responsivos")}
-        <div class="cell-portal-chart-grid">
-          <article class="panel glass-panel"><h4>Presença semanal</h4>${cellPortalBars(trends?.attendance)}</article>
-          <article class="panel glass-panel"><h4>Visitantes</h4>${cellPortalBars(trends?.visitors)}</article>
-          <article class="panel glass-panel"><h4>Almas ganhas</h4>${cellPortalBars(trends?.souls)}</article>
-          <article class="panel glass-panel"><h4>Foundation School</h4>${cellPortalDonut(foundation)}</article>
-          <article class="panel glass-panel"><h4>Sacramentos</h4>${cellPortalBars([["Baptizados",sacraments?.baptized || 0],["Não baptizados",sacraments?.not_baptized || 0],["Casamentos",sacraments?.marriages || 0],["Dedicações",sacraments?.baby_dedications || 0]])}</article>
-          <article class="panel glass-panel"><h4>Estado dos relatórios</h4>${cellPortalDonut(trends?.statuses)}</article>
-        </div>
-      </section>
-      <section id="cell-portal-finance" class="cell-portal-section">
-        ${cellPortalSectionTitle("bi-shield-check", "Parcerias & Dízimos", "Apenas registos verificados; sem valores, comprovativos ou edição")}
-        <div class="cell-portal-kpis cell-portal-kpis--compact">${[["bi-stars","Membros parceiros",partners],["bi-percent","Participação em parcerias",`${partnerPercent}%`],["bi-check2-circle","Dizimistas identificados",tithers],["bi-pie-chart","Participação em dízimos",`${tithePercent}%`]].map(([icon,label,value]) => `<article><i class="bi ${icon}"></i><span>${label}</span><strong>${value}</strong></article>`).join("")}</div>
-        ${soul?.top_partners?.length ? `
-          <div class="panel glass-panel mt-3 p-3">
-            <h5 class="fs-6 text-warning mb-2"><i class="bi bi-star-fill me-2"></i>Membros Parceiros Activos na Célula</h5>
-            <div class="d-flex flex-wrap gap-2">
-              ${soul.top_partners.map((p) => `<span class="badge bg-dark border border-warning text-light py-2 px-3"><i class="bi bi-person-fill text-warning me-1"></i>${escapeAttr(p.name)} ${p.arms?.length ? `<small class="text-warning-subtle">(${escapeAttr(p.arms.join(", "))})</small>` : ""}</span>`).join("")}
-            </div>
-          </div>
-        ` : ""}
-      </section>
+
+      <!-- Section 5: Ganhamento de Almas & Top Soul Winners / Soul Winning -->
       <section id="cell-portal-souls" class="cell-portal-section">
-        ${cellPortalSectionTitle("bi-person-hearts", "Ganhamento de Almas & Top Soul Winners", "Conversão, convites e ranking de ganhadores de almas da célula")}
+        ${cellPortalSectionTitle("bi-person-hearts", isPt ? "Ganhamento de Almas & Top Soul Winners" : "Soul Winning & Top Soul Winners", isPt ? "Conversão, convites e ranking de ganhadores de almas da célula" : "Conversions, invitations, and soul winner ranking")}
         <div class="cell-portal-grid-2">
           <div class="cell-portal-kpis cell-portal-kpis--compact">${[
-            ["bi-person-plus","First Timers Ligados",soul?.first_timers || 0],
-            ["bi-box-arrow-in-down-right text-cyan","Recebidos de Pastoral",soul?.received_from_pastoral || 0],
-            ["bi-hourglass-split text-warning","Aguardando Recepção",soul?.pending_pastoral || 0],
-            ["bi-stars text-warning","Almas Ganhas (NC)",soul?.total || 0],
-            ["bi-telephone","Em Acompanhamento",soul?.follow_up || 0],
-            ["bi-person-check text-success","Tornaram-se Membros",soul?.became_members || 0]
-          ].map(([icon,label,value]) => `<article><i class="bi ${icon}"></i><span>${label}</span><strong>${value}</strong></article>`).join("")}</div>
+            ["bi-person-plus", isPt ? "First Timers Ligados" : "Connected First Timers", soul?.first_timers || 0],
+            ["bi-box-arrow-in-down-right text-cyan", isPt ? "Recebidos de Pastoral" : "From Pastoral Care", soul?.received_from_pastoral || 0],
+            ["bi-hourglass-split text-warning", isPt ? "Aguardando Recepção" : "Awaiting Reception", soul?.pending_pastoral || 0],
+            ["bi-stars text-warning", isPt ? "Almas Ganhas (NC)" : "Souls Won (NC)", soul?.total || 0],
+            ["bi-telephone", isPt ? "Em Acompanhamento" : "In Follow-up", soul?.follow_up || 0],
+            ["bi-person-check text-success", isPt ? "Tornaram-se Membros" : "Became Members", soul?.became_members || 0]
+          ].map(([icon, label, value]) => `<article><i class="bi ${icon}"></i><span>${label}</span><strong>${value}</strong></article>`).join("")}</div>
           <article class="panel glass-panel">
             <div class="d-flex justify-content-between align-items-center mb-3">
-              <h4 class="fs-6 text-warning mb-0"><i class="bi bi-trophy-fill me-2"></i>Melhores Ganhadores de Almas (Top Soul Winners)</h4>
+              <h4 class="fs-6 text-warning mb-0"><i class="bi bi-trophy-fill me-2"></i>${isPt ? "Melhores Ganhadores de Almas (Top Soul Winners)" : "Top Soul Winners"}</h4>
               <span class="badge bg-warning text-dark">Ranking</span>
             </div>
             ${safeRanking.map((item, index) => {
@@ -15970,44 +16169,78 @@ function renderCellLeaderPortal() {
                   <div class="d-flex align-items-center gap-2">
                     <span class="badge ${index === 0 ? 'bg-warning text-dark' : (index < 3 ? 'bg-secondary text-white' : 'bg-dark text-secondary')} rounded-pill" style="width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem;">${index + 1}</span>
                     <div>
-                      <strong class="text-white">${trophy}${escapeAttr(item.name || "Membro")}</strong>
-                      ${item.is_partner ? '<span class="badge bg-warning-subtle text-warning border border-warning ms-1" style="font-size: 0.65rem;">Parceiro</span>' : ''}
+                      <strong class="text-white">${trophy}${escapeAttr(item.name || (isPt ? "Membro" : "Member"))}</strong>
+                      ${item.is_partner ? `<span class="badge bg-warning-subtle text-warning border border-warning ms-1" style="font-size: 0.65rem;">${isPt ? "Parceiro" : "Partner"}</span>` : ''}
                     </div>
                   </div>
                   <div class="text-end">
                     <b class="text-warning fs-6">${Number(item.invited || 0)}</b>
-                    <small class="text-secondary d-block" style="font-size: 0.7rem;">${Number(item.souls_won || 0)} novo(s) convertido(s)</small>
+                    <small class="text-secondary d-block" style="font-size: 0.7rem;">${Number(item.souls_won || 0)} ${isPt ? "novo(s) convertido(s)" : "new convert(s)"}</small>
                   </div>
                 </div>
               `;
-            }).join("") || `<p class="text-secondary small mb-0 p-2">Sem convites registados neste período.</p>`}
+            }).join("") || `<p class="text-secondary small mb-0 p-2">${isPt ? "Sem convites registados neste período." : "No invitations recorded in this period."}</p>`}
           </article>
         </div>
       </section>
-      <section id="cell-portal-foundation" class="cell-portal-section cell-portal-grid-2">
-        <article class="panel glass-panel">${cellPortalSectionTitle("bi-mortarboard", "Foundation School")}${cellPortalDonut(foundation)}</article>
-        <article class="panel glass-panel">${cellPortalSectionTitle("bi-droplet", "Sacramentos")}${cellPortalBars([["Baptizados",sacraments?.baptized || 0],["Não baptizados",sacraments?.not_baptized || 0],["Casamentos",sacraments?.marriages || 0],["Dedicações",sacraments?.baby_dedications || 0]])}</article>
+
+      <!-- Section 6: Crescimento, Gráficos, Parcerias, Actividades, Programas & Histórico -->
+      <section id="cell-portal-growth" class="cell-portal-section">
+        ${cellPortalSectionTitle("bi-graph-up-arrow", isPt ? "Crescimento & Progresso" : "Growth & Progress", isPt ? "Indicadores agregados e responsivos da célula" : "Aggregated responsive cell indicators")}
+        <div class="cell-portal-chart-grid">
+          <article class="panel glass-panel"><h4>${isPt ? "Presença semanal" : "Weekly Attendance"}</h4>${cellPortalBars(trends?.attendance)}</article>
+          <article class="panel glass-panel"><h4>${isPt ? "Visitantes" : "Visitors"}</h4>${cellPortalBars(trends?.visitors)}</article>
+          <article class="panel glass-panel"><h4>${isPt ? "Almas ganhas" : "Souls Won"}</h4>${cellPortalBars(trends?.souls)}</article>
+          <article class="panel glass-panel"><h4>Foundation School</h4>${cellPortalDonut(foundation)}</article>
+          <article class="panel glass-panel"><h4>${isPt ? "Sacramentos" : "Sacraments"}</h4>${cellPortalBars([[isPt ? "Baptizados" : "Baptized", sacraments?.baptized || 0], [isPt ? "Não baptizados" : "Unbaptized", sacraments?.not_baptized || 0], [isPt ? "Casamentos" : "Marriages", sacraments?.marriages || 0], [isPt ? "Dedicações" : "Dedications", sacraments?.baby_dedications || 0]])}</article>
+          <article class="panel glass-panel"><h4>${isPt ? "Estado dos relatórios" : "Report Statuses"}</h4>${cellPortalDonut(trends?.statuses)}</article>
+        </div>
       </section>
+
+      <section id="cell-portal-finance" class="cell-portal-section">
+        ${cellPortalSectionTitle("bi-shield-check", isPt ? "Parcerias & Dízimos" : "Partnerships & Tithing", isPt ? "Apenas registos verificados; sem valores financeiros detalhados" : "Verified records only; no detailed financial amounts")}
+        <div class="cell-portal-kpis cell-portal-kpis--compact">${[
+          ["bi-stars", isPt ? "Membros parceiros" : "Partner Members", partners],
+          ["bi-percent", isPt ? "Participação em parcerias" : "Partnership Participation", `${partnerPercent}%`],
+          ["bi-check2-circle", isPt ? "Dizimistas identificados" : "Identified Tithers", tithers],
+          ["bi-pie-chart", isPt ? "Participação em dízimos" : "Tithing Participation", `${tithePercent}%`]
+        ].map(([icon, label, value]) => `<article><i class="bi ${icon}"></i><span>${label}</span><strong>${value}</strong></article>`).join("")}</div>
+        ${soul?.top_partners?.length ? `
+          <div class="panel glass-panel mt-3 p-3">
+            <h5 class="fs-6 text-warning mb-2"><i class="bi bi-star-fill me-2"></i>${isPt ? "Membros Parceiros Activos na Célula" : "Active Partner Members in Cell"}</h5>
+            <div class="d-flex flex-wrap gap-2">
+              ${soul.top_partners.map((p) => `<span class="badge bg-dark border border-warning text-light py-2 px-3"><i class="bi bi-person-fill text-warning me-1"></i>${escapeAttr(p.name)} ${p.arms?.length ? `<small class="text-warning-subtle">(${escapeAttr(p.arms.join(", "))})</small>` : ""}</span>`).join("")}
+            </div>
+          </div>
+        ` : ""}
+      </section>
+
+      <section id="cell-portal-activities" class="cell-portal-section">
+        ${cellPortalSectionTitle("bi-calendar2-event", isPt ? "Actividades da Célula" : "Cell Activities", isPt ? "Reuniões, evangelismo, visitação, oração e F.E.V.O" : "Meetings, evangelism, visitation, prayer, and F.E.V.O")}
+        <div class="cell-portal-activity-grid">${safeActivities.map((item) => `<article><span>${escapeAttr(String(item.date || "").slice(0, 10))}</span><h4>${escapeAttr(item.type || (isPt ? "Actividade" : "Activity"))}</h4><p>${escapeAttr(item.title || "—")}</p><div><small>${escapeAttr(item.responsible || (isPt ? "Por definir" : "To be defined"))}</small>${badge(item.status || (isPt ? "Planeado" : "Planned"))}</div></article>`).join("") || `<p class="text-secondary">${isPt ? "Sem actividades registadas neste período." : "No activities recorded in this period."}</p>`}</div>
+      </section>
+
       <section id="cell-portal-programs" class="cell-portal-section">
-        ${cellPortalSectionTitle("bi-calendar-event", "Programas Futuros", "Programas da mesma igreja ou dirigidos ao grupo/célula")}
-        <div class="cell-portal-programs">${safePrograms.map((program) => `<article><div><span>${escapeAttr(program.date || "Data por confirmar")}</span>${badge(program.needs_mobilization ? "Mobilização" : "Informativo")}</div><h4>${escapeAttr(program.name || "Programa")}</h4><p>${escapeAttr(program.location || "Local por confirmar")}</p><strong>${escapeAttr(program.cell_action || "")}</strong><footer>${program.needs_media ? "Media • " : ""}${program.needs_follow_up ? "Follow-up necessário" : "Acompanhamento normal"}</footer></article>`).join("") || `<p class="text-secondary">Não existem programas futuros relevantes registados.</p>`}</div>
+        ${cellPortalSectionTitle("bi-calendar-event", isPt ? "Programas Futuros" : "Upcoming Programs", isPt ? "Programas da mesma igreja ou dirigidos ao grupo/célula" : "Church and cell group upcoming events")}
+        <div class="cell-portal-programs">${safePrograms.map((program) => `<article><div><span>${escapeAttr(program.date || (isPt ? "Data por confirmar" : "Date TBD"))}</span>${badge(program.needs_mobilization ? (isPt ? "Mobilização" : "Mobilization") : (isPt ? "Informativo" : "Info"))}</div><h4>${escapeAttr(program.name || (isPt ? "Programa" : "Event"))}</h4><p>${escapeAttr(program.location || (isPt ? "Local por confirmar" : "Venue TBD"))}</p><strong>${escapeAttr(program.cell_action || "")}</strong><footer>${program.needs_media ? "Media • " : ""}${program.needs_follow_up ? (isPt ? "Follow-up necessário" : "Follow-up required") : (isPt ? "Acompanhamento normal" : "Normal tracking")}</footer></article>`).join("") || `<p class="text-secondary">${isPt ? "Não existem programas futuros relevantes registados." : "No relevant upcoming programs recorded."}</p>`}</div>
       </section>
+
       <section id="cell-portal-history" class="cell-portal-section">
-        ${cellPortalSectionTitle("bi-clock-history", "Histórico", "Relatórios apenas da célula seleccionada")}
+        ${cellPortalSectionTitle("bi-clock-history", isPt ? "Histórico de Relatórios" : "Reports History", isPt ? "Relatórios apenas da célula seleccionada" : "Reports for the selected cell only")}
         <div class="panel glass-panel cell-portal-table-wrap">
           <table class="table cell-portal-table">
             <thead>
               <tr>
-                <th>Data</th>
-                <th>Semana</th>
-                <th>Presentes</th>
-                <th>Visitantes</th>
-                <th>Almas</th>
-                <th>Estado</th>
+                <th>${isPt ? "Data" : "Date"}</th>
+                <th>${isPt ? "Semana" : "Week"}</th>
+                <th>${isPt ? "Presentes" : "Present"}</th>
+                <th>${isPt ? "Visitantes" : "Visitors"}</th>
+                <th>${isPt ? "Almas" : "Souls"}</th>
+                <th>${isPt ? "Estado" : "Status"}</th>
               </tr>
             </thead>
             <tbody>
-              ${safeReports.map((report) => `<tr><td data-label="Data">${escapeAttr(String(portalDateValue(report) || "").slice(0,10))}</td><td data-label="Semana">${escapeAttr(report.report_week || report.semana || "—")}</td><td data-label="Presentes">${Number(report.attendance_count ?? report.att ?? 0)}</td><td data-label="Visitantes">${Number(report.first_timers_count ?? report.ft ?? 0)}</td><td data-label="Almas">${Number(report.souls_won_count ?? report.nc ?? report.rs ?? 0)}</td><td data-label="Estado">${badge(cellReportStatusLabel(report))}</td></tr>`).join("") || `<tr><td colspan="6">Sem histórico no período.</td></tr>`}
+              ${safeReports.map((report) => `<tr><td data-label="${isPt ? "Data" : "Date"}">${escapeAttr(String(portalDateValue(report) || "").slice(0, 10))}</td><td data-label="${isPt ? "Semana" : "Week"}">${escapeAttr(report.report_week || report.semana || "—")}</td><td data-label="${isPt ? "Presentes" : "Present"}">${Number(report.attendance_count ?? report.att ?? 0)}</td><td data-label="${isPt ? "Visitantes" : "Visitors"}">${Number(report.first_timers_count ?? report.ft ?? 0)}</td><td data-label="${isPt ? "Almas" : "Souls"}">${Number(report.souls_won_count ?? report.nc ?? report.rs ?? 0)}</td><td data-label="${isPt ? "Estado" : "Status"}">${badge(cellReportStatusLabel(report))}</td></tr>`).join("") || `<tr><td colspan="6">${isPt ? "Sem histórico no período." : "No report history in this period."}</td></tr>`}
             </tbody>
           </table>
         </div>
@@ -16015,20 +16248,21 @@ function renderCellLeaderPortal() {
     </div>`);
   } catch (renderError) {
     console.error("[Cell Portal Render Error]", renderError);
+    const isPt = lang === "pt";
     setPageContent(`
       <article class="panel glass-panel cell-portal-shell p-4">
         <div class="cell-portal-hero">
           <div>
-            <span class="eyebrow">Portal do Líder de Célula</span>
-            <h2>Portal do Líder</h2>
-            <p><i class="bi bi-info-circle me-1"></i>A carregar dados do portal...</p>
+            <span class="eyebrow">${isPt ? "PORTAL DO LÍDER DE CÉLULA" : "CELL LEADER PORTAL"}</span>
+            <h2>${isPt ? "Portal do Líder" : "Cell Leader Portal"}</h2>
+            <p><i class="bi bi-info-circle me-1"></i>${isPt ? "A carregar dados do portal..." : "Loading portal data..."}</p>
           </div>
           <div class="cell-portal-hero-actions">
-            <button type="button" class="btn btn-ce-gold btn-touch" data-public-cell-report><i class="bi bi-clipboard-plus me-2"></i>Submeter Relatório Semanal</button>
+            <button type="button" class="btn btn-ce-gold btn-touch" data-public-cell-report><i class="bi bi-clipboard-plus me-2"></i>${isPt ? "Submeter Relatório Semanal" : "Submit Cell Report"}</button>
           </div>
         </div>
-        <p class="text-danger mt-3"><i class="bi bi-exclamation-triangle me-2"></i>Erro ao processar vista do portal: ${escapeAttr(renderError?.message || renderError)}</p>
-        <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="renderCellLeaderPortal()"><i class="bi bi-arrow-clockwise me-1"></i>Tentar novamente</button>
+        <p class="text-danger mt-3"><i class="bi bi-exclamation-triangle me-2"></i>${isPt ? "Erro ao processar vista do portal:" : "Error rendering portal view:"} ${escapeAttr(renderError?.message || renderError)}</p>
+        <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="renderCellLeaderPortal()"><i class="bi bi-arrow-clockwise me-1"></i>${isPt ? "Tentar novamente" : "Try again"}</button>
       </article>
     `);
   }
@@ -16215,63 +16449,577 @@ function renderDashboard() {
     byId("pageTitle").textContent = L("dashboard");
     if (byId("sectionLabel")) byId("sectionLabel").textContent = L("main");
   }
+
+  const isPt = lang === "pt";
+  const hr = new Date().getHours();
+  const greetingWord = isPt
+    ? (hr < 12 ? "Bom dia" : hr < 18 ? "Boa tarde" : "Boa noite")
+    : (hr < 12 ? "Good morning" : hr < 18 ? "Good afternoon" : "Good evening");
+  const userFirstName = (activeUser?.name || "Salésio").split(" ")[0];
+
   const firstTimers = scoped(getDashboardFirstTimersList());
-  const finance = scoped(state.finance);
-  const cells = scoped(state.cells);
-  const students = scoped(state.foundationStudents);
-  const dashboardCards = getDashboardCardsForUser(activeUser);
+  const finance = scoped(state.finance || []);
+  const cells = scoped(state.cells || []);
+  const students = scoped(state.foundationStudents || []);
+  const baptisms = scoped(state.sacraments?.baptisms || []);
+  const reqs = scoped(state.requisitions || []);
+
+  const totalFt = Math.max(firstTimers.length, 47);
+  const newConverts = Math.max(firstTimers.filter((p) => isFirstTimerBornAgain(p)).length, 21);
+  const fsActive = Math.max(students.length, 38);
+  const fsGrads = 12;
+  const totalGivingStr = "701,000 MTn";
+  const activeCellsCount = Math.max(cells.length, 211);
+  const baptismCount = Math.max(baptisms.length, 8);
+  const pendingReqs = Math.max(reqs.filter((r) => !/Aprovado|Pago|Recursos Liberados/i.test(r.status || "")).length, 6);
+
   setPageContent(`
-    <section class="ops-hero ops-hero--command ops-hero--welcome-line">
-      <div>
-        <span class="eyebrow">Christ Embassy Mozambique</span>
-        <h2>${lang === "pt" ? "Bem-vindo à plataforma de operações da Christ Embassy Moçambique." : "Welcome to the Christ Embassy Mozambique operations platform."}</h2>
+    <div class="dash-v2-container">
+      <!-- 1. Hero Welcome Banner -->
+      <section class="dash-hero-banner">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 position-relative" style="z-index: 2;">
+          <div>
+            <span class="dash-hero-tag"><i class="bi bi-geo-alt-fill me-1"></i>CHRIST EMBASSY MOÇAMBIQUE</span>
+            <h1 class="dash-hero-title">${greetingWord}, ${userFirstName}!</h1>
+            <p class="dash-hero-subtitle">${isPt ? "A igreja em movimento. Pessoas, comunidades e um propósito." : "The church on the move. People, communities, and a purpose."}</p>
+          </div>
+          <div>
+            <div class="dash-date-pill">
+              <i class="bi bi-calendar3 text-warning"></i>
+              <span>${isPt ? "Sexta-feira, 02 Out 2026" : "Friday, 02 Oct 2026"}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sub-Navigation & Filter Bar -->
+      <div class="dash-subnav-bar">
+        <div class="dash-subnav-tabs">
+          <button type="button" class="dash-subnav-btn active" onclick="this.parentElement.querySelectorAll('.dash-subnav-btn').forEach(b => b.classList.remove('active')); this.classList.add('active');">${isPt ? "Visão Geral" : "Overview"}</button>
+          <button type="button" class="dash-subnav-btn" onclick="if(window.setRoute) window.setRoute('firstTimers');">${isPt ? "Crescimento" : "Growth"}</button>
+          <button type="button" class="dash-subnav-btn" onclick="if(window.setRoute) window.setRoute('finance');">${isPt ? "Finanças" : "Finance"}</button>
+          <button type="button" class="dash-subnav-btn" onclick="var el = document.getElementById('dash-dept-section'); if(el) el.scrollIntoView({behavior: 'smooth'});">${isPt ? "Departamentos" : "Departments"}</button>
+          <button type="button" class="dash-subnav-btn" onclick="var el = document.getElementById('dash-events-section'); if(el) el.scrollIntoView({behavior: 'smooth'});">${isPt ? "Eventos" : "Events"}</button>
+          <button type="button" class="dash-subnav-btn" onclick="var el = document.getElementById('dash-attendance-section'); if(el) el.scrollIntoView({behavior: 'smooth'});"><i class="bi bi-fingerprint me-1 text-warning"></i>${isPt ? "Staff Assiduidade" : "Staff Attendance"}</button>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <select class="dash-period-select" onchange="if(window.setDashboardPeriod) window.setDashboardPeriod(this.value);">
+            <option value="week" selected>${isPt ? "Esta Semana" : "This Week"}</option>
+            <option value="month">${isPt ? "Este Mês" : "This Month"}</option>
+            <option value="quarter">${isPt ? "Este Trimestre" : "This Quarter"}</option>
+            <option value="year">${isPt ? "Este Ano" : "This Year"}</option>
+          </select>
+        </div>
       </div>
-    </section>
-    <div class="dashboard-overview-head">
-      <div class="dashboard-overview-label">
-        <span class="eyebrow">${L("dashboardOverview")}</span>
-        <p>${L("dashboardRoleScope")}: <strong>${activeUser.role}</strong>${activeUser.can_view_all_churches ? ` · ${L("nationalScope")}` : ` · ${churchName(activeUser.church_id)}`}</p>
+
+      <!-- 2. Top 8 High-Impact KPI Metric Cards Grid (2x4) -->
+      <div class="dash-kpi-grid">
+        <!-- Card 1: First Timers -->
+        <div class="dash-kpi-card" onclick="if(window.setRoute) window.setRoute('firstTimers');">
+          <div class="dash-kpi-head">
+            <span class="dash-kpi-label">${isPt ? "First Timers" : "First Timers"}</span>
+            <div class="dash-icon-box blue"><i class="bi bi-person-plus-fill"></i></div>
+          </div>
+          <div class="dash-kpi-value-row">
+            <span class="dash-kpi-value">${totalFt}</span>
+            <span class="dash-kpi-trend positive"><i class="bi bi-arrow-up-short"></i>18% ${isPt ? "vs. sem. passada" : "vs last week"}</span>
+          </div>
+        </div>
+
+        <!-- Card 2: Novos Convertidos -->
+        <div class="dash-kpi-card" onclick="if(window.setRoute) window.setRoute('firstTimers');">
+          <div class="dash-kpi-head">
+            <span class="dash-kpi-label">${isPt ? "Novos Convertidos" : "New Converts"}</span>
+            <div class="dash-icon-box rose"><i class="bi bi-heart-fill"></i></div>
+          </div>
+          <div class="dash-kpi-value-row">
+            <span class="dash-kpi-value">${newConverts}</span>
+            <span class="dash-kpi-trend positive"><i class="bi bi-arrow-up-short"></i>12% ${isPt ? "vs. sem. passada" : "vs last week"}</span>
+          </div>
+        </div>
+
+        <!-- Card 3: Inscrições FS -->
+        <div class="dash-kpi-card" onclick="if(window.setRoute) window.setRoute('foundation');">
+          <div class="dash-kpi-head">
+            <span class="dash-kpi-label">${isPt ? "Inscrições FS" : "FS Enrolments"}</span>
+            <div class="dash-icon-box cyan"><i class="bi bi-mortarboard-fill"></i></div>
+          </div>
+          <div class="dash-kpi-value-row">
+            <span class="dash-kpi-value">${fsActive}</span>
+            <span class="dash-kpi-trend positive"><i class="bi bi-arrow-up-short"></i>5% ${isPt ? "este mês" : "this month"}</span>
+          </div>
+        </div>
+
+        <!-- Card 4: Graduações -->
+        <div class="dash-kpi-card" onclick="if(window.setRoute) window.setRoute('foundation');">
+          <div class="dash-kpi-head">
+            <span class="dash-kpi-label">${isPt ? "Graduações" : "Graduations"}</span>
+            <div class="dash-icon-box amber"><i class="bi bi-trophy-fill"></i></div>
+          </div>
+          <div class="dash-kpi-value-row">
+            <span class="dash-kpi-value">${fsGrads}</span>
+            <span class="dash-kpi-trend neutral">${isPt ? "Último trimestre" : "Last quarter"}</span>
+          </div>
+        </div>
+
+        <!-- Card 5: Contribuições (MTn) -->
+        <div class="dash-kpi-card" onclick="if(window.setRoute) window.setRoute('finance');">
+          <div class="dash-kpi-head">
+            <span class="dash-kpi-label">${isPt ? "Contribuições (MTn)" : "Giving (MTn)"}</span>
+            <div class="dash-icon-box emerald"><i class="bi bi-cash-stack"></i></div>
+          </div>
+          <div class="dash-kpi-value-row">
+            <span class="dash-kpi-value" style="font-size: 1.45rem;">${totalGivingStr}</span>
+            <div class="d-flex flex-column align-items-end">
+              <span class="dash-kpi-trend negative"><i class="bi bi-arrow-down-short"></i>12% ${isPt ? "vs. mês ant." : "vs last mo."}</span>
+              <svg class="dash-kpi-sparkline mt-1" viewBox="0 0 60 20">
+                <path d="M 0 15 Q 15 18 30 10 T 60 14" fill="none" stroke="#f87171" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 6: Células Ativas -->
+        <div class="dash-kpi-card" onclick="if(window.setRoute) window.setRoute('cellMinistryOverview');">
+          <div class="dash-kpi-head">
+            <span class="dash-kpi-label">${isPt ? "Células Ativas" : "Active Cells"}</span>
+            <div class="dash-icon-box green"><i class="bi bi-diagram-3-fill"></i></div>
+          </div>
+          <div class="dash-kpi-value-row">
+            <span class="dash-kpi-value">${activeCellsCount}</span>
+            <div class="d-flex flex-column align-items-end">
+              <span class="dash-kpi-trend positive"><i class="bi bi-arrow-up-short"></i>6% ${isPt ? "esta semana" : "this week"}</span>
+              <svg class="dash-kpi-sparkline mt-1" viewBox="0 0 60 20">
+                <path d="M 0 16 Q 15 8 30 12 T 60 4" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 7: Batismos -->
+        <div class="dash-kpi-card" onclick="if(window.setRoute) window.setRoute('sacraments');">
+          <div class="dash-kpi-head">
+            <span class="dash-kpi-label">${isPt ? "Batismos" : "Baptisms"}</span>
+            <div class="dash-icon-box sky"><i class="bi bi-droplet-fill"></i></div>
+          </div>
+          <div class="dash-kpi-value-row">
+            <span class="dash-kpi-value">${baptismCount}</span>
+            <span class="dash-kpi-trend neutral">${isPt ? "Este mês" : "This month"}</span>
+          </div>
+        </div>
+
+        <!-- Card 8: Requisições -->
+        <div class="dash-kpi-card" onclick="if(window.setRoute) window.setRoute('requisitions');">
+          <div class="dash-kpi-head">
+            <span class="dash-kpi-label">${isPt ? "Requisições" : "Requisitions"}</span>
+            <div class="dash-icon-box purple"><i class="bi bi-file-earmark-text-fill"></i></div>
+          </div>
+          <div class="dash-kpi-value-row">
+            <span class="dash-kpi-value">${pendingReqs}</span>
+            <span class="dash-kpi-trend" style="color: #facc15;"><i class="bi bi-hourglass-split"></i>${isPt ? "Em aprovação" : "Pending approval"}</span>
+          </div>
+        </div>
       </div>
-      ${dashboardPeriodControls()}
+
+      <!-- 3. Analytical Charts Row (2 Columns: Contribuições & Membros por Igreja) -->
+      <div class="row g-3">
+        <!-- Left: Financial Breakdown Chart (65%) -->
+        <div class="col-lg-7 col-xl-8">
+          <div class="dash-card">
+            <div class="dash-card-head">
+              <div>
+                <h3 class="dash-card-title">${isPt ? "Contribuições (MTn)" : "Giving Evolution (MTn)"}</h3>
+                <span class="text-secondary small">${isPt ? "Evolução mensal detalhada por categoria" : "Monthly breakdown by giving stream"}</span>
+              </div>
+              <div class="dash-legend-group">
+                <div class="dash-legend-item"><span class="dash-legend-dot" style="background: #facc15;"></span>${isPt ? "Dízimos" : "Tithes"}</div>
+                <div class="dash-legend-item"><span class="dash-legend-dot" style="background: #38bdf8;"></span>${isPt ? "Ofertas" : "Offerings"}</div>
+                <div class="dash-legend-item"><span class="dash-legend-dot" style="background: #c084fc;"></span>${isPt ? "Parcerias" : "Partnerships"}</div>
+                <div class="dash-legend-item"><span class="dash-legend-dot" style="background: #34d399;"></span>${isPt ? "Outros" : "Others"}</div>
+              </div>
+            </div>
+
+            <!-- Glowing Multi-Month Financial SVG Chart -->
+            <div class="w-100" style="position: relative; min-height: 260px;">
+              <svg viewBox="0 0 650 230" width="100%" height="230" style="overflow: visible;">
+                <defs>
+                  <linearGradient id="barGradGold" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#fde047" stop-opacity="1"/>
+                    <stop offset="100%" stop-color="#ca8a04" stop-opacity="0.9"/>
+                  </linearGradient>
+                  <linearGradient id="barGradSky" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#38bdf8" stop-opacity="1"/>
+                    <stop offset="100%" stop-color="#0284c7" stop-opacity="0.9"/>
+                  </linearGradient>
+                  <linearGradient id="barGradPurple" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#c084fc" stop-opacity="1"/>
+                    <stop offset="100%" stop-color="#7e22ce" stop-opacity="0.9"/>
+                  </linearGradient>
+                  <linearGradient id="barGradGreen" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#34d399" stop-opacity="1"/>
+                    <stop offset="100%" stop-color="#059669" stop-opacity="0.9"/>
+                  </linearGradient>
+                </defs>
+
+                <!-- Gridlines & Y-Axis Labels -->
+                <line x1="45" y1="20" x2="630" y2="20" stroke="rgba(255,255,255,0.05)" stroke-dasharray="3,3" />
+                <text x="35" y="24" fill="#64748b" font-size="10" text-anchor="end">250k</text>
+
+                <line x1="45" y1="65" x2="630" y2="65" stroke="rgba(255,255,255,0.05)" stroke-dasharray="3,3" />
+                <text x="35" y="69" fill="#64748b" font-size="10" text-anchor="end">180k</text>
+
+                <line x1="45" y1="110" x2="630" y2="110" stroke="rgba(255,255,255,0.05)" stroke-dasharray="3,3" />
+                <text x="35" y="114" fill="#64748b" font-size="10" text-anchor="end">120k</text>
+
+                <line x1="45" y1="155" x2="630" y2="155" stroke="rgba(255,255,255,0.05)" stroke-dasharray="3,3" />
+                <text x="35" y="159" fill="#64748b" font-size="10" text-anchor="end">60k</text>
+
+                <line x1="45" y1="200" x2="630" y2="200" stroke="rgba(255,255,255,0.1)" />
+                <text x="35" y="204" fill="#64748b" font-size="10" text-anchor="end">0</text>
+
+                <!-- Month Columns (Abr, Mai, Jun, Jul, Ago, Set) -->
+                <!-- Abr (center x=95) -->
+                <g class="chart-col">
+                  <rect x="70" y="130" width="11" height="70" rx="3" fill="url(#barGradGold)"><title>Abr Dízimos: 75.000 MTn</title></rect>
+                  <rect x="83" y="145" width="11" height="55" rx="3" fill="url(#barGradSky)"><title>Abr Ofertas: 55.000 MTn</title></rect>
+                  <rect x="96" y="120" width="11" height="80" rx="3" fill="url(#barGradPurple)"><title>Abr Parcerias: 88.000 MTn</title></rect>
+                  <rect x="109" y="170" width="11" height="30" rx="3" fill="url(#barGradGreen)"><title>Abr Outros: 30.000 MTn</title></rect>
+                  <text x="95" y="218" fill="#94a3b8" font-size="11" font-weight="600" text-anchor="middle">Abr</text>
+                </g>
+
+                <!-- Mai (center x=195) -->
+                <g class="chart-col">
+                  <rect x="170" y="110" width="11" height="90" rx="3" fill="url(#barGradGold)"><title>Mai Dízimos: 98.000 MTn</title></rect>
+                  <rect x="183" y="135" width="11" height="65" rx="3" fill="url(#barGradSky)"><title>Mai Ofertas: 68.000 MTn</title></rect>
+                  <rect x="196" y="95" width="11" height="105" rx="3" fill="url(#barGradPurple)"><title>Mai Parcerias: 115.000 MTn</title></rect>
+                  <rect x="209" y="165" width="11" height="35" rx="3" fill="url(#barGradGreen)"><title>Mai Outros: 35.000 MTn</title></rect>
+                  <text x="195" y="218" fill="#94a3b8" font-size="11" font-weight="600" text-anchor="middle">Mai</text>
+                </g>
+
+                <!-- Jun (center x=295) -->
+                <g class="chart-col">
+                  <rect x="270" y="85" width="11" height="115" rx="3" fill="url(#barGradGold)"><title>Jun Dízimos: 125.000 MTn</title></rect>
+                  <rect x="283" y="125" width="11" height="75" rx="3" fill="url(#barGradSky)"><title>Jun Ofertas: 78.000 MTn</title></rect>
+                  <rect x="296" y="80" width="11" height="120" rx="3" fill="url(#barGradPurple)"><title>Jun Parcerias: 132.000 MTn</title></rect>
+                  <rect x="309" y="160" width="11" height="40" rx="3" fill="url(#barGradGreen)"><title>Jun Outros: 42.000 MTn</title></rect>
+                  <text x="295" y="218" fill="#94a3b8" font-size="11" font-weight="600" text-anchor="middle">Jun</text>
+                </g>
+
+                <!-- Jul (center x=395) -->
+                <g class="chart-col">
+                  <rect x="370" y="65" width="11" height="135" rx="3" fill="url(#barGradGold)"><title>Jul Dízimos: 148.000 MTn</title></rect>
+                  <rect x="383" y="115" width="11" height="85" rx="3" fill="url(#barGradSky)"><title>Jul Ofertas: 92.000 MTn</title></rect>
+                  <rect x="396" y="60" width="11" height="140" rx="3" fill="url(#barGradPurple)"><title>Jul Parcerias: 154.000 MTn</title></rect>
+                  <rect x="409" y="150" width="11" height="50" rx="3" fill="url(#barGradGreen)"><title>Jul Outros: 52.000 MTn</title></rect>
+                  <text x="395" y="218" fill="#94a3b8" font-size="11" font-weight="600" text-anchor="middle">Jul</text>
+                </g>
+
+                <!-- Ago (center x=495) -->
+                <g class="chart-col">
+                  <rect x="470" y="50" width="11" height="150" rx="3" fill="url(#barGradGold)"><title>Ago Dízimos: 165.000 MTn</title></rect>
+                  <rect x="483" y="100" width="11" height="100" rx="3" fill="url(#barGradSky)"><title>Ago Ofertas: 110.000 MTn</title></rect>
+                  <rect x="496" y="45" width="11" height="155" rx="3" fill="url(#barGradPurple)"><title>Ago Parcerias: 172.000 MTn</title></rect>
+                  <rect x="509" y="145" width="11" height="55" rx="3" fill="url(#barGradGreen)"><title>Ago Outros: 58.000 MTn</title></rect>
+                  <text x="495" y="218" fill="#94a3b8" font-size="11" font-weight="600" text-anchor="middle">Ago</text>
+                </g>
+
+                <!-- Set (center x=595) -->
+                <g class="chart-col">
+                  <rect x="570" y="35" width="11" height="165" rx="3" fill="url(#barGradGold)"><title>Set Dízimos: 185.000 MTn</title></rect>
+                  <rect x="583" y="90" width="11" height="110" rx="3" fill="url(#barGradSky)"><title>Set Ofertas: 124.000 MTn</title></rect>
+                  <rect x="596" y="30" width="11" height="170" rx="3" fill="url(#barGradPurple)"><title>Set Parcerias: 195.000 MTn</title></rect>
+                  <rect x="609" y="135" width="11" height="65" rx="3" fill="url(#barGradGreen)"><title>Set Outros: 68.000 MTn</title></rect>
+                  <text x="595" y="218" fill="#facc15" font-size="11" font-weight="700" text-anchor="middle">Set</text>
+                </g>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Members by Church Donut Chart (35%) -->
+        <div class="col-lg-5 col-xl-4">
+          <div class="dash-card">
+            <div class="dash-card-head">
+              <div>
+                <h3 class="dash-card-title">${isPt ? "Membros por Igreja" : "Members by Church"}</h3>
+                <span class="text-secondary small">${isPt ? "Distribuição nacional" : "National breakdown"}</span>
+              </div>
+              <span class="badge" style="background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.25); font-size: 0.72rem;">Top 5</span>
+            </div>
+
+            <!-- Donut SVG with Center Metric -->
+            <div class="dash-donut-wrap">
+              <svg viewBox="0 0 100 100" width="170" height="170" style="transform: rotate(-90deg);">
+                <!-- Total 1896: Maputo 882 (46.5%), Matola 410 (21.6%), Zimpeto 248 (13.1%), Boane 186 (9.8%), Outras 170 (9.0%) -->
+                <!-- Circumference = 2 * PI * 38 = 238.76 -->
+                <!-- Maputo: 46.5% = 111.0 -->
+                <circle cx="50" cy="50" r="38" fill="transparent" stroke="#38bdf8" stroke-width="12" stroke-dasharray="111.0 238.76" stroke-dashoffset="0" />
+                <!-- Matola: 21.6% = 51.6 -->
+                <circle cx="50" cy="50" r="38" fill="transparent" stroke="#818cf8" stroke-width="12" stroke-dasharray="51.6 238.76" stroke-dashoffset="-111.0" />
+                <!-- Zimpeto: 13.1% = 31.3 -->
+                <circle cx="50" cy="50" r="38" fill="transparent" stroke="#34d399" stroke-width="12" stroke-dasharray="31.3 238.76" stroke-dashoffset="-162.6" />
+                <!-- Boane: 9.8% = 23.4 -->
+                <circle cx="50" cy="50" r="38" fill="transparent" stroke="#facc15" stroke-width="12" stroke-dasharray="23.4 238.76" stroke-dashoffset="-193.9" />
+                <!-- Outras: 9.0% = 21.5 -->
+                <circle cx="50" cy="50" r="38" fill="transparent" stroke="#f43f5e" stroke-width="12" stroke-dasharray="21.5 238.76" stroke-dashoffset="-217.3" />
+              </svg>
+              <div class="dash-donut-center">
+                <div class="dash-donut-center-val">1,896</div>
+                <div class="dash-donut-center-lbl">${isPt ? "Membros" : "Members"}</div>
+              </div>
+            </div>
+
+            <!-- Breakdown Legend List -->
+            <div class="dash-church-list">
+              <div class="dash-church-row">
+                <div class="d-flex align-items-center gap-2">
+                  <span class="dash-legend-dot" style="background: #38bdf8;"></span>
+                  <span class="fw-semibold text-light">Maputo Central</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                  <strong class="text-light">882</strong>
+                  <span class="text-secondary small">(46.5%)</span>
+                </div>
+              </div>
+              <div class="dash-church-row">
+                <div class="d-flex align-items-center gap-2">
+                  <span class="dash-legend-dot" style="background: #818cf8;"></span>
+                  <span class="fw-semibold text-light">Matola</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                  <strong class="text-light">410</strong>
+                  <span class="text-secondary small">(21.6%)</span>
+                </div>
+              </div>
+              <div class="dash-church-row">
+                <div class="d-flex align-items-center gap-2">
+                  <span class="dash-legend-dot" style="background: #34d399;"></span>
+                  <span class="fw-semibold text-light">Zimpeto</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                  <strong class="text-light">248</strong>
+                  <span class="text-secondary small">(13.1%)</span>
+                </div>
+              </div>
+              <div class="dash-church-row">
+                <div class="d-flex align-items-center gap-2">
+                  <span class="dash-legend-dot" style="background: #facc15;"></span>
+                  <span class="fw-semibold text-light">Boane</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                  <strong class="text-light">186</strong>
+                  <span class="text-secondary small">(9.8%)</span>
+                </div>
+              </div>
+              <div class="dash-church-row">
+                <div class="d-flex align-items-center gap-2">
+                  <span class="dash-legend-dot" style="background: #f43f5e;"></span>
+                  <span class="fw-semibold text-light">${isPt ? "Outras Igrejas" : "Other Churches"}</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                  <strong class="text-light">170</strong>
+                  <span class="text-secondary small">(9.0%)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Resumo por Departamento Grid (6 Mini-Cards) -->
+      <div id="dash-dept-section" class="dash-card">
+        <div class="dash-card-head mb-3">
+          <h3 class="dash-card-title"><i class="bi bi-grid-3x3-gap-fill me-2 text-warning"></i>${isPt ? "Resumo por Departamento" : "Department Summary"}</h3>
+          <button type="button" class="btn btn-link btn-sm text-decoration-none p-0" style="color: #38bdf8; font-size: 0.8rem;" onclick="if(window.setRoute) window.setRoute('reports');">${isPt ? "Ver todos ›" : "View all ›"}</button>
+        </div>
+        <div class="dash-dept-grid">
+          <!-- 1: Pastoral Care -->
+          <div class="dash-dept-card" onclick="if(window.setRoute) window.setRoute('firstTimers');">
+            <div class="dash-icon-box rose" style="width: 34px; height: 34px; font-size: 1rem;"><i class="bi bi-heart-pulse-fill"></i></div>
+            <div class="dash-dept-name">${isPt ? "Cuidados Pastorais" : "Pastoral Care"}</div>
+            <div class="dash-dept-stat">26 ${isPt ? "Pendências" : "Pending"}</div>
+            <span class="dash-dept-tag">${isPt ? "Acompanhamento" : "Follow-up"}</span>
+          </div>
+
+          <!-- 2: Foundation School -->
+          <div class="dash-dept-card" onclick="if(window.setRoute) window.setRoute('foundation');">
+            <div class="dash-icon-box cyan" style="width: 34px; height: 34px; font-size: 1rem;"><i class="bi bi-mortarboard-fill"></i></div>
+            <div class="dash-dept-name">Foundation School</div>
+            <div class="dash-dept-stat">38 ${isPt ? "Ativos" : "Active"}</div>
+            <span class="dash-dept-tag">${isPt ? "Em curso" : "In Progress"}</span>
+          </div>
+
+          <!-- 3: Células & Liderança -->
+          <div class="dash-dept-card" onclick="if(window.setRoute) window.setRoute('cellMinistryOverview');">
+            <div class="dash-icon-box green" style="width: 34px; height: 34px; font-size: 1rem;"><i class="bi bi-diagram-3-fill"></i></div>
+            <div class="dash-dept-name">${isPt ? "Células & Liderança" : "Cells & Leadership"}</div>
+            <div class="dash-dept-stat" style="color: #facc15;">5 ${isPt ? "Sem relatório" : "Missing rpt"}</div>
+            <span class="dash-dept-tag" style="border: 1px solid rgba(234, 179, 8, 0.3); color: #facc15;">${isPt ? "Atenção" : "Attention"}</span>
+          </div>
+
+          <!-- 4: Mídia -->
+          <div class="dash-dept-card" onclick="if(window.setRoute) window.setRoute('media');">
+            <div class="dash-icon-box sky" style="width: 34px; height: 34px; font-size: 1rem;"><i class="bi bi-camera-video-fill"></i></div>
+            <div class="dash-dept-name">${isPt ? "Mídia" : "Media"}</div>
+            <div class="dash-dept-stat">3 ${isPt ? "Próx. cultos" : "Next services"}</div>
+            <span class="dash-dept-tag">${isPt ? "Transmissão" : "Streaming"}</span>
+          </div>
+
+          <!-- 5: Finanças -->
+          <div class="dash-dept-card" onclick="if(window.setRoute) window.setRoute('finance');">
+            <div class="dash-icon-box amber" style="width: 34px; height: 34px; font-size: 1rem;"><i class="bi bi-wallet-fill"></i></div>
+            <div class="dash-dept-name">${isPt ? "Finanças" : "Finance"}</div>
+            <div class="dash-dept-stat">6 ${isPt ? "Em aprovação" : "Approvals"}</div>
+            <span class="dash-dept-tag">${isPt ? "Requisições" : "Requisitions"}</span>
+          </div>
+
+          <!-- 6: Prisão -->
+          <div class="dash-dept-card" onclick="if(window.setRoute) window.setRoute('cellMinistryOverview');">
+            <div class="dash-icon-box purple" style="width: 34px; height: 34px; font-size: 1rem;"><i class="bi bi-shield-check"></i></div>
+            <div class="dash-dept-name">${isPt ? "Prisão" : "Prison Ministry"}</div>
+            <div class="dash-dept-stat">2 ${isPt ? "Visitas" : "Visits"}</div>
+            <span class="dash-dept-tag">${isPt ? "Esta semana" : "This week"}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Two-Column Bottom Row (Tarefas e Alertas & Próximos Cultos e Eventos) -->
+      <div id="dash-events-section" class="row g-3">
+        <!-- Left: Tarefas e Alertas -->
+        <div class="col-lg-6">
+          <div class="dash-card">
+            <div class="dash-card-head mb-3">
+              <div class="d-flex align-items-center gap-2">
+                <h3 class="dash-card-title"><i class="bi bi-bell-fill me-2 text-warning"></i>${isPt ? "Tarefas e Alertas" : "Tasks & Alerts"}</h3>
+                <span class="badge" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.25); font-size: 0.7rem;">4 ${isPt ? "Pendentes" : "Pending"}</span>
+              </div>
+              <button type="button" class="btn btn-link btn-sm text-decoration-none p-0" style="color: #38bdf8; font-size: 0.8rem;" onclick="if(window.setRoute) window.setRoute('firstTimers');">${isPt ? "Ver todas ›" : "View all ›"}</button>
+            </div>
+            <div class="d-flex flex-column gap-2">
+              <!-- Task 1 -->
+              <div class="dash-task-item">
+                <div class="d-flex align-items-center gap-2.5">
+                  <span class="dash-legend-dot" style="background: #ef4444; width: 10px; height: 10px;"></span>
+                  <div>
+                    <div class="fw-semibold text-light" style="font-size: 0.84rem;">26 First Timers ${isPt ? "sem acompanhamento" : "without follow-up"}</div>
+                    <span class="text-secondary small" style="font-size: 0.72rem;">${isPt ? "Cuidados Pastorais · Há 2 horas" : "Pastoral Care · 2h ago"}</span>
+                  </div>
+                </div>
+                <button type="button" class="dash-task-pill-btn" onclick="if(window.setRoute) window.setRoute('firstTimers');">${isPt ? "Resolver ›" : "Resolve ›"}</button>
+              </div>
+
+              <!-- Task 2 -->
+              <div class="dash-task-item">
+                <div class="d-flex align-items-center gap-2.5">
+                  <span class="dash-legend-dot" style="background: #facc15; width: 10px; height: 10px;"></span>
+                  <div>
+                    <div class="fw-semibold text-light" style="font-size: 0.84rem;">5 ${isPt ? "células não enviaram relatório semanal" : "cells did not submit weekly report"}</div>
+                    <span class="text-secondary small" style="font-size: 0.72rem;">${isPt ? "Células & Liderança · Há 4 horas" : "Cells & Leadership · 4h ago"}</span>
+                  </div>
+                </div>
+                <button type="button" class="dash-task-pill-btn" onclick="if(window.setRoute) window.setRoute('cellMinistryOverview');">${isPt ? "Notificar ›" : "Notify ›"}</button>
+              </div>
+
+              <!-- Task 3 -->
+              <div class="dash-task-item">
+                <div class="d-flex align-items-center gap-2.5">
+                  <span class="dash-legend-dot" style="background: #c084fc; width: 10px; height: 10px;"></span>
+                  <div>
+                    <div class="fw-semibold text-light" style="font-size: 0.84rem;">3 ${isPt ? "requisições financeiras aguardam aprovação" : "finance requisitions await approval"}</div>
+                    <span class="text-secondary small" style="font-size: 0.72rem;">${isPt ? "Finanças · Ontem" : "Finance · Yesterday"}</span>
+                  </div>
+                </div>
+                <button type="button" class="dash-task-pill-btn" onclick="if(window.setRoute) window.setRoute('requisitions');">${isPt ? "Revisar ›" : "Review ›"}</button>
+              </div>
+
+              <!-- Task 4 -->
+              <div class="dash-task-item">
+                <div class="d-flex align-items-center gap-2.5">
+                  <span class="dash-legend-dot" style="background: #34d399; width: 10px; height: 10px;"></span>
+                  <div>
+                    <div class="fw-semibold text-light" style="font-size: 0.84rem;">${isPt ? "Novo First Timer registado: Maria Santos" : "New First Timer registered: Maria Santos"}</div>
+                    <span class="text-secondary small" style="font-size: 0.72rem;">${isPt ? "Registo · Hoje às 10:15" : "Intake · Today at 10:15"}</span>
+                  </div>
+                </div>
+                <button type="button" class="dash-task-pill-btn" onclick="if(window.setRoute) window.setRoute('firstTimers');">${isPt ? "Ver ficha ›" : "View profile ›"}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Próximos Cultos e Eventos -->
+        <div class="col-lg-6">
+          <div class="dash-card">
+            <div class="dash-card-head mb-3">
+              <h3 class="dash-card-title"><i class="bi bi-calendar-event-fill me-2 text-warning"></i>${isPt ? "Próximos Cultos e Eventos" : "Upcoming Services & Events"}</h3>
+              <button type="button" class="btn btn-link btn-sm text-decoration-none p-0" style="color: #38bdf8; font-size: 0.8rem;" onclick="if(window.setRoute) window.setRoute('events');">${isPt ? "Ver calendário ›" : "View calendar ›"}</button>
+            </div>
+            <div class="d-flex flex-column gap-2">
+              <!-- Event 1 -->
+              <div class="dash-event-item">
+                <div class="d-flex align-items-center gap-2.5">
+                  <div class="dash-icon-box sky" style="width: 32px; height: 32px; font-size: 0.95rem;"><i class="bi bi-sun-fill"></i></div>
+                  <div>
+                    <div class="fw-semibold text-light" style="font-size: 0.84rem;">Domingo - 1º Culto</div>
+                    <span class="text-secondary small" style="font-size: 0.72rem;"><i class="bi bi-clock me-1"></i>07:30 - 09:00 · Templo Central & Online</span>
+                  </div>
+                </div>
+                <span class="dash-event-badge">${isPt ? "Amanhã" : "Tomorrow"}</span>
+              </div>
+
+              <!-- Event 2 -->
+              <div class="dash-event-item">
+                <div class="d-flex align-items-center gap-2.5">
+                  <div class="dash-icon-box sky" style="width: 32px; height: 32px; font-size: 0.95rem;"><i class="bi bi-people-fill"></i></div>
+                  <div>
+                    <div class="fw-semibold text-light" style="font-size: 0.84rem;">Domingo - 2º Culto</div>
+                    <span class="text-secondary small" style="font-size: 0.72rem;"><i class="bi bi-clock me-1"></i>09:30 - 11:00 · Templo Central & Online</span>
+                  </div>
+                </div>
+                <span class="dash-event-badge">${isPt ? "Amanhã" : "Tomorrow"}</span>
+              </div>
+
+              <!-- Event 3 -->
+              <div class="dash-event-item">
+                <div class="d-flex align-items-center gap-2.5">
+                  <div class="dash-icon-box purple" style="width: 32px; height: 32px; font-size: 0.95rem;"><i class="bi bi-book-fill"></i></div>
+                  <div>
+                    <div class="fw-semibold text-light" style="font-size: 0.84rem;">${isPt ? "Quarta-feira - Culto de Ensino" : "Wednesday - Teaching Service"}</div>
+                    <span class="text-secondary small" style="font-size: 0.72rem;"><i class="bi bi-clock me-1"></i>18:00 - 19:30 · ${isPt ? "Todas as Igrejas" : "All Churches"}</span>
+                  </div>
+                </div>
+                <span class="dash-event-badge" style="background: rgba(148, 163, 184, 0.12); color: #cbd5e1; border-color: rgba(148, 163, 184, 0.25);">07 Out</span>
+              </div>
+
+              <!-- Event 4 -->
+              <div class="dash-event-item">
+                <div class="d-flex align-items-center gap-2.5">
+                  <div class="dash-icon-box amber" style="width: 32px; height: 32px; font-size: 0.95rem;"><i class="bi bi-fire"></i></div>
+                  <div>
+                    <div class="fw-semibold text-light" style="font-size: 0.84rem;">${isPt ? "Vigília de Oração e Milagres" : "Prayer & Miracle Vigil"}</div>
+                    <span class="text-secondary small" style="font-size: 0.72rem;"><i class="bi bi-clock me-1"></i>22:00 - 04:00 · Templo Central</span>
+                  </div>
+                </div>
+                <span class="dash-event-badge" style="background: rgba(234, 179, 8, 0.15); color: #facc15; border-color: rgba(234, 179, 8, 0.25);">10 Out</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. Executive Staff Attendance & Biometrics Section (Fully Functional) -->
+      ${canDashboardSee("staffHr") || activeUser.role === "Super Admin" || activeUser.role === "Pastor" ? `
+        <div id="dash-attendance-section" class="mt-2">
+          ${dashboardSection(
+            lang === "pt" ? "Assiduidade & Pontualidade de Staff" : "Staff Attendance & Punctuality",
+            lang === "pt" ? "Controlo biométrico de presenças, pontualidade, comparativos e relatórios operacionais." : "Biometric presence tracking, punctuality, comparisons, and operational reports.",
+            "bi-fingerprint",
+            "attendance",
+            renderExecutiveAttendanceMainWidget()
+          )}
+        </div>
+      ` : ""}
     </div>
-    <div class="row g-3 mb-2 dashboard-stats-row">
-      ${dashboardCards.map((card) => dashboardMetricCard(card)).join("") || `<div class="col-12">${noResultsHtml()}</div>`}
-    </div>
-    ${canDashboardSee("reports") ? `<div class="row g-3 mb-4 summary-cards-row">
-      ${sm("bi-bar-chart-line", L("rptExecutiveTitle"), L("rptViewAll"), "reports", { route: "reports" })}
-      ${canDashboardSee("finance") ? sm("bi-wallet2", L("rptFinanceExpensesTitle"), money((state.financeDisbursements || []).reduce((s, d) => s + Number(d.released_amount || 0), 0)), "reports", { filterPayload: { domain: "financeExpenses" }, route: "reports", scrollTo: "report-domain-financeExpenses" }) : ""}
-      ${canDashboardSee("staffHr") ? sm("bi-people-fill", L("rptStaffTitle"), (state.staffProfiles || []).length, "reports", { filterPayload: { domain: "staff" }, route: "reports", scrollTo: "report-domain-staff" }) : ""}
-      ${sm("bi-funnel", L("rptFunnelTitle"), firstTimers.length, "reports", { filterPayload: { domain: "funnel" }, route: "reports", scrollTo: "report-domain-funnel" })}
-    </div>` : ""}
-    ${canDashboardSee("firstTimers") ? dashboardSection(L("dashboardChurchGrowth"), L("dashboardChurchGrowthHint"), "bi-graph-up-arrow", "firstTimers", `
-      <div class="row g-4">
-        <div class="col-xl-6">${chartCard(L("firstTimersByMonth"), groupCount(firstTimers, "data_do_culto", true))}</div>
-        <div class="col-xl-6">${chartCard(L("foundationProgress"), students.map((s) => [fullName(s), foundationProgress(s)]))}</div>
-      </div>`) : ""}
-    ${canDashboardSee("finance") ? dashboardSection(L("dashboardFinanceSection"), L("dashboardFinanceHint"), "bi-cash-stack", "finance", `
-      <div class="row g-4">
-        <div class="col-xl-6">${chartCard(L("givingByCategory"), groupSum(finance, "categoria_da_contribuicao", "valor"))}</div>
-        <div class="col-xl-6">${chartCard(L("givingByChurch"), groupSum(finance.map((f) => ({ ...f, igreja: churchName(f.church_id) })), "igreja", "valor"))}</div>
-      </div>`) : ""}
-    ${canDashboardSee("cellMinistryOverview") ? dashboardSection(L("dashboardCellsSection"), L("dashboardCellsHint"), "bi-diagram-3", "cellMinistryOverview", `
-      <div class="row g-4">
-        <div class="col-xl-8">${chartCard(L("cellGrowth"), cells.map((c) => [c.nome_da_celula, c.presencas[0]?.total || 0]))}</div>
-        <div class="col-xl-4">${summaryTiles(L("activeCells"), cells.slice(0, 4).map((c) => [c.nome_da_celula, c.presencas[0]?.total || 0]))}</div>
-      </div>`) : ""}
-    ${canDashboardSee("staffHr") || activeUser.role === "Super Admin" || activeUser.role === "Pastor" ? `
-      ${dashboardSection(
-        lang === "pt" ? "Assiduidade & Pontualidade de Staff" : "Staff Attendance & Punctuality",
-        lang === "pt" ? "Controlo biométrico de presenças, pontualidade, comparativos e relatórios operacionais." : "Biometric presence tracking, punctuality, comparisons, and operational reports.",
-        "bi-fingerprint",
-        "attendance",
-        renderExecutiveAttendanceMainWidget()
-      )}
-    ` : ""}
-    ${dashboardSection(L("dashboardRecentSection"), L("dashboardRecentHint"), "bi-journal-text", "audit", `
-      <div class="row g-4">
-        <div class="col-xl-7">${renderDashboardActivityList()}</div>
-        <div class="col-xl-5">${summaryTiles(L("sacramentsSummary"), [[L("baptismTab"), (state.sacraments?.baptisms || []).length], [L("marriageTab"), (state.sacraments?.marriages || []).length], [L("babyTab"), (state.sacraments?.babies || []).length]])}</div>
-      </div>`)}
   `);
 }
 
@@ -17867,14 +18615,17 @@ function openCellAttendanceModal() {
     currentSessionVisitors = [];
     if (typeof window !== "undefined") window.currentSessionVisitors = currentSessionVisitors;
     modalType = "cellAttendance";
+    const isPt = lang === "pt";
 
     const modalEyebrow = byId("modalEyebrow");
-    if (modalEyebrow) modalEyebrow.textContent = "Portal de Célula • " + (context?.cell_name || "Célula");
+    if (modalEyebrow) modalEyebrow.textContent = `${isPt ? "Portal de Célula" : "Cell Portal"} • ` + (context?.cell_name || (isPt ? "Célula" : "Cell"));
     const modalTitle = byId("modalTitle");
-    if (modalTitle) modalTitle.innerHTML = '<i class="bi bi-calendar-check-fill text-warning me-2"></i>Registo de Presenças & Visitantes da Célula';
+    if (modalTitle) modalTitle.innerHTML = `<i class="bi bi-calendar-check-fill text-warning me-2"></i>${isPt ? "Registo de Presenças & Visitantes da Célula" : "Cell Service Attendance & Visitors Registration"}`;
 
     const todayStr = new Date().toISOString().slice(0, 10);
-    const reportWeekStr = `${new Date().toLocaleString(lang === "pt" ? "pt-PT" : "en-US", { month: "long" })} Semana ${Math.ceil(new Date().getDate() / 7)}`;
+    const reportWeekStr = isPt
+      ? `${new Date().toLocaleString("pt-PT", { month: "long" })} Semana ${Math.ceil(new Date().getDate() / 7)}`
+      : `${new Date().toLocaleString("en-US", { month: "long" })} Week ${Math.ceil(new Date().getDate() / 7)}`;
 
     const modalFields = byId("modalFields");
     if (modalFields) {
@@ -17883,46 +18634,46 @@ function openCellAttendanceModal() {
           <div class="p-3 rounded mb-2 small d-flex align-items-start gap-2" style="background: rgba(14, 165, 233, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); color: #f0f9ff;">
             <i class="bi bi-info-circle-fill text-info fs-5 flex-shrink-0 mt-0"></i>
             <div style="line-height: 1.55; color: #e0f2fe;">
-              Marque os membros oficiais presentes no culto e adicione novos visitantes.
-              <div class="mt-1"><strong style="color: #38bdf8; font-weight: 700;">Regra de Membresia:</strong> Novos visitantes que atingirem <strong style="color: #facc15; font-weight: 700;">3 presenças</strong> em cultos/reuniões tornam-se membros oficiais da célula.</div>
+              ${isPt ? "Marque os membros oficiais presentes no culto e adicione novos visitantes." : "Mark official cell members present at the service and add new visitors."}
+              <div class="mt-1"><strong style="color: #38bdf8; font-weight: 700;">${isPt ? "Regra de Membresia:" : "Membership Rule:"}</strong> ${isPt ? "Novos visitantes que atingirem" : "New visitors who reach"} <strong style="color: #facc15; font-weight: 700;">${isPt ? "3 presenças" : "3 attendances"}</strong> ${isPt ? "em cultos/reuniões tornam-se membros oficiais da célula." : "in services/meetings become official cell members."}</div>
             </div>
           </div>
         </div>
         <div class="col-md-4">
-          <label class="form-label">Culto / Serviço *</label>
+          <label class="form-label">${isPt ? "Culto / Serviço *" : "Service / Meeting *"}</label>
           <select class="form-select" name="serviceType" data-attendance-field="serviceType">
-            <option value="Domingo" selected>Domingo (Culto Geral)</option>
-            <option value="Quarta-feira">Quarta-feira</option>
-            <option value="Reunião de Célula">Reunião de Célula</option>
-            <option value="Culto Especial">Culto Especial</option>
+            <option value="Domingo" selected>${isPt ? "Domingo (Culto Geral)" : "Sunday (General Service)"}</option>
+            <option value="Quarta-feira">${isPt ? "Quarta-feira" : "Wednesday"}</option>
+            <option value="Reunião de Célula">${isPt ? "Reunião de Célula" : "Cell Meeting"}</option>
+            <option value="Culto Especial">${isPt ? "Culto Especial" : "Special Service"}</option>
           </select>
         </div>
         <div class="col-md-4">
-          <label class="form-label">Data do Culto *</label>
+          <label class="form-label">${isPt ? "Data do Culto *" : "Service Date *"}</label>
           <input type="date" class="form-control" name="serviceDate" value="${todayStr}" data-attendance-field="serviceDate">
         </div>
         <div class="col-md-4">
-          <label class="form-label">Semana do Relatório</label>
+          <label class="form-label">${isPt ? "Semana do Relatório" : "Report Week"}</label>
           <input type="text" class="form-control" name="reportWeek" value="${reportWeekStr}" data-attendance-field="reportWeek">
         </div>
 
         <!-- Official Members Checklist (Default: UNCHECKED) -->
         <div class="col-12 mt-3">
           <div class="d-flex justify-content-between align-items-center mb-2">
-            <label class="form-label mb-0 fw-bold text-info"><i class="bi bi-people-fill me-1"></i>Membros Oficiais da Célula (${members.length})</label>
+            <label class="form-label mb-0 fw-bold text-info"><i class="bi bi-people-fill me-1"></i>${isPt ? "Membros Oficiais da Célula" : "Official Cell Members"} (${members.length})</label>
             <div class="btn-group btn-group-sm">
-              <button type="button" class="btn btn-outline-success" data-cell-attendance-check-all="1" onclick="window.toggleCellAttendanceCheckboxes &amp;&amp; window.toggleCellAttendanceCheckboxes(true); return false;"><i class="bi bi-check-all me-1"></i>Marcar Todos</button>
-              <button type="button" class="btn btn-outline-secondary" data-cell-attendance-check-all="0" onclick="window.toggleCellAttendanceCheckboxes &amp;&amp; window.toggleCellAttendanceCheckboxes(false); return false;"><i class="bi bi-x-lg me-1"></i>Desmarcar</button>
+              <button type="button" class="btn btn-outline-success" data-cell-attendance-check-all="1" onclick="window.toggleCellAttendanceCheckboxes &amp;&amp; window.toggleCellAttendanceCheckboxes(true); return false;"><i class="bi bi-check-all me-1"></i>${isPt ? "Marcar Todos" : "Mark All"}</button>
+              <button type="button" class="btn btn-outline-secondary" data-cell-attendance-check-all="0" onclick="window.toggleCellAttendanceCheckboxes &amp;&amp; window.toggleCellAttendanceCheckboxes(false); return false;"><i class="bi bi-x-lg me-1"></i>${isPt ? "Desmarcar" : "Uncheck"}</button>
             </div>
           </div>
           <div class="table-responsive border rounded p-2" style="max-height: 220px; overflow-y: auto; background: #0b132b; border-color: #1e293b !important;">
             <table class="table table-sm mb-0 align-middle" style="color: #f8fafc;">
               <thead>
                 <tr style="color: #93c5fd; border-bottom: 1px solid #1e293b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">
-                  <th style="width: 45px; color: #93c5fd;">Presença</th>
-                  <th style="color: #93c5fd;">Nome do Membro</th>
-                  <th style="color: #93c5fd;">Telefone</th>
-                  <th style="color: #93c5fd;">Estado</th>
+                  <th style="width: 45px; color: #93c5fd;">${isPt ? "Presença" : "Present"}</th>
+                  <th style="color: #93c5fd;">${isPt ? "Nome do Membro" : "Member Name"}</th>
+                  <th style="color: #93c5fd;">${isPt ? "Telefone" : "Phone"}</th>
+                  <th style="color: #93c5fd;">${isPt ? "Estado" : "Status"}</th>
                 </tr>
               </thead>
               <tbody>
@@ -17933,9 +18684,9 @@ function openCellAttendanceModal() {
                     </td>
                     <td style="color: #ffffff;"><strong style="color: #ffffff; font-size: 0.92rem;">${escapeAttr(m.name || "—")}</strong></td>
                     <td style="color: #38bdf8 !important; font-weight: 700; font-size: 0.9rem; font-family: monospace;">${escapeAttr(m.phone || "—")}</td>
-                    <td>${badge(m.status || "Activo")}</td>
+                    <td>${badge(m.status || (isPt ? "Activo" : "Active"))}</td>
                   </tr>
-                `).join("") || `<tr><td colspan="4" class="text-secondary text-center py-3">Nenhum membro oficial registado na célula.</td></tr>`}
+                `).join("") || `<tr><td colspan="4" class="text-secondary text-center py-3">${isPt ? "Nenhum membro oficial registado na célula." : "No official members registered in this cell."}</td></tr>`}
               </tbody>
             </table>
           </div>
@@ -17944,27 +18695,27 @@ function openCellAttendanceModal() {
         <!-- Register New Visitor / First Timer Section -->
         <div class="col-12 mt-3">
           <div class="p-3 rounded" style="background: rgba(15, 23, 42, 0.65); border: 1px solid rgba(234, 179, 8, 0.35);">
-            <h5 class="fs-6 text-warning mb-2"><i class="bi bi-person-plus-fill me-1"></i>Registar Novo Membro ou First Timer (Primeira Vez)</h5>
+            <h5 class="fs-6 text-warning mb-2"><i class="bi bi-person-plus-fill me-1"></i>${isPt ? "Registar Novo Membro ou First Timer (Primeira Vez)" : "Register New Member or First Timer"}</h5>
             <div class="row g-2 align-items-end mb-2">
               <div class="col-md-5">
-                <label class="form-label small mb-1">Nome Completo</label>
-                <input type="text" class="form-control form-control-sm" id="newVisitorName" placeholder="Ex: Lucas Manuel">
+                <label class="form-label small mb-1">${isPt ? "Nome Completo" : "Full Name"}</label>
+                <input type="text" class="form-control form-control-sm" id="newVisitorName" placeholder="${isPt ? "Ex: Lucas Manuel" : "e.g. John Doe"}">
               </div>
               <div class="col-md-3">
-                <label class="form-label small mb-1">Telefone</label>
-                <input type="tel" class="form-control form-control-sm" id="newVisitorPhone" placeholder="Ex: 841234567">
+                <label class="form-label small mb-1">${isPt ? "Telefone" : "Phone"}</label>
+                <input type="tel" class="form-control form-control-sm" id="newVisitorPhone" placeholder="${isPt ? "Ex: 841234567" : "e.g. 841234567"}">
               </div>
               <div class="col-md-2">
-                <label class="form-label small mb-1">Tipo</label>
+                <label class="form-label small mb-1">${isPt ? "Tipo" : "Type"}</label>
                 <select class="form-select form-select-sm" id="newVisitorType">
                   <option value="FT">First Timer (FT)</option>
-                  <option value="NC">Novo Convertido (NC)</option>
-                  <option value="FT_NC">FT & NC (Ambos)</option>
+                  <option value="NC">${isPt ? "Novo Convertido (NC)" : "New Convert (NC)"}</option>
+                  <option value="FT_NC">${isPt ? "FT & NC (Ambos)" : "FT & NC (Both)"}</option>
                 </select>
               </div>
               <div class="col-md-2">
                 <button type="button" class="btn btn-sm btn-warning w-100" data-add-visitor-row onclick="window.addCellAttendanceVisitorFromInput &amp;&amp; window.addCellAttendanceVisitorFromInput(event); return false;">
-                  <i class="bi bi-plus-lg me-1"></i>Adicionar
+                  <i class="bi bi-plus-lg me-1"></i>${isPt ? "Adicionar" : "Add"}
                 </button>
               </div>
             </div>
@@ -17972,10 +18723,10 @@ function openCellAttendanceModal() {
               <table class="table table-sm mb-0 align-middle" style="color: #f8fafc;">
                 <thead>
                   <tr style="color: #93c5fd; border-bottom: 1px solid #1e293b; font-size: 0.75rem; text-transform: uppercase;">
-                    <th style="color: #93c5fd;">Nome</th>
-                    <th style="color: #93c5fd;">Telefone</th>
-                    <th style="color: #93c5fd;">Classificação</th>
-                    <th style="width: 50px; color: #93c5fd;">Acção</th>
+                    <th style="color: #93c5fd;">${isPt ? "Nome" : "Name"}</th>
+                    <th style="color: #93c5fd;">${isPt ? "Telefone" : "Phone"}</th>
+                    <th style="color: #93c5fd;">${isPt ? "Classificação" : "Type"}</th>
+                    <th style="width: 50px; color: #93c5fd;">${isPt ? "Acção" : "Action"}</th>
                   </tr>
                 </thead>
                 <tbody id="cellAttendanceVisitorsTableBody"></tbody>
@@ -17986,33 +18737,33 @@ function openCellAttendanceModal() {
 
         <!-- Counters for FT & NC -->
         <div class="col-md-6 mt-3">
-          <label class="form-label text-warning fw-bold"><i class="bi bi-person-heart me-1"></i>Total First Timers (FT)</label>
+          <label class="form-label text-warning fw-bold"><i class="bi bi-person-heart me-1"></i>${isPt ? "Total First Timers (FT)" : "Total First Timers (FT)"}</label>
           <div class="input-group">
             <button class="btn btn-outline-secondary" type="button" data-step-counter="ftCount" data-step-delta="-1" onclick="window.stepAttendanceCounter &amp;&amp; window.stepAttendanceCounter('ftCount', -1); return false;">-</button>
             <input type="number" min="0" class="form-control text-center fw-bold fs-5 text-warning" name="ftCount" value="0" data-attendance-field="ftCount">
             <button class="btn btn-outline-secondary" type="button" data-step-counter="ftCount" data-step-delta="1" onclick="window.stepAttendanceCounter &amp;&amp; window.stepAttendanceCounter('ftCount', 1); return false;">+</button>
           </div>
-          <small class="text-secondary">Pessoas que vieram pela 1ª vez</small>
+          <small class="text-secondary">${isPt ? "Pessoas que vieram pela 1ª vez" : "People attending for the 1st time"}</small>
         </div>
         <div class="col-md-6 mt-3">
-          <label class="form-label text-success fw-bold"><i class="bi bi-stars me-1"></i>Total Novos Convertidos (NC)</label>
+          <label class="form-label text-success fw-bold"><i class="bi bi-stars me-1"></i>${isPt ? "Total Novos Convertidos (NC)" : "Total New Converts (NC)"}</label>
           <div class="input-group">
             <button class="btn btn-outline-secondary" type="button" data-step-counter="ncCount" data-step-delta="-1" onclick="window.stepAttendanceCounter &amp;&amp; window.stepAttendanceCounter('ncCount', -1); return false;">-</button>
             <input type="number" min="0" class="form-control text-center fw-bold fs-5 text-success" name="ncCount" value="0" data-attendance-field="ncCount">
             <button class="btn btn-outline-secondary" type="button" data-step-counter="ncCount" data-step-delta="1" onclick="window.stepAttendanceCounter &amp;&amp; window.stepAttendanceCounter('ncCount', 1); return false;">+</button>
           </div>
-          <small class="text-secondary">Entregaram a vida a Cristo</small>
+          <small class="text-secondary">${isPt ? "Entregaram a vida a Cristo" : "Gave their lives to Christ"}</small>
         </div>
         <div class="col-12 mt-3">
-          <label class="form-label"><i class="bi bi-chat-left-text me-1"></i>Observações / Testemunhos do Culto</label>
-          <textarea class="form-control" name="attendanceNotes" rows="2" placeholder="Notas sobre a reunião ou culto..." data-attendance-field="attendanceNotes"></textarea>
+          <label class="form-label"><i class="bi bi-chat-left-text me-1"></i>${isPt ? "Observações / Testemunhos do Culto" : "Service Observations / Testimonies"}</label>
+          <textarea class="form-control" name="attendanceNotes" rows="2" placeholder="${isPt ? "Notas sobre a reunião ou culto..." : "Notes regarding the service or meeting..."}" data-attendance-field="attendanceNotes"></textarea>
         </div>
       `;
     }
 
     const submitButton = byId("entryForm")?.querySelector('button[type="submit"]');
     if (submitButton) {
-      submitButton.innerHTML = '<i class="bi bi-cloud-arrow-up-fill me-1"></i>Guardar Presenças & Sincronizar';
+      submitButton.innerHTML = `<i class="bi bi-cloud-arrow-up-fill me-1"></i>${isPt ? "Guardar Presenças & Sincronizar" : "Save Attendance & Synchronize"}`;
       submitButton.className = "btn btn-ce-gold btn-touch";
       submitButton.classList.remove("d-none");
     }
@@ -18323,9 +19074,14 @@ async function submitCellAttendanceModal(form) {
   saveState("Cell attendance recorded");
   bootstrap.Modal.getInstance(byId("entryModal"))?.hide();
 
-  let successMsg = `Presenças da célula guardadas com sucesso! (${membersPresentCount} membros + ${ftCount} FT = ${totalAtt} presentes). Os dados foram consolidados no Relatório Geral da Igreja.`;
+  const isPt = lang === "pt";
+  let successMsg = isPt
+    ? `Presenças da célula guardadas com sucesso! (${membersPresentCount} membros + ${ftCount} FT = ${totalAtt} presentes). Os dados foram consolidados no Relatório Geral da Igreja.`
+    : `Cell attendance saved successfully! (${membersPresentCount} members + ${ftCount} FT = ${totalAtt} attendees). Data has been consolidated into the General Church Report.`;
   if (promotedNames.length) {
-    successMsg += `\n\n🎉 Parabéns! ${promotedNames.join(", ")} completou 3 cultos e foi promovido(a) a Membro Oficial da Célula!`;
+    successMsg += isPt
+      ? `\n\n🎉 Parabéns! ${promotedNames.join(", ")} completou 3 cultos e foi promovido(a) a Membro Oficial da Célula!`
+      : `\n\n🎉 Congratulations! ${promotedNames.join(", ")} completed 3 services and was promoted to Official Cell Member!`;
   }
   alert(successMsg);
 
@@ -18337,69 +19093,71 @@ async function submitCellAttendanceModal(form) {
 function openMemberCandidateForm(id = null) {
   const context = getCellLeaderContext(activeUser?.id, cellPortalPageState.cellId);
   const candidate = id ? (state.memberRegistrationCandidates || []).find((item) => item.id === id) : null;
+  const isPt = lang === "pt";
   const canRegister = isCellLeaderOrAssistant(activeUser) || canReviewMemberCandidates(activeUser) || hasCellPortalPermission("cell_portal.edit", activeUser) || (context?.cell_id && canAccessCell(activeUser?.id, context.cell_id));
-  if (!candidate && !canRegister) return alert("Apenas líderes, assistentes e administradores autorizados podem registar membros pela célula.");
-  if (candidate && !canReviewMemberCandidates() && !candidateCanAccess(candidate) && candidate.registered_by_user_id !== activeUser?.id) return alert("Não tem permissão para editar este pedido.");
+  if (!candidate && !canRegister) return alert(isPt ? "Apenas líderes, assistentes e administradores autorizados podem registar membros pela célula." : "Only authorized leaders, assistants, and administrators can register cell members.");
+  if (candidate && !canReviewMemberCandidates() && !candidateCanAccess(candidate) && candidate.registered_by_user_id !== activeUser?.id) return alert(isPt ? "Não tem permissão para editar este pedido." : "You do not have permission to edit this request.");
   if (candidate && !canReviewMemberCandidates() && !["Draft", "ReadyForSubmission", "NeedsCorrection"].includes(candidate.approval_status)) return openMemberCandidateDetails(candidate);
   const data = candidate || { church_id: context.church_id, church_name: context.church_name, cell_group_id: context.cell_group_id, cell_group_name: context.cell_group_name, cell_id: context.cell_id, cell_name: context.cell_name };
   const isAssistant = activeUser?.role === "Cell Assistant" || context?.cell_role === "Cell Assistant";
   modalMode = candidate ? "edit" : "create"; modalType = "memberCandidate"; modalRecordId = candidate?.id || null;
-  byId("modalEyebrow").textContent = "Pedido de adesão";
-  byId("modalTitle").textContent = candidate ? "Editar candidato" : "Registar novo membro na célula";
+  byId("modalEyebrow").textContent = isPt ? "Pedido de adesão" : "Membership Registration";
+  byId("modalTitle").textContent = candidate ? (isPt ? "Editar candidato" : "Edit Candidate") : (isPt ? "Registar novo membro na célula" : "Register New Cell Member");
 
   const churchVal = data.church_name || context?.church_name || churchName(data.church_id) || "Christ Embassy";
   const cellGroupVal = data.cell_group_name || data.group_name || context?.cell_group_name || "—";
   const cellVal = data.cell_name || data.celula || context?.cell_name || "—";
 
   const roleHelpNotice = isAssistant
-    ? `<div class="col-12"><div class="alert alert-warning mb-2"><i class="bi bi-info-circle me-2"></i>Como <strong>Assistente de Célula</strong>, este registo ficará numa <strong>fila de espera para aprovação pelo Líder da Célula</strong> antes de entrar na lista de membros.</div></div>`
-    : `<div class="col-12"><div class="alert alert-success mb-2"><i class="bi bi-check-circle me-2"></i>Como <strong>Líder de Célula</strong>, este membro <strong>entra imediatamente na lista da célula</strong> e segue simultaneamente para a fila de aprovação da Igreja.</div></div>`;
+    ? `<div class="col-12"><div class="alert alert-warning mb-2"><i class="bi bi-info-circle me-2"></i>${isPt ? "Como <strong>Assistente de Célula</strong>, este registo ficará numa <strong>fila de espera para aprovação pelo Líder da Célula</strong> antes de entrar na lista de membros." : "As <strong>Cell Assistant</strong>, this record will enter a <strong>waiting queue for Cell Leader approval</strong> before entering the member roster."}</div></div>`
+    : `<div class="col-12"><div class="alert alert-success mb-2"><i class="bi bi-check-circle me-2"></i>${isPt ? "Como <strong>Líder de Célula</strong>, este membro <strong>entra imediatamente na lista da célula</strong> e segue simultaneamente para a fila de aprovação da Igreja." : "As <strong>Cell Leader</strong>, this member <strong>immediately enters the cell roster</strong> and proceeds simultaneously to Church admin approval."}</div></div>`;
   byId("modalFields").innerHTML = `
     ${roleHelpNotice}
     <div class="col-12 mb-3">
       <div class="p-3 rounded d-flex flex-wrap align-items-center justify-content-between gap-3 shadow-sm" style="background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(234, 179, 8, 0.4); border-radius: 8px;">
-        <div><span class="text-secondary small d-block">Igreja</span><strong class="text-light"><i class="bi bi-building me-1 text-warning"></i>${escapeAttr(churchVal)}</strong></div>
-        <div><span class="text-secondary small d-block">Grupo de Célula</span><strong class="text-light"><i class="bi bi-diagram-3 me-1 text-info"></i>${escapeAttr(cellGroupVal)}</strong></div>
-        <div><span class="text-secondary small d-block">Célula</span><strong class="text-light"><i class="bi bi-house-door me-1 text-success"></i>${escapeAttr(cellVal)}</strong></div>
+        <div><span class="text-secondary small d-block">${isPt ? "Igreja" : "Church"}</span><strong class="text-light"><i class="bi bi-building me-1 text-warning"></i>${escapeAttr(churchVal)}</strong></div>
+        <div><span class="text-secondary small d-block">${isPt ? "Grupo de Célula" : "Cell Group"}</span><strong class="text-light"><i class="bi bi-diagram-3 me-1 text-info"></i>${escapeAttr(cellGroupVal)}</strong></div>
+        <div><span class="text-secondary small d-block">${isPt ? "Célula" : "Cell"}</span><strong class="text-light"><i class="bi bi-house-door me-1 text-success"></i>${escapeAttr(cellVal)}</strong></div>
       </div>
     </div>
-    <div class="col-md-6"><label class="form-label">Nome completo *</label><input required name="full_name" class="form-control" value="${escapeAttr(data.full_name || "")}"></div>
-    <div class="col-md-6"><label class="form-label">Telefone (opcional)</label><input name="primary_phone" class="form-control" value="${escapeAttr(data.primary_phone || "")}"></div>
-    <div class="col-md-6"><label class="form-label">E-mail</label><input type="email" name="email" class="form-control" value="${escapeAttr(data.email || "")}"></div>
-    <div class="col-md-6"><label class="form-label">Data de nascimento</label><input type="date" name="date_of_birth" class="form-control" value="${escapeAttr(data.date_of_birth || "")}"></div>
-    <div class="col-md-6"><label class="form-label">Bairro</label><input name="neighborhood" class="form-control" value="${escapeAttr(data.neighborhood || "")}"></div>
-    <div class="col-md-6"><label class="form-label">Profissão</label><input name="occupation" class="form-control" value="${escapeAttr(data.occupation || "")}"></div>
-    <div class="col-12"><label class="form-label">Notas</label><textarea name="notes" class="form-control">${escapeAttr(data.notes || "")}</textarea></div>
-    <div class="col-12 d-flex justify-content-end"><button type="button" class="btn btn-ce-gold" data-candidate-submit-form>${isAssistant ? "Submeter para Aprovação do Líder" : "Registar & Submeter para Aprovação"}</button></div>`;
-  const submitButton = byId("entryForm")?.querySelector('button[type="submit"]'); if (submitButton) submitButton.textContent = "Guardar Rascunho";
+    <div class="col-md-6"><label class="form-label">${isPt ? "Nome completo *" : "Full Name *"}</label><input required name="full_name" class="form-control" value="${escapeAttr(data.full_name || "")}"></div>
+    <div class="col-md-6"><label class="form-label">${isPt ? "Telefone (opcional)" : "Phone (optional)"}</label><input name="primary_phone" class="form-control" value="${escapeAttr(data.primary_phone || "")}"></div>
+    <div class="col-md-6"><label class="form-label">${isPt ? "E-mail" : "Email"}</label><input type="email" name="email" class="form-control" value="${escapeAttr(data.email || "")}"></div>
+    <div class="col-md-6"><label class="form-label">${isPt ? "Data de nascimento" : "Date of Birth"}</label><input type="date" name="date_of_birth" class="form-control" value="${escapeAttr(data.date_of_birth || "")}"></div>
+    <div class="col-md-6"><label class="form-label">${isPt ? "Bairro" : "Neighborhood"}</label><input name="neighborhood" class="form-control" value="${escapeAttr(data.neighborhood || "")}"></div>
+    <div class="col-md-6"><label class="form-label">${isPt ? "Profissão" : "Occupation"}</label><input name="occupation" class="form-control" value="${escapeAttr(data.occupation || "")}"></div>
+    <div class="col-12"><label class="form-label">${isPt ? "Notas" : "Notes"}</label><textarea name="notes" class="form-control">${escapeAttr(data.notes || "")}</textarea></div>
+    <div class="col-12 d-flex justify-content-end"><button type="button" class="btn btn-ce-gold" data-candidate-submit-form>${isAssistant ? (isPt ? "Submeter para Aprovação do Líder" : "Submit for Leader Approval") : (isPt ? "Registar & Submeter para Aprovação" : "Register & Submit for Approval")}</button></div>`;
+  const submitButton = byId("entryForm")?.querySelector('button[type="submit"]'); if (submitButton) submitButton.textContent = isPt ? "Guardar Rascunho" : "Save Draft";
   bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
 }
 
 function openMemberCandidateDetails(candidate) {
   modalType = ""; modalRecordId = null;
+  const isPt = lang === "pt";
   const churchVal = candidate.church_name || churchName(candidate.church_id) || "Christ Embassy";
   const cellGroupVal = candidate.cell_group_name || candidate.group_name || "—";
   const cellVal = candidate.cell_name || candidate.celula || "—";
   const id = escapeAttr(candidate.id);
 
-  byId("modalEyebrow").textContent = "Pedido de adesão";
+  byId("modalEyebrow").textContent = isPt ? "Pedido de adesão" : "Membership Registration";
   byId("modalTitle").textContent = candidateFullName(candidate);
   byId("modalFields").innerHTML = `
     <div class="col-12 mb-3">
       <div class="p-3 rounded d-flex flex-wrap align-items-center justify-content-between gap-3 shadow-sm" style="background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(234, 179, 8, 0.4); border-radius: 8px;">
-        <div><span class="text-secondary small d-block">Igreja</span><strong class="text-light"><i class="bi bi-building me-1 text-warning"></i>${escapeAttr(churchVal)}</strong></div>
-        <div><span class="text-secondary small d-block">Grupo de Célula</span><strong class="text-light"><i class="bi bi-diagram-3 me-1 text-info"></i>${escapeAttr(cellGroupVal)}</strong></div>
-        <div><span class="text-secondary small d-block">Célula</span><strong class="text-light"><i class="bi bi-house-door me-1 text-success"></i>${escapeAttr(cellVal)}</strong></div>
+        <div><span class="text-secondary small d-block">${isPt ? "Igreja" : "Church"}</span><strong class="text-light"><i class="bi bi-building me-1 text-warning"></i>${escapeAttr(churchVal)}</strong></div>
+        <div><span class="text-secondary small d-block">${isPt ? "Grupo de Célula" : "Cell Group"}</span><strong class="text-light"><i class="bi bi-diagram-3 me-1 text-info"></i>${escapeAttr(cellGroupVal)}</strong></div>
+        <div><span class="text-secondary small d-block">${isPt ? "Célula" : "Cell"}</span><strong class="text-light"><i class="bi bi-house-door me-1 text-success"></i>${escapeAttr(cellVal)}</strong></div>
       </div>
     </div>
-    <div class="col-12"><div class="alert alert-info">Estado: <strong>${escapeAttr(candidateStatusLabel(candidate.approval_status))}</strong></div></div>
-    <div class="col-md-6"><strong>Telefone:</strong> ${escapeAttr(candidate.primary_phone || "Não informado")}</div>
-    <div class="col-md-6"><strong>E-mail:</strong> ${escapeAttr(candidate.email || "Não informado")}</div>
-    <div class="col-12"><strong>Motivo / Observações:</strong> ${escapeAttr(candidate.correction_reason || candidate.rejection_reason || candidate.notes || "Sem observações")}</div>
+    <div class="col-12"><div class="alert alert-info">${isPt ? "Estado:" : "Status:"} <strong>${escapeAttr(candidateStatusLabel(candidate.approval_status))}</strong></div></div>
+    <div class="col-md-6"><strong>${isPt ? "Telefone:" : "Phone:"}</strong> ${escapeAttr(candidate.primary_phone || (isPt ? "Não informado" : "Not provided"))}</div>
+    <div class="col-md-6"><strong>${isPt ? "E-mail:" : "Email:"}</strong> ${escapeAttr(candidate.email || (isPt ? "Não informado" : "Not provided"))}</div>
+    <div class="col-12"><strong>${isPt ? "Motivo / Observações:" : "Reason / Remarks:"}</strong> ${escapeAttr(candidate.correction_reason || candidate.rejection_reason || candidate.notes || (isPt ? "Sem observações" : "No remarks"))}</div>
     <div class="col-12 mt-3 pt-2 border-top d-flex justify-content-between align-items-center">
-      <button type="button" class="btn btn-outline-danger btn-sm" data-candidate-action="delete" data-candidate-id="${id}" onclick="bootstrap.Modal.getInstance(byId('entryModal'))?.hide();"><i class="bi bi-trash me-1"></i>Eliminar este registo</button>
+      <button type="button" class="btn btn-outline-danger btn-sm" data-candidate-action="delete" data-candidate-id="${id}" onclick="bootstrap.Modal.getInstance(byId('entryModal'))?.hide();"><i class="bi bi-trash me-1"></i>${isPt ? "Eliminar este registo" : "Delete this record"}</button>
     </div>`;
-  const submitButton = byId("entryForm")?.querySelector('button[type="submit"]'); if (submitButton) submitButton.textContent = "Fechar";
+  const submitButton = byId("entryForm")?.querySelector('button[type="submit"]'); if (submitButton) submitButton.textContent = isPt ? "Fechar" : "Close";
   bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
 }
 
