@@ -11393,6 +11393,46 @@ function yesNo(value) {
   return value ? L("yes") : L("no");
 }
 
+function yesNoBadge(value) {
+  const isYes = value === true || value === "true" || value === 1 || value === "Sim" || value === "Yes" || value === "SIM" || value === "YES";
+  if (isYes) {
+    return `<span class="badge bg-success-subtle text-success" style="font-size: 0.72rem; padding: 0.22rem 0.52rem;"><i class="bi bi-check-lg me-0.5"></i>${L("yes")}</span>`;
+  }
+  return `<span class="badge bg-secondary-subtle text-secondary" style="font-size: 0.72rem; padding: 0.22rem 0.52rem;">${L("no")}</span>`;
+}
+
+function formatFirstTimerNumber(p, idx) {
+  const num = p?.first_timer_number;
+  if (num && !num.includes("-4") && num.length <= 15) {
+    return num;
+  }
+  const id = String(p?.id || "");
+  if (id.startsWith("FT-")) return id;
+  const match = id.match(/(\d+)$/);
+  if (match && match[1]) {
+    const d = parseInt(match[1], 10);
+    if (!isNaN(d)) return `FT-2026-${String(d).padStart(4, "0")}`;
+  }
+  const fallback = typeof idx === "number" ? idx + 1 : 1;
+  return `FT-2026-${String(fallback).padStart(4, "0")}`;
+}
+
+function renderTableIdBadge(text) {
+  return `<span class="badge font-monospace" style="background: rgba(255, 255, 255, 0.05); color: #cbd5e1; border: 1px solid rgba(255, 255, 255, 0.1); font-size: 0.74rem; padding: 0.22rem 0.52rem; letter-spacing: 0.04em;">${escapeAttr(text || "—")}</span>`;
+}
+
+function renderPersonNameCell(p) {
+  const full = fullName(p);
+  const clean = cleanDisplayText(full);
+  const initial = clean.replace(/^(Irmão\/Irmã|Irmão|Irmã|Pastor|Pr\.|Sister|Brother)\s*/i, "").trim().charAt(0).toUpperCase() || "P";
+  return `<div class="d-flex align-items-center gap-2">
+    <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 28px; height: 28px; background: rgba(56, 189, 248, 0.12); color: #38bdf8; font-weight: 700; font-size: 0.75rem; border: 1px solid rgba(56, 189, 248, 0.25);">
+      ${initial}
+    </div>
+    <div class="fw-semibold text-white" style="font-size: 0.86rem;">${clean}</div>
+  </div>`;
+}
+
 function badge(status) {
   return `<span class="status-pill status-${badgeClass(status)}"><i class="bi bi-circle-fill"></i>${statusText(status)}</span>`;
 }
@@ -16646,24 +16686,28 @@ function renderFirstTimers() {
       ${filterBar({ viewToggle: ViewToggle(view), statusOptions: followupStatuses })}
       ${(() => {
         const filtered = applyFirstTimerCardFilters(list, firstTimersPageState.filter);
-        const fTableRows = filtered.map((p) => {
+        const fTableRows = filtered.map((p, idx) => {
           const isReceived = Boolean(p.cell_received || p.workflow_status === "CELL_RECEIVED" || p.estado_do_seguimento === "Received in Cell");
           const hasCell = Boolean(p.cell_id || p.celula || p.cell_name);
           const cellBadge = isReceived
-            ? `<span class="badge bg-success-subtle text-success border border-success"><i class="bi bi-check-circle-fill me-1"></i>Recebido na Célula</span>`
+            ? `<span class="badge bg-success-subtle text-success"><i class="bi bi-check-circle-fill me-1"></i>Recebido na Célula</span>`
             : (hasCell
-              ? `<span class="badge bg-info-subtle text-cyan border border-info"><i class="bi bi-clock-history me-1"></i>Atribuído à Célula</span>`
-              : `<span class="badge bg-secondary-subtle text-muted border border-secondary"><i class="bi bi-dash-circle me-1"></i>Não Atribuído</span>`);
+              ? `<span class="badge bg-info-subtle text-cyan"><i class="bi bi-clock-history me-1"></i>Atribuído à Célula</span>`
+              : `<span class="badge bg-secondary-subtle text-secondary"><i class="bi bi-dash-circle me-1"></i>Não Atribuído</span>`);
+          const cellNameStr = cleanDisplayText(p.cell_name || p.celula || "");
+          const cellDisplay = cellNameStr && cellNameStr !== "—" && cellNameStr !== "-"
+            ? `<span class="badge bg-secondary-subtle text-light"><i class="bi bi-diagram-3 me-1 text-cyan"></i>${escapeAttr(cellNameStr)}</span>`
+            : `<span class="text-secondary small">—</span>`;
           return [
-            p.first_timer_number || "—",
-            fullName(p),
-            p.telefone || p.phone || "—",
-            churchName(p.church_id),
+            renderTableIdBadge(formatFirstTimerNumber(p, idx)),
+            renderPersonNameCell(p),
+            p.telefone || p.phone ? `<span class="font-monospace small text-light">${escapeAttr(p.telefone || p.phone)}</span>` : `<span class="text-secondary small">—</span>`,
+            `<span class="small fw-semibold text-white">${escapeAttr(cleanDisplayText(churchName(p.church_id)))}</span>`,
             cellBadge,
-            p.cell_name || p.celula ? `<span class="badge bg-secondary-subtle text-body"><i class="bi bi-diagram-3 me-1"></i>${escapeAttr(p.cell_name || p.celula)}</span>` : `<span class="text-secondary small">—</span>`,
-            p.convidado_por || p.invited_by || p.invited_by_name || "—",
-            yesNo(p.nasceu_de_novo),
-            yesNo(p.foundation_school_interest ?? p.quer_escola_de_fundacao),
+            cellDisplay,
+            p.convidado_por || p.invited_by || p.invited_by_name ? `<span class="small text-secondary">${escapeAttr(p.convidado_por || p.invited_by || p.invited_by_name)}</span>` : `<span class="text-secondary small">—</span>`,
+            yesNoBadge(p.nasceu_de_novo),
+            yesNoBadge(p.foundation_school_interest ?? p.quer_escola_de_fundacao),
             badge(firstTimerWorkflowLabel(p.workflow_status)),
             firstTimerActions(p.id)
           ];
@@ -16772,18 +16816,22 @@ function renderFollowUp() {
             "ESF",
             "Célula",
             cleanDisplayText(L("actions"))
-          ], filtered.map((p) => {
+          ], filtered.map((p, idx) => {
             const fu = (state.followUps || []).find((f) => f.first_timer_id === p.id);
+            const cellNameStr = cleanDisplayText(p.celula || p.cell_name || p.celula_preferida || "");
+            const cellDisplay = cellNameStr && cellNameStr !== "—" && cellNameStr !== "-"
+              ? `<span class="badge bg-secondary-subtle text-light"><i class="bi bi-diagram-3 me-1 text-cyan"></i>${escapeAttr(cellNameStr)}</span>`
+              : `<span class="text-secondary small">—</span>`;
             return [
-              p.first_timer_number || "—",
-              cleanDisplayText(fullName(p)),
-              p.telefone || p.phone || "—",
-              cleanDisplayText(churchName(p.church_id)),
-              cleanDisplayText(p.celula || p.cell_name || p.celula_preferida || "—"),
+              renderTableIdBadge(formatFirstTimerNumber(p, idx)),
+              renderPersonNameCell(p),
+              p.telefone || p.phone ? `<span class="font-monospace small text-light">${escapeAttr(p.telefone || p.phone)}</span>` : `<span class="text-secondary small">—</span>`,
+              `<span class="small fw-semibold text-white">${escapeAttr(cleanDisplayText(churchName(p.church_id)))}</span>`,
+              cellDisplay,
               badge(p.estado_do_seguimento || p.follow_up_status || "Pending"),
-              fu?.proxima_data_de_contacto || p.next_follow_up_date || "—",
-              yesNo(p.foundation_school_interest ?? p.quer_escola_de_fundacao),
-              yesNo(p.cell_interest ?? p.interesse_em_celula),
+              fu?.proxima_data_de_contacto || p.next_follow_up_date ? `<span class="small font-monospace text-secondary">${escapeAttr(fu?.proxima_data_de_contacto || p.next_follow_up_date)}</span>` : `<span class="text-secondary small">—</span>`,
+              yesNoBadge(p.foundation_school_interest ?? p.quer_escola_de_fundacao),
+              yesNoBadge(p.cell_interest ?? p.interesse_em_celula),
               actionButtons([
                 ["view", "firstTimer", p.id, cleanDisplayText(L("view"))],
                 ["followup", "firstTimer", p.id, cleanDisplayText(L("updateFollowup"))]
@@ -33192,6 +33240,8 @@ function actionButtons(buttons) {
   const iconMap = {
     view: "bi-eye",
     viewSubmission: "bi-file-earmark-text",
+    viewProfile: "bi-person-badge",
+    followup: "bi-telephone-outbound",
     edit: "bi-pencil-square",
     delete: "bi-trash3",
     deletePublicSubmission: "bi-trash3",
@@ -33200,12 +33250,29 @@ function actionButtons(buttons) {
     reject: "bi-x-circle",
     rejectGroup: "bi-x-octagon",
     status: "bi-arrow-repeat",
-    export: "bi-download"
+    export: "bi-download",
+    merge: "bi-intersect",
+    moveChurch: "bi-building-gear",
+    assign: "bi-person-plus",
+    cell: "bi-diagram-3",
+    submitIntake: "bi-send",
+    approveAndAssignCell: "bi-check-all",
+    approveIntake: "bi-check2-circle",
+    returnIntake: "bi-arrow-counterclockwise",
+    rejectIntake: "bi-x-circle",
+    assignCell: "bi-diagram-3",
+    handoffFollowup: "bi-telephone-forward",
+    receiveFollowup: "bi-telephone-inbound",
+    createExplicitFollowup: "bi-telephone-plus",
+    enrollFoundation: "bi-mortarboard",
+    convertToMember: "bi-person-check"
   };
 
   const classMap = {
     view: "action-btn--view",
     viewSubmission: "action-btn--view",
+    viewProfile: "action-btn--view",
+    followup: "action-btn--view",
     edit: "action-btn--edit",
     delete: "action-btn--danger",
     deletePublicSubmission: "action-btn--danger",
@@ -33214,7 +33281,22 @@ function actionButtons(buttons) {
     reject: "action-btn--danger",
     rejectGroup: "action-btn--danger",
     status: "action-btn--status",
-    export: "action-btn--gold"
+    export: "action-btn--gold",
+    merge: "action-btn--status",
+    moveChurch: "action-btn--view",
+    assign: "action-btn--status",
+    cell: "action-btn--view",
+    submitIntake: "action-btn--gold",
+    approveAndAssignCell: "action-btn--success",
+    approveIntake: "action-btn--success",
+    returnIntake: "action-btn--edit",
+    rejectIntake: "action-btn--danger",
+    assignCell: "action-btn--status",
+    handoffFollowup: "action-btn--view",
+    receiveFollowup: "action-btn--success",
+    createExplicitFollowup: "action-btn--view",
+    enrollFoundation: "action-btn--status",
+    convertToMember: "action-btn--success"
   };
 
   return `<div class="action-cluster">${visible.map(([action, type, id, label]) => {
