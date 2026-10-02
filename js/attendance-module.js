@@ -353,13 +353,13 @@
           <p class="text-secondary small mb-0">${t("Pipeline pastoral: Brother Lio ➔ Pastor Valdemiro ➔ Pastor Kéne", "Pastoral pipeline: Brother Lio ➔ Pastor Valdemiro ➔ Pastor Kéne")}</p>
         </div>
         <div class="d-flex align-items-center gap-2">
-          <button type="button" class="btn btn-sm btn-outline-info" data-attendance-tab="manual">
+          <button type="button" class="btn btn-sm" style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.28); color: #4ade80; font-weight: 600; font-size: 0.82rem;" data-attendance-tab="manual">
             <i class="bi bi-chat-left-text-fill me-1.5"></i>${t("Colar WhatsApp", "Paste WhatsApp")}
           </button>
-          <button type="button" class="btn btn-sm btn-outline-warning" data-attendance-tab="comparison">
+          <button type="button" class="btn btn-sm" style="background: rgba(234, 179, 8, 0.1); border: 1px solid rgba(234, 179, 8, 0.28); color: #facc15; font-weight: 600; font-size: 0.82rem;" data-attendance-tab="comparison">
             <i class="bi bi-arrow-left-right me-1.5"></i>${t("Comparar Períodos", "Compare Periods")}
           </button>
-          <button type="button" class="btn btn-sm btn-ce-gold" data-attendance-quick-export="daily">
+          <button type="button" class="btn btn-sm" style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.28); color: #38bdf8; font-weight: 600; font-size: 0.82rem;" data-attendance-quick-export="daily">
             <i class="bi bi-file-earmark-pdf me-1.5"></i>${t("Dossiê em PDF", "PDF Dossier")}
           </button>
         </div>
@@ -368,10 +368,10 @@
       <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
         <div>
           <div class="d-flex align-items-center gap-2 mb-1">
-            <span class="badge bg-gold-subtle text-gold text-uppercase px-2 py-1 fw-bold tracking-wider" style="letter-spacing: 0.05em; font-size: 0.72rem;">
+            <span class="badge" style="background: rgba(234, 179, 8, 0.12); color: #facc15; border: 1px solid rgba(234, 179, 8, 0.25); font-size: 0.72rem; letter-spacing: 0.05em; font-weight: 700;">
               <i class="bi bi-fingerprint me-1"></i>${t("RECURSOS HUMANOS & ASSIDUIDADE", "HUMAN RESOURCES & ATTENDANCE")}
             </span>
-            <span class="badge bg-primary-subtle text-primary text-uppercase px-2 py-1 fw-semibold" style="font-size: 0.72rem;">
+            <span class="badge" style="background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.25); font-size: 0.72rem; font-weight: 600;">
               <i class="bi bi-shield-check me-1"></i>${t("Fluxo Pastoral Ativo", "Pastoral Pipeline Active")}
             </span>
           </div>
@@ -379,16 +379,16 @@
           <p class="text-secondary small mb-0 mt-0.5">${t("Extração por Ir. Lio (Paixão à Primeira Vista) ➔ Auditoria por Pr. Valdemiro (Cuidados Pastorais) ➔ Homologação por Pr. Kéne", "Extraction by Br. Lio ➔ Pastoral Audit by Pr. Valdemiro ➔ Homologation by Pr. Kéne")}</p>
         </div>
         <div class="d-flex align-items-center gap-2">
-          <button type="button" class="btn btn-sm btn-ce-gold" data-attendance-tab="manual">
+          <button type="button" class="btn btn-sm" style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.28); color: #4ade80; font-weight: 600; font-size: 0.82rem;" data-attendance-tab="manual">
             <i class="bi bi-whatsapp me-1.5"></i>${t("Registo Rápido WhatsApp", "Quick WhatsApp Entry")}
           </button>
-          <button type="button" class="btn btn-sm btn-outline-info" data-attendance-tab="workflow">
+          <button type="button" class="btn btn-sm" style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.28); color: #38bdf8; font-weight: 600; font-size: 0.82rem;" data-attendance-tab="workflow">
             <i class="bi bi-diagram-3-fill me-1.5"></i>${t("Fluxo de Submissão", "Submission Pipeline")}
           </button>
-          <button type="button" class="btn btn-sm btn-outline-warning" data-attendance-tab="comparison">
+          <button type="button" class="btn btn-sm" style="background: rgba(234, 179, 8, 0.1); border: 1px solid rgba(234, 179, 8, 0.28); color: #facc15; font-weight: 600; font-size: 0.82rem;" data-attendance-tab="comparison">
             <i class="bi bi-arrow-left-right me-1.5"></i>${t("Comparar Períodos", "Compare Periods")}
           </button>
-          <button type="button" class="btn btn-sm btn-outline-secondary" data-attendance-quick-export="daily">
+          <button type="button" class="btn btn-sm" style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.12); color: #cbd5e1; font-weight: 600; font-size: 0.82rem;" data-attendance-quick-export="daily">
             <i class="bi bi-file-earmark-pdf me-1.5"></i>${t("Dossiê PDF", "PDF Dossier")}
           </button>
         </div>
@@ -485,26 +485,26 @@
     // Workflow banner for current date
     var wfSub = await getBridge().getWorkflowSubmissionByDate(date);
     var wfBanner = `
-      <div class="att-card p-3 mb-4 border-gold border-opacity-30 bg-gold-subtle-10">
+      <div class="p-3 mb-3 rounded" style="background: rgba(255, 255, 255, 0.025); border: 1px solid rgba(255, 255, 255, 0.08);">
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
           <div class="d-flex align-items-center gap-3">
-            <div class="att-avatar" style="width: 38px; height: 38px; font-size: 1.1rem; background: rgba(212,175,55,0.2); color: #d4af37; border-color: #d4af37;">
+            <div class="att-avatar" style="width: 38px; height: 38px; font-size: 1.1rem; background: rgba(234, 179, 8, 0.1); color: #facc15; border: 1px solid rgba(234, 179, 8, 0.25);">
               <i class="bi bi-shield-check"></i>
             </div>
             <div>
               <div class="d-flex align-items-center gap-2">
                 <strong class="text-white">${t("Estado do Fluxo Executivo", "Executive Pipeline Status")}:</strong>
-                ${wfSub && wfSub.overseer_status === "Acknowledged" ? `<span class="badge bg-success"><i class="bi bi-check-all me-1"></i>${t("Homologado pelo Pastor Kéne", "Homologated by Pastor Kéne")}</span>` : wfSub && wfSub.pastoral_status === "Approved" ? `<span class="badge bg-info text-dark"><i class="bi bi-send-check me-1"></i>${t("Auditado por Pr. Valdemiro ➔ No Painel do Pr. Kéne", "Audited by Pr. Valdemiro ➔ On Pr. Kéne Dashboard")}</span>` : `<span class="badge bg-warning text-dark"><i class="bi bi-clock-history me-1"></i>${t("Extração por Ir. Lio (Paixão à Primeira Vista)", "Extracted by Br. Lio")}</span>`}
+                ${wfSub && wfSub.overseer_status === "Acknowledged" ? `<span class="badge" style="background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.25);"><i class="bi bi-check-all me-1"></i>${t("Homologado pelo Pastor Kéne", "Homologated by Pastor Kéne")}</span>` : wfSub && wfSub.pastoral_status === "Approved" ? `<span class="badge" style="background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.25);"><i class="bi bi-send-check me-1"></i>${t("Auditado por Pr. Valdemiro ➔ No Painel do Pr. Kéne", "Audited by Pr. Valdemiro ➔ On Pr. Kéne Dashboard")}</span>` : `<span class="badge" style="background: rgba(234, 179, 8, 0.12); color: #facc15; border: 1px solid rgba(234, 179, 8, 0.25);"><i class="bi bi-clock-history me-1"></i>${t("Extração por Ir. Lio (Paixão à Primeira Vista)", "Extracted by Br. Lio")}</span>`}
               </div>
-              <small class="text-secondary">${wfSub ? `${t("Encaminhamento:", "Routing:")} ${wfSub.extracted_by} ➔ ${wfSub.pastoral_head} ➔ ${wfSub.overseer_name}` : t("Submissão disponível para envio e validação.", "Ready for submission and approval.")}</small>
+              <small class="text-secondary">${wfSub ? `${t("Encaminhamento:", "Routing:")} ${wfSub.extracted_by || "Ir. Lio (Paixão à Primeira Vista)"} ➔ ${wfSub.pastoral_head || "Pr. Valdemiro (Cuidados Pastorais)"} ➔ ${wfSub.overseer_name || "Pr. Kéne (Superintendente)"}` : `${t("Encaminhamento Padrão:", "Default Routing:")} Ir. Lio (Paixão à Primeira Vista) ➔ Pr. Valdemiro (Cuidados Pastorais) ➔ Pr. Kéne (Superintendente)`}</small>
             </div>
           </div>
           <div class="d-flex align-items-center gap-2">
-            <button type="button" class="btn btn-xs btn-outline-light" data-attendance-tab="workflow">
-              <i class="bi bi-diagram-3 me-1"></i>${t("Ver Pipeline Completo", "View Full Pipeline")}
+            <button type="button" class="btn btn-sm" style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.12); color: #cbd5e1; font-weight: 500; font-size: 0.82rem;" data-attendance-tab="workflow">
+              <i class="bi bi-diagram-3 me-1" style="color: #38bdf8;"></i>${t("Ver Pipeline Completo", "View Full Pipeline")}
             </button>
-            <button type="button" class="btn btn-xs btn-outline-warning" data-attendance-tab="comparison">
-              <i class="bi bi-arrow-left-right me-1"></i>${t("Comparar com Outro Dia", "Compare with Another Day")}
+            <button type="button" class="btn btn-sm" style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.12); color: #cbd5e1; font-weight: 500; font-size: 0.82rem;" data-attendance-tab="comparison">
+              <i class="bi bi-arrow-left-right me-1" style="color: #facc15;"></i>${t("Comparar com Outro Dia", "Compare with Another Day")}
             </button>
           </div>
         </div>
@@ -521,84 +521,48 @@
     else if (attendancePageState.dailyFilter === "late_all") displayedRecords = allLateRecords;
     else if (attendancePageState.dailyFilter === "absent") displayedRecords = absentRecords;
 
-    // Build KPI Cards HTML
+    // Build KPI Cards HTML matching Dashboard Attendance KPI Style
     var kpisHtml = `
-      <div class="attendance-kpi-grid" id="attendanceDailyKpis">
-        <div class="att-kpi-card ${attendancePageState.dailyFilter === "all" ? "is-active" : ""}" data-attendance-filter="all" role="button" tabindex="0">
-          <div class="att-kpi-header">
-            <div class="att-kpi-icon" style="background: linear-gradient(135deg, #1e3a8a, #0284c7); color: #fff;">
-              <i class="bi bi-people-fill"></i>
-            </div>
-            <span class="badge bg-secondary bg-opacity-25 text-secondary" style="font-size: 0.68rem; font-weight: 600;">${t("Biometria", "Biometrics")}</span>
-          </div>
-          <div class="att-kpi-body">
-            <span class="att-kpi-label">${t("Total Registados", "Total Registered")}</span>
-            <span class="att-kpi-value">${totalRecords}</span>
+      <div class="row g-3 mb-3" id="attendanceDailyKpis">
+        <div class="col-6 col-md-4 col-xl-2">
+          <div class="p-3 rounded att-card-clickable text-center" data-attendance-filter="all" role="button" tabindex="0" title="${t("Clique para ver todos os colaboradores", "Click to view all staff")}">
+            <span class="text-secondary small d-block mb-1" style="font-size: 0.72rem; letter-spacing: 0.04em;">${t("TOTAL REGISTADOS", "TOTAL EXPECTED")}</span>
+            <strong class="fs-4" style="color: #f1f5f9;">${totalRecords}</strong>
           </div>
         </div>
 
-        <div class="att-kpi-card" data-attendance-filter="all" role="button" tabindex="0">
-          <div class="att-kpi-header">
-            <div class="att-kpi-icon" style="background: linear-gradient(135deg, #0284c7, #06b6d4); color: #fff;">
-              <i class="bi bi-person-check-fill"></i>
-            </div>
-            <span class="badge bg-info-subtle text-info" style="font-size: 0.68rem; font-weight: 600;">${totalRecords ? Math.round((presentRecords.length / totalRecords) * 100) : 0}% ${t("taxa", "rate")}</span>
-          </div>
-          <div class="att-kpi-body">
-            <span class="att-kpi-label">${t("Presentes Hoje", "Present Today")}</span>
-            <span class="att-kpi-value text-info">${presentRecords.length}</span>
+        <div class="col-6 col-md-4 col-xl-2">
+          <div class="p-3 rounded att-card-clickable text-center" data-attendance-filter="all" role="button" tabindex="0" title="${t("Clique para filtrar presentes", "Click to view present staff")}">
+            <span class="text-secondary small d-block mb-1" style="font-size: 0.72rem; letter-spacing: 0.04em;">${t("PRESENTES NO POSTO", "PRESENT")}</span>
+            <strong class="fs-4" style="color: #38bdf8;">${presentRecords.length} <small class="text-secondary fw-normal fs-6">(${totalRecords ? Math.round((presentRecords.length / totalRecords) * 100) : 0}%)</small></strong>
           </div>
         </div>
 
-        <div class="att-kpi-card ${attendancePageState.dailyFilter === "on_time" ? "is-active" : ""}" data-attendance-filter="on_time" role="button" tabindex="0">
-          <div class="att-kpi-header">
-            <div class="att-kpi-icon" style="background: linear-gradient(135deg, #15803d, #22c55e); color: #fff;">
-              <i class="bi bi-check-circle-fill"></i>
-            </div>
-            <span class="badge bg-success-subtle text-success" style="font-size: 0.68rem; font-weight: 600;">${t("Pontuais", "On Time")}</span>
-          </div>
-          <div class="att-kpi-body">
-            <span class="att-kpi-label">${t("No Horário (≤08:00)", "On Time (≤08:00)")}</span>
-            <span class="att-kpi-value text-success">${onTimeRecords.length}</span>
+        <div class="col-6 col-md-4 col-xl-2">
+          <div class="p-3 rounded att-card-clickable text-center" data-attendance-filter="on_time" role="button" tabindex="0" title="${t("Clique para ver pontuais", "Click to view on-time staff")}">
+            <span class="text-secondary small d-block mb-1" style="font-size: 0.72rem; letter-spacing: 0.04em;">${t("TAXA PONTUALIDADE", "PUNCTUALITY RATE")}</span>
+            <strong class="fs-4" style="color: #34d399;">${totalRecords ? Math.round((onTimeRecords.length / totalRecords) * 100) : 0}%</strong>
           </div>
         </div>
 
-        <div class="att-kpi-card ${attendancePageState.dailyFilter === "grace_period" ? "is-active" : ""}" data-attendance-filter="grace_period" role="button" tabindex="0">
-          <div class="att-kpi-header">
-            <div class="att-kpi-icon" style="background: linear-gradient(135deg, #0891b2, #38bdf8); color: #fff;">
-              <i class="bi bi-clock-history"></i>
-            </div>
-            <span class="badge bg-info-subtle text-info" style="font-size: 0.68rem; font-weight: 600;">${t("Autorizado", "Authorized")}</span>
-          </div>
-          <div class="att-kpi-body">
-            <span class="att-kpi-label">${t("Tolerância (+15m)", "Grace (+15m)")}</span>
-            <span class="att-kpi-value text-info">${graceRecords.length}</span>
+        <div class="col-6 col-md-4 col-xl-2">
+          <div class="p-3 rounded att-card-clickable text-center" data-attendance-filter="late_all" role="button" tabindex="0" title="${t("Clique para filtrar atrasados", "Click to view late staff")}">
+            <span class="text-secondary small d-block mb-1" style="font-size: 0.72rem; letter-spacing: 0.04em;">${t("EM ATRASO (>08:15)", "TOTAL LATE")}</span>
+            <strong class="fs-4" style="color: #f87171;">${allLateRecords.length}</strong>
           </div>
         </div>
 
-        <div class="att-kpi-card ${attendancePageState.dailyFilter === "late_all" ? "is-active" : ""}" data-attendance-filter="late_all" role="button" tabindex="0">
-          <div class="att-kpi-header">
-            <div class="att-kpi-icon" style="background: linear-gradient(135deg, #dc2626, #f97316); color: #fff;">
-              <i class="bi bi-exclamation-triangle-fill"></i>
-            </div>
-            <span class="badge bg-danger-subtle text-danger" style="font-size: 0.68rem; font-weight: 600;">${allLateRecords.length > 0 ? t("Atenção RH", "HR Attention") : t("Excelente", "Excellent")}</span>
-          </div>
-          <div class="att-kpi-body">
-            <span class="att-kpi-label">${t("Total em Atraso", "Total Late")}</span>
-            <span class="att-kpi-value text-danger">${allLateRecords.length}</span>
+        <div class="col-6 col-md-4 col-xl-2">
+          <div class="p-3 rounded att-card-clickable text-center">
+            <span class="text-secondary small d-block mb-1" style="font-size: 0.72rem; letter-spacing: 0.04em;">${t("HORA MÉDIA ENTRADA", "AVG CHECK-IN")}</span>
+            <strong class="fs-4" style="color: #facc15; font-variant-numeric: tabular-nums;">${avgCheckInStr}</strong>
           </div>
         </div>
 
-        <div class="att-kpi-card ${attendancePageState.dailyFilter === "absent" ? "is-active" : ""}" data-attendance-filter="absent" role="button" tabindex="0">
-          <div class="att-kpi-header">
-            <div class="att-kpi-icon" style="background: linear-gradient(135deg, #475569, #64748b); color: #fff;">
-              <i class="bi bi-dash-circle-fill"></i>
-            </div>
-            <span class="badge bg-secondary bg-opacity-25 text-secondary" style="font-size: 0.68rem; font-weight: 600;">${t("Não picou", "No Punch")}</span>
-          </div>
-          <div class="att-kpi-body">
-            <span class="att-kpi-label">${t("Sem Registo / Falta", "No Record / Absent")}</span>
-            <span class="att-kpi-value text-secondary">${absentRecords.length}</span>
+        <div class="col-6 col-md-4 col-xl-2">
+          <div class="p-3 rounded att-card-clickable text-center" data-attendance-filter="absent" role="button" tabindex="0" title="${t("Clique para filtrar ausências", "Click to view absences")}">
+            <span class="text-secondary small d-block mb-1" style="font-size: 0.72rem; letter-spacing: 0.04em;">${t("SEM REGISTO / AUSENTES", "UNRECORDED / ABSENT")}</span>
+            <strong class="fs-4" style="color: #94a3b8;">${absentRecords.length}</strong>
           </div>
         </div>
       </div>`;
@@ -636,17 +600,17 @@
               <option value="Paixão à Primeira Vista / CESTAFF" ${attendancePageState.selectedDepartment === "Paixão à Primeira Vista / CESTAFF" ? "selected" : ""}>Paixão à Primeira Vista</option>
             </select>
 
-            <button type="button" class="btn btn-sm btn-ce-gold" onclick="window.generateDailyPreviewModal('${date}')" title="${t("Visualizar / Imprimir PDF do dia", "Preview / Print Daily PDF")}">
-              <i class="bi bi-printer-fill me-1"></i>${t("Imprimir / PDF", "Print / PDF")}
+            <button type="button" class="btn btn-sm" style="background: rgba(234, 179, 8, 0.1); border: 1px solid rgba(234, 179, 8, 0.28); color: #facc15; font-weight: 600; font-size: 0.82rem;" onclick="window.generateDailyPreviewModal('${date}')" title="${t("Visualizar / Imprimir PDF do dia", "Preview / Print Daily PDF")}">
+              <i class="bi bi-printer me-1"></i>${t("Imprimir / PDF", "Print / PDF")}
             </button>
 
-            <button type="button" class="btn btn-sm btn-outline-warning" id="attendanceExportDailyCsv" title="${t("Exportar CSV do dia", "Export Daily CSV")}">
+            <button type="button" class="btn btn-sm" style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.12); color: #94a3b8; font-weight: 500; font-size: 0.82rem;" id="attendanceExportDailyCsv" title="${t("Exportar CSV do dia", "Export Daily CSV")}">
               <i class="bi bi-download me-1"></i>CSV
             </button>
           </div>
         </div>
 
-        <div class="d-flex flex-wrap align-items-center gap-2 mt-3 pt-3 border-top border-secondary border-opacity-25">
+        <div class="d-flex flex-wrap align-items-center gap-2 mt-3 pt-3 border-top border-secondary border-opacity-15">
           <span class="text-secondary small fw-bold text-uppercase me-1" style="font-size: 0.72rem; letter-spacing: 0.05em;">${t("Filtrar por Status:", "Filter by Status:")}</span>
           <button type="button" class="att-filter-btn ${attendancePageState.dailyFilter === "all" ? "active" : ""}" data-attendance-filter="all">${t("Todos", "All")} (${totalRecords})</button>
           <button type="button" class="att-filter-btn ${attendancePageState.dailyFilter === "on_time" ? "active" : ""}" data-attendance-filter="on_time">${t("Pontual", "On Time")} (${onTimeRecords.length})</button>
@@ -1090,13 +1054,13 @@
 
           <!-- Step 2: Pastor Valdemiro -->
           <div class="col-12 col-lg-4">
-            <div class="att-card p-3.5 h-100 border-info border-opacity-50 position-relative">
+            <div class="att-card p-3.5 h-100 position-relative" style="background: rgba(255, 255, 255, 0.025); border: 1px solid rgba(255, 255, 255, 0.08);">
               <div class="d-flex align-items-center justify-content-between mb-3">
-                <span class="badge bg-info text-dark font-monospace px-2.5 py-1">ETAPA 2</span>
-                <span class="badge bg-info-subtle text-info"><i class="bi bi-check2-circle me-1"></i>${t("Auditoria Pastoral", "Pastoral Audit")}</span>
+                <span class="badge" style="background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.25); font-family: monospace; font-size: 0.72rem;">ETAPA 2</span>
+                <span class="badge" style="background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.25);"><i class="bi bi-check2-circle me-1"></i>${t("Auditoria Pastoral", "Pastoral Audit")}</span>
               </div>
               <div class="d-flex align-items-center gap-3 mb-3">
-                <div class="att-avatar" style="width: 48px; height: 48px; font-size: 1.25rem; background: rgba(6, 182, 212, 0.2); border-color: #06b6d4; color: #22d3ee;">
+                <div class="att-avatar" style="width: 48px; height: 48px; font-size: 1.25rem; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.28); color: #38bdf8;">
                   PV
                 </div>
                 <div>
@@ -1113,7 +1077,7 @@
                 <div class="text-secondary mb-1"><strong>${t("Auditoria:", "Audited At:")}</strong> <span class="text-white font-monospace">${currentSub ? currentSub.pastoral_reviewed_at?.slice(0, 19).replace("T", " ") : "—"}</span></div>
                 <div class="text-secondary text-truncate"><strong>${t("Nota:", "Note:")}</strong> <em>"${currentSub?.pastoral_notes || t("Sem notas", "No notes")}"</em></div>
               </div>
-              <button type="button" class="btn btn-sm btn-info text-dark fw-semibold w-100" id="wfForwardByValdemiroBtn">
+              <button type="button" class="btn btn-sm w-100" style="background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8; font-weight: 600;" id="wfForwardByValdemiroBtn">
                 <i class="bi bi-arrow-right-circle-fill me-1.5"></i>${t("Auditado ➔ Encaminhar ao Pastor Kéne", "Audit ➔ Forward to Pastor Kéne")}
               </button>
             </div>
@@ -1121,13 +1085,13 @@
 
           <!-- Step 3: Pastor Kéne -->
           <div class="col-12 col-lg-4">
-            <div class="att-card p-3.5 h-100 border-gold border-opacity-70 position-relative" style="background: linear-gradient(145deg, rgba(212,175,55,0.08), rgba(7,19,38,0.95));">
+            <div class="att-card p-3.5 h-100 position-relative" style="background: rgba(255, 255, 255, 0.025); border: 1px solid rgba(255, 255, 255, 0.08);">
               <div class="d-flex align-items-center justify-content-between mb-3">
-                <span class="badge bg-warning text-dark font-monospace px-2.5 py-1">ETAPA 3 (FINAL)</span>
-                <span class="badge bg-gold-subtle text-gold"><i class="bi bi-star-fill me-1"></i>${t("Painel Geral / MAIN", "MAIN Dashboard")}</span>
+                <span class="badge" style="background: rgba(234, 179, 8, 0.12); color: #facc15; border: 1px solid rgba(234, 179, 8, 0.25); font-family: monospace; font-size: 0.72rem;">ETAPA 3 (FINAL)</span>
+                <span class="badge" style="background: rgba(234, 179, 8, 0.12); color: #facc15; border: 1px solid rgba(234, 179, 8, 0.25);"><i class="bi bi-star-fill me-1"></i>${t("Painel Geral / MAIN", "MAIN Dashboard")}</span>
               </div>
               <div class="d-flex align-items-center gap-3 mb-3">
-                <div class="att-avatar" style="width: 48px; height: 48px; font-size: 1.25rem; background: rgba(212, 175, 55, 0.25); border-color: #d4af37; color: #ffd700;">
+                <div class="att-avatar" style="width: 48px; height: 48px; font-size: 1.25rem; background: rgba(234, 179, 8, 0.1); border: 1px solid rgba(234, 179, 8, 0.28); color: #facc15;">
                   PK
                 </div>
                 <div>
@@ -1144,7 +1108,7 @@
                 <div class="text-secondary mb-1"><strong>${t("Receção no MAIN:", "Received on MAIN:")}</strong> <span class="text-white font-monospace">${currentSub ? currentSub.overseer_received_at?.slice(0, 19).replace("T", " ") : "—"}</span></div>
                 <div class="text-secondary text-truncate"><strong>${t("Despacho:", "Pastoral Direction:")}</strong> <em>"${currentSub?.overseer_notes || t("Sem despacho", "No notes")}"</em></div>
               </div>
-              <button type="button" class="btn btn-sm btn-ce-gold w-100" id="wfAcknowledgeByKeneBtn">
+              <button type="button" class="btn btn-sm w-100" style="background: rgba(234, 179, 8, 0.12); border: 1px solid rgba(234, 179, 8, 0.3); color: #facc15; font-weight: 600;" id="wfAcknowledgeByKeneBtn">
                 <i class="bi bi-patch-check-fill me-1.5"></i>${t("Homologar como Pastor Kéne", "Homologate as Pastor Kéne")}
               </button>
             </div>
@@ -1676,18 +1640,18 @@ Thank you for the opportunity Pastor Sir`;
         var absentCount = recs.filter(function (r) { return !r.is_present; }).length;
 
         previewSectionHtml = `
-          <div class="att-card p-4 mb-4 border-gold border-opacity-50" id="manualParsedPreviewCard">
+          <div class="att-card p-4 mb-4" id="manualParsedPreviewCard" style="background: rgba(255, 255, 255, 0.025); border: 1px solid rgba(255, 255, 255, 0.08);">
             <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3 pb-3 border-bottom border-secondary border-opacity-25">
               <div>
-                <span class="badge bg-gold-subtle text-gold mb-1"><i class="bi bi-check2-all me-1"></i>${t("Dados Processados do WhatsApp", "Parsed WhatsApp Data")}</span>
-                <h5 class="fw-bold text-white mb-0">${t("Pré-visualização do Relatório — Data:", "Report Preview — Date:")} <span class="text-gold font-monospace">${parsed.attendance_date}</span></h5>
+                <span class="badge mb-1" style="background: rgba(234, 179, 8, 0.12); color: #facc15; border: 1px solid rgba(234, 179, 8, 0.25);"><i class="bi bi-check2-all me-1"></i>${t("Dados Processados do WhatsApp", "Parsed WhatsApp Data")}</span>
+                <h5 class="fw-bold text-white mb-0">${t("Pré-visualização do Relatório — Data:", "Report Preview — Date:")} <span style="color: #facc15; font-family: monospace;">${parsed.attendance_date}</span></h5>
                 <span class="text-secondary small">${t("Verifique e faça pequenos ajustes antes de gravar no sistema.", "Review and adjust any punch time before saving.")}</span>
               </div>
               <div class="d-flex align-items-center gap-2">
-                <button type="button" class="btn btn-sm btn-outline-secondary" id="clearParsedWhatsAppBtn">
+                <button type="button" class="btn btn-sm" style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.12); color: #94a3b8; font-weight: 500;" id="clearParsedWhatsAppBtn">
                   <i class="bi bi-trash me-1"></i>${t("Descartar", "Discard")}
                 </button>
-                <button type="button" class="btn btn-sm btn-success" id="confirmSaveParsedWhatsAppBtn">
+                <button type="button" class="btn btn-sm" style="background: rgba(34, 197, 94, 0.14); border: 1px solid rgba(34, 197, 94, 0.35); color: #4ade80; font-weight: 600;" id="confirmSaveParsedWhatsAppBtn">
                   <i class="bi bi-cloud-check-fill me-1.5"></i>${t("Gravar e Submeter Lote", "Save & Submit Batch")}
                 </button>
               </div>
@@ -1696,38 +1660,38 @@ Thank you for the opportunity Pastor Sir`;
             <!-- Stats Chips -->
             <div class="row g-2 mb-3">
               <div class="col-6 col-md-2">
-                <div class="p-2 rounded bg-dark text-center border border-secondary border-opacity-25">
-                  <span class="text-secondary small d-block" style="font-size: 0.7rem;">${t("TOTAL", "TOTAL")}</span>
+                <div class="p-2 rounded text-center" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08);">
+                  <span class="text-secondary small d-block" style="font-size: 0.7rem; letter-spacing: 0.04em;">${t("TOTAL", "TOTAL")}</span>
                   <strong class="fs-5 text-white">${recs.length}</strong>
                 </div>
               </div>
               <div class="col-6 col-md-2">
-                <div class="p-2 rounded bg-dark text-center border border-secondary border-opacity-25">
-                  <span class="text-secondary small d-block" style="font-size: 0.7rem;">${t("PRESENTES", "PRESENT")}</span>
+                <div class="p-2 rounded text-center" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08);">
+                  <span class="text-secondary small d-block" style="font-size: 0.7rem; letter-spacing: 0.04em;">${t("PRESENTES", "PRESENT")}</span>
                   <strong class="fs-5 text-info">${presentCount}</strong>
                 </div>
               </div>
               <div class="col-6 col-md-2">
-                <div class="p-2 rounded bg-dark text-center border border-secondary border-opacity-25">
-                  <span class="text-secondary small d-block" style="font-size: 0.7rem;">${t("PONTUAIS", "ON TIME")}</span>
+                <div class="p-2 rounded text-center" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08);">
+                  <span class="text-secondary small d-block" style="font-size: 0.7rem; letter-spacing: 0.04em;">${t("PONTUAIS", "ON TIME")}</span>
                   <strong class="fs-5 text-success">${onTimeCount}</strong>
                 </div>
               </div>
               <div class="col-6 col-md-2">
-                <div class="p-2 rounded bg-dark text-center border border-secondary border-opacity-25">
-                  <span class="text-secondary small d-block" style="font-size: 0.7rem;">${t("TOLERÂNCIA", "GRACE")}</span>
+                <div class="p-2 rounded text-center" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08);">
+                  <span class="text-secondary small d-block" style="font-size: 0.7rem; letter-spacing: 0.04em;">${t("TOLERÂNCIA", "GRACE")}</span>
                   <strong class="fs-5 text-info">${graceCount}</strong>
                 </div>
               </div>
               <div class="col-6 col-md-2">
-                <div class="p-2 rounded bg-dark text-center border border-secondary border-opacity-25">
-                  <span class="text-secondary small d-block" style="font-size: 0.7rem;">${t("ATRASADOS", "LATE")}</span>
+                <div class="p-2 rounded text-center" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08);">
+                  <span class="text-secondary small d-block" style="font-size: 0.7rem; letter-spacing: 0.04em;">${t("ATRASADOS", "LATE")}</span>
                   <strong class="fs-5 text-danger">${lateCount}</strong>
                 </div>
               </div>
               <div class="col-6 col-md-2">
-                <div class="p-2 rounded bg-dark text-center border border-secondary border-opacity-25">
-                  <span class="text-secondary small d-block" style="font-size: 0.7rem;">${t("SEM REGISTO", "ABSENT")}</span>
+                <div class="p-2 rounded text-center" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08);">
+                  <span class="text-secondary small d-block" style="font-size: 0.7rem; letter-spacing: 0.04em;">${t("SEM REGISTO", "ABSENT")}</span>
                   <strong class="fs-5 text-warning">${absentCount}</strong>
                 </div>
               </div>

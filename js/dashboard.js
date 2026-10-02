@@ -15969,7 +15969,7 @@ function renderDashboard() {
       <div class="row g-4 align-items-stretch">
         <div class="col-xl-7">${renderDashboardPendingList(firstTimers)}</div>
         <div class="col-xl-5">
-          <article class="chart-card glass-panel light-surface h-100 dashboard-side-card">
+          <article class="chart-card glass-panel h-100 dashboard-side-card">
             <div class="panel-head"><h3 class="panel-title"><i class="bi bi-lightning-charge me-2 text-info"></i>${L("needsAction")}</h3></div>
             <div class="dashboard-side-metrics">
               <div><span>${L("pending")}</span><strong>${firstTimers.filter((p) => statusKey(p.estado_do_seguimento) === "pending").length}</strong></div>
@@ -16014,14 +16014,14 @@ function chartCard(title, rows) {
         <span class="chart-label finance-chart-label">${label}</span>
         <div class="chart-track"><div class="chart-fill finance-chart-fill" style="width:${Math.max(5, Math.round((Number(value) / max) * 100))}%"></div></div>
         <strong class="finance-chart-value chart-value bar-value amount-value">${value}</strong>
-      </div>`).join("") : EmptyState({ compact: true, title: L("empty"), icon: "bi-bar-chart", variant: "light" });
-  if (typeof ChartPanel === "function") return ChartPanel(title, `<div class="chart-bars">${bars}</div>`, { variant: "light" });
-  return `<article class="chart-card glass-panel light-surface h-100"><div class="panel-head"><h3 class="panel-title"><i class="bi bi-activity me-2 text-info"></i>${title}</h3></div><div class="chart-bars">${bars}</div></article>`;
+      </div>`).join("") : EmptyState({ compact: true, title: L("empty"), icon: "bi-bar-chart" });
+  if (typeof ChartPanel === "function") return ChartPanel(title, `<div class="chart-bars">${bars}</div>`);
+  return `<article class="chart-card glass-panel h-100"><div class="panel-head"><h3 class="panel-title"><i class="bi bi-activity me-2 text-info"></i>${title}</h3></div><div class="chart-bars">${bars}</div></article>`;
 }
 
 function summaryTiles(title, rows) {
   return `
-    <article class="chart-card glass-panel light-surface h-100">
+    <article class="chart-card glass-panel h-100">
       <div class="panel-head"><h3 class="panel-title"><i class="bi bi-grid-1x2 me-2 text-info"></i>${title}</h3></div>
       <div class="donut-grid">${rows.map(([label, value]) => `<div class="donut-item"><span class="chart-label">${label}</span><strong>${value}</strong></div>`).join("")}</div>
     </article>
@@ -22142,7 +22142,7 @@ function renderChurchCard(church) {
     ? `<div class="church-card-services">${upcoming.map((record) => `<span class="church-service-chip">${formatServiceTimeShort(record)}</span>`).join("")}</div>`
     : "";
   return `
-    <article class="church-card data-card light-surface">
+    <article class="church-card data-card">
       <div class="church-card-head">
         <div class="church-card-titles">
           <span class="eyebrow church-card-type">${churchTypeText(church.type)}</span>
