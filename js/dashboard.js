@@ -16440,6 +16440,14 @@ window.openEditCellMemberModal = openEditCellMemberModal;
 window.openTransferCellMemberModal = openTransferCellMemberModal;
 window.openRemoveCellMemberModal = openRemoveCellMemberModal;
 
+if (typeof window !== "undefined") {
+  window.dashboardActiveSubTab = window.dashboardActiveSubTab || "overview";
+  window.switchDashboardSubTab = function(tabKey) {
+    window.dashboardActiveSubTab = tabKey;
+    renderDashboard();
+  };
+}
+
 function renderDashboard() {
   if (isCellLeaderOrAssistant(activeUser)) {
     renderCellLeaderPortal();
@@ -16456,170 +16464,624 @@ function renderDashboard() {
     ? (hr < 12 ? "Bom dia" : hr < 18 ? "Boa tarde" : "Boa noite")
     : (hr < 12 ? "Good morning" : hr < 18 ? "Good afternoon" : "Good evening");
   const userFirstName = (activeUser?.name || "Salésio").split(" ")[0];
+  const activeSubTab = window.dashboardActiveSubTab || "overview";
 
-  const firstTimers = scoped(getDashboardFirstTimersList());
+  // 1. Scoped real data extraction
+  const firstTimers = scoped(getDashboardFirstTimersList() || []);
   const finance = scoped(state.finance || []);
-  const cells = scoped(state.cells || []);
+  const cells = scoped(state.cellRegistry?.length ? state.cellRegistry : (state.cells || []));
   const students = scoped(state.foundationStudents || []);
   const baptisms = scoped(state.sacraments?.baptisms || []);
   const reqs = scoped(state.requisitions || []);
+  const programs = scoped(state.programs || []);
 
-  const totalFt = Math.max(firstTimers.length, 47);
-  const newConverts = Math.max(firstTimers.filter((p) => isFirstTimerBornAgain(p)).length, 21);
-  const fsActive = Math.max(students.length, 38);
-  const fsGrads = 12;
-  const totalGivingStr = "701,000 MTn";
-  const activeCellsCount = Math.max(cells.length, 211);
-  const baptismCount = Math.max(baptisms.length, 8);
-  const pendingReqs = Math.max(reqs.filter((r) => !/Aprovado|Pago|Recursos Liberados/i.test(r.status || "")).length, 6);
+  // Members real count and distribution by church
+  const membersList = (state.members && state.members.length > 0)
+    ? state.members
+    : (modulePageState?.members?.items || []);
+  const scopedMembers = scoped(membersList);
 
-  setPageContent(`
-    <div class="dash-v2-container">
-      <!-- 1. Hero Welcome Banner -->
-      <section class="dash-hero-banner">
-        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 position-relative" style="z-index: 2;">
-          <div>
-            <span class="dash-hero-tag"><i class="bi bi-geo-alt-fill me-1"></i>CHRIST EMBASSY MOÇAMBIQUE</span>
-            <h1 class="dash-hero-title">${greetingWord}, ${userFirstName}!</h1>
-            <p class="dash-hero-subtitle">${isPt ? "A igreja em movimento. Pessoas, comunidades e um propósito." : "The church on the move. People, communities, and a purpose."}</p>
-          </div>
-          <div>
-            <div class="dash-date-pill">
-              <i class="bi bi-calendar3 text-warning"></i>
-              <span>${isPt ? "Sexta-feira, 02 Out 2026" : "Friday, 02 Oct 2026"}</span>
-            </div>
+  const churchCounts = {};
+  scopedMembers.forEach((m) => {
+    const cName = m.church_name || m.igreja || (typeof churchName === "function" ? churchName(m.church_id) : "") || (isPt ? "Maputo Central" : "Maputo Central");
+    if (cName) {
+      churchCounts[cName] = (churchCounts[cName] || 0) + 1;
+    }
+  });
+
+  const activeChurchEntries = Object.entries(churchCounts)
+    .filter(([_, count]) => count > 0)
+    .sort((a, b) => b[1] - a[1]);
+
+  const totalRealMembers = scopedMembers.length;
+
+  // Real KPI Metrics
+  const totalFt = firstTimers.length;
+  const newConverts = firstTimers.filter((p) => isFirstTimerBornAgain(p)).length;
+  const fsActive = students.filter((s) => !s.graduado).length || students.length;
+  const fsGrads = students.filter((s) => s.graduado).length;
+  const totalGivingNum = finance.reduce((sum, f) => sum + Number(f.valor || 0), 0);
+  const totalGivingStr = totalGivingNum > 0 ? (typeof money === "function" ? money(totalGivingNum) : totalGivingNum.toLocaleString() + " MTn") : "0 MTn";
+  const activeCellsCount = cells.filter((c) => statusKey(c.status || c.estado) === "active" || /Activo|Active/i.test(c.status || c.estado || "")).length || cells.length;
+  const baptismCount = baptisms.length;
+  const pendingReqs = reqs.filter((r) => /Pendente|Submetido|Revis|Aguardando/i.test(r.status || r.finance_status || "")).length;
+
+  // Follow-ups & tasks counts
+  const pendingFollowupsCount = firstTimers.filter((p) => isFirstTimerPendingFollowUp(p)).length;
+  const cellsMissingReportCount = cells.filter((c) => !c.presencas || !c.presencas.length).length;
+
+  // Real Financial Breakdown per month (Abr, Mai, Jun, Jul, Ago, Set)
+  const monthLabels = isPt ? ["Abr", "Mai", "Jun", "Jul", "Ago", "Set"] : ["Apr", "May", "Jun", "Jul", "Aug", "Sep"];
+  const streamMap = {
+    tithes: [0, 0, 0, 0, 0, 0],
+    offerings: [0, 0, 0, 0, 0, 0],
+    partnerships: [0, 0, 0, 0, 0, 0],
+    others: [0, 0, 0, 0, 0, 0]
+  };
+
+  finance.forEach((f) => {
+    const dStr = f.data || f.data_da_contribuicao || f.created_at;
+    const cat = String(f.categoria_da_contribuicao || f.categoria || f.category || "").toLowerCase();
+    const val = Number(f.valor || f.amount || 0);
+    let slot = 5; // default Set / Sep
+    if (dStr) {
+      const d = new Date(dStr);
+      const m = d.getMonth(); // 3 = Apr, 8 = Sep
+      if (m >= 3 && m <= 8) slot = m - 3;
+    }
+    if (/d[ií]zimo|tithe/i.test(cat)) streamMap.tithes[slot] += val;
+    else if (/oferta|offering/i.test(cat)) streamMap.offerings[slot] += val;
+    else if (/parceria|partnership/i.test(cat)) streamMap.partnerships[slot] += val;
+    else streamMap.others[slot] += val;
+  });
+
+  const maxMonthVal = Math.max(
+    ...[0, 1, 2, 3, 4, 5].map((i) => Math.max(streamMap.tithes[i], streamMap.offerings[i], streamMap.partnerships[i], streamMap.others[i], 1)),
+    1000
+  );
+
+  // Helper to build Donut SVG with 100% real data
+  function renderRealDonut() {
+    if (!totalRealMembers || activeChurchEntries.length === 0) {
+      return `
+        <div class="dash-donut-wrap">
+          <svg viewBox="0 0 100 100" width="170" height="170">
+            <circle cx="50" cy="50" r="38" fill="transparent" stroke="rgba(255,255,255,0.06)" stroke-width="12" />
+          </svg>
+          <div class="dash-donut-center">
+            <div class="dash-donut-center-val">0</div>
+            <div class="dash-donut-center-lbl">${isPt ? "Membros" : "Members"}</div>
           </div>
         </div>
-      </section>
+        <p class="text-secondary small text-center my-2">${isPt ? "Nenhum membro registado ainda" : "No members registered yet"}</p>
+      `;
+    }
 
-      <!-- Sub-Navigation & Filter Bar -->
-      <div class="dash-subnav-bar">
-        <div class="dash-subnav-tabs">
-          <button type="button" class="dash-subnav-btn active" onclick="this.parentElement.querySelectorAll('.dash-subnav-btn').forEach(b => b.classList.remove('active')); this.classList.add('active');">${isPt ? "Visão Geral" : "Overview"}</button>
-          <button type="button" class="dash-subnav-btn" onclick="if(window.setRoute) window.setRoute('firstTimers');">${isPt ? "Crescimento" : "Growth"}</button>
-          <button type="button" class="dash-subnav-btn" onclick="if(window.setRoute) window.setRoute('finance');">${isPt ? "Finanças" : "Finance"}</button>
-          <button type="button" class="dash-subnav-btn" onclick="var el = document.getElementById('dash-dept-section'); if(el) el.scrollIntoView({behavior: 'smooth'});">${isPt ? "Departamentos" : "Departments"}</button>
-          <button type="button" class="dash-subnav-btn" onclick="var el = document.getElementById('dash-events-section'); if(el) el.scrollIntoView({behavior: 'smooth'});">${isPt ? "Eventos" : "Events"}</button>
-          <button type="button" class="dash-subnav-btn" onclick="var el = document.getElementById('dash-attendance-section'); if(el) el.scrollIntoView({behavior: 'smooth'});"><i class="bi bi-fingerprint me-1 text-warning"></i>${isPt ? "Staff Assiduidade" : "Staff Attendance"}</button>
+    const colors = ["#38bdf8", "#818cf8", "#34d399", "#facc15", "#f43f5e", "#c084fc", "#fb923c"];
+    const circumference = 2 * Math.PI * 38; // ~238.76
+    let currentOffset = 0;
+
+    const circles = activeChurchEntries.map(([church, count], idx) => {
+      const pct = count / totalRealMembers;
+      const strokeDash = pct * circumference;
+      const color = colors[idx % colors.length];
+      const circleSvg = `<circle cx="50" cy="50" r="38" fill="transparent" stroke="${color}" stroke-width="12" stroke-dasharray="${strokeDash.toFixed(1)} ${circumference.toFixed(1)}" stroke-dashoffset="-${currentOffset.toFixed(1)}" />`;
+      currentOffset += strokeDash;
+      return circleSvg;
+    }).join("");
+
+    const churchListHtml = activeChurchEntries.map(([church, count], idx) => {
+      const pct = ((count / totalRealMembers) * 100).toFixed(1);
+      const color = colors[idx % colors.length];
+      return `
+        <div class="dash-church-row">
+          <div class="d-flex align-items-center gap-2">
+            <span class="dash-legend-dot" style="background: ${color};"></span>
+            <span class="fw-semibold text-light text-truncate" style="max-width: 170px;" title="${escapeAttr(church)}">${escapeAttr(church)}</span>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <strong class="text-light">${count}</strong>
+            <span class="text-secondary small">(${pct}%)</span>
+          </div>
         </div>
-        <div class="d-flex align-items-center gap-2">
-          <select class="dash-period-select" onchange="if(window.setDashboardPeriod) window.setDashboardPeriod(this.value);">
-            <option value="week" selected>${isPt ? "Esta Semana" : "This Week"}</option>
-            <option value="month">${isPt ? "Este Mês" : "This Month"}</option>
-            <option value="quarter">${isPt ? "Este Trimestre" : "This Quarter"}</option>
-            <option value="year">${isPt ? "Este Ano" : "This Year"}</option>
-          </select>
+      `;
+    }).join("");
+
+    return `
+      <div class="dash-donut-wrap">
+        <svg viewBox="0 0 100 100" width="170" height="170" style="transform: rotate(-90deg);">
+          ${circles}
+        </svg>
+        <div class="dash-donut-center">
+          <div class="dash-donut-center-val">${totalRealMembers}</div>
+          <div class="dash-donut-center-lbl">${isPt ? "Membros" : "Members"}</div>
         </div>
       </div>
+      <div class="dash-church-list">
+        ${churchListHtml}
+      </div>
+    `;
+  }
 
-      <!-- 2. Top 8 High-Impact KPI Metric Cards Grid (2x4) -->
+  // Helper for Top KPI Grid
+  function renderKpiGrid() {
+    return `
       <div class="dash-kpi-grid">
         <!-- Card 1: First Timers -->
-        <div class="dash-kpi-card" onclick="if(window.setRoute) window.setRoute('firstTimers');">
+        <div class="dash-kpi-card" onclick="window.switchDashboardSubTab('growth');">
           <div class="dash-kpi-head">
             <span class="dash-kpi-label">${isPt ? "First Timers" : "First Timers"}</span>
             <div class="dash-icon-box blue"><i class="bi bi-person-plus-fill"></i></div>
           </div>
           <div class="dash-kpi-value-row">
             <span class="dash-kpi-value">${totalFt}</span>
-            <span class="dash-kpi-trend positive"><i class="bi bi-arrow-up-short"></i>18% ${isPt ? "vs. sem. passada" : "vs last week"}</span>
+            <span class="dash-kpi-trend positive"><i class="bi bi-arrow-up-short"></i>${totalFt > 0 ? "Ativos" : "--"}</span>
           </div>
         </div>
 
         <!-- Card 2: Novos Convertidos -->
-        <div class="dash-kpi-card" onclick="if(window.setRoute) window.setRoute('firstTimers');">
+        <div class="dash-kpi-card" onclick="window.switchDashboardSubTab('growth');">
           <div class="dash-kpi-head">
             <span class="dash-kpi-label">${isPt ? "Novos Convertidos" : "New Converts"}</span>
             <div class="dash-icon-box rose"><i class="bi bi-heart-fill"></i></div>
           </div>
           <div class="dash-kpi-value-row">
             <span class="dash-kpi-value">${newConverts}</span>
-            <span class="dash-kpi-trend positive"><i class="bi bi-arrow-up-short"></i>12% ${isPt ? "vs. sem. passada" : "vs last week"}</span>
+            <span class="dash-kpi-trend positive"><i class="bi bi-arrow-up-short"></i>${newConverts > 0 ? (Math.round((newConverts / (totalFt || 1)) * 100) + "% do total") : "--"}</span>
           </div>
         </div>
 
         <!-- Card 3: Inscrições FS -->
-        <div class="dash-kpi-card" onclick="if(window.setRoute) window.setRoute('foundation');">
+        <div class="dash-kpi-card" onclick="window.switchDashboardSubTab('growth');">
           <div class="dash-kpi-head">
             <span class="dash-kpi-label">${isPt ? "Inscrições FS" : "FS Enrolments"}</span>
             <div class="dash-icon-box cyan"><i class="bi bi-mortarboard-fill"></i></div>
           </div>
           <div class="dash-kpi-value-row">
             <span class="dash-kpi-value">${fsActive}</span>
-            <span class="dash-kpi-trend positive"><i class="bi bi-arrow-up-short"></i>5% ${isPt ? "este mês" : "this month"}</span>
+            <span class="dash-kpi-trend positive">${fsActive > 0 ? (isPt ? "Em curso" : "Active") : "--"}</span>
           </div>
         </div>
 
         <!-- Card 4: Graduações -->
-        <div class="dash-kpi-card" onclick="if(window.setRoute) window.setRoute('foundation');">
+        <div class="dash-kpi-card" onclick="window.switchDashboardSubTab('growth');">
           <div class="dash-kpi-head">
             <span class="dash-kpi-label">${isPt ? "Graduações" : "Graduations"}</span>
             <div class="dash-icon-box amber"><i class="bi bi-trophy-fill"></i></div>
           </div>
           <div class="dash-kpi-value-row">
             <span class="dash-kpi-value">${fsGrads}</span>
-            <span class="dash-kpi-trend neutral">${isPt ? "Último trimestre" : "Last quarter"}</span>
+            <span class="dash-kpi-trend neutral">${isPt ? "Concluídos" : "Graduated"}</span>
           </div>
         </div>
 
         <!-- Card 5: Contribuições (MTn) -->
-        <div class="dash-kpi-card" onclick="if(window.setRoute) window.setRoute('finance');">
+        <div class="dash-kpi-card" onclick="window.switchDashboardSubTab('finance');">
           <div class="dash-kpi-head">
             <span class="dash-kpi-label">${isPt ? "Contribuições (MTn)" : "Giving (MTn)"}</span>
             <div class="dash-icon-box emerald"><i class="bi bi-cash-stack"></i></div>
           </div>
           <div class="dash-kpi-value-row">
-            <span class="dash-kpi-value" style="font-size: 1.45rem;">${totalGivingStr}</span>
-            <div class="d-flex flex-column align-items-end">
-              <span class="dash-kpi-trend negative"><i class="bi bi-arrow-down-short"></i>12% ${isPt ? "vs. mês ant." : "vs last mo."}</span>
-              <svg class="dash-kpi-sparkline mt-1" viewBox="0 0 60 20">
-                <path d="M 0 15 Q 15 18 30 10 T 60 14" fill="none" stroke="#f87171" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-            </div>
+            <span class="dash-kpi-value" style="font-size: 1.35rem;">${totalGivingStr}</span>
+            <span class="dash-kpi-trend positive"><i class="bi bi-check-circle"></i>${isPt ? "Verificado" : "Verified"}</span>
           </div>
         </div>
 
         <!-- Card 6: Células Ativas -->
-        <div class="dash-kpi-card" onclick="if(window.setRoute) window.setRoute('cellMinistryOverview');">
+        <div class="dash-kpi-card" onclick="window.switchDashboardSubTab('departments');">
           <div class="dash-kpi-head">
             <span class="dash-kpi-label">${isPt ? "Células Ativas" : "Active Cells"}</span>
             <div class="dash-icon-box green"><i class="bi bi-diagram-3-fill"></i></div>
           </div>
           <div class="dash-kpi-value-row">
             <span class="dash-kpi-value">${activeCellsCount}</span>
-            <div class="d-flex flex-column align-items-end">
-              <span class="dash-kpi-trend positive"><i class="bi bi-arrow-up-short"></i>6% ${isPt ? "esta semana" : "this week"}</span>
-              <svg class="dash-kpi-sparkline mt-1" viewBox="0 0 60 20">
-                <path d="M 0 16 Q 15 8 30 12 T 60 4" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-            </div>
+            <span class="dash-kpi-trend positive"><i class="bi bi-geo-alt"></i>${isPt ? "Registadas" : "Registered"}</span>
           </div>
         </div>
 
         <!-- Card 7: Batismos -->
-        <div class="dash-kpi-card" onclick="if(window.setRoute) window.setRoute('sacraments');">
+        <div class="dash-kpi-card" onclick="window.switchDashboardSubTab('growth');">
           <div class="dash-kpi-head">
             <span class="dash-kpi-label">${isPt ? "Batismos" : "Baptisms"}</span>
             <div class="dash-icon-box sky"><i class="bi bi-droplet-fill"></i></div>
           </div>
           <div class="dash-kpi-value-row">
             <span class="dash-kpi-value">${baptismCount}</span>
-            <span class="dash-kpi-trend neutral">${isPt ? "Este mês" : "This month"}</span>
+            <span class="dash-kpi-trend neutral">${isPt ? "Registados" : "Recorded"}</span>
           </div>
         </div>
 
         <!-- Card 8: Requisições -->
-        <div class="dash-kpi-card" onclick="if(window.setRoute) window.setRoute('requisitions');">
+        <div class="dash-kpi-card" onclick="window.switchDashboardSubTab('finance');">
           <div class="dash-kpi-head">
             <span class="dash-kpi-label">${isPt ? "Requisições" : "Requisitions"}</span>
             <div class="dash-icon-box purple"><i class="bi bi-file-earmark-text-fill"></i></div>
           </div>
           <div class="dash-kpi-value-row">
             <span class="dash-kpi-value">${pendingReqs}</span>
-            <span class="dash-kpi-trend" style="color: #facc15;"><i class="bi bi-hourglass-split"></i>${isPt ? "Em aprovação" : "Pending approval"}</span>
+            <span class="dash-kpi-trend" style="color: ${pendingReqs > 0 ? "#facc15" : "#34d399"};"><i class="bi bi-hourglass-split"></i>${pendingReqs > 0 ? (isPt ? "Em aprovação" : "Pending") : (isPt ? "Em dia" : "All clear")}</span>
           </div>
         </div>
       </div>
+    `;
+  }
+
+  // Dynamic Sub-Tab Views Content Generator
+  function renderSubTabContent() {
+    if (activeSubTab === "growth") {
+      return `
+        <!-- Growth Focused Dashboard View -->
+        <div class="dash-card mb-3">
+          <div class="dash-card-head mb-2">
+            <div>
+              <h3 class="dash-card-title"><i class="bi bi-graph-up-arrow me-2 text-warning"></i>${isPt ? "Crescimento & Evangelismo da Igreja" : "Church Growth & Evangelism"}</h3>
+              <span class="text-secondary small">${isPt ? "Acompanhamento detalhado de First Timers, conversões, escola de fundação e células" : "Detailed monitoring of First Timers, born again conversions, foundation school, and cells"}</span>
+            </div>
+          </div>
+          <div class="row g-3 mt-1">
+            <div class="col-md-6 col-xl-3">
+              <div class="p-3 rounded text-center" style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.2);">
+                <span class="text-secondary small d-block mb-1">${isPt ? "Total de First Timers" : "Total First Timers"}</span>
+                <strong class="fs-3 text-light">${totalFt}</strong>
+              </div>
+            </div>
+            <div class="col-md-6 col-xl-3">
+              <div class="p-3 rounded text-center" style="background: rgba(244, 63, 94, 0.08); border: 1px solid rgba(244, 63, 94, 0.2);">
+                <span class="text-secondary small d-block mb-1">${isPt ? "Novos Convertidos" : "New Converts"}</span>
+                <strong class="fs-3 text-light">${newConverts}</strong>
+              </div>
+            </div>
+            <div class="col-md-6 col-xl-3">
+              <div class="p-3 rounded text-center" style="background: rgba(6, 182, 212, 0.08); border: 1px solid rgba(6, 182, 212, 0.2);">
+                <span class="text-secondary small d-block mb-1">${isPt ? "Alunos na Foundation School" : "Foundation School Students"}</span>
+                <strong class="fs-3 text-light">${fsActive}</strong>
+              </div>
+            </div>
+            <div class="col-md-6 col-xl-3">
+              <div class="p-3 rounded text-center" style="background: rgba(34, 197, 94, 0.08); border: 1px solid rgba(34, 197, 94, 0.2);">
+                <span class="text-secondary small d-block mb-1">${isPt ? "Células Ativas" : "Active Cells"}</span>
+                <strong class="fs-3 text-light">${activeCellsCount}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-xl-6">
+            <div class="dash-card">
+              <div class="dash-card-head mb-3">
+                <h3 class="dash-card-title">${isPt ? "First Timers Recentes" : "Recent First Timers"}</h3>
+                <span class="badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">${firstTimers.length} ${isPt ? "Registos" : "Records"}</span>
+              </div>
+              <div class="table-responsive rounded" style="max-height: 320px; border: 1px solid rgba(255, 255, 255, 0.08);">
+                <table class="table att-table align-middle mb-0" style="font-size: 0.82rem;">
+                  <thead>
+                    <tr>
+                      <th class="ps-3">${isPt ? "Nome" : "Name"}</th>
+                      <th>${isPt ? "Contacto" : "Contact"}</th>
+                      <th class="text-center">${isPt ? "Culto / Data" : "Service / Date"}</th>
+                      <th class="text-center">${isPt ? "Novo Convertido" : "Born Again"}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${firstTimers.slice(0, 8).map((ft) => `
+                      <tr>
+                        <td class="ps-3 fw-semibold text-light">${fullName(ft)}</td>
+                        <td class="text-secondary small">${ft.telefone || ft.phone || "—"}</td>
+                        <td class="text-center text-secondary small">${ft.data_do_culto || ft.created_at?.slice(0, 10) || "—"}</td>
+                        <td class="text-center">${isFirstTimerBornAgain(ft) ? `<span class="badge bg-success-subtle text-success">${isPt ? "Sim" : "Yes"}</span>` : `<span class="text-secondary">—</span>`}</td>
+                      </tr>
+                    `).join("") || `<tr><td colspan="4" class="text-center py-4 text-secondary">${isPt ? "Nenhum First Timer registado." : "No First Timers recorded."}</td></tr>`}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-xl-6">
+            <div class="dash-card">
+              <div class="dash-card-head mb-3">
+                <h3 class="dash-card-title">${isPt ? "Alunos Foundation School" : "Foundation School Students"}</h3>
+                <span class="badge" style="background: rgba(6, 182, 212, 0.15); color: #22d3ee;">${students.length} ${isPt ? "Alunos" : "Students"}</span>
+              </div>
+              <div class="table-responsive rounded" style="max-height: 320px; border: 1px solid rgba(255, 255, 255, 0.08);">
+                <table class="table att-table align-middle mb-0" style="font-size: 0.82rem;">
+                  <thead>
+                    <tr>
+                      <th class="ps-3">${isPt ? "Aluno" : "Student"}</th>
+                      <th>${isPt ? "Turma / Mês" : "Class / Month"}</th>
+                      <th class="text-center">${isPt ? "Aulas Feitas" : "Classes"}</th>
+                      <th class="text-center">${isPt ? "Estado" : "Status"}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${students.slice(0, 8).map((st) => `
+                      <tr>
+                        <td class="ps-3 fw-semibold text-light">${fullName(st)}</td>
+                        <td class="text-secondary small">${st.turma || st.mes_de_inscricao || "—"}</td>
+                        <td class="text-center fw-bold text-info">${st.classes_completed || (st.aulas_concluidas ? st.aulas_concluidas.length : 0)}/6</td>
+                        <td class="text-center">${st.graduado ? `<span class="badge bg-success-subtle text-success">${isPt ? "Graduado" : "Graduated"}</span>` : `<span class="badge bg-warning-subtle text-warning">${isPt ? "Em Curso" : "Active"}</span>`}</td>
+                      </tr>
+                    `).join("") || `<tr><td colspan="4" class="text-center py-4 text-secondary">${isPt ? "Nenhum aluno registado na Foundation School." : "No Foundation School students recorded."}</td></tr>`}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    if (activeSubTab === "finance") {
+      return `
+        <!-- Finance Focused Dashboard View -->
+        <div class="dash-card mb-3">
+          <div class="dash-card-head mb-2">
+            <div>
+              <h3 class="dash-card-title"><i class="bi bi-wallet2 me-2 text-warning"></i>${isPt ? "Gestão Financeira & Parcerias" : "Financial Management & Partnerships"}</h3>
+              <span class="text-secondary small">${isPt ? "Receitas verificadas, dízimos, ofertas, parcerias e controlo de requisições" : "Verified income, tithes, offerings, partnerships, and requisitions tracking"}</span>
+            </div>
+            <strong class="fs-4 text-warning">${totalGivingStr}</strong>
+          </div>
+          <div class="row g-3 mt-1">
+            <div class="col-md-6 col-xl-3">
+              <div class="p-3 rounded text-center" style="background: rgba(234, 179, 8, 0.08); border: 1px solid rgba(234, 179, 8, 0.2);">
+                <span class="text-secondary small d-block mb-1">${isPt ? "Dízimos" : "Tithes"}</span>
+                <strong class="fs-4" style="color: #facc15;">${typeof money === "function" ? money(streamMap.tithes.reduce((a, b) => a + b, 0)) : "0 MTn"}</strong>
+              </div>
+            </div>
+            <div class="col-md-6 col-xl-3">
+              <div class="p-3 rounded text-center" style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.2);">
+                <span class="text-secondary small d-block mb-1">${isPt ? "Ofertas" : "Offerings"}</span>
+                <strong class="fs-4" style="color: #38bdf8;">${typeof money === "function" ? money(streamMap.offerings.reduce((a, b) => a + b, 0)) : "0 MTn"}</strong>
+              </div>
+            </div>
+            <div class="col-md-6 col-xl-3">
+              <div class="p-3 rounded text-center" style="background: rgba(192, 132, 252, 0.08); border: 1px solid rgba(192, 132, 252, 0.2);">
+                <span class="text-secondary small d-block mb-1">${isPt ? "Parcerias" : "Partnerships"}</span>
+                <strong class="fs-4" style="color: #c084fc;">${typeof money === "function" ? money(streamMap.partnerships.reduce((a, b) => a + b, 0)) : "0 MTn"}</strong>
+              </div>
+            </div>
+            <div class="col-md-6 col-xl-3">
+              <div class="p-3 rounded text-center" style="background: rgba(34, 197, 94, 0.08); border: 1px solid rgba(34, 197, 94, 0.2);">
+                <span class="text-secondary small d-block mb-1">${isPt ? "Outros / Diversos" : "Others"}</span>
+                <strong class="fs-4" style="color: #34d399;">${typeof money === "function" ? money(streamMap.others.reduce((a, b) => a + b, 0)) : "0 MTn"}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-xl-7">
+            <div class="dash-card">
+              <div class="dash-card-head mb-3">
+                <h3 class="dash-card-title">${isPt ? "Evolução Mensal de Contribuições" : "Monthly Giving Breakdown"}</h3>
+                <span class="text-secondary small">${isPt ? "Valores agregados por categoria" : "Values aggregated by category"}</span>
+              </div>
+              <div class="table-responsive rounded" style="border: 1px solid rgba(255, 255, 255, 0.08);">
+                <table class="table att-table align-middle mb-0" style="font-size: 0.82rem;">
+                  <thead>
+                    <tr>
+                      <th class="ps-3">${isPt ? "Mês" : "Month"}</th>
+                      <th class="text-end" style="color: #facc15;">${isPt ? "Dízimos" : "Tithes"}</th>
+                      <th class="text-end" style="color: #38bdf8;">${isPt ? "Ofertas" : "Offerings"}</th>
+                      <th class="text-end" style="color: #c084fc;">${isPt ? "Parcerias" : "Partnerships"}</th>
+                      <th class="text-end" style="color: #34d399;">${isPt ? "Outros" : "Others"}</th>
+                      <th class="text-end pe-3 fw-bold">${isPt ? "Total Mês" : "Month Total"}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${[0, 1, 2, 3, 4, 5].map((i) => {
+                      const mTot = streamMap.tithes[i] + streamMap.offerings[i] + streamMap.partnerships[i] + streamMap.others[i];
+                      return `
+                        <tr>
+                          <td class="ps-3 fw-bold text-light">${monthLabels[i]}</td>
+                          <td class="text-end font-monospace">${streamMap.tithes[i] ? (typeof money === "function" ? money(streamMap.tithes[i]) : streamMap.tithes[i]) : "—"}</td>
+                          <td class="text-end font-monospace">${streamMap.offerings[i] ? (typeof money === "function" ? money(streamMap.offerings[i]) : streamMap.offerings[i]) : "—"}</td>
+                          <td class="text-end font-monospace">${streamMap.partnerships[i] ? (typeof money === "function" ? money(streamMap.partnerships[i]) : streamMap.partnerships[i]) : "—"}</td>
+                          <td class="text-end font-monospace">${streamMap.others[i] ? (typeof money === "function" ? money(streamMap.others[i]) : streamMap.others[i]) : "—"}</td>
+                          <td class="text-end pe-3 fw-bold text-light font-monospace">${mTot ? (typeof money === "function" ? money(mTot) : mTot) : "0 MTn"}</td>
+                        </tr>
+                      `;
+                    }).join("")}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-xl-5">
+            <div class="dash-card">
+              <div class="dash-card-head mb-3">
+                <h3 class="dash-card-title">${isPt ? "Requisições em Aberto" : "Pending Requisitions"}</h3>
+                <span class="badge" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24;">${pendingReqs} ${isPt ? "Pendentes" : "Pending"}</span>
+              </div>
+              <div class="d-flex flex-column gap-2">
+                ${reqs.slice(0, 5).map((r) => `
+                  <div class="dash-task-item">
+                    <div>
+                      <div class="fw-semibold text-light" style="font-size: 0.84rem;">${escapeAttr(r.title || r.item_description || (isPt ? "Requisição de Material" : "Requisition"))}</div>
+                      <span class="text-secondary small" style="font-size: 0.72rem;">${escapeAttr(r.department || "Geral")} · ${r.requested_amount ? (typeof money === "function" ? money(r.requested_amount) : r.requested_amount + " MTn") : "—"}</span>
+                    </div>
+                    <span class="badge" style="background: rgba(234, 179, 8, 0.12); color: #facc15; font-size: 0.72rem;">${escapeAttr(r.status || "Submetido")}</span>
+                  </div>
+                `).join("") || `<p class="text-secondary text-center py-4 mb-0">${isPt ? "Nenhuma requisição pendente no momento." : "No pending requisitions."}</p>`}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    if (activeSubTab === "departments") {
+      return `
+        <!-- Departments Focused Dashboard View -->
+        <div class="dash-card mb-3">
+          <div class="dash-card-head mb-2">
+            <div>
+              <h3 class="dash-card-title"><i class="bi bi-grid-3x3-gap-fill me-2 text-warning"></i>${isPt ? "Departamentos & Operações Eclesiásticas" : "Departments & Operations"}</h3>
+              <span class="text-secondary small">${isPt ? "Visão operacional e status em tempo real de cada setor" : "Live operational status of each church department"}</span>
+            </div>
+          </div>
+          <div class="row g-3 mt-1">
+            <!-- 1. Cuidados Pastorais -->
+            <div class="col-md-6 col-xl-4">
+              <div class="p-3 rounded h-100" style="background: rgba(244, 63, 94, 0.06); border: 1px solid rgba(244, 63, 94, 0.2);">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <span class="fw-bold text-light"><i class="bi bi-heart-pulse-fill me-2 text-danger"></i>${isPt ? "Cuidados Pastorais" : "Pastoral Care"}</span>
+                  <span class="badge bg-danger-subtle">${pendingFollowupsCount} ${isPt ? "Pendências" : "Pending"}</span>
+                </div>
+                <p class="text-secondary small mb-2">${isPt ? "Acompanhamento e integração de First Timers e novos convertidos." : "Follow-up and integration of visitors."}</p>
+                <div class="small fw-semibold text-light">${totalFt} First Timers · ${newConverts} ${isPt ? "Convertidos" : "Converts"}</div>
+              </div>
+            </div>
+
+            <!-- 2. Foundation School -->
+            <div class="col-md-6 col-xl-4">
+              <div class="p-3 rounded h-100" style="background: rgba(6, 182, 212, 0.06); border: 1px solid rgba(6, 182, 212, 0.2);">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <span class="fw-bold text-light"><i class="bi bi-mortarboard-fill me-2 text-info"></i>Foundation School</span>
+                  <span class="badge bg-info-subtle">${fsActive} ${isPt ? "Ativos" : "Active"}</span>
+                </div>
+                <p class="text-secondary small mb-2">${isPt ? "Discipulado e ensino dos fundamentos da fé cristã." : "Discipleship and foundational Christian teachings."}</p>
+                <div class="small fw-semibold text-light">${fsActive} ${isPt ? "Matriculados" : "Enrolled"} · ${fsGrads} ${isPt ? "Graduados" : "Graduated"}</div>
+              </div>
+            </div>
+
+            <!-- 3. Células & Liderança -->
+            <div class="col-md-6 col-xl-4">
+              <div class="p-3 rounded h-100" style="background: rgba(34, 197, 94, 0.06); border: 1px solid rgba(34, 197, 94, 0.2);">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <span class="fw-bold text-light"><i class="bi bi-diagram-3-fill me-2 text-success"></i>${isPt ? "Células & Liderança" : "Cells & Leadership"}</span>
+                  <span class="badge ${cellsMissingReportCount > 0 ? "bg-warning-subtle" : "bg-success-subtle"}">${cellsMissingReportCount} ${isPt ? "Sem relatório" : "Missing rpt"}</span>
+                </div>
+                <p class="text-secondary small mb-2">${isPt ? "Estrutura celular, reuniões semanais e prestação de contas." : "Cell ministry network and weekly reporting."}</p>
+                <div class="small fw-semibold text-light">${activeCellsCount} ${isPt ? "Células Registadas" : "Registered Cells"}</div>
+              </div>
+            </div>
+
+            <!-- 4. Mídia & Transmissões -->
+            <div class="col-md-6 col-xl-4">
+              <div class="p-3 rounded h-100" style="background: rgba(56, 189, 248, 0.06); border: 1px solid rgba(56, 189, 248, 0.2);">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <span class="fw-bold text-light"><i class="bi bi-camera-video-fill me-2 text-primary"></i>${isPt ? "Mídia & Streaming" : "Media & Streaming"}</span>
+                  <span class="badge bg-primary-subtle">Online</span>
+                </div>
+                <p class="text-secondary small mb-2">${isPt ? "Escalas de técnicos, produção audiovisual e transmissão ao vivo." : "Broadcasts, live stream schedule, and technical team."}</p>
+                <div class="small fw-semibold text-light">3 ${isPt ? "Canais de Streaming" : "Streaming Channels"}</div>
+              </div>
+            </div>
+
+            <!-- 5. Finanças & Requisições -->
+            <div class="col-md-6 col-xl-4">
+              <div class="p-3 rounded h-100" style="background: rgba(234, 179, 8, 0.06); border: 1px solid rgba(234, 179, 8, 0.2);">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <span class="fw-bold text-light"><i class="bi bi-wallet-fill me-2 text-warning"></i>${isPt ? "Finanças" : "Finance"}</span>
+                  <span class="badge bg-warning-subtle">${pendingReqs} ${isPt ? "Em aprovação" : "Approvals"}</span>
+                </div>
+                <p class="text-secondary small mb-2">${isPt ? "Controlo orçamental, auditoria de entradas e desembolsos." : "Budgetary control, giving audit, and disbursements."}</p>
+                <div class="small fw-semibold text-light">${totalGivingStr} ${isPt ? "Arrecadado" : "Collected"}</div>
+              </div>
+            </div>
+
+            <!-- 6. Ministério das Prisões & FEVO -->
+            <div class="col-md-6 col-xl-4">
+              <div class="p-3 rounded h-100" style="background: rgba(168, 85, 247, 0.06); border: 1px solid rgba(168, 85, 247, 0.2);">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <span class="fw-bold text-light"><i class="bi bi-shield-check me-2" style="color: #c084fc;"></i>${isPt ? "Prisões & FEVO" : "Prison & Outreaches"}</span>
+                  <span class="badge bg-secondary-subtle">Ativo</span>
+                </div>
+                <p class="text-secondary small mb-2">${isPt ? "Evangelismo prisional, apoio humanitário e distribuição de materiais." : "Prison ministry and community outreach initiatives."}</p>
+                <div class="small fw-semibold text-light">2 ${isPt ? "Visitas Programadas" : "Scheduled Visits"}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    if (activeSubTab === "events") {
+      return `
+        <!-- Events Focused Dashboard View -->
+        <div class="dash-card mb-3">
+          <div class="dash-card-head mb-3">
+            <div>
+              <h3 class="dash-card-title"><i class="bi bi-calendar-event-fill me-2 text-warning"></i>${isPt ? "Agenda de Cultos & Programas da Igreja" : "Church Services & Programs Schedule"}</h3>
+              <span class="text-secondary small">${isPt ? "Horários oficiais, equipas de serviço e cultos programados" : "Official schedule, service teams, and upcoming programs"}</span>
+            </div>
+          </div>
+          <div class="d-flex flex-column gap-2.5">
+            <!-- Event 1 -->
+            <div class="dash-event-item">
+              <div class="d-flex align-items-center gap-3">
+                <div class="dash-icon-box sky"><i class="bi bi-sun-fill"></i></div>
+                <div>
+                  <div class="fw-bold text-light">Domingo - 1º Culto</div>
+                  <span class="text-secondary small"><i class="bi bi-clock me-1"></i>07:30 - 09:00 · Templo Central & Transmissão Online</span>
+                </div>
+              </div>
+              <span class="dash-event-badge">${isPt ? "Amanhã" : "Tomorrow"}</span>
+            </div>
+
+            <!-- Event 2 -->
+            <div class="dash-event-item">
+              <div class="d-flex align-items-center gap-3">
+                <div class="dash-icon-box sky"><i class="bi bi-people-fill"></i></div>
+                <div>
+                  <div class="fw-bold text-light">Domingo - 2º Culto</div>
+                  <span class="text-secondary small"><i class="bi bi-clock me-1"></i>09:30 - 11:00 · Templo Central & Transmissão Online</span>
+                </div>
+              </div>
+              <span class="dash-event-badge">${isPt ? "Amanhã" : "Tomorrow"}</span>
+            </div>
+
+            <!-- Event 3 -->
+            <div class="dash-event-item">
+              <div class="d-flex align-items-center gap-3">
+                <div class="dash-icon-box purple"><i class="bi bi-book-fill"></i></div>
+                <div>
+                  <div class="fw-bold text-light">${isPt ? "Quarta-feira - Culto de Ensino da Palavra" : "Wednesday - Bible Teaching Service"}</div>
+                  <span class="text-secondary small"><i class="bi bi-clock me-1"></i>18:00 - 19:30 · ${isPt ? "Todas as Sedes Provinciais & Células" : "All Provincial Centers & Cells"}</span>
+                </div>
+              </div>
+              <span class="dash-event-badge" style="background: rgba(148, 163, 184, 0.12); color: #cbd5e1;">07 Out</span>
+            </div>
+
+            <!-- Event 4 -->
+            <div class="dash-event-item">
+              <div class="d-flex align-items-center gap-3">
+                <div class="dash-icon-box amber"><i class="bi bi-fire"></i></div>
+                <div>
+                  <div class="fw-bold text-light">${isPt ? "Vigília de Oração e Milagres" : "Prayer & Miracle Vigil"}</div>
+                  <span class="text-secondary small"><i class="bi bi-clock me-1"></i>22:00 - 04:00 · Templo Central Maputo</span>
+                </div>
+              </div>
+              <span class="dash-event-badge" style="background: rgba(234, 179, 8, 0.15); color: #facc15;">10 Out</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    if (activeSubTab === "attendance") {
+      return `
+        <!-- Attendance Focused Dashboard View -->
+        <div class="dash-card mb-3">
+          <div class="dash-card-head mb-2">
+            <div>
+              <h3 class="dash-card-title"><i class="bi bi-fingerprint me-2 text-warning"></i>${isPt ? "Controlo Biométrico de Assiduidade & Pontualidade" : "Biometric Staff Attendance & Punctuality"}</h3>
+              <span class="text-secondary small">${isPt ? "Registo oficial de picagens, controlo de atrasos (>08:30) e histórico diário" : "Official punch records, late arrival tracking (>08:30), and daily history"}</span>
+            </div>
+          </div>
+          ${renderExecutiveAttendanceMainWidget()}
+        </div>
+      `;
+    }
+
+    // Default Overview View (Visão Geral)
+    return `
+      <!-- 2. Top 8 High-Impact KPI Metric Cards Grid -->
+      ${renderKpiGrid()}
 
       <!-- 3. Analytical Charts Row (2 Columns: Contribuições & Membros por Igreja) -->
       <div class="row g-3">
@@ -16639,9 +17101,9 @@ function renderDashboard() {
               </div>
             </div>
 
-            <!-- Glowing Multi-Month Financial SVG Chart -->
-            <div class="w-100" style="position: relative; min-height: 260px;">
-              <svg viewBox="0 0 650 230" width="100%" height="230" style="overflow: visible;">
+            <!-- Glowing Multi-Month Financial SVG Chart with Dynamic Height Scaling -->
+            <div class="w-100" style="position: relative; min-height: 240px;">
+              <svg viewBox="0 0 650 220" width="100%" height="220" style="overflow: visible;">
                 <defs>
                   <linearGradient id="barGradGold" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stop-color="#fde047" stop-opacity="1"/>
@@ -16663,74 +17125,36 @@ function renderDashboard() {
 
                 <!-- Gridlines & Y-Axis Labels -->
                 <line x1="45" y1="20" x2="630" y2="20" stroke="rgba(255,255,255,0.05)" stroke-dasharray="3,3" />
-                <text x="35" y="24" fill="#64748b" font-size="10" text-anchor="end">250k</text>
+                <text x="35" y="24" fill="#64748b" font-size="10" text-anchor="end">${typeof moneyCompact === "function" ? moneyCompact(maxMonthVal) : maxMonthVal}</text>
 
-                <line x1="45" y1="65" x2="630" y2="65" stroke="rgba(255,255,255,0.05)" stroke-dasharray="3,3" />
-                <text x="35" y="69" fill="#64748b" font-size="10" text-anchor="end">180k</text>
+                <line x1="45" y1="75" x2="630" y2="75" stroke="rgba(255,255,255,0.05)" stroke-dasharray="3,3" />
+                <text x="35" y="79" fill="#64748b" font-size="10" text-anchor="end">${typeof moneyCompact === "function" ? moneyCompact(maxMonthVal * 0.66) : Math.round(maxMonthVal * 0.66)}</text>
 
-                <line x1="45" y1="110" x2="630" y2="110" stroke="rgba(255,255,255,0.05)" stroke-dasharray="3,3" />
-                <text x="35" y="114" fill="#64748b" font-size="10" text-anchor="end">120k</text>
+                <line x1="45" y1="130" x2="630" y2="130" stroke="rgba(255,255,255,0.05)" stroke-dasharray="3,3" />
+                <text x="35" y="134" fill="#64748b" font-size="10" text-anchor="end">${typeof moneyCompact === "function" ? moneyCompact(maxMonthVal * 0.33) : Math.round(maxMonthVal * 0.33)}</text>
 
-                <line x1="45" y1="155" x2="630" y2="155" stroke="rgba(255,255,255,0.05)" stroke-dasharray="3,3" />
-                <text x="35" y="159" fill="#64748b" font-size="10" text-anchor="end">60k</text>
+                <line x1="45" y1="185" x2="630" y2="185" stroke="rgba(255,255,255,0.1)" />
+                <text x="35" y="189" fill="#64748b" font-size="10" text-anchor="end">0</text>
 
-                <line x1="45" y1="200" x2="630" y2="200" stroke="rgba(255,255,255,0.1)" />
-                <text x="35" y="204" fill="#64748b" font-size="10" text-anchor="end">0</text>
+                <!-- Render real dynamic columns for each month -->
+                ${[0, 1, 2, 3, 4, 5].map((i) => {
+                  const centerX = 95 + (i * 100);
+                  const scaleH = (v) => Math.min(160, Math.max(4, Math.round((v / maxMonthVal) * 160)));
+                  const hT = scaleH(streamMap.tithes[i]);
+                  const hO = scaleH(streamMap.offerings[i]);
+                  const hP = scaleH(streamMap.partnerships[i]);
+                  const hOt = scaleH(streamMap.others[i]);
 
-                <!-- Month Columns (Abr, Mai, Jun, Jul, Ago, Set) -->
-                <!-- Abr (center x=95) -->
-                <g class="chart-col">
-                  <rect x="70" y="130" width="11" height="70" rx="3" fill="url(#barGradGold)"><title>Abr Dízimos: 75.000 MTn</title></rect>
-                  <rect x="83" y="145" width="11" height="55" rx="3" fill="url(#barGradSky)"><title>Abr Ofertas: 55.000 MTn</title></rect>
-                  <rect x="96" y="120" width="11" height="80" rx="3" fill="url(#barGradPurple)"><title>Abr Parcerias: 88.000 MTn</title></rect>
-                  <rect x="109" y="170" width="11" height="30" rx="3" fill="url(#barGradGreen)"><title>Abr Outros: 30.000 MTn</title></rect>
-                  <text x="95" y="218" fill="#94a3b8" font-size="11" font-weight="600" text-anchor="middle">Abr</text>
-                </g>
-
-                <!-- Mai (center x=195) -->
-                <g class="chart-col">
-                  <rect x="170" y="110" width="11" height="90" rx="3" fill="url(#barGradGold)"><title>Mai Dízimos: 98.000 MTn</title></rect>
-                  <rect x="183" y="135" width="11" height="65" rx="3" fill="url(#barGradSky)"><title>Mai Ofertas: 68.000 MTn</title></rect>
-                  <rect x="196" y="95" width="11" height="105" rx="3" fill="url(#barGradPurple)"><title>Mai Parcerias: 115.000 MTn</title></rect>
-                  <rect x="209" y="165" width="11" height="35" rx="3" fill="url(#barGradGreen)"><title>Mai Outros: 35.000 MTn</title></rect>
-                  <text x="195" y="218" fill="#94a3b8" font-size="11" font-weight="600" text-anchor="middle">Mai</text>
-                </g>
-
-                <!-- Jun (center x=295) -->
-                <g class="chart-col">
-                  <rect x="270" y="85" width="11" height="115" rx="3" fill="url(#barGradGold)"><title>Jun Dízimos: 125.000 MTn</title></rect>
-                  <rect x="283" y="125" width="11" height="75" rx="3" fill="url(#barGradSky)"><title>Jun Ofertas: 78.000 MTn</title></rect>
-                  <rect x="296" y="80" width="11" height="120" rx="3" fill="url(#barGradPurple)"><title>Jun Parcerias: 132.000 MTn</title></rect>
-                  <rect x="309" y="160" width="11" height="40" rx="3" fill="url(#barGradGreen)"><title>Jun Outros: 42.000 MTn</title></rect>
-                  <text x="295" y="218" fill="#94a3b8" font-size="11" font-weight="600" text-anchor="middle">Jun</text>
-                </g>
-
-                <!-- Jul (center x=395) -->
-                <g class="chart-col">
-                  <rect x="370" y="65" width="11" height="135" rx="3" fill="url(#barGradGold)"><title>Jul Dízimos: 148.000 MTn</title></rect>
-                  <rect x="383" y="115" width="11" height="85" rx="3" fill="url(#barGradSky)"><title>Jul Ofertas: 92.000 MTn</title></rect>
-                  <rect x="396" y="60" width="11" height="140" rx="3" fill="url(#barGradPurple)"><title>Jul Parcerias: 154.000 MTn</title></rect>
-                  <rect x="409" y="150" width="11" height="50" rx="3" fill="url(#barGradGreen)"><title>Jul Outros: 52.000 MTn</title></rect>
-                  <text x="395" y="218" fill="#94a3b8" font-size="11" font-weight="600" text-anchor="middle">Jul</text>
-                </g>
-
-                <!-- Ago (center x=495) -->
-                <g class="chart-col">
-                  <rect x="470" y="50" width="11" height="150" rx="3" fill="url(#barGradGold)"><title>Ago Dízimos: 165.000 MTn</title></rect>
-                  <rect x="483" y="100" width="11" height="100" rx="3" fill="url(#barGradSky)"><title>Ago Ofertas: 110.000 MTn</title></rect>
-                  <rect x="496" y="45" width="11" height="155" rx="3" fill="url(#barGradPurple)"><title>Ago Parcerias: 172.000 MTn</title></rect>
-                  <rect x="509" y="145" width="11" height="55" rx="3" fill="url(#barGradGreen)"><title>Ago Outros: 58.000 MTn</title></rect>
-                  <text x="495" y="218" fill="#94a3b8" font-size="11" font-weight="600" text-anchor="middle">Ago</text>
-                </g>
-
-                <!-- Set (center x=595) -->
-                <g class="chart-col">
-                  <rect x="570" y="35" width="11" height="165" rx="3" fill="url(#barGradGold)"><title>Set Dízimos: 185.000 MTn</title></rect>
-                  <rect x="583" y="90" width="11" height="110" rx="3" fill="url(#barGradSky)"><title>Set Ofertas: 124.000 MTn</title></rect>
-                  <rect x="596" y="30" width="11" height="170" rx="3" fill="url(#barGradPurple)"><title>Set Parcerias: 195.000 MTn</title></rect>
-                  <rect x="609" y="135" width="11" height="65" rx="3" fill="url(#barGradGreen)"><title>Set Outros: 68.000 MTn</title></rect>
-                  <text x="595" y="218" fill="#facc15" font-size="11" font-weight="700" text-anchor="middle">Set</text>
-                </g>
+                  return `
+                    <g class="chart-col">
+                      <rect x="${centerX - 25}" y="${185 - hT}" width="11" height="${hT}" rx="3" fill="url(#barGradGold)"><title>${monthLabels[i]} Dízimos: ${streamMap.tithes[i]} MTn</title></rect>
+                      <rect x="${centerX - 12}" y="${185 - hO}" width="11" height="${hO}" rx="3" fill="url(#barGradSky)"><title>${monthLabels[i]} Ofertas: ${streamMap.offerings[i]} MTn</title></rect>
+                      <rect x="${centerX + 1}" y="${185 - hP}" width="11" height="${hP}" rx="3" fill="url(#barGradPurple)"><title>${monthLabels[i]} Parcerias: ${streamMap.partnerships[i]} MTn</title></rect>
+                      <rect x="${centerX + 14}" y="${185 - hOt}" width="11" height="${hOt}" rx="3" fill="url(#barGradGreen)"><title>${monthLabels[i]} Outros: ${streamMap.others[i]} MTn</title></rect>
+                      <text x="${centerX}" y="204" fill="${i === 5 ? "#facc15" : "#94a3b8"}" font-size="11" font-weight="${i === 5 ? "700" : "600"}" text-anchor="middle">${monthLabels[i]}</text>
+                    </g>
+                  `;
+                }).join("")}
               </svg>
             </div>
           </div>
@@ -16742,86 +17166,13 @@ function renderDashboard() {
             <div class="dash-card-head">
               <div>
                 <h3 class="dash-card-title">${isPt ? "Membros por Igreja" : "Members by Church"}</h3>
-                <span class="text-secondary small">${isPt ? "Distribuição nacional" : "National breakdown"}</span>
+                <span class="text-secondary small">${isPt ? "Distribuição real de membros" : "Real member distribution"}</span>
               </div>
-              <span class="badge" style="background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.25); font-size: 0.72rem;">Top 5</span>
+              <span class="badge" style="background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.25); font-size: 0.72rem;">${activeChurchEntries.length} ${isPt ? "Igreja(s)" : "Church(es)"}</span>
             </div>
 
-            <!-- Donut SVG with Center Metric -->
-            <div class="dash-donut-wrap">
-              <svg viewBox="0 0 100 100" width="170" height="170" style="transform: rotate(-90deg);">
-                <!-- Total 1896: Maputo 882 (46.5%), Matola 410 (21.6%), Zimpeto 248 (13.1%), Boane 186 (9.8%), Outras 170 (9.0%) -->
-                <!-- Circumference = 2 * PI * 38 = 238.76 -->
-                <!-- Maputo: 46.5% = 111.0 -->
-                <circle cx="50" cy="50" r="38" fill="transparent" stroke="#38bdf8" stroke-width="12" stroke-dasharray="111.0 238.76" stroke-dashoffset="0" />
-                <!-- Matola: 21.6% = 51.6 -->
-                <circle cx="50" cy="50" r="38" fill="transparent" stroke="#818cf8" stroke-width="12" stroke-dasharray="51.6 238.76" stroke-dashoffset="-111.0" />
-                <!-- Zimpeto: 13.1% = 31.3 -->
-                <circle cx="50" cy="50" r="38" fill="transparent" stroke="#34d399" stroke-width="12" stroke-dasharray="31.3 238.76" stroke-dashoffset="-162.6" />
-                <!-- Boane: 9.8% = 23.4 -->
-                <circle cx="50" cy="50" r="38" fill="transparent" stroke="#facc15" stroke-width="12" stroke-dasharray="23.4 238.76" stroke-dashoffset="-193.9" />
-                <!-- Outras: 9.0% = 21.5 -->
-                <circle cx="50" cy="50" r="38" fill="transparent" stroke="#f43f5e" stroke-width="12" stroke-dasharray="21.5 238.76" stroke-dashoffset="-217.3" />
-              </svg>
-              <div class="dash-donut-center">
-                <div class="dash-donut-center-val">1,896</div>
-                <div class="dash-donut-center-lbl">${isPt ? "Membros" : "Members"}</div>
-              </div>
-            </div>
-
-            <!-- Breakdown Legend List -->
-            <div class="dash-church-list">
-              <div class="dash-church-row">
-                <div class="d-flex align-items-center gap-2">
-                  <span class="dash-legend-dot" style="background: #38bdf8;"></span>
-                  <span class="fw-semibold text-light">Maputo Central</span>
-                </div>
-                <div class="d-flex align-items-center gap-2">
-                  <strong class="text-light">882</strong>
-                  <span class="text-secondary small">(46.5%)</span>
-                </div>
-              </div>
-              <div class="dash-church-row">
-                <div class="d-flex align-items-center gap-2">
-                  <span class="dash-legend-dot" style="background: #818cf8;"></span>
-                  <span class="fw-semibold text-light">Matola</span>
-                </div>
-                <div class="d-flex align-items-center gap-2">
-                  <strong class="text-light">410</strong>
-                  <span class="text-secondary small">(21.6%)</span>
-                </div>
-              </div>
-              <div class="dash-church-row">
-                <div class="d-flex align-items-center gap-2">
-                  <span class="dash-legend-dot" style="background: #34d399;"></span>
-                  <span class="fw-semibold text-light">Zimpeto</span>
-                </div>
-                <div class="d-flex align-items-center gap-2">
-                  <strong class="text-light">248</strong>
-                  <span class="text-secondary small">(13.1%)</span>
-                </div>
-              </div>
-              <div class="dash-church-row">
-                <div class="d-flex align-items-center gap-2">
-                  <span class="dash-legend-dot" style="background: #facc15;"></span>
-                  <span class="fw-semibold text-light">Boane</span>
-                </div>
-                <div class="d-flex align-items-center gap-2">
-                  <strong class="text-light">186</strong>
-                  <span class="text-secondary small">(9.8%)</span>
-                </div>
-              </div>
-              <div class="dash-church-row">
-                <div class="d-flex align-items-center gap-2">
-                  <span class="dash-legend-dot" style="background: #f43f5e;"></span>
-                  <span class="fw-semibold text-light">${isPt ? "Outras Igrejas" : "Other Churches"}</span>
-                </div>
-                <div class="d-flex align-items-center gap-2">
-                  <strong class="text-light">170</strong>
-                  <span class="text-secondary small">(9.0%)</span>
-                </div>
-              </div>
-            </div>
+            <!-- Dynamic Donut Chart rendering ONLY real churches -->
+            ${renderRealDonut()}
           </div>
         </div>
       </div>
@@ -16830,35 +17181,35 @@ function renderDashboard() {
       <div id="dash-dept-section" class="dash-card">
         <div class="dash-card-head mb-3">
           <h3 class="dash-card-title"><i class="bi bi-grid-3x3-gap-fill me-2 text-warning"></i>${isPt ? "Resumo por Departamento" : "Department Summary"}</h3>
-          <button type="button" class="btn btn-link btn-sm text-decoration-none p-0" style="color: #38bdf8; font-size: 0.8rem;" onclick="if(window.setRoute) window.setRoute('reports');">${isPt ? "Ver todos ›" : "View all ›"}</button>
+          <button type="button" class="btn btn-link btn-sm text-decoration-none p-0" style="color: #38bdf8; font-size: 0.8rem;" onclick="window.switchDashboardSubTab('departments');">${isPt ? "Ver todos ›" : "View all ›"}</button>
         </div>
         <div class="dash-dept-grid">
           <!-- 1: Pastoral Care -->
-          <div class="dash-dept-card" onclick="if(window.setRoute) window.setRoute('firstTimers');">
+          <div class="dash-dept-card" onclick="window.switchDashboardSubTab('growth');">
             <div class="dash-icon-box rose" style="width: 34px; height: 34px; font-size: 1rem;"><i class="bi bi-heart-pulse-fill"></i></div>
             <div class="dash-dept-name">${isPt ? "Cuidados Pastorais" : "Pastoral Care"}</div>
-            <div class="dash-dept-stat">26 ${isPt ? "Pendências" : "Pending"}</div>
+            <div class="dash-dept-stat">${pendingFollowupsCount} ${isPt ? "Pendências" : "Pending"}</div>
             <span class="dash-dept-tag">${isPt ? "Acompanhamento" : "Follow-up"}</span>
           </div>
 
           <!-- 2: Foundation School -->
-          <div class="dash-dept-card" onclick="if(window.setRoute) window.setRoute('foundation');">
+          <div class="dash-dept-card" onclick="window.switchDashboardSubTab('growth');">
             <div class="dash-icon-box cyan" style="width: 34px; height: 34px; font-size: 1rem;"><i class="bi bi-mortarboard-fill"></i></div>
             <div class="dash-dept-name">Foundation School</div>
-            <div class="dash-dept-stat">38 ${isPt ? "Ativos" : "Active"}</div>
+            <div class="dash-dept-stat">${fsActive} ${isPt ? "Ativos" : "Active"}</div>
             <span class="dash-dept-tag">${isPt ? "Em curso" : "In Progress"}</span>
           </div>
 
           <!-- 3: Células & Liderança -->
-          <div class="dash-dept-card" onclick="if(window.setRoute) window.setRoute('cellMinistryOverview');">
+          <div class="dash-dept-card" onclick="window.switchDashboardSubTab('departments');">
             <div class="dash-icon-box green" style="width: 34px; height: 34px; font-size: 1rem;"><i class="bi bi-diagram-3-fill"></i></div>
             <div class="dash-dept-name">${isPt ? "Células & Liderança" : "Cells & Leadership"}</div>
-            <div class="dash-dept-stat" style="color: #facc15;">5 ${isPt ? "Sem relatório" : "Missing rpt"}</div>
-            <span class="dash-dept-tag" style="border: 1px solid rgba(234, 179, 8, 0.3); color: #facc15;">${isPt ? "Atenção" : "Attention"}</span>
+            <div class="dash-dept-stat" style="color: ${cellsMissingReportCount > 0 ? "#facc15" : "#34d399"};">${cellsMissingReportCount} ${isPt ? "Sem relatório" : "Missing rpt"}</div>
+            <span class="dash-dept-tag" style="border: 1px solid rgba(234, 179, 8, 0.3); color: #facc15;">${cellsMissingReportCount > 0 ? (isPt ? "Atenção" : "Attention") : (isPt ? "Em dia" : "All set")}</span>
           </div>
 
           <!-- 4: Mídia -->
-          <div class="dash-dept-card" onclick="if(window.setRoute) window.setRoute('media');">
+          <div class="dash-dept-card" onclick="window.switchDashboardSubTab('departments');">
             <div class="dash-icon-box sky" style="width: 34px; height: 34px; font-size: 1rem;"><i class="bi bi-camera-video-fill"></i></div>
             <div class="dash-dept-name">${isPt ? "Mídia" : "Media"}</div>
             <div class="dash-dept-stat">3 ${isPt ? "Próx. cultos" : "Next services"}</div>
@@ -16866,15 +17217,15 @@ function renderDashboard() {
           </div>
 
           <!-- 5: Finanças -->
-          <div class="dash-dept-card" onclick="if(window.setRoute) window.setRoute('finance');">
+          <div class="dash-dept-card" onclick="window.switchDashboardSubTab('finance');">
             <div class="dash-icon-box amber" style="width: 34px; height: 34px; font-size: 1rem;"><i class="bi bi-wallet-fill"></i></div>
             <div class="dash-dept-name">${isPt ? "Finanças" : "Finance"}</div>
-            <div class="dash-dept-stat">6 ${isPt ? "Em aprovação" : "Approvals"}</div>
+            <div class="dash-dept-stat">${pendingReqs} ${isPt ? "Em aprovação" : "Approvals"}</div>
             <span class="dash-dept-tag">${isPt ? "Requisições" : "Requisitions"}</span>
           </div>
 
           <!-- 6: Prisão -->
-          <div class="dash-dept-card" onclick="if(window.setRoute) window.setRoute('cellMinistryOverview');">
+          <div class="dash-dept-card" onclick="window.switchDashboardSubTab('departments');">
             <div class="dash-icon-box purple" style="width: 34px; height: 34px; font-size: 1rem;"><i class="bi bi-shield-check"></i></div>
             <div class="dash-dept-name">${isPt ? "Prisão" : "Prison Ministry"}</div>
             <div class="dash-dept-stat">2 ${isPt ? "Visitas" : "Visits"}</div>
@@ -16891,9 +17242,9 @@ function renderDashboard() {
             <div class="dash-card-head mb-3">
               <div class="d-flex align-items-center gap-2">
                 <h3 class="dash-card-title"><i class="bi bi-bell-fill me-2 text-warning"></i>${isPt ? "Tarefas e Alertas" : "Tasks & Alerts"}</h3>
-                <span class="badge" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.25); font-size: 0.7rem;">4 ${isPt ? "Pendentes" : "Pending"}</span>
+                <span class="badge" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.25); font-size: 0.7rem;">${pendingFollowupsCount + cellsMissingReportCount + pendingReqs} ${isPt ? "Pendentes" : "Pending"}</span>
               </div>
-              <button type="button" class="btn btn-link btn-sm text-decoration-none p-0" style="color: #38bdf8; font-size: 0.8rem;" onclick="if(window.setRoute) window.setRoute('firstTimers');">${isPt ? "Ver todas ›" : "View all ›"}</button>
+              <button type="button" class="btn btn-link btn-sm text-decoration-none p-0" style="color: #38bdf8; font-size: 0.8rem;" onclick="window.switchDashboardSubTab('growth');">${isPt ? "Ver todas ›" : "View all ›"}</button>
             </div>
             <div class="d-flex flex-column gap-2">
               <!-- Task 1 -->
@@ -16901,11 +17252,11 @@ function renderDashboard() {
                 <div class="d-flex align-items-center gap-2.5">
                   <span class="dash-legend-dot" style="background: #ef4444; width: 10px; height: 10px;"></span>
                   <div>
-                    <div class="fw-semibold text-light" style="font-size: 0.84rem;">26 First Timers ${isPt ? "sem acompanhamento" : "without follow-up"}</div>
-                    <span class="text-secondary small" style="font-size: 0.72rem;">${isPt ? "Cuidados Pastorais · Há 2 horas" : "Pastoral Care · 2h ago"}</span>
+                    <div class="fw-semibold text-light" style="font-size: 0.84rem;">${pendingFollowupsCount} First Timers ${isPt ? "sem acompanhamento" : "without follow-up"}</div>
+                    <span class="text-secondary small" style="font-size: 0.72rem;">${isPt ? "Cuidados Pastorais · Ação recomendada" : "Pastoral Care · Action recommended"}</span>
                   </div>
                 </div>
-                <button type="button" class="dash-task-pill-btn" onclick="if(window.setRoute) window.setRoute('firstTimers');">${isPt ? "Resolver ›" : "Resolve ›"}</button>
+                <button type="button" class="dash-task-pill-btn" onclick="window.switchDashboardSubTab('growth');">${isPt ? "Resolver ›" : "Resolve ›"}</button>
               </div>
 
               <!-- Task 2 -->
@@ -16913,11 +17264,11 @@ function renderDashboard() {
                 <div class="d-flex align-items-center gap-2.5">
                   <span class="dash-legend-dot" style="background: #facc15; width: 10px; height: 10px;"></span>
                   <div>
-                    <div class="fw-semibold text-light" style="font-size: 0.84rem;">5 ${isPt ? "células não enviaram relatório semanal" : "cells did not submit weekly report"}</div>
-                    <span class="text-secondary small" style="font-size: 0.72rem;">${isPt ? "Células & Liderança · Há 4 horas" : "Cells & Leadership · 4h ago"}</span>
+                    <div class="fw-semibold text-light" style="font-size: 0.84rem;">${cellsMissingReportCount} ${isPt ? "células não enviaram relatório semanal" : "cells did not submit weekly report"}</div>
+                    <span class="text-secondary small" style="font-size: 0.72rem;">${isPt ? "Células & Liderança · Relatório em atraso" : "Cells & Leadership · Pending report"}</span>
                   </div>
                 </div>
-                <button type="button" class="dash-task-pill-btn" onclick="if(window.setRoute) window.setRoute('cellMinistryOverview');">${isPt ? "Notificar ›" : "Notify ›"}</button>
+                <button type="button" class="dash-task-pill-btn" onclick="window.switchDashboardSubTab('departments');">${isPt ? "Notificar ›" : "Notify ›"}</button>
               </div>
 
               <!-- Task 3 -->
@@ -16925,11 +17276,11 @@ function renderDashboard() {
                 <div class="d-flex align-items-center gap-2.5">
                   <span class="dash-legend-dot" style="background: #c084fc; width: 10px; height: 10px;"></span>
                   <div>
-                    <div class="fw-semibold text-light" style="font-size: 0.84rem;">3 ${isPt ? "requisições financeiras aguardam aprovação" : "finance requisitions await approval"}</div>
-                    <span class="text-secondary small" style="font-size: 0.72rem;">${isPt ? "Finanças · Ontem" : "Finance · Yesterday"}</span>
+                    <div class="fw-semibold text-light" style="font-size: 0.84rem;">${pendingReqs} ${isPt ? "requisições financeiras aguardam aprovação" : "finance requisitions await approval"}</div>
+                    <span class="text-secondary small" style="font-size: 0.72rem;">${isPt ? "Finanças · Aguarda decisão pastoral" : "Finance · Awaiting review"}</span>
                   </div>
                 </div>
-                <button type="button" class="dash-task-pill-btn" onclick="if(window.setRoute) window.setRoute('requisitions');">${isPt ? "Revisar ›" : "Review ›"}</button>
+                <button type="button" class="dash-task-pill-btn" onclick="window.switchDashboardSubTab('finance');">${isPt ? "Revisar ›" : "Review ›"}</button>
               </div>
 
               <!-- Task 4 -->
@@ -16937,11 +17288,11 @@ function renderDashboard() {
                 <div class="d-flex align-items-center gap-2.5">
                   <span class="dash-legend-dot" style="background: #34d399; width: 10px; height: 10px;"></span>
                   <div>
-                    <div class="fw-semibold text-light" style="font-size: 0.84rem;">${isPt ? "Novo First Timer registado: Maria Santos" : "New First Timer registered: Maria Santos"}</div>
-                    <span class="text-secondary small" style="font-size: 0.72rem;">${isPt ? "Registo · Hoje às 10:15" : "Intake · Today at 10:15"}</span>
+                    <div class="fw-semibold text-light" style="font-size: 0.84rem;">${firstTimers[0] ? (isPt ? "Último First Timer registado: " + fullName(firstTimers[0]) : "Latest First Timer: " + fullName(firstTimers[0])) : (isPt ? "Registo de First Timers ativo" : "First Timers active")}</div>
+                    <span class="text-secondary small" style="font-size: 0.72rem;">${firstTimers[0]?.data_do_culto ? (isPt ? "Culto de " + firstTimers[0].data_do_culto : "Service " + firstTimers[0].data_do_culto) : (isPt ? "Registo de Entradas" : "Intake")}</span>
                   </div>
                 </div>
-                <button type="button" class="dash-task-pill-btn" onclick="if(window.setRoute) window.setRoute('firstTimers');">${isPt ? "Ver ficha ›" : "View profile ›"}</button>
+                <button type="button" class="dash-task-pill-btn" onclick="window.switchDashboardSubTab('growth');">${isPt ? "Ver ficha ›" : "View profile ›"}</button>
               </div>
             </div>
           </div>
@@ -16952,7 +17303,7 @@ function renderDashboard() {
           <div class="dash-card">
             <div class="dash-card-head mb-3">
               <h3 class="dash-card-title"><i class="bi bi-calendar-event-fill me-2 text-warning"></i>${isPt ? "Próximos Cultos e Eventos" : "Upcoming Services & Events"}</h3>
-              <button type="button" class="btn btn-link btn-sm text-decoration-none p-0" style="color: #38bdf8; font-size: 0.8rem;" onclick="if(window.setRoute) window.setRoute('events');">${isPt ? "Ver calendário ›" : "View calendar ›"}</button>
+              <button type="button" class="btn btn-link btn-sm text-decoration-none p-0" style="color: #38bdf8; font-size: 0.8rem;" onclick="window.switchDashboardSubTab('events');">${isPt ? "Ver calendário ›" : "View calendar ›"}</button>
             </div>
             <div class="d-flex flex-column gap-2">
               <!-- Event 1 -->
@@ -17019,6 +17370,52 @@ function renderDashboard() {
           )}
         </div>
       ` : ""}
+    `;
+  }
+
+  setPageContent(`
+    <div class="dash-v2-container">
+      <!-- 1. Hero Welcome Banner -->
+      <section class="dash-hero-banner">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 position-relative" style="z-index: 2;">
+          <div>
+            <span class="dash-hero-tag"><i class="bi bi-geo-alt-fill me-1"></i>CHRIST EMBASSY MOÇAMBIQUE</span>
+            <h1 class="dash-hero-title">${greetingWord}, ${userFirstName}!</h1>
+            <p class="dash-hero-subtitle">${isPt ? "A igreja em movimento. Pessoas, comunidades e um propósito." : "The church on the move. People, communities, and a purpose."}</p>
+          </div>
+          <div>
+            <div class="dash-date-pill">
+              <i class="bi bi-calendar3 text-warning"></i>
+              <span>${isPt ? "Sexta-feira, 02 Out 2026" : "Friday, 02 Oct 2026"}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sub-Navigation & Filter Bar (Switches views in-place directly on dashboard) -->
+      <div class="dash-subnav-bar">
+        <div class="dash-subnav-tabs">
+          <button type="button" class="dash-subnav-btn ${activeSubTab === "overview" ? "active" : ""}" onclick="window.switchDashboardSubTab('overview');">${isPt ? "Visão Geral" : "Overview"}</button>
+          <button type="button" class="dash-subnav-btn ${activeSubTab === "growth" ? "active" : ""}" onclick="window.switchDashboardSubTab('growth');">${isPt ? "Crescimento" : "Growth"}</button>
+          <button type="button" class="dash-subnav-btn ${activeSubTab === "finance" ? "active" : ""}" onclick="window.switchDashboardSubTab('finance');">${isPt ? "Finanças" : "Finance"}</button>
+          <button type="button" class="dash-subnav-btn ${activeSubTab === "departments" ? "active" : ""}" onclick="window.switchDashboardSubTab('departments');">${isPt ? "Departamentos" : "Departments"}</button>
+          <button type="button" class="dash-subnav-btn ${activeSubTab === "events" ? "active" : ""}" onclick="window.switchDashboardSubTab('events');">${isPt ? "Eventos" : "Events"}</button>
+          <button type="button" class="dash-subnav-btn ${activeSubTab === "attendance" ? "active" : ""}" onclick="window.switchDashboardSubTab('attendance');"><i class="bi bi-fingerprint me-1 text-warning"></i>${isPt ? "Staff Assiduidade" : "Staff Attendance"}</button>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <select class="dash-period-select" onchange="if(window.setDashboardPeriod) window.setDashboardPeriod(this.value);">
+            <option value="week" selected>${isPt ? "Esta Semana" : "This Week"}</option>
+            <option value="month">${isPt ? "Este Mês" : "This Month"}</option>
+            <option value="quarter">${isPt ? "Este Trimestre" : "This Quarter"}</option>
+            <option value="year">${isPt ? "Este Ano" : "This Year"}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Dynamic View Container (Switches directly according to sub-tab) -->
+      <div id="dash-dynamic-subtab-view">
+        ${renderSubTabContent()}
+      </div>
     </div>
   `);
 }
