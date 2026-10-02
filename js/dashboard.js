@@ -14197,6 +14197,22 @@ function renderExecutiveAttendanceMainWidgetContent() {
     }));
   }
 
+  const attSettings = (bridge?.getLocalStore ? bridge.getLocalStore("settings") : null) || { standard_start_time: "08:30", grace_period_minutes: 0, minor_delay_threshold_minutes: 15, severe_delay_threshold_minutes: 60 };
+
+  // Actively normalize punctuality for all records in period using 08:30 baseline
+  periodRecords = periodRecords.map((r) => {
+    if (r.check_in && r.check_in !== "--:--" && bridge?.calculatePunctualityStatus) {
+      const punc = bridge.calculatePunctualityStatus(r.check_in, attSettings);
+      return Object.assign({}, r, {
+        status: punc.status,
+        delay_minutes: punc.delay_minutes,
+        is_late: punc.is_late,
+        is_present: punc.is_present,
+      });
+    }
+    return r;
+  });
+
   // Stats calculation
   const totalExpected = periodRecords.length || 15;
   const presentRecs = periodRecords.filter((r) => r.is_present);

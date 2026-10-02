@@ -246,16 +246,46 @@
 
   var SEED_UPLOADS = [
     {
+      id: "e1111111-1111-4111-8111-111111111100",
+      filename: "Attendance_Record_20261002.xlsx",
+      upload_date: "2026-10-02",
+      device_create_time: "2026-10-02 09:00:00",
+      record_count: 15,
+      present_count: 15,
+      on_time_count: 12,
+      grace_count: 0,
+      late_count: 3,
+      absent_count: 0,
+      uploaded_by: "Brother Lio",
+      file_size_bytes: 14500,
+      created_at: "2026-10-02T09:00:00Z",
+    },
+    {
+      id: "e1111111-1111-4111-8111-111111111104",
+      filename: "Attendance_Record_20261001.xlsx",
+      upload_date: "2026-10-01",
+      device_create_time: "2026-10-01 09:00:00",
+      record_count: 15,
+      present_count: 15,
+      on_time_count: 12,
+      grace_count: 0,
+      late_count: 3,
+      absent_count: 0,
+      uploaded_by: "Brother Lio",
+      file_size_bytes: 14500,
+      created_at: "2026-10-01T09:00:00Z",
+    },
+    {
       id: "e1111111-1111-4111-8111-111111111101",
       filename: "Attendance_Record_20260709.xlsx",
       upload_date: "2026-07-09",
       device_create_time: "2026-07-09 09:39:33",
-      record_count: 22,
-      present_count: 14,
-      on_time_count: 1,
-      grace_count: 4,
-      late_count: 9,
-      absent_count: 8,
+      record_count: 15,
+      present_count: 13,
+      on_time_count: 9,
+      grace_count: 0,
+      late_count: 4,
+      absent_count: 2,
       uploaded_by: "Brother Lio",
       file_size_bytes: 14500,
       created_at: "2026-07-09T09:40:00Z",
@@ -265,11 +295,11 @@
       filename: "Attendance_Record_20260708.xlsx",
       upload_date: "2026-07-08",
       device_create_time: "2026-07-08 09:35:10",
-      record_count: 22,
-      present_count: 21,
-      on_time_count: 7,
-      grace_count: 8,
-      late_count: 6,
+      record_count: 15,
+      present_count: 14,
+      on_time_count: 11,
+      grace_count: 0,
+      late_count: 3,
       absent_count: 1,
       uploaded_by: "Brother Lio",
       file_size_bytes: 14200,
@@ -280,11 +310,11 @@
       filename: "Attendance_Record_20260707.xlsx",
       upload_date: "2026-07-07",
       device_create_time: "2026-07-07 09:30:00",
-      record_count: 22,
-      present_count: 22,
-      on_time_count: 10,
-      grace_count: 8,
-      late_count: 4,
+      record_count: 15,
+      present_count: 15,
+      on_time_count: 13,
+      grace_count: 0,
+      late_count: 2,
       absent_count: 0,
       uploaded_by: "Brother Lio",
       file_size_bytes: 14100,
@@ -381,14 +411,14 @@
       overseer_status: "Delivered_Main",
       overseer_notes: "Visto no MAIN. Relatório homologado com acompanhamento da equipa.",
       
-      record_count: 22,
-      present_count: 14,
-      on_time_count: 1,
-      grace_count: 4,
-      late_count: 9,
-      absent_count: 8,
-      total_delay_minutes: 367,
-      status: "delivered_to_kene", // "draft" | "submitted_by_lio" | "reviewed_by_valdemiro" | "delivered_to_kene"
+      record_count: 15,
+      present_count: 13,
+      on_time_count: 9,
+      grace_count: 0,
+      late_count: 4,
+      absent_count: 2,
+      total_delay_minutes: 120,
+      status: "delivered_to_kene",
       created_at: "2026-07-09T09:40:00Z",
       updated_at: "2026-07-09T10:30:00Z",
     },
@@ -405,20 +435,20 @@
       pastoral_head: "Pastor Valdemiro",
       pastoral_reviewed_at: "2026-07-08T10:00:00Z",
       pastoral_status: "Approved",
-      pastoral_notes: "Excelente índice de comparência geral (95%).",
+      pastoral_notes: "Excelente índice de comparência geral (93%). Horário base 08:30.",
       
       overseer_name: "Pastor Kéne",
       overseer_received_at: "2026-07-08T10:20:00Z",
       overseer_status: "Delivered_Main",
       overseer_notes: "Homologado no Painel Geral da Igreja.",
       
-      record_count: 22,
-      present_count: 21,
-      on_time_count: 7,
-      grace_count: 8,
-      late_count: 6,
+      record_count: 15,
+      present_count: 14,
+      on_time_count: 11,
+      grace_count: 0,
+      late_count: 3,
       absent_count: 1,
-      total_delay_minutes: 198,
+      total_delay_minutes: 32,
       status: "delivered_to_kene",
       created_at: "2026-07-08T09:36:00Z",
       updated_at: "2026-07-08T10:20:00Z",
@@ -447,6 +477,7 @@
     if (kind === "attendance" || kind === "records") {
       var cached = loadLocal(KEYS.attendance);
       var validStaffIds = new Set(STAFF_LIST.map(function (s) { return String(s.id); }));
+      var set = getLocalStore("settings") || DEFAULT_SETTINGS;
 
       if (!cached || !Array.isArray(cached) || !cached.length) {
         cached = SEED_ATTENDANCE.map(function (x) {
@@ -478,7 +509,7 @@
           updated = true;
         }
 
-        // Ensure all default seed records (e.g. 2026-10-01) exist and have accurate punch data & official full names
+        // Ensure all default seed records (e.g. 2026-10-01, 2026-10-02) exist and have accurate punch data & official full names
         var attMap = {};
         var staffMap = {};
         STAFF_LIST.forEach(function (s) {
@@ -499,7 +530,20 @@
             if (!r.role || r.role === "Staff Member") r.role = st.role;
             updated = true;
           }
+
+          // Re-calculate punctuality strictly according to the 08:30 baseline
+          if (r.check_in && r.check_in !== "--:--") {
+            var punc = calculatePunctualityStatus(r.check_in, set);
+            if (r.status !== punc.status || r.delay_minutes !== punc.delay_minutes || r.is_late !== punc.is_late || r.is_present !== punc.is_present) {
+              r.status = punc.status;
+              r.delay_minutes = punc.delay_minutes;
+              r.is_late = punc.is_late;
+              r.is_present = punc.is_present;
+              updated = true;
+            }
+          }
         });
+
         SEED_ATTENDANCE.forEach(function (seed) {
           var key = seed.attendance_date + "___" + String(seed.employee_id);
           var existing = attMap[key];
@@ -986,13 +1030,27 @@
 
           var { data, error } = await query;
           if (!error && Array.isArray(data) && data.length) {
-            return { ok: true, data: data };
+            var sRemote = getLocalStore("settings") || DEFAULT_SETTINGS;
+            var normalizedRemote = data.map(function (r) {
+              if (r.check_in && r.check_in !== "--:--") {
+                var p = calculatePunctualityStatus(r.check_in, sRemote);
+                return Object.assign({}, r, {
+                  status: p.status,
+                  delay_minutes: p.delay_minutes,
+                  is_late: p.is_late,
+                  is_present: p.is_present,
+                });
+              }
+              return r;
+            });
+            return { ok: true, data: normalizedRemote };
           }
         } catch (_) {}
       }
 
       // Fallback local memory / storage
       var rows = getLocalStore("attendance");
+      var sLocal = getLocalStore("settings") || DEFAULT_SETTINGS;
       var filtered = rows.filter(function (r) {
         if (filters.date && r.attendance_date !== filters.date) return false;
         if (filters.startDate && r.attendance_date < filters.startDate) return false;
@@ -1011,7 +1069,20 @@
         return true;
       });
 
-      return { ok: true, data: filtered };
+      var normalizedFiltered = filtered.map(function (r) {
+        if (r.check_in && r.check_in !== "--:--") {
+          var punc = calculatePunctualityStatus(r.check_in, sLocal);
+          return Object.assign({}, r, {
+            status: punc.status,
+            delay_minutes: punc.delay_minutes,
+            is_late: punc.is_late,
+            is_present: punc.is_present,
+          });
+        }
+        return r;
+      });
+
+      return { ok: true, data: normalizedFiltered };
     },
 
     saveBatchAttendance: async function (records, uploadInfo) {
