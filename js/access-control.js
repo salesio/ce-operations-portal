@@ -532,20 +532,21 @@
     },
     "Attendance & Time Manager": {
       modules: {
-        dashboard: { ...VIEW_ONLY, scope: "all" },
+        dashboard: { ...NO_ACCESS, can_view: false, scope: "own" },
         attendance: { can_view: true, can_create: true, can_edit: true, can_delete: true, can_approve: true, can_verify: true, can_export: true, scope: "all" },
-        staffHr: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "all" },
-        reports: { ...VIEW_ONLY, scope: "all", can_export: true },
-        usersRoles: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "all" },
-        notifications: { ...VIEW_ONLY, scope: "all" }
+        staffHr: { ...NO_ACCESS, can_view: false, scope: "own" },
+        reports: { ...NO_ACCESS, can_view: false, scope: "own" },
+        usersRoles: { ...NO_ACCESS, can_view: false, scope: "own" },
+        notifications: { ...VIEW_ONLY, scope: "own" }
       }
     },
     "Attendance Officer": {
       modules: {
-        dashboard: { ...VIEW_ONLY, scope: "church" },
+        dashboard: { ...NO_ACCESS, can_view: false, scope: "church" },
         attendance: { can_view: true, can_create: true, can_edit: true, can_delete: false, can_approve: false, can_verify: true, can_export: true, scope: "church" },
-        staffHr: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: false, scope: "church" },
-        reports: { ...VIEW_ONLY, scope: "church", can_export: true },
+        staffHr: { ...NO_ACCESS, can_view: false, scope: "church" },
+        reports: { ...NO_ACCESS, can_view: false, scope: "church" },
+        usersRoles: { ...NO_ACCESS, can_view: false, scope: "own" },
         notifications: { ...VIEW_ONLY, scope: "church" }
       }
     },

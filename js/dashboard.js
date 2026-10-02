@@ -3816,7 +3816,7 @@ const seedData = {
     { id: "bd91b99f-362f-4eb1-8e5c-c4b125065c8b", auth_user_id: "bd91b99f-362f-4eb1-8e5c-c4b125065c8b", name: "Irmã Angélica Amilcar Macuacua", full_name: "Irmã Angélica Amilcar Macuacua", email: "alec@embaixadadecristo.org", phone: "+258855621609", role: "ALEC Manager", role_name: "Coordenadora ALEC", church_id: "a1111111-1111-4111-8111-111111111101", cell_group_id: "217d9a73-3d57-4979-854d-dc97662a55e5", cell_group_name: "Estrelas de Sião", cell_id: "1e6d6f18-d0e4-4731-8426-de2a73f2076d", cell_name: "ESTRELAS DE SIÃO D", assigned_cells: ["1e6d6f18-d0e4-4731-8426-de2a73f2076d"], assigned_cell_groups: ["217d9a73-3d57-4979-854d-dc97662a55e5"], department_permissions: ["cell", "alecRegistration", "alecScores", "churchReports", "cellReports"], can_view_all_churches: false, status: "Active" },
     { id: "473e4df5-883c-499a-a42e-223495c266d1", auth_user_id: "473e4df5-883c-499a-a42e-223495c266d1", name: "Filipe Chamango", full_name: "Filipe Chamango", email: "diamantes.main@embaixadadecristo.org", role: "Cell Leader", role_name: "Líder de Célula Diamantes Main", church_id: "a1111111-1111-4111-8111-111111111101", cell_id: "d1a00000-d1a0-4000-8000-000000000001", cell_name: "Diamantes main", cell_group_id: "d1a00000-0000-4000-8000-000000000001", cell_group_name: "Diamantes Main", assigned_cells: ["d1a00000-d1a0-4000-8000-000000000001", "d1a00000-d1a0-4000-8000-000000000002", "d1a00000-d1a0-4000-8000-000000000003", "d1a00000-d1a0-4000-8000-000000000004", "d1a00000-d1a0-4000-8000-000000000005", "d1a00000-d1a0-4000-8000-000000000006", "d1a00000-d1a0-4000-8000-000000000007", "d1a00000-d1a0-4000-8000-000000000008", "d1a00000-d1a0-4000-8000-000000000009", "d1a00000-d1a0-4000-8000-000000000010"], assigned_cell_groups: ["d1a00000-0000-4000-8000-000000000001"], assigned_foundation_teacher_id: "ftch-filipe-chamango", department_permissions: ["cellReports", "followUp", "foundation", "foundation_teacher", "reports"], cannot_create_classes: false, permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_portal.view", "cell_portal.edit", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary", "follow_up.view", "follow_up.edit", "follow_up.enroll_foundation", "foundation.view", "foundation.edit_students", "foundation.record_lessons", "foundation.record_tests", "foundation.record_exam", "foundation.reports"], can_view_all_churches: false, status: "Active" },
     { id: "1002af2a-86d0-4654-9aae-351a2dd546e7", auth_user_id: "1002af2a-86d0-4654-9aae-351a2dd546e7", name: "Eduarda Paula Manganhela Paula Manganhela", full_name: "Eduarda Paula Manganhela Paula Manganhela", email: "eduardapaula.jm@gmail.com", phone: "+258849246778", role: "Cell Leader", role_name: "Cell Leader", church_id: "a1111111-1111-4111-8111-111111111101", cell_id: "83336c21-1928-4d0c-8284-fcb88b770048", cell_name: "Visionários Main", cell_group_id: "f9f013c8-346f-4567-8911-762379b97d40", cell_group_name: "Visionários", assigned_cells: ["83336c21-1928-4d0c-8284-fcb88b770048"], assigned_cell_groups: ["f9f013c8-346f-4567-8911-762379b97d40"], department_permissions: ["cellReports"], cannot_create_classes: false, permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_portal.view", "cell_portal.edit", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary"], can_view_all_churches: false, status: "Active" },
-    { id: "leo-kusi-att-user-001", auth_user_id: "leo-kusi-att-user-001", name: "Leopold Nyongbet Kusi", full_name: "Leopold Nyongbet Kusi", email: "paisdefe@embaixadadecristo.org", aliases: ["paisdefe@embaixadadecristo.org", "paisdefe", "leopold.kusi@embaixadadecristo.org", "leopoldkusi94@gmail.com", "leopold@embaixadadecristo.org", "leopold"], phone: "+258843739719", role: "Cell Group Leader", role_name: "Líder de Grupo de Células (Pais da Fé) & Gestor de Assiduidade", church_id: "a1111111-1111-4111-8111-111111111101", cell_group_id: "0d7246a1-0afe-45a6-8489-e564668d0cd6", cell_group_name: "Pais da Fé", assigned_cell_groups: ["0d7246a1-0afe-45a6-8489-e564668d0cd6", "group-paixao-primeira-vista"], assigned_cells: ["22233c97-7ae2-449b-8c09-253ef0f7a05d", "00556da6-1b3d-4d17-8c8b-83dd2b09d83d", "fb17d394-51de-4a8c-86c6-999a00819ca8"], department_permissions: ["attendance", "cellReports", "cell", "staffHr", "reports"], permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_portal.view", "cell_portal.edit", "cell_portal.register_member", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary", "attendance.view", "attendance.mark", "attendance.edit", "attendance.export"], can_view_all_churches: true, status: "Active" },
+    { id: "leo-kusi-att-user-001", auth_user_id: "leo-kusi-att-user-001", name: "Leopold Nyongbet Kusi", full_name: "Leopold Nyongbet Kusi", email: "paisdefe@embaixadadecristo.org", aliases: ["paisdefe@embaixadadecristo.org", "paisdefe", "leopold.kusi@embaixadadecristo.org", "leopoldkusi94@gmail.com", "leopold@embaixadadecristo.org", "leopold"], phone: "+258843739719", role: "Cell Group Leader", role_name: "Líder de Grupo de Células", church_id: "a1111111-1111-4111-8111-111111111101", cell_group_id: "0d7246a1-0afe-45a6-8489-e564668d0cd6", cell_group_name: "Pais da Fé", assigned_cell_groups: ["0d7246a1-0afe-45a6-8489-e564668d0cd6"], assigned_cells: ["22233c97-7ae2-449b-8c09-253ef0f7a05d", "00556da6-1b3d-4d17-8c8b-83dd2b09d83d", "fb17d394-51de-4a8c-86c6-999a00819ca8"], department_permissions: ["attendance"], permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_portal.view", "cell_portal.edit", "cell_portal.register_member", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary", "attendance.view", "attendance.mark", "attendance.edit", "attendance.export"], can_view_all_churches: false, status: "Active" },
     { id: "edbcbcdc-f860-4cb7-8997-d667a5331e9c", auth_user_id: "edbcbcdc-f860-4cb7-8997-d667a5331e9c", name: "Test Creation Verify", full_name: "Test Creation Verify", email: "test_creation_verify@embaixadadecristo.org", role: "Cell Leader", role_name: "Cell Leader", church_id: "a1111111-1111-4111-8111-111111111101", assigned_cells: [], assigned_cell_groups: [], department_permissions: ["cellMinistry"], cannot_create_classes: false, permissions: ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated", "cell_portal.view", "cell_portal.edit", "cell_portal.view_members", "cell_portal.view_member_profile", "cell_portal.submit_report", "cell_portal.view_finance_summary", "cell_portal.view_partnership_summary", "cell_portal.view_soul_winning", "cell_portal.view_programs", "cell_portal.view_charts", "cell_portal.export_summary"], can_view_all_churches: false, status: "Active" }
   ],
   departments: [
@@ -5440,15 +5440,29 @@ function normalizeState(saved) {
         if (!isTombstone(seedUser)) deduplicatedUsers.push(structuredClone(seedUser));
       } else {
         const existing = deduplicatedUsers[existingIdx];
-        deduplicatedUsers[existingIdx] = {
-          ...seedUser,
-          ...existing,
-          aliases: Array.from(new Set([...(seedUser.aliases || []), ...(existing.aliases || [])])),
-          assigned_cell_groups: Array.from(new Set([...(seedUser.assigned_cell_groups || []), ...(existing.assigned_cell_groups || [])])),
-          assigned_cells: Array.from(new Set([...(seedUser.assigned_cells || []), ...(existing.assigned_cells || [])])),
-          department_permissions: Array.from(new Set([...(seedUser.department_permissions || []), ...(existing.department_permissions || [])])),
-          permissions: Array.from(new Set([...(seedUser.permissions || []), ...(existing.permissions || [])]))
-        };
+        if (seedUser.id === "leo-kusi-att-user-001") {
+          deduplicatedUsers[existingIdx] = {
+            ...existing,
+            ...seedUser,
+            aliases: Array.from(new Set([...(seedUser.aliases || []), ...(existing.aliases || [])])),
+            assigned_cell_groups: seedUser.assigned_cell_groups || [],
+            assigned_cells: seedUser.assigned_cells || [],
+            department_permissions: seedUser.department_permissions || ["attendance"],
+            can_view_all_churches: false,
+            role: seedUser.role,
+            role_name: seedUser.role_name
+          };
+        } else {
+          deduplicatedUsers[existingIdx] = {
+            ...seedUser,
+            ...existing,
+            aliases: Array.from(new Set([...(seedUser.aliases || []), ...(existing.aliases || [])])),
+            assigned_cell_groups: Array.from(new Set([...(seedUser.assigned_cell_groups || []), ...(existing.assigned_cell_groups || [])])),
+            assigned_cells: Array.from(new Set([...(seedUser.assigned_cells || []), ...(existing.assigned_cells || [])])),
+            department_permissions: Array.from(new Set([...(seedUser.department_permissions || []), ...(existing.department_permissions || [])])),
+            permissions: Array.from(new Set([...(seedUser.permissions || []), ...(existing.permissions || [])]))
+          };
+        }
       }
     }
   });
@@ -11723,7 +11737,7 @@ function userHasExtendedCellPerms(user = activeUser) {
   if (!user) return false;
   if ((user.department_permissions || []).includes("*") || user.role === "Super Admin" || String(user.role || "").toLowerCase().includes("super_admin")) return true;
   const deptPerms = user.department_permissions || [];
-  const nonCellPerms = deptPerms.filter((p) => !["cellReports", "cell_reports", "cellPortal", "cell_portal"].includes(p));
+  const nonCellPerms = deptPerms.filter((p) => !["cellReports", "cell_reports", "cellPortal", "cell_portal", "attendance"].includes(p));
   if (nonCellPerms.length > 0) return true;
   return deptPerms.some((p) => ["cellMinistry", "cell_ministry", "cell", "alec", "alec_manager"].includes(p)) ||
     ["Cell Ministry Head", "Cell Ministry Reviewer", "ALEC Manager", "ALEC Coordinator", "Coordenadora ALEC", "Coordenador ALEC", "Department Head", "Program Coordinator", "Prison Ministry Coordinator", "Ministry Materials Manager", "Media Director", "Venue Manager", "Finance Head", "Finance Officer", "Counselor", "HR Manager", "Requisition Officer", "Staff Member"].includes(user.role);
@@ -11821,7 +11835,7 @@ function roleWorkspaceRoutes(user = activeUser) {
   } else if (role === "department head") {
     routes.push("members", "firstTimers", "followUp", "reports", "requisitions", "staffHr", "staffHrStaffRoute", "staffHrBirthdaysRoute", "staffHrDepartmentsRoute", "staffHrRolesRoute", "staffHrSalariesRoute", "staffHrPerformanceRoute", "staffHrAttendanceRoute", "staffHrEquipmentRoute", "staffHrDocumentsRoute", "staffHrReportsRoute", "attendance", "venueInventory", "fevo", "cell", "cellMinistry", "cellReports", "alec", "media", "programs", "cellPrison", "cellMaterials", "counseling", "sacraments", "foundation", "finance", "financeOverviewRoute", "financeEntriesRoute", "financePublicSubmissionsRoute", "financeVerificationRoute", "financeApprovedRequisitionsRoute", "financeReportsRoute", "financePartnersRoute", "financeExportsRoute", "partnership", "partnershipArmsRoute", "partnershipPartnersRoute", "partnershipContributionsRoute", "partnershipHighlightsRoute", "partnershipAnalyticsRoute", "partnershipReportsRoute", "partnershipExportsRoute");
   } else if (role === "attendance & time manager" || role === "attendance manager" || role === "gestor de assiduidade & ponto" || role === "gestor de assiduidade e ponto" || role === "attendance officer" || role === "oficial de assiduidade & ponto") {
-    routes.push("attendance", "staffHr", "staffHrStaffRoute", "staffHrBirthdaysRoute", "staffHrDepartmentsRoute", "staffHrRolesRoute", "staffHrAttendanceRoute", "staffHrReportsRoute", "reports", "users", "dashboard");
+    routes.push("attendance");
   } else if (role === "staff member") {
     routes.push("requisitions", "venueInventory", "venueInventoryStaff", "staffHr", "staffHrStaffRoute", "staffHrBirthdaysRoute", "staffHrDepartmentsRoute", "staffHrRolesRoute", "staffHrSalariesRoute", "staffHrPerformanceRoute", "staffHrAttendanceRoute", "staffHrEquipmentRoute", "staffHrDocumentsRoute", "staffHrReportsRoute", "attendance");
   }
@@ -11865,7 +11879,7 @@ function roleWorkspaceRoutes(user = activeUser) {
     if (grants.includes("programs")) routes.push("programs");
     if (grants.includes("prisonMinistry") || grants.includes("cellPrison")) routes.push("cellPrison");
     if (grants.includes("ministryMaterials") || grants.includes("cellMaterials")) routes.push("cellMaterials");
-    if (grants.includes("staffHr") || grants.includes("attendance")) routes.push("staffHr", "staffHrStaffRoute", "staffHrBirthdaysRoute", "staffHrDepartmentsRoute", "staffHrRolesRoute", "staffHrSalariesRoute", "staffHrPerformanceRoute", "staffHrAttendanceRoute", "staffHrEquipmentRoute", "staffHrDocumentsRoute", "staffHrReportsRoute", "attendance");
+    if (grants.includes("staffHr")) routes.push("staffHr", "staffHrStaffRoute", "staffHrBirthdaysRoute", "staffHrDepartmentsRoute", "staffHrRolesRoute", "staffHrSalariesRoute", "staffHrPerformanceRoute", "staffHrAttendanceRoute", "staffHrEquipmentRoute", "staffHrDocumentsRoute", "staffHrReportsRoute", "attendance");
     if (grants.includes("attendance")) routes.push("attendance");
     if (grants.includes("requisitions")) routes.push("requisitions");
     if (grants.includes("members")) routes.push("members");
@@ -12495,10 +12509,12 @@ function renderShell() {
   if (isCellPortalOnly) {
     const isGroup = ["cell group leader", "cell_group_leader", "líder de grupo de células", "lider de grupo de celulas", "cell group coordinator"].includes(String(activeUser?.role || "").toLowerCase().trim()) || (Array.isArray(activeUser?.assigned_cell_groups) && activeUser.assigned_cell_groups.length > 0);
     const portalTitle = isGroup ? (lang === "pt" ? "Meu Grupo de Células" : "My Cell Group") : (lang === "pt" ? "Minha Célula" : "My Cell");
+    const hasAttendanceAccess = (activeUser?.department_permissions || []).includes("attendance") || ["attendance & time manager", "attendance manager", "gestor de assiduidade & ponto", "attendance officer"].includes(String(activeUser?.role || "").toLowerCase().trim());
     byId("sidebarNav").innerHTML = `<div class="nav-group is-expanded"><div class="nav-group-body"><div class="nav-group-body-inner">
       <button type="button" class="nav-item-btn ${["dashboard", "cellPortal"].includes(activeRoute) ? "active" : ""}" data-route="cellPortal"><i class="bi bi-grid-1x2"></i><span>${portalTitle}</span></button>
       <button type="button" class="nav-item-btn ${activeRoute === "cellReceivedReports" ? "active" : ""}" data-route="cellReceivedReports"><i class="bi bi-clock-history"></i><span>${lang === "pt" ? "Relatórios Submetidos" : "Submitted Reports"}</span></button>
       <button type="button" class="nav-item-btn" data-public-cell-report><i class="bi bi-clipboard-plus"></i><span>${lang === "pt" ? "Submeter Relatório" : "Submit Report"}</span></button>
+      ${hasAttendanceAccess ? `<button type="button" class="nav-item-btn ${activeRoute === "attendance" ? "active" : ""}" data-route="attendance"><i class="bi bi-person-check"></i><span>${lang === "pt" ? "Ponto & Assiduidade" : "Attendance & Time"}</span></button>` : ""}
       ${typeof resolveRouteAccess === "function" && resolveRouteAccess("followUp").visible && !resolveRouteAccess("followUp").locked ? `<button type="button" class="nav-item-btn ${activeRoute === "followUp" ? "active" : ""}" data-route="followUp"><i class="bi bi-person-lines-fill"></i><span>${lang === "pt" ? "Acompanhamento" : "Follow-Up"}</span></button>` : ""}
       ${typeof resolveRouteAccess === "function" && resolveRouteAccess("foundation").visible && !resolveRouteAccess("foundation").locked ? `<button type="button" class="nav-item-btn ${activeRoute === "foundation" ? "active" : ""}" data-route="foundation"><i class="bi bi-book"></i><span>${lang === "pt" ? "Escola de Fundação" : "Foundation School"}</span></button>` : ""}
       ${typeof resolveRouteAccess === "function" && resolveRouteAccess("reports").visible && !resolveRouteAccess("reports").locked ? `<button type="button" class="nav-item-btn ${activeRoute === "reports" ? "active" : ""}" data-route="reports"><i class="bi bi-bar-chart"></i><span>${lang === "pt" ? "Relatórios" : "Reports"}</span></button>` : ""}
