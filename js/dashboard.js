@@ -17315,10 +17315,12 @@ function renderDashboard() {
     // Default Overview View (Visão Geral)
     return `
       <!-- 2. Top 8 High-Impact KPI Metric Cards Grid -->
-      ${renderKpiGrid()}
+      <div class="mb-4">
+        ${renderKpiGrid()}
+      </div>
 
       <!-- 3. Analytical Charts Row (2 Columns: Contribuições & Membros por Igreja) -->
-      <div class="row g-3">
+      <div class="row g-3 mb-4">
         <!-- Left: Financial Breakdown Chart (65%) -->
         <div class="col-lg-7 col-xl-8">
           <div class="dash-card">
@@ -17433,7 +17435,7 @@ function renderDashboard() {
       </div>
 
       <!-- 4. Resumo por Departamento Grid (6 Mini-Cards) -->
-      <div id="dash-dept-section" class="dash-card">
+      <div id="dash-dept-section" class="dash-card mb-4">
         <div class="dash-card-head mb-3">
           <h3 class="dash-card-title"><i class="bi bi-grid-3x3-gap-fill me-2 text-warning"></i>${isPt ? "Resumo por Departamento" : "Department Summary"}</h3>
           <button type="button" class="btn btn-link btn-sm text-decoration-none p-0" style="color: #38bdf8; font-size: 0.8rem;" onclick="window.switchDashboardSubTab('departments');">${isPt ? "Ver todos ›" : "View all ›"}</button>
@@ -17490,7 +17492,7 @@ function renderDashboard() {
       </div>
 
       <!-- 5. Two-Column Bottom Row (Tarefas e Alertas & Próximos Cultos e Eventos) -->
-      <div id="dash-events-section" class="row g-3">
+      <div id="dash-events-section" class="row g-3 mb-4">
         <!-- Left: Tarefas e Alertas -->
         <div class="col-lg-6">
           <div class="dash-card">
@@ -17615,7 +17617,7 @@ function renderDashboard() {
 
       <!-- 6. Executive Staff Attendance & Biometrics Section (Fully Functional) -->
       ${canDashboardSee("staffHr") || activeUser.role === "Super Admin" || activeUser.role === "Pastor" ? `
-        <div id="dash-attendance-section" class="mt-2">
+        <div id="dash-attendance-section" class="mt-4 pt-2">
           ${dashboardSection(
             lang === "pt" ? "Assiduidade & Pontualidade de Staff" : "Staff Attendance & Punctuality",
             lang === "pt" ? "Controlo biométrico de presenças, pontualidade, comparativos e relatórios operacionais." : "Biometric presence tracking, punctuality, comparisons, and operational reports.",
