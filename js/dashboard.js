@@ -16459,8 +16459,17 @@ async function hydrateDashboardRealData() {
       window.CESupabase?.getSupabaseClient?.() ||
       (typeof supabase !== "undefined" ? supabase : null);
 
-    const membersRepo = typeof getMembersRepoSafe === "function" ? getMembersRepoSafe() : null;
-    const promises = [];
+    // 0. Churches
+    if (sbClient) {
+      promises.push(
+        sbClient.from("churches").select("*").then(({ data, error }) => {
+          if (!error && Array.isArray(data) && data.length > 0) {
+            state.churches = data;
+            didUpdate = true;
+          }
+        }).catch((e) => console.warn("[CE Dashboard] churches fetch error", e))
+      );
+    }
 
     // 1. Members
     if (sbClient) {
@@ -16625,26 +16634,109 @@ function renderDashboard() {
         : [];
   const scopedMembers = scoped(membersList);
 
-  const churchCounts = {};
+  // Members real count and distribution by church (listing ALL churches including 0)
+  const registeredChurches = (typeof relationalChurches === "function" ? relationalChurches() : (state.churches || seedData?.churches || []));
+  
+  const churchCountMap = new Map();
+  registeredChurches.forEach((c) => {
+    const cId = String(c.id || c.church_id || "");
+    const cName = typeof ecChurchDisplayName === "function" ? ecChurchDisplayName(cId, c.public_name || c.church_name || c.name || "Igreja") : (c.public_name || c.church_name || c.name || "Igreja");
+    const rawKey = cId || cName;
+    churchCountMap.set(rawKey, {
+      id: cId,
+      name: cName,
+      rawName: (c.church_name || c.public_name || c.name || "").toLowerCase(),
+      count: 0
+    });
+  });
+
+  if (churchCountMap.size === 0) {
+    const defaultList = [
+      "E.C. Maputo Central - Sede",
+      "Christ Embassy Matola",
+      "Christ Embassy Khongolote",
+      "Christ Embassy Beira",
+      "Christ Embassy Nampula",
+      "Christ Embassy Choupal",
+      "Christ Embassy Online Church"
+    ];
+    defaultList.forEach((name, idx) => {
+      churchCountMap.set("def-church-" + idx, {
+        id: "def-church-" + idx,
+        name,
+        rawName: name.toLowerCase(),
+        count: 0
+      });
+    });
+  }
+
   scopedMembers.forEach((m) => {
-    let cName = m.church_name || m.igreja || (typeof churchName === "function" ? churchName(m.church_id) : "") || "Maputo Central – Sede";
-    if (/maputo/i.test(cName)) cName = "Maputo Central – Sede";
-    else if (/matola/i.test(cName)) cName = "Matola";
-    else if (/zimpeto/i.test(cName)) cName = "Zimpeto";
-    else if (/boane/i.test(cName)) cName = "Boane";
+    let matched = false;
+    const mChurchId = String(m.church_id || "");
     
-    churchCounts[cName] = (churchCounts[cName] || 0) + 1;
+    // 1. Match by ID
+    if (mChurchId && churchCountMap.has(mChurchId)) {
+      churchCountMap.get(mChurchId).count += 1;
+      matched = true;
+    } else {
+      // 2. Match by Name
+      const mChurchName = String(m.church_name || m.igreja || (typeof churchName === "function" ? churchName(m.church_id) : "") || "").toLowerCase();
+      for (const entry of churchCountMap.values()) {
+        if (
+          mChurchName &&
+          (entry.rawName.includes(mChurchName) || mChurchName.includes(entry.rawName) ||
+           (mChurchName.includes("maputo") && entry.rawName.includes("maputo")) ||
+           (mChurchName.includes("matola") && entry.rawName.includes("matola")) ||
+           (mChurchName.includes("khongolote") && entry.rawName.includes("khongolote")) ||
+           (mChurchName.includes("beira") && entry.rawName.includes("beira")) ||
+           (mChurchName.includes("nampula") && entry.rawName.includes("nampula")) ||
+           (mChurchName.includes("choupal") && entry.rawName.includes("choupal")) ||
+           (mChurchName.includes("online") && entry.rawName.includes("online")) ||
+           (mChurchName.includes("zimpeto") && entry.rawName.includes("zimpeto")) ||
+           (mChurchName.includes("boane") && entry.rawName.includes("boane")))
+        ) {
+          entry.count += 1;
+          matched = true;
+          break;
+        }
+      }
+    }
+
+    // 3. Fallback: attribute to headquarters (Sede)
+    if (!matched) {
+      let sede = null;
+      for (const entry of churchCountMap.values()) {
+        if (/maputo|sede/i.test(entry.name) || /maputo|sede/i.test(entry.rawName)) {
+          sede = entry;
+          break;
+        }
+      }
+      if (sede) {
+        sede.count += 1;
+      } else {
+        const first = churchCountMap.values().next().value;
+        if (first) first.count += 1;
+      }
+    }
   });
 
   let totalRealMembers = scopedMembers.length;
   if (totalRealMembers === 0 && modulePageState?.members?.totalCount > 0) {
     totalRealMembers = modulePageState.members.totalCount;
-    churchCounts["Maputo Central – Sede"] = totalRealMembers;
+    for (const entry of churchCountMap.values()) {
+      if (/maputo|sede/i.test(entry.name) || /maputo|sede/i.test(entry.rawName)) {
+        entry.count = totalRealMembers;
+        break;
+      }
+    }
   }
 
-  const activeChurchEntries = Object.entries(churchCounts)
-    .filter(([_, count]) => count > 0)
-    .sort((a, b) => b[1] - a[1]);
+  const allChurchEntries = Array.from(churchCountMap.values()).sort((a, b) => {
+    if (b.count !== a.count) return b.count - a.count;
+    return a.name.localeCompare(b.name);
+  });
+
+  const nonZeroChurchEntries = allChurchEntries.filter((e) => e.count > 0);
 
   // Real KPI Metrics
   const totalFt = firstTimers.length;
@@ -16693,45 +16785,36 @@ function renderDashboard() {
 
   // Helper to build Donut SVG with 100% real data
   function renderRealDonut() {
-    if (!totalRealMembers || activeChurchEntries.length === 0) {
-      return `
-        <div class="dash-donut-wrap">
-          <svg viewBox="0 0 100 100" width="170" height="170">
-            <circle cx="50" cy="50" r="38" fill="transparent" stroke="rgba(255,255,255,0.06)" stroke-width="12" />
-          </svg>
-          <div class="dash-donut-center">
-            <div class="dash-donut-center-val">0</div>
-            <div class="dash-donut-center-lbl">${isPt ? "Membros" : "Members"}</div>
-          </div>
-        </div>
-        <p class="text-secondary small text-center my-2">${isPt ? "Nenhum membro registado ainda" : "No members registered yet"}</p>
-      `;
-    }
-
-    const colors = ["#38bdf8", "#818cf8", "#34d399", "#facc15", "#f43f5e", "#c084fc", "#fb923c"];
+    const colors = ["#38bdf8", "#818cf8", "#34d399", "#facc15", "#f43f5e", "#c084fc", "#fb923c", "#2dd4bf", "#e879f9", "#a78bfa"];
     const circumference = 2 * Math.PI * 38; // ~238.76
     let currentOffset = 0;
 
-    const circles = activeChurchEntries.map(([church, count], idx) => {
-      const pct = count / totalRealMembers;
-      const strokeDash = pct * circumference;
-      const color = colors[idx % colors.length];
-      const circleSvg = `<circle cx="50" cy="50" r="38" fill="transparent" stroke="${color}" stroke-width="12" stroke-dasharray="${strokeDash.toFixed(1)} ${circumference.toFixed(1)}" stroke-dashoffset="-${currentOffset.toFixed(1)}" />`;
-      currentOffset += strokeDash;
-      return circleSvg;
-    }).join("");
+    let circles = "";
+    if (totalRealMembers > 0 && nonZeroChurchEntries.length > 0) {
+      circles = nonZeroChurchEntries.map((entry, idx) => {
+        const pct = entry.count / totalRealMembers;
+        const strokeDash = pct * circumference;
+        const color = colors[idx % colors.length];
+        const circleSvg = `<circle cx="50" cy="50" r="38" fill="transparent" stroke="${color}" stroke-width="12" stroke-dasharray="${strokeDash.toFixed(1)} ${circumference.toFixed(1)}" stroke-dashoffset="-${currentOffset.toFixed(1)}" />`;
+        currentOffset += strokeDash;
+        return circleSvg;
+      }).join("");
+    } else {
+      circles = `<circle cx="50" cy="50" r="38" fill="transparent" stroke="rgba(255,255,255,0.06)" stroke-width="12" />`;
+    }
 
-    const churchListHtml = activeChurchEntries.map(([church, count], idx) => {
-      const pct = ((count / totalRealMembers) * 100).toFixed(1);
-      const color = colors[idx % colors.length];
+    const churchListHtml = allChurchEntries.map((entry, idx) => {
+      const pct = totalRealMembers > 0 ? ((entry.count / totalRealMembers) * 100).toFixed(1) : "0.0";
+      const isNonZero = entry.count > 0;
+      const color = isNonZero ? colors[idx % colors.length] : "#475569";
       return `
         <div class="dash-church-row">
-          <div class="d-flex align-items-center gap-2">
-            <span class="dash-legend-dot" style="background: ${color};"></span>
-            <span class="fw-semibold text-light text-truncate" style="max-width: 170px;" title="${escapeAttr(church)}">${escapeAttr(church)}</span>
+          <div class="d-flex align-items-center gap-2" style="min-width: 0;">
+            <span class="dash-legend-dot" style="background: ${color}; flex-shrink: 0;"></span>
+            <span class="fw-semibold text-truncate ${isNonZero ? "text-light" : "text-secondary"}" style="max-width: 170px;" title="${escapeAttr(entry.name)}">${escapeAttr(entry.name)}</span>
           </div>
-          <div class="d-flex align-items-center gap-2">
-            <strong class="text-light">${count}</strong>
+          <div class="d-flex align-items-center gap-2 flex-shrink-0">
+            <strong class="${isNonZero ? "text-light" : "text-secondary"}">${entry.count}</strong>
             <span class="text-secondary small">(${pct}%)</span>
           </div>
         </div>
@@ -16740,7 +16823,7 @@ function renderDashboard() {
 
     return `
       <div class="dash-donut-wrap">
-        <svg viewBox="0 0 100 100" width="170" height="170" style="transform: rotate(-90deg);">
+        <svg viewBox="0 0 100 100" width="170" height="170" style="${totalRealMembers > 0 ? "transform: rotate(-90deg);" : ""}">
           ${circles}
         </svg>
         <div class="dash-donut-center">
@@ -16813,7 +16896,7 @@ function renderDashboard() {
             <div class="dash-icon-box emerald"><i class="bi bi-cash-stack"></i></div>
           </div>
           <div class="dash-kpi-value-row">
-            <span class="dash-kpi-value" style="font-size: 1.35rem;">${totalGivingStr}</span>
+            <span class="dash-kpi-value" style="font-size: 1.12rem;">${totalGivingStr}</span>
             <span class="dash-kpi-trend positive"><i class="bi bi-check-circle"></i>${isPt ? "Verificado" : "Verified"}</span>
           </div>
         </div>
