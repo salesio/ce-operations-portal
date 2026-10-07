@@ -6438,6 +6438,73 @@ tr[data-public-cell-report="1"] td:last-child {
 .kanban-column--closed .kanban-column-head { border-top: 3px solid #6c757d; }
 .kanban-column--success .kanban-column-head { border-top: 3px solid #198754; }
 
+/* Click-to-call link styles */
+a[href^="tel:"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #38bdf8;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.15s ease, opacity 0.15s ease, transform 0.15s ease;
+  min-height: 24px;
+}
+a[href^="tel:"]:hover,
+a[href^="tel:"]:focus {
+  color: #7dd3fc;
+  text-decoration: underline;
+}
+[data-theme="light"] a[href^="tel:"],
+.theme-light a[href^="tel:"] {
+  color: #0284c7;
+}
+[data-theme="light"] a[href^="tel:"]:hover,
+.theme-light a[href^="tel:"]:focus {
+  color: #0369a1;
+}
+
+/* Follow-up Kanban tabs & isolation */
+.followup-kanban-tabs {
+  display: flex;
+  gap: 0.45rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.85rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+.followup-kanban-tabs::-webkit-scrollbar {
+  height: 4px;
+}
+.followup-kanban-tabs::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+.followup-kanban-tabs .btn {
+  white-space: nowrap;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.78rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 9999px;
+  font-weight: 600;
+}
+.kanban-board--isolated .kanban-board {
+  grid-template-columns: 1fr;
+}
+.kanban-board--isolated .kanban-column {
+  min-height: auto;
+}
+.kanban-board--isolated .kanban-column-body {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+@media (max-width: 576px) {
+  .kanban-board--isolated .kanban-column-body {
+    grid-template-columns: 1fr;
+  }
+}
+
 .module-tab-strip button,
 .department-tabs button {
   transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
@@ -12830,10 +12897,19 @@ nav.module-tabs {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  padding: 0.4rem 0.5rem;
+  padding: 0.45rem 0.65rem;
   background: rgba(15, 23, 42, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 0.85rem;
+  margin-bottom: 1.35rem;
+}
+
+/* Dynamic Subtab View Container */
+#dash-dynamic-subtab-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
 }
 
 .dash-subnav-tabs {
@@ -12882,12 +12958,14 @@ nav.module-tabs {
   display: grid;
   grid-template-columns: repeat(8, minmax(0, 1fr));
   gap: 0.55rem;
+  margin-bottom: 0.5rem;
 }
 
 @media (max-width: 1200px) {
   .dash-kpi-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 0.6rem;
+    margin-bottom: 0.5rem;
   }
 }
 

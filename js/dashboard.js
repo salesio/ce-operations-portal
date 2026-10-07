@@ -4257,7 +4257,7 @@ const foundationPageState = {
   graduation: { classGroupId: "", status: "" }
 };
 const firstTimersPageState = { filter: {} };
-const followUpPageState = { filter: {} };
+const followUpPageState = { filter: {}, kanbanColumn: "all" };
 const counselingPageState = { tab: "overview", filter: {} };
 const fevoPageState = { filter: {} };
 const venuePageState = { route: "venueInventory", filter: {}, page: 1, pageSize: 10, view: localStorage.getItem("ce_venue_view_mode") || "table" };
@@ -13550,7 +13550,7 @@ function toggleModuleNav(key) {
   });
 }
 
-const modulePageState = { members: { view: "cards", filter: {}, candidateTab: "pending", page: 1, pageSize: 50, totalCount: 0, totalPages: 1, items: [], loading: false, loaded: false, error: "", requestId: 0 }, firstTimers: { view: "table" }, followUp: { view: "table" } };
+const modulePageState = { members: { view: "cards", filter: {}, candidateTab: "pending", page: 1, pageSize: 50, totalCount: 0, totalPages: 1, items: [], loading: false, loaded: false, error: "", requestId: 0 }, firstTimers: { view: "cards" }, followUp: { view: "kanban" } };
 window.modulePageState = modulePageState;
 const usersPageState = { tab: "users", attendanceDate: "2026-10-01", filter: "all" };
 window.usersPageState = usersPageState;
@@ -18287,12 +18287,17 @@ function renderFirstTimerCard(person) {
   const isReceived = Boolean(person.cell_received || person.workflow_status === "CELL_RECEIVED" || person.estado_do_seguimento === "Received in Cell");
   const hasCell = Boolean(person.cell_id || person.cell_name || person.celula);
   const cellStatusText = isReceived ? "Recebido na Célula" : (hasCell ? "Atribuído à Célula" : "Não Atribuído");
+  const rawPhone = person.telefone || person.phone || "";
+  const cleanPhone = rawPhone ? rawPhone.replace(/[^\d+]/g, "") : "";
+  const phoneVal = rawPhone
+    ? `<a href="tel:${escapeAttr(cleanPhone)}" class="text-decoration-none font-monospace text-nowrap"><i class="bi bi-telephone-fill me-1"></i>${escapeAttr(rawPhone)}</a>`
+    : "—";
   return DataCard({
     title: fullName(person),
     subtitle: person.culto || L("service"),
     badges: [badge(person.estado_do_seguimento)],
     meta: [
-      [L("phone"), person.telefone || person.phone, "bi-telephone"],
+      [L("phone"), phoneVal, "bi-telephone"],
       [L("church"), churchName(person.church_id), "bi-building"],
       ["Estado Célula", cellStatusText, isReceived ? "bi-check-circle-fill text-success" : (hasCell ? "bi-diagram-3 text-info" : "bi-dash-circle text-muted")],
       [L("cell"), person.cell_name || person.celula || "Não atribuída", "bi-diagram-3"],
@@ -18356,7 +18361,9 @@ function renderFirstTimers() {
           return [
             renderTableIdBadge(formatFirstTimerNumber(p, idx)),
             renderPersonNameCell(p),
-            p.telefone || p.phone ? `<span class="font-monospace small text-light">${escapeAttr(p.telefone || p.phone)}</span>` : `<span class="text-secondary small">—</span>`,
+            p.telefone || p.phone
+              ? `<a href="tel:${escapeAttr((p.telefone || p.phone).replace(/[^\d+]/g, ''))}" class="font-monospace small text-info text-decoration-none text-nowrap"><i class="bi bi-telephone-fill me-1"></i>${escapeAttr(p.telefone || p.phone)}</a>`
+              : `<span class="text-secondary small">—</span>`,
             `<span class="small fw-semibold text-white">${escapeAttr(cleanDisplayText(churchName(p.church_id)))}</span>`,
             cellBadge,
             cellDisplay,
@@ -18378,22 +18385,65 @@ function renderFirstTimers() {
 }
 
 function renderFollowUpKanban(list) {
-  const columns = [
-    [cleanDisplayText(L("pending")), ["Pending", "Pendente"], "pending"],
-    [cleanDisplayText(L("contacted")), ["Contacted", "Contactado"], "contacted"],
-    [cleanDisplayText(L("noAnswer")), ["No Answer", "Sem Resposta"], "pending"],
-    [cleanDisplayText(L("visitScheduled")), ["Interested", "Interessado", "Visita Marcada", "Scheduled", "Agendado"], "contacted"],
-    [cleanDisplayText(L("sentToCell")), ["Sent to Cell", "Encaminhado para Célula", "Enrolled in Foundation School", "Inscrito na Escola de Fundação"], "success"],
-    [cleanDisplayText(L("closed")), ["Became Member", "Tornou-se Membro", "Closed", "Fechado", "Concluído"], "closed"]
+  const allColumns = [
+    { key: "pending", title: cleanDisplayText(L("pending")), statuses: ["Pending", "Pendente"], tone: "pending", icon: "bi-hourglass-split" },
+    { key: "contacted", title: cleanDisplayText(L("contacted")), statuses: ["Contacted", "Contactado"], tone: "contacted", icon: "bi-check2-circle" },
+    { key: "noAnswer", title: cleanDisplayText(L("noAnswer")), statuses: ["No Answer", "Sem Resposta"], tone: "pending", icon: "bi-telephone-x" },
+    { key: "visitScheduled", title: cleanDisplayText(L("visitScheduled")), statuses: ["Interested", "Interessado", "Visita Marcada", "Scheduled", "Agendado"], tone: "contacted", icon: "bi-calendar-check" },
+    { key: "sentToCell", title: cleanDisplayText(L("sentToCell")), statuses: ["Sent to Cell", "Encaminhado para Célula", "Enrolled in Foundation School", "Inscrito na Escola de Fundação"], tone: "success", icon: "bi-diagram-3" },
+    { key: "closed", title: cleanDisplayText(L("closed")), statuses: ["Became Member", "Tornou-se Membro", "Closed", "Fechado", "Concluído"], tone: "closed", icon: "bi-person-check" }
   ];
   if (typeof KanbanBoard !== "function") return "";
-  return KanbanBoard(columns.map(([title, statuses, tone]) => {
+
+  const activeCol = followUpPageState.kanbanColumn || "all";
+
+  const colData = allColumns.map((col) => {
     const items = list.filter((p) => {
       const st = String(p.estado_do_seguimento || p.follow_up_status || "Pending").trim();
-      return statuses.some((s) => s.toLowerCase() === st.toLowerCase() || statusKey(s) === statusKey(st));
+      return col.statuses.some((s) => s.toLowerCase() === st.toLowerCase() || statusKey(s) === statusKey(st));
     });
-    return [title, items.length, items.map((p) => typeof FollowUpCard === "function" ? FollowUpCard(p) : renderFirstTimerCard(p)).join(""), tone];
-  }));
+    return {
+      ...col,
+      count: items.length,
+      cardsHtml: items.map((p) => typeof FollowUpCard === "function" ? FollowUpCard(p) : renderFirstTimerCard(p)).join("")
+    };
+  });
+
+  const switcherHtml = `
+    <div class="followup-kanban-tabs d-flex gap-2 flex-wrap mb-3 align-items-center">
+      <span class="small text-secondary fw-semibold me-1"><i class="bi bi-funnel me-1"></i>${lang === "pt" ? "Isolar Coluna:" : "Isolate Column:"}</span>
+      <button type="button" class="btn btn-sm ${activeCol === "all" ? "btn-ce-gold shadow-sm" : "btn-outline-secondary"} btn-touch" data-followup-kanban-tab="all">
+        <i class="bi bi-grid-3x3 me-1"></i>${lang === "pt" ? "Todas as Colunas" : "All Columns"} <span class="badge ${activeCol === "all" ? "bg-dark text-white" : "bg-secondary-subtle text-light"} ms-1">${list.length}</span>
+      </button>
+      ${colData.map((col) => `
+        <button type="button" class="btn btn-sm ${activeCol === col.key ? "btn-ce-gold shadow-sm" : "btn-outline-secondary"} btn-touch" data-followup-kanban-tab="${col.key}">
+          <i class="bi ${col.icon} me-1"></i>${col.title} <span class="badge ${activeCol === col.key ? "bg-dark text-white" : "bg-secondary-subtle text-light"} ms-1">${col.count}</span>
+        </button>
+      `).join("")}
+    </div>
+  `;
+
+  let boardHtml = "";
+  if (activeCol !== "all") {
+    const selected = colData.find((c) => c.key === activeCol) || colData[0];
+    const banner = `
+      <div class="alert alert-info py-2 px-3 d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi ${selected.icon} fs-5 text-info"></i>
+          <span>${lang === "pt" ? `Visualização isolada: <strong>${selected.title}</strong> (${selected.count} registo${selected.count === 1 ? "" : "s"})` : `Isolated view: <strong>${selected.title}</strong> (${selected.count} record${selected.count === 1 ? "" : "s"})`}</span>
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-info btn-touch" data-followup-kanban-tab="all">
+          <i class="bi bi-grid-3x3 me-1"></i>${lang === "pt" ? "Ver Todas as Colunas" : "View All Columns"}
+        </button>
+      </div>
+    `;
+    const kanbanContent = KanbanBoard([[selected.title, selected.count, selected.cardsHtml, selected.tone]]);
+    boardHtml = banner + `<div class="kanban-board--isolated">${kanbanContent}</div>`;
+  } else {
+    boardHtml = KanbanBoard(colData.map((c) => [c.title, c.count, c.cardsHtml, c.tone]));
+  }
+
+  return switcherHtml + boardHtml;
 }
 
 function renderFollowUp() {
@@ -18480,7 +18530,9 @@ function renderFollowUp() {
             return [
               renderTableIdBadge(formatFirstTimerNumber(p, idx)),
               renderPersonNameCell(p),
-              p.telefone || p.phone ? `<span class="font-monospace small text-light">${escapeAttr(p.telefone || p.phone)}</span>` : `<span class="text-secondary small">—</span>`,
+              p.telefone || p.phone
+                ? `<a href="tel:${escapeAttr((p.telefone || p.phone).replace(/[^\d+]/g, ''))}" class="font-monospace small text-info text-decoration-none text-nowrap"><i class="bi bi-telephone-fill me-1"></i>${escapeAttr(p.telefone || p.phone)}</a>`
+                : `<span class="text-secondary small">—</span>`,
               `<span class="small fw-semibold text-white">${escapeAttr(cleanDisplayText(churchName(p.church_id)))}</span>`,
               cellDisplay,
               badge(p.estado_do_seguimento || p.follow_up_status || "Pending"),
@@ -18532,12 +18584,18 @@ function renderMemberCard(member) {
 
   const subtitle = member.departamento || (inviter ? `${lang === "pt" ? "Convidado por" : "Invited by"}: ${escapeAttr(inviter)}` : "");
 
+  const rawMemberPhone = member.telefone || member.primary_phone || "";
+  const cleanMemberPhone = rawMemberPhone ? rawMemberPhone.replace(/[^\d+]/g, "") : "";
+  const memberPhoneVal = rawMemberPhone
+    ? `<a href="tel:${escapeAttr(cleanMemberPhone)}" class="text-decoration-none font-monospace text-nowrap"><i class="bi bi-telephone-fill me-1"></i>${escapeAttr(rawMemberPhone)}</a>`
+    : "—";
+
   return DataCard({
     title: fullName(member),
     subtitle: subtitle,
     badges: [badge(member.estado), originBadge].filter(Boolean),
     meta: [
-      [L("phone"), member.telefone || member.primary_phone || "—", "bi-telephone"],
+      [L("phone"), memberPhoneVal, "bi-telephone"],
       [L("church"), churchName(member.church_id), "bi-building"],
       [L("cell"), memberCellLabel(member) || "-", "bi-diagram-3"],
       ...(inviter ? [[lang === "pt" ? "Convidado por" : "Invited by", inviter, "bi-person-heart"]] : [])
@@ -39641,6 +39699,10 @@ function detailGrid(record, type = "") {
       const isPdf = String(val).startsWith("data:application/pdf") || String(val).toLowerCase().endsWith(".pdf");
       return `<button type="button" class="btn btn-sm btn-outline-info py-0 px-2" onclick="window.previewMaterialPaymentProof && window.previewMaterialPaymentProof('', '${escapeAttr(val)}')"><i class="bi ${isPdf ? "bi-file-earmark-pdf" : "bi-image"} me-1"></i>${L("viewProof") || "Ver POP"}</button>`;
     }
+    if (key === "phone" || key === "telefone" || key === "primary_phone" || key === "contact_phone" || fieldType === "tel") {
+      const cleanPhone = String(val).replace(/[^\d+]/g, "");
+      return `<a href="tel:${escapeAttr(cleanPhone)}" class="text-info text-decoration-none font-monospace text-nowrap"><i class="bi bi-telephone-fill me-1"></i>${escapeAttr(String(val))}</a>`;
+    }
     if (key === "estado" || key === "status") {
       return badge(val);
     }
@@ -39735,9 +39797,31 @@ function followupTimeline(firstTimerId) {
 function openFollowup(id) {
   modalType = "followup";
   modalRecordId = id;
+  const person = (state.firstTimers || []).find((item) => String(item.id) === String(id));
+  const personName = person ? fullName(person) : "";
+  const personPhone = person ? (person.telefone || person.phone || "") : "";
+  const cleanPhone = personPhone ? personPhone.replace(/[^\d+]/g, "") : "";
+  const phoneCallBanner = personPhone
+    ? `<div class="col-12 mb-3">
+        <div class="d-flex align-items-center justify-content-between p-3 rounded light-surface border border-info border-opacity-25 bg-info-subtle bg-opacity-10">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-person-circle fs-3 text-info"></i>
+            <div>
+              <div class="fw-bold text-white fs-6">${escapeAttr(personName)}</div>
+              <a href="tel:${escapeAttr(cleanPhone)}" class="text-info text-decoration-none font-monospace small"><i class="bi bi-telephone-fill me-1"></i>${escapeAttr(personPhone)}</a>
+            </div>
+          </div>
+          <div class="d-flex gap-2">
+            <a href="tel:${escapeAttr(cleanPhone)}" class="btn btn-sm btn-success btn-touch shadow-sm"><i class="bi bi-telephone-outbound me-1"></i>${lang === "pt" ? "Ligar Agora" : "Call Now"}</a>
+            ${cleanPhone.length >= 8 ? `<a href="https://wa.me/${cleanPhone.startsWith("+") ? cleanPhone.slice(1) : cleanPhone}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-success btn-touch"><i class="bi bi-whatsapp"></i></a>` : ""}
+          </div>
+        </div>
+      </div>`
+    : (personName ? `<div class="col-12 mb-2"><div class="fw-bold text-white fs-6"><i class="bi bi-person me-1 text-info"></i>${escapeAttr(personName)}</div></div>` : "");
+
   byId("modalEyebrow").textContent = L("updateFollowup");
   byId("modalTitle").textContent = L("followUp");
-  byId("modalFields").innerHTML = [
+  byId("modalFields").innerHTML = phoneCallBanner + [
     ["data_do_contacto", "contactDate", "date"],
     ["metodo", "contactMethod", "select", ["Chamada", "WhatsApp", "SMS", "Presencial"]],
     ["resultado", "result", "textarea"],
@@ -42078,6 +42162,12 @@ document.addEventListener("click", async (event) => {
   const followupViewBtn = event.target.closest("[data-followup-view]");
   if (followupViewBtn) {
     modulePageState.followUp.view = followupViewBtn.dataset.followupView;
+    if (activeRoute === "followUp") renderFollowUp();
+    return;
+  }
+  const followupKanbanTabBtn = event.target.closest("[data-followup-kanban-tab]");
+  if (followupKanbanTabBtn) {
+    followUpPageState.kanbanColumn = followupKanbanTabBtn.dataset.followupKanbanTab || "all";
     if (activeRoute === "followUp") renderFollowUp();
     return;
   }

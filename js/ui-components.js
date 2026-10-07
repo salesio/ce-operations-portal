@@ -325,12 +325,17 @@ function FollowUpCard(person) {
   const followup = (state?.followUps || []).find((f) => f.first_timer_id === person.id);
   const nextDate = followup?.proxima_data_de_contacto || person.proxima_data_de_contacto || person.next_follow_up_date || "-";
   const cellTarget = clean(person.celula || person.cell_name || person.celula_preferida || "-");
+  const rawPhone = person.telefone || person.phone || "";
+  const cleanPhone = rawPhone ? rawPhone.replace(/[^\d+]/g, "") : "";
+  const phoneVal = rawPhone
+    ? `<a href="tel:${escapeAttr(cleanPhone)}" class="text-decoration-none font-monospace text-nowrap"><i class="bi bi-telephone-fill me-1"></i>${escapeAttr(rawPhone)}</a>`
+    : "-";
   return DataCard({
     title: name,
     subtitle: uiT("followUp", "Acompanhamento"),
     badges: [StatusBadge(person.estado_do_seguimento || person.follow_up_status || "Pending")],
     meta: [
-      [uiT("phone", "Telefone"), person.telefone || person.phone || "-", "bi-telephone"],
+      [uiT("phone", "Telefone"), phoneVal, "bi-telephone"],
       [uiT("church", "Igreja"), church || "-", "bi-building"],
       [uiT("nextContact", "Próximo Contacto"), nextDate, "bi-calendar-event"],
       [uiT("cell", "Célula / Alvo"), cellTarget, "bi-diagram-3"]
