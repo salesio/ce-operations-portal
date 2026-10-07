@@ -17402,10 +17402,10 @@ function renderDashboard() {
                 <h3 class="dash-card-title">${isPt ? "Membros por Igreja" : "Members by Church"}</h3>
                 <span class="text-secondary small">${isPt ? "Distribuição real de membros" : "Real member distribution"}</span>
               </div>
-              <span class="badge" style="background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.25); font-size: 0.72rem;">${activeChurchEntries.length} ${isPt ? "Igreja(s)" : "Church(es)"}</span>
+              <span class="badge" style="background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.25); font-size: 0.72rem;">${allChurchEntries.length} ${isPt ? "Igreja(s)" : "Church(es)"}</span>
             </div>
 
-            <!-- Dynamic Donut Chart rendering ONLY real churches -->
+            <!-- Dynamic Donut Chart rendering all churches -->
             ${renderRealDonut()}
           </div>
         </div>
