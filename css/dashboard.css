@@ -12881,71 +12881,83 @@ nav.module-tabs {
 .dash-kpi-grid {
   display: grid;
   grid-template-columns: repeat(8, minmax(0, 1fr));
-  gap: 0.45rem;
+  gap: 0.55rem;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
   .dash-kpi-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 0.5rem;
+    gap: 0.6rem;
   }
 }
 
 @media (max-width: 640px) {
   .dash-kpi-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.4rem;
+    gap: 0.5rem;
   }
 }
 
 .dash-kpi-card {
   position: relative;
-  background: linear-gradient(145deg, rgba(15, 23, 42, 0.85) 0%, rgba(30, 41, 59, 0.75) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 0.75rem;
-  padding: 0.6rem 0.5rem;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
+  background: linear-gradient(155deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.75) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.85rem;
+  padding: 0.85rem 0.75rem 0.75rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  min-height: 98px;
   min-width: 0;
   transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
   cursor: pointer;
   overflow: hidden;
 }
 
+.dash-kpi-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+}
+
 .dash-kpi-card:hover {
-  transform: translateY(-2px);
-  border-color: rgba(56, 189, 248, 0.35);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35), 0 0 16px rgba(56, 189, 248, 0.08);
+  transform: translateY(-3px);
+  border-color: rgba(56, 189, 248, 0.4);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.35), 0 0 20px rgba(56, 189, 248, 0.12);
 }
 
 .dash-kpi-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.2rem;
-  margin-bottom: 0.35rem;
+  gap: 0.35rem;
+  margin-bottom: 0.5rem;
 }
 
 .dash-kpi-label {
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   font-weight: 600;
   color: #94a3b8;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .dash-icon-box {
-  width: 24px;
-  height: 24px;
-  border-radius: 0.4rem;
+  width: 28px;
+  height: 28px;
+  border-radius: 0.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.78rem;
+  font-size: 0.85rem;
   flex-shrink: 0;
 }
 
@@ -13001,20 +13013,21 @@ nav.module-tabs {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 0.25rem;
-  margin-bottom: 0.25rem;
+  gap: 0.35rem;
+  margin-top: auto;
   min-width: 0;
 }
 
 .dash-kpi-value {
-  font-size: 1.35rem;
+  font-size: 1.55rem;
   font-weight: 800;
   color: #f8fafc;
-  line-height: 1.1;
+  line-height: 1;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  letter-spacing: -0.02em;
 }
 
 .dash-kpi-trend {
@@ -13023,6 +13036,8 @@ nav.module-tabs {
   gap: 0.2rem;
   font-size: 0.68rem;
   font-weight: 600;
+  padding: 0.15rem 0.35rem;
+  border-radius: 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -13031,14 +13046,20 @@ nav.module-tabs {
 
 .dash-kpi-trend.positive {
   color: #34d399;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
 .dash-kpi-trend.negative {
   color: #f87171;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
 .dash-kpi-trend.neutral {
   color: #94a3b8;
+  background: rgba(148, 163, 184, 0.1);
+  border: 1px solid rgba(148, 163, 184, 0.18);
 }
 
 .dash-kpi-sparkline {
@@ -13050,9 +13071,9 @@ nav.module-tabs {
 .dash-card {
   background: linear-gradient(145deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 1.1rem;
-  padding: 1.4rem;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+  border-radius: 1.15rem;
+  padding: 1.35rem 1.5rem;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.28);
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -13060,13 +13081,14 @@ nav.module-tabs {
 
 .dash-card-head {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
+  gap: 0.75rem;
   margin-bottom: 1.25rem;
 }
 
 .dash-card-title {
-  font-size: 1.08rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: #f8fafc;
   margin: 0;
@@ -13093,12 +13115,52 @@ nav.module-tabs {
   border-radius: 50%;
 }
 
+/* Financial Chart Container & Summary */
+.dash-chart-flex {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 300px;
+  justify-content: space-between;
+}
+
+.dash-chart-summary-bar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.dash-chart-summary-item {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 0.55rem;
+  padding: 0.5rem 0.75rem;
+  text-align: center;
+}
+
+.dash-chart-summary-label {
+  font-size: 0.68rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 0.15rem;
+}
+
+.dash-chart-summary-val {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
 /* Donut Chart and List Layout */
 .dash-donut-wrap {
   position: relative;
-  width: 170px;
-  height: 170px;
-  margin: 0.5rem auto 1.2rem;
+  width: 160px;
+  height: 160px;
+  margin: 0.25rem auto 1rem;
 }
 
 .dash-donut-center {
@@ -13111,7 +13173,7 @@ nav.module-tabs {
 }
 
 .dash-donut-center-val {
-  font-size: 1.35rem;
+  font-size: 1.45rem;
   font-weight: 800;
   color: #f8fafc;
   line-height: 1;
@@ -13129,9 +13191,9 @@ nav.module-tabs {
   flex-direction: column;
   gap: 0.35rem;
   width: 100%;
-  max-height: 230px;
+  max-height: 250px;
   overflow-y: auto;
-  padding-right: 2px;
+  padding-right: 4px;
 }
 
 .dash-church-list::-webkit-scrollbar {
@@ -13151,15 +13213,16 @@ nav.module-tabs {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.35rem 0.55rem;
+  padding: 0.42rem 0.65rem;
   border-radius: 0.45rem;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.04);
   font-size: 0.78rem;
+  transition: background 0.15s ease;
 }
 
 .dash-church-row:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 /* 4. Resumo por Departamento Mini-Cards */

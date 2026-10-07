@@ -17335,61 +17335,82 @@ function renderDashboard() {
               </div>
             </div>
 
-            <!-- Glowing Multi-Month Financial SVG Chart with Dynamic Height Scaling -->
-            <div class="w-100" style="position: relative; min-height: 240px;">
-              <svg viewBox="0 0 650 220" width="100%" height="220" style="overflow: visible;">
+            <!-- Glowing Multi-Month Financial SVG Chart with Full Height Scaling -->
+            <div class="dash-chart-flex">
+              <svg viewBox="0 0 740 320" width="100%" height="100%" style="overflow: visible; min-height: 270px;">
                 <defs>
                   <linearGradient id="barGradGold" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stop-color="#fde047" stop-opacity="1"/>
-                    <stop offset="100%" stop-color="#ca8a04" stop-opacity="0.9"/>
+                    <stop offset="100%" stop-color="#ca8a04" stop-opacity="0.95"/>
                   </linearGradient>
                   <linearGradient id="barGradSky" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stop-color="#38bdf8" stop-opacity="1"/>
-                    <stop offset="100%" stop-color="#0284c7" stop-opacity="0.9"/>
+                    <stop offset="100%" stop-color="#0284c7" stop-opacity="0.95"/>
                   </linearGradient>
                   <linearGradient id="barGradPurple" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stop-color="#c084fc" stop-opacity="1"/>
-                    <stop offset="100%" stop-color="#7e22ce" stop-opacity="0.9"/>
+                    <stop offset="100%" stop-color="#7e22ce" stop-opacity="0.95"/>
                   </linearGradient>
                   <linearGradient id="barGradGreen" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stop-color="#34d399" stop-opacity="1"/>
-                    <stop offset="100%" stop-color="#059669" stop-opacity="0.9"/>
+                    <stop offset="100%" stop-color="#059669" stop-opacity="0.95"/>
                   </linearGradient>
                 </defs>
 
                 <!-- Gridlines & Y-Axis Labels -->
-                <line x1="45" y1="20" x2="630" y2="20" stroke="rgba(255,255,255,0.05)" stroke-dasharray="3,3" />
-                <text x="35" y="24" fill="#64748b" font-size="10" text-anchor="end">${typeof moneyCompact === "function" ? moneyCompact(maxMonthVal) : maxMonthVal}</text>
+                <line x1="65" y1="35" x2="720" y2="35" stroke="rgba(255,255,255,0.06)" stroke-dasharray="4,4" />
+                <text x="55" y="39" fill="#94a3b8" font-size="11" font-family="monospace" text-anchor="end">${typeof moneyCompact === "function" ? moneyCompact(maxMonthVal) : maxMonthVal}</text>
 
-                <line x1="45" y1="75" x2="630" y2="75" stroke="rgba(255,255,255,0.05)" stroke-dasharray="3,3" />
-                <text x="35" y="79" fill="#64748b" font-size="10" text-anchor="end">${typeof moneyCompact === "function" ? moneyCompact(maxMonthVal * 0.66) : Math.round(maxMonthVal * 0.66)}</text>
+                <line x1="65" y1="95" x2="720" y2="95" stroke="rgba(255,255,255,0.06)" stroke-dasharray="4,4" />
+                <text x="55" y="99" fill="#64748b" font-size="11" font-family="monospace" text-anchor="end">${typeof moneyCompact === "function" ? moneyCompact(Math.round(maxMonthVal * 0.75)) : Math.round(maxMonthVal * 0.75)}</text>
 
-                <line x1="45" y1="130" x2="630" y2="130" stroke="rgba(255,255,255,0.05)" stroke-dasharray="3,3" />
-                <text x="35" y="134" fill="#64748b" font-size="10" text-anchor="end">${typeof moneyCompact === "function" ? moneyCompact(maxMonthVal * 0.33) : Math.round(maxMonthVal * 0.33)}</text>
+                <line x1="65" y1="155" x2="720" y2="155" stroke="rgba(255,255,255,0.06)" stroke-dasharray="4,4" />
+                <text x="55" y="159" fill="#64748b" font-size="11" font-family="monospace" text-anchor="end">${typeof moneyCompact === "function" ? moneyCompact(Math.round(maxMonthVal * 0.50)) : Math.round(maxMonthVal * 0.50)}</text>
 
-                <line x1="45" y1="185" x2="630" y2="185" stroke="rgba(255,255,255,0.1)" />
-                <text x="35" y="189" fill="#64748b" font-size="10" text-anchor="end">0</text>
+                <line x1="65" y1="215" x2="720" y2="215" stroke="rgba(255,255,255,0.06)" stroke-dasharray="4,4" />
+                <text x="55" y="219" fill="#64748b" font-size="11" font-family="monospace" text-anchor="end">${typeof moneyCompact === "function" ? moneyCompact(Math.round(maxMonthVal * 0.25)) : Math.round(maxMonthVal * 0.25)}</text>
 
-                <!-- Render real dynamic columns for each month -->
+                <line x1="65" y1="275" x2="720" y2="275" stroke="rgba(255,255,255,0.12)" />
+                <text x="55" y="279" fill="#64748b" font-size="11" font-family="monospace" text-anchor="end">0</text>
+
+                <!-- Render dynamic columns for each month -->
                 ${[0, 1, 2, 3, 4, 5].map((i) => {
-                  const centerX = 95 + (i * 100);
-                  const scaleH = (v) => Math.min(160, Math.max(4, Math.round((v / maxMonthVal) * 160)));
+                  const centerX = 115 + (i * 115);
+                  const scaleH = (v) => (v > 0 ? Math.max(6, Math.round((v / maxMonthVal) * 235)) : 2);
                   const hT = scaleH(streamMap.tithes[i]);
                   const hO = scaleH(streamMap.offerings[i]);
                   const hP = scaleH(streamMap.partnerships[i]);
                   const hOt = scaleH(streamMap.others[i]);
+                  const isCurrent = i === 5;
 
                   return `
                     <g class="chart-col">
-                      <rect x="${centerX - 25}" y="${185 - hT}" width="11" height="${hT}" rx="3" fill="url(#barGradGold)"><title>${monthLabels[i]} Dízimos: ${streamMap.tithes[i]} MTn</title></rect>
-                      <rect x="${centerX - 12}" y="${185 - hO}" width="11" height="${hO}" rx="3" fill="url(#barGradSky)"><title>${monthLabels[i]} Ofertas: ${streamMap.offerings[i]} MTn</title></rect>
-                      <rect x="${centerX + 1}" y="${185 - hP}" width="11" height="${hP}" rx="3" fill="url(#barGradPurple)"><title>${monthLabels[i]} Parcerias: ${streamMap.partnerships[i]} MTn</title></rect>
-                      <rect x="${centerX + 14}" y="${185 - hOt}" width="11" height="${hOt}" rx="3" fill="url(#barGradGreen)"><title>${monthLabels[i]} Outros: ${streamMap.others[i]} MTn</title></rect>
-                      <text x="${centerX}" y="204" fill="${i === 5 ? "#facc15" : "#94a3b8"}" font-size="11" font-weight="${i === 5 ? "700" : "600"}" text-anchor="middle">${monthLabels[i]}</text>
+                      <rect x="${centerX - 34}" y="${275 - hT}" width="15" height="${hT}" rx="4" fill="url(#barGradGold)" opacity="${streamMap.tithes[i] > 0 ? "1" : "0.25"}"><title>${monthLabels[i]} Dízimos: ${streamMap.tithes[i]} MTn</title></rect>
+                      <rect x="${centerX - 16}" y="${275 - hO}" width="15" height="${hO}" rx="4" fill="url(#barGradSky)" opacity="${streamMap.offerings[i] > 0 ? "1" : "0.25"}"><title>${monthLabels[i]} Ofertas: ${streamMap.offerings[i]} MTn</title></rect>
+                      <rect x="${centerX + 2}" y="${275 - hP}" width="15" height="${hP}" rx="4" fill="url(#barGradPurple)" opacity="${streamMap.partnerships[i] > 0 ? "1" : "0.25"}"><title>${monthLabels[i]} Parcerias: ${streamMap.partnerships[i]} MTn</title></rect>
+                      <rect x="${centerX + 20}" y="${275 - hOt}" width="15" height="${hOt}" rx="4" fill="url(#barGradGreen)" opacity="${streamMap.others[i] > 0 ? "1" : "0.25"}"><title>${monthLabels[i]} Outros: ${streamMap.others[i]} MTn</title></rect>
+                      ${isCurrent ? `<rect x="${centerX - 24}" y="288" width="48" height="20" rx="10" fill="rgba(250, 204, 21, 0.12)" stroke="rgba(250, 204, 21, 0.3)" />` : ""}
+                      <text x="${centerX}" y="303" fill="${isCurrent ? "#facc15" : "#94a3b8"}" font-size="12" font-weight="${isCurrent ? "700" : "600"}" text-anchor="middle">${monthLabels[i]}</text>
                     </g>
                   `;
                 }).join("")}
               </svg>
+
+              <!-- Mini Summary Metric Bar -->
+              <div class="dash-chart-summary-bar">
+                <div class="dash-chart-summary-item">
+                  <div class="dash-chart-summary-label">${isPt ? "Total no Semestre" : "Period Total"}</div>
+                  <div class="dash-chart-summary-val" style="color: #facc15;">${typeof money === "function" ? money(streamMap.tithes.reduce((a,b)=>a+b,0) + streamMap.offerings.reduce((a,b)=>a+b,0) + streamMap.partnerships.reduce((a,b)=>a+b,0) + streamMap.others.reduce((a,b)=>a+b,0)) : "0 MTn"}</div>
+                </div>
+                <div class="dash-chart-summary-item">
+                  <div class="dash-chart-summary-label">${isPt ? "Média Mensal" : "Monthly Avg"}</div>
+                  <div class="dash-chart-summary-val" style="color: #38bdf8;">${typeof money === "function" ? money(Math.round((streamMap.tithes.reduce((a,b)=>a+b,0) + streamMap.offerings.reduce((a,b)=>a+b,0) + streamMap.partnerships.reduce((a,b)=>a+b,0) + streamMap.others.reduce((a,b)=>a+b,0)) / 6)) : "0 MTn"}</div>
+                </div>
+                <div class="dash-chart-summary-item">
+                  <div class="dash-chart-summary-label">${isPt ? "Maior Categoria" : "Top Stream"}</div>
+                  <div class="dash-chart-summary-val" style="color: #34d399;">${isPt ? "Dízimos & Ofertas" : "Tithes & Offerings"}</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
