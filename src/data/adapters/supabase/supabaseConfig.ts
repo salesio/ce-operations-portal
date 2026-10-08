@@ -37,10 +37,8 @@ export function isLikelySupabaseUrl(url: string): boolean {
   if (/YOUR_PROJECT|YOUR_SUPABASE|example\.com|placeholder/i.test(url)) return false;
   try {
     const parsed = new URL(url);
-    if (parsed.protocol === "https:" && parsed.hostname.endsWith(".supabase.co")) return true;
-    // Local Supabase CLI / self-host (optional future)
-    if (flagTrue("VITE_ENABLE_SUPABASE") && (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1")) {
-      return true;
+    if (parsed.protocol === "https:" || parsed.protocol === "http:") {
+      return Boolean(parsed.hostname && parsed.hostname.length > 3);
     }
     return false;
   } catch {
