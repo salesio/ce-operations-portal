@@ -48,7 +48,7 @@ export function isLikelySupabaseUrl(url: string): boolean {
 
 export function getSupabaseEnvConfig(): SupabaseEnvConfig {
   const url = readEnv("VITE_SUPABASE_URL") || "https://api.embaixadadecristo.org";
-  const anonKey = readEnv("VITE_SUPABASE_ANON_KEY") || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzkxNDY0NTQ0LCJleHAiOjIwMDcwMDQ1NDR9.xMLsM1EBKV-hJCWRsYjpXP91ESaq5Msns9FamCVMJh0";
+  const anonKey = readEnv("VITE_SUPABASE_ANON_KEY") || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzkxNDU0ODUzLCJleHAiOjIxMDY4MTQ4NTN9.xMLsM1EBKV-hJCWRsYjpXP91ESaq5Msns9FawCVMJh0";
   const enableSupabase = flagTrue("VITE_ENABLE_SUPABASE") || readEnv("VITE_DATA_SOURCE") === "supabase";
   // isConfigured = env usable for a public client (URL+anon look valid).
   // enableSupabase still gates initialization in foundation client.
