@@ -16472,32 +16472,46 @@ async function hydrateDashboardRealData() {
       );
     }
 
-    // 1. Members
+    // 1. Members (optimized fetch with cache and instant UI update)
     if (sbClient) {
       promises.push(
-        sbClient.from("members").select("id, full_name, nome, apelido, church_id, church_name, cell_id, cell_name, celula, status").then(({ data, error }) => {
+        sbClient.from("members").select("id, full_name, nome, apelido, church_id, church_name, cell_id, cell_name, celula, status").limit(3000).then(({ data, error }) => {
           if (!error && Array.isArray(data) && data.length > 0) {
             state.members = data;
+            try {
+              localStorage.setItem("ce-dashboard:members-cache", JSON.stringify(data));
+              localStorage.setItem("ce-data-layer:members", JSON.stringify(data));
+            } catch (_) {}
             if (window.modulePageState?.members) {
               modulePageState.members.items = data;
               modulePageState.members.totalCount = data.length;
               modulePageState.members.loaded = true;
             }
             didUpdate = true;
+            if (activeRoute === "dashboard") {
+              renderDashboard();
+            }
           }
         }).catch((e) => console.warn("[CE Dashboard] members fetch error", e))
       );
     } else if (membersRepo?.listMembersPage) {
       promises.push(
-        membersRepo.listMembersPage({ page: 1, pageSize: 2000 }).then((res) => {
+        membersRepo.listMembersPage({ page: 1, pageSize: 3000 }).then((res) => {
           if (res?.ok && Array.isArray(res.data?.items) && res.data.items.length > 0) {
             state.members = res.data.items;
+            try {
+              localStorage.setItem("ce-dashboard:members-cache", JSON.stringify(res.data.items));
+              localStorage.setItem("ce-data-layer:members", JSON.stringify(res.data.items));
+            } catch (_) {}
             if (window.modulePageState?.members) {
               modulePageState.members.items = res.data.items;
               modulePageState.members.totalCount = res.data.totalCount || res.data.items.length;
               modulePageState.members.loaded = true;
             }
             didUpdate = true;
+            if (activeRoute === "dashboard") {
+              renderDashboard();
+            }
           }
         }).catch((e) => console.warn("[CE Dashboard] membersRepo fetch error", e))
       );
@@ -16625,14 +16639,27 @@ function renderDashboard() {
   const reqs = scoped(state.requisitions || []);
   const programs = scoped(state.programs || []);
 
-  // Members real count and distribution by church
-  const membersList = (Array.isArray(state.members) && state.members.length > 0)
+  // Members real count and distribution by church (with instant local cache fallback)
+  let membersList = (Array.isArray(state.members) && state.members.length > 0)
     ? state.members
     : (Array.isArray(modulePageState?.members?.items) && modulePageState.members.items.length > 0)
       ? modulePageState.members.items
       : (Array.isArray(state.memberRegistrationCandidates) && state.memberRegistrationCandidates.length > 0)
         ? state.memberRegistrationCandidates
         : [];
+  
+  if (!membersList.length) {
+    try {
+      const cached = localStorage.getItem("ce-dashboard:members-cache") || localStorage.getItem("ce-data-layer:members");
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          membersList = parsed;
+          state.members = parsed;
+        }
+      }
+    } catch (_) {}
+  }
   const scopedMembers = scoped(membersList);
 
   // Members real count and distribution by church (listing ALL churches including 0)
@@ -43960,6 +43987,7 @@ function continueEnterDashboard() {
       if (hydrated) {
         markRouteHydrated("members");
         requestRouteSync("cellMembers");
+        requestRouteSync("dashboard");
       }
     })
     .catch((error) => console.warn("[CE Members] background hydrate skipped", error));
