@@ -12820,7 +12820,7 @@ nav.module-tabs {
 .dash-v2-container {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 0.65rem;
   width: 100%;
 }
 
@@ -12829,9 +12829,9 @@ nav.module-tabs {
   position: relative;
   background: radial-gradient(circle at top right, rgba(30, 58, 138, 0.4) 0%, rgba(15, 23, 42, 0.95) 70%), linear-gradient(135deg, #0b1329 0%, #0f172a 100%);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 1.15rem;
-  padding: 1.6rem 2rem;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+  border-radius: 0.85rem;
+  padding: 0.55rem 1.15rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
   overflow: hidden;
 }
 
@@ -12840,8 +12840,8 @@ nav.module-tabs {
   position: absolute;
   top: -50%;
   right: -20%;
-  width: 380px;
-  height: 380px;
+  width: 320px;
+  height: 320px;
   background: radial-gradient(circle, rgba(56, 189, 248, 0.12) 0%, transparent 70%);
   pointer-events: none;
 }
@@ -12849,29 +12849,29 @@ nav.module-tabs {
 .dash-hero-tag {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  font-size: 0.68rem;
+  gap: 0.35rem;
+  font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #facc15;
   background: rgba(234, 179, 8, 0.1);
   border: 1px solid rgba(234, 179, 8, 0.25);
-  padding: 0.22rem 0.65rem;
+  padding: 0.12rem 0.5rem;
   border-radius: 999px;
-  margin-bottom: 0.6rem;
+  margin-bottom: 0.2rem;
 }
 
 .dash-hero-title {
-  font-size: 1.75rem;
+  font-size: 1.2rem;
   font-weight: 800;
   letter-spacing: -0.02em;
   color: #f8fafc;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.1rem;
 }
 
 .dash-hero-subtitle {
-  font-size: 0.88rem;
+  font-size: 0.78rem;
   color: #94a3b8;
   margin-bottom: 0;
 }
@@ -12879,13 +12879,13 @@ nav.module-tabs {
 .dash-date-pill {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
   background: rgba(15, 23, 42, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.12);
   color: #e2e8f0;
-  padding: 0.45rem 0.95rem;
+  padding: 0.25rem 0.65rem;
   border-radius: 999px;
-  font-size: 0.82rem;
+  font-size: 0.75rem;
   font-weight: 500;
   backdrop-filter: blur(10px);
 }
@@ -12896,19 +12896,19 @@ nav.module-tabs {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.45rem 0.65rem;
+  gap: 0.5rem;
+  padding: 0.25rem 0.45rem;
   background: rgba(15, 23, 42, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 0.85rem;
-  margin-bottom: 1.35rem;
+  border-radius: 0.65rem;
+  margin-bottom: 0.45rem;
 }
 
 /* Dynamic Subtab View Container */
 #dash-dynamic-subtab-view {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 0.65rem;
   width: 100%;
 }
 
@@ -12916,16 +12916,16 @@ nav.module-tabs {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.25rem;
 }
 
 .dash-subnav-btn {
   background: transparent;
   border: 1px solid transparent;
   color: #94a3b8;
-  font-size: 0.82rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  padding: 0.4rem 0.9rem;
+  padding: 0.25rem 0.65rem;
   border-radius: 999px;
   transition: all 0.2s ease;
   cursor: pointer;
@@ -12940,16 +12940,16 @@ nav.module-tabs {
   color: #0f172a;
   background: #facc15;
   font-weight: 700;
-  box-shadow: 0 4px 14px rgba(234, 179, 8, 0.35);
+  box-shadow: 0 2px 10px rgba(234, 179, 8, 0.35);
 }
 
 .dash-period-select {
   background: rgba(15, 23, 42, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.12);
   color: #e2e8f0;
-  font-size: 0.8rem;
-  padding: 0.38rem 0.85rem;
-  border-radius: 0.6rem;
+  font-size: 0.75rem;
+  padding: 0.22rem 0.6rem;
+  border-radius: 0.45rem;
   outline: none;
 }
 
@@ -12957,22 +12957,21 @@ nav.module-tabs {
 .dash-kpi-grid {
   display: grid;
   grid-template-columns: repeat(8, minmax(0, 1fr));
-  gap: 0.55rem;
-  margin-bottom: 0.5rem;
+  gap: 0.4rem;
+  margin-bottom: 0;
 }
 
 @media (max-width: 1200px) {
   .dash-kpi-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 0.6rem;
-    margin-bottom: 0.5rem;
+    gap: 0.45rem;
   }
 }
 
 @media (max-width: 640px) {
   .dash-kpi-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.5rem;
+    gap: 0.35rem;
   }
 }
 
@@ -12980,13 +12979,13 @@ nav.module-tabs {
   position: relative;
   background: linear-gradient(155deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.75) 100%);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 0.85rem;
-  padding: 0.85rem 0.75rem 0.75rem;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  border-radius: 0.65rem;
+  padding: 0.45rem 0.55rem 0.45rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 98px;
+  min-height: 64px;
   min-width: 0;
   transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
   cursor: pointer;
@@ -13004,21 +13003,21 @@ nav.module-tabs {
 }
 
 .dash-kpi-card:hover {
-  transform: translateY(-3px);
+  transform: translateY(-2px);
   border-color: rgba(56, 189, 248, 0.4);
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.35), 0 0 20px rgba(56, 189, 248, 0.12);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3), 0 0 14px rgba(56, 189, 248, 0.12);
 }
 
 .dash-kpi-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.35rem;
-  margin-bottom: 0.5rem;
+  gap: 0.25rem;
+  margin-bottom: 0.2rem;
 }
 
 .dash-kpi-label {
-  font-size: 0.72rem;
+  font-size: 0.65rem;
   font-weight: 600;
   color: #94a3b8;
   letter-spacing: 0.02em;
@@ -13029,13 +13028,13 @@ nav.module-tabs {
 }
 
 .dash-icon-box {
-  width: 28px;
-  height: 28px;
-  border-radius: 0.5rem;
+  width: 22px;
+  height: 22px;
+  border-radius: 0.35rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.85rem;
+  font-size: 0.72rem;
   flex-shrink: 0;
 }
 
@@ -13091,13 +13090,13 @@ nav.module-tabs {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 0.35rem;
+  gap: 0.25rem;
   margin-top: auto;
   min-width: 0;
 }
 
 .dash-kpi-value {
-  font-size: 1.55rem;
+  font-size: 1.18rem;
   font-weight: 800;
   color: #f8fafc;
   line-height: 1;
@@ -13111,11 +13110,11 @@ nav.module-tabs {
 .dash-kpi-trend {
   display: inline-flex;
   align-items: center;
-  gap: 0.2rem;
-  font-size: 0.68rem;
+  gap: 0.15rem;
+  font-size: 0.6rem;
   font-weight: 600;
-  padding: 0.15rem 0.35rem;
-  border-radius: 4px;
+  padding: 0.08rem 0.25rem;
+  border-radius: 3px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -13141,17 +13140,17 @@ nav.module-tabs {
 }
 
 .dash-kpi-sparkline {
-  height: 24px;
-  width: 58px;
+  height: 18px;
+  width: 45px;
 }
 
 /* 3. Analytical Charts Cards */
 .dash-card {
   background: linear-gradient(145deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 1.15rem;
-  padding: 1.35rem 1.5rem;
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.28);
+  border-radius: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -13161,12 +13160,12 @@ nav.module-tabs {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 0.75rem;
-  margin-bottom: 1.25rem;
+  gap: 0.5rem;
+  margin-bottom: 0.45rem;
 }
 
 .dash-card-title {
-  font-size: 1.05rem;
+  font-size: 0.88rem;
   font-weight: 700;
   color: #f8fafc;
   margin: 0;
@@ -13176,20 +13175,20 @@ nav.module-tabs {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.85rem;
-  font-size: 0.76rem;
+  gap: 0.5rem;
+  font-size: 0.68rem;
   color: #cbd5e1;
 }
 
 .dash-legend-item {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.25rem;
 }
 
 .dash-legend-dot {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
 }
 
@@ -13198,37 +13197,37 @@ nav.module-tabs {
   display: flex;
   flex-direction: column;
   flex: 1;
-  min-height: 300px;
+  min-height: 140px;
   justify-content: space-between;
 }
 
 .dash-chart-summary-bar {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0.75rem;
-  margin-top: 1rem;
-  padding-top: 0.9rem;
+  gap: 0.4rem;
+  margin-top: 0.35rem;
+  padding-top: 0.35rem;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .dash-chart-summary-item {
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.04);
-  border-radius: 0.55rem;
-  padding: 0.5rem 0.75rem;
+  border-radius: 0.4rem;
+  padding: 0.25rem 0.45rem;
   text-align: center;
 }
 
 .dash-chart-summary-label {
-  font-size: 0.68rem;
+  font-size: 0.6rem;
   color: #94a3b8;
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  margin-bottom: 0.15rem;
+  margin-bottom: 0.05rem;
 }
 
 .dash-chart-summary-val {
-  font-size: 0.92rem;
+  font-size: 0.78rem;
   font-weight: 700;
   color: #f8fafc;
 }
@@ -13236,9 +13235,9 @@ nav.module-tabs {
 /* Donut Chart and List Layout */
 .dash-donut-wrap {
   position: relative;
-  width: 160px;
-  height: 160px;
-  margin: 0.25rem auto 1rem;
+  width: 95px;
+  height: 95px;
+  margin: 0.1rem auto 0.35rem;
 }
 
 .dash-donut-center {
@@ -13251,14 +13250,14 @@ nav.module-tabs {
 }
 
 .dash-donut-center-val {
-  font-size: 1.45rem;
+  font-size: 1.05rem;
   font-weight: 800;
   color: #f8fafc;
   line-height: 1;
 }
 
 .dash-donut-center-lbl {
-  font-size: 0.68rem;
+  font-size: 0.58rem;
   color: #94a3b8;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -13267,15 +13266,15 @@ nav.module-tabs {
 .dash-church-list {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.2rem;
   width: 100%;
-  max-height: 250px;
+  max-height: 110px;
   overflow-y: auto;
-  padding-right: 4px;
+  padding-right: 3px;
 }
 
 .dash-church-list::-webkit-scrollbar {
-  width: 4px;
+  width: 3px;
 }
 
 .dash-church-list::-webkit-scrollbar-track {
@@ -13284,18 +13283,18 @@ nav.module-tabs {
 
 .dash-church-list::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.15);
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
 .dash-church-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.42rem 0.65rem;
-  border-radius: 0.45rem;
+  padding: 0.2rem 0.45rem;
+  border-radius: 0.35rem;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.04);
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   transition: background 0.15s ease;
 }
 
@@ -13307,7 +13306,7 @@ nav.module-tabs {
 .dash-dept-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 0.85rem;
+  gap: 0.45rem;
 }
 
 @media (max-width: 1100px) {
@@ -13325,14 +13324,14 @@ nav.module-tabs {
 .dash-dept-card {
   background: rgba(15, 23, 42, 0.75);
   border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 0.85rem;
-  padding: 1rem 0.85rem;
+  border-radius: 0.65rem;
+  padding: 0.4rem 0.45rem;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.45rem;
+  gap: 0.2rem;
   transition: all 0.2s ease;
   cursor: pointer;
 }
@@ -13344,21 +13343,21 @@ nav.module-tabs {
 }
 
 .dash-dept-name {
-  font-size: 0.78rem;
+  font-size: 0.7rem;
   font-weight: 600;
   color: #cbd5e1;
 }
 
 .dash-dept-stat {
-  font-size: 0.95rem;
+  font-size: 0.82rem;
   font-weight: 800;
   color: #f8fafc;
 }
 
 .dash-dept-tag {
-  font-size: 0.65rem;
+  font-size: 0.58rem;
   color: #94a3b8;
-  padding: 0.15rem 0.45rem;
+  padding: 0.08rem 0.35rem;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.04);
 }

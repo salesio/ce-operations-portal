@@ -16851,7 +16851,7 @@ function renderDashboard() {
 
     return `
       <div class="dash-donut-wrap">
-        <svg viewBox="0 0 100 100" width="170" height="170" style="${totalRealMembers > 0 ? "transform: rotate(-90deg);" : ""}">
+        <svg viewBox="0 0 100 100" width="95" height="95" style="${totalRealMembers > 0 ? "transform: rotate(-90deg);" : ""}">
           ${circles}
         </svg>
         <div class="dash-donut-center">
@@ -17343,19 +17343,19 @@ function renderDashboard() {
     // Default Overview View (Visão Geral)
     return `
       <!-- 2. Top 8 High-Impact KPI Metric Cards Grid -->
-      <div class="mb-4">
+      <div class="mb-2">
         ${renderKpiGrid()}
       </div>
 
       <!-- 3. Analytical Charts Row (2 Columns: Contribuições & Membros por Igreja) -->
-      <div class="row g-3 mb-4">
+      <div class="row g-2 mb-2">
         <!-- Left: Financial Breakdown Chart (65%) -->
         <div class="col-lg-7 col-xl-8">
           <div class="dash-card">
             <div class="dash-card-head">
               <div>
                 <h3 class="dash-card-title">${isPt ? "Contribuições (MTn)" : "Giving Evolution (MTn)"}</h3>
-                <span class="text-secondary small">${isPt ? "Evolução mensal detalhada por categoria" : "Monthly breakdown by giving stream"}</span>
+                <span class="text-secondary" style="font-size: 0.68rem;">${isPt ? "Evolução mensal detalhada por categoria" : "Monthly breakdown by giving stream"}</span>
               </div>
               <div class="dash-legend-group">
                 <div class="dash-legend-item"><span class="dash-legend-dot" style="background: #facc15;"></span>${isPt ? "Dízimos" : "Tithes"}</div>
@@ -17365,9 +17365,9 @@ function renderDashboard() {
               </div>
             </div>
 
-            <!-- Glowing Multi-Month Financial SVG Chart with Full Height Scaling -->
+            <!-- Glowing Multi-Month Financial SVG Chart with Compact Height Scaling -->
             <div class="dash-chart-flex">
-              <svg viewBox="0 0 740 320" width="100%" height="100%" style="overflow: visible; min-height: 270px;">
+              <svg viewBox="0 0 740 185" width="100%" height="100%" style="overflow: visible; min-height: 120px; max-height: 135px;">
                 <defs>
                   <linearGradient id="barGradGold" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stop-color="#fde047" stop-opacity="1"/>
@@ -17388,25 +17388,25 @@ function renderDashboard() {
                 </defs>
 
                 <!-- Gridlines & Y-Axis Labels -->
-                <line x1="65" y1="35" x2="720" y2="35" stroke="rgba(255,255,255,0.06)" stroke-dasharray="4,4" />
-                <text x="55" y="39" fill="#94a3b8" font-size="11" font-family="monospace" text-anchor="end">${typeof moneyCompact === "function" ? moneyCompact(maxMonthVal) : maxMonthVal}</text>
+                <line x1="60" y1="18" x2="720" y2="18" stroke="rgba(255,255,255,0.06)" stroke-dasharray="4,4" />
+                <text x="52" y="21" fill="#94a3b8" font-size="9" font-family="monospace" text-anchor="end">${typeof moneyCompact === "function" ? moneyCompact(maxMonthVal) : maxMonthVal}</text>
 
-                <line x1="65" y1="95" x2="720" y2="95" stroke="rgba(255,255,255,0.06)" stroke-dasharray="4,4" />
-                <text x="55" y="99" fill="#64748b" font-size="11" font-family="monospace" text-anchor="end">${typeof moneyCompact === "function" ? moneyCompact(Math.round(maxMonthVal * 0.75)) : Math.round(maxMonthVal * 0.75)}</text>
+                <line x1="60" y1="58" x2="720" y2="58" stroke="rgba(255,255,255,0.06)" stroke-dasharray="4,4" />
+                <text x="52" y="61" fill="#64748b" font-size="9" font-family="monospace" text-anchor="end">${typeof moneyCompact === "function" ? moneyCompact(Math.round(maxMonthVal * 0.75)) : Math.round(maxMonthVal * 0.75)}</text>
 
-                <line x1="65" y1="155" x2="720" y2="155" stroke="rgba(255,255,255,0.06)" stroke-dasharray="4,4" />
-                <text x="55" y="159" fill="#64748b" font-size="11" font-family="monospace" text-anchor="end">${typeof moneyCompact === "function" ? moneyCompact(Math.round(maxMonthVal * 0.50)) : Math.round(maxMonthVal * 0.50)}</text>
+                <line x1="60" y1="98" x2="720" y2="98" stroke="rgba(255,255,255,0.06)" stroke-dasharray="4,4" />
+                <text x="52" y="101" fill="#64748b" font-size="9" font-family="monospace" text-anchor="end">${typeof moneyCompact === "function" ? moneyCompact(Math.round(maxMonthVal * 0.50)) : Math.round(maxMonthVal * 0.50)}</text>
 
-                <line x1="65" y1="215" x2="720" y2="215" stroke="rgba(255,255,255,0.06)" stroke-dasharray="4,4" />
-                <text x="55" y="219" fill="#64748b" font-size="11" font-family="monospace" text-anchor="end">${typeof moneyCompact === "function" ? moneyCompact(Math.round(maxMonthVal * 0.25)) : Math.round(maxMonthVal * 0.25)}</text>
+                <line x1="60" y1="138" x2="720" y2="138" stroke="rgba(255,255,255,0.06)" stroke-dasharray="4,4" />
+                <text x="52" y="141" fill="#64748b" font-size="9" font-family="monospace" text-anchor="end">${typeof moneyCompact === "function" ? moneyCompact(Math.round(maxMonthVal * 0.25)) : Math.round(maxMonthVal * 0.25)}</text>
 
-                <line x1="65" y1="275" x2="720" y2="275" stroke="rgba(255,255,255,0.12)" />
-                <text x="55" y="279" fill="#64748b" font-size="11" font-family="monospace" text-anchor="end">0</text>
+                <line x1="60" y1="158" x2="720" y2="158" stroke="rgba(255,255,255,0.12)" />
+                <text x="52" y="161" fill="#64748b" font-size="9" font-family="monospace" text-anchor="end">0</text>
 
                 <!-- Render dynamic columns for each month -->
                 ${[0, 1, 2, 3, 4, 5].map((i) => {
                   const centerX = 115 + (i * 115);
-                  const scaleH = (v) => (v > 0 ? Math.max(6, Math.round((v / maxMonthVal) * 235)) : 2);
+                  const scaleH = (v) => (v > 0 ? Math.max(4, Math.round((v / maxMonthVal) * 135)) : 2);
                   const hT = scaleH(streamMap.tithes[i]);
                   const hO = scaleH(streamMap.offerings[i]);
                   const hP = scaleH(streamMap.partnerships[i]);
@@ -17415,12 +17415,12 @@ function renderDashboard() {
 
                   return `
                     <g class="chart-col">
-                      <rect x="${centerX - 34}" y="${275 - hT}" width="15" height="${hT}" rx="4" fill="url(#barGradGold)" opacity="${streamMap.tithes[i] > 0 ? "1" : "0.25"}"><title>${monthLabels[i]} Dízimos: ${streamMap.tithes[i]} MTn</title></rect>
-                      <rect x="${centerX - 16}" y="${275 - hO}" width="15" height="${hO}" rx="4" fill="url(#barGradSky)" opacity="${streamMap.offerings[i] > 0 ? "1" : "0.25"}"><title>${monthLabels[i]} Ofertas: ${streamMap.offerings[i]} MTn</title></rect>
-                      <rect x="${centerX + 2}" y="${275 - hP}" width="15" height="${hP}" rx="4" fill="url(#barGradPurple)" opacity="${streamMap.partnerships[i] > 0 ? "1" : "0.25"}"><title>${monthLabels[i]} Parcerias: ${streamMap.partnerships[i]} MTn</title></rect>
-                      <rect x="${centerX + 20}" y="${275 - hOt}" width="15" height="${hOt}" rx="4" fill="url(#barGradGreen)" opacity="${streamMap.others[i] > 0 ? "1" : "0.25"}"><title>${monthLabels[i]} Outros: ${streamMap.others[i]} MTn</title></rect>
-                      ${isCurrent ? `<rect x="${centerX - 24}" y="288" width="48" height="20" rx="10" fill="rgba(250, 204, 21, 0.12)" stroke="rgba(250, 204, 21, 0.3)" />` : ""}
-                      <text x="${centerX}" y="303" fill="${isCurrent ? "#facc15" : "#94a3b8"}" font-size="12" font-weight="${isCurrent ? "700" : "600"}" text-anchor="middle">${monthLabels[i]}</text>
+                      <rect x="${centerX - 30}" y="${158 - hT}" width="13" height="${hT}" rx="3" fill="url(#barGradGold)" opacity="${streamMap.tithes[i] > 0 ? "1" : "0.25"}"><title>${monthLabels[i]} Dízimos: ${streamMap.tithes[i]} MTn</title></rect>
+                      <rect x="${centerX - 14}" y="${158 - hO}" width="13" height="${hO}" rx="3" fill="url(#barGradSky)" opacity="${streamMap.offerings[i] > 0 ? "1" : "0.25"}"><title>${monthLabels[i]} Ofertas: ${streamMap.offerings[i]} MTn</title></rect>
+                      <rect x="${centerX + 2}" y="${158 - hP}" width="13" height="${hP}" rx="3" fill="url(#barGradPurple)" opacity="${streamMap.partnerships[i] > 0 ? "1" : "0.25"}"><title>${monthLabels[i]} Parcerias: ${streamMap.partnerships[i]} MTn</title></rect>
+                      <rect x="${centerX + 18}" y="${158 - hOt}" width="13" height="${hOt}" rx="3" fill="url(#barGradGreen)" opacity="${streamMap.others[i] > 0 ? "1" : "0.25"}"><title>${monthLabels[i]} Outros: ${streamMap.others[i]} MTn</title></rect>
+                      ${isCurrent ? `<rect x="${centerX - 22}" y="166" width="44" height="16" rx="8" fill="rgba(250, 204, 21, 0.12)" stroke="rgba(250, 204, 21, 0.3)" />` : ""}
+                      <text x="${centerX}" y="178" fill="${isCurrent ? "#facc15" : "#94a3b8"}" font-size="10" font-weight="${isCurrent ? "700" : "600"}" text-anchor="middle">${monthLabels[i]}</text>
                     </g>
                   `;
                 }).join("")}
@@ -17451,9 +17451,9 @@ function renderDashboard() {
             <div class="dash-card-head">
               <div>
                 <h3 class="dash-card-title">${isPt ? "Membros por Igreja" : "Members by Church"}</h3>
-                <span class="text-secondary small">${isPt ? "Distribuição real de membros" : "Real member distribution"}</span>
+                <span class="text-secondary" style="font-size: 0.68rem;">${isPt ? "Distribuição real de membros" : "Real member distribution"}</span>
               </div>
-              <span class="badge" style="background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.25); font-size: 0.72rem;">${allChurchEntries.length} ${isPt ? "Igreja(s)" : "Church(es)"}</span>
+              <span class="badge" style="background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.25); font-size: 0.68rem;">${allChurchEntries.length} ${isPt ? "Igreja(s)" : "Church(es)"}</span>
             </div>
 
             <!-- Dynamic Donut Chart rendering all churches -->
@@ -17463,15 +17463,15 @@ function renderDashboard() {
       </div>
 
       <!-- 4. Resumo por Departamento Grid (6 Mini-Cards) -->
-      <div id="dash-dept-section" class="dash-card mb-4">
-        <div class="dash-card-head mb-3">
+      <div id="dash-dept-section" class="dash-card mb-2">
+        <div class="dash-card-head mb-2">
           <h3 class="dash-card-title"><i class="bi bi-grid-3x3-gap-fill me-2 text-warning"></i>${isPt ? "Resumo por Departamento" : "Department Summary"}</h3>
-          <button type="button" class="btn btn-link btn-sm text-decoration-none p-0" style="color: #38bdf8; font-size: 0.8rem;" onclick="window.switchDashboardSubTab('departments');">${isPt ? "Ver todos ›" : "View all ›"}</button>
+          <button type="button" class="btn btn-link btn-sm text-decoration-none p-0" style="color: #38bdf8; font-size: 0.75rem;" onclick="window.switchDashboardSubTab('departments');">${isPt ? "Ver todos ›" : "View all ›"}</button>
         </div>
         <div class="dash-dept-grid">
           <!-- 1: Pastoral Care -->
           <div class="dash-dept-card" onclick="window.switchDashboardSubTab('growth');">
-            <div class="dash-icon-box rose" style="width: 34px; height: 34px; font-size: 1rem;"><i class="bi bi-heart-pulse-fill"></i></div>
+            <div class="dash-icon-box rose"><i class="bi bi-heart-pulse-fill"></i></div>
             <div class="dash-dept-name">${isPt ? "Cuidados Pastorais" : "Pastoral Care"}</div>
             <div class="dash-dept-stat">${pendingFollowupsCount} ${isPt ? "Pendências" : "Pending"}</div>
             <span class="dash-dept-tag">${isPt ? "Acompanhamento" : "Follow-up"}</span>
@@ -17479,7 +17479,7 @@ function renderDashboard() {
 
           <!-- 2: Foundation School -->
           <div class="dash-dept-card" onclick="window.switchDashboardSubTab('growth');">
-            <div class="dash-icon-box cyan" style="width: 34px; height: 34px; font-size: 1rem;"><i class="bi bi-mortarboard-fill"></i></div>
+            <div class="dash-icon-box cyan"><i class="bi bi-mortarboard-fill"></i></div>
             <div class="dash-dept-name">Foundation School</div>
             <div class="dash-dept-stat">${fsActive} ${isPt ? "Ativos" : "Active"}</div>
             <span class="dash-dept-tag">${isPt ? "Em curso" : "In Progress"}</span>
@@ -17487,7 +17487,7 @@ function renderDashboard() {
 
           <!-- 3: Células & Liderança -->
           <div class="dash-dept-card" onclick="window.switchDashboardSubTab('departments');">
-            <div class="dash-icon-box green" style="width: 34px; height: 34px; font-size: 1rem;"><i class="bi bi-diagram-3-fill"></i></div>
+            <div class="dash-icon-box green"><i class="bi bi-diagram-3-fill"></i></div>
             <div class="dash-dept-name">${isPt ? "Células & Liderança" : "Cells & Leadership"}</div>
             <div class="dash-dept-stat" style="color: ${cellsMissingReportCount > 0 ? "#facc15" : "#34d399"};">${cellsMissingReportCount} ${isPt ? "Sem relatório" : "Missing rpt"}</div>
             <span class="dash-dept-tag" style="border: 1px solid rgba(234, 179, 8, 0.3); color: #facc15;">${cellsMissingReportCount > 0 ? (isPt ? "Atenção" : "Attention") : (isPt ? "Em dia" : "All set")}</span>
@@ -17495,7 +17495,7 @@ function renderDashboard() {
 
           <!-- 4: Mídia -->
           <div class="dash-dept-card" onclick="window.switchDashboardSubTab('departments');">
-            <div class="dash-icon-box sky" style="width: 34px; height: 34px; font-size: 1rem;"><i class="bi bi-camera-video-fill"></i></div>
+            <div class="dash-icon-box sky"><i class="bi bi-camera-video-fill"></i></div>
             <div class="dash-dept-name">${isPt ? "Mídia" : "Media"}</div>
             <div class="dash-dept-stat">3 ${isPt ? "Próx. cultos" : "Next services"}</div>
             <span class="dash-dept-tag">${isPt ? "Transmissão" : "Streaming"}</span>
@@ -17503,7 +17503,7 @@ function renderDashboard() {
 
           <!-- 5: Finanças -->
           <div class="dash-dept-card" onclick="window.switchDashboardSubTab('finance');">
-            <div class="dash-icon-box amber" style="width: 34px; height: 34px; font-size: 1rem;"><i class="bi bi-wallet-fill"></i></div>
+            <div class="dash-icon-box amber"><i class="bi bi-wallet-fill"></i></div>
             <div class="dash-dept-name">${isPt ? "Finanças" : "Finance"}</div>
             <div class="dash-dept-stat">${pendingReqs} ${isPt ? "Em aprovação" : "Approvals"}</div>
             <span class="dash-dept-tag">${isPt ? "Requisições" : "Requisitions"}</span>
@@ -17511,7 +17511,7 @@ function renderDashboard() {
 
           <!-- 6: Prisão -->
           <div class="dash-dept-card" onclick="window.switchDashboardSubTab('departments');">
-            <div class="dash-icon-box purple" style="width: 34px; height: 34px; font-size: 1rem;"><i class="bi bi-shield-check"></i></div>
+            <div class="dash-icon-box purple"><i class="bi bi-shield-check"></i></div>
             <div class="dash-dept-name">${isPt ? "Prisão" : "Prison Ministry"}</div>
             <div class="dash-dept-stat">2 ${isPt ? "Visitas" : "Visits"}</div>
             <span class="dash-dept-tag">${isPt ? "Esta semana" : "This week"}</span>
