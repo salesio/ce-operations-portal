@@ -13423,3 +13423,28 @@ nav.module-tabs {
   white-space: nowrap;
 }
 
+/* ==========================================================================
+   Smooth Count-Up & Tabular Number Typography
+   ========================================================================== */
+.dash-kpi-value,
+.dash-donut-center-val,
+.summary-card-value,
+.metric-value,
+.dash-dept-stat,
+.dash-chart-summary-val,
+.att-kpi-value,
+.cell-stat-value,
+.stat-card-value,
+.stat-value,
+.alec-kpi-val,
+.kpi-card h3,
+.kpi-value,
+.cell-summary-val,
+[data-countup] {
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+

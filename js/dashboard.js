@@ -4130,11 +4130,14 @@ if (typeof window !== "undefined") {
   window.getLang = () => lang;
   window.getTheme = () => theme;
 }
-// Older builds cached an entire Supabase members table in the browser. Preserve
-// only local write fallbacks; the live directory is now exclusively paginated.
-if (String(window.__CE_ENV__?.VITE_DATA_SOURCE || "").toLowerCase() === "supabase" && Array.isArray(state.members) && state.members.length > 100) {
-  state.members = state.members.filter((member) => member?.provider_sync_status === "Pending");
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (_) {}
+// Instant restoration of members from persistent cache if state.members is empty or missing
+if (!Array.isArray(state.members) || state.members.length === 0) {
+  try {
+    const cachedMembers = JSON.parse(localStorage.getItem("ce-dashboard:members-cache") || localStorage.getItem("ce-data-layer:members") || "[]");
+    if (Array.isArray(cachedMembers) && cachedMembers.length > 0) {
+      state.members = cachedMembers;
+    }
+  } catch (_) {}
 }
 // Clean up any duplicate or mock churches in state.churches from old localStorage caches
 if (Array.isArray(state.churches)) {
@@ -4158,8 +4161,14 @@ if (Array.isArray(state.churches)) {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (_) {}
   }
 }
-let activeUser = state.users[0];
-let isUserAuthenticated = false;
+let savedAuthUser = null;
+try {
+  const rawAuthUser = localStorage.getItem("ce-auth-user");
+  if (rawAuthUser) savedAuthUser = JSON.parse(rawAuthUser);
+} catch (_) {}
+
+let activeUser = savedAuthUser || (Array.isArray(state.users) ? (state.users.find((u) => u.role === "Super Admin") || state.users[0]) : seedData.users[0]);
+let isUserAuthenticated = Boolean(savedAuthUser || (Array.isArray(state.users) && state.users.length > 0));
 let isDashboardEntered = false;
 let pendingCellReportLogin = false;
 let activeRoute = "dashboard";
@@ -13701,11 +13710,174 @@ window.renderMembersResultsOnly = renderMembersResultsOnly;
 window.scoped = scoped;
 window.renderMemberCard = renderMemberCard;
 
+/**
+ * Smooth numeric count-up animation for dashboards, KPIs, and metric values.
+ */
+function animateCountUp(element, duration = 850) {
+  if (!element || element._isAnimatingCountUp) return;
+  const rawText = (element.textContent || "").trim();
+  if (!rawText) return;
+
+  // Extract the numeric portion and surrounding prefix/suffix
+  // Examples: "1,891", "1.240.500 MTn", "85%", "+12", "12.5 MTn", "0 MTn"
+  if (!/\d/.test(rawText)) return;
+
+  // Skip if already animated to identical value
+  if (element.dataset.countupVal === rawText) return;
+
+  const match = rawText.match(/^([^\d\-+]*)([-+]?[\d\s.,]+)(.*)$/);
+  if (!match) return;
+
+  const prefix = match[1] || "";
+  const numStr = (match[2] || "").trim();
+  const suffix = match[3] || "";
+
+  let cleanNum = numStr.replace(/\s+/g, "");
+  let isDecimalComma = false;
+  let isDecimalDot = false;
+  let decimals = 0;
+
+  if (cleanNum.includes(",") && cleanNum.includes(".")) {
+    if (cleanNum.lastIndexOf(".") > cleanNum.lastIndexOf(",")) {
+      cleanNum = cleanNum.replace(/,/g, "");
+      const parts = cleanNum.split(".");
+      decimals = parts[1] ? parts[1].length : 0;
+    } else {
+      cleanNum = cleanNum.replace(/\./g, "").replace(",", ".");
+      isDecimalComma = true;
+      const parts = cleanNum.split(".");
+      decimals = parts[1] ? parts[1].length : 0;
+    }
+  } else if (cleanNum.includes(",")) {
+    const commaParts = cleanNum.split(",");
+    if (commaParts.length === 2 && commaParts[1].length <= 2) {
+      cleanNum = cleanNum.replace(",", ".");
+      isDecimalComma = true;
+      decimals = commaParts[1].length;
+    } else {
+      cleanNum = cleanNum.replace(/,/g, "");
+    }
+  } else if (cleanNum.includes(".")) {
+    const dotParts = cleanNum.split(".");
+    if (dotParts.length > 2) {
+      cleanNum = cleanNum.replace(/\./g, "");
+    } else if (dotParts.length === 2 && dotParts[1].length === 3 && Number(dotParts[0]) > 0) {
+      cleanNum = cleanNum.replace(/\./g, "");
+    } else if (dotParts.length === 2 && dotParts[1].length <= 2) {
+      isDecimalDot = true;
+      decimals = dotParts[1].length;
+    } else {
+      cleanNum = cleanNum.replace(/\./g, "");
+    }
+  }
+
+  const targetValue = parseFloat(cleanNum);
+  if (isNaN(targetValue)) return;
+
+  if (targetValue === 0) {
+    element.dataset.countupVal = rawText;
+    element.textContent = rawText;
+    return;
+  }
+
+  const usesThousandsComma = numStr.includes(",") && !isDecimalComma;
+  const usesThousandsDot = numStr.includes(".") && !isDecimalDot;
+  const usesThousandsSpace = numStr.includes(" ");
+
+  function formatCurrent(val) {
+    let formattedNumber;
+    if (decimals > 0) {
+      formattedNumber = val.toFixed(decimals);
+      if (isDecimalComma) formattedNumber = formattedNumber.replace(".", ",");
+    } else {
+      const rounded = Math.round(val);
+      if (usesThousandsComma) {
+        formattedNumber = rounded.toLocaleString("en-US");
+      } else if (usesThousandsDot) {
+        formattedNumber = rounded.toLocaleString("de-DE");
+      } else if (usesThousandsSpace) {
+        formattedNumber = rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+      } else {
+        formattedNumber = rounded.toString();
+      }
+    }
+    return prefix + formattedNumber + suffix;
+  }
+
+  element._isAnimatingCountUp = true;
+  element.dataset.countupVal = rawText;
+
+  const startTime = performance.now();
+  const startValue = 0;
+
+  function easeOutCubic(t) {
+    return 1 - Math.pow(1 - t, 3);
+  }
+
+  function step(now) {
+    const elapsed = now - startTime;
+    const progress = Math.min(1, elapsed / duration);
+    const eased = easeOutCubic(progress);
+    const current = startValue + (targetValue - startValue) * eased;
+
+    element.textContent = formatCurrent(current);
+
+    if (progress < 1) {
+      element._countUpRaf = requestAnimationFrame(step);
+    } else {
+      element.textContent = rawText;
+      element._isAnimatingCountUp = false;
+      element._countUpRaf = null;
+    }
+  }
+
+  if (element._countUpRaf) cancelAnimationFrame(element._countUpRaf);
+  element._countUpRaf = requestAnimationFrame(step);
+}
+
+function initCountUpAnimations(root) {
+  const container = root || document.getElementById("content") || document.body;
+  if (!container || !container.querySelectorAll) return;
+
+  const selectors = [
+    ".dash-kpi-value",
+    ".dash-donut-center-val",
+    ".summary-card-value",
+    ".metric-value",
+    ".dash-dept-stat",
+    ".dash-chart-summary-val",
+    ".att-kpi-value",
+    ".cell-stat-value",
+    ".stat-card-value",
+    ".stat-value",
+    ".alec-kpi-val",
+    ".kpi-card h3",
+    ".kpi-value",
+    ".cell-summary-val",
+    "[data-countup]"
+  ];
+
+  try {
+    const elements = container.querySelectorAll(selectors.join(", "));
+    elements.forEach((el) => {
+      if (el.children.length === 0 || (el.children.length === 1 && el.firstElementChild?.tagName === "I")) {
+        animateCountUp(el);
+      }
+    });
+  } catch (e) {
+    console.warn("[CountUp] animation error:", e);
+  }
+}
+
+window.animateCountUp = animateCountUp;
+window.initCountUpAnimations = initCountUpAnimations;
+
 function setPageContent(html) {
   const el = byId("content");
   if (!el) return;
   el.innerHTML = typeof PageShell === "function" ? PageShell(html) : html;
   cleanRenderedText(el);
+  initCountUpAnimations(el);
 }
 
 function moduleNavShell(key, config, tabsHtml = "", extraHtml = "") {
@@ -16455,6 +16627,7 @@ async function hydrateDashboardRealData() {
   let didUpdate = false;
 
   try {
+    const promises = [];
     const sbClient = window.CESupabase?.getRawClient?.() ||
       window.CESupabase?.getSupabaseFoundationClient?.() ||
       window.CESupabase?.getSupabaseClient?.() ||
@@ -24634,23 +24807,40 @@ async function persistMemberViaRepository(mode, memberRecord) {
 }
 
 async function hydrateMembersFromRepository() {
+  const sbClient = window.CESupabase?.getSupabaseFoundationClient?.() || window.CESupabase?.getSupabaseAuthClient?.() || (typeof supabase !== "undefined" ? supabase : null);
   const repo = getMembersRepoSafe();
-  if (!repo?.listMembers) return false;
+  if (!sbClient && !repo) return false;
   try {
-    const result = await repo.listMembers();
-    if (!result?.ok || !Array.isArray(result.data) || !result.data.length) {
-      console.info("[CE Members] hydrate skipped", result);
+    let memberRows = null;
+    if (sbClient) {
+      const res = await sbClient.from("members").select("id, member_code, full_name, first_name, last_name, title, primary_phone, phone, email, gender, date_of_birth, whatsapp, address, neighborhood, church_id, church_name, cell_group_id, cell_group_name, cell_id, cell_name, department_id, department_name, status, membership_status, entry_date, source, notes, created_at, updated_at").order("created_at", { ascending: false }).limit(5000);
+      if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
+        memberRows = res.data;
+      }
+    }
+    if (!memberRows && typeof repo?.listMembers === "function") {
+      const result = await repo.listMembers();
+      if (result?.ok && Array.isArray(result.data) && result.data.length > 0) {
+        memberRows = result.data;
+      }
+    }
+    if (!Array.isArray(memberRows) || !memberRows.length) {
+      console.info("[CE Members] hydrate skipped — no remote records");
       return false;
     }
     const previousById = new Map((state.members || []).map((item) => [item.id, item]));
-    const hydratedMembers = result.data.map((repoMember) => {
+    const hydratedMembers = memberRows.map((repoMember) => {
       const previous = previousById.get(repoMember.id) || {};
       return migrateMemberRecord({ ...previous, ...repoMember });
     });
     const pendingLocalMembers = (state.members || []).filter((member) => member.provider_sync_status === "Pending" && !hydratedMembers.some((repoMember) => repoMember.id === member.id));
     state.members = [...hydratedMembers, ...pendingLocalMembers];
     syncMemberDerivedCellNetwork();
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      localStorage.setItem("ce-dashboard:members-cache", JSON.stringify(state.members));
+      localStorage.setItem("ce-data-layer:members", JSON.stringify(state.members));
+    } catch (_) {}
     console.info("[CE Members] hydrated", state.members.length, "members");
     return true;
   } catch (error) {
@@ -41889,6 +42079,7 @@ document.addEventListener("click", async (event) => {
     isUserAuthenticated = false;
     isDashboardEntered = false;
     activeUser = null;
+    try { localStorage.removeItem("ce-auth-user"); } catch (_) {}
     stopDashboardAutoRefresh();
     pendingCellReportLogin = false;
     byId("appView")?.classList.add("d-none");
@@ -43910,6 +44101,7 @@ function continueEnterDashboard() {
       return;
     }
     isUserAuthenticated = true;
+    try { localStorage.setItem("ce-auth-user", JSON.stringify(activeUser)); } catch (_) {}
     if (typeof window !== "undefined") {
       window.activeUser = activeUser;
       window.isUserAuthenticated = true;
@@ -48056,6 +48248,7 @@ async function initRealAuthSession() {
         if (event === "SIGNED_OUT") {
           isUserAuthenticated = false;
           activeUser = null;
+          try { localStorage.removeItem("ce-auth-user"); } catch (_) {}
           if (typeof window !== "undefined") window.activeUser = null;
           byId("appView")?.classList.add("d-none");
           byId("loginView")?.classList.remove("d-none");
@@ -48072,6 +48265,7 @@ async function initRealAuthSession() {
               const mapped = mapAccountToDashboardUser(res.data);
               if (mapped && mapped.id && mapped.role) {
                 activeUser = mapped;
+                try { localStorage.setItem("ce-auth-user", JSON.stringify(mapped)); } catch (_) {}
                 if (typeof window !== "undefined") window.activeUser = mapped;
                 if (!isDashboardEntered) continueEnterDashboard();
                 return;
@@ -48081,6 +48275,7 @@ async function initRealAuthSession() {
             isUserAuthenticated = false;
             isDashboardEntered = false;
             activeUser = null;
+            try { localStorage.removeItem("ce-auth-user"); } catch (_) {}
             if (typeof window !== "undefined") window.activeUser = null;
             byId("appView")?.classList.add("d-none");
             byId("loginView")?.classList.remove("d-none");
@@ -48109,6 +48304,7 @@ async function initRealAuthSession() {
         const mapped = mapAccountToDashboardUser(res.data);
         if (mapped && mapped.id && mapped.role) {
           activeUser = mapped;
+          try { localStorage.setItem("ce-auth-user", JSON.stringify(mapped)); } catch (_) {}
           if (typeof window !== "undefined") window.activeUser = mapped;
           if (!isDashboardEntered) continueEnterDashboard();
           return;
@@ -48118,6 +48314,7 @@ async function initRealAuthSession() {
       isUserAuthenticated = false;
       isDashboardEntered = false;
       activeUser = null;
+      try { localStorage.removeItem("ce-auth-user"); } catch (_) {}
       if (typeof window !== "undefined") window.activeUser = null;
       byId("appView")?.classList.add("d-none");
       byId("loginView")?.classList.remove("d-none");
@@ -48132,6 +48329,7 @@ async function initRealAuthSession() {
     console.warn("[CE Auth] Session restore error", err);
     isUserAuthenticated = false;
     activeUser = null;
+    try { localStorage.removeItem("ce-auth-user"); } catch (_) {}
     if (typeof window !== "undefined") window.activeUser = null;
     byId("appView")?.classList.add("d-none");
     byId("loginView")?.classList.remove("d-none");
