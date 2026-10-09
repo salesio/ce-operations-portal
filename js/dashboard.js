@@ -11902,8 +11902,9 @@ function isCellLeaderOrAssistant(user = activeUser) {
 function roleWorkspaceRoutes(user = activeUser) {
   if (!user) return null;
   const role = String(user?.role || user?.role_name || "").toLowerCase().trim();
+  const userEmail = String(user?.email || "").toLowerCase().trim();
   const grants = user?.department_permissions || [];
-  const isSuper = grants.includes("*") || user.role === "Super Admin" || role.includes("super_admin") || role === "super admin";
+  const isSuper = grants.includes("*") || user?.role === "Super Admin" || role.includes("super_admin") || role === "super admin" || role === "main pastor" || userEmail === "admin@embaixadadecristo.org";
   if (isSuper) return null;
 
   const routes = [];
@@ -35784,7 +35785,8 @@ function renderUserForm(record = {}, modalMode = "create") {
   const deptPerms = new Set(Array.isArray(rawDept) ? rawDept : String(rawDept || "").split(",").map((s) => s.trim()).filter(Boolean));
 
   // Dynamic base role calculation
-  const currentRole = record.role || record.role_name || (cellId ? "Cell Leader" : (cellGroupId ? "Cell Group Leader" : (deptPerms.size ? "Department Head" : "Staff Member")));
+  const isSuperUser = (record.email && String(record.email).toLowerCase() === "admin@embaixadadecristo.org") || record.role === "Super Admin" || record.role_name === "Super Admin" || (deptPerms.has("*"));
+  const currentRole = isSuperUser ? "Super Admin" : (record.role || record.role_name || (cellId ? "Cell Leader" : (cellGroupId ? "Cell Group Leader" : (deptPerms.size ? "Department Head" : "Staff Member"))));
 
   // Real 18 groups from Supabase/Seed
   const groups = typeof getAllRegisteredCellGroups === "function" 
@@ -37599,11 +37601,15 @@ async function submitForm(form) {
     const churchId = data.church_id || activeUser?.church_id || "a1111111-1111-4111-8111-111111111101";
     const cellGroupId = data.cell_group_id || "";
     const cellId = data.cell_id || "";
-    const cannotCreateClasses = formData.has("cannot_create_classes");
-    const canViewAllChurches = formData.has("can_view_all_churches") || role === "Super Admin";
+    let effectiveRole = role;
+    if (email.toLowerCase() === "admin@embaixadadecristo.org" || role === "Super Admin") {
+      effectiveRole = "Super Admin";
+    }
+    const canViewAllChurches = formData.has("can_view_all_churches") || effectiveRole === "Super Admin";
     const status = data.status || "Active";
 
-    const departmentPermissions = (role === "Super Admin" && !checkedPerms.length) ? ["*"] : checkedPerms;
+    const departmentPermissions = (effectiveRole === "Super Admin") ? ["*"] : checkedPerms;
+    role = effectiveRole;
 
     let cellGroupName = "";
     if (cellGroupId) {

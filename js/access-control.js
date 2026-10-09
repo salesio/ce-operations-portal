@@ -809,7 +809,8 @@
     }
 
     const rNorm = String(user.role || user.role_name || "").trim().toLowerCase();
-    if ((user.department_permissions || []).includes("*") || user.role === "Super Admin" || rNorm === "super_admin" || rNorm === "super admin") {
+    const userEmail = String(user.email || "").trim().toLowerCase();
+    if ((user.department_permissions || []).includes("*") || user.role === "Super Admin" || rNorm === "super_admin" || rNorm === "super admin" || rNorm === "main pastor" || userEmail === "admin@embaixadadecristo.org") {
       return { module, ...FULL_ACCESS, can_view_salary: true, can_review: true, can_forward: true, can_register_inventory: true };
     }
 
