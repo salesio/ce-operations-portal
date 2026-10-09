@@ -1,0 +1,56 @@
+name: Deploy to Production VPS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: vps-production-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Sync to Contabo VPS
+    runs-on: ubuntu-latest
+    if: "${{ secrets.VPS_HOST != '' && secrets.VPS_SSH_KEY != '' }}"
+
+    steps:
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER || 'root' }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 22
+          script_stop: true
+          script: |
+            echo "🚀 Iniciando atualização no VPS..."
+            
+            # 1. Configurar diretório seguro do Git
+            git config --global --add safe.directory /var/www/ce-portal
+            
+            # 2. Atualizar o Portal de Operações
+            cd /var/www/ce-portal
+            git fetch origin main
+            git reset --hard origin/main
+            
+            # 3. Garantir configuração do Supabase Self-Hosted
+            if [ -f /opt/supabase/.env ]; then
+              ANON_KEY=$(grep -E "^ANON_KEY=" /opt/supabase/.env | cut -d '=' -f2-)
+              cat <<EOF > /var/www/ce-portal/js/runtime-config.js
+            window.__CE_ENV__ = Object.assign(window.__CE_ENV__ || {}, {
+              VITE_DATA_SOURCE: "supabase",
+              VITE_ENABLE_SUPABASE: "true",
+              VITE_ENABLE_STORAGE: "true",
+              VITE_ENABLE_REAL_AUTH: "true",
+              VITE_SUPABASE_URL: "https://api.embaixadadecristo.org",
+              VITE_SUPABASE_ANON_KEY: "$ANON_KEY"
+            });
+            EOF
+            fi
+            
+            # 4. Ajustar permissões
+            chown -R www-data:www-data /var/www/ce-portal
+            
+            echo "✅ Deploy concluído com sucesso em https://portal.embaixadadecristo.org!"
