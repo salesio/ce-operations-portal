@@ -13266,7 +13266,7 @@ nav.module-tabs {
 }
 
 .dash-donut-wrap svg circle {
-  transition: stroke-dasharray 1.4s cubic-bezier(0.16, 1, 0.3, 1), stroke-dashoffset 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: stroke-dasharray 5s cubic-bezier(0.16, 1, 0.3, 1), stroke-dashoffset 5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .dash-sync-badge {

@@ -4131,11 +4131,14 @@ if (typeof window !== "undefined") {
   window.getTheme = () => theme;
 }
 // Instant restoration of members from persistent cache if state.members is empty or missing
-const KNOWN_SYSTEM_MEMBERS_TOTAL = 1222;
-if (typeof localStorage !== "undefined" && !localStorage.getItem("ce-dashboard:total-members-count")) {
-  try {
-    localStorage.setItem("ce-dashboard:total-members-count", String(KNOWN_SYSTEM_MEMBERS_TOTAL));
-  } catch (_) {}
+const KNOWN_SYSTEM_MEMBERS_TOTAL = 1891;
+if (typeof localStorage !== "undefined") {
+  const curTotal = Number(localStorage.getItem("ce-dashboard:total-members-count") || 0);
+  if (!curTotal || curTotal < KNOWN_SYSTEM_MEMBERS_TOTAL) {
+    try {
+      localStorage.setItem("ce-dashboard:total-members-count", String(KNOWN_SYSTEM_MEMBERS_TOTAL));
+    } catch (_) {}
+  }
 }
 if (!Array.isArray(state.members) || state.members.length === 0) {
   try {
@@ -13719,7 +13722,7 @@ window.renderMemberCard = renderMemberCard;
 /**
  * Smooth numeric count-up animation for dashboards, KPIs, and metric values.
  */
-function animateCountUp(element, duration = 850) {
+function animateCountUp(element, duration = 5000) {
   if (!element || element._isAnimatingCountUp) return;
   const rawText = (element.textContent || "").trim();
   if (!rawText) return;
@@ -13813,12 +13816,12 @@ function animateCountUp(element, duration = 850) {
   element._isAnimatingCountUp = true;
   element.dataset.countupVal = rawText;
 
-  const animDuration = element.classList.contains("dash-donut-center-val") ? Math.max(duration, 1400) : duration;
+  const animDuration = Number(element.dataset.duration) || duration || 5000;
   const startTime = performance.now();
   const startValue = 0;
 
   function easeOutCubic(t) {
-    return 1 - Math.pow(1 - t, 3);
+    return 1 - Math.pow(1 - t, 2.4);
   }
 
   function step(now) {
