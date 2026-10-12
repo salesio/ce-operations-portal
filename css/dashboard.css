@@ -12829,9 +12829,9 @@ nav.module-tabs {
   position: relative;
   background: radial-gradient(circle at top right, rgba(30, 58, 138, 0.4) 0%, rgba(15, 23, 42, 0.95) 70%), linear-gradient(135deg, #0b1329 0%, #0f172a 100%);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 1.15rem;
-  padding: 1.15rem 1.6rem;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.32);
+  border-radius: 0.85rem;
+  padding: 0.55rem 1.35rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
   overflow: hidden;
 }
 
@@ -12840,8 +12840,8 @@ nav.module-tabs {
   position: absolute;
   top: -50%;
   right: -20%;
-  width: 360px;
-  height: 360px;
+  width: 300px;
+  height: 300px;
   background: radial-gradient(circle, rgba(56, 189, 248, 0.12) 0%, transparent 70%);
   pointer-events: none;
 }
@@ -12849,43 +12849,45 @@ nav.module-tabs {
 .dash-hero-tag {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  font-size: 0.68rem;
+  gap: 0.3rem;
+  font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #facc15;
   background: rgba(234, 179, 8, 0.1);
   border: 1px solid rgba(234, 179, 8, 0.25);
-  padding: 0.18rem 0.6rem;
+  padding: 0.12rem 0.5rem;
   border-radius: 999px;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.15rem;
 }
 
 .dash-hero-title {
-  font-size: 1.6rem;
+  font-size: 1.25rem;
   font-weight: 800;
   letter-spacing: -0.02em;
   color: #f8fafc;
-  margin-bottom: 0.2rem;
+  margin-bottom: 0.1rem;
+  line-height: 1.2;
 }
 
 .dash-hero-subtitle {
-  font-size: 0.88rem;
+  font-size: 0.78rem;
   color: #94a3b8;
   margin-bottom: 0;
+  line-height: 1.2;
 }
 
 .dash-date-pill {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.4rem;
   background: rgba(15, 23, 42, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.12);
   color: #e2e8f0;
-  padding: 0.38rem 0.85rem;
+  padding: 0.25rem 0.65rem;
   border-radius: 999px;
-  font-size: 0.82rem;
+  font-size: 0.76rem;
   font-weight: 500;
   backdrop-filter: blur(10px);
 }
@@ -12896,12 +12898,12 @@ nav.module-tabs {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 0.65rem;
-  padding: 0.35rem 0.55rem;
+  gap: 0.5rem;
+  padding: 0.28rem 0.5rem;
   background: rgba(15, 23, 42, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 0.75rem;
-  margin-bottom: 0.85rem;
+  margin-bottom: 0.5rem;
 }
 
 /* Dynamic Subtab View Container */
