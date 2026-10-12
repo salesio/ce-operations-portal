@@ -8,6 +8,92 @@ const SIDEBAR_GROUPS_KEY = "ce-dashboard-sidebar-groups";
 const MODULE_NAV_KEY = "ce-dashboard-module-nav";
 const SIDEBAR_COLLAPSED_KEY = "ce-dashboard-sidebar-collapsed";
 
+// Immediate storage hygiene & quota relief to ensure quota errors never occur
+(function cleanupStorageQuota() {
+  if (typeof localStorage === "undefined") return;
+  try {
+    // 1. Remove duplicate members cache which wastes 1.5MB - 2MB
+    localStorage.removeItem("ce-data-layer:members");
+
+    // 2. Prune STORAGE_KEY if it exists and is bulky (> 300KB)
+    const rawState = localStorage.getItem(STORAGE_KEY);
+    if (rawState && rawState.length > 300000) {
+      try {
+        const parsed = JSON.parse(rawState);
+        let modified = false;
+        if (Array.isArray(parsed.members) && parsed.members.length > 50) {
+          parsed.members = parsed.members.filter((m) => m && (m.provider_sync_status === "Pending" || String(m.id || "").startsWith("mem-local-"))).slice(0, 50);
+          modified = true;
+        }
+        if (Array.isArray(parsed.auditLogs) && parsed.auditLogs.length > 50) {
+          parsed.auditLogs = parsed.auditLogs.slice(-50);
+          modified = true;
+        }
+        if (Array.isArray(parsed.attendance) && parsed.attendance.length > 100) {
+          parsed.attendance = parsed.attendance.slice(-50);
+          modified = true;
+        }
+        if (modified) {
+          try {
+            if (typeof safeSaveStorageState === "function") {
+              safeSaveStorageState(parsed);
+            } else {
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+            }
+          } catch (_) {}
+          console.info("[CE Storage] Pruned bloated localStorage state to reclaim quota space.");
+        }
+      } catch (_) {}
+    }
+  } catch (e) {
+    console.warn("[CE Storage] Initial storage cleanup notice:", e);
+  }
+})();
+
+// Universal storage safety proxy to catch any QuotaExceededError and prevent unhandled modal save crashes
+(function installStorageSafetyProxy() {
+  if (typeof localStorage === "undefined") return;
+  const _origSetItem = localStorage.setItem.bind(localStorage);
+  if (typeof window !== "undefined") {
+    window._rawLocalStorageSetItem = _origSetItem;
+  }
+  let _inSafeProxy = false;
+  localStorage.setItem = function safeSetItem(key, val) {
+    try {
+      return _origSetItem(key, val);
+    } catch (quotaErr) {
+      const msg = String(quotaErr?.message || quotaErr || "");
+      const isQuota = quotaErr?.name === "QuotaExceededError" || msg.toLowerCase().includes("quota") || msg.toLowerCase().includes("exceeded");
+      if (!isQuota) throw quotaErr;
+
+      if (_inSafeProxy) return false;
+      _inSafeProxy = true;
+      try {
+        console.warn("[CE Storage] Intercepted storage quota exceeded for key:", key);
+        try { localStorage.removeItem("ce-data-layer:members"); } catch (_) {}
+
+        if (key === STORAGE_KEY || (typeof STORAGE_KEY !== "undefined" && key === STORAGE_KEY)) {
+          if (typeof safeSaveStorageState === "function") {
+            try {
+              const parsed = typeof val === "string" ? JSON.parse(val) : val;
+              return safeSaveStorageState(parsed);
+            } catch (_) {
+              if (typeof state !== "undefined") return safeSaveStorageState(state);
+            }
+          }
+        }
+        // Try retry once after freeing space
+        try {
+          return _origSetItem(key, val);
+        } catch (_) {
+          return false;
+        }
+      } finally {
+        _inSafeProxy = false;
+      }
+    }
+  };
+})();
 
 function isValidUuid(val) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(val || ""));
@@ -3877,13 +3963,29 @@ const seedData = {
   requisitions: [],
   financeDisbursements: [],
   churches: [
-    { id: "a1111111-1111-4111-8111-111111111101", church_id: "a1111111-1111-4111-8111-111111111101", church_name: "E.C. Maputo Central - Sede", public_name: "E.C. Maputo Central - Sede", type: "Sede Nacional", province: "Maputo Cidade", city: "KaMpfumo", district_or_area: "Urbanização", address: "Avenida de Angola, ao lado da CETRACO, Maputo", pastor_in_charge: "Pastor Kene Ume", phone_primary: "+258 86 227 0000", phone_secondary: "", email: "info@embaixadadecristo.org", facebook: "Embaixada de Cristo Moçambique", instagram: "@embaixada_de_cristo_mocambique", youtube: "", service_times: defaultSeedServiceTimes("a1111111-1111-4111-8111-111111111101", "Sede Nacional"), parent_church_id: "", status: "Activa", information_status: "Confirmado", notes: "Sede Nacional", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2024-01-01", updated_at: "2026-07-10", attendance_last_4_weeks: [112, 98, 104, 92] },
-    { id: "a1111111-1111-4111-8111-111111111102", church_id: "a1111111-1111-4111-8111-111111111102", church_name: "Christ Embassy Matola", public_name: "E.C. Matola", type: "Igreja Local", province: "Maputo Província", city: "Matola", district_or_area: "Matola", address: "Rua Mário Estêves Coluna, Nr 63B, perto do KFC / DNIC", pastor_in_charge: "", phone_primary: "+258 84 372 2630", phone_secondary: "+258 84 643 5951 / +258 87 780 9005", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("a1111111-1111-4111-8111-111111111102", "Igreja Local"), parent_church_id: "a1111111-1111-4111-8111-111111111101", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [48, 52, 46, 50] },
-    { id: "a1111111-1111-4111-8111-111111111103", church_id: "a1111111-1111-4111-8111-111111111103", church_name: "Christ Embassy Khongolote", public_name: "E.C. Khongolote", type: "Igreja Local", province: "Maputo Província", city: "Matola", district_or_area: "Khongolote", address: "Rua Licuacuanine, 648 – Khongolote, Matola", pastor_in_charge: "", phone_primary: "", phone_secondary: "", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("a1111111-1111-4111-8111-111111111103", "Igreja Local"), parent_church_id: "a1111111-1111-4111-8111-111111111101", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [32, 28, 30, 29] },
-    { id: "a1111111-1111-4111-8111-111111111104", church_id: "a1111111-1111-4111-8111-111111111104", church_name: "Christ Embassy Beira", public_name: "E.C. Beira", type: "Igreja Local", province: "Sofala", city: "Beira", district_or_area: "Beira", address: "Beira, Sofala", pastor_in_charge: "", phone_primary: "", phone_secondary: "", email: "", facebook: "Igreja Embaixada de Cristo Beira", instagram: "@embaixada_de_cristo_beira", youtube: "", service_times: defaultSeedServiceTimes("a1111111-1111-4111-8111-111111111104", "Igreja Local"), parent_church_id: "a1111111-1111-4111-8111-111111111101", status: "Activa", information_status: "Confirmado", notes: "Endereço e contactos a confirmar com a igreja local.", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [40, 38, 42, 39] },
-    { id: "a1111111-1111-4111-8111-111111111105", church_id: "a1111111-1111-4111-8111-111111111105", church_name: "Christ Embassy Nampula", public_name: "E.C. Nampula", type: "Igreja Local", province: "Nampula", city: "Nampula", district_or_area: "Muhala-Expansão", address: "Terminal de Chapa Muhala-Expansão, Paragem Igreja", pastor_in_charge: "Pastor Armando de Jesus", phone_primary: "", phone_secondary: "", email: "", facebook: "Embaixada De Cristo Nampula", instagram: "@embaixada_de_cristo.nampula", youtube: "", service_times: defaultSeedServiceTimes("a1111111-1111-4111-8111-111111111105", "Igreja Local"), parent_church_id: "a1111111-1111-4111-8111-111111111101", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [36, 34, 35, 37] },
-    { id: "a1111111-1111-4111-8111-111111111106", church_id: "a1111111-1111-4111-8111-111111111106", church_name: "Christ Embassy Choupal", public_name: "E.C. Choupal", type: "Igreja Local", province: "Maputo Cidade", city: "KaMubukwana", district_or_area: "Choupal", address: "Choupal, Maputo", pastor_in_charge: "", phone_primary: "", phone_secondary: "", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("a1111111-1111-4111-8111-111111111106", "Igreja Local"), parent_church_id: "a1111111-1111-4111-8111-111111111101", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [28, 30, 27, 31] },
-    { id: "a1111111-1111-4111-8111-111111111107", church_id: "a1111111-1111-4111-8111-111111111107", church_name: "Christ Embassy Online Church", public_name: "E.C. Online", type: "Igreja Online", province: "Online", city: "Online", district_or_area: "Virtual", address: "Transmissão online", pastor_in_charge: "Equipa de Media", phone_primary: "+258 86 877 389", phone_secondary: "", email: "online@embaixada-de-cristo.org", facebook: "", instagram: "", youtube: "Christ Embassy Mozambique Online", service_times: defaultSeedServiceTimes("a1111111-1111-4111-8111-111111111107", "Igreja Online"), parent_church_id: "a1111111-1111-4111-8111-111111111101", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2024-06-01", updated_at: "2026-07-10", attendance_last_4_weeks: [54, 61, 48, 57] }
+    { id: "a1111111-1111-4111-8111-111111111101", church_id: "a1111111-1111-4111-8111-111111111101", church_name: "E.C. Maputo Central - Sede", public_name: "E.C. Maputo Central - Sede", type: "Sede Nacional", province: "Maputo Cidade", city: "KaMpfumo", district_or_area: "Urbanização", address: "Avenida de Angola No 1818, Maputo", pastor_in_charge: "Pastor Kene Ume", phone_primary: "+258 86 227 0000", phone_secondary: "", email: "info@embaixadadecristo.org", facebook: "Embaixada de Cristo Moçambique", instagram: "@embaixada_de_cristo_mocambique", youtube: "", service_times: defaultSeedServiceTimes("a1111111-1111-4111-8111-111111111101", "Sede Nacional"), parent_church_id: "", status: "Activa", information_status: "Confirmado", notes: "Sede Nacional", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2024-01-01", updated_at: "2026-07-10", attendance_last_4_weeks: [112, 98, 104, 92] },
+    { id: "a4b58c3d-5f45-4dfd-9fc3-eef0b28f4394", church_id: "a4b58c3d-5f45-4dfd-9fc3-eef0b28f4394", church_name: "E.C. Maxaquene", public_name: "E.C. Maxaquene", type: "Igreja Local", province: "Maputo Cidade", city: "KaMaxakeni", district_or_area: "Maxaquene", address: "Av. Milagre Mabote, Perto do Comando distrital da Policia Municipal", pastor_in_charge: "", phone_primary: "+258 85 071 5705", phone_secondary: "", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("a4b58c3d-5f45-4dfd-9fc3-eef0b28f4394", "Igreja Local"), parent_church_id: "", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [0, 0, 0, 0] },
+    { id: "134ca1e9-1923-4751-a389-2e1f6fd08308", church_id: "134ca1e9-1923-4751-a389-2e1f6fd08308", church_name: "E.C. Soveste", public_name: "E.C. Soveste", type: "Igreja Local", province: "Maputo Cidade", city: "KaMaxakeni", district_or_area: "Maxaquene", address: "Rua da Soveste, Em frente ao Car Wash", pastor_in_charge: "", phone_primary: "+258 87 907 6716", phone_secondary: "", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("134ca1e9-1923-4751-a389-2e1f6fd08308", "Igreja Local"), parent_church_id: "", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [0, 0, 0, 0] },
+    { id: "5bec53aa-8d64-49d9-a065-9670e408fcca", church_id: "5bec53aa-8d64-49d9-a065-9670e408fcca", church_name: "E.C. Malhazine", public_name: "E.C. Malhazine", type: "Igreja Local", province: "Maputo Cidade", city: "KaMavota", district_or_area: "Magoanine A", address: 'Bairro de Magoanine "A", Próximo à paragem Muswazi', pastor_in_charge: "", phone_primary: "+258 86 570 5588", phone_secondary: "", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("5bec53aa-8d64-49d9-a065-9670e408fcca", "Igreja Local"), parent_church_id: "", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [0, 0, 0, 0] },
+    { id: "a89e625e-e1d6-4b68-a20e-a3897f4ba61e", church_id: "a89e625e-e1d6-4b68-a20e-a3897f4ba61e", church_name: "E.C. Matendene", public_name: "E.C. Matendene", type: "Igreja Local", province: "Maputo Cidade", city: "KaMavota", district_or_area: "Matendene", address: "Cruzamento de Matendene Primeira lomba, Rua do projeto", pastor_in_charge: "", phone_primary: "+258 84 017 3645", phone_secondary: "+258 87 317 3645", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("a89e625e-e1d6-4b68-a20e-a3897f4ba61e", "Igreja Local"), parent_church_id: "", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [0, 0, 0, 0] },
+    { id: "a1111111-1111-4111-8111-111111111106", church_id: "a1111111-1111-4111-8111-111111111106", church_name: "E.C. Choupal", public_name: "E.C. Choupal", type: "Igreja Local", province: "Maputo Cidade", city: "KaMubukwana", district_or_area: "Choupal", address: "Rua 9", pastor_in_charge: "", phone_primary: "+258 84 698 5710", phone_secondary: "+258 84 717 0785", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("a1111111-1111-4111-8111-111111111106", "Igreja Local"), parent_church_id: "", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [28, 30, 27, 31] },
+    { id: "a1111111-1111-4111-8111-111111111102", church_id: "a1111111-1111-4111-8111-111111111102", church_name: "E.C. Matola", public_name: "E.C. Matola", type: "Igreja Local", province: "Maputo Província", city: "Matola", district_or_area: "Machava Sede", address: "Machava Sede, Paragem Nazi Nazi em frente ao Banco BIM", pastor_in_charge: "", phone_primary: "+258 84 780 9005", phone_secondary: "+258 87 780 9009", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("a1111111-1111-4111-8111-111111111102", "Igreja Local"), parent_church_id: "", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [48, 52, 46, 50] },
+    { id: "ff953bf1-7964-4023-be6e-13b5dc7fd5e3", church_id: "ff953bf1-7964-4023-be6e-13b5dc7fd5e3", church_name: "E.C. Machava 1", public_name: "E.C. Machava 1", type: "Igreja Local", province: "Maputo Província", city: "Matola", district_or_area: "Machava 1", address: "Paragem Baião", pastor_in_charge: "", phone_primary: "+258 84 634 8924", phone_secondary: "+258 86 634 8924", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("ff953bf1-7964-4023-be6e-13b5dc7fd5e3", "Igreja Local"), parent_church_id: "", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [0, 0, 0, 0] },
+    { id: "25933efb-20a3-43a4-a610-410360a1df94", church_id: "25933efb-20a3-43a4-a610-410360a1df94", church_name: "E.C. Matola 700", public_name: "E.C. Matola 700", type: "Igreja Local", province: "Maputo Província", city: "Matola", district_or_area: "Matola F", address: "Atrás do Shoprite, Rua de Sofala, número 178, Matola F, ao pé da MOBISCO", pastor_in_charge: "", phone_primary: "+258 87 737 9797", phone_secondary: "", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("25933efb-20a3-43a4-a610-410360a1df94", "Igreja Local"), parent_church_id: "", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [0, 0, 0, 0] },
+    { id: "a1111111-1111-4111-8111-111111111103", church_id: "a1111111-1111-4111-8111-111111111103", church_name: "E.C. Khongolote", public_name: "E.C. Khongolote", type: "Igreja Local", province: "Maputo Província", city: "Matola", district_or_area: "Khongolote", address: "1 de Maio, atrás da nossa loja", pastor_in_charge: "", phone_primary: "+258 84 366 8999", phone_secondary: "+258 87 366 5744", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("a1111111-1111-4111-8111-111111111103", "Igreja Local"), parent_church_id: "", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [32, 28, 30, 29] },
+    { id: "e30f5af0-5011-4e9b-9257-95a3d5e375ea", church_id: "e30f5af0-5011-4e9b-9257-95a3d5e375ea", church_name: "E.C. Chamanculo", public_name: "E.C. Chamanculo", type: "Igreja Local", province: "Maputo Cidade", city: "Nlhamankulu", district_or_area: "Chamanculo", address: "Rua da UFA", pastor_in_charge: "", phone_primary: "+258 84 752 8642", phone_secondary: "", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("e30f5af0-5011-4e9b-9257-95a3d5e375ea", "Igreja Local"), parent_church_id: "", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [0, 0, 0, 0] },
+    { id: "285a880a-2cca-4d13-8224-f831ccfeb141", church_id: "285a880a-2cca-4d13-8224-f831ccfeb141", church_name: "E.C. Zona Verde", public_name: "E.C. Zona Verde", type: "Igreja Local", province: "Maputo Província", city: "Matola", district_or_area: "Zona Verde", address: "Paragem Distrito", pastor_in_charge: "", phone_primary: "+258 84 640 8877", phone_secondary: "", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("285a880a-2cca-4d13-8224-f831ccfeb141", "Igreja Local"), parent_church_id: "", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [0, 0, 0, 0] },
+    { id: "132f3e3d-02e2-4dfe-9e42-c46fa59f3883", church_id: "132f3e3d-02e2-4dfe-9e42-c46fa59f3883", church_name: "E.C. Manhiça", public_name: "E.C. Manhiça", type: "Igreja Local", province: "Maputo Província", city: "Manhiça", district_or_area: "Manhiça", address: "Estrada N1, ao lado do restaurante A Palhota (paragem mercado aeródromo)", pastor_in_charge: "", phone_primary: "+258 87 506 2895", phone_secondary: "", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("132f3e3d-02e2-4dfe-9e42-c46fa59f3883", "Igreja Local"), parent_church_id: "", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [0, 0, 0, 0] },
+    { id: "586f3073-f5aa-49a6-b09a-51d5747e9991", church_id: "586f3073-f5aa-49a6-b09a-51d5747e9991", church_name: "E.C. Inhambane", public_name: "E.C. Inhambane", type: "Igreja Local", province: "Inhambane", city: "Inhambane", district_or_area: "Liberdade 1", address: "Bairro Liberdade 1, Marivas (antigo ginásio)", pastor_in_charge: "", phone_primary: "+258 85 625 8985", phone_secondary: "", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("586f3073-f5aa-49a6-b09a-51d5747e9991", "Igreja Local"), parent_church_id: "", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [0, 0, 0, 0] },
+    { id: "a1111111-1111-4111-8111-111111111104", church_id: "a1111111-1111-4111-8111-111111111104", church_name: "E.C. Beira", public_name: "E.C. Beira", type: "Igreja Local", province: "Sofala", city: "Beira", district_or_area: "Centro", address: "Cinema Olímpia (atrás da AGL)", pastor_in_charge: "", phone_primary: "+258 87 402 0035", phone_secondary: "", email: "", facebook: "Igreja Embaixada de Cristo Beira", instagram: "@embaixada_de_cristo_beira", youtube: "", service_times: defaultSeedServiceTimes("a1111111-1111-4111-8111-111111111104", "Igreja Local"), parent_church_id: "", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [40, 38, 42, 39] },
+    { id: "66803aaa-ba1d-461f-8ca3-a27311c04fa8", church_id: "66803aaa-ba1d-461f-8ca3-a27311c04fa8", church_name: "E.C. Tete", public_name: "E.C. Tete", type: "Igreja Local", province: "Tete", city: "Tete", district_or_area: "Francisco Manyanga", address: "Perto do hospital centro número 3, Bairro Francisco Manyanga", pastor_in_charge: "", phone_primary: "+258 86 029 0962", phone_secondary: "+258 84 129 6839", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("66803aaa-ba1d-461f-8ca3-a27311c04fa8", "Igreja Local"), parent_church_id: "", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [0, 0, 0, 0] },
+    { id: "01bd4fc6-7ac1-4f34-a370-89cc967727b1", church_id: "01bd4fc6-7ac1-4f34-a370-89cc967727b1", church_name: "E.C. Chimoio", public_name: "E.C. Chimoio", type: "Igreja Local", province: "Manica", city: "Chimoio", district_or_area: "7 de Setembro", address: "Bairro 7 de Setembro, Rua do Pimpão, ao lado da Farmácia 7 de Setembro", pastor_in_charge: "", phone_primary: "+258 87 215 6741", phone_secondary: "", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("01bd4fc6-7ac1-4f34-a370-89cc967727b1", "Igreja Local"), parent_church_id: "", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [0, 0, 0, 0] },
+    { id: "a1111111-1111-4111-8111-111111111105", church_id: "a1111111-1111-4111-8111-111111111105", church_name: "E.C. Nampula", public_name: "E.C. Nampula", type: "Igreja Local", province: "Nampula", city: "Nampula", district_or_area: "Amurane / Muhala", address: "Paragem Armazém, na rua do mercado Amurane", pastor_in_charge: "", phone_primary: "+258 86 759 6384", phone_secondary: "", email: "", facebook: "Embaixada De Cristo Nampula", instagram: "@embaixada_de_cristo.nampula", youtube: "", service_times: defaultSeedServiceTimes("a1111111-1111-4111-8111-111111111105", "Igreja Local"), parent_church_id: "", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [36, 34, 35, 37] },
+    { id: "ba7a28e9-ccd2-439e-9e78-bf9ab3259d1d", church_id: "ba7a28e9-ccd2-439e-9e78-bf9ab3259d1d", church_name: "E.C. Lichinga", public_name: "E.C. Lichinga", type: "Igreja Local", province: "Niassa", city: "Lichinga", district_or_area: "Nângala", address: "Av. Eduardo Mondlane, perto da Universidade Rovuma Niassa, Bairro Nângala", pastor_in_charge: "", phone_primary: "+258 84 900 1077", phone_secondary: "", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("ba7a28e9-ccd2-439e-9e78-bf9ab3259d1d", "Igreja Local"), parent_church_id: "", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [0, 0, 0, 0] },
+    { id: "d18a9a72-c9c0-4b82-94bc-5e0aeaac3b7f", church_id: "d18a9a72-c9c0-4b82-94bc-5e0aeaac3b7f", church_name: "E.C. Dondo", public_name: "E.C. Dondo", type: "Igreja Local", province: "Sofala", city: "Dondo", district_or_area: "Vila de Dondo", address: "Complexo Maia & Dinis, EN6, Vila de Dondo", pastor_in_charge: "", phone_primary: "+258 85 693 9348", phone_secondary: "", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("d18a9a72-c9c0-4b82-94bc-5e0aeaac3b7f", "Igreja Local"), parent_church_id: "", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [0, 0, 0, 0] },
+    { id: "c8bda7f4-be6a-49f8-8485-894e942cb693", church_id: "c8bda7f4-be6a-49f8-8485-894e942cb693", church_name: "E.C. Manga", public_name: "E.C. Manga", type: "Igreja Local", province: "Sofala", city: "Beira", district_or_area: "Manga", address: "Rua 2, próximo ao supermercado Mutarara", pastor_in_charge: "", phone_primary: "+258 85 781 7483", phone_secondary: "+258 86 321 7166", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("c8bda7f4-be6a-49f8-8485-894e942cb693", "Igreja Local"), parent_church_id: "", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [0, 0, 0, 0] },
+    { id: "ccf45f8f-8692-4556-a7a4-e98d6cc1d715", church_id: "ccf45f8f-8692-4556-a7a4-e98d6cc1d715", church_name: "E.C. Xai-Xai", public_name: "E.C. Xai-Xai", type: "Igreja Local", province: "Gaza", city: "Xai-Xai", district_or_area: "Xai-Xai", address: "Xai-Xai, Gaza", pastor_in_charge: "", phone_primary: "", phone_secondary: "", email: "", facebook: "", instagram: "", youtube: "", service_times: defaultSeedServiceTimes("ccf45f8f-8692-4556-a7a4-e98d6cc1d715", "Igreja Local"), parent_church_id: "", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2026-07-01", updated_at: "2026-07-10", attendance_last_4_weeks: [0, 0, 0, 0] },
+    { id: "a1111111-1111-4111-8111-111111111107", church_id: "a1111111-1111-4111-8111-111111111107", church_name: "E.C. Online", public_name: "E.C. Online", type: "Igreja Online", province: "Online", city: "Online", district_or_area: "Virtual", address: "Transmissão online", pastor_in_charge: "Equipa de Media", phone_primary: "+258 86 877 389", phone_secondary: "", email: "online@embaixada-de-cristo.org", facebook: "", instagram: "", youtube: "Christ Embassy Mozambique Online", service_times: defaultSeedServiceTimes("a1111111-1111-4111-8111-111111111107", "Igreja Online"), parent_church_id: "", status: "Activa", information_status: "Confirmado", notes: "", created_by: "Admin Principal", updated_by: "Admin Principal", created_at: "2024-06-01", updated_at: "2026-07-10", attendance_last_4_weeks: [54, 61, 48, 57] }
   ],
   firstTimers: [],
   followUps: [],
@@ -4031,28 +4133,77 @@ const seedData = {
 const EC_CHURCH_DISPLAY_NAMES = {
   "church-hq": "E.C. Maputo Central - Sede",
   "a1111111-1111-4111-8111-111111111101": "E.C. Maputo Central - Sede",
-  "church-matola": "E.C. Matola",
-  "church-khongolote": "E.C. Khongolote",
-  "church-choupal": "E.C. Choupal",
+  "a4b58c3d-5f45-4dfd-9fc3-eef0b28f4394": "E.C. Maxaquene",
+  "church-maxaquene": "E.C. Maxaquene",
+  "134ca1e9-1923-4751-a389-2e1f6fd08308": "E.C. Soveste",
+  "church-soveste": "E.C. Soveste",
+  "5bec53aa-8d64-49d9-a065-9670e408fcca": "E.C. Malhazine",
+  "a1111111-1111-4111-8111-111111111108": "E.C. Malhazine",
   "church-malhazine": "E.C. Malhazine",
+  "a89e625e-e1d6-4b68-a20e-a3897f4ba61e": "E.C. Matendene",
+  "church-matendene": "E.C. Matendene",
+  "a1111111-1111-4111-8111-111111111106": "E.C. Choupal",
+  "church-choupal": "E.C. Choupal",
+  "a1111111-1111-4111-8111-111111111102": "E.C. Matola",
+  "church-matola": "E.C. Matola",
+  "ff953bf1-7964-4023-be6e-13b5dc7fd5e3": "E.C. Machava 1",
+  "church-machava1": "E.C. Machava 1",
+  "25933efb-20a3-43a4-a610-410360a1df94": "E.C. Matola 700",
+  "church-matola700": "E.C. Matola 700",
+  "a1111111-1111-4111-8111-111111111103": "E.C. Khongolote",
+  "church-khongolote": "E.C. Khongolote",
+  "e30f5af0-5011-4e9b-9257-95a3d5e375ea": "E.C. Chamanculo",
+  "church-chamanculo": "E.C. Chamanculo",
+  "285a880a-2cca-4d13-8224-f831ccfeb141": "E.C. Zona Verde",
+  "church-zonaverde": "E.C. Zona Verde",
+  "132f3e3d-02e2-4dfe-9e42-c46fa59f3883": "E.C. Manhiça",
+  "church-manhica": "E.C. Manhiça",
+  "586f3073-f5aa-49a6-b09a-51d5747e9991": "E.C. Inhambane",
+  "church-inhambane": "E.C. Inhambane",
+  "a1111111-1111-4111-8111-111111111104": "E.C. Beira",
   "church-beira": "E.C. Beira",
-  "church-nampula": "E.C. Nampula",
+  "66803aaa-ba1d-461f-8ca3-a27311c04fa8": "E.C. Tete",
+  "a1111111-1111-4111-8111-111111111109": "E.C. Tete",
   "church-tete": "E.C. Tete",
+  "01bd4fc6-7ac1-4f34-a370-89cc967727b1": "E.C. Chimoio",
+  "church-chimoio": "E.C. Chimoio",
+  "a1111111-1111-4111-8111-111111111105": "E.C. Nampula",
+  "1da7c8c8-3723-4259-9634-e19d35246d48": "E.C. Nampula",
+  "church-nampula": "E.C. Nampula",
+  "ba7a28e9-ccd2-439e-9e78-bf9ab3259d1d": "E.C. Lichinga",
+  "church-lichinga": "E.C. Lichinga",
+  "d18a9a72-c9c0-4b82-94bc-5e0aeaac3b7f": "E.C. Dondo",
+  "church-dondo": "E.C. Dondo",
+  "c8bda7f4-be6a-49f8-8485-894e942cb693": "E.C. Manga",
+  "church-manga": "E.C. Manga",
+  "ccf45f8f-8692-4556-a7a4-e98d6cc1d715": "E.C. Xai-Xai",
+  "church-xaixai": "E.C. Xai-Xai",
+  "a1111111-1111-4111-8111-111111111107": "E.C. Online",
   "church-virtual": "E.C. Online"
 };
 
 function ecChurchDisplayName(churchId = "", fallback = "") {
   if (EC_CHURCH_DISPLAY_NAMES[churchId]) return EC_CHURCH_DISPLAY_NAMES[churchId];
-  const cleaned = cleanDisplayText(fallback || "")
+  let cleaned = cleanDisplayText(fallback || "")
     .replace(/^National HQ\s*-\s*/i, "")
     .replace(/^Igreja\s+/i, "")
     .replace(/^Embaixada\s+de\s+Cristo\s+/i, "")
     .replace(/^Christ\s+Embassy\s+/i, "")
-    .replace(/^E\.C\.\s*/i, "")
+    .replace(/^E\.C\.\s*-?\s*/i, "")
     .replace(/\s*\/\s*Embaixada\s+de\s+Cristo\s+Mo[cç]ambique/i, "")
     .trim();
   if (!cleaned || cleaned === "-") return churchId || "-";
   if (/^(Mo[cç]ambique|Mozambique)$/i.test(cleaned)) return "E.C. Moçambique";
+  
+  // Title-case single uppercase words (e.g. "MAXAQUENE" -> "Maxaquene", "ZONA-VERDE" -> "Zona Verde")
+  if (cleaned === cleaned.toUpperCase()) {
+    cleaned = cleaned
+      .replace(/-/g, " ")
+      .split(" ")
+      .filter(Boolean)
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+      .join(" ");
+  }
   return `E.C. ${cleaned}`;
 }
 
@@ -4167,7 +4318,7 @@ if (Array.isArray(state.churches)) {
   }
   if (cleanList.length && cleanList.length !== state.churches.length) {
     state.churches = cleanList;
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (_) {}
+    safeSaveStorageState(state);
   }
 }
 let savedAuthUser = null;
@@ -5276,6 +5427,91 @@ function byId(id) {
   return document.getElementById(id);
 }
 
+function safeSaveStorageState(st = (typeof state !== "undefined" ? state : null)) {
+  if (typeof localStorage === "undefined" || !st) return false;
+  const rawSet = (typeof window !== "undefined" && typeof window._rawLocalStorageSetItem === "function")
+    ? window._rawLocalStorageSetItem
+    : localStorage.setItem.bind(localStorage);
+  try {
+    // Keep in-memory audit logs bounded so they don't grow forever
+    if (Array.isArray(st.auditLogs) && st.auditLogs.length > 50) {
+      st.auditLogs = st.auditLogs.slice(-50);
+    }
+
+    // Prepare a quota-conscious copy of state for storage
+    const toSave = { ...st };
+
+    if (Array.isArray(toSave.auditLogs)) {
+      toSave.auditLogs = toSave.auditLogs.slice(-30);
+    }
+
+    // Members array: if it has hundreds or thousands of records, don't duplicate them into ce-ops-dashboard-v3.
+    // Full members list is already maintained by Supabase and cached in ce-dashboard:members-cache.
+    if (Array.isArray(toSave.members) && toSave.members.length > 50) {
+      const pendingOrLocal = toSave.members.filter((m) => m && (m.provider_sync_status === "Pending" || String(m.id || "").startsWith("mem-local-")));
+      toSave.members = pendingOrLocal.length > 0 ? pendingOrLocal.slice(0, 50) : toSave.members.slice(0, 20);
+    }
+
+    // Attendance records: if excessively large, keep latest 50
+    if (Array.isArray(toSave.attendance) && toSave.attendance.length > 100) {
+      toSave.attendance = toSave.attendance.slice(-50);
+    }
+
+    try {
+      rawSet(STORAGE_KEY, JSON.stringify(toSave));
+      return true;
+    } catch (quotaErr) {
+      console.warn("[CE Storage] Quota exceeded on primary state save, running storage cleanup...", quotaErr);
+
+      // Clean up legacy duplicate cache keys to reclaim storage space
+      try { localStorage.removeItem("ce-data-layer:members"); } catch (_) {}
+
+      // Aggressive pruning
+      const pruned = { ...toSave };
+      pruned.members = [];
+      if (Array.isArray(pruned.auditLogs)) pruned.auditLogs = pruned.auditLogs.slice(-10);
+      if (Array.isArray(pruned.attendance)) pruned.attendance = pruned.attendance.slice(-20);
+      if (Array.isArray(pruned.finance) && pruned.finance.length > 100) pruned.finance = pruned.finance.slice(-50);
+
+      try {
+        rawSet(STORAGE_KEY, JSON.stringify(pruned));
+        return true;
+      } catch (secondErr) {
+        console.warn("[CE Storage] Quota exceeded on secondary save, saving essential state only...", secondErr);
+
+        // Third attempt: save essential operational state (users, churches, cells, cellGroups, departments, settings, auth info)
+        const essentialOnly = {
+          users: Array.isArray(st.users) ? st.users : [],
+          churches: Array.isArray(st.churches) ? st.churches : [],
+          departments: Array.isArray(st.departments) ? st.departments : [],
+          cellGroups: Array.isArray(st.cellGroups) ? st.cellGroups : [],
+          cells: Array.isArray(st.cells) ? st.cells : [],
+          activeUser: st.activeUser || null,
+          currentUser: st.currentUser || null,
+          deletedUserIds: Array.isArray(st.deletedUserIds) ? st.deletedUserIds : [],
+          deletedUserEmails: Array.isArray(st.deletedUserEmails) ? st.deletedUserEmails : [],
+          settings: st.settings || {}
+        };
+
+        try {
+          rawSet(STORAGE_KEY, JSON.stringify(essentialOnly));
+          return true;
+        } catch (fatalStorageErr) {
+          console.error("[CE Storage] Unable to persist state to localStorage (quota full):", fatalStorageErr);
+          return false;
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("[CE Storage] safeSaveStorageState error (non-fatal):", err);
+    return false;
+  }
+}
+
+if (typeof window !== "undefined") {
+  window.safeSaveStorageState = safeSaveStorageState;
+}
+
 function loadState() {
   const saved = localStorage.getItem(STORAGE_KEY);
   if (!saved) {
@@ -5285,7 +5521,7 @@ function loadState() {
       initial = result.state;
     }
     initial = normalizeState(initial);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
+    safeSaveStorageState(initial);
     return structuredClone(initial);
   }
   try {
@@ -5294,13 +5530,13 @@ function loadState() {
       const result = importPublicGivingQueue(normalized);
       if (result.imported > 0) {
         normalized = result.state;
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
+        safeSaveStorageState(normalized);
       }
     }
     return normalized;
   } catch {
     const fallback = normalizeState(structuredClone(seedData));
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(fallback));
+    safeSaveStorageState(fallback);
     return structuredClone(fallback);
   }
 }
@@ -5746,29 +5982,36 @@ function normalizeState(saved) {
 }
 
 function saveState(action = "Updated data") {
-  const log = {
-    id: `audit-${Date.now()}`,
-    church_id: activeUser?.church_id || "",
-    actor: activeUser?.name || "",
-    user_id: activeUser?.id || "",
-    user_name: activeUser?.name || "",
-    user_role: activeUser?.role || "",
-    action: "update",
-    module: "dashboard",
-    description: action,
-    severity: "info",
-    date: new Date().toISOString().slice(0, 10),
-    created_at: new Date().toISOString(),
-  };
-  state.auditLogs = Array.isArray(state.auditLogs) ? state.auditLogs : [];
-  state.auditLogs.push(log);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  // Dual-write audit to data layer (soft-fail)
   try {
-    const ac = window.CEAccessControl || window.CEAccessControlData;
-    if (ac?.createAuditLog) void ac.createAuditLog(log);
-    else if (ac?.dualWriteAudit) void ac.dualWriteAudit(log);
-  } catch (_) {}
+    const log = {
+      id: `audit-${Date.now()}`,
+      church_id: activeUser?.church_id || "",
+      actor: activeUser?.name || "",
+      user_id: activeUser?.id || "",
+      user_name: activeUser?.name || "",
+      user_role: activeUser?.role || "",
+      action: "update",
+      module: "dashboard",
+      description: action,
+      severity: "info",
+      date: new Date().toISOString().slice(0, 10),
+      created_at: new Date().toISOString(),
+    };
+    state.auditLogs = Array.isArray(state.auditLogs) ? state.auditLogs : [];
+    state.auditLogs.push(log);
+    if (state.auditLogs.length > 50) {
+      state.auditLogs = state.auditLogs.slice(-50);
+    }
+    safeSaveStorageState(state);
+    // Dual-write audit to data layer (soft-fail)
+    try {
+      const ac = window.CEAccessControl || window.CEAccessControlData;
+      if (ac?.createAuditLog) void ac.createAuditLog(log);
+      else if (ac?.dualWriteAudit) void ac.dualWriteAudit(log);
+    } catch (_) {}
+  } catch (err) {
+    console.warn("[CE State] saveState notice (non-fatal):", err);
+  }
 }
 
 function dualWriteUserRecord(mode, record) {
@@ -5806,9 +6049,7 @@ function logAccessDenied(route, module) {
   };
   state.auditLogs = Array.isArray(state.auditLogs) ? state.auditLogs : [];
   state.auditLogs.push(log);
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  } catch (_) {}
+  safeSaveStorageState(state);
   try {
     const ac = window.CEAccessControl || window.CEAccessControlData;
     if (ac?.createAuditLog) void ac.createAuditLog(log);
@@ -5816,19 +6057,59 @@ function logAccessDenied(route, module) {
 }
 
 const CANONICAL_CHURCH_MAP = {
+  // String slug mappings
   "church-hq": "a1111111-1111-4111-8111-111111111101",
-  "church-matola": "a1111111-1111-4111-8111-111111111102",
-  "church-khongolote": "a1111111-1111-4111-8111-111111111103",
-  "church-beira": "a1111111-1111-4111-8111-111111111104",
-  "church-nampula": "a1111111-1111-4111-8111-111111111105",
+  "church-maxaquene": "a4b58c3d-5f45-4dfd-9fc3-eef0b28f4394",
+  "church-soveste": "134ca1e9-1923-4751-a389-2e1f6fd08308",
+  "church-malhazine": "5bec53aa-8d64-49d9-a065-9670e408fcca",
+  "church-matendene": "a89e625e-e1d6-4b68-a20e-a3897f4ba61e",
   "church-choupal": "a1111111-1111-4111-8111-111111111106",
+  "church-matola": "a1111111-1111-4111-8111-111111111102",
+  "church-machava1": "ff953bf1-7964-4023-be6e-13b5dc7fd5e3",
+  "church-matola700": "25933efb-20a3-43a4-a610-410360a1df94",
+  "church-khongolote": "a1111111-1111-4111-8111-111111111103",
+  "church-chamanculo": "e30f5af0-5011-4e9b-9257-95a3d5e375ea",
+  "church-zonaverde": "285a880a-2cca-4d13-8224-f831ccfeb141",
+  "church-manhica": "132f3e3d-02e2-4dfe-9e42-c46fa59f3883",
+  "church-inhambane": "586f3073-f5aa-49a6-b09a-51d5747e9991",
+  "church-beira": "a1111111-1111-4111-8111-111111111104",
+  "church-tete": "66803aaa-ba1d-461f-8ca3-a27311c04fa8",
+  "church-chimoio": "01bd4fc6-7ac1-4f34-a370-89cc967727b1",
+  "church-nampula": "a1111111-1111-4111-8111-111111111105",
+  "church-lichinga": "ba7a28e9-ccd2-439e-9e78-bf9ab3259d1d",
+  "church-dondo": "d18a9a72-c9c0-4b82-94bc-5e0aeaac3b7f",
+  "church-manga": "c8bda7f4-be6a-49f8-8485-894e942cb693",
+  "church-xaixai": "ccf45f8f-8692-4556-a7a4-e98d6cc1d715",
   "church-virtual": "a1111111-1111-4111-8111-111111111107",
+
+  // Legacy/seed UUID alias redirects
+  "1da7c8c8-3723-4259-9634-e19d35246d48": "a1111111-1111-4111-8111-111111111105",
+  "a1111111-1111-4111-8111-111111111108": "5bec53aa-8d64-49d9-a065-9670e408fcca",
+  "a1111111-1111-4111-8111-111111111109": "66803aaa-ba1d-461f-8ca3-a27311c04fa8",
+
+  // Canonical UUID identity mappings
   "a1111111-1111-4111-8111-111111111101": "a1111111-1111-4111-8111-111111111101",
-  "a1111111-1111-4111-8111-111111111102": "a1111111-1111-4111-8111-111111111102",
-  "a1111111-1111-4111-8111-111111111103": "a1111111-1111-4111-8111-111111111103",
-  "a1111111-1111-4111-8111-111111111104": "a1111111-1111-4111-8111-111111111104",
-  "a1111111-1111-4111-8111-111111111105": "a1111111-1111-4111-8111-111111111105",
+  "a4b58c3d-5f45-4dfd-9fc3-eef0b28f4394": "a4b58c3d-5f45-4dfd-9fc3-eef0b28f4394",
+  "134ca1e9-1923-4751-a389-2e1f6fd08308": "134ca1e9-1923-4751-a389-2e1f6fd08308",
+  "5bec53aa-8d64-49d9-a065-9670e408fcca": "5bec53aa-8d64-49d9-a065-9670e408fcca",
+  "a89e625e-e1d6-4b68-a20e-a3897f4ba61e": "a89e625e-e1d6-4b68-a20e-a3897f4ba61e",
   "a1111111-1111-4111-8111-111111111106": "a1111111-1111-4111-8111-111111111106",
+  "a1111111-1111-4111-8111-111111111102": "a1111111-1111-4111-8111-111111111102",
+  "ff953bf1-7964-4023-be6e-13b5dc7fd5e3": "ff953bf1-7964-4023-be6e-13b5dc7fd5e3",
+  "25933efb-20a3-43a4-a610-410360a1df94": "25933efb-20a3-43a4-a610-410360a1df94",
+  "a1111111-1111-4111-8111-111111111103": "a1111111-1111-4111-8111-111111111103",
+  "e30f5af0-5011-4e9b-9257-95a3d5e375ea": "e30f5af0-5011-4e9b-9257-95a3d5e375ea",
+  "285a880a-2cca-4d13-8224-f831ccfeb141": "285a880a-2cca-4d13-8224-f831ccfeb141",
+  "132f3e3d-02e2-4dfe-9e42-c46fa59f3883": "132f3e3d-02e2-4dfe-9e42-c46fa59f3883",
+  "586f3073-f5aa-49a6-b09a-51d5747e9991": "586f3073-f5aa-49a6-b09a-51d5747e9991",
+  "a1111111-1111-4111-8111-111111111104": "a1111111-1111-4111-8111-111111111104",
+  "66803aaa-ba1d-461f-8ca3-a27311c04fa8": "66803aaa-ba1d-461f-8ca3-a27311c04fa8",
+  "01bd4fc6-7ac1-4f34-a370-89cc967727b1": "01bd4fc6-7ac1-4f34-a370-89cc967727b1",
+  "a1111111-1111-4111-8111-111111111105": "a1111111-1111-4111-8111-111111111105",
+  "ba7a28e9-ccd2-439e-9e78-bf9ab3259d1d": "ba7a28e9-ccd2-439e-9e78-bf9ab3259d1d",
+  "d18a9a72-c9c0-4b82-94bc-5e0aeaac3b7f": "d18a9a72-c9c0-4b82-94bc-5e0aeaac3b7f",
+  "c8bda7f4-be6a-49f8-8485-894e942cb693": "c8bda7f4-be6a-49f8-8485-894e942cb693",
+  "ccf45f8f-8692-4556-a7a4-e98d6cc1d715": "ccf45f8f-8692-4556-a7a4-e98d6cc1d715",
   "a1111111-1111-4111-8111-111111111107": "a1111111-1111-4111-8111-111111111107",
 };
 
@@ -7319,7 +7600,7 @@ function recordCellReportSecurityEvent(action, description, entityId = "") {
   };
   state.auditLogs = Array.isArray(state.auditLogs) ? state.auditLogs : [];
   state.auditLogs.push(log);
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (_) {}
+  safeSaveStorageState(state);
   try { window.CEAccessControl?.createAuditLog?.(log); } catch (_) {}
 }
 
@@ -8275,9 +8556,7 @@ async function submitPublicCellReport(form) {
     saveState(legacyPublic ? "Legacy demo cell report submitted" : "Authenticated cell report submitted");
   } catch (error) {
     // Public form may run before full admin session; still persist blob.
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch (_) {}
+    safeSaveStorageState(state);
     console.warn("[CE CellReport public] saveState fallback", error);
   }
   showPublicCellReport(submission);
@@ -8857,7 +9136,7 @@ async function refreshMemberDepartmentsFromRepository() {
     const previous = JSON.stringify((state.departments || []).map((department) => [department.id, department.name, department.church_id]));
     const next = JSON.stringify(normalized.map((department) => [department.id, department.name, department.church_id]));
     state.departments = normalized;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    safeSaveStorageState(state);
     return previous !== next;
   } catch (error) {
     console.warn("[CE Members] department registry refresh skipped", error);
@@ -9456,7 +9735,7 @@ async function hydrateFinanceFromRepository() {
     }
     if (hydrated) {
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        safeSaveStorageState(state);
       } catch (_) {}
     }
     return hydrated;
@@ -16786,7 +17065,7 @@ async function hydrateDashboardRealData() {
             state.members = data;
             try {
               localStorage.setItem("ce-dashboard:members-cache", JSON.stringify(data));
-              localStorage.setItem("ce-data-layer:members", JSON.stringify(data));
+              localStorage.removeItem("ce-data-layer:members");
               localStorage.setItem("ce-dashboard:total-members-count", String(data.length));
             } catch (_) {}
             if (window.modulePageState?.members) {
@@ -16806,7 +17085,7 @@ async function hydrateDashboardRealData() {
             const cnt = res.data.totalCount || res.data.items.length;
             try {
               localStorage.setItem("ce-dashboard:members-cache", JSON.stringify(res.data.items));
-              localStorage.setItem("ce-data-layer:members", JSON.stringify(res.data.items));
+              localStorage.removeItem("ce-data-layer:members");
               localStorage.setItem("ce-dashboard:total-members-count", String(cnt));
             } catch (_) {}
             if (window.modulePageState?.members) {
@@ -16968,15 +17247,27 @@ function renderDashboard() {
   // Canonical official churches of Christ Embassy Mozambique
   const canonicalChurches = [
     { id: "a1111111-1111-4111-8111-111111111101", name: "E.C. Maputo Central - Sede", keyWords: ["maputo", "sede", "central", "22222222-2222-2222-2222-222222222201", "a1111111-1111-4111-8111-111111111101", "church-hq", "e6f47732-c7f4-42b7-a895-d2fc76483166"] },
-    { id: "a1111111-1111-4111-8111-111111111102", name: "E.C. Matola", keyWords: ["matola", "a1111111-1111-4111-8111-111111111102", "church-matola"] },
-    { id: "a1111111-1111-4111-8111-111111111103", name: "E.C. Khongolote", keyWords: ["khongolote", "a1111111-1111-4111-8111-111111111103", "church-khongolote"] },
-    { id: "a1111111-1111-4111-8111-111111111104", name: "E.C. Beira", keyWords: ["beira", "a1111111-1111-4111-8111-111111111104", "church-beira"] },
-    { id: "a1111111-1111-4111-8111-111111111105", name: "E.C. Nampula", keyWords: ["nampula", "a1111111-1111-4111-8111-111111111105", "church-nampula"] },
+    { id: "a4b58c3d-5f45-4dfd-9fc3-eef0b28f4394", name: "E.C. Maxaquene", keyWords: ["maxaquene", "a4b58c3d-5f45-4dfd-9fc3-eef0b28f4394", "church-maxaquene"] },
+    { id: "134ca1e9-1923-4751-a389-2e1f6fd08308", name: "E.C. Soveste", keyWords: ["soveste", "134ca1e9-1923-4751-a389-2e1f6fd08308", "church-soveste"] },
+    { id: "5bec53aa-8d64-49d9-a065-9670e408fcca", name: "E.C. Malhazine", keyWords: ["malhazine", "5bec53aa-8d64-49d9-a065-9670e408fcca", "a1111111-1111-4111-8111-111111111108", "church-malhazine"] },
+    { id: "a89e625e-e1d6-4b68-a20e-a3897f4ba61e", name: "E.C. Matendene", keyWords: ["matendene", "a89e625e-e1d6-4b68-a20e-a3897f4ba61e", "church-matendene"] },
     { id: "a1111111-1111-4111-8111-111111111106", name: "E.C. Choupal", keyWords: ["choupal", "a1111111-1111-4111-8111-111111111106", "church-choupal"] },
-    { id: "a1111111-1111-4111-8111-111111111108", name: "E.C. Malhazine", keyWords: ["malhazine", "a1111111-1111-4111-8111-111111111108", "church-malhazine"] },
-    { id: "a1111111-1111-4111-8111-111111111109", name: "E.C. Tete", keyWords: ["tete", "a1111111-1111-4111-8111-111111111109", "church-tete"] },
-    { id: "a1111111-1111-4111-8111-111111111110", name: "E.C. Zimpeto", keyWords: ["zimpeto", "a1111111-1111-4111-8111-111111111110", "church-zimpeto"] },
-    { id: "a1111111-1111-4111-8111-111111111111", name: "E.C. Boane", keyWords: ["boane", "a1111111-1111-4111-8111-111111111111", "church-boane"] },
+    { id: "a1111111-1111-4111-8111-111111111102", name: "E.C. Matola", keyWords: ["matola", "a1111111-1111-4111-8111-111111111102", "church-matola"] },
+    { id: "ff953bf1-7964-4023-be6e-13b5dc7fd5e3", name: "E.C. Machava 1", keyWords: ["machava 1", "machava", "ff953bf1-7964-4023-be6e-13b5dc7fd5e3", "church-machava1"] },
+    { id: "25933efb-20a3-43a4-a610-410360a1df94", name: "E.C. Matola 700", keyWords: ["matola 700", "700", "25933efb-20a3-43a4-a610-410360a1df94", "church-matola700"] },
+    { id: "a1111111-1111-4111-8111-111111111103", name: "E.C. Khongolote", keyWords: ["khongolote", "a1111111-1111-4111-8111-111111111103", "church-khongolote"] },
+    { id: "e30f5af0-5011-4e9b-9257-95a3d5e375ea", name: "E.C. Chamanculo", keyWords: ["chamanculo", "e30f5af0-5011-4e9b-9257-95a3d5e375ea", "church-chamanculo"] },
+    { id: "285a880a-2cca-4d13-8224-f831ccfeb141", name: "E.C. Zona Verde", keyWords: ["zona verde", "verde", "285a880a-2cca-4d13-8224-f831ccfeb141", "church-zonaverde"] },
+    { id: "132f3e3d-02e2-4dfe-9e42-c46fa59f3883", name: "E.C. Manhiça", keyWords: ["manhiça", "manhica", "132f3e3d-02e2-4dfe-9e42-c46fa59f3883", "church-manhica"] },
+    { id: "586f3073-f5aa-49a6-b09a-51d5747e9991", name: "E.C. Inhambane", keyWords: ["inhambane", "586f3073-f5aa-49a6-b09a-51d5747e9991", "church-inhambane"] },
+    { id: "a1111111-1111-4111-8111-111111111104", name: "E.C. Beira", keyWords: ["beira", "a1111111-1111-4111-8111-111111111104", "church-beira"] },
+    { id: "66803aaa-ba1d-461f-8ca3-a27311c04fa8", name: "E.C. Tete", keyWords: ["tete", "66803aaa-ba1d-461f-8ca3-a27311c04fa8", "a1111111-1111-4111-8111-111111111109", "church-tete"] },
+    { id: "01bd4fc6-7ac1-4f34-a370-89cc967727b1", name: "E.C. Chimoio", keyWords: ["chimoio", "01bd4fc6-7ac1-4f34-a370-89cc967727b1", "church-chimoio"] },
+    { id: "a1111111-1111-4111-8111-111111111105", name: "E.C. Nampula", keyWords: ["nampula", "a1111111-1111-4111-8111-111111111105", "1da7c8c8-3723-4259-9634-e19d35246d48", "church-nampula"] },
+    { id: "ba7a28e9-ccd2-439e-9e78-bf9ab3259d1d", name: "E.C. Lichinga", keyWords: ["lichinga", "ba7a28e9-ccd2-439e-9e78-bf9ab3259d1d", "church-lichinga"] },
+    { id: "d18a9a72-c9c0-4b82-94bc-5e0aeaac3b7f", name: "E.C. Dondo", keyWords: ["dondo", "d18a9a72-c9c0-4b82-94bc-5e0aeaac3b7f", "church-dondo"] },
+    { id: "c8bda7f4-be6a-49f8-8485-894e942cb693", name: "E.C. Manga", keyWords: ["manga", "c8bda7f4-be6a-49f8-8485-894e942cb693", "church-manga"] },
+    { id: "ccf45f8f-8692-4556-a7a4-e98d6cc1d715", name: "E.C. Xai-Xai", keyWords: ["xai-xai", "xaixai", "ccf45f8f-8692-4556-a7a4-e98d6cc1d715", "church-xaixai"] },
     { id: "a1111111-1111-4111-8111-111111111107", name: "E.C. Online", keyWords: ["online", "virtual", "a1111111-1111-4111-8111-111111111107", "church-virtual"] }
   ];
 
@@ -24563,7 +24854,7 @@ async function refreshChurchesFromRepositoryForForms() {
       });
       if (changed && typeof localStorage !== "undefined" && typeof STORAGE_KEY !== "undefined") {
         try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+          safeSaveStorageState(state);
         } catch (_) {}
       }
       return changed;
@@ -24633,7 +24924,7 @@ async function hydrateChurchesFromRepository() {
       const previous = previousById.get(repoChurch.id) || {};
       return migrateChurchRecord({ ...previous, ...repoChurch });
     });
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    safeSaveStorageState(state);
     console.info("[CE Churches] hydrated", state.churches.length, "churches");
     return true;
   } catch (error) {
@@ -24842,7 +25133,7 @@ function cacheMemberDetail(record) {
   replace(state.members || (state.members = []));
   replace(modulePageState?.members?.items);
   replace(cellPortalMembersState?.items);
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (_) {}
+  try { safeSaveStorageState(state); } catch (_) {}
   return detailed;
 }
 
@@ -25017,9 +25308,9 @@ async function hydrateMembersFromRepository() {
     state.members = [...hydratedMembers, ...pendingLocalMembers];
     syncMemberDerivedCellNetwork();
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      safeSaveStorageState(state);
       localStorage.setItem("ce-dashboard:members-cache", JSON.stringify(state.members));
-      localStorage.setItem("ce-data-layer:members", JSON.stringify(state.members));
+      localStorage.removeItem("ce-data-layer:members");
       localStorage.setItem("ce-dashboard:total-members-count", String(state.members.length));
     } catch (_) {}
     console.info("[CE Members] hydrated", state.members.length, "members");
@@ -25273,7 +25564,7 @@ async function hydrateFirstTimersFromRepository() {
         created_at: row.created_at || new Date().toISOString()
       };
     });
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    safeSaveStorageState(state);
     console.info("[CE FirstTimers] hydrated", state.firstTimers.length, "first timers from Supabase");
     return true;
   } catch (error) {
@@ -25444,7 +25735,7 @@ async function hydrateFollowUpsFromRepository() {
         created_at: row.created_at || new Date().toISOString()
       };
     });
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    safeSaveStorageState(state);
     console.info("[CE FollowUps] hydrated", state.followUps.length, "follow-ups from Supabase");
     return true;
   } catch (error) {
@@ -25765,7 +26056,7 @@ async function hydrateFoundationSchoolFromRepository() {
 
     if (hydrated) {
       ensureFoundationData();
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      safeSaveStorageState(state);
     }
     return hydrated;
   } catch (error) {
@@ -26384,7 +26675,7 @@ async function hydrateCellMinistryFromRepository() {
     }
     if (typeof autoConsolidateAllChurchReports === "function") autoConsolidateAllChurchReports();
     if (Array.isArray(state.members) && state.members.length) syncMemberDerivedCellNetwork();
-    if (hydrated) localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    if (hydrated) safeSaveStorageState(state);
     return hydrated;
   } catch (error) {
     console.warn("[CE CellMinistry] hydrate failed — keeping localStorage cell data.", error);
@@ -33771,7 +34062,7 @@ function syncMediaToLocalStorage() {
   const media = state.media;
   if (!media || typeof media !== "object") return;
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    safeSaveStorageState(state);
     localStorage.setItem("ce-data-layer:media-team", JSON.stringify(media.technicians || []));
     localStorage.setItem("ce-data-layer:media-roles", JSON.stringify(media.roles || []));
     localStorage.setItem("ce-data-layer:media-services", JSON.stringify(media.services || []));
@@ -35620,7 +35911,7 @@ async function hydrateSettingsFromRepository() {
     }
     if (hydrated) {
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        safeSaveStorageState(state);
       } catch (_) {}
       console.info("[CE Settings] hydrated", {
         settings: (state.systemSettings || []).length,
@@ -35659,7 +35950,7 @@ async function hydrateNotificationsFromRepository() {
     });
     state.notifications = [...byId.values()];
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      safeSaveStorageState(state);
     } catch (_) {}
     if (typeof updateNotificationCenter === "function") updateNotificationCenter();
     console.info("[CE Notifications] hydrated", state.notifications.length);
@@ -36717,9 +37008,7 @@ async function saveUserToSupabase(user) {
           if (idx >= 0) {
             state.users[idx] = { ...state.users[idx], ...user };
           }
-          try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-          } catch (_) {}
+          safeSaveStorageState(state);
         }
         dualWriteUserRecord("update", user);
         return true;
@@ -36785,9 +37074,7 @@ async function saveUserToSupabase(user) {
       if (idx >= 0) {
         state.users[idx] = { ...state.users[idx], ...user };
       }
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      } catch (_) {}
+      safeSaveStorageState(state);
     }
     dualWriteUserRecord(existing ? "update" : "create", user);
     return true;
@@ -43200,6 +43487,18 @@ byId("entryForm")?.addEventListener("submit", async (event) => {
     if (modalType) await submitForm(form);
   } catch (err) {
     console.error("[EntryForm Submit Error]", err);
+    const msg = String(err?.message || err || "");
+    if (msg.toLowerCase().includes("quota") || msg.toLowerCase().includes("setitem") || err?.name === "QuotaExceededError") {
+      console.warn("[EntryForm] Storage quota exceeded caught gracefully:", err);
+      try { safeSaveStorageState(state); } catch (_) {}
+      try { bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide(); } catch (_) {}
+      if (typeof showToast === "function") {
+        showToast(lang === "pt" ? "Dados gravados com sucesso! (Armazenamento local otimizado)" : "Data saved successfully! (Local storage optimized)");
+      }
+      if (activeRoute === "users") renderUsers();
+      else if (typeof setRoute === "function") setRoute(activeRoute);
+      return;
+    }
     alert(lang === "pt" ? `Erro ao guardar: ${err?.message || err}` : `Error saving: ${err?.message || err}`);
   } finally {
     if (typeof setButtonLoading === "function") setButtonLoading(submitBtn, false);
@@ -44753,7 +45052,7 @@ async function hydrateProgramsFromRepository() {
 
     if (hydrated) {
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        safeSaveStorageState(state);
       } catch (_) {}
       console.info("[CE Programs] hydrated", {
         programs: (state.programs || []).length,
@@ -44882,7 +45181,7 @@ async function hydrateMinistryMaterialsFromRepository() {
 
     if (hydrated) {
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        safeSaveStorageState(state);
       } catch (_) {}
       console.info("[CE Materials] hydrated", {
         catalogue: (state.ministryMaterials.catalogue || []).length,
@@ -45010,7 +45309,7 @@ async function hydratePrisonMinistryFromRepository() {
 
     if (hydrated) {
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        safeSaveStorageState(state);
       } catch (_) {}
       console.info("[CE Prison] hydrated", {
         prisons: (state.prisonMinistry.prisons || []).length,
@@ -45106,7 +45405,7 @@ async function hydrateFevoFromRepository() {
 
     if (hydrated) {
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        safeSaveStorageState(state);
       } catch (_) {}
       console.info("[CE FEVO] hydrated", {
         configs: (state.fevo.weeklyConfigurations || []).length,
@@ -45515,7 +45814,7 @@ async function hydrateSacramentsFromRepository() {
 
     if (hydrated) {
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        safeSaveStorageState(state);
       } catch (_) {}
       console.info("[CE Sacraments] hydrated from Supabase", {
         baptisms: (state.sacraments.baptisms || []).length,
@@ -45629,9 +45928,7 @@ async function hydrateCounselingFromRepository() {
     }
 
     if (hydrated) {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      } catch (_) {}
+      safeSaveStorageState(state);
       console.info("[CE Counseling] hydrated", {
         requests: (state.counseling.requests || []).length,
         counselors: (state.counseling.counselors || []).length,
@@ -45865,8 +46162,8 @@ async function hydrateMediaFromRepository() {
     }));
 
     if (hydrated) {
+      safeSaveStorageState(state);
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
         localStorage.setItem("ce-data-layer:media-team", JSON.stringify(state.media.technicians));
         localStorage.setItem("ce-data-layer:media-roles", JSON.stringify(state.media.roles));
         localStorage.setItem("ce-data-layer:media-services", JSON.stringify(state.media.services));
@@ -46031,9 +46328,7 @@ async function hydrateAccessControlFromRepository() {
       });
 
       state.users = [...byId.values()];
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      } catch (_) {}
+      safeSaveStorageState(state);
       hydrated = true;
       console.info("[CE AccessControl] hydrated users", state.users.length);
       if (typeof activeRoute !== "undefined" && activeRoute === "users" && typeof renderUsers === "function") {
@@ -46064,9 +46359,7 @@ async function hydrateAccessControlFromRepository() {
       }
     }
     if (hydrated) {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      } catch (_) {}
+      safeSaveStorageState(state);
     }
     return hydrated;
   } catch (error) {
@@ -46254,9 +46547,7 @@ async function hydrateStaffHrFromRepository() {
     }
 
     if (hydrated) {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      } catch (_) {}
+      safeSaveStorageState(state);
       if (typeof isStaffHrRoute === "function" && isStaffHrRoute(activeRoute)) {
         renderStaffHr();
       }
@@ -46437,9 +46728,7 @@ async function hydrateVenueInventoryFromRepository() {
     }));
 
     if (hydrated) {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      } catch (_) {}
+      safeSaveStorageState(state);
     }
     return hydrated;
   } catch (error) {
@@ -46484,9 +46773,7 @@ async function dualWriteVenueInventoryRecord(modalType, mode, record) {
     }
     if (result && result.ok && result.data && result.data.id && mode === "create") {
       record.id = result.data.id;
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      } catch (_) {}
+      safeSaveStorageState(state);
     }
     return result;
   } catch (err) {
@@ -46506,9 +46793,7 @@ async function hydrateRequisitionsFromRepository() {
     const result = await repo.listRequisitions();
     if (!result?.ok || !Array.isArray(result.data)) return false;
     state.requisitions = result.data.map((row) => ({ ...row, id: row.id }));
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch (_) {}
+    safeSaveStorageState(state);
     if (activeRoute === "requisitions" && typeof renderRequisitions === "function") {
       renderRequisitions();
     }
@@ -46539,9 +46824,7 @@ async function dualWriteRequisitionRecord(mode, record) {
     }
     if (result && result.ok && result.data && result.data.id && mode === "create") {
       record.id = result.data.id;
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      } catch (_) {}
+      safeSaveStorageState(state);
     }
     return result;
   } catch (err) {

@@ -17,14 +17,15 @@ VALUES
 ON CONFLICT (name) DO NOTHING;
 
 -- Sample HQ church (dev only) — full churches/members seed: supabase/seeds/churches_members_seed.sql
-INSERT INTO public.churches (id, church_name, public_name, type, province, city, status)
+INSERT INTO public.churches (id, church_name, public_name, type, province, city, address, status)
 VALUES (
-  '22222222-2222-2222-2222-222222222201',
+  'a1111111-1111-4111-8111-111111111101',
   'E.C. Maputo Central - Sede',
   'E.C. Maputo Central - Sede',
   'HQ',
-  'Maputo',
-  'Maputo',
+  'Maputo Cidade',
+  'KaMpfumo',
+  'Avenida de Angola No 1818, Maputo',
   'Active'
 )
 ON CONFLICT (id) DO NOTHING;
