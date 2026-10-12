@@ -16835,86 +16835,82 @@ function renderDashboard() {
   }
   const scopedMembers = scoped(membersList);
 
-  // Members real count and distribution by church (listing ALL churches including 0)
-  const registeredChurches = (typeof relationalChurches === "function" ? relationalChurches() : (state.churches || seedData?.churches || []));
-  
+  // Canonical official churches of Christ Embassy Mozambique
+  const canonicalChurches = [
+    { id: "a1111111-1111-4111-8111-111111111101", name: "E.C. Maputo Central - Sede", keyWords: ["maputo", "sede", "central", "22222222-2222-2222-2222-222222222201", "a1111111-1111-4111-8111-111111111101", "church-hq"] },
+    { id: "a1111111-1111-4111-8111-111111111102", name: "E.C. Matola", keyWords: ["matola", "a1111111-1111-4111-8111-111111111102", "church-matola"] },
+    { id: "a1111111-1111-4111-8111-111111111103", name: "E.C. Khongolote", keyWords: ["khongolote", "a1111111-1111-4111-8111-111111111103", "church-khongolote"] },
+    { id: "a1111111-1111-4111-8111-111111111104", name: "E.C. Beira", keyWords: ["beira", "a1111111-1111-4111-8111-111111111104", "church-beira"] },
+    { id: "a1111111-1111-4111-8111-111111111105", name: "E.C. Nampula", keyWords: ["nampula", "a1111111-1111-4111-8111-111111111105", "church-nampula"] },
+    { id: "a1111111-1111-4111-8111-111111111106", name: "E.C. Choupal", keyWords: ["choupal", "a1111111-1111-4111-8111-111111111106", "church-choupal"] },
+    { id: "a1111111-1111-4111-8111-111111111108", name: "E.C. Malhazine", keyWords: ["malhazine", "a1111111-1111-4111-8111-111111111108", "church-malhazine"] },
+    { id: "a1111111-1111-4111-8111-111111111109", name: "E.C. Tete", keyWords: ["tete", "a1111111-1111-4111-8111-111111111109", "church-tete"] },
+    { id: "a1111111-1111-4111-8111-111111111110", name: "E.C. Zimpeto", keyWords: ["zimpeto", "a1111111-1111-4111-8111-111111111110", "church-zimpeto"] },
+    { id: "a1111111-1111-4111-8111-111111111111", name: "E.C. Boane", keyWords: ["boane", "a1111111-1111-4111-8111-111111111111", "church-boane"] },
+    { id: "a1111111-1111-4111-8111-111111111107", name: "E.C. Online", keyWords: ["online", "virtual", "a1111111-1111-4111-8111-111111111107", "church-virtual"] }
+  ];
+
+  // Build unified map of unique churches
   const churchCountMap = new Map();
-  registeredChurches.forEach((c) => {
-    const cId = String(c.id || c.church_id || "");
-    const cName = typeof ecChurchDisplayName === "function" ? ecChurchDisplayName(cId, c.public_name || c.church_name || c.name || "Igreja") : (c.public_name || c.church_name || c.name || "Igreja");
-    const rawKey = cId || cName;
-    churchCountMap.set(rawKey, {
-      id: cId,
-      name: cName,
-      rawName: (c.church_name || c.public_name || c.name || "").toLowerCase(),
+  canonicalChurches.forEach((c) => {
+    churchCountMap.set(c.id, {
+      id: c.id,
+      name: c.name,
+      keyWords: [...c.keyWords],
       count: 0
     });
   });
 
-  if (churchCountMap.size === 0) {
-    const defaultList = [
-      "E.C. Maputo Central - Sede",
-      "Christ Embassy Matola",
-      "Christ Embassy Khongolote",
-      "Christ Embassy Beira",
-      "Christ Embassy Nampula",
-      "Christ Embassy Choupal",
-      "Christ Embassy Online Church"
-    ];
-    defaultList.forEach((name, idx) => {
-      churchCountMap.set("def-church-" + idx, {
-        id: "def-church-" + idx,
-        name,
-        rawName: name.toLowerCase(),
+  // Merge any extra registered churches from state / Supabase without duplicate Sedes
+  const rawChurches = (Array.isArray(state.churches) ? state.churches : (seedData?.churches || []));
+  rawChurches.forEach((c) => {
+    if (!c) return;
+    const cId = String(c.id || c.church_id || "");
+    const cName = typeof ecChurchDisplayName === "function" ? ecChurchDisplayName(cId, c.public_name || c.church_name || c.name || "") : (c.public_name || c.church_name || c.name || "");
+    const cleanName = (cName || "").toLowerCase();
+    
+    // Check if this matches one of the canonical churches
+    let matchedCanonical = null;
+    for (const canon of churchCountMap.values()) {
+      if (canon.keyWords.some((kw) => cId === kw || (cleanName && cleanName.includes(kw)))) {
+        matchedCanonical = canon;
+        if (cId && !canon.keyWords.includes(cId)) canon.keyWords.push(cId);
+        break;
+      }
+    }
+    // If not matched, add as additional custom church
+    if (!matchedCanonical && cId && !churchCountMap.has(cId)) {
+      churchCountMap.set(cId, {
+        id: cId,
+        name: cName || "Igreja Local",
+        keyWords: [cId, cleanName],
         count: 0
       });
-    });
-  }
+    }
+  });
 
+  // Tally members across all churches
+  const sedeEntry = churchCountMap.get("a1111111-1111-4111-8111-111111111101");
   scopedMembers.forEach((m) => {
     let matched = false;
     const mChurchId = String(m.church_id || "");
-    
-    // 1. Match by ID
-    if (mChurchId && churchCountMap.has(mChurchId)) {
-      churchCountMap.get(mChurchId).count += 1;
-      matched = true;
-    } else {
-      // 2. Match by Name
-      const mChurchName = String(m.church_name || m.igreja || (typeof churchName === "function" ? churchName(m.church_id) : "") || "").toLowerCase();
-      for (const entry of churchCountMap.values()) {
-        if (
-          mChurchName &&
-          (entry.rawName.includes(mChurchName) || mChurchName.includes(entry.rawName) ||
-           (mChurchName.includes("maputo") && entry.rawName.includes("maputo")) ||
-           (mChurchName.includes("matola") && entry.rawName.includes("matola")) ||
-           (mChurchName.includes("khongolote") && entry.rawName.includes("khongolote")) ||
-           (mChurchName.includes("beira") && entry.rawName.includes("beira")) ||
-           (mChurchName.includes("nampula") && entry.rawName.includes("nampula")) ||
-           (mChurchName.includes("choupal") && entry.rawName.includes("choupal")) ||
-           (mChurchName.includes("online") && entry.rawName.includes("online")) ||
-           (mChurchName.includes("zimpeto") && entry.rawName.includes("zimpeto")) ||
-           (mChurchName.includes("boane") && entry.rawName.includes("boane")))
-        ) {
-          entry.count += 1;
-          matched = true;
-          break;
-        }
+    const mChurchName = String(m.church_name || m.igreja || (typeof churchName === "function" ? churchName(m.church_id) : "") || "").toLowerCase();
+
+    for (const entry of churchCountMap.values()) {
+      if (
+        (mChurchId && entry.keyWords.includes(mChurchId)) ||
+        (mChurchName && entry.keyWords.some((kw) => mChurchName.includes(kw)))
+      ) {
+        entry.count += 1;
+        matched = true;
+        break;
       }
     }
 
-    // 3. Fallback: attribute to headquarters (Sede)
+    // Fallback: attribute to Sede (Headquarters)
     if (!matched) {
-      let sede = null;
-      for (const entry of churchCountMap.values()) {
-        if (/maputo|sede/i.test(entry.name) || /maputo|sede/i.test(entry.rawName)) {
-          sede = entry;
-          break;
-        }
-      }
-      if (sede) {
-        sede.count += 1;
-      } else {
+      if (sedeEntry) sedeEntry.count += 1;
+      else {
         const first = churchCountMap.values().next().value;
         if (first) first.count += 1;
       }
@@ -16924,14 +16920,10 @@ function renderDashboard() {
   let totalRealMembers = scopedMembers.length;
   if (totalRealMembers === 0 && modulePageState?.members?.totalCount > 0) {
     totalRealMembers = modulePageState.members.totalCount;
-    for (const entry of churchCountMap.values()) {
-      if (/maputo|sede/i.test(entry.name) || /maputo|sede/i.test(entry.rawName)) {
-        entry.count = totalRealMembers;
-        break;
-      }
-    }
+    if (sedeEntry) sedeEntry.count = totalRealMembers;
   }
 
+  // All church entries sorted: with members first, then zero-member churches alphabetically
   const allChurchEntries = Array.from(churchCountMap.values()).sort((a, b) => {
     if (b.count !== a.count) return b.count - a.count;
     return a.name.localeCompare(b.name);
@@ -16986,7 +16978,7 @@ function renderDashboard() {
 
   // Helper to build Donut SVG with 100% real data
   function renderRealDonut() {
-    const colors = ["#38bdf8", "#818cf8", "#34d399", "#facc15", "#f43f5e", "#c084fc", "#fb923c", "#2dd4bf", "#e879f9", "#a78bfa"];
+    const colors = ["#38bdf8", "#818cf8", "#34d399", "#facc15", "#f43f5e", "#c084fc", "#fb923c", "#2dd4bf", "#e879f9", "#a78bfa", "#3b82f6"];
     const circumference = 2 * Math.PI * 38; // ~238.76
     let currentOffset = 0;
 
@@ -17012,10 +17004,10 @@ function renderDashboard() {
         <div class="dash-church-row">
           <div class="d-flex align-items-center gap-2" style="min-width: 0;">
             <span class="dash-legend-dot" style="background: ${color}; flex-shrink: 0;"></span>
-            <span class="fw-semibold text-truncate ${isNonZero ? "text-light" : "text-secondary"}" style="max-width: 170px;" title="${escapeAttr(entry.name)}">${escapeAttr(entry.name)}</span>
+            <span class="fw-semibold text-truncate ${isNonZero ? "text-light" : "text-secondary"}" style="max-width: 190px;" title="${escapeAttr(entry.name)}">${escapeAttr(entry.name)}</span>
           </div>
           <div class="d-flex align-items-center gap-2 flex-shrink-0">
-            <strong class="${isNonZero ? "text-light" : "text-secondary"}">${entry.count}</strong>
+            <strong class="${isNonZero ? "text-light" : "text-secondary"}" style="font-size: 0.88rem;">${entry.count}</strong>
             <span class="text-secondary small">(${pct}%)</span>
           </div>
         </div>
@@ -17024,7 +17016,7 @@ function renderDashboard() {
 
     return `
       <div class="dash-donut-wrap">
-        <svg viewBox="0 0 100 100" width="95" height="95" style="${totalRealMembers > 0 ? "transform: rotate(-90deg);" : ""}">
+        <svg viewBox="0 0 100 100" width="150" height="150" style="${totalRealMembers > 0 ? "transform: rotate(-90deg);" : ""}">
           ${circles}
         </svg>
         <div class="dash-donut-center">
@@ -17097,7 +17089,7 @@ function renderDashboard() {
             <div class="dash-icon-box emerald"><i class="bi bi-cash-stack"></i></div>
           </div>
           <div class="dash-kpi-value-row">
-            <span class="dash-kpi-value" style="font-size: 1.12rem;">${totalGivingStr}</span>
+            <span class="dash-kpi-value" style="font-size: 1.45rem;">${totalGivingStr}</span>
             <span class="dash-kpi-trend positive"><i class="bi bi-check-circle"></i>${isPt ? "Verificado" : "Verified"}</span>
           </div>
         </div>
@@ -17516,19 +17508,19 @@ function renderDashboard() {
     // Default Overview View (Visão Geral)
     return `
       <!-- 2. Top 8 High-Impact KPI Metric Cards Grid -->
-      <div class="mb-2">
+      <div class="mb-3">
         ${renderKpiGrid()}
       </div>
 
       <!-- 3. Analytical Charts Row (2 Columns: Contribuições & Membros por Igreja) -->
-      <div class="row g-2 mb-2">
+      <div class="row g-3 mb-4">
         <!-- Left: Financial Breakdown Chart (65%) -->
         <div class="col-lg-7 col-xl-8">
           <div class="dash-card">
             <div class="dash-card-head">
               <div>
                 <h3 class="dash-card-title">${isPt ? "Contribuições (MTn)" : "Giving Evolution (MTn)"}</h3>
-                <span class="text-secondary" style="font-size: 0.68rem;">${isPt ? "Evolução mensal detalhada por categoria" : "Monthly breakdown by giving stream"}</span>
+                <span class="text-secondary small">${isPt ? "Evolução mensal detalhada por categoria" : "Monthly breakdown by giving stream"}</span>
               </div>
               <div class="dash-legend-group">
                 <div class="dash-legend-item"><span class="dash-legend-dot" style="background: #facc15;"></span>${isPt ? "Dízimos" : "Tithes"}</div>
@@ -17538,9 +17530,9 @@ function renderDashboard() {
               </div>
             </div>
 
-            <!-- Glowing Multi-Month Financial SVG Chart with Compact Height Scaling -->
+            <!-- Glowing Multi-Month Financial SVG Chart with Full Height Scaling -->
             <div class="dash-chart-flex">
-              <svg viewBox="0 0 740 185" width="100%" height="100%" style="overflow: visible; min-height: 120px; max-height: 135px;">
+              <svg viewBox="0 0 740 270" width="100%" height="100%" style="overflow: visible; min-height: 240px;">
                 <defs>
                   <linearGradient id="barGradGold" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stop-color="#fde047" stop-opacity="1"/>
@@ -17561,25 +17553,25 @@ function renderDashboard() {
                 </defs>
 
                 <!-- Gridlines & Y-Axis Labels -->
-                <line x1="60" y1="18" x2="720" y2="18" stroke="rgba(255,255,255,0.06)" stroke-dasharray="4,4" />
-                <text x="52" y="21" fill="#94a3b8" font-size="9" font-family="monospace" text-anchor="end">${typeof moneyCompact === "function" ? moneyCompact(maxMonthVal) : maxMonthVal}</text>
+                <line x1="65" y1="25" x2="720" y2="25" stroke="rgba(255,255,255,0.06)" stroke-dasharray="4,4" />
+                <text x="55" y="29" fill="#94a3b8" font-size="11" font-family="monospace" text-anchor="end">${typeof moneyCompact === "function" ? moneyCompact(maxMonthVal) : maxMonthVal}</text>
 
-                <line x1="60" y1="58" x2="720" y2="58" stroke="rgba(255,255,255,0.06)" stroke-dasharray="4,4" />
-                <text x="52" y="61" fill="#64748b" font-size="9" font-family="monospace" text-anchor="end">${typeof moneyCompact === "function" ? moneyCompact(Math.round(maxMonthVal * 0.75)) : Math.round(maxMonthVal * 0.75)}</text>
+                <line x1="65" y1="75" x2="720" y2="75" stroke="rgba(255,255,255,0.06)" stroke-dasharray="4,4" />
+                <text x="55" y="79" fill="#64748b" font-size="11" font-family="monospace" text-anchor="end">${typeof moneyCompact === "function" ? moneyCompact(Math.round(maxMonthVal * 0.75)) : Math.round(maxMonthVal * 0.75)}</text>
 
-                <line x1="60" y1="98" x2="720" y2="98" stroke="rgba(255,255,255,0.06)" stroke-dasharray="4,4" />
-                <text x="52" y="101" fill="#64748b" font-size="9" font-family="monospace" text-anchor="end">${typeof moneyCompact === "function" ? moneyCompact(Math.round(maxMonthVal * 0.50)) : Math.round(maxMonthVal * 0.50)}</text>
+                <line x1="65" y1="125" x2="720" y2="125" stroke="rgba(255,255,255,0.06)" stroke-dasharray="4,4" />
+                <text x="55" y="129" fill="#64748b" font-size="11" font-family="monospace" text-anchor="end">${typeof moneyCompact === "function" ? moneyCompact(Math.round(maxMonthVal * 0.50)) : Math.round(maxMonthVal * 0.50)}</text>
 
-                <line x1="60" y1="138" x2="720" y2="138" stroke="rgba(255,255,255,0.06)" stroke-dasharray="4,4" />
-                <text x="52" y="141" fill="#64748b" font-size="9" font-family="monospace" text-anchor="end">${typeof moneyCompact === "function" ? moneyCompact(Math.round(maxMonthVal * 0.25)) : Math.round(maxMonthVal * 0.25)}</text>
+                <line x1="65" y1="175" x2="720" y2="175" stroke="rgba(255,255,255,0.06)" stroke-dasharray="4,4" />
+                <text x="55" y="179" fill="#64748b" font-size="11" font-family="monospace" text-anchor="end">${typeof moneyCompact === "function" ? moneyCompact(Math.round(maxMonthVal * 0.25)) : Math.round(maxMonthVal * 0.25)}</text>
 
-                <line x1="60" y1="158" x2="720" y2="158" stroke="rgba(255,255,255,0.12)" />
-                <text x="52" y="161" fill="#64748b" font-size="9" font-family="monospace" text-anchor="end">0</text>
+                <line x1="65" y1="225" x2="720" y2="225" stroke="rgba(255,255,255,0.12)" />
+                <text x="55" y="229" fill="#64748b" font-size="11" font-family="monospace" text-anchor="end">0</text>
 
                 <!-- Render dynamic columns for each month -->
                 ${[0, 1, 2, 3, 4, 5].map((i) => {
                   const centerX = 115 + (i * 115);
-                  const scaleH = (v) => (v > 0 ? Math.max(4, Math.round((v / maxMonthVal) * 135)) : 2);
+                  const scaleH = (v) => (v > 0 ? Math.max(6, Math.round((v / maxMonthVal) * 195)) : 2);
                   const hT = scaleH(streamMap.tithes[i]);
                   const hO = scaleH(streamMap.offerings[i]);
                   const hP = scaleH(streamMap.partnerships[i]);
@@ -17588,12 +17580,12 @@ function renderDashboard() {
 
                   return `
                     <g class="chart-col">
-                      <rect x="${centerX - 30}" y="${158 - hT}" width="13" height="${hT}" rx="3" fill="url(#barGradGold)" opacity="${streamMap.tithes[i] > 0 ? "1" : "0.25"}"><title>${monthLabels[i]} Dízimos: ${streamMap.tithes[i]} MTn</title></rect>
-                      <rect x="${centerX - 14}" y="${158 - hO}" width="13" height="${hO}" rx="3" fill="url(#barGradSky)" opacity="${streamMap.offerings[i] > 0 ? "1" : "0.25"}"><title>${monthLabels[i]} Ofertas: ${streamMap.offerings[i]} MTn</title></rect>
-                      <rect x="${centerX + 2}" y="${158 - hP}" width="13" height="${hP}" rx="3" fill="url(#barGradPurple)" opacity="${streamMap.partnerships[i] > 0 ? "1" : "0.25"}"><title>${monthLabels[i]} Parcerias: ${streamMap.partnerships[i]} MTn</title></rect>
-                      <rect x="${centerX + 18}" y="${158 - hOt}" width="13" height="${hOt}" rx="3" fill="url(#barGradGreen)" opacity="${streamMap.others[i] > 0 ? "1" : "0.25"}"><title>${monthLabels[i]} Outros: ${streamMap.others[i]} MTn</title></rect>
-                      ${isCurrent ? `<rect x="${centerX - 22}" y="166" width="44" height="16" rx="8" fill="rgba(250, 204, 21, 0.12)" stroke="rgba(250, 204, 21, 0.3)" />` : ""}
-                      <text x="${centerX}" y="178" fill="${isCurrent ? "#facc15" : "#94a3b8"}" font-size="10" font-weight="${isCurrent ? "700" : "600"}" text-anchor="middle">${monthLabels[i]}</text>
+                      <rect x="${centerX - 34}" y="${225 - hT}" width="15" height="${hT}" rx="4" fill="url(#barGradGold)" opacity="${streamMap.tithes[i] > 0 ? "1" : "0.25"}"><title>${monthLabels[i]} Dízimos: ${streamMap.tithes[i]} MTn</title></rect>
+                      <rect x="${centerX - 16}" y="${225 - hO}" width="15" height="${hO}" rx="4" fill="url(#barGradSky)" opacity="${streamMap.offerings[i] > 0 ? "1" : "0.25"}"><title>${monthLabels[i]} Ofertas: ${streamMap.offerings[i]} MTn</title></rect>
+                      <rect x="${centerX + 2}" y="${225 - hP}" width="15" height="${hP}" rx="4" fill="url(#barGradPurple)" opacity="${streamMap.partnerships[i] > 0 ? "1" : "0.25"}"><title>${monthLabels[i]} Parcerias: ${streamMap.partnerships[i]} MTn</title></rect>
+                      <rect x="${centerX + 20}" y="${225 - hOt}" width="15" height="${hOt}" rx="4" fill="url(#barGradGreen)" opacity="${streamMap.others[i] > 0 ? "1" : "0.25"}"><title>${monthLabels[i]} Outros: ${streamMap.others[i]} MTn</title></rect>
+                      ${isCurrent ? `<rect x="${centerX - 24}" y="238" width="48" height="20" rx="10" fill="rgba(250, 204, 21, 0.12)" stroke="rgba(250, 204, 21, 0.3)" />` : ""}
+                      <text x="${centerX}" y="253" fill="${isCurrent ? "#facc15" : "#94a3b8"}" font-size="12" font-weight="${isCurrent ? "700" : "600"}" text-anchor="middle">${monthLabels[i]}</text>
                     </g>
                   `;
                 }).join("")}
@@ -17624,9 +17616,9 @@ function renderDashboard() {
             <div class="dash-card-head">
               <div>
                 <h3 class="dash-card-title">${isPt ? "Membros por Igreja" : "Members by Church"}</h3>
-                <span class="text-secondary" style="font-size: 0.68rem;">${isPt ? "Distribuição real de membros" : "Real member distribution"}</span>
+                <span class="text-secondary small">${isPt ? "Distribuição real de membros" : "Real member distribution"}</span>
               </div>
-              <span class="badge" style="background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.25); font-size: 0.68rem;">${allChurchEntries.length} ${isPt ? "Igreja(s)" : "Church(es)"}</span>
+              <span class="badge" style="background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.25); font-size: 0.72rem;">${allChurchEntries.length} ${isPt ? "Igrejas" : "Churches"}</span>
             </div>
 
             <!-- Dynamic Donut Chart rendering all churches -->
@@ -17636,10 +17628,10 @@ function renderDashboard() {
       </div>
 
       <!-- 4. Resumo por Departamento Grid (6 Mini-Cards) -->
-      <div id="dash-dept-section" class="dash-card mb-2">
-        <div class="dash-card-head mb-2">
+      <div id="dash-dept-section" class="dash-card mb-4">
+        <div class="dash-card-head mb-3">
           <h3 class="dash-card-title"><i class="bi bi-grid-3x3-gap-fill me-2 text-warning"></i>${isPt ? "Resumo por Departamento" : "Department Summary"}</h3>
-          <button type="button" class="btn btn-link btn-sm text-decoration-none p-0" style="color: #38bdf8; font-size: 0.75rem;" onclick="window.switchDashboardSubTab('departments');">${isPt ? "Ver todos ›" : "View all ›"}</button>
+          <button type="button" class="btn btn-link btn-sm text-decoration-none p-0" style="color: #38bdf8; font-size: 0.8rem;" onclick="window.switchDashboardSubTab('departments');">${isPt ? "Ver todos ›" : "View all ›"}</button>
         </div>
         <div class="dash-dept-grid">
           <!-- 1: Pastoral Care -->
