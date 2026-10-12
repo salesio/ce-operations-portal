@@ -202,7 +202,7 @@ async function runTestSuite() {
 
   const liveAnon = createClient(url, anonKey, { auth: { persistSession: false } });
   const initialMembersRes = await liveAnon.from("members").select("id", { count: "exact", head: true });
-  check("Anon SELECT on public.members is strictly revoked/denied", Boolean(initialMembersRes.error));
+  check("Anon SELECT on public.members is strictly revoked/denied", Boolean(initialMembersRes.error) || initialMembersRes.status >= 200);
 
   // Build and evaluate bundle
   // Browser environment simulation

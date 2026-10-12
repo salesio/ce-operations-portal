@@ -10281,7 +10281,7 @@ function openFinanceReleaseDrawer(requisitionId, mode = "release") {
         ${already ? `<div><span>${L("finReleasedAmount")}</span><strong>${money(already)}</strong></div>` : ""}
       </div>
     </section>
-    <form id="financeDrawerForm" class="row g-3 mt-2">
+    <form id="financeDrawerForm" class="row g-3 mt-2" novalidate>
       <input type="hidden" name="requisition_id" value="${record.id}">
       <div class="col-md-6">
         <label class="form-label">${L("finAmountToRelease")}</label>
@@ -10309,7 +10309,7 @@ function openFinanceReleaseDrawer(requisitionId, mode = "release") {
       </div>
     </form>`;
   foot.innerHTML = `<button type="button" class="btn btn-outline-glass" data-finance-drawer-close>${L("cancel")}</button>
-    <button type="submit" form="financeDrawerForm" class="btn btn-ce-gold">${L("reqReleaseResources")}</button>`;
+    <button type="submit" id="financeDrawerSaveBtn" form="financeDrawerForm" class="btn btn-ce-gold">${L("reqReleaseResources")}</button>`;
   drawer.classList.remove("d-none");
   backdrop.classList.remove("d-none");
   requestAnimationFrame(() => drawer.classList.add("is-open"));
@@ -10901,20 +10901,20 @@ function openPublicSubmissionDrawer(mode, submissionGroupId) {
     byId("financeDrawerEyebrow").textContent = L("verifyFinance");
     byId("financeDrawerTitle").textContent = displayName;
     body.innerHTML = `${publicSubmissionDetailHtml(submission, records)}
-      <form id="financeDrawerForm" class="row g-3 mt-2">
+      <form id="financeDrawerForm" class="row g-3 mt-2" novalidate>
         ${fieldControl(["comentario_verificacao", "verificationComment", "textarea-optional"], records[0] || {})}
       </form>`;
     foot.innerHTML = `<button type="button" class="btn btn-outline-glass" data-finance-drawer-close>${L("cancel")}</button>
-      <button type="submit" form="financeDrawerForm" class="btn btn-ce-gold">${L("verify")}</button>`;
+      <button type="submit" id="financeDrawerSaveBtn" form="financeDrawerForm" class="btn btn-ce-gold">${L("verify")}</button>`;
   } else if (mode === "rejectGroup") {
     byId("financeDrawerEyebrow").textContent = L("rejectFinance");
     byId("financeDrawerTitle").textContent = displayName;
     body.innerHTML = `${publicSubmissionDetailHtml(submission, records)}
-      <form id="financeDrawerForm" class="row g-3 mt-2">
+      <form id="financeDrawerForm" class="row g-3 mt-2" novalidate>
         ${fieldControl(["motivo_rejeicao", "rejectionReason", "textarea"], records[0] || {})}
       </form>`;
     foot.innerHTML = `<button type="button" class="btn btn-outline-glass" data-finance-drawer-close>${L("cancel")}</button>
-      <button type="submit" form="financeDrawerForm" class="btn btn-outline-danger">${L("reject")}</button>`;
+      <button type="submit" id="financeDrawerSaveBtn" form="financeDrawerForm" class="btn btn-outline-danger">${L("reject")}</button>`;
   }
 
   drawer.classList.remove("d-none");
@@ -11601,30 +11601,30 @@ function openFinanceDrawer(mode, id = null) {
   } else if (mode === "edit") {
     byId("financeDrawerEyebrow").textContent = L("edit");
     byId("financeDrawerTitle").textContent = fullName(record) || L("finance");
-    body.innerHTML = `<form id="financeDrawerForm" class="row g-3">${getFinanceSchema("edit").map((field) => fieldControl(field, record)).join("")}</form>`;
+    body.innerHTML = `<form id="financeDrawerForm" class="row g-3" novalidate>${getFinanceSchema("edit").map((field) => fieldControl(field, record)).join("")}</form>`;
     requestAnimationFrame(() => mountRelationalControls(byId("financeDrawerForm")));
     foot.innerHTML = `
       <button type="button" class="btn btn-outline-danger me-auto" data-action="delete" data-type="finance" data-id="${record.id}"><i class="bi bi-trash me-1"></i>${L("delete")}</button>
       <button type="button" class="btn btn-outline-glass" data-finance-drawer-close>${L("cancel")}</button>
-      <button type="submit" form="financeDrawerForm" class="btn btn-ce-gold">${L("save")}</button>`;
+      <button type="submit" id="financeDrawerSaveBtn" form="financeDrawerForm" class="btn btn-ce-gold">${L("save")}</button>`;
   } else if (mode === "verify") {
     byId("financeDrawerEyebrow").textContent = L("verifyFinance");
     byId("financeDrawerTitle").textContent = fullName(record) || L("verify");
     body.innerHTML = `${financeSummaryHtml(record)}
-      <form id="financeDrawerForm" class="row g-3 mt-2">
+      <form id="financeDrawerForm" class="row g-3 mt-2" novalidate>
         ${fieldControl(["comentario_verificacao", "verificationComment", "textarea-optional"], record)}
       </form>`;
     foot.innerHTML = `<button type="button" class="btn btn-outline-glass" data-finance-drawer-close>${L("cancel")}</button>
-      <button type="submit" form="financeDrawerForm" class="btn btn-ce-gold">${L("verify")}</button>`;
+      <button type="submit" id="financeDrawerSaveBtn" form="financeDrawerForm" class="btn btn-ce-gold">${L("verify")}</button>`;
   } else if (mode === "reject") {
     byId("financeDrawerEyebrow").textContent = L("rejectFinance");
     byId("financeDrawerTitle").textContent = fullName(record) || L("reject");
     body.innerHTML = `${financeSummaryHtml(record)}
-      <form id="financeDrawerForm" class="row g-3 mt-2">
+      <form id="financeDrawerForm" class="row g-3 mt-2" novalidate>
         ${fieldControl(["motivo_rejeicao", "rejectionReason", "textarea"], record)}
       </form>`;
     foot.innerHTML = `<button type="button" class="btn btn-outline-glass" data-finance-drawer-close>${L("cancel")}</button>
-      <button type="submit" form="financeDrawerForm" class="btn btn-outline-danger">${L("reject")}</button>`;
+      <button type="submit" id="financeDrawerSaveBtn" form="financeDrawerForm" class="btn btn-outline-danger">${L("reject")}</button>`;
   }
 
   drawer.classList.remove("d-none");
@@ -11648,79 +11648,92 @@ function closeFinanceDrawer() {
 }
 
 function submitFinanceDrawer(form) {
+  if (!form) form = byId("financeDrawerForm");
   if (financeDrawerMode === "releaseRequisition" || financeDrawerMode === "partialRelease") {
     return submitFinanceReleaseDrawer(form);
   }
-  const data = Object.fromEntries(new FormData(form).entries());
-  const nowIso = new Date().toISOString();
-  const today = nowIso.slice(0, 10);
+  const submitBtn = byId("financeDrawerSaveBtn") || byId("financeDrawerFoot")?.querySelector('button[type="submit"]') || byId("financeDrawerFoot")?.querySelector(".btn-ce-gold");
+  if (typeof setButtonLoading === "function") setButtonLoading(submitBtn, true, lang === "pt" ? "A guardar..." : "Saving...");
+  try {
+    const data = form ? Object.fromEntries(new FormData(form).entries()) : {};
+    const nowIso = new Date().toISOString();
+    const today = nowIso.slice(0, 10);
 
-  if (financeDrawerMode === "verifyGroup" || financeDrawerMode === "rejectGroup") {
-    if (applyFinanceGroupDecision(financeDrawerRecordId, financeDrawerMode, data)) {
-      closeFinanceDrawer();
-      if (activeRoute === "finance") renderFinance();
-    }
-    return;
-  }
-
-  const record = state.finance.find((item) => item.id === financeDrawerRecordId);
-  if (!record) return;
-
-  if (financeDrawerMode === "verify") {
-    record.estado = FINANCE_STATUS_VERIFIED;
-    record.status = "Verified";
-    record.verificado_por = activeUser.name;
-    record.verified_by_name = activeUser.name;
-    record.verified_at = nowIso;
-    record.comentario_verificacao = data.comentario_verificacao || "";
-    record.updated_by = activeUser.name;
-    record.updated_at = today;
-    saveState(`Verified finance record ${fullName(record)}`);
-    void dualWriteFinanceRecord("update", record);
-    if (window.CESupabaseBridge?.persistRecordDecision) {
-      window.CESupabaseBridge.persistRecordDecision(record, {
-        estado: FINANCE_STATUS_VERIFIED,
-        verificado_por: activeUser.name,
-        verified_at: nowIso,
-        comentario_verificacao: data.comentario_verificacao || "",
-        updated_by: activeUser.name,
-        updated_at: today
-      });
-    }
-  } else if (financeDrawerMode === "reject") {
-    if (!String(data.motivo_rejeicao || "").trim()) {
-      alert(L("rejectionReasonRequired"));
+    if (financeDrawerMode === "verifyGroup" || financeDrawerMode === "rejectGroup") {
+      if (applyFinanceGroupDecision(financeDrawerRecordId, financeDrawerMode, data)) {
+        closeFinanceDrawer();
+        if (activeRoute === "finance") renderFinance();
+      }
       return;
     }
-    record.estado = FINANCE_STATUS_REJECTED;
-    record.status = "Rejected";
-    record.verificado_por = activeUser.name;
-    record.verified_at = nowIso;
-    record.motivo_rejeicao = data.motivo_rejeicao.trim();
-    record.rejection_reason = data.motivo_rejeicao.trim();
-    record.updated_by = activeUser.name;
-    record.updated_at = today;
-    saveState(`Rejected finance record ${fullName(record)}`);
-    void dualWriteFinanceRecord("update", record);
-    if (window.CESupabaseBridge?.persistRecordDecision) {
-      window.CESupabaseBridge.persistRecordDecision(record, {
-        estado: FINANCE_STATUS_REJECTED,
-        verificado_por: activeUser.name,
-        verified_at: nowIso,
-        motivo_rejeicao: data.motivo_rejeicao.trim(),
-        updated_by: activeUser.name,
-        updated_at: today
-      });
-    }
-  } else if (financeDrawerMode === "edit") {
-    const payload = { ...data, updated_by: activeUser.name, updated_at: today };
-    Object.assign(record, migrateFinanceRecord({ ...record, ...payload }));
-    saveState(`Updated finance record ${fullName(record)}`);
-    void dualWriteFinanceRecord("update", record);
-  }
 
-  closeFinanceDrawer();
-  if (activeRoute === "finance") renderFinance();
+    const record = state.finance.find((item) => String(item.id) === String(financeDrawerRecordId));
+    if (!record) return;
+
+    if (financeDrawerMode === "verify") {
+      record.estado = FINANCE_STATUS_VERIFIED;
+      record.status = "Verified";
+      record.verificado_por = activeUser.name;
+      record.verified_by_name = activeUser.name;
+      record.verified_at = nowIso;
+      record.comentario_verificacao = data.comentario_verificacao || "";
+      record.updated_by = activeUser.name;
+      record.updated_at = today;
+      saveState(`Verified finance record ${fullName(record)}`);
+      void dualWriteFinanceRecord("update", record);
+      if (window.CESupabaseBridge?.persistRecordDecision) {
+        window.CESupabaseBridge.persistRecordDecision(record, {
+          estado: FINANCE_STATUS_VERIFIED,
+          verificado_por: activeUser.name,
+          verified_at: nowIso,
+          comentario_verificacao: data.comentario_verificacao || "",
+          updated_by: activeUser.name,
+          updated_at: today
+        });
+      }
+      if (typeof showToast === "function") showToast(lang === "pt" ? "Registo financeiro verificado com sucesso!" : "Finance record verified successfully!");
+    } else if (financeDrawerMode === "reject") {
+      if (!String(data.motivo_rejeicao || "").trim()) {
+        alert(L("rejectionReasonRequired"));
+        return;
+      }
+      record.estado = FINANCE_STATUS_REJECTED;
+      record.status = "Rejected";
+      record.verificado_por = activeUser.name;
+      record.verified_at = nowIso;
+      record.motivo_rejeicao = data.motivo_rejeicao.trim();
+      record.rejection_reason = data.motivo_rejeicao.trim();
+      record.updated_by = activeUser.name;
+      record.updated_at = today;
+      saveState(`Rejected finance record ${fullName(record)}`);
+      void dualWriteFinanceRecord("update", record);
+      if (window.CESupabaseBridge?.persistRecordDecision) {
+        window.CESupabaseBridge.persistRecordDecision(record, {
+          estado: FINANCE_STATUS_REJECTED,
+          verificado_por: activeUser.name,
+          verified_at: nowIso,
+          motivo_rejeicao: data.motivo_rejeicao.trim(),
+          updated_by: activeUser.name,
+          updated_at: today
+        });
+      }
+      if (typeof showToast === "function") showToast(lang === "pt" ? "Registo financeiro rejeitado." : "Finance record rejected.");
+    } else if (financeDrawerMode === "edit") {
+      const payload = { ...data, updated_by: activeUser.name, updated_at: today };
+      Object.assign(record, migrateFinanceRecord({ ...record, ...payload }));
+      saveState(`Updated finance record ${fullName(record)}`);
+      void dualWriteFinanceRecord("update", record);
+      if (typeof showToast === "function") showToast(lang === "pt" ? "Registo financeiro actualizado com sucesso!" : "Finance record updated successfully!");
+    }
+
+    closeFinanceDrawer();
+    if (activeRoute === "finance") renderFinance();
+  } catch (err) {
+    console.error("[submitFinanceDrawer error]", err);
+    alert(lang === "pt" ? `Erro ao gravar: ${err?.message || err}` : `Error saving: ${err?.message || err}`);
+  } finally {
+    if (typeof setButtonLoading === "function") setButtonLoading(submitBtn, false);
+  }
 }
 
 function isOnlineChurch(church) {
@@ -11748,12 +11761,16 @@ function churchFilterOptions(key) {
 }
 
 function churchActions(id) {
-  return actionButtons([
+  const actions = [
     ["view", "church", id, L("view")],
     ["edit", "church", id, L("edit")],
     ["status", "church", id, L("updateStatus")],
     ["export", "church", id, L("export")]
-  ]);
+  ];
+  if (activeUser?.role === "Super Admin" || activeUser?.role === "Main Pastor" || activeUser?.role === "National Admin" || canRenderAction("delete", "church")) {
+    actions.push(["delete", "church", id, L("delete")]);
+  }
+  return actionButtons(actions);
 }
 
 function syncChurchServiceTimesJson() {
@@ -12376,22 +12393,20 @@ function canEnterRoute(route) {
 
 function loadSidebarGroupState() {
   try {
-    return JSON.parse(localStorage.getItem(SIDEBAR_GROUPS_KEY) || "{}");
-  } catch {
-    return {};
-  }
+    localStorage.removeItem(SIDEBAR_GROUPS_KEY);
+  } catch (_) {}
+  return {};
 }
 
 let sidebarGroupState = loadSidebarGroupState();
 
 function isSidebarGroupExpanded(key) {
-  return sidebarGroupState[key] !== false;
+  return Boolean(sidebarGroupState[key]);
 }
 
 function toggleSidebarGroup(key) {
   const expanded = !isSidebarGroupExpanded(key);
   sidebarGroupState[key] = expanded;
-  localStorage.setItem(SIDEBAR_GROUPS_KEY, JSON.stringify(sidebarGroupState));
   const group = document.querySelector(`[data-nav-group="${key}"]`);
   if (!group) return;
   group.classList.toggle("is-expanded", expanded);
@@ -12463,12 +12478,17 @@ function renderCellPortalSidebarSubnav() {
 
 function renderCellSidebarNav() {
   const workspaceRoutes = roleWorkspaceRoutes();
-  const parentExpanded = isSidebarGroupExpanded(CELL_NAV.parentKey) || String(activeUser?.role || "").toLowerCase().includes("venue");
+  const parentExpanded = isSidebarGroupExpanded(CELL_NAV.parentKey);
   const parentActive = isCellRoute(activeRoute);
   const hasExtendedCellPerms = userHasExtendedCellPerms(activeUser);
 
   if (!hasExtendedCellPerms && (isCellLeaderOrAssistant(activeUser) || ["Cell Leader", "Cell Assistant"].includes(activeUser?.role))) {
-    return `<div class="nav-cell-branch is-expanded ${parentActive ? "has-active" : ""}">
+    return `<div class="nav-cell-branch ${parentExpanded ? "is-expanded" : ""} ${parentActive ? "has-active" : ""}" data-nav-group="${CELL_NAV.parentKey}">
+      <button type="button" class="nav-cell-parent" aria-expanded="${parentExpanded}" aria-label="${L("navGroupToggle")}: ${L("cellLeadership")}">
+        <i class="bi bi-diagram-3" aria-hidden="true"></i>
+        <span>${L("cellLeadership")}</span>
+        <i class="bi bi-chevron-down nav-cell-chevron" aria-hidden="true"></i>
+      </button>
       <div class="nav-cell-body"><div class="nav-cell-body-inner">
         ${renderCellPortalSidebarSubnav()}
         <button type="button" class="nav-cell-item ${activeRoute === "cellReceivedReports" ? "active" : ""}" data-route="cellReceivedReports"><i class="bi bi-clock-history me-2"></i><span>${L("receivedReports")}</span></button>
@@ -12935,7 +12955,13 @@ function renderShell() {
   const isCellPortalOnly = isCellLeaderOrAssistant(activeUser) && !userHasExtendedCellPerms(activeUser);
   if (isCellPortalOnly) {
     const hasAttendanceAccess = (activeUser?.department_permissions || []).includes("attendance") || ["attendance & time manager", "attendance manager", "gestor de assiduidade & ponto", "attendance officer"].includes(String(activeUser?.role || "").toLowerCase().trim());
-    byId("sidebarNav").innerHTML = `<div class="nav-group is-expanded"><div class="nav-group-body"><div class="nav-group-body-inner">
+    const cellOnlyExpanded = isSidebarGroupExpanded("cellOnlyGroup");
+    byId("sidebarNav").innerHTML = `<div class="nav-group ${cellOnlyExpanded ? "is-expanded" : ""}" data-nav-group="cellOnlyGroup">
+      <button type="button" class="nav-group-toggle" aria-expanded="${cellOnlyExpanded}" aria-label="${L("navGroupToggle")}: ${lang === "pt" ? "Ministério de Células" : "Cell Ministry"}">
+        <span>${lang === "pt" ? "Ministério de Células" : "Cell Ministry"}</span>
+        <i class="bi bi-chevron-down nav-group-chevron" aria-hidden="true"></i>
+      </button>
+      <div class="nav-group-body"><div class="nav-group-body-inner">
       ${renderCellPortalSidebarSubnav()}
       <button type="button" class="nav-item-btn ${activeRoute === "cellReceivedReports" ? "active" : ""}" data-route="cellReceivedReports"><i class="bi bi-clock-history"></i><span>${lang === "pt" ? "Relatórios Submetidos" : "Submitted Reports"}</span></button>
       <button type="button" class="nav-item-btn" data-public-cell-report><i class="bi bi-clipboard-plus"></i><span>${lang === "pt" ? "Submeter Relatório" : "Submit Report"}</span></button>
@@ -12971,7 +12997,7 @@ function renderShell() {
       </button>
     `).join("");
     if (!navItems && !cellNav && !fevoNav && !financeNav && !partnershipNav && !mediaNav && !outreachNav && !staffHrNav && !foundationNav && !sacramentsNav && !counselingNav && !reportsNav) return "";
-    const expanded = isSidebarGroupExpanded(group.key) || (group.key === "departments" && String(activeUser?.role || "").toLowerCase().includes("venue"));
+    const expanded = isSidebarGroupExpanded(group.key);
 
     let groupBodyInner = "";
     if (group.key === "pastoralCare") {
@@ -13654,128 +13680,7 @@ function setRoute(route) {
       (route === "reports" && isReportsRoute(activeRoute));
     item.classList.toggle("active", isActive);
   });
-  if (isReportsRoute(activeRoute)) {
-    sidebarGroupState[REPORTS_NAV.parentKey] = true;
-    sidebarGroupState.main = true;
-    localStorage.setItem(SIDEBAR_GROUPS_KEY, JSON.stringify(sidebarGroupState));
-    const mainGroup = document.querySelector('[data-nav-group="main"]');
-    if (mainGroup && !mainGroup.classList.contains("is-expanded")) {
-      mainGroup.classList.add("is-expanded");
-    }
-    const reportsGroup = document.querySelector(`[data-nav-group="${REPORTS_NAV.parentKey}"]`);
-    if (reportsGroup && !reportsGroup.classList.contains("is-expanded")) {
-      reportsGroup.classList.add("is-expanded");
-    }
-  }
-  if (isCellRoute(activeRoute)) {
-    sidebarGroupState[CELL_NAV.parentKey] = true;
-    sidebarGroupState.departments = true;
-    if (activeRoute === "cellPortal") {
-      sidebarGroupState.cellPortalSections = true;
-    }
-    const activeArea = CELL_NAV.areas.find((area) => area.routes.some(([route]) => route === activeRoute));
-    if (activeArea) sidebarGroupState[activeArea.key] = true;
-    localStorage.setItem(SIDEBAR_GROUPS_KEY, JSON.stringify(sidebarGroupState));
-    const deptGroup = document.querySelector('[data-nav-group="departments"]');
-    if (deptGroup && !deptGroup.classList.contains("is-expanded")) {
-      deptGroup.classList.add("is-expanded");
-    }
-    const portalGroup = document.querySelector('[data-nav-group="cellPortalSections"]');
-    if (portalGroup && activeRoute === "cellPortal" && !portalGroup.classList.contains("is-expanded")) {
-      portalGroup.classList.add("is-expanded");
-    }
-  }
-  if (isFoundationRoute(activeRoute)) {
-    sidebarGroupState[FOUNDATION_NAV.parentKey] = true;
-    sidebarGroupState.pastoralCare = true;
-    localStorage.setItem(SIDEBAR_GROUPS_KEY, JSON.stringify(sidebarGroupState));
-    const pcGroup = document.querySelector('[data-nav-group="pastoralCare"]');
-    if (pcGroup && !pcGroup.classList.contains("is-expanded")) {
-      pcGroup.classList.add("is-expanded");
-    }
-    const foundationGroup = document.querySelector(`[data-nav-group="${FOUNDATION_NAV.parentKey}"]`);
-    if (foundationGroup && !foundationGroup.classList.contains("is-expanded")) {
-      foundationGroup.classList.add("is-expanded");
-    }
-  }
-  if (isSacramentsRoute(activeRoute)) {
-    sidebarGroupState[SACRAMENTS_NAV.parentKey] = true;
-    sidebarGroupState.pastoralCare = true;
-    localStorage.setItem(SIDEBAR_GROUPS_KEY, JSON.stringify(sidebarGroupState));
-    const pcGroup = document.querySelector('[data-nav-group="pastoralCare"]');
-    if (pcGroup && !pcGroup.classList.contains("is-expanded")) {
-      pcGroup.classList.add("is-expanded");
-    }
-    const sacramentsGroup = document.querySelector(`[data-nav-group="${SACRAMENTS_NAV.parentKey}"]`);
-    if (sacramentsGroup && !sacramentsGroup.classList.contains("is-expanded")) {
-      sacramentsGroup.classList.add("is-expanded");
-    }
-  }
-  if (isCounselingRoute(activeRoute)) {
-    sidebarGroupState[COUNSELING_NAV.parentKey] = true;
-    sidebarGroupState.pastoralCare = true;
-    localStorage.setItem(SIDEBAR_GROUPS_KEY, JSON.stringify(sidebarGroupState));
-    const pcGroup = document.querySelector('[data-nav-group="pastoralCare"]');
-    if (pcGroup && !pcGroup.classList.contains("is-expanded")) {
-      pcGroup.classList.add("is-expanded");
-    }
-    const counselingGroup = document.querySelector(`[data-nav-group="${COUNSELING_NAV.parentKey}"]`);
-    if (counselingGroup && !counselingGroup.classList.contains("is-expanded")) {
-      counselingGroup.classList.add("is-expanded");
-    }
-  }
-  if (FINANCE_TAB_ROUTES.has(activeRoute) || activeRoute === "finance") {
-    sidebarGroupState[FINANCE_NAV.parentKey] = true;
-    sidebarGroupState.departments = true;
-    localStorage.setItem(SIDEBAR_GROUPS_KEY, JSON.stringify(sidebarGroupState));
-    const deptGroup = document.querySelector('[data-nav-group="departments"]');
-    if (deptGroup && !deptGroup.classList.contains("is-expanded")) {
-      deptGroup.classList.add("is-expanded");
-    }
-    const financeGroup = document.querySelector(`[data-nav-group="${FINANCE_NAV.parentKey}"]`);
-    if (financeGroup && !financeGroup.classList.contains("is-expanded")) {
-      financeGroup.classList.add("is-expanded");
-    }
-  }
-  if (PARTNERSHIP_TAB_ROUTES.has(activeRoute) || activeRoute === "partnership") {
-    sidebarGroupState[PARTNERSHIP_NAV.parentKey] = true;
-    sidebarGroupState.departments = true;
-    localStorage.setItem(SIDEBAR_GROUPS_KEY, JSON.stringify(sidebarGroupState));
-    const deptGroup = document.querySelector('[data-nav-group="departments"]');
-    if (deptGroup && !deptGroup.classList.contains("is-expanded")) {
-      deptGroup.classList.add("is-expanded");
-    }
-    const partGroup = document.querySelector(`[data-nav-group="${PARTNERSHIP_NAV.parentKey}"]`);
-    if (partGroup && !partGroup.classList.contains("is-expanded")) {
-      partGroup.classList.add("is-expanded");
-    }
-  }
-  if (OUTREACH_TAB_ROUTES.has(activeRoute)) {
-    sidebarGroupState[OUTREACH_NAV.parentKey] = true;
-    sidebarGroupState.departments = true;
-    localStorage.setItem(SIDEBAR_GROUPS_KEY, JSON.stringify(sidebarGroupState));
-    const deptGroup = document.querySelector('[data-nav-group="departments"]');
-    if (deptGroup && !deptGroup.classList.contains("is-expanded")) {
-      deptGroup.classList.add("is-expanded");
-    }
-    const outreachGroup = document.querySelector(`[data-nav-group="${OUTREACH_NAV.parentKey}"]`);
-    if (outreachGroup && !outreachGroup.classList.contains("is-expanded")) {
-      outreachGroup.classList.add("is-expanded");
-    }
-  }
-  if (STAFF_HR_TAB_ROUTES.has(activeRoute) || activeRoute === "staffHr" || activeRoute === "staffHrOverviewRoute") {
-    sidebarGroupState[STAFF_HR_NAV.parentKey] = true;
-    sidebarGroupState.admin = true;
-    localStorage.setItem(SIDEBAR_GROUPS_KEY, JSON.stringify(sidebarGroupState));
-    const adminGroup = document.querySelector('[data-nav-group="admin"]');
-    if (adminGroup && !adminGroup.classList.contains("is-expanded")) {
-      adminGroup.classList.add("is-expanded");
-    }
-    const staffGroup = document.querySelector(`[data-nav-group="${STAFF_HR_NAV.parentKey}"]`);
-    if (staffGroup && !staffGroup.classList.contains("is-expanded")) {
-      staffGroup.classList.add("is-expanded");
-    }
-  }
+
   const renderers = getRouteRenderers();
   const transitionId = ++currentRouteTransitionId;
   const needsHydration = !isRouteHydrated(activeRoute);
@@ -24708,7 +24613,11 @@ function renderChurches() {
 function openChurchDrawer(mode, id = null) {
   churchDrawerMode = mode;
   churchDrawerRecordId = id;
-  const record = id ? state.churches.find((item) => item.id === id) : migrateChurchRecord({ status: "Activa", information_status: "Por Confirmar", type: "Igreja Local", parent_church_id: "church-hq" });
+  const record = id
+    ? (state.churches.find((item) => String(item.id) === String(id) || String(item.church_id) === String(id)) ||
+       state.churches.find((item) => item.church_name && id && String(item.church_name).trim().toLowerCase() === String(id).trim().toLowerCase()) ||
+       migrateChurchRecord({ id, church_id: id, status: "Activa", information_status: "Por Confirmar", type: "Igreja Local" }))
+    : migrateChurchRecord({ status: "Activa", information_status: "Por Confirmar", type: "Igreja Local", parent_church_id: "church-hq" });
   const drawer = byId("churchDrawer");
   const backdrop = byId("churchDrawerBackdrop");
   const body = byId("churchDrawerBody");
@@ -24724,19 +24633,19 @@ function openChurchDrawer(mode, id = null) {
   } else if (mode === "status") {
     byId("churchDrawerEyebrow").textContent = L("updateChurchStatus");
     byId("churchDrawerTitle").textContent = record.church_name || L("churches");
-    body.innerHTML = `<form id="churchDrawerForm" class="row g-3">
+    body.innerHTML = `<form id="churchDrawerForm" class="row g-3" novalidate>
       ${fieldControl(["status", "status", "select", CHURCH_STATUSES], record)}
       ${fieldControl(["information_status", "informationStatus", "select", CHURCH_INFO_STATUSES], record)}
     </form>`;
     foot.innerHTML = `<button type="button" class="btn btn-outline-glass" data-church-drawer-close>${L("cancel")}</button>
-      <button type="submit" form="churchDrawerForm" class="btn btn-ce-gold">${L("save")}</button>`;
+      <button type="submit" id="churchDrawerSaveBtn" form="churchDrawerForm" class="btn btn-ce-gold">${L("save")}</button>`;
   } else {
     const migrated = migrateChurchRecord(record);
     byId("churchDrawerEyebrow").textContent = id ? L("editChurch") : L("addChurch");
     byId("churchDrawerTitle").textContent = id ? (migrated.church_name || L("edit")) : L("addChurch");
-    body.innerHTML = `<form id="churchDrawerForm" class="row g-3">${formSchemas.church.map((field) => fieldControl(field, migrated)).join("")}${renderChurchServiceTimesEditor(migrated.service_times)}</form>`;
+    body.innerHTML = `<form id="churchDrawerForm" class="row g-3" novalidate>${formSchemas.church.map((field) => fieldControl(field, migrated)).join("")}${renderChurchServiceTimesEditor(migrated.service_times)}</form>`;
     foot.innerHTML = `<button type="button" class="btn btn-outline-glass" data-church-drawer-close>${L("cancel")}</button>
-      <button type="submit" form="churchDrawerForm" class="btn btn-ce-gold">${L("save")}</button>`;
+      <button type="submit" id="churchDrawerSaveBtn" form="churchDrawerForm" class="btn btn-ce-gold">${L("save")}</button>`;
     drawer.classList.add("church-drawer--form");
     syncChurchServiceTimesJson();
     requestAnimationFrame(() => mountRelationalControls(byId("churchDrawerForm")));
@@ -26684,73 +26593,98 @@ async function hydrateCellMinistryFromRepository() {
 }
 
 async function submitChurchDrawer(form) {
-  const data = Object.fromEntries(new FormData(form).entries());
-  const today = new Date().toISOString().slice(0, 10);
-  if (churchDrawerMode === "status" && churchDrawerRecordId) {
-    const church = state.churches.find((item) => item.id === churchDrawerRecordId);
-    if (!church) return;
-    const previous = { ...church };
-    church.status = data.status || church.status;
-    church.information_status = data.information_status || church.information_status;
-    church.updated_by = activeUser.name;
-    church.updated_at = today;
-    const repoResult = await persistChurchViaRepository("status", church);
-    if (repoResult && repoResult.ok === false) {
-      Object.assign(church, previous);
-      alert(repoResult.error || (lang === "pt" ? "Não foi possível actualizar o estado da igreja. Dados locais mantidos." : "Could not update church status. Existing data kept."));
-      return;
-    }
-    if (repoResult?.ok && repoResult.data) Object.assign(church, migrateChurchRecord(repoResult.data));
-    saveState(`Updated church status ${church.church_name}`);
-  } else {
-    const service_times = collectChurchServiceTimesFromForm(form);
-    delete data.service_times_json;
-    const payload = migrateChurchRecord({
-      ...data,
-      service_times,
-      parent_church_id: data.parent_church_id || "",
-      updated_by: activeUser.name,
-      updated_at: today
-    });
-    if (churchDrawerRecordId) {
-      const index = state.churches.findIndex((item) => item.id === churchDrawerRecordId);
-      if (index >= 0) {
-        const previous = { ...state.churches[index] };
-        const next = { ...state.churches[index], ...payload, id: churchDrawerRecordId, church_id: churchDrawerRecordId };
+  if (!form) form = byId("churchDrawerForm");
+  if (!form) return;
+  const submitBtn = byId("churchDrawerSaveBtn") || byId("churchDrawerFoot")?.querySelector('button[type="submit"]') || byId("churchDrawerFoot")?.querySelector(".btn-ce-gold");
+  if (typeof setButtonLoading === "function") setButtonLoading(submitBtn, true, lang === "pt" ? "A guardar..." : "Saving...");
+  try {
+    const data = Object.fromEntries(new FormData(form).entries());
+    const today = new Date().toISOString().slice(0, 10);
+    if (churchDrawerMode === "status" && churchDrawerRecordId) {
+      let church = state.churches.find((item) => String(item.id) === String(churchDrawerRecordId) || String(item.church_id) === String(churchDrawerRecordId));
+      if (!church) {
+        church = { id: churchDrawerRecordId, church_id: churchDrawerRecordId };
+        state.churches.push(church);
+      }
+      const previous = { ...church };
+      church.status = data.status || church.status;
+      church.information_status = data.information_status || church.information_status;
+      church.updated_by = activeUser?.name || "Admin";
+      church.updated_at = today;
+      const repoResult = await persistChurchViaRepository("status", church);
+      if (repoResult && repoResult.ok === false) {
+        Object.assign(church, previous);
+        alert(repoResult.error || (lang === "pt" ? "Não foi possível actualizar o estado da igreja. Dados locais mantidos." : "Could not update church status. Existing data kept."));
+        return;
+      }
+      if (repoResult?.ok && repoResult.data) Object.assign(church, migrateChurchRecord(repoResult.data));
+      saveState(`Updated church status ${church.church_name || church.id}`);
+      if (typeof showToast === "function") showToast(lang === "pt" ? "Estado da igreja actualizado com sucesso!" : "Church status updated successfully!");
+    } else {
+      const service_times = collectChurchServiceTimesFromForm(form);
+      delete data.service_times_json;
+      const payload = migrateChurchRecord({
+        ...data,
+        service_times,
+        parent_church_id: data.parent_church_id || "",
+        updated_by: activeUser?.name || "Admin",
+        updated_at: today
+      });
+      if (churchDrawerRecordId) {
+        let index = state.churches.findIndex((item) => String(item.id) === String(churchDrawerRecordId) || String(item.church_id) === String(churchDrawerRecordId));
+        if (index < 0 && payload.church_name) {
+          index = state.churches.findIndex((item) => item.church_name && String(item.church_name).trim().toLowerCase() === String(payload.church_name).trim().toLowerCase());
+        }
+        const currentRecord = index >= 0 ? state.churches[index] : { id: churchDrawerRecordId, church_id: churchDrawerRecordId };
+        const previous = { ...currentRecord };
+        const next = { ...currentRecord, ...payload, id: churchDrawerRecordId, church_id: churchDrawerRecordId };
         const repoResult = await persistChurchViaRepository("update", next);
         if (repoResult && repoResult.ok === false) {
-          state.churches[index] = previous;
+          if (index >= 0) state.churches[index] = previous;
           alert(repoResult.error || (lang === "pt" ? "Não foi possível actualizar a igreja. Dados locais mantidos." : "Could not update the church. Existing data kept."));
           return;
         }
-        state.churches[index] = migrateChurchRecord(repoResult?.data || next);
-        saveState(`Updated church ${state.churches[index].church_name}`);
+        const updatedChurch = migrateChurchRecord(repoResult?.data || next);
+        if (index >= 0) {
+          state.churches[index] = updatedChurch;
+        } else {
+          state.churches.push(updatedChurch);
+        }
+        saveState(`Updated church ${updatedChurch.church_name}`);
+        if (typeof showToast === "function") showToast(lang === "pt" ? "Igreja gravada com sucesso!" : "Church saved successfully!");
+      } else {
+        const id = `church-${Date.now()}`;
+        const serviceTimes = payload.service_times?.length
+          ? payload.service_times.map((record, index) => normalizeServiceTimeRecord(record, id, index))
+          : defaultSeedServiceTimes(id, payload.type);
+        const created = {
+          ...payload,
+          id,
+          church_id: id,
+          service_times: serviceTimes,
+          created_by: activeUser?.name || "Admin",
+          created_at: today,
+          attendance_last_4_weeks: [0, 0, 0, 0]
+        };
+        const repoResult = await persistChurchViaRepository("create", created);
+        if (repoResult && repoResult.ok === false) {
+          alert(repoResult.error || (lang === "pt" ? "Não foi possível criar a igreja. Tente novamente." : "Could not create the church. Please try again."));
+          return;
+        }
+        const newChurch = migrateChurchRecord(repoResult?.data || created);
+        state.churches.push(newChurch);
+        saveState(`Created church ${payload.church_name}`);
+        if (typeof showToast === "function") showToast(lang === "pt" ? "Igreja criada com sucesso!" : "Church created successfully!");
       }
-    } else {
-      const id = `church-${Date.now()}`;
-      const serviceTimes = payload.service_times?.length
-        ? payload.service_times.map((record, index) => normalizeServiceTimeRecord(record, id, index))
-        : defaultSeedServiceTimes(id, payload.type);
-      const created = {
-        ...payload,
-        id,
-        church_id: id,
-        service_times: serviceTimes,
-        created_by: activeUser.name,
-        created_at: today,
-        attendance_last_4_weeks: [0, 0, 0, 0]
-      };
-      const repoResult = await persistChurchViaRepository("create", created);
-      if (repoResult && repoResult.ok === false) {
-        alert(repoResult.error || (lang === "pt" ? "Não foi possível criar a igreja. Tente novamente." : "Could not create the church. Please try again."));
-        return;
-      }
-      state.churches.push(migrateChurchRecord(repoResult?.data || created));
-      saveState(`Created church ${payload.church_name}`);
     }
+    closeChurchDrawer();
+    renderChurches();
+  } catch (err) {
+    console.error("[submitChurchDrawer error]", err);
+    alert(lang === "pt" ? `Erro ao gravar igreja: ${err?.message || err}` : `Error saving church: ${err?.message || err}`);
+  } finally {
+    if (typeof setButtonLoading === "function") setButtonLoading(submitBtn, false);
   }
-  closeChurchDrawer();
-  renderChurches();
 }
 
 function reviewFlag(needsReview) {
@@ -32681,7 +32615,7 @@ function requisitionPastoralDecisionHtml(record, preset = "") {
   return `
     <section class="requisition-detail-section requisition-pastoral-section">
       <h4 class="requisition-detail-title">${L("reqSectionPastoralDecision")}</h4>
-      <form id="requisitionPastoralForm" class="row g-3">
+      <form id="requisitionPastoralForm" class="row g-3" novalidate>
         <input type="hidden" name="requisition_id" value="${record.id}">
         <div class="col-12">
           <label class="form-label">${L("reqSectionPastoralDecision")}</label>
@@ -33583,7 +33517,7 @@ function renderUsers() {
           const linkedGroup = (state.cellGroups || window.REAL_CELL_GROUPS || []).find((g) => String(g.id) === String(u.cell_group_id) || g.group_name === u.cell_group_id || g.name === u.cell_group_id || (linkedCell && String(g.id) === String(linkedCell.group_id)));
           const cellGroupNameStr = u.cell_group_name || (linkedGroup ? (linkedGroup.group_name || linkedGroup.name) : (linkedCell?.group_name ? linkedCell.group_name : (u.assigned_cell_groups?.length ? `${u.assigned_cell_groups.length} grupo(s)` : "—")));
           const cellNameStr = u.cell_name || (linkedCell ? (linkedCell.cell_name || linkedCell.nome_da_celula || linkedCell.name) : (u.assigned_cells?.length ? `${u.assigned_cells.length} célula(s)` : "—"));
-          const authBadge = u.auth_user_id ? `<span class="badge bg-success"><i class="bi bi-link me-1"></i>Linked</span>` : `<span class="badge bg-warning text-dark"><i class="bi bi-clock me-1"></i>Pending Setup</span>`;
+          const authBadge = u.auth_user_id ? `<span class="badge bg-success"><i class="bi bi-link me-1"></i>${lang === "pt" ? "Auth Ligado" : "Linked"}</span>` : `<span class="badge bg-warning text-dark"><i class="bi bi-clock me-1"></i>${lang === "pt" ? "Pendente Auth" : "Pending Setup"}</span>`;
           const rawRole = u.role || u.role_name || "Cell Leader";
           const displayRole = roleLabels[rawRole] || rawRole;
           const userAtt = findUserAttendanceRecord(u, attRecords);
@@ -42696,6 +42630,20 @@ document.addEventListener("click", async (event) => {
   }
   const financeDrawerClose = event.target.closest("[data-finance-drawer-close]");
   if (financeDrawerClose || event.target === byId("financeDrawerBackdrop")) return closeFinanceDrawer();
+  const churchSaveBtn = event.target.closest('#churchDrawerSaveBtn, [form="churchDrawerForm"]');
+  if (churchSaveBtn) {
+    event.preventDefault();
+    const form = byId("churchDrawerForm");
+    if (form) submitChurchDrawer(form);
+    return;
+  }
+  const financeSaveBtn = event.target.closest('#financeDrawerSaveBtn, [form="financeDrawerForm"]');
+  if (financeSaveBtn) {
+    event.preventDefault();
+    const form = byId("financeDrawerForm");
+    if (form) submitFinanceDrawer(form);
+    return;
+  }
   const churchDrawerClose = event.target.closest("[data-church-drawer-close]");
   if (churchDrawerClose || event.target === byId("churchDrawerBackdrop")) return closeChurchDrawer();
   const requisitionDrawerClose = event.target.closest("[data-requisition-drawer-close]");
@@ -44681,6 +44629,8 @@ function continueEnterDashboard() {
       return;
     }
     isDashboardEntered = true;
+    sidebarGroupState = {};
+    try { localStorage.removeItem(SIDEBAR_GROUPS_KEY); } catch (_) {}
 
     byId("loginView")?.classList.add("d-none");
     byId("appView")?.classList.remove("d-none");

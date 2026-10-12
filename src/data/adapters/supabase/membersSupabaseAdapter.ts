@@ -340,7 +340,7 @@ async function verifyActiveSession(
       return {
         ok: false,
         error: "Sessão expirada ou não autenticada. Inicie sessão novamente.",
-        code: "42501",
+        code: "AUTH_NO_SESSION",
         status: 401,
       };
     }
@@ -349,7 +349,7 @@ async function verifyActiveSession(
     return {
       ok: false,
       error: "Erro ao verificar sessão de autenticação.",
-      code: "42501",
+      code: "AUTH_NO_SESSION",
       status: 401,
     };
   }

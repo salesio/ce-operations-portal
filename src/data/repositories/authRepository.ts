@@ -363,9 +363,9 @@ export async function loginDemo(
   email: string,
   passwordOrHint = "demo",
 ): Promise<LoginResult> {
-  if (isRealAuthEnabled() && getBackendFeatureFlags().enableRealAuth) {
+  if (getDataSource() === "supabase" || (isRealAuthEnabled() && getBackendFeatureFlags().enableRealAuth)) {
     return fail(
-      "Modo demo desactivado quando autenticação real está activa.",
+      "Modo demo desactivado quando VITE_DATA_SOURCE=supabase ou autenticação real está activa.",
       "AUTH_DEMO_DISABLED",
     );
   }
@@ -435,7 +435,7 @@ export async function loginWithSupabase(
 ): Promise<LoginResult> {
   const info = getAuthInfo();
   if (!info.realAuthEnabled) {
-    return loginDemo(email, password);
+    return fail("Autenticação real não configurada.", "AUTH_NOT_CONFIGURED");
   }
 
   const signed = await signInWithEmailPassword(email, password);
@@ -478,13 +478,8 @@ export async function loginWithSupabase(
 
 /** Unified login: real auth when enabled, otherwise demo. */
 export async function login(email: string, password: string): Promise<LoginResult> {
-  if (isRealAuthEnabled() || getBackendFeatureFlags().enableRealAuth) {
-    const res = await loginWithSupabase(email, password);
-    if (res.ok) return res;
-    if (res.code === "AUTH_NOT_CONFIGURED") {
-      return loginDemo(email, password);
-    }
-    return res;
+  if (getDataSource() === "supabase" || isRealAuthEnabled()) {
+    return loginWithSupabase(email, password);
   }
   return loginDemo(email, password);
 }
