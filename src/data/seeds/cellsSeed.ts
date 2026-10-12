@@ -1883,6 +1883,8 @@ export interface CellSeed {
   cell_group_id: string;
   name: string;
   leader_id: string;
+  primary_leader_user_id?: string | null;
+  assistant_leader_user_ids?: string[];
   assistant_leader_id?: string;
   meeting_day: string;
   meeting_time: string;
@@ -1899,6 +1901,8 @@ export const CELLS_SEED: CellSeed[] = REAL_CELLS_LIST.map((cell, index) => ({
   cell_group_id: cell.group_id,
   name: cell.name,
   leader_id: `u1111111-0000-0000-0001-${String(index + 1).padStart(12, "0")}`,
+  primary_leader_user_id: index === 0 ? "u-7" : null,
+  assistant_leader_user_ids: index === 0 ? ["u-cell-assistant"] : [],
   meeting_day: "Wednesday",
   meeting_time: "18:00",
   meeting_location: "Maputo Central",

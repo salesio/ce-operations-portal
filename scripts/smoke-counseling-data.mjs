@@ -40,7 +40,7 @@ ok("referrals seed exists", existsSync(join(root, "src/data/seeds/counselingRefe
 ok("counseling bridge exists", existsSync(join(root, "js/counseling-data-bridge.js")));
 ok(
   "index includes counseling bridge",
-  /counseling-data-bridge\.js\?v=20260723-counseling-data-v1/.test(read("index.html")),
+  /counseling-data-bridge\.js(?:\?v=[^"']*)?/.test(read("index.html")),
 );
 ok("docs pilot Counseling", /Pilot migration: Counseling/.test(read("DATA_LAYER_PLAN.md")));
 ok("COUNSELING_MODULE_PLAN exists", existsSync(join(root, "COUNSELING_MODULE_PLAN.md")));

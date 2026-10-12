@@ -40,12 +40,12 @@
           : window.CEDataLayer && typeof window.CEDataLayer.getDataSource === "function"
             ? window.CEDataLayer.getDataSource()
             : "";
-      var value = String(runtime || fromBundle || "supabase")
+      var value = String(runtime || fromBundle || "mock")
         .trim()
         .toLowerCase();
       if (value === "local" || value === "api" || value === "supabase" || value === "mock") return value;
     } catch (_) {}
-    return "supabase";
+    return "mock";
   }
 
   function resolveApi() {
@@ -292,7 +292,26 @@
         return list("checklists");
       },
       createServiceChecklist: function (payload) {
-        return create("checklists", "check-", payload);
+        var flags = [
+          payload && payload.sound_ready,
+          payload && payload.microphones_ready,
+          payload && payload.cameras_ready,
+          payload && payload.streaming_ready,
+          payload && payload.projector_ready,
+          payload && payload.lights_ready,
+          payload && payload.ac_ready,
+          payload && payload.chairs_ready,
+          payload && payload.pulpit_ready,
+          payload && payload.cleaning_ready,
+          payload && payload.instruments_ready,
+          payload && payload.power_backup_ready,
+        ];
+        var allOk = flags.every(Boolean);
+        var anyFail = flags.some(function (f) { return f === false; });
+        var status = (payload && (payload.status || payload.estado)) || (allOk ? "Completed" : anyFail ? "Requires Attention" : "Open");
+        var estado = (payload && payload.estado) || (status === "Completed" ? "Pronto" : status === "Requires Attention" ? "Parcial" : "Aberto");
+        var item = Object.assign({}, payload || {}, { status: status, estado: estado });
+        return create("checklists", "check-", item);
       },
       updateServiceChecklist: function (id, payload) {
         return update("checklists", id, payload);
@@ -349,23 +368,43 @@
         return create("items", "inv-", item);
       },
       getInfo: function () {
-        return { source: resolveDataSource(), provider: "pure-js-fallback", ready: true };
+        var source = resolveDataSource();
+        return {
+          source: source,
+          provider: source,
+          ready: true,
+          description:
+            source === "local"
+              ? "localStorage provider (ce-data-layer:* keys). Separate from dashboard.js UI state."
+              : "In-memory mock data (isolated from dashboard localStorage UI state).",
+          domain: "venueInventory",
+        };
       },
     };
   }
 
   async function call(method, args) {
-    var resolved = resolveApi();
-    var api = resolved.api || pure();
-    var fn = api[method];
+    var source = resolveDataSource();
     var fallback = pure();
+    if (source === "local" || source === "mock") {
+      if (typeof fallback[method] === "function") {
+        return Promise.resolve(fallback[method].apply(fallback, args || []));
+      }
+    }
+    var resolved = resolveApi();
+    var api = resolved.api || fallback;
+    var fn = api[method];
     if (typeof fn !== "function") fn = fallback[method];
     if (typeof fn !== "function") return fail("Método em falta: " + method);
     try {
-      return await Promise.resolve(fn.apply(api, args || []));
+      var res = await Promise.resolve(fn.apply(api, args || []));
+      if ((!res || res.ok === false) && typeof fallback[method] === "function") {
+        return Promise.resolve(fallback[method].apply(fallback, args || []));
+      }
+      return res;
     } catch (error) {
       console.warn("[CE VenueInventory] call failed", method, error);
-      if (typeof fallback[method] === "function") return fallback[method].apply(fallback, args || []);
+      if (typeof fallback[method] === "function") return Promise.resolve(fallback[method].apply(fallback, args || []));
       return fail(error && error.message);
     }
   }
@@ -456,6 +495,8 @@
       return call("registerItemFromRequisition", [requisition, actor]);
     },
     getInfo: function () {
+      var source = resolveDataSource();
+      if (source === "local" || source === "mock") return pure().getInfo();
       var resolved = resolveApi();
       if (resolved.api && typeof resolved.api.getInfo === "function") return resolved.api.getInfo();
       return pure().getInfo();

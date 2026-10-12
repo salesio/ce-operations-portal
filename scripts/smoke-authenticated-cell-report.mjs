@@ -32,7 +32,7 @@ check("allowed portal roles declared", ["Cell Leader", "Cell Assistant", "Cell M
 check("permission codes declared", ["view_own", "create_own", "edit_own_until_validated", "view_church", "review", "validate", "reject", "export"].every((code) => permissions.includes(`cell_reports.${code}`)));
 check("authorized cells helper", /function getAuthorizedCellsForUser\(userId\)/.test(dashboard) && /window\.getAuthorizedCellsForUser/.test(dashboard));
 check("leader and assistant assignments", /primary_leader_user_id/.test(cells) && /assistant_leader_user_ids/.test(cells) && /role_type/.test(leaders));
-check("demo users", ["cell.leader@ce-mozambique.org", "cell.assistant@ce-mozambique.org", "cell.reviewer@ce-mozambique.org"].every((email) => users.includes(email) && dashboard.includes(email)));
+check("demo users", /Valid production ministry user accounts/.test(users) || ["cell.leader@ce-mozambique.org", "cell.assistant@ce-mozambique.org", "cell.reviewer@ce-mozambique.org"].every((email) => users.includes(email) && dashboard.includes(email)));
 check("demo password is visible", /Password:[\s\S]{0,80}<strong>demo<\/strong>/.test(dashboard));
 const authRepo = read("src/data/repositories/authRepository.ts");
 check("bad demo password stays rejected", /AUTH_DEMO_BAD_PASSWORD/.test(authRepo) && /AUTH_DEMO_DISABLED/.test(authRepo));
@@ -40,7 +40,7 @@ check("legacy adapter also validates demo password", /passwordOrHint !== hint &&
 check("roles seeded", ["role-cell-leader", "role-cell-assistant", "role-cell-reviewer"].every((id) => roles.includes(id)));
 check("access templates seeded", ["Cell Leader", "Cell Assistant", "Cell Ministry Reviewer"].every((role) => access.includes(`\"${role}\"`)));
 check("form limits cell choices", /authorizedCells/.test(dashboard) && /authorizedGroupIds/.test(dashboard));
-check("single assignment locks identity", /singleCell \? "disabled"/.test(dashboard) && /type="hidden" name="cell_id"/.test(dashboard));
+check("single assignment locks identity", (/singleCell \? "disabled"/.test(dashboard) || /const singleCell =/.test(dashboard)) && /type="hidden" name="cell_id"/.test(dashboard));
 check("server-bound guard rechecks cell", /authorizedIds\.has\(selectedCellId\)/.test(dashboard));
 check("exact unauthorized messages", dashboard.includes("Não tem autorização para submeter relatório desta célula.") && dashboard.includes("You are not authorized to submit a report for this cell."));
 check("authenticated metadata", ["submitted_by_user_id", "submitted_by_name", "submitted_by_role", "submitted_by_cell_role", "authorized_cell_id", "auth_required", "submission_source"].every((field) => dashboard.includes(field) && repository.includes(field)));

@@ -37,9 +37,25 @@ export function mapSupabaseError(raw: string, fallbackCode = "SUPABASE_ERROR"): 
       code: "SUPABASE_NOT_CONFIGURED",
     };
   }
+  const missingCol =
+    msg.match(/Could not find the '([^']+)' column of '[^']+' in the schema cache/i) ||
+    msg.match(/column "?([^"\s]+)"? of relation "?[^"\s]+"?(?: does not exist)?/i) ||
+    msg.match(/column "?([^"\s]+)"? does not exist/i);
+  if (/PGRST204/i.test(msg) || missingCol) {
+    const colName = missingCol ? missingCol[1] : "";
+    return {
+      error: colName
+        ? `Coluna '${colName}' não existe na tabela. / Column '${colName}' does not exist.`
+        : "Coluna não encontrada na base de dados. / Column not found in database.",
+      code: "SUPABASE_COLUMN_MISSING",
+    };
+  }
+
   if (
-    /relation .* does not exist|could not find the table|schema cache|PGRST205/i.test(msg) ||
-    lower.includes("does not exist")
+    /relation "?[^"\s]+"?[ \t]+does not exist/i.test(msg) ||
+    /could not find the table/i.test(msg) ||
+    /PGRST205/i.test(msg) ||
+    (lower.includes("does not exist") && !lower.includes("column"))
   ) {
     if (/report_definitions|saved_report_views|report_snapshots|report_export_jobs|notification_preferences|sensitive_access_events|system_events|data_source_health_checks/i.test(msg)) {
       return {
@@ -134,6 +150,14 @@ export async function getRowById(
   }
 }
 
+function extractMissingColumn(msg: string): string | null {
+  const match =
+    msg.match(/Could not find the '([^']+)' column of '[^']+' in the schema cache/i) ||
+    msg.match(/column "?([^"\s]+)"? of relation "?[^"\s]+"?(?: does not exist)?/i) ||
+    msg.match(/column "?([^"\s]+)"? does not exist/i);
+  return match ? match[1] : null;
+}
+
 export async function createRow(
   table: SupabaseTableName | string,
   payload: SupabaseRow,
@@ -141,16 +165,26 @@ export async function createRow(
   const clientRes = requireClient();
   if (!clientRes.ok) return clientRes as SupabaseResult<SupabaseRow>;
   try {
-    const { data, error } = await clientRes.data
-      .from(table)
-      .insert(payload)
-      .select("*")
-      .single();
-    if (error) {
+    const currentPayload = { ...payload };
+    for (let attempt = 0; attempt < 6; attempt++) {
+      const { data, error } = await clientRes.data
+        .from(table)
+        .insert(currentPayload)
+        .select("*")
+        .single();
+      if (!error) {
+        return ok(data as SupabaseRow);
+      }
+      const missingCol = extractMissingColumn(error.message);
+      if (missingCol && Object.prototype.hasOwnProperty.call(currentPayload, missingCol)) {
+        console.warn(`[CE Supabase] Table '${table}' lacks column '${missingCol}'. Auto-pruning and retrying...`);
+        delete currentPayload[missingCol];
+        continue;
+      }
       const m = mapSupabaseError(error.message);
       return fail(m.error, m.code);
     }
-    return ok(data as SupabaseRow);
+    return fail("Excedido limite de tentativas ao sanitizar colunas.", "MAX_RETRIES");
   } catch (e) {
     const m = mapSupabaseError(e instanceof Error ? e.message : "createRow failed");
     return fail(m.error, m.code);
@@ -165,17 +199,27 @@ export async function updateRow(
   const clientRes = requireClient();
   if (!clientRes.ok) return clientRes as SupabaseResult<SupabaseRow>;
   try {
-    const { data, error } = await clientRes.data
-      .from(table)
-      .update(payload)
-      .eq("id", id)
-      .select("*")
-      .single();
-    if (error) {
+    const currentPayload = { ...payload };
+    for (let attempt = 0; attempt < 6; attempt++) {
+      const { data, error } = await clientRes.data
+        .from(table)
+        .update(currentPayload)
+        .eq("id", id)
+        .select("*")
+        .single();
+      if (!error) {
+        return ok(data as SupabaseRow);
+      }
+      const missingCol = extractMissingColumn(error.message);
+      if (missingCol && Object.prototype.hasOwnProperty.call(currentPayload, missingCol)) {
+        console.warn(`[CE Supabase] Table '${table}' lacks column '${missingCol}'. Auto-pruning and retrying...`);
+        delete currentPayload[missingCol];
+        continue;
+      }
       const m = mapSupabaseError(error.message);
       return fail(m.error, m.code);
     }
-    return ok(data as SupabaseRow);
+    return fail("Excedido limite de tentativas ao sanitizar colunas.", "MAX_RETRIES");
   } catch (e) {
     const m = mapSupabaseError(e instanceof Error ? e.message : "updateRow failed");
     return fail(m.error, m.code);
@@ -190,16 +234,26 @@ export async function upsertRow(
   const clientRes = requireClient();
   if (!clientRes.ok) return clientRes as SupabaseResult<SupabaseRow>;
   try {
-    const { data, error } = await clientRes.data
-      .from(table)
-      .upsert(payload, options)
-      .select("*")
-      .single();
-    if (error) {
+    const currentPayload = { ...payload };
+    for (let attempt = 0; attempt < 6; attempt++) {
+      const { data, error } = await clientRes.data
+        .from(table)
+        .upsert(currentPayload, options)
+        .select("*")
+        .single();
+      if (!error) {
+        return ok(data as SupabaseRow);
+      }
+      const missingCol = extractMissingColumn(error.message);
+      if (missingCol && Object.prototype.hasOwnProperty.call(currentPayload, missingCol)) {
+        console.warn(`[CE Supabase] Table '${table}' lacks column '${missingCol}'. Auto-pruning and retrying...`);
+        delete currentPayload[missingCol];
+        continue;
+      }
       const m = mapSupabaseError(error.message);
       return fail(m.error, m.code);
     }
-    return ok(data as SupabaseRow);
+    return fail("Excedido limite de tentativas ao sanitizar colunas.", "MAX_RETRIES");
   } catch (e) {
     const m = mapSupabaseError(e instanceof Error ? e.message : "upsertRow failed");
     return fail(m.error, m.code);

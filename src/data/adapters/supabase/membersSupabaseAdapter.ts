@@ -247,10 +247,6 @@ export function mapMemberToRow(member: Partial<Member>, forUpdate = false): Supa
     confirmed_by: cleanString(member.confirmed_by),
     confirmed_at: cleanDate(member.confirmed_at),
     reconciliation_notes: cleanString(member.reconciliation_notes),
-    member_since_year: member.member_since_year ?? null,
-    member_since_raw: cleanString(member.member_since_raw),
-    member_since_precision: cleanString(member.member_since_precision) || "exact",
-    metadata: {},
   };
   if (!forUpdate) {
     const id = member.id;

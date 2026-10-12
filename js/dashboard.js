@@ -4328,7 +4328,10 @@ try {
 } catch (_) {}
 
 let activeUser = savedAuthUser || (Array.isArray(state.users) ? (state.users.find((u) => u.role === "Super Admin") || state.users[0]) : seedData.users[0]);
-let isUserAuthenticated = Boolean(savedAuthUser || (Array.isArray(state.users) && state.users.length > 0));
+let isUserAuthenticated = false;
+if (savedAuthUser) {
+  isUserAuthenticated = true;
+}
 let isDashboardEntered = false;
 let pendingCellReportLogin = false;
 let activeRoute = "dashboard";
@@ -12143,7 +12146,7 @@ function fallbackCanViewModule(user = activeUser, module = "dashboard") {
   if (role === "HR Manager") return ["staffHr", "attendance", "reports"].includes(module);
   if (role === "Requisition Officer") return ["requisitions", "reports", "venueInventory"].includes(module);
   if (role === "Counseling Head") return ["counseling", "followUp", "firstTimers", "reports", "notifications"].includes(module);
-  if (role === "Reitor" || role === "Rector") return ["firstTimers", "followUp", "foundation", "sacraments", "counseling", "notifications"].includes(module);
+  if (role === "Reitor" || role === "Rector" || isPastoralCareRector(user)) return ["firstTimers", "followUp", "foundation", "sacraments", "counseling", "notifications", "reports"].includes(module);
   if (role === "Counselor") return ["counseling", "followUp", "notifications"].includes(module);
   if (role === "Follow-Up Coordinator") return ["followUp", "firstTimers"].includes(module);
   if (role === "Foundation Teacher" || role === "Foundation Assistant") return ["foundation", "notifications"].includes(module);
@@ -12154,6 +12157,11 @@ function fallbackCanViewModule(user = activeUser, module = "dashboard") {
   if (role === "Staff Member") return ["requisitions", "venueInventory", "staffHr", "attendance", "notifications"].includes(module);
   const legacyModuleKeys = {
     foundation: ["foundation", "foundation_teacher", "foundation_assistant", "foundation_rector", "foundation_coordinator"],
+    pastoralCare: ["pastoralCare", "pastoral_care", "counseling", "sacraments", "firstTimers", "followUp", "foundation"],
+    counseling: ["counseling", "counseling_head", "counselor", "pastoralCare", "pastoral_care"],
+    sacraments: ["sacraments", "pastoralCare", "pastoral_care"],
+    firstTimers: ["firstTimers", "first_timers", "pastoralCare", "pastoral_care"],
+    followUp: ["followUp", "follow_up", "pastoralCare", "pastoral_care"],
     finance: ["finance", "financeHead", "financeOfficer", "financeVerify", "financeViewer"],
     partnership: ["partnership", "partnerships", "partnershipCoordinator"],
     staffHr: ["staffHr", "attendance"],
@@ -12185,12 +12193,18 @@ function userHasExtendedCellPerms(user = activeUser) {
 
 function isPastoralCareRector(user = activeUser) {
   const role = String(user?.role || user?.role_name || "").toLowerCase().trim();
+  const grants = user?.department_permissions || [];
   return (
     role === "pastoral_care_rector" ||
     role === "pastoral care rector" ||
     role === "reitor de cuidados pastorais" ||
     role === "reitor" ||
-    role === "rector"
+    role === "rector" ||
+    role === "pastoral_care" ||
+    role === "pastoral care" ||
+    role === "cuidados pastorais" ||
+    grants.includes("pastoralCare") ||
+    grants.includes("pastoral_care")
   );
 }
 
@@ -12252,15 +12266,21 @@ function roleWorkspaceRoutes(user = activeUser) {
   } else if (role === "alec_manager" || role === "alec coordinator" || role === "alec manager" || role === "alec_coordinator") {
     routes.push("cellAlecOverview", "cellAlecRegistration", "cellAlecScores", "cellAlecReports", "cellChurchReports", "cellPortal");
   } else if (isPastoralCareRector(user)) {
-    routes.push("firstTimers", "followUp", "foundation", "sacraments", "counseling");
+    routes.push(
+      "firstTimers",
+      "followUp",
+      "foundation", ...Array.from(FOUNDATION_TAB_ROUTES),
+      "sacraments", ...Array.from(SACRAMENTS_TAB_ROUTES),
+      "counseling", ...Array.from(COUNSELING_TAB_ROUTES)
+    );
   } else if (role === "follow-up coordinator" || role === "follow_up_coordinator" || role === "coordenador de acompanhamento") {
     routes.push("firstTimers", "followUp");
   } else if (role === "counseling head" || role === "counseling_head" || role === "head de aconselhamento") {
-    routes.push("counseling", "followUp", "firstTimers", "reports");
+    routes.push("counseling", ...Array.from(COUNSELING_TAB_ROUTES), "followUp", "firstTimers", "reports");
   } else if (role === "counselor" || role === "conselheiro") {
-    routes.push("counseling", "followUp");
+    routes.push("counseling", ...Array.from(COUNSELING_TAB_ROUTES), "followUp");
   } else if (role === "foundation teacher" || role === "foundation assistant" || role === "foundation rector" || role === "foundation coordinator") {
-    routes.push("foundation");
+    routes.push("foundation", ...Array.from(FOUNDATION_TAB_ROUTES));
   } else if (role === "media director" || role === "media supervisor" || role === "director de mídia" || role === "supervisor de mídia") {
     routes.push("media", "mediaTeamRoute", "mediaRolesRoute", "mediaSchedulesRoute", "mediaServicesRoute", "mediaChannelsRoute", "mediaPerformanceRoute", "mediaReportsRoute", "reports", "venueInventory", "programs");
   } else if (role === "media team member" || role === "membro da equipa de mídia") {
@@ -12300,11 +12320,21 @@ function roleWorkspaceRoutes(user = activeUser) {
     }
     if (grants.includes("followUp") || grants.includes("follow_up")) routes.push("followUp");
     if (grants.includes("firstTimers") || grants.includes("first_timers")) routes.push("firstTimers");
-    if (grants.includes("foundation") || grants.includes("foundation_teacher") || grants.includes("foundation_assistant")) routes.push("foundation");
+    if (grants.includes("foundation") || grants.includes("foundation_teacher") || grants.includes("foundation_assistant") || grants.includes("foundation_rector") || grants.includes("foundation_coordinator")) {
+      routes.push("foundation", ...Array.from(FOUNDATION_TAB_ROUTES));
+    }
     if (grants.includes("reports") || grants.includes("reports_viewer")) routes.push("reports");
-    if (grants.includes("pastoralCare")) routes.push("counseling", "sacraments");
-    if (grants.includes("counseling")) routes.push("counseling");
-    if (grants.includes("sacraments")) routes.push("sacraments");
+    if (grants.includes("pastoralCare") || grants.includes("pastoral_care")) {
+      routes.push(
+        "firstTimers",
+        "followUp",
+        "foundation", ...Array.from(FOUNDATION_TAB_ROUTES),
+        "sacraments", ...Array.from(SACRAMENTS_TAB_ROUTES),
+        "counseling", ...Array.from(COUNSELING_TAB_ROUTES)
+      );
+    }
+    if (grants.includes("counseling")) routes.push("counseling", ...Array.from(COUNSELING_TAB_ROUTES));
+    if (grants.includes("sacraments")) routes.push("sacraments", ...Array.from(SACRAMENTS_TAB_ROUTES));
     if (grants.includes("venueInventory") || grants.includes("inventory") || grants.includes("venues")) {
       routes.push("venueInventory", "venueInventoryGeneral", "venueInventoryAcquisitions", "venueInventoryStaff", "venueInventoryMaintenance", "venueInventoryMovements", "venueInventorySpaces", "venueInventoryChecklist", "venueInventoryReports");
     }
@@ -12343,6 +12373,12 @@ function isRouteInRoleWorkspace(route, user = activeUser) {
   const allowedRoutes = roleWorkspaceRoutes(user);
   if (!allowedRoutes) return true;
   if (allowedRoutes.includes(route)) return true;
+  if ((route.startsWith("foundation") || isFoundationRoute(route)) && (allowedRoutes.includes("foundation") || allowedRoutes.some((r) => FOUNDATION_TAB_ROUTES.has(r)))) return true;
+  if ((route.startsWith("counseling") || isCounselingRoute(route)) && (allowedRoutes.includes("counseling") || allowedRoutes.some((r) => COUNSELING_TAB_ROUTES.has(r)))) return true;
+  if ((route.startsWith("sacraments") || isSacramentsRoute(route)) && (allowedRoutes.includes("sacraments") || allowedRoutes.some((r) => SACRAMENTS_TAB_ROUTES.has(r)))) return true;
+  if ((route.startsWith("firstTimers") || route === "firstTimers") && allowedRoutes.includes("firstTimers")) return true;
+  if ((route.startsWith("followUp") || route === "followUp") && allowedRoutes.includes("followUp")) return true;
+  if ((route.startsWith("reports") || isReportsRoute(route)) && allowedRoutes.includes("reports")) return true;
   if (route.startsWith("staffHr") && (allowedRoutes.includes("staffHr") || allowedRoutes.some((r) => STAFF_HR_TAB_ROUTES.has(r)))) return true;
   if (route.startsWith("finance") && allowedRoutes.includes("finance")) return true;
   if (route.startsWith("partnership") && allowedRoutes.includes("partnership")) return true;
@@ -12401,6 +12437,8 @@ function loadSidebarGroupState() {
 let sidebarGroupState = loadSidebarGroupState();
 
 function isSidebarGroupExpanded(key) {
+  if (sidebarGroupState[key] !== undefined) return Boolean(sidebarGroupState[key]);
+  if (isPastoralCareRector(activeUser) && (key === "pastoralCare" || key === "foundationHeader" || key === "sacramentsHeader" || key === "counselingHeader")) return true;
   return Boolean(sidebarGroupState[key]);
 }
 
@@ -15981,6 +16019,7 @@ async function submitCellMemberRemovalForm(form) {
 
 function renderCellLeaderPortal() {
   try {
+    // Cell Leader Portal não cria financeRecord; ofertas de relatórios semanais aguardam em Pending Finance Review.
     const isPt = lang === "pt";
     if (!isUserAuthenticated) {
       showLoginView();
@@ -18349,7 +18388,8 @@ function firstTimerWorkflowLabel(status) {
 }
 
 function canReviewFirstTimerIntake() {
-  return /super\s*admin|reitor|rector/i.test(String(activeUser?.role || ""));
+  if (isPastoralCareRector(activeUser)) return true;
+  return /super\s*admin|reitor|rector|pastoral/i.test(String(activeUser?.role || activeUser?.role_name || ""));
 }
 
 function renderFirstTimerRectorPanel(list) {
@@ -25142,6 +25182,9 @@ async function persistMemberViaRepository(mode, memberRecord) {
         cleaned[k] = (!s || s === "null" || s === "undefined") ? null : s;
       }
     });
+    if (cleaned.church_id && !isUuid(cleaned.church_id)) {
+      cleaned.church_id = null;
+    }
     return cleaned;
   };
   const payloadRecord = typeof memberRecord === "object" ? cleanMemberRecord(memberRecord) : memberRecord;
@@ -25156,6 +25199,14 @@ async function persistMemberViaRepository(mode, memberRecord) {
       result = await repo.deleteMember(payloadRecord.id || payloadRecord);
     } else {
       console.warn("[CE Members] repo method missing for mode", mode, repo);
+      if (mode === "create") {
+        const fallbackMember = {
+          ...payloadRecord,
+          provider_sync_status: "Pending",
+          provider_sync_error: "Not implemented in repository",
+        };
+        return { ok: true, data: fallbackMember, skipped: true, via: "local-state-fallback" };
+      }
       if (liveSupabase) return { ok: false, error: "A operação de membros não está disponível no Supabase.", code: "NOT_IMPLEMENTED" };
       return { ok: true, data: memberRecord, skipped: true, via: "local-state-fallback" };
     }
@@ -25164,9 +25215,29 @@ async function persistMemberViaRepository(mode, memberRecord) {
       const soft =
         result.code === "UNAVAILABLE" ||
         result.code === "NOT_IMPLEMENTED" ||
-        /indispon[ií]vel|not implemented|invalid input syntax for type (uuid|date)|22P02|22007/i.test(String(result.error || ""));
-      // A live database failure must never be presented as a successful local
-      // save. Doing so made edits appear correct until the next page refresh.
+        result.code === "SUPABASE_TABLE_MISSING" ||
+        result.code === "SUPABASE_RLS_DENIED" ||
+        result.code === "SUPABASE_COLUMN_MISSING" ||
+        /indispon[ií]vel|not implemented|invalid input syntax for type (uuid|date)|22P02|22007|migration|tabela|permission|rls|denied/i.test(String(result.error || ""));
+
+      // For member creation, never block user registration on server sync errors:
+      // tag record with pending sync status and save locally so user is unblocked.
+      if (mode === "create") {
+        console.warn("[CE Members] repo write failed on create — falling back to local save with pending sync", result);
+        const fallbackMember = {
+          ...payloadRecord,
+          provider_sync_status: "Pending",
+          provider_sync_error: result.error || "Sync pending",
+        };
+        return {
+          ok: true,
+          data: fallbackMember,
+          skipped: true,
+          via: "local-state-fallback",
+          repoError: result,
+          warning: result.error,
+        };
+      }
       if (soft && !liveSupabase) {
         console.warn("[CE Members] repo soft-fail — keeping local save", result);
         return { ok: true, data: memberRecord, skipped: true, via: "local-state-fallback", repoError: result };
@@ -25178,6 +25249,14 @@ async function persistMemberViaRepository(mode, memberRecord) {
     return result || { ok: true, data: memberRecord };
   } catch (error) {
     console.warn("[CE Members] repository write failed — local fallback", error);
+    if (mode === "create") {
+      const fallbackMember = {
+        ...payloadRecord,
+        provider_sync_status: "Pending",
+        provider_sync_error: error?.message || "Sync pending",
+      };
+      return { ok: true, data: fallbackMember, skipped: true, via: "local-state-fallback", warning: error?.message };
+    }
     if (liveSupabase) return { ok: false, error: error?.message || "Não foi possível guardar no Supabase.", code: "MEMBERS_WRITE_FAILED" };
     return { ok: true, data: memberRecord, skipped: true, via: "local-state-fallback", error: error?.message };
   }
@@ -32782,7 +32861,10 @@ function submitRequisitionPastoralDecision(decision) {
   if (!action) return;
 
   const result = lib.applyWorkflowAction(state, activeUser, record.id, action, payload);
-  if (!result.ok) return;
+  if (!result.ok) {
+    alert(result.error || (lang === "pt" ? "Erro ao processar requisição." : "Error processing requisition."));
+    return;
+  }
 
   const messages = {
     approve: L("reqApproveSuccess"),
@@ -36825,7 +36907,9 @@ function mountUserFormControls(form) {
     "Follow-Up Coordinator": ["followUp", "firstTimers"],
     "Foundation Teacher": ["foundation", "foundation_teacher"],
     "Foundation Rector": ["foundation", "foundation_teacher", "reports"],
-    "Reitor de Cuidados Pastorais": ["pastoralCare", "followUp", "counseling", "sacraments", "reports"],
+    "Reitor de Cuidados Pastorais": ["pastoralCare", "firstTimers", "followUp", "foundation", "counseling", "sacraments", "reports"],
+    "pastoral_care_rector": ["pastoralCare", "firstTimers", "followUp", "foundation", "counseling", "sacraments", "reports"],
+    "Pastoral Care Rector": ["pastoralCare", "firstTimers", "followUp", "foundation", "counseling", "sacraments", "reports"],
     "Department Head": ["reports"],
     "Program Coordinator": ["programs", "reports"],
     "Prison Ministry Coordinator": ["prisonMinistry", "reports"],
@@ -38918,8 +39002,12 @@ async function submitForm(form) {
         alert(repoResult.error || (lang === "pt" ? "Não foi possível guardar o membro. Tente novamente." : "Could not save the member. Please try again."));
         return;
       }
-      state.members.push(migrateMemberRecord(repoResult?.data || created));
-      saveState(`Created member ${fullName(created)}`);
+      const finalMember = migrateMemberRecord(repoResult?.data || created);
+      state.members.push(finalMember);
+      saveState(`Created member ${fullName(finalMember)}`);
+      if (repoResult?.warning && typeof showToast === "function") {
+        showToast(lang === "pt" ? "Membro guardado localmente (sincronização com o servidor pendente)." : "Member saved locally (server sync pending).", "warning");
+      }
     }
     bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide();
     form.reset();
@@ -44144,7 +44232,7 @@ function mapAccountToDashboardUser(account) {
     role = "Cell Group Leader";
   } else if (rLow === "assistant_cell_leader" || rLow === "assistant cell leader") {
     role = "Assistant Cell Leader";
-  } else if (rLow === "pastoral_care_rector" || rLow === "pastoral care rector" || rLow === "reitor de cuidados pastorais" || rLow === "reitor" || rLow === "rector") {
+  } else if (rLow === "pastoral_care_rector" || rLow === "pastoral care rector" || rLow === "reitor de cuidados pastorais" || rLow === "reitor" || rLow === "rector" || rLow === "pastoral_care" || rLow === "pastoral care" || rLow === "cuidados pastorais" || (account?.department_permissions || []).includes("pastoralCare") || (account?.department_permissions || []).includes("pastoral_care")) {
     role = "pastoral_care_rector";
   }
 
@@ -44647,7 +44735,8 @@ function continueEnterDashboard() {
     }
     const requestedRoute = location.hash.replace("#", "");
     if (isPastoralCareRector(activeUser)) {
-      setRoute("firstTimers");
+      const targetRoute = isRouteInRoleWorkspace(requestedRoute) ? requestedRoute : "firstTimers";
+      setRoute(targetRoute);
     } else if (resumeCellReport && (hasCellReportPermission("cell_reports.create_own") || isCellLeaderOrAssistant(activeUser))) {
       history.replaceState(null, "", "#cell-report-submit");
       void showPublicCellReport();

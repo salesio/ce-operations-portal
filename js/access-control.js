@@ -464,6 +464,7 @@
         foundation: { can_view: true, can_create: true, can_edit: true, can_delete: true, can_approve: true, can_verify: true, can_export: true, scope: "church" },
         sacraments: { can_view: true, can_create: true, can_edit: true, can_delete: true, can_approve: true, can_verify: true, can_export: true, scope: "church" },
         counseling: { can_view: true, can_create: true, can_edit: true, can_delete: true, can_approve: true, can_verify: true, can_export: true, scope: "church", can_assign_counselor: true, can_schedule_counseling: true, can_write_counseling_feedback: true, can_view_sensitive_counseling_notes: true, can_refer_to_pastor: true, can_create_follow_up_from_counseling: true },
+        reports: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "church" },
         notifications: { ...VIEW_ONLY, scope: "church" }
       }
     },
@@ -475,6 +476,7 @@
         foundation: { can_view: true, can_create: true, can_edit: true, can_delete: true, can_approve: true, can_verify: true, can_export: true, scope: "church" },
         sacraments: { can_view: true, can_create: true, can_edit: true, can_delete: true, can_approve: true, can_verify: true, can_export: true, scope: "church" },
         counseling: { can_view: true, can_create: true, can_edit: true, can_delete: true, can_approve: true, can_verify: true, can_export: true, scope: "church", can_assign_counselor: true, can_schedule_counseling: true, can_write_counseling_feedback: true, can_view_sensitive_counseling_notes: true, can_refer_to_pastor: true, can_create_follow_up_from_counseling: true },
+        reports: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "church" },
         notifications: { ...VIEW_ONLY, scope: "church" }
       }
     },
@@ -486,6 +488,7 @@
         foundation: { can_view: true, can_create: true, can_edit: true, can_delete: true, can_approve: true, can_verify: true, can_export: true, scope: "church" },
         sacraments: { can_view: true, can_create: true, can_edit: true, can_delete: true, can_approve: true, can_verify: true, can_export: true, scope: "church" },
         counseling: { can_view: true, can_create: true, can_edit: true, can_delete: true, can_approve: true, can_verify: true, can_export: true, scope: "church", can_assign_counselor: true, can_schedule_counseling: true, can_write_counseling_feedback: true, can_view_sensitive_counseling_notes: true, can_refer_to_pastor: true, can_create_follow_up_from_counseling: true },
+        reports: { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_verify: false, can_export: true, scope: "church" },
         notifications: { ...VIEW_ONLY, scope: "church" }
       }
     },
@@ -607,7 +610,20 @@
     staffHr: "staffHr",
     attendance: "attendance",
     users: "usersRoles",
-    access: "accessControl"
+    access: "accessControl",
+    pastoralCare: "pastoralCare",
+    pastoral_care: "pastoralCare",
+    firstTimers: "firstTimers",
+    first_timers: "firstTimers",
+    followUp: "followUp",
+    follow_up: "followUp",
+    foundation: "foundation",
+    foundation_teacher: "foundation",
+    foundation_assistant: "foundation",
+    foundation_rector: "foundation",
+    foundation_coordinator: "foundation",
+    counseling: "counseling",
+    sacraments: "sacraments"
   };
 
   function routeToModule(route) {
@@ -693,6 +709,26 @@
         scope: user.can_view_all_churches ? "all" : (user.assigned_department ? "department" : "church")
       };
     }
+    if (["firstTimers", "followUp", "foundation", "sacraments", "counseling"].includes(module) && (grants.includes("pastoralCare") || grants.includes("pastoral_care"))) {
+      return {
+        can_view: true,
+        can_create: true,
+        can_edit: true,
+        can_delete: true,
+        can_approve: true,
+        can_verify: true,
+        can_export: true,
+        scope: user.can_view_all_churches ? "all" : (user.assigned_department ? "department" : "church"),
+        ...(module === "counseling" ? {
+          can_assign_counselor: true,
+          can_schedule_counseling: true,
+          can_write_counseling_feedback: true,
+          can_view_sensitive_counseling_notes: true,
+          can_refer_to_pastor: true,
+          can_create_follow_up_from_counseling: true
+        } : {})
+      };
+    }
     if (grants.includes(module)) {
       return {
         can_view: true,
@@ -726,9 +762,9 @@
   const EXPLICIT_DENIED_MODULES = {
     alec_manager: new Set(["dashboard", "finance", "staffHr", "requisitions", "usersRoles", "accessControl", "auditLogs", "churches", "counseling", "foundation", "fevo", "venueInventory", "sacraments", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media", "reports", "members", "firstTimers", "followUp"]),
     "ALEC Coordinator": new Set(["dashboard", "finance", "staffHr", "requisitions", "usersRoles", "accessControl", "auditLogs", "churches", "counseling", "foundation", "fevo", "venueInventory", "sacraments", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media", "reports", "members", "firstTimers", "followUp"]),
-    pastoral_care_rector: new Set(["dashboard", "churches", "members", "reports", "fevo", "cell", "cellMinistry", "cellReports", "alec", "finance", "publicGiving", "requisitions", "venueInventory", "staffHr", "usersRoles", "accessControl", "auditLogs", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"]),
-    "Pastoral Care Rector": new Set(["dashboard", "churches", "members", "reports", "fevo", "cell", "cellMinistry", "cellReports", "alec", "finance", "publicGiving", "requisitions", "venueInventory", "staffHr", "usersRoles", "accessControl", "auditLogs", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"]),
-    "Reitor de Cuidados Pastorais": new Set(["dashboard", "churches", "members", "reports", "fevo", "cell", "cellMinistry", "cellReports", "alec", "finance", "publicGiving", "requisitions", "venueInventory", "staffHr", "usersRoles", "accessControl", "auditLogs", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"]),
+    pastoral_care_rector: new Set(["dashboard", "churches", "members", "fevo", "cell", "cellMinistry", "cellReports", "alec", "finance", "publicGiving", "requisitions", "venueInventory", "staffHr", "usersRoles", "accessControl", "auditLogs", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"]),
+    "Pastoral Care Rector": new Set(["dashboard", "churches", "members", "fevo", "cell", "cellMinistry", "cellReports", "alec", "finance", "publicGiving", "requisitions", "venueInventory", "staffHr", "usersRoles", "accessControl", "auditLogs", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"]),
+    "Reitor de Cuidados Pastorais": new Set(["dashboard", "churches", "members", "fevo", "cell", "cellMinistry", "cellReports", "alec", "finance", "publicGiving", "requisitions", "venueInventory", "staffHr", "usersRoles", "accessControl", "auditLogs", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"]),
     "Cell Leader": new Set(["finance", "staffHr", "requisitions", "usersRoles", "accessControl", "auditLogs", "churches", "counseling", "foundation", "fevo", "venueInventory", "sacraments", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"]),
     "Cell Assistant": new Set(["finance", "staffHr", "requisitions", "usersRoles", "accessControl", "auditLogs", "churches", "counseling", "foundation", "fevo", "venueInventory", "sacraments", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"]),
     "Assistant Cell Leader": new Set(["finance", "staffHr", "requisitions", "usersRoles", "accessControl", "auditLogs", "churches", "counseling", "foundation", "fevo", "venueInventory", "sacraments", "prisonMinistry", "ministryMaterials", "programs", "partnership", "media"]),
@@ -747,7 +783,7 @@
     if (r === "venue_manager" || r === "venue manager" || r === "gestor de património & instalações" || r === "gestor de patrimonio e instalacoes" || r === "gestor de patrimonio") {
       return "Venue Manager";
     }
-    if (r === "pastoral_care_rector" || r === "pastoral care rector" || r === "reitor de cuidados pastorais" || r === "reitor" || r === "rector") {
+    if (r === "pastoral_care_rector" || r === "pastoral care rector" || r === "reitor de cuidados pastorais" || r === "reitor" || r === "rector" || r === "pastoral_care" || r === "pastoral care" || r === "cuidados pastorais") {
       return "pastoral_care_rector";
     }
     if (r === "alec_manager" || r === "alec manager" || r === "alec coordinator" || r === "alec_coordinator") {
@@ -851,6 +887,10 @@
       };
     }
 
+    if (user?.can_view_all_churches) {
+      access.scope = "all";
+    }
+
     if (access.can_view || access.can_create || access.can_edit) {
       access.module = module;
       return access;
@@ -886,7 +926,8 @@
     if (module === "requisitions" && requisitionApprovalTabs.has(tab)) return Boolean(access.can_approve || access.can_verify || access.can_review || access.can_forward);
     if (module === "requisitions" && requisitionFinanceTabs.has(tab)) return Boolean(access.can_release_resources || access.can_verify);
     if (module === "requisitions" && requisitionReportTabs.has(tab)) return Boolean(access.can_export || access.can_approve || access.can_verify);
-    if (module === "foundation" && (user?.role === "Foundation Teacher" || (user?.department_permissions || []).includes("foundation_teacher") || (user?.department_permissions || []).includes("foundation"))) return foundationTeacherTabs.has(tab);
+    const isPastoralRector = user?.role === "pastoral_care_rector" || user?.role === "Pastoral Care Rector" || user?.role === "Reitor de Cuidados Pastorais" || String(user?.role || "").toLowerCase().includes("reitor") || String(user?.role || "").toLowerCase().includes("rector") || (user?.department_permissions || []).includes("pastoralCare") || (user?.department_permissions || []).includes("pastoral_care");
+    if (module === "foundation" && (isPastoralRector || user?.role === "Foundation Teacher" || (user?.department_permissions || []).includes("foundation_teacher") || (user?.department_permissions || []).includes("foundation"))) return foundationTeacherTabs.has(tab);
     if (module === "foundation" && (user?.role === "Foundation Assistant" || (user?.department_permissions || []).includes("foundation_assistant"))) return foundationAssistantTabs.has(tab);
     return true;
   }
@@ -934,10 +975,10 @@
   }
 
   function getUserScope(user, module = "dashboard") {
-    const access = resolveModuleAccess(user, module);
-    if (access.scope) return access.scope;
     if ((user?.department_permissions || []).includes("*")) return "all";
     if (user?.can_view_all_churches) return "national";
+    const access = resolveModuleAccess(user, module);
+    if (access.scope) return access.scope;
     if (user?.assigned_department || user?.department_ids?.length) return "department";
     return "church";
   }

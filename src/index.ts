@@ -3430,7 +3430,7 @@ function installDataLayerGlobals(): void {
   root.cellMinistrySupabaseAdapter = cellMinistrySupabase;
   root.CECellMinistry = Object.assign(root.CECellMinistry || {}, cellMinistrySupabase);
   root.venueInventorySupabaseAdapter = venueInventorySupabase;
-  root.CEVenueInventory = Object.assign(root.CEVenueInventory || {}, venueInventory, venueInventorySupabase);
+  root.CEVenueInventory = Object.assign(root.CEVenueInventory || {}, venueInventorySupabase, venueInventory);
   root.CEReports = Object.assign(root.CEReports || {}, reportsSupabase);
   root.CEReportExports = Object.assign(root.CEReportExports || {}, {
     listReportExportJobs: reportsSupabase.listReportExportJobs,
