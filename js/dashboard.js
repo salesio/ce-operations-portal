@@ -5324,6 +5324,97 @@ function L(key) {
   return cleanDisplayText(TEXT[lang]?.[key] || TEXT.en[key] || key);
 }
 
+function formatUserRole(userOrRole = activeUser) {
+  if (!userOrRole) return "";
+  const raw = typeof userOrRole === "string"
+    ? userOrRole
+    : String(userOrRole.role_name || userOrRole.role || "").trim();
+  if (!raw) return "";
+  const rawLow = raw.toLowerCase().trim();
+  const isPt = (typeof lang !== "undefined" ? lang : "pt") === "pt";
+
+  if (rawLow === "pastoral_care_rector" || rawLow === "pastoral care rector" || rawLow === "reitor de cuidados pastorais" || rawLow === "reitor" || rawLow === "rector") {
+    return isPt ? "Reitor de Cuidados Pastorais" : "Pastoral Care Rector";
+  }
+  if (rawLow === "super_admin" || rawLow === "super admin") {
+    return "Super Admin";
+  }
+  if (rawLow === "main_pastor" || rawLow === "main pastor") {
+    return isPt ? "Pastor Principal" : "Main Pastor";
+  }
+  if (rawLow === "national_admin" || rawLow === "national admin") {
+    return isPt ? "Administrador Nacional" : "National Admin";
+  }
+  if (rawLow === "church_pastor" || rawLow === "church pastor") {
+    return isPt ? "Pastor da Igreja" : "Church Pastor";
+  }
+  if (rawLow === "church_admin" || rawLow === "church admin") {
+    return isPt ? "Administrador da Igreja" : "Church Admin";
+  }
+  if (rawLow === "department_head" || rawLow === "department head") {
+    return isPt ? "Responsável de Departamento" : "Department Head";
+  }
+  if (rawLow === "finance_head" || rawLow === "finance head") {
+    return isPt ? "Responsável de Finanças" : "Finance Head";
+  }
+  if (rawLow === "finance_officer" || rawLow === "finance officer") {
+    return isPt ? "Oficial de Finanças" : "Finance Officer";
+  }
+  if (rawLow === "hr_manager" || rawLow === "hr manager") {
+    return isPt ? "Gestor de Recursos Humanos" : "HR Manager";
+  }
+  if (rawLow === "staff_member" || rawLow === "staff member") {
+    return isPt ? "Membro de Staff" : "Staff Member";
+  }
+  if (rawLow === "cell_leader" || rawLow === "cell leader") {
+    return isPt ? "Líder de Célula" : "Cell Leader";
+  }
+  if (rawLow === "cell_group_leader" || rawLow === "cell group leader") {
+    return isPt ? "Líder de Grupo de Células" : "Cell Group Leader";
+  }
+  if (rawLow === "cell_assistant" || rawLow === "cell assistant" || rawLow === "assistant_cell_leader" || rawLow === "assistant cell leader") {
+    return isPt ? "Assistente de Célula" : "Cell Assistant";
+  }
+  if (rawLow === "cell_ministry_head" || rawLow === "cell ministry head") {
+    return isPt ? "Responsável de Células" : "Cell Ministry Head";
+  }
+  if (rawLow === "counselor") {
+    return isPt ? "Conselheiro Pastoral" : "Pastoral Counselor";
+  }
+  if (rawLow === "fevo_coordinator" || rawLow === "fevo coordinator" || rawLow === "f.e.v.o coordinator") {
+    return isPt ? "Coordenador F.E.V.O" : "FEVO Coordinator";
+  }
+  if (rawLow === "follow_up_coordinator" || rawLow === "follow up coordinator" || rawLow === "follow-up coordinator") {
+    return isPt ? "Coordenador Follow-Up" : "Follow-Up Coordinator";
+  }
+  if (rawLow === "foundation_rector" || rawLow === "foundation rector") {
+    return isPt ? "Reitor da Escola de Fundação" : "Foundation Rector";
+  }
+  if (rawLow === "foundation_teacher" || rawLow === "foundation teacher") {
+    return isPt ? "Professor da Escola de Fundação" : "Foundation Teacher";
+  }
+  if (rawLow === "venue_manager" || rawLow === "venue manager") {
+    return isPt ? "Gestor de Património" : "Venue Manager";
+  }
+  if (rawLow === "media_director" || rawLow === "media director" || rawLow === "media_coordinator") {
+    return isPt ? "Director de Mídia" : "Media Director";
+  }
+  if (rawLow === "requisition_officer" || rawLow === "requisition officer") {
+    return isPt ? "Oficial de Requisições" : "Requisition Officer";
+  }
+  if (rawLow === "alec_manager" || rawLow === "alec manager") {
+    return "ALEC Manager";
+  }
+
+  if (typeof userOrRole === "object" && userOrRole.role_name && !userOrRole.role_name.includes("_")) {
+    return userOrRole.role_name;
+  }
+
+  return raw
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 function registerDeletedUser(user) {
   if (!user) return;
   if (!state) return;
@@ -10064,7 +10155,7 @@ function buildFinanceExportHtml(reportType, list, stats, churchRows, partnerProf
   const heading = reportTitles[reportType] || L("financeExportGeneral");
   const summary = `
     <h1>${heading}</h1>
-    <p class="meta">${new Date().toLocaleString()} · ${activeUser.name} (${activeUser.role})</p>
+    <p class="meta">${new Date().toLocaleString()} · ${activeUser.name} (${formatUserRole(activeUser)})</p>
     <div class="summary">
       <div class="card"><span>${L("financeTotalReceived")}</span><strong>${money(stats.totalReceived)}</strong></div>
       <div class="card"><span>${L("financeTotalVerified")}</span><strong>${money(stats.totalVerified)}</strong></div>
@@ -10507,7 +10598,7 @@ function buildRequisitionReportExportHtml(list, stats) {
     </tr>`).join("");
   return `
     <h1>${L("reqReportsTitle")}</h1>
-    <p class="meta">${new Date().toLocaleString()} · ${activeUser.name} (${activeUser.role})</p>
+    <p class="meta">${new Date().toLocaleString()} · ${activeUser.name} (${formatUserRole(activeUser)})</p>
     <div class="summary">
       <div class="card"><span>${L("finApprovedRequisitions")}</span><strong>${stats.approvedCount || stats.total}</strong></div>
       <div class="card"><span>${L("reqApprovedValue")}</span><strong>${money(stats.approvedTotal)}</strong></div>
@@ -13009,7 +13100,7 @@ function renderShell() {
       ${typeof resolveRouteAccess === "function" && resolveRouteAccess("reports").visible && !resolveRouteAccess("reports").locked ? `<button type="button" class="nav-item-btn ${activeRoute === "reports" ? "active" : ""}" data-route="reports"><i class="bi bi-bar-chart"></i><span>${lang === "pt" ? "Relatórios" : "Reports"}</span></button>` : ""}
     </div></div></div>`;
     byId("activeUserName").textContent = activeUser.name || activeUser.full_name || "";
-    byId("activeUserRole").textContent = activeUser.role || activeUser.role_name || "";
+    byId("activeUserRole").textContent = formatUserRole(activeUser);
     applySidebarCollapse();
     updateNotificationCenter();
     return;
@@ -13080,7 +13171,7 @@ function renderShell() {
     </div>`;
   }).join("");
   byId("activeUserName").textContent = activeUser.name || activeUser.full_name || "";
-  byId("activeUserRole").textContent = activeUser.role || activeUser.role_name || "";
+  byId("activeUserRole").textContent = formatUserRole(activeUser);
   cleanRenderedText(byId("sidebarNav"));
   cleanRenderedText(document.querySelector(".ops-sidebar"));
   applySidebarCollapse();
@@ -13126,6 +13217,8 @@ function applyLanguage(next = lang) {
   if (searchBtn) {
     searchBtn.setAttribute("title", lang === "en" ? "Search" : "Pesquisar");
     searchBtn.setAttribute("aria-label", lang === "en" ? "Global Search (Ctrl+K)" : "Pesquisa Global (Ctrl+K)");
+    const searchTxt = searchBtn.querySelector(".universal-search-text");
+    if (searchTxt) searchTxt.textContent = lang === "en" ? "Search..." : "Pesquisar...";
   }
   const universalSearchInp = byId("universalSearchInput");
   if (universalSearchInp) {
@@ -44246,7 +44339,7 @@ function mapAccountToDashboardUser(account) {
     email: account.email || fromState?.email,
     name: account.name || account.full_name || account.fullName || fromState?.name,
     role: role,
-    role_name: role,
+    role_name: account.role_name || fromState?.role_name || formatUserRole(role),
     role_id: account.role_id || fromState?.role_id,
     church_id: account.church_id || account.churchId || fromState?.church_id,
     churchId: account.churchId || account.church_id || fromState?.churchId,
