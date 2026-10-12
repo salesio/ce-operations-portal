@@ -20549,6 +20549,10 @@ function openMemberCandidateForm(id = null) {
     <div class="col-12 d-flex justify-content-end"><button type="button" class="btn btn-ce-gold" data-candidate-submit-form>${isAssistant ? (isPt ? "Submeter para Aprovação do Líder" : "Submit for Leader Approval") : (isPt ? "Registar & Submeter para Aprovação" : "Register & Submit for Approval")}</button></div>`;
   const submitButton = byId("entryForm")?.querySelector('button[type="submit"]'); if (submitButton) submitButton.textContent = isPt ? "Guardar Rascunho" : "Save Draft";
   bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
+  requestAnimationFrame(() => {
+    mountPersonAutocomplete(byId("entryForm"));
+    cleanRenderedText(byId("entryModal"));
+  });
 }
 
 function openMemberCandidateDetails(candidate) {
@@ -43852,6 +43856,7 @@ document.addEventListener("keydown", (event) => {
 byId("entryModal")?.addEventListener("shown.bs.modal", () => {
   cleanRenderedText(byId("entryModal"));
   mountMediaScheduleFormControls(byId("entryForm"));
+  mountPersonAutocomplete(byId("entryForm"));
 });
 
 byId("entryModal")?.addEventListener("hidden.bs.modal", () => {
@@ -47955,7 +47960,9 @@ function mountAlecMemberAutocompleteControls(formEl) {
 // ============================================================================
 
 async function searchPersonsAcrossSystem(query) {
-  const q = String(query || "").trim().toLowerCase();
+  const normStr = (s) => String(s || "").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const rawQ = String(query || "").trim();
+  const q = normStr(rawQ);
   if (q.length < 2) return [];
 
   const results = [];
@@ -47980,7 +47987,7 @@ async function searchPersonsAcrossSystem(query) {
       whatsapp: item.whatsapp || item.primary_phone || item.phone || item.telefone || "",
       email: item.email || "",
       church_id: item.church_id || item.churchId || "",
-      church_name: item.church_name || item.igreja || churchName(item.church_id),
+      church_name: item.church_name || item.igreja || (typeof churchName === "function" ? churchName(item.church_id) : ""),
       cell_group_id: item.cell_group_id || item.group_id || "",
       cell_group_name: item.cell_group_name || item.group_name || item.grupo_de_celula || "",
       cell_id: item.cell_id || "",
@@ -47995,30 +48002,65 @@ async function searchPersonsAcrossSystem(query) {
     });
   };
 
+  const matchesQuery = (haystack) => {
+    if (!haystack) return false;
+    return normStr(haystack).includes(q);
+  };
+
   // 1. Remote Supabase search if available
-  if (typeof usesSupabaseMembers === "function" && usesSupabaseMembers()) {
-    try {
-      const client = window.CESupabase?.getRawClient?.() || window.supabase;
-      if (client && typeof client.rpc === "function") {
-        const { data, error } = await client.rpc("search_alec_candidate_members", { p_query: q });
+  const client = window.CESupabase?.getRawClient?.() || window.supabase || (typeof sbClient !== "undefined" ? sbClient : null);
+  if (client) {
+    if (typeof client.rpc === "function") {
+      try {
+        const { data, error } = await client.rpc("search_alec_candidate_members", { p_query: rawQ });
         if (!error && Array.isArray(data)) {
           data.forEach((m) => addResult(m, "Membro Oficial"));
         }
+      } catch (e) {
+        console.warn("[Person Autocomplete] rpc search", e);
       }
-    } catch (e) {
-      console.warn("[Person Autocomplete] rpc search", e);
     }
 
-    const repo = getMembersRepoSafe();
-    if (repo?.listMembersPage && results.length < 5) {
+    // Direct members query fallback if results are low
+    if (results.length < 5 && typeof client.from === "function") {
       try {
-        const res = await repo.listMembersPage({ page: 1, pageSize: 15, search: q });
-        if (res?.ok && Array.isArray(res.data?.items)) {
-          res.data.items.forEach((m) => addResult(m, "Membro Oficial"));
+        const { data, error } = await client.from("members")
+          .select("id, full_name, first_name, last_name, phone, primary_phone, email, church_id, church_name, cell_group_id, cell_group_name, cell_id, cell_name, date_of_birth, gender, neighborhood, occupation, marital_status")
+          .ilike("full_name", `%${rawQ}%`)
+          .limit(8);
+        if (!error && Array.isArray(data)) {
+          data.forEach((m) => addResult(m, "Membro Oficial"));
         }
       } catch (e) {
-        console.warn("[Person Autocomplete] listMembersPage search", e);
+        // quiet fallback
       }
+    }
+
+    // Direct first_timers query fallback
+    if (results.length < 8 && typeof client.from === "function") {
+      try {
+        const { data, error } = await client.from("first_timers")
+          .select("id, full_name, phone, email, cell_id, cell_name, church_id, church_name, date_of_birth, gender, neighborhood, occupation")
+          .ilike("full_name", `%${rawQ}%`)
+          .limit(5);
+        if (!error && Array.isArray(data)) {
+          data.forEach((ft) => addResult(ft, "Primeira Vez (FT)"));
+        }
+      } catch (e) {
+        // quiet fallback
+      }
+    }
+  }
+
+  const repo = typeof getMembersRepoSafe === "function" ? getMembersRepoSafe() : null;
+  if (repo?.listMembersPage && results.length < 5) {
+    try {
+      const res = await repo.listMembersPage({ page: 1, pageSize: 15, search: rawQ });
+      if (res?.ok && Array.isArray(res.data?.items)) {
+        res.data.items.forEach((m) => addResult(m, "Membro Oficial"));
+      }
+    } catch (e) {
+      console.warn("[Person Autocomplete] listMembersPage search", e);
     }
   }
 
@@ -48027,35 +48069,41 @@ async function searchPersonsAcrossSystem(query) {
     const haystack = [
       m.full_name, m.nome, m.apelido, m.first_name, m.last_name,
       m.primary_phone, m.phone, m.telefone, m.email, m.cell_name, m.celula
-    ].filter(Boolean).join(" ").toLowerCase();
-    if (haystack.includes(q)) addResult(m, "Membro Oficial");
+    ].filter(Boolean).join(" ");
+    if (matchesQuery(haystack)) addResult(m, "Membro Oficial");
   });
 
   // 3. Search state.memberRegistrationCandidates
   (state.memberRegistrationCandidates || []).forEach((c) => {
     const haystack = [
       c.full_name, c.first_name, c.last_name,
-      c.primary_phone, c.email, c.cell_name
-    ].filter(Boolean).join(" ").toLowerCase();
-    if (haystack.includes(q)) addResult(c, "Candidato a Membro", true);
+      c.primary_phone, c.phone, c.telefone, c.email, c.cell_name, c.celula
+    ].filter(Boolean).join(" ");
+    if (matchesQuery(haystack)) addResult(c, "Candidato a Membro", true);
   });
 
   // 4. Search cell leaders
   (state.cellLeadership?.leaders || []).forEach((l) => {
-    const haystack = [l.name, l.nome, l.phone, l.telefone, l.email, l.cell_name, l.celula].filter(Boolean).join(" ").toLowerCase();
-    if (haystack.includes(q)) addResult(l, "Líder de Célula");
+    const haystack = [l.name, l.nome, l.phone, l.telefone, l.email, l.cell_name, l.celula].filter(Boolean).join(" ");
+    if (matchesQuery(haystack)) addResult(l, "Líder de Célula");
   });
 
   // 5. Search staff profiles
   (state.staffProfiles || []).forEach((s) => {
-    const haystack = [s.full_name, s.nome, s.phone, s.email, s.department, s.departamento].filter(Boolean).join(" ").toLowerCase();
-    if (haystack.includes(q)) addResult(s, "Staff / Obreiro");
+    const haystack = [s.full_name, s.nome, s.phone, s.email, s.department, s.departamento].filter(Boolean).join(" ");
+    if (matchesQuery(haystack)) addResult(s, "Staff / Obreiro");
   });
 
   // 6. Search first timers
   (state.firstTimers || []).forEach((ft) => {
-    const haystack = [ft.full_name, ft.nome, ft.phone, ft.telefone].filter(Boolean).join(" ").toLowerCase();
-    if (haystack.includes(q)) addResult(ft, "Primeira Vez (FT)");
+    const haystack = [ft.full_name, ft.nome, ft.phone, ft.telefone, ft.email].filter(Boolean).join(" ");
+    if (matchesQuery(haystack)) addResult(ft, "Primeira Vez (FT)");
+  });
+
+  // 7. Search foundation students
+  (state.foundationStudents || state.foundationSchool?.students || []).forEach((fs) => {
+    const haystack = [fs.full_name, fs.nome, fs.phone, fs.email, fs.cell_name].filter(Boolean).join(" ");
+    if (matchesQuery(haystack)) addResult(fs, "Foundation School");
   });
 
   return results.slice(0, 10);
@@ -48076,8 +48124,10 @@ function applyPersonToForm(formEl, nameInput, chosen, feedbackBadge) {
     input.dispatchEvent(new Event("change", { bubbles: true }));
   };
 
+  const chosenName = chosen.displayName || chosen.full_name || chosen.nome || "";
+
   if (nameInput) {
-    nameInput.value = chosen.displayName || chosen.full_name || chosen.nome || "";
+    nameInput.value = chosenName;
     nameInput.dataset.personSelected = "true";
     nameInput.dataset.selectedPersonId = chosen.id || "";
     const clearNameBtn = formEl.querySelector("#btnClearUserName");
@@ -48086,9 +48136,11 @@ function applyPersonToForm(formEl, nameInput, chosen, feedbackBadge) {
     }
   }
 
+  setVal('[name="full_name"]', chosenName);
+  setVal('[name="nome_completo"]', chosenName);
   setVal('[name="first_name"]', chosen.first_name);
   setVal('[name="last_name"]', chosen.last_name);
-  setVal('[name="nome"]', chosen.first_name || chosen.displayName);
+  setVal('[name="nome"]', chosen.first_name || chosenName);
   setVal('[name="apelido"]', chosen.last_name);
 
   const phoneVal = chosen.primary_phone || chosen.phone || chosen.telefone || chosen.contacto || "";
@@ -48104,8 +48156,7 @@ function applyPersonToForm(formEl, nameInput, chosen, feedbackBadge) {
   } else {
     const emailInput = formEl.querySelector('[name="email"]');
     if (emailInput && (!emailInput.value || emailInput.value.includes("@embaixadadecristo.org"))) {
-      const fullName = chosen.displayName || chosen.full_name || "";
-      const parts = fullName
+      const parts = chosenName
         .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
         .toLowerCase()
         .replace(/[^a-z0-9\s]/g, "")
@@ -48121,17 +48172,44 @@ function applyPersonToForm(formEl, nameInput, chosen, feedbackBadge) {
     }
   }
 
-  setVal('[name="date_of_birth"]', chosen.date_of_birth);
-  setVal('[name="data_de_nascimento"]', chosen.date_of_birth);
-  setVal('[name="gender"]', chosen.gender);
-  setVal('[name="genero"]', chosen.gender);
-  setVal('[name="sexo"]', chosen.gender);
-  setVal('[name="neighborhood"]', chosen.neighborhood);
-  setVal('[name="bairro"]', chosen.neighborhood);
-  setVal('[name="occupation"]', chosen.occupation);
-  setVal('[name="profissao"]', chosen.occupation);
-  setVal('[name="marital_status"]', chosen.marital_status);
-  setVal('[name="estado_civil"]', chosen.marital_status);
+  // Normalize date of birth to YYYY-MM-DD for HTML date inputs
+  let dob = chosen.date_of_birth || chosen.data_de_nascimento || "";
+  if (dob) {
+    if (dob.includes("T")) {
+      dob = dob.split("T")[0];
+    } else if (/^\d{2}\/\d{2}\/\d{4}$/.test(dob)) {
+      const [d, m, y] = dob.split("/");
+      dob = `${y}-${m}-${d}`;
+    }
+  }
+  setVal('[name="date_of_birth"]', dob);
+  setVal('[name="data_de_nascimento"]', dob);
+
+  const genderVal = chosen.gender || chosen.genero || chosen.sexo || "";
+  if (genderVal) {
+    setVal('[name="gender"]', genderVal);
+    setVal('[name="genero"]', genderVal);
+    setVal('[name="sexo"]', genderVal);
+    const genderSelect = formEl.querySelector('[name="gender"], [name="genero"], [name="sexo"]');
+    if (genderSelect && genderSelect.tagName === "SELECT") {
+      const gNorm = String(genderVal).toLowerCase().trim();
+      for (const opt of genderSelect.options) {
+        const optNorm = String(opt.value || opt.text).toLowerCase().trim();
+        if (optNorm === gNorm || (gNorm.startsWith("m") && optNorm.startsWith("m")) || (gNorm.startsWith("f") && optNorm.startsWith("f"))) {
+          genderSelect.value = opt.value;
+          genderSelect.dispatchEvent(new Event("change", { bubbles: true }));
+          break;
+        }
+      }
+    }
+  }
+
+  setVal('[name="neighborhood"]', chosen.neighborhood || chosen.bairro);
+  setVal('[name="bairro"]', chosen.neighborhood || chosen.bairro);
+  setVal('[name="occupation"]', chosen.occupation || chosen.profissao);
+  setVal('[name="profissao"]', chosen.occupation || chosen.profissao);
+  setVal('[name="marital_status"]', chosen.marital_status || chosen.estado_civil);
+  setVal('[name="estado_civil"]', chosen.marital_status || chosen.estado_civil);
 
   // Church matching
   if (chosen.church_id) {
@@ -48246,7 +48324,10 @@ function applyPersonToForm(formEl, nameInput, chosen, feedbackBadge) {
   if (chosen.cell_leader_name) setVal('[name="nome_do_lider_de_celula"]', chosen.cell_leader_name);
 
   if (feedbackBadge) {
-    feedbackBadge.innerHTML = `<i class="bi bi-check-circle-fill text-success me-1"></i> Dados preenchidos a partir de: <strong>${escapeAttr(chosen.displayName)}</strong> (${escapeAttr(chosen.church_name || "Igreja")})`;
+    const isPt = (typeof lang !== "undefined" ? lang : "pt") === "pt";
+    const prefix = isPt ? "Dados preenchidos a partir de:" : "Auto-filled from:";
+    const churchLabel = chosen.church_name || (typeof churchName === "function" ? churchName(chosen.church_id) : "") || (isPt ? "Igreja" : "Church");
+    feedbackBadge.innerHTML = `<i class="bi bi-check-circle-fill text-success me-1"></i> ${prefix} <strong>${escapeAttr(chosen.displayName)}</strong> (${escapeAttr(churchLabel)})`;
     feedbackBadge.classList.remove("d-none");
   }
 }
@@ -48342,7 +48423,7 @@ function mountPersonAutocomplete(formEl, options = {}) {
     if (!suggestionsBox) {
       suggestionsBox = document.createElement("div");
       suggestionsBox.className = "person-autocomplete-suggestions list-group position-absolute shadow-lg d-none";
-      suggestionsBox.style.cssText = "z-index: 1060; top: 100%; left: 12px; right: 12px; max-height: 260px; overflow-y: auto; border: 1px solid rgba(234, 179, 8, 0.4); border-radius: 8px; background: #0f172a;";
+      suggestionsBox.style.cssText = "z-index: 1060; max-height: 260px; overflow-y: auto; border: 1px solid rgba(234, 179, 8, 0.4); border-radius: 8px; background: #0f172a;";
       fieldContainer.appendChild(suggestionsBox);
     }
 
@@ -48357,6 +48438,12 @@ function mountPersonAutocomplete(formEl, options = {}) {
     if (!nameInput.getAttribute("placeholder")) {
       nameInput.setAttribute("placeholder", L("searchExistingMembers") || (lang === "pt" ? "Digite para pesquisar membros existentes..." : "Type to search existing members..."));
     }
+
+    const updateBoxPosition = () => {
+      suggestionsBox.style.left = `${nameInput.offsetLeft}px`;
+      suggestionsBox.style.width = `${nameInput.offsetWidth}px`;
+      suggestionsBox.style.top = `${nameInput.offsetTop + nameInput.offsetHeight + 4}px`;
+    };
 
     const hideBox = () => {
       suggestionsBox.classList.add("d-none");
@@ -48393,6 +48480,8 @@ function mountPersonAutocomplete(formEl, options = {}) {
         const matches = await searchPersonsAcrossSystem(q);
         if (currentSeq !== searchSeq || nameInput.dataset.personSelected === "true") return;
 
+        updateBoxPosition();
+
         if (!matches.length) {
           const noMatchesMsg = L("noMembersFound") || (lang === "pt" ? "Nenhum membro encontrado na base" : "No member found in database");
           suggestionsBox.innerHTML = `<div class="list-group-item bg-dark text-white-50 p-2 small"><i class="bi bi-info-circle me-1"></i>${escapeAttr(noMatchesMsg)}</div>`;
@@ -48404,7 +48493,7 @@ function mountPersonAutocomplete(formEl, options = {}) {
           const personId = escapeAttr(person.id);
           const pName = escapeAttr(person.displayName || person.full_name || person.nome || "Membro");
           const pPhone = escapeAttr(person.primary_phone || person.phone || person.telefone || "");
-          const pChurch = escapeAttr(person.church_name || churchName(person.church_id) || "");
+          const pChurch = escapeAttr(person.church_name || (typeof churchName === "function" ? churchName(person.church_id) : "") || "");
           const pCell = escapeAttr(person.cell_name || person.celula || "");
           const pSource = escapeAttr(person.source_label || (person.is_candidate ? "Candidato" : "Membro"));
 
@@ -48436,6 +48525,38 @@ function mountPersonAutocomplete(formEl, options = {}) {
           });
         });
       }, 200);
+    });
+
+    nameInput.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        hideBox();
+      } else if (e.key === "ArrowDown") {
+        const firstBtn = suggestionsBox.querySelector("button");
+        if (firstBtn && !suggestionsBox.classList.contains("d-none")) {
+          e.preventDefault();
+          firstBtn.focus();
+        }
+      }
+    });
+
+    suggestionsBox.addEventListener("keydown", (e) => {
+      const btns = Array.from(suggestionsBox.querySelectorAll("button"));
+      const currentIndex = btns.indexOf(document.activeElement);
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        const next = btns[currentIndex + 1] || btns[0];
+        if (next) next.focus();
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        if (currentIndex <= 0) {
+          nameInput.focus();
+        } else {
+          btns[currentIndex - 1].focus();
+        }
+      } else if (e.key === "Escape") {
+        hideBox();
+        nameInput.focus();
+      }
     });
 
     document.addEventListener("click", (e) => {
