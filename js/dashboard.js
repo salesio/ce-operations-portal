@@ -13783,9 +13783,23 @@ function animateCountUp(element, duration = 5000) {
   const targetValue = parseFloat(cleanNum);
   if (isNaN(targetValue)) return;
 
+  const isDonutCenter = element.classList.contains("dash-donut-center-val");
+  const donutCard = isDonutCenter ? (element.closest(".dash-card") || element.closest("#dash-church-distribution-card") || element.parentElement?.parentElement?.parentElement || document.body) : null;
+  const donutSegments = donutCard ? Array.from(donutCard.querySelectorAll(".dash-donut-segment")) : [];
+  const churchCounts = donutCard ? Array.from(donutCard.querySelectorAll(".dash-church-count")) : [];
+  const churchPcts = donutCard ? Array.from(donutCard.querySelectorAll(".dash-church-pct")) : [];
+  const circumference = 2 * Math.PI * 38; // ~238.76104
+
   if (targetValue === 0) {
     element.dataset.countupVal = rawText;
     element.textContent = rawText;
+    if (isDonutCenter) {
+      donutSegments.forEach((seg) => {
+        seg.setAttribute("stroke-dasharray", `0 ${circumference.toFixed(2)}`);
+      });
+      churchCounts.forEach((c) => { c.textContent = "0"; });
+      churchPcts.forEach((p) => { p.textContent = "(0.0%)"; });
+    }
     return;
   }
 
@@ -13815,6 +13829,16 @@ function animateCountUp(element, duration = 5000) {
 
   element._isAnimatingCountUp = true;
   element.dataset.countupVal = rawText;
+  element.textContent = formatCurrent(0);
+
+  if (isDonutCenter) {
+    donutSegments.forEach((seg) => {
+      seg.setAttribute("stroke-dasharray", `0 ${circumference.toFixed(2)}`);
+      seg.setAttribute("stroke-dashoffset", "0");
+    });
+    churchCounts.forEach((c) => { c.textContent = "0"; });
+    churchPcts.forEach((p) => { p.textContent = "(0.0%)"; });
+  }
 
   const animDuration = Number(element.dataset.duration) || duration || 5000;
   const startTime = performance.now();
@@ -13832,12 +13856,63 @@ function animateCountUp(element, duration = 5000) {
 
     element.textContent = formatCurrent(current);
 
+    if (isDonutCenter && donutSegments.length > 0) {
+      let runningOffset = 0;
+      donutSegments.forEach((seg) => {
+        const targetDash = parseFloat(seg.dataset.targetDash || "0");
+        const currentDash = targetDash * eased;
+        seg.setAttribute("stroke-dasharray", `${currentDash.toFixed(2)} ${circumference.toFixed(2)}`);
+        seg.setAttribute("stroke-dashoffset", `-${runningOffset.toFixed(2)}`);
+        runningOffset += currentDash;
+      });
+
+      churchCounts.forEach((countEl) => {
+        const targetCnt = parseFloat(countEl.dataset.target || "0");
+        if (targetCnt > 0) {
+          const curCnt = Math.round(targetCnt * eased);
+          countEl.textContent = curCnt.toLocaleString("en-US");
+        } else {
+          countEl.textContent = "0";
+        }
+      });
+
+      churchPcts.forEach((pctEl) => {
+        const targetPct = parseFloat(pctEl.dataset.targetPct || "0");
+        if (targetPct > 0) {
+          const curPct = (targetPct * eased).toFixed(1);
+          pctEl.textContent = `(${curPct}%)`;
+        } else {
+          pctEl.textContent = "(0.0%)";
+        }
+      });
+    }
+
     if (progress < 1) {
       element._countUpRaf = requestAnimationFrame(step);
     } else {
       element.textContent = rawText;
       element._isAnimatingCountUp = false;
       element._countUpRaf = null;
+
+      if (isDonutCenter && donutSegments.length > 0) {
+        let runningOffset = 0;
+        donutSegments.forEach((seg) => {
+          const targetDash = parseFloat(seg.dataset.targetDash || "0");
+          seg.setAttribute("stroke-dasharray", `${targetDash.toFixed(2)} ${circumference.toFixed(2)}`);
+          seg.setAttribute("stroke-dashoffset", `-${runningOffset.toFixed(2)}`);
+          runningOffset += targetDash;
+        });
+
+        churchCounts.forEach((countEl) => {
+          const targetCnt = parseFloat(countEl.dataset.target || "0");
+          countEl.textContent = Math.round(targetCnt).toLocaleString("en-US");
+        });
+
+        churchPcts.forEach((pctEl) => {
+          const targetPct = parseFloat(pctEl.dataset.targetPct || "0");
+          pctEl.textContent = `(${targetPct.toFixed(1)}%)`;
+        });
+      }
     }
   }
 
@@ -16994,7 +17069,10 @@ function renderDashboard() {
     modulePageState?.members?.totalCount || 0,
     knownStoredMembersCount
   );
-  if (scopedMembers.length === 0 && sedeEntry) {
+  const unassignedDeficit = totalRealMembers - scopedMembers.length;
+  if (unassignedDeficit > 0 && sedeEntry) {
+    sedeEntry.count += unassignedDeficit;
+  } else if (scopedMembers.length === 0 && sedeEntry) {
     sedeEntry.count = totalRealMembers;
   }
 
@@ -17084,11 +17162,12 @@ function renderDashboard() {
 
     let circles = "";
     if (totalRealMembers > 0 && nonZeroChurchEntries.length > 0) {
-      circles = nonZeroChurchEntries.map((entry, idx) => {
+      const bgTrack = `<circle cx="50" cy="50" r="38" fill="transparent" stroke="rgba(255,255,255,0.06)" stroke-width="12" />`;
+      circles = bgTrack + nonZeroChurchEntries.map((entry, idx) => {
         const pct = entry.count / totalRealMembers;
         const strokeDash = pct * circumference;
         const color = colors[idx % colors.length];
-        const circleSvg = `<circle cx="50" cy="50" r="38" fill="transparent" stroke="${color}" stroke-width="12" stroke-dasharray="${strokeDash.toFixed(1)} ${circumference.toFixed(1)}" stroke-dashoffset="-${currentOffset.toFixed(1)}" />`;
+        const circleSvg = `<circle class="dash-donut-segment" data-target-dash="${strokeDash.toFixed(2)}" data-target-offset="${currentOffset.toFixed(2)}" cx="50" cy="50" r="38" fill="transparent" stroke="${color}" stroke-width="12" stroke-dasharray="0 ${circumference.toFixed(2)}" stroke-dashoffset="-${currentOffset.toFixed(2)}" />`;
         currentOffset += strokeDash;
         return circleSvg;
       }).join("");
@@ -17107,8 +17186,8 @@ function renderDashboard() {
             <span class="fw-semibold text-truncate ${isNonZero ? "text-light" : "text-secondary"}" style="max-width: 190px;" title="${escapeAttr(entry.name)}">${escapeAttr(entry.name)}</span>
           </div>
           <div class="d-flex align-items-center gap-2 flex-shrink-0">
-            <strong class="${isNonZero ? "text-light" : "text-secondary"}" style="font-size: 0.88rem;">${entry.count}</strong>
-            <span class="text-secondary small">(${pct}%)</span>
+            <strong class="dash-church-count ${isNonZero ? "text-light" : "text-secondary"}" style="font-size: 0.88rem;" data-target="${entry.count}">0</strong>
+            <span class="dash-church-pct text-secondary small" data-target-pct="${pct}">(0.0%)</span>
           </div>
         </div>
       `;
@@ -17120,7 +17199,7 @@ function renderDashboard() {
           ${circles}
         </svg>
         <div class="dash-donut-center">
-          <div class="dash-donut-center-val" data-countup="${totalRealMembers}">${totalRealMembers}</div>
+          <div class="dash-donut-center-val" data-countup="${totalRealMembers}">0</div>
           <div class="dash-donut-center-lbl">${isPt ? "Membros" : "Members"}</div>
         </div>
       </div>
@@ -17712,7 +17791,7 @@ function renderDashboard() {
 
         <!-- Right: Members by Church Donut Chart (35%) -->
         <div class="col-lg-5 col-xl-4">
-          <div class="dash-card">
+          <div id="dash-church-distribution-card" class="dash-card">
             <div class="dash-card-head">
               <div>
                 <h3 class="dash-card-title">${isPt ? "Membros por Igreja" : "Members by Church"}</h3>
