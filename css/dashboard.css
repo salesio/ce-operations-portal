@@ -13265,6 +13265,40 @@ nav.module-tabs {
   letter-spacing: 0.05em;
 }
 
+.dash-donut-wrap svg circle {
+  transition: stroke-dasharray 1.4s cubic-bezier(0.16, 1, 0.3, 1), stroke-dashoffset 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dash-sync-badge {
+  background: rgba(56, 189, 248, 0.12);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  font-size: 0.72rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  animation: dashPulseSync 2s infinite ease-in-out;
+}
+
+@keyframes dashPulseSync {
+  0%, 100% { opacity: 0.95; }
+  50% { opacity: 0.45; }
+}
+
+.dash-synced-badge {
+  background: rgba(34, 197, 94, 0.12);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  font-size: 0.72rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+}
+
 .dash-church-list {
   display: flex;
   flex-direction: column;
