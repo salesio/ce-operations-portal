@@ -20656,22 +20656,72 @@ async function submitMemberCandidateForm(form, { submit = false } = {}) {
     updated_at: now
   };
 
-  if (!record.full_name || !record.church_id || !record.cell_id) return alert("Nome completo, igreja e célula são obrigatórios.");
+  if (!record.full_name || !record.church_id || !record.cell_id) return alert(isPt ? "Nome completo, igreja e célula são obrigatórios." : "Full name, church, and cell are required.");
   if (!existing) state.memberRegistrationCandidates.push(record); else Object.assign(existing, record);
   const repoResult = await persistMemberCandidateViaRepository(existing ? "update" : "create", record);
-  if (repoResult?.ok === false) return alert(repoResult.error || "Não foi possível guardar o pedido de adesão.");
+  let isTableMissing = false;
+  if (repoResult?.ok === false) {
+    isTableMissing = repoResult.code === "SUPABASE_TABLE_MISSING" ||
+      String(repoResult.error || "").toLowerCase().includes("tabela") ||
+      String(repoResult.error || "").toLowerCase().includes("migration") ||
+      String(repoResult.error || "").toLowerCase().includes("does not exist");
+    if (!isTableMissing) {
+      return alert(repoResult.error || (isPt ? "Não foi possível guardar o pedido de adesão." : "Failed to save membership request."));
+    }
+    console.warn("[CE Member Candidates] Remote table missing, preserved locally in state/localStorage:", repoResult.error);
+    record.provider_sync_status = "Pending";
+  }
+
+  // If Cell Leader registers a member, also immediately add them to the local cell roster so they appear in reports and roster
+  if (submit && !isAssistant && record.cell_id) {
+    const existingMember = (state.members || []).find((m) => String(m.id) === String(record.id) || (m.full_name && m.full_name.toLowerCase() === record.full_name.toLowerCase() && String(m.cell_id) === String(record.cell_id)));
+    if (!existingMember) {
+      state.members.push({
+        id: record.id,
+        full_name: record.full_name,
+        nome: record.first_name || record.full_name,
+        apelido: record.last_name || "",
+        first_name: record.first_name,
+        last_name: record.last_name,
+        church_id: record.church_id,
+        church_name: record.church_name,
+        cell_group_id: record.cell_group_id,
+        cell_group_name: record.cell_group_name,
+        cell_id: record.cell_id,
+        cell_name: record.cell_name,
+        celula: record.cell_name,
+        phone: record.primary_phone,
+        primary_phone: record.primary_phone,
+        email: record.email,
+        date_of_birth: record.date_of_birth,
+        neighborhood: record.neighborhood,
+        occupation: record.occupation,
+        status: "Active",
+        membership_status: "Candidate",
+        provider_sync_status: isTableMissing ? "Pending" : "Synced",
+        created_at: now,
+        updated_at: now
+      });
+    }
+  }
+
   recordCandidateAudit(existing ? "member_candidate.updated" : "member_candidate.created", record);
   if (submit) {
     if (isAssistant) {
       recordCandidateAudit(existing ? "member_candidate.resubmitted_to_leader" : "member_candidate.submitted_to_leader", record);
-      alert("Membro registado com sucesso! O registo foi enviado para a fila de aprovação do Líder da Célula.");
+      alert(isPt
+        ? "Membro registado com sucesso! O registo foi enviado para a fila de aprovação do Líder da Célula."
+        : "Member registered successfully! The record was sent to the Cell Leader approval queue.");
     } else {
       recordCandidateAudit(existing ? "member_candidate.resubmitted" : "member_candidate.submitted", record);
       notifyCandidateReviewers(record);
-      alert("Membro registado e adicionado à lista da célula com sucesso! O registo foi enviado para aprovação da Igreja.");
+      const syncNote = isTableMissing ? (isPt ? "\n(Guardado localmente com sucesso. A tabela remota precisa ser criada para sincronização na nuvem)." : "\n(Saved locally successfully. Remote table migration needed for cloud sync).") : "";
+      alert((isPt
+        ? "Membro registado e adicionado à lista da célula com sucesso! O registo foi enviado para aprovação da Igreja."
+        : "Member registered and added to cell roster successfully! The record was submitted for Church approval.") + syncNote);
     }
   } else {
-    alert("Rascunho guardado com sucesso.");
+    alert(isPt ? "Rascunho guardado com sucesso." : "Draft saved successfully.");
   }
   saveState(submit ? (isAssistant ? "Pedido submetido para o Líder" : "Membro registado e enviado para a Igreja") : "Rascunho guardado");
   bootstrap.Modal.getInstance(byId("entryModal"))?.hide();
