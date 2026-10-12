@@ -17540,11 +17540,11 @@ function renderDashboard() {
           <div class="d-flex flex-column gap-2.5">
             <!-- Event 1 -->
             <div class="dash-event-item">
-              <div class="d-flex align-items-center gap-3">
+              <div class="d-flex align-items-center gap-3 min-w-0 flex-grow-1">
                 <div class="dash-icon-box sky"><i class="bi bi-sun-fill"></i></div>
-                <div>
-                  <div class="fw-bold text-light">Domingo - 1º Culto</div>
-                  <span class="text-secondary small"><i class="bi bi-clock me-1"></i>07:30 - 09:00 · Templo Central & Transmissão Online</span>
+                <div class="dash-event-info">
+                  <div class="dash-event-title">Domingo - 1º Culto</div>
+                  <div class="dash-event-sub"><i class="bi bi-clock me-1 text-info"></i>07:30 - 09:00 · Templo Central & Transmissão Online</div>
                 </div>
               </div>
               <span class="dash-event-badge">${isPt ? "Amanhã" : "Tomorrow"}</span>
@@ -17552,11 +17552,11 @@ function renderDashboard() {
 
             <!-- Event 2 -->
             <div class="dash-event-item">
-              <div class="d-flex align-items-center gap-3">
-                <div class="dash-icon-box sky"><i class="bi bi-people-fill"></i></div>
-                <div>
-                  <div class="fw-bold text-light">Domingo - 2º Culto</div>
-                  <span class="text-secondary small"><i class="bi bi-clock me-1"></i>09:30 - 11:00 · Templo Central & Transmissão Online</span>
+              <div class="d-flex align-items-center gap-3 min-w-0 flex-grow-1">
+                <div class="dash-icon-box blue"><i class="bi bi-people-fill"></i></div>
+                <div class="dash-event-info">
+                  <div class="dash-event-title">Domingo - 2º Culto</div>
+                  <div class="dash-event-sub"><i class="bi bi-clock me-1 text-info"></i>09:30 - 11:00 · Templo Central & Transmissão Online</div>
                 </div>
               </div>
               <span class="dash-event-badge">${isPt ? "Amanhã" : "Tomorrow"}</span>
@@ -17564,26 +17564,26 @@ function renderDashboard() {
 
             <!-- Event 3 -->
             <div class="dash-event-item">
-              <div class="d-flex align-items-center gap-3">
+              <div class="d-flex align-items-center gap-3 min-w-0 flex-grow-1">
                 <div class="dash-icon-box purple"><i class="bi bi-book-fill"></i></div>
-                <div>
-                  <div class="fw-bold text-light">${isPt ? "Quarta-feira - Culto de Ensino da Palavra" : "Wednesday - Bible Teaching Service"}</div>
-                  <span class="text-secondary small"><i class="bi bi-clock me-1"></i>18:00 - 19:30 · ${isPt ? "Todas as Sedes Provinciais & Células" : "All Provincial Centers & Cells"}</span>
+                <div class="dash-event-info">
+                  <div class="dash-event-title">${isPt ? "Quarta-feira - Culto de Ensino da Palavra" : "Wednesday - Bible Teaching Service"}</div>
+                  <div class="dash-event-sub"><i class="bi bi-clock me-1 text-secondary"></i>18:00 - 19:30 · ${isPt ? "Todas as Sedes Provinciais & Células" : "All Provincial Centers & Cells"}</div>
                 </div>
               </div>
-              <span class="dash-event-badge" style="background: rgba(148, 163, 184, 0.12); color: #cbd5e1;">07 Out</span>
+              <span class="dash-event-badge muted">07 Out</span>
             </div>
 
             <!-- Event 4 -->
             <div class="dash-event-item">
-              <div class="d-flex align-items-center gap-3">
+              <div class="d-flex align-items-center gap-3 min-w-0 flex-grow-1">
                 <div class="dash-icon-box amber"><i class="bi bi-fire"></i></div>
-                <div>
-                  <div class="fw-bold text-light">${isPt ? "Vigília de Oração e Milagres" : "Prayer & Miracle Vigil"}</div>
-                  <span class="text-secondary small"><i class="bi bi-clock me-1"></i>22:00 - 04:00 · Templo Central Maputo</span>
+                <div class="dash-event-info">
+                  <div class="dash-event-title">${isPt ? "Vigília de Oração e Milagres" : "Prayer & Miracle Vigil"}</div>
+                  <div class="dash-event-sub"><i class="bi bi-clock me-1 text-warning"></i>22:00 - 04:00 · Templo Central Maputo</div>
                 </div>
               </div>
-              <span class="dash-event-badge" style="background: rgba(234, 179, 8, 0.15); color: #facc15;">10 Out</span>
+              <span class="dash-event-badge amber">10 Out</span>
             </div>
           </div>
         </div>
@@ -17798,57 +17798,57 @@ function renderDashboard() {
             <div class="dash-card-head mb-3">
               <div class="d-flex align-items-center gap-2">
                 <h3 class="dash-card-title"><i class="bi bi-bell-fill me-2 text-warning"></i>${isPt ? "Tarefas e Alertas" : "Tasks & Alerts"}</h3>
-                <span class="badge" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.25); font-size: 0.7rem;">${pendingFollowupsCount + cellsMissingReportCount + pendingReqs} ${isPt ? "Pendentes" : "Pending"}</span>
+                <span class="dash-header-badge">${pendingFollowupsCount + cellsMissingReportCount + pendingReqs} ${isPt ? "Pendentes" : "Pending"}</span>
               </div>
-              <button type="button" class="btn btn-link btn-sm text-decoration-none p-0" style="color: #38bdf8; font-size: 0.8rem;" onclick="window.switchDashboardSubTab('growth');">${isPt ? "Ver todas ›" : "View all ›"}</button>
+              <button type="button" class="dash-head-link" onclick="window.switchDashboardSubTab('growth');">${isPt ? "Ver todas" : "View all"} <i class="bi bi-chevron-right ms-1"></i></button>
             </div>
-            <div class="d-flex flex-column gap-2">
+            <div class="d-flex flex-column gap-2.5">
               <!-- Task 1 -->
               <div class="dash-task-item">
-                <div class="d-flex align-items-center gap-2.5">
-                  <span class="dash-legend-dot" style="background: #ef4444; width: 10px; height: 10px;"></span>
-                  <div>
-                    <div class="fw-semibold text-light" style="font-size: 0.84rem;">${pendingFollowupsCount} First Timers ${isPt ? "sem acompanhamento" : "without follow-up"}</div>
-                    <span class="text-secondary small" style="font-size: 0.72rem;">${isPt ? "Cuidados Pastorais · Ação recomendada" : "Pastoral Care · Action recommended"}</span>
+                <div class="d-flex align-items-center gap-3 min-w-0 flex-grow-1">
+                  <div class="dash-icon-box rose"><i class="bi bi-person-exclamation"></i></div>
+                  <div class="dash-task-info">
+                    <div class="dash-task-title">${pendingFollowupsCount} First Timers ${isPt ? "sem acompanhamento" : "without follow-up"}</div>
+                    <div class="dash-task-sub">${isPt ? "Cuidados Pastorais · Ação recomendada" : "Pastoral Care · Action recommended"}</div>
                   </div>
                 </div>
-                <button type="button" class="dash-task-pill-btn" onclick="window.switchDashboardSubTab('growth');">${isPt ? "Resolver ›" : "Resolve ›"}</button>
+                <button type="button" class="dash-task-pill-btn" onclick="window.switchDashboardSubTab('growth');">${isPt ? "Resolver" : "Resolve"} <i class="bi bi-chevron-right ms-1"></i></button>
               </div>
 
               <!-- Task 2 -->
               <div class="dash-task-item">
-                <div class="d-flex align-items-center gap-2.5">
-                  <span class="dash-legend-dot" style="background: #facc15; width: 10px; height: 10px;"></span>
-                  <div>
-                    <div class="fw-semibold text-light" style="font-size: 0.84rem;">${cellsMissingReportCount} ${isPt ? "células não enviaram relatório semanal" : "cells did not submit weekly report"}</div>
-                    <span class="text-secondary small" style="font-size: 0.72rem;">${isPt ? "Células & Liderança · Relatório em atraso" : "Cells & Leadership · Pending report"}</span>
+                <div class="d-flex align-items-center gap-3 min-w-0 flex-grow-1">
+                  <div class="dash-icon-box amber"><i class="bi bi-diagram-3-fill"></i></div>
+                  <div class="dash-task-info">
+                    <div class="dash-task-title">${cellsMissingReportCount} ${isPt ? "células não enviaram relatório semanal" : "cells did not submit weekly report"}</div>
+                    <div class="dash-task-sub">${isPt ? "Células & Liderança · Relatório em atraso" : "Cells & Leadership · Pending report"}</div>
                   </div>
                 </div>
-                <button type="button" class="dash-task-pill-btn" onclick="window.switchDashboardSubTab('departments');">${isPt ? "Notificar ›" : "Notify ›"}</button>
+                <button type="button" class="dash-task-pill-btn" onclick="window.switchDashboardSubTab('departments');">${isPt ? "Notificar" : "Notify"} <i class="bi bi-chevron-right ms-1"></i></button>
               </div>
 
               <!-- Task 3 -->
               <div class="dash-task-item">
-                <div class="d-flex align-items-center gap-2.5">
-                  <span class="dash-legend-dot" style="background: #c084fc; width: 10px; height: 10px;"></span>
-                  <div>
-                    <div class="fw-semibold text-light" style="font-size: 0.84rem;">${pendingReqs} ${isPt ? "requisições financeiras aguardam aprovação" : "finance requisitions await approval"}</div>
-                    <span class="text-secondary small" style="font-size: 0.72rem;">${isPt ? "Finanças · Aguarda decisão pastoral" : "Finance · Awaiting review"}</span>
+                <div class="d-flex align-items-center gap-3 min-w-0 flex-grow-1">
+                  <div class="dash-icon-box purple"><i class="bi bi-receipt-cutoff"></i></div>
+                  <div class="dash-task-info">
+                    <div class="dash-task-title">${pendingReqs} ${isPt ? "requisições financeiras aguardam aprovação" : "finance requisitions await approval"}</div>
+                    <div class="dash-task-sub">${isPt ? "Finanças · Aguarda decisão pastoral" : "Finance · Awaiting review"}</div>
                   </div>
                 </div>
-                <button type="button" class="dash-task-pill-btn" onclick="window.switchDashboardSubTab('finance');">${isPt ? "Revisar ›" : "Review ›"}</button>
+                <button type="button" class="dash-task-pill-btn" onclick="window.switchDashboardSubTab('finance');">${isPt ? "Revisar" : "Review"} <i class="bi bi-chevron-right ms-1"></i></button>
               </div>
 
               <!-- Task 4 -->
               <div class="dash-task-item">
-                <div class="d-flex align-items-center gap-2.5">
-                  <span class="dash-legend-dot" style="background: #34d399; width: 10px; height: 10px;"></span>
-                  <div>
-                    <div class="fw-semibold text-light" style="font-size: 0.84rem;">${firstTimers[0] ? (isPt ? "Último First Timer registado: " + fullName(firstTimers[0]) : "Latest First Timer: " + fullName(firstTimers[0])) : (isPt ? "Registo de First Timers ativo" : "First Timers active")}</div>
-                    <span class="text-secondary small" style="font-size: 0.72rem;">${firstTimers[0]?.data_do_culto ? (isPt ? "Culto de " + firstTimers[0].data_do_culto : "Service " + firstTimers[0].data_do_culto) : (isPt ? "Registo de Entradas" : "Intake")}</span>
+                <div class="d-flex align-items-center gap-3 min-w-0 flex-grow-1">
+                  <div class="dash-icon-box emerald"><i class="bi bi-person-check-fill"></i></div>
+                  <div class="dash-task-info">
+                    <div class="dash-task-title">${firstTimers[0] ? (isPt ? "Último First Timer: " + fullName(firstTimers[0]) : "Latest First Timer: " + fullName(firstTimers[0])) : (isPt ? "Registo de First Timers ativo" : "First Timers active")}</div>
+                    <div class="dash-task-sub">${firstTimers[0]?.data_do_culto ? (isPt ? "Culto de " + firstTimers[0].data_do_culto : "Service " + firstTimers[0].data_do_culto) : (isPt ? "Registo de Entradas" : "Intake")}</div>
                   </div>
                 </div>
-                <button type="button" class="dash-task-pill-btn" onclick="window.switchDashboardSubTab('growth');">${isPt ? "Ver ficha ›" : "View profile ›"}</button>
+                <button type="button" class="dash-task-pill-btn" onclick="window.switchDashboardSubTab('growth');">${isPt ? "Ver ficha" : "View profile"} <i class="bi bi-chevron-right ms-1"></i></button>
               </div>
             </div>
           </div>
@@ -17859,16 +17859,16 @@ function renderDashboard() {
           <div class="dash-card">
             <div class="dash-card-head mb-3">
               <h3 class="dash-card-title"><i class="bi bi-calendar-event-fill me-2 text-warning"></i>${isPt ? "Próximos Cultos e Eventos" : "Upcoming Services & Events"}</h3>
-              <button type="button" class="btn btn-link btn-sm text-decoration-none p-0" style="color: #38bdf8; font-size: 0.8rem;" onclick="window.switchDashboardSubTab('events');">${isPt ? "Ver calendário ›" : "View calendar ›"}</button>
+              <button type="button" class="dash-head-link" onclick="window.switchDashboardSubTab('events');">${isPt ? "Ver calendário" : "View calendar"} <i class="bi bi-chevron-right ms-1"></i></button>
             </div>
-            <div class="d-flex flex-column gap-2">
+            <div class="d-flex flex-column gap-2.5">
               <!-- Event 1 -->
               <div class="dash-event-item">
-                <div class="d-flex align-items-center gap-2.5">
-                  <div class="dash-icon-box sky" style="width: 32px; height: 32px; font-size: 0.95rem;"><i class="bi bi-sun-fill"></i></div>
-                  <div>
-                    <div class="fw-semibold text-light" style="font-size: 0.84rem;">Domingo - 1º Culto</div>
-                    <span class="text-secondary small" style="font-size: 0.72rem;"><i class="bi bi-clock me-1"></i>07:30 - 09:00 · Templo Central & Online</span>
+                <div class="d-flex align-items-center gap-3 min-w-0 flex-grow-1">
+                  <div class="dash-icon-box sky"><i class="bi bi-sun-fill"></i></div>
+                  <div class="dash-event-info">
+                    <div class="dash-event-title">Domingo - 1º Culto</div>
+                    <div class="dash-event-sub"><i class="bi bi-clock me-1 text-info"></i>07:30 - 09:00 · Templo Central & Online</div>
                   </div>
                 </div>
                 <span class="dash-event-badge">${isPt ? "Amanhã" : "Tomorrow"}</span>
@@ -17876,11 +17876,11 @@ function renderDashboard() {
 
               <!-- Event 2 -->
               <div class="dash-event-item">
-                <div class="d-flex align-items-center gap-2.5">
-                  <div class="dash-icon-box sky" style="width: 32px; height: 32px; font-size: 0.95rem;"><i class="bi bi-people-fill"></i></div>
-                  <div>
-                    <div class="fw-semibold text-light" style="font-size: 0.84rem;">Domingo - 2º Culto</div>
-                    <span class="text-secondary small" style="font-size: 0.72rem;"><i class="bi bi-clock me-1"></i>09:30 - 11:00 · Templo Central & Online</span>
+                <div class="d-flex align-items-center gap-3 min-w-0 flex-grow-1">
+                  <div class="dash-icon-box blue"><i class="bi bi-people-fill"></i></div>
+                  <div class="dash-event-info">
+                    <div class="dash-event-title">Domingo - 2º Culto</div>
+                    <div class="dash-event-sub"><i class="bi bi-clock me-1 text-info"></i>09:30 - 11:00 · Templo Central & Online</div>
                   </div>
                 </div>
                 <span class="dash-event-badge">${isPt ? "Amanhã" : "Tomorrow"}</span>
@@ -17888,26 +17888,26 @@ function renderDashboard() {
 
               <!-- Event 3 -->
               <div class="dash-event-item">
-                <div class="d-flex align-items-center gap-2.5">
-                  <div class="dash-icon-box purple" style="width: 32px; height: 32px; font-size: 0.95rem;"><i class="bi bi-book-fill"></i></div>
-                  <div>
-                    <div class="fw-semibold text-light" style="font-size: 0.84rem;">${isPt ? "Quarta-feira - Culto de Ensino" : "Wednesday - Teaching Service"}</div>
-                    <span class="text-secondary small" style="font-size: 0.72rem;"><i class="bi bi-clock me-1"></i>18:00 - 19:30 · ${isPt ? "Todas as Igrejas" : "All Churches"}</span>
+                <div class="d-flex align-items-center gap-3 min-w-0 flex-grow-1">
+                  <div class="dash-icon-box purple"><i class="bi bi-book-fill"></i></div>
+                  <div class="dash-event-info">
+                    <div class="dash-event-title">${isPt ? "Quarta-feira - Culto de Ensino" : "Wednesday - Teaching Service"}</div>
+                    <div class="dash-event-sub"><i class="bi bi-clock me-1 text-secondary"></i>18:00 - 19:30 · ${isPt ? "Todas as Igrejas" : "All Churches"}</div>
                   </div>
                 </div>
-                <span class="dash-event-badge" style="background: rgba(148, 163, 184, 0.12); color: #cbd5e1; border-color: rgba(148, 163, 184, 0.25);">07 Out</span>
+                <span class="dash-event-badge muted">07 Out</span>
               </div>
 
               <!-- Event 4 -->
               <div class="dash-event-item">
-                <div class="d-flex align-items-center gap-2.5">
-                  <div class="dash-icon-box amber" style="width: 32px; height: 32px; font-size: 0.95rem;"><i class="bi bi-fire"></i></div>
-                  <div>
-                    <div class="fw-semibold text-light" style="font-size: 0.84rem;">${isPt ? "Vigília de Oração e Milagres" : "Prayer & Miracle Vigil"}</div>
-                    <span class="text-secondary small" style="font-size: 0.72rem;"><i class="bi bi-clock me-1"></i>22:00 - 04:00 · Templo Central</span>
+                <div class="d-flex align-items-center gap-3 min-w-0 flex-grow-1">
+                  <div class="dash-icon-box amber"><i class="bi bi-fire"></i></div>
+                  <div class="dash-event-info">
+                    <div class="dash-event-title">${isPt ? "Vigília de Oração e Milagres" : "Prayer & Miracle Vigil"}</div>
+                    <div class="dash-event-sub"><i class="bi bi-clock me-1 text-warning"></i>22:00 - 04:00 · Templo Central</div>
                   </div>
                 </div>
-                <span class="dash-event-badge" style="background: rgba(234, 179, 8, 0.15); color: #facc15; border-color: rgba(234, 179, 8, 0.25);">10 Out</span>
+                <span class="dash-event-badge amber">10 Out</span>
               </div>
             </div>
           </div>
@@ -37925,6 +37925,7 @@ async function submitForm(form) {
       effectiveRole = "Super Admin";
     }
     const canViewAllChurches = formData.has("can_view_all_churches") || effectiveRole === "Super Admin";
+    const cannotCreateClasses = formData.has("cannot_create_classes");
     const status = data.status || "Active";
 
     const departmentPermissions = (effectiveRole === "Super Admin") ? ["*"] : checkedPerms;
@@ -37969,7 +37970,10 @@ async function submitForm(form) {
     }
 
     if (modalMode === "edit") {
-      const index = state.users.findIndex((item) => String(item.id) === String(modalRecordId));
+      let index = state.users.findIndex((item) => String(item.id) === String(modalRecordId) || (item.auth_user_id && String(item.auth_user_id) === String(modalRecordId)));
+      if (index < 0 && email) {
+        index = state.users.findIndex((item) => item.email && String(item.email).trim().toLowerCase() === email);
+      }
       if (index >= 0) {
         state.users[index] = {
           ...state.users[index],
@@ -37995,7 +37999,66 @@ async function submitForm(form) {
         };
         saveState(`Updated user ${email}`);
         dualWriteUserRecord("update", state.users[index]);
+        if (state.users[index].name) {
+          registerPendingMemberFromExternalRole({
+            name: state.users[index].name,
+            phone: state.users[index].phone,
+            email: state.users[index].email,
+            church_id: state.users[index].church_id,
+            cell_group_id: state.users[index].cell_group_id,
+            cell_id: state.users[index].cell_id,
+            role_title: `Função / Perfil (${state.users[index].role || 'Líder/Staff'})`,
+            origin: "Auto-UserRole",
+            entity_type: "user",
+            entity_id: state.users[index].id
+          });
+        }
         void saveUserToSupabase(state.users[index]).then(() => {
+          saveState(`Synced updated user ${email} with Supabase`);
+          if (activeRoute === "users") renderUsers();
+        });
+      } else {
+        const updatedRecord = {
+          id: modalRecordId || `u-${Date.now()}`,
+          name,
+          full_name: name,
+          email,
+          phone,
+          role,
+          role_name: role,
+          church_id: churchId,
+          cell_group_id: cellGroupId,
+          cell_group_name: cellGroupName,
+          cell_id: cellId,
+          cell_name: cellName,
+          assigned_cells: assignedCells,
+          assigned_cell_groups: assignedCellGroups,
+          department_permissions: departmentPermissions,
+          cannot_create_classes: cannotCreateClasses,
+          can_view_all_churches: canViewAllChurches,
+          status,
+          has_dashboard_access: true,
+          password: password || undefined,
+          updated_at: today
+        };
+        state.users.push(updatedRecord);
+        saveState(`Updated user ${email}`);
+        dualWriteUserRecord("update", updatedRecord);
+        if (updatedRecord.name) {
+          registerPendingMemberFromExternalRole({
+            name: updatedRecord.name,
+            phone: updatedRecord.phone,
+            email: updatedRecord.email,
+            church_id: updatedRecord.church_id,
+            cell_group_id: updatedRecord.cell_group_id,
+            cell_id: updatedRecord.cell_id,
+            role_title: `Função / Perfil (${updatedRecord.role || 'Líder/Staff'})`,
+            origin: "Auto-UserRole",
+            entity_type: "user",
+            entity_id: updatedRecord.id
+          });
+        }
+        void saveUserToSupabase(updatedRecord).then(() => {
           saveState(`Synced updated user ${email} with Supabase`);
           if (activeRoute === "users") renderUsers();
         });
@@ -43056,6 +43119,9 @@ byId("entryForm")?.addEventListener("submit", async (event) => {
     if (modalType === "memberCandidate") return await submitMemberCandidateForm(form);
     if (modalType === "cellAttendance") return await submitCellAttendanceModal(form);
     if (modalType) await submitForm(form);
+  } catch (err) {
+    console.error("[EntryForm Submit Error]", err);
+    alert(lang === "pt" ? `Erro ao guardar: ${err?.message || err}` : `Error saving: ${err?.message || err}`);
   } finally {
     if (typeof setButtonLoading === "function") setButtonLoading(submitBtn, false);
   }
