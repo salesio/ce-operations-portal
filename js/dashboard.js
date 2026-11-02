@@ -17629,7 +17629,22 @@ function toggleModuleNav(key) {
 
 const modulePageState = { members: { view: "cards", filter: {}, candidateTab: "pending", page: 1, pageSize: defaultMembersPageSize(), totalCount: 0, totalPages: 1, items: [], loading: false, loaded: false, error: "", requestId: 0 }, firstTimers: { view: "cards" }, followUp: { view: "kanban" } };
 window.modulePageState = modulePageState;
-const usersPageState = { tab: "users", attendanceDate: "2026-10-01", filter: "all" };
+const usersPageState = {
+  tab: "users",
+  attendanceDate: "2026-10-01",
+  filter: "all",
+  page: 1,
+  pageSize: 25,
+  totalPages: 1,
+  filters: {
+    search: "",
+    role: "",
+    cell_group_id: "",
+    church_id: "",
+    status: "",
+    auth_status: ""
+  }
+};
 window.usersPageState = usersPageState;
 
 function openStaffAttendanceTrajectory(staffIdOrName) {
@@ -44784,6 +44799,32 @@ function renderUsers() {
   const lateCount = attRecords.filter((r) => r.is_late).length;
   const absentCount = attRecords.filter((r) => !r.is_present).length;
 
+  if (!window.usersPageState) {
+    window.usersPageState = {
+      tab: "users",
+      attendanceDate: "2026-10-01",
+      filter: "all",
+      page: 1,
+      pageSize: 25,
+      totalPages: 1,
+      filters: { search: "", role: "", cell_group_id: "", church_id: "", status: "", auth_status: "" }
+    };
+  }
+  if (!window.usersPageState.filters) {
+    window.usersPageState.filters = { search: "", role: "", cell_group_id: "", church_id: "", status: "", auth_status: "" };
+  }
+  if (![10, 25, 50].includes(Number(window.usersPageState.pageSize))) {
+    window.usersPageState.pageSize = 25;
+  }
+  if (!window.usersPageState.page || window.usersPageState.page < 1) {
+    window.usersPageState.page = 1;
+  }
+
+  const activeSearchInput = document.querySelector('[data-users-filter="search"]');
+  const isSearchFocused = activeSearchInput && document.activeElement === activeSearchInput;
+  const cursorPos = isSearchFocused ? activeSearchInput.selectionStart : null;
+  const currentVal = isSearchFocused ? activeSearchInput.value : null;
+
   const currentTab = usersPageState.tab || "users";
 
   const exportBtnHtml = `
@@ -44800,11 +44841,262 @@ function renderUsers() {
   let tabBodyHtml = "";
 
   if (currentTab === "users") {
+    const userFilters = window.usersPageState.filters || {};
+    const fSearch = (userFilters.search || "").trim().toLowerCase();
+    const fRole = (userFilters.role || "").trim();
+    const fCellGroup = (userFilters.cell_group_id || "").trim();
+    const fChurch = (userFilters.church_id || "").trim();
+    const fStatus = (userFilters.status || "").trim().toLowerCase();
+    const fAuth = (userFilters.auth_status || "").trim().toLowerCase();
+
+    const filteredUsers = users.filter((u) => {
+      if (fSearch) {
+        const allRoles = typeof getUserAllRoles === "function" ? getUserAllRoles(u) : [];
+        const matchText = [
+          u.name,
+          u.full_name,
+          u.email,
+          u.phone,
+          u.contacto,
+          u.kingschat_username,
+          u.cell_name,
+          u.cell_group_name,
+          u.role,
+          u.role_name,
+          ...allRoles
+        ].filter(Boolean).join(" ").toLowerCase();
+        if (!matchText.includes(fSearch)) return false;
+      }
+
+      if (fRole) {
+        const uRoles = typeof getUserAllRoles === "function" ? getUserAllRoles(u) : [];
+        if (u.role) uRoles.push(u.role);
+        if (u.role_name) uRoles.push(u.role_name);
+        if (u.role_id) uRoles.push(u.role_id);
+        const targetNorm = fRole.toLowerCase().replace(/[^a-z0-9]/g, "");
+        const matchesRole = uRoles.some((r) => {
+          if (!r) return false;
+          const norm = String(r).toLowerCase().replace(/[^a-z0-9]/g, "");
+          if (norm === targetNorm) return true;
+          const mappedLabel = roleLabels[r] || "";
+          const normLabel = mappedLabel.toLowerCase().replace(/[^a-z0-9]/g, "");
+          return normLabel === targetNorm || norm.includes(targetNorm) || targetNorm.includes(norm);
+        });
+        if (!matchesRole) return false;
+      }
+
+      if (fCellGroup) {
+        const uGroupId = String(u.cell_group_id || "").trim();
+        const uGroupName = String(u.cell_group_name || "").trim().toLowerCase();
+        const assignedGroups = Array.isArray(u.assigned_cell_groups) ? u.assigned_cell_groups.map(String) : [];
+
+        const linkedCell = (state.cellRegistry || state.cells || window.REAL_CELLS_REGISTRY || []).find(
+          (c) => String(c.id) === String(u.cell_id) || c.cell_name === u.cell_id || c.name === u.cell_id
+        );
+        const linkedCellGroupId = linkedCell ? String(linkedCell.group_id || linkedCell.cell_group_id || "") : "";
+        const linkedCellGroupName = linkedCell?.group_name ? String(linkedCell.group_name).toLowerCase() : "";
+
+        const targetGroupObj = (state.cellGroups || window.REAL_CELL_GROUPS || []).find(
+          (g) => String(g.id) === fCellGroup || g.group_name === fCellGroup || g.name === fCellGroup
+        );
+        const targetId = targetGroupObj ? String(targetGroupObj.id) : fCellGroup;
+        const targetName = (targetGroupObj ? (targetGroupObj.group_name || targetGroupObj.name) : fCellGroup).trim().toLowerCase();
+
+        const matchesGroup =
+          uGroupId === targetId ||
+          uGroupId === fCellGroup ||
+          (uGroupName && (uGroupName === targetName || uGroupName.includes(targetName) || targetName.includes(uGroupName))) ||
+          linkedCellGroupId === targetId ||
+          linkedCellGroupId === fCellGroup ||
+          (linkedCellGroupName && (linkedCellGroupName === targetName || linkedCellGroupName.includes(targetName) || targetName.includes(linkedCellGroupName))) ||
+          assignedGroups.includes(targetId) ||
+          assignedGroups.includes(fCellGroup);
+
+        if (!matchesGroup) return false;
+      }
+
+      if (fChurch) {
+        const uChurch = String(u.church_id || "").trim();
+        const matchesChurch = uChurch === fChurch || (typeof CANONICAL_CHURCH_MAP !== "undefined" && (CANONICAL_CHURCH_MAP[uChurch] === fChurch || CANONICAL_CHURCH_MAP[fChurch] === uChurch));
+        if (!matchesChurch) return false;
+      }
+
+      if (fStatus) {
+        const rawStatus = String(u.status || "active").toLowerCase();
+        const isLocked = /lock|bloque|suspend|inactiv|inativ/i.test(rawStatus) || u.isActive === false;
+        if (fStatus === "active" && isLocked) return false;
+        if (fStatus === "inactive" && !isLocked) return false;
+      }
+
+      if (fAuth) {
+        const hasAuth = Boolean(u.auth_user_id);
+        if (fAuth === "linked" && !hasAuth) return false;
+        if (fAuth === "pending" && hasAuth) return false;
+      }
+
+      return true;
+    });
+
+    const totalFiltered = filteredUsers.length;
+    const pageSize = Number(window.usersPageState.pageSize) || 25;
+    const totalPages = Math.max(1, Math.ceil(totalFiltered / pageSize));
+    window.usersPageState.totalPages = totalPages;
+    if (window.usersPageState.page > totalPages) window.usersPageState.page = totalPages;
+    if (window.usersPageState.page < 1) window.usersPageState.page = 1;
+    const currentPage = window.usersPageState.page;
+    const startIdx = (currentPage - 1) * pageSize;
+    const endIdx = Math.min(startIdx + pageSize, totalFiltered);
+    const pagedUsers = filteredUsers.slice(startIdx, endIdx);
+
+    const hasActiveFilters = Boolean(
+      fSearch || fRole || fCellGroup || fChurch || fStatus || fAuth
+    );
+
+    // Filter Options
+    const availableRolesSet = new Set([
+      "cell_group_leader", "cell_leader", "cell_assistant", "cell_ministry_head",
+      "group_pastor", "church_pastor", "church_admin", "super_admin",
+      "deacon_deaconess", "foundation_rector", "foundation_teacher",
+      "attendance_time_manager", "finance_head"
+    ]);
+    users.forEach((u) => {
+      if (u.role) availableRolesSet.add(u.role);
+      if (u.role_name) availableRolesSet.add(u.role_name);
+    });
+    const filterRoles = Array.from(availableRolesSet)
+      .map((k) => ({
+        key: k,
+        label: roleLabels[k] || k
+      }))
+      .filter((v, idx, arr) => arr.findIndex((t) => t.label.toLowerCase() === v.label.toLowerCase()) === idx)
+      .sort((a, b) => a.label.localeCompare(b.label));
+
+    const allGroups = (state.cellGroups || window.REAL_CELL_GROUPS || []).filter((g) => g && (g.id || g.name));
+    const sortedGroups = [...allGroups].sort((a, b) => (a.group_name || a.name || "").localeCompare(b.group_name || b.name || ""));
+
+    const candidateChurches = typeof scoped === "function" ? scoped(state.churches || seedData?.churches || [], "churches") : (state.churches || []);
+    const seenChurchNames = new Set();
+    const uniqueChurches = [];
+    candidateChurches.forEach((c) => {
+      if (!c || !c.id) return;
+      const name = (typeof cleanDisplayText === "function" ? cleanDisplayText(c.church_name || c.public_name || c.name || c.id) : (c.church_name || c.name)).trim().toLowerCase();
+      if (!seenChurchNames.has(name)) {
+        seenChurchNames.add(name);
+        uniqueChurches.push(c);
+      }
+    });
+
+    const filterBarHtml = `
+      <div class="card bg-dark bg-opacity-25 border border-secondary border-opacity-25 p-3 mb-3 rounded-3" data-users-filter-bar>
+        <div class="row g-2 align-items-end">
+          <div class="col-12 col-md-4 col-xl-3">
+            <label class="form-label small text-secondary mb-1">
+              <i class="bi bi-search me-1"></i>${lang === "pt" ? "Pesquisar" : "Search"}
+            </label>
+            <div class="input-group input-group-sm">
+              <input type="search" class="form-control" placeholder="${lang === "pt" ? "Nome, email, telefone, cargo..." : "Name, email, phone, role..."}" data-users-filter="search" value="${escapeAttr(userFilters.search || "")}">
+              ${userFilters.search ? `<button class="btn btn-outline-secondary" type="button" data-users-filter-clear-search title="${lang === "pt" ? "Limpar pesquisa" : "Clear search"}"><i class="bi bi-x"></i></button>` : ""}
+            </div>
+          </div>
+          <div class="col-6 col-md-4 col-xl-2">
+            <label class="form-label small text-secondary mb-1">
+              <i class="bi bi-person-badge me-1"></i>${lang === "pt" ? "Função / Cargo" : "Role"}
+            </label>
+            <select class="form-select form-select-sm" data-users-filter="role">
+              <option value="">${lang === "pt" ? "Todas as Funções" : "All Roles"}</option>
+              ${filterRoles.map((r) => `<option value="${escapeAttr(r.key)}"${fRole === r.key ? " selected" : ""}>${escapeHtml(r.label)}</option>`).join("")}
+            </select>
+          </div>
+          <div class="col-6 col-md-4 col-xl-2">
+            <label class="form-label small text-secondary mb-1">
+              <i class="bi bi-diagram-3 me-1"></i>${lang === "pt" ? "Grupo de Célula" : "Cell Group"}
+            </label>
+            <select class="form-select form-select-sm" data-users-filter="cell_group_id">
+              <option value="">${lang === "pt" ? "Todos os Grupos" : "All Groups"}</option>
+              ${sortedGroups.map((g) => `<option value="${escapeAttr(g.id || g.name)}"${(fCellGroup === String(g.id) || fCellGroup === g.name) ? " selected" : ""}>${escapeHtml(g.group_name || g.name)}</option>`).join("")}
+            </select>
+          </div>
+          <div class="col-6 col-md-3 col-xl-2">
+            <label class="form-label small text-secondary mb-1">
+              <i class="bi bi-building me-1"></i>${lang === "pt" ? "Igreja" : "Church"}
+            </label>
+            <select class="form-select form-select-sm" data-users-filter="church_id">
+              <option value="">${lang === "pt" ? "Todas as Igrejas" : "All Churches"}</option>
+              ${uniqueChurches.map((c) => `<option value="${escapeAttr(c.id)}"${String(fChurch) === String(c.id) ? " selected" : ""}>${escapeHtml(c.church_name || c.public_name || c.name || c.id)}</option>`).join("")}
+            </select>
+          </div>
+          <div class="col-6 col-md-3 col-xl-1">
+            <label class="form-label small text-secondary mb-1">
+              ${lang === "pt" ? "Estado" : "Status"}
+            </label>
+            <select class="form-select form-select-sm" data-users-filter="status">
+              <option value="">${lang === "pt" ? "Todos" : "All"}</option>
+              <option value="active" ${fStatus === "active" ? "selected" : ""}>${lang === "pt" ? "Activos" : "Active"}</option>
+              <option value="inactive" ${fStatus === "inactive" ? "selected" : ""}>${lang === "pt" ? "Inactivos" : "Inactive"}</option>
+            </select>
+          </div>
+          <div class="col-6 col-md-3 col-xl-1">
+            <label class="form-label small text-secondary mb-1">
+              Auth
+            </label>
+            <select class="form-select form-select-sm" data-users-filter="auth_status">
+              <option value="">${lang === "pt" ? "Todos" : "All"}</option>
+              <option value="linked" ${fAuth === "linked" ? "selected" : ""}>${lang === "pt" ? "Ligado" : "Linked"}</option>
+              <option value="pending" ${fAuth === "pending" ? "selected" : ""}>${lang === "pt" ? "Pendente" : "Pending"}</option>
+            </select>
+          </div>
+          <div class="col-6 col-md-3 col-xl-1">
+            <button type="button" class="btn btn-sm btn-outline-secondary w-100" data-users-filter-clear title="${lang === "pt" ? "Limpar todos os filtros" : "Clear filters"}" ${hasActiveFilters ? "" : "disabled"}>
+              <i class="bi bi-x-circle me-1"></i>${lang === "pt" ? "Limpar" : "Clear"}
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const paginationBarHtml = `
+      <div class="p-2 p-md-3 border-top border-bottom border-secondary border-opacity-25 d-flex justify-content-between align-items-center flex-wrap gap-2 my-2" data-users-pagination>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <span class="text-secondary small">
+            ${totalFiltered === 0
+              ? (lang === "pt" ? "0 utilizadores encontrados" : "0 users found")
+              : `${lang === "pt" ? "Mostrando" : "Showing"} <strong>${startIdx + 1}–${endIdx}</strong> ${lang === "pt" ? "de" : "of"} <strong>${totalFiltered}</strong> ${lang === "pt" ? "utilizadores" : "users"}${totalFiltered !== users.length ? ` (${lang === "pt" ? "total" : "total"}: ${users.length})` : ""}`}
+            · ${lang === "pt" ? "Página" : "Page"} <strong>${currentPage}</strong> / <strong>${totalPages}</strong>
+          </span>
+          <label class="d-flex align-items-center gap-1 text-secondary small mb-0 ms-md-2">
+            ${lang === "pt" ? "Por página:" : "Per page:"}
+            <select class="form-select form-select-sm" data-users-page-size style="width: auto; display: inline-block;">
+              <option value="10" ${pageSize === 10 ? "selected" : ""}>10</option>
+              <option value="25" ${pageSize === 25 ? "selected" : ""}>25</option>
+              <option value="50" ${pageSize === 50 ? "selected" : ""}>50</option>
+            </select>
+          </label>
+        </div>
+        <div class="d-flex align-items-center gap-1">
+          <button type="button" class="action-btn" data-users-page="first" ${currentPage <= 1 ? "disabled" : ""} title="${lang === "pt" ? "Primeira página" : "First page"}">
+            <i class="bi bi-chevron-double-left"></i>
+          </button>
+          <button type="button" class="action-btn" data-users-page="prev" ${currentPage <= 1 ? "disabled" : ""} title="${lang === "pt" ? "Página anterior" : "Previous page"}">
+            <i class="bi bi-chevron-left me-1"></i>${lang === "pt" ? "Anterior" : "Prev"}
+          </button>
+          <span class="badge bg-ce-blue px-2 py-1 mx-1">${currentPage} / ${totalPages}</span>
+          <button type="button" class="action-btn" data-users-page="next" ${currentPage >= totalPages ? "disabled" : ""} title="${lang === "pt" ? "Próxima página" : "Next page"}">
+            ${lang === "pt" ? "Próximo" : "Next"}<i class="bi bi-chevron-right ms-1"></i>
+          </button>
+          <button type="button" class="action-btn" data-users-page="last" ${currentPage >= totalPages ? "disabled" : ""} title="${lang === "pt" ? "Última página" : "Last page"}">
+            <i class="bi bi-chevron-double-right"></i>
+          </button>
+        </div>
+      </div>
+    `;
+
     tabBodyHtml = `
+      ${filterBarHtml}
       <div class="panel-head mb-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
         <div class="d-flex align-items-center gap-2">
           <h3 class="panel-title mb-0"><i class="bi bi-people me-2"></i>${L("usersRoles")}</h3>
-          <span class="badge bg-ce-blue">${users.length} ${lang === "pt" ? "utilizadores" : "users"}</span>
+          <span class="badge bg-ce-blue">${totalFiltered} ${lang === "pt" ? "utilizadores" : "users"}</span>
+          ${hasActiveFilters ? `<span class="badge bg-warning text-dark"><i class="bi bi-funnel-fill me-1"></i>${lang === "pt" ? "Filtrado de" : "Filtered from"} ${users.length}</span>` : ""}
         </div>
         <div class="d-flex align-items-center gap-2">
           <button type="button" class="btn btn-sm btn-ce-gold" data-open-form="user">
@@ -44815,7 +45107,15 @@ function renderUsers() {
           </button>
         </div>
       </div>
-      ${dataTable(
+      ${paginationBarHtml}
+      ${pagedUsers.length === 0 ? `
+        <div class="p-5 text-center text-secondary border rounded my-3 border-secondary border-opacity-25">
+          <i class="bi bi-people fs-1 text-secondary opacity-50 d-block mb-2"></i>
+          <h5 class="text-white-50">${lang === "pt" ? "Nenhum utilizador encontrado" : "No users found"}</h5>
+          <p class="small text-secondary mb-3">${lang === "pt" ? "Nenhum utilizador corresponde aos filtros ou pesquisa actuais." : "No users match your active filters or search query."}</p>
+          ${hasActiveFilters ? `<button type="button" class="btn btn-sm btn-outline-warning" data-users-filter-clear><i class="bi bi-x-circle me-1"></i>${lang === "pt" ? "Limpar Filtros" : "Clear Filters"}</button>` : ""}
+        </div>
+      ` : dataTable(
         [
           L("name"),
           L("Role"),
@@ -44824,7 +45124,7 @@ function renderUsers() {
           lang === "pt" ? "Igreja & Célula" : "Church & Cell",
           L("actions")
         ],
-        users.map((u) => {
+        pagedUsers.map((u) => {
           const linkedCell = (state.cellRegistry || state.cells || window.REAL_CELLS_REGISTRY || []).find((c) => String(c.id) === String(u.cell_id) || c.cell_name === u.cell_id || c.name === u.cell_id);
           const linkedGroup = (state.cellGroups || window.REAL_CELL_GROUPS || []).find((g) => String(g.id) === String(u.cell_group_id) || g.group_name === u.cell_group_id || g.name === u.cell_group_id || (linkedCell && String(g.id) === String(linkedCell.group_id)));
           const cellGroupNameStr = u.cell_group_name || (linkedGroup ? (linkedGroup.group_name || linkedGroup.name) : (linkedCell?.group_name ? linkedCell.group_name : (u.assigned_cell_groups?.length ? `${u.assigned_cell_groups.length} grupo(s)` : "—")));
@@ -44856,6 +45156,7 @@ function renderUsers() {
           ];
         }),
       )}
+      ${pagedUsers.length > 0 ? paginationBarHtml : ""}
     `;
   } else if (currentTab === "attendance") {
     const filterKey = usersPageState.filter || "all";
@@ -44966,6 +45267,19 @@ function renderUsers() {
       ${tabBodyHtml}
     </article>
   `);
+
+  if (isSearchFocused) {
+    const newSearchInp = document.querySelector('[data-users-filter="search"]');
+    if (newSearchInp) {
+      if (currentVal !== null && newSearchInp.value !== currentVal) {
+        newSearchInp.value = currentVal;
+      }
+      newSearchInp.focus();
+      if (cursorPos !== null) {
+        try { newSearchInp.setSelectionRange(cursorPos, cursorPos); } catch (_) {}
+      }
+    }
+  }
 }
 
 function renderAccess() {
@@ -55797,15 +56111,51 @@ document.addEventListener("click", async (event) => {
   }
   const usersTabBtn = event.target.closest("[data-users-tab]");
   if (usersTabBtn) {
-    if (!window.usersPageState) window.usersPageState = { tab: "users", attendanceDate: "2026-10-01", filter: "all" };
+    if (!window.usersPageState) window.usersPageState = { tab: "users", attendanceDate: "2026-10-01", filter: "all", page: 1, pageSize: 25, totalPages: 1, filters: {} };
     window.usersPageState.tab = usersTabBtn.dataset.usersTab || "users";
     return renderUsers();
   }
   const usersAttFilterBtn = event.target.closest("[data-users-attendance-filter]");
   if (usersAttFilterBtn) {
-    if (!window.usersPageState) window.usersPageState = { tab: "attendance", attendanceDate: "2026-10-01", filter: "all" };
+    if (!window.usersPageState) window.usersPageState = { tab: "attendance", attendanceDate: "2026-10-01", filter: "all", page: 1, pageSize: 25, totalPages: 1, filters: {} };
     window.usersPageState.filter = usersAttFilterBtn.dataset.usersAttendanceFilter || "all";
     return renderUsers();
+  }
+  const usersPageBtn = event.target.closest("[data-users-page]");
+  if (usersPageBtn) {
+    if (!window.usersPageState) window.usersPageState = { tab: "users", page: 1, pageSize: 25, totalPages: 1, filters: {} };
+    const action = usersPageBtn.dataset.usersPage;
+    const totalPages = window.usersPageState.totalPages || 1;
+    if (action === "prev") {
+      window.usersPageState.page = Math.max(1, (window.usersPageState.page || 1) - 1);
+    } else if (action === "next") {
+      window.usersPageState.page = Math.min(totalPages, (window.usersPageState.page || 1) + 1);
+    } else if (action === "first") {
+      window.usersPageState.page = 1;
+    } else if (action === "last") {
+      window.usersPageState.page = totalPages;
+    }
+    renderUsers();
+    scrollContentTo('[data-users-filter-bar]', { behavior: "smooth" });
+    return;
+  }
+  const usersFilterClearBtn = event.target.closest("[data-users-filter-clear]");
+  if (usersFilterClearBtn) {
+    if (window.usersPageState) {
+      window.usersPageState.filters = { search: "", role: "", cell_group_id: "", church_id: "", status: "", auth_status: "" };
+      window.usersPageState.page = 1;
+    }
+    renderUsers();
+    return;
+  }
+  const usersFilterClearSearchBtn = event.target.closest("[data-users-filter-clear-search]");
+  if (usersFilterClearSearchBtn) {
+    if (window.usersPageState?.filters) {
+      window.usersPageState.filters.search = "";
+      window.usersPageState.page = 1;
+    }
+    renderUsers();
+    return;
   }
   const memberProfileEdit = event.target.closest("[data-member-profile-edit]");
   if (memberProfileEdit) {
@@ -58676,6 +59026,20 @@ document.addEventListener("input", (event) => {
     return;
   }
 
+  // Users filter search input
+  if (event.target.matches('[data-users-filter="search"]')) {
+    clearTimeout(window.__usersFilterSearchDebounce);
+    const searchVal = event.target.value;
+    window.__usersFilterSearchDebounce = setTimeout(() => {
+      if (!window.usersPageState) window.usersPageState = { tab: "users", page: 1, pageSize: 25, totalPages: 1, filters: {} };
+      if (!window.usersPageState.filters) window.usersPageState.filters = {};
+      window.usersPageState.filters.search = searchVal.trim();
+      window.usersPageState.page = 1;
+      if (activeRoute === "users") renderUsers();
+    }, 250);
+    return;
+  }
+
   // Generic .filter-toolbar search input
   const filterToolbar = event.target.closest(".filter-toolbar");
   if (filterToolbar && event.target.matches('[data-filter-search], input[type="search"]')) {
@@ -58720,6 +59084,25 @@ document.addEventListener("change", (event) => {
       modulePageState.members.page = 1;
       modulePageState.members.loaded = false;
       void loadMembersPage({ force: true });
+    }
+    return;
+  }
+  if (event.target.matches("[data-users-page-size]")) {
+    if (!window.usersPageState) window.usersPageState = { tab: "users", page: 1, pageSize: 25, totalPages: 1, filters: {} };
+    window.usersPageState.pageSize = Number(event.target.value) || 25;
+    window.usersPageState.page = 1;
+    renderUsers();
+    scrollContentTo('[data-users-filter-bar]', { behavior: "smooth" });
+    return;
+  }
+  if (event.target.matches("[data-users-filter]")) {
+    const filterKey = event.target.dataset.usersFilter;
+    if (filterKey && filterKey !== "search") {
+      if (!window.usersPageState) window.usersPageState = { tab: "users", page: 1, pageSize: 25, totalPages: 1, filters: {} };
+      if (!window.usersPageState.filters) window.usersPageState.filters = {};
+      window.usersPageState.filters[filterKey] = event.target.value;
+      window.usersPageState.page = 1;
+      renderUsers();
     }
     return;
   }
