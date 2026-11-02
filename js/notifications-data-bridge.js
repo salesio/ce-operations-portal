@@ -8,8 +8,9 @@
   var KEYS = {
     notifications: "ce-data-layer:notifications",
     templates: "ce-data-layer:notification-templates",
+    preferences: "ce-data-layer:notification-preferences",
   };
-  var memory = { notifications: null, templates: null };
+  var memory = { notifications: null, templates: null, preferences: null };
 
   function resolveDataSource() {
     try {
@@ -24,6 +25,31 @@
       if (value === "local" || value === "api" || value === "supabase" || value === "mock") return value;
     } catch (_) {}
     return "mock";
+  }
+
+    function getSupabase() {
+    try {
+      if (typeof window !== "undefined") {
+        if (window.supabaseClient) return window.supabaseClient;
+        if (typeof window.CESupabase?.getSupabaseClient === "function") {
+          var c = window.CESupabase.getSupabaseClient();
+          if (c) {
+            window.supabaseClient = c;
+            return c;
+          }
+        }
+        if (window.CESupabase?.client) return window.CESupabase.client;
+        if (window.supabase && typeof window.supabase.createClient === "function") {
+          var env = window.__CE_ENV__ || {};
+          var url = env.VITE_SUPABASE_URL || "https://api.embaixadadecristo.org";
+          var key = env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzkxNDU0ODUzLCJleHAiOjIxMDY4MTQ4NTN9.xMLsM1EBKV-hJCWRsYjpXP91ESaq5Msns9FawCVMJh0";
+          var cl = window.supabase.createClient(url, key);
+          window.supabaseClient = cl;
+          return cl;
+        }
+      }
+    } catch (_) {}
+    return null;
   }
 
   function resolveApi() {
@@ -132,6 +158,12 @@
         return list("notifications");
       },
       createNotification: function (p) {
+        var inferredScope = (p && p.scope) || (
+          (p && p.recipient_user_id) ? "user" :
+          (p && p.recipient_role) ? "role" :
+          (p && p.recipient_department_id) ? "department" :
+          (p && p.recipient_church_id) ? "church" : "national"
+        );
         return create(
           "notifications",
           "not-",
@@ -139,11 +171,11 @@
             {
               type: "info",
               priority: "normal",
-              scope: "national",
               is_read: false,
               is_archived: false,
             },
             p || {},
+            { scope: inferredScope },
           ),
         );
       },
@@ -158,11 +190,24 @@
         if (s.persist) save(KEYS.notifications, s.rows);
         return ok(true);
       },
-      getNotificationsByUser: function (userId) {
+      getNotificationsByUser: function (userId, userObj) {
+        var targetUser = userObj || (typeof window !== "undefined" && window.activeUser && (!userId || window.activeUser.id === userId) ? window.activeUser : null);
         return ok(
           store("notifications").rows.filter(function (n) {
+            // Never return notifications explicitly addressed to another user
+            if (n.recipient_user_id && userId && String(n.recipient_user_id) !== String(userId)) {
+              return false;
+            }
+            if (typeof window !== "undefined" && typeof window.notificationMatchesUser === "function" && targetUser) {
+              return window.notificationMatchesUser(n, targetUser);
+            }
+            if (n.recipient_user_id && userId && String(n.recipient_user_id) === String(userId)) {
+              return true;
+            }
+            if (n.scope === "user") {
+              return false;
+            }
             return (
-              n.recipient_user_id === userId ||
               n.scope === "national" ||
               n.scope === "all"
             );
@@ -237,15 +282,23 @@
         var message = tpl
           ? fillTemplate(tpl.message_template_pt || "", vars)
           : payload.message || "";
+        var inferredScope = payload.scope || (
+          payload.recipient_user_id ? "user" :
+          (payload.recipient_role || payload.role) ? "role" :
+          payload.recipient_department_id ? "department" :
+          payload.recipient_church_id ? "church" :
+          (tpl && tpl.recipient_strategy) || "role"
+        );
         return pure().createNotification({
           title: title,
           message: message,
           type: payload.type || (tpl && tpl.default_type) || "info",
           module: payload.module || (tpl && tpl.module) || "system",
           priority: payload.priority || (tpl && tpl.default_priority) || "normal",
-          scope: payload.scope || "role",
+          scope: inferredScope,
           recipient_user_id: payload.recipient_user_id || "",
           recipient_role: payload.recipient_role || payload.role || "",
+          recipient_department_id: payload.recipient_department_id || "",
           recipient_church_id: payload.recipient_church_id || "",
           action_url: payload.action_url || "",
           action_label: payload.action_label || "Ver",
@@ -272,7 +325,33 @@
       ensureNotificationsSeeded: function () {
         store("notifications");
         store("templates");
+        store("preferences");
         return ok(true);
+      },
+      listNotificationPreferences: function () {
+        return list("preferences");
+      },
+      getNotificationPreferencesByUser: function (userId) {
+        var rows = store("preferences").rows.filter(function (p) {
+          return String(p.user_id) === String(userId);
+        });
+        return ok(rows);
+      },
+      upsertNotificationPreference: function (p) {
+        p = p || {};
+        var s = store("preferences");
+        var idx = s.rows.findIndex(function (r) {
+          return String(r.user_id) === String(p.user_id) && (p.module_key ? r.module_key === p.module_key : true);
+        });
+        if (idx >= 0) {
+          s.rows[idx] = Object.assign({}, s.rows[idx], p, { updated_at: now() });
+          if (s.persist) save(KEYS.preferences, s.rows);
+          return ok(s.rows[idx]);
+        }
+        return create("preferences", "pref-", Object.assign({ in_app_enabled: true, push_enabled: false, frequency: "Immediate" }, p));
+      },
+      updateNotificationPreference: function (id, p) {
+        return update("preferences", id, p);
       },
       getNotificationsDataSourceInfo: function () {
         return {
@@ -294,19 +373,98 @@
 
   function call(method, args) {
     var resolved = resolveApi();
-    if (resolved.api && typeof resolved.api[method] === "function") {
+    var apiFn = null;
+    if (resolved.api) {
+      apiFn = resolved.api[method];
+      if (!apiFn && method === "markNotificationAsRead") apiFn = resolved.api.markNotificationRead;
+      if (!apiFn && method === "markNotificationRead") apiFn = resolved.api.markNotificationAsRead;
+    }
+    if (typeof apiFn === "function") {
       try {
-        var result = resolved.api[method].apply(resolved.api, args || []);
+        var result = apiFn.apply(resolved.api, args || []);
         if (result && typeof result.then === "function") return result;
         return wrapPromise(result);
       } catch (e) {
         console.warn("[CE Notifications] API failed, fallback", method, e);
       }
     }
+
     var fallback = pure();
-    if (typeof fallback[method] === "function") {
+    var fallbackFn = fallback[method];
+    if (!fallbackFn && method === "markNotificationRead") fallbackFn = fallback.markNotificationAsRead;
+
+    // Remote Supabase integration for listNotifications
+    if (method === "listNotifications") {
+      var sb = getSupabase();
+      if (sb && typeof sb.from === "function") {
+        return sb.from("notifications").select("*").order("created_at", { ascending: false }).limit(60)
+          .then(function (res) {
+            if (res && !res.error && Array.isArray(res.data) && res.data.length) {
+              var s = store("notifications");
+              var remoteIds = new Set(res.data.map(function (r) { return String(r.id); }));
+              var localOnly = (s.rows || []).filter(function (r) { return !remoteIds.has(String(r.id)); });
+              s.rows = res.data.concat(localOnly);
+              if (s.persist) save(KEYS.notifications, s.rows);
+              return ok(s.rows);
+            }
+            return fallbackFn ? wrapPromise(fallbackFn.apply(fallback, args || [])) : ok([]);
+          })
+          .catch(function (e) {
+            console.warn("[CE Notifications] remote list failed, using fallback", e);
+            return fallbackFn ? wrapPromise(fallbackFn.apply(fallback, args || [])) : ok([]);
+          });
+      }
+    }
+
+    // Remote Supabase update for markNotificationAsRead
+    if ((method === "markNotificationAsRead" || method === "markNotificationRead") && args && args[0]) {
+      var notifId = args[0];
+      var sbMark = getSupabase();
+      if (sbMark && typeof sbMark.from === "function" && String(notifId).includes("-")) {
+        try {
+          sbMark.from("notifications").update({ is_read: true, read_at: new Date().toISOString() }).eq("id", notifId).then(function () {}).catch(function () {});
+        } catch (_) {}
+      }
+    }
+
+    // Remote Supabase insert for createNotification
+    if (method === "createNotification" && args && args[0]) {
+      var sbInsert = getSupabase();
+      if (sbInsert && typeof sbInsert.from === "function") {
+        try {
+          var payload = args[0];
+          var inferredScope = payload.scope || (
+            payload.recipient_user_id ? "user" :
+            payload.recipient_role ? "role" :
+            payload.recipient_department_id ? "department" :
+            payload.recipient_church_id ? "church" : "national"
+          );
+          var dbRow = {
+            title: payload.title || "Notificação",
+            message: payload.message || payload.body || "",
+            type: payload.priority === "urgent" || payload.type === "urgent" ? "urgent" : (payload.type || "info"),
+            module: payload.module || "system",
+            entity_type: payload.entity_type || "",
+            entity_id: String(payload.entity_id || ""),
+            priority: payload.priority || "normal",
+            recipient_user_id: payload.recipient_user_id || null,
+            recipient_role: payload.recipient_role || null,
+            recipient_department_id: payload.recipient_department_id || null,
+            recipient_church_id: payload.recipient_church_id || null,
+            scope: inferredScope,
+            action_url: payload.action_url || "",
+            action_label: payload.action_label || "",
+            is_read: false,
+            metadata: payload.metadata || {}
+          };
+          sbInsert.from("notifications").insert([dbRow]).then(function () {}).catch(function () {});
+        } catch (_) {}
+      }
+    }
+
+    if (typeof fallbackFn === "function") {
       try {
-        return wrapPromise(fallback[method].apply(fallback, args || []));
+        return wrapPromise(fallbackFn.apply(fallback, args || []));
       } catch (e2) {
         return wrapPromise(fail(e2 && e2.message ? e2.message : "fallback error"));
       }
@@ -325,12 +483,17 @@
     "getCriticalNotifications",
     "getTodayNotifications",
     "markNotificationAsRead",
+    "markNotificationRead",
     "markNotificationAsUnread",
     "markAllNotificationsAsRead",
     "archiveNotification",
     "listNotificationTemplates",
     "createNotificationTemplate",
     "updateNotificationTemplate",
+    "listNotificationPreferences",
+    "getNotificationPreferencesByUser",
+    "upsertNotificationPreference",
+    "updateNotificationPreference",
     "notify",
     "getNotificationOverviewStats",
     "ensureNotificationsSeeded",
@@ -344,6 +507,62 @@
       return call(m, Array.prototype.slice.call(arguments));
     };
   });
+
+  // Native Browser Notification Helpers
+  function getBrowserPermission() {
+    if (typeof window === "undefined" || !("Notification" in window)) return "unsupported";
+    return Notification.permission; // "default", "granted", "denied"
+  }
+
+  function requestBrowserPermission() {
+    if (typeof window === "undefined" || !("Notification" in window)) {
+      return Promise.resolve({ ok: false, permission: "unsupported", message: "Browser does not support notifications" });
+    }
+    return Notification.requestPermission().then(function (perm) {
+      try {
+        localStorage.setItem("ce-notification-permission", perm);
+        localStorage.setItem("ce-notifications-prompted", perm === "granted" ? "granted" : "denied");
+      } catch (_) {}
+      return { ok: perm === "granted", permission: perm };
+    });
+  }
+
+  function sendBrowserNotification(title, options) {
+    if (typeof window === "undefined" || !("Notification" in window)) return false;
+    if (Notification.permission !== "granted") return false;
+    var notifOptions = Object.assign({
+      icon: "assets/logo-ce.png",
+      badge: "assets/logo-ce.png",
+      vibrate: [200, 100, 200]
+    }, options || {});
+
+    // On mobile devices, registration.showNotification is required for PWA push
+    try {
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.ready.then(function (reg) {
+          if (reg && typeof reg.showNotification === "function") {
+            reg.showNotification(title || "Embaixada de Cristo", notifOptions);
+          } else {
+            new Notification(title || "Embaixada de Cristo", notifOptions);
+          }
+        }).catch(function () {
+          try { new Notification(title || "Embaixada de Cristo", notifOptions); } catch (_) {}
+        });
+        return true;
+      }
+    } catch (_) {}
+
+    try {
+      return new Notification(title || "Embaixada de Cristo", notifOptions);
+    } catch (e) {
+      console.warn("[CE Notifications] browser notification error", e);
+      return false;
+    }
+  }
+
+  dataApi.getBrowserPermission = getBrowserPermission;
+  dataApi.requestBrowserPermission = requestBrowserPermission;
+  dataApi.sendBrowserNotification = sendBrowserNotification;
 
   window.CENotifications = Object.assign({}, window.CENotifications || {}, dataApi);
   window.CEDataLayer = window.CEDataLayer || {};

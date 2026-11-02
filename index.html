@@ -37,11 +37,73 @@
   <link href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600&family=Barlow+Semi+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="manifest" href="manifest.webmanifest?v=20261019-dark-v4">
+  <meta name="theme-color" content="#081121">
+  <meta name="background-color" content="#081121">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="CE Ops Portal">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="assets/icon-512.png">
   <link rel="icon" type="image/png" href="assets/logo-ce.png">
-  <link rel="stylesheet" href="css/dashboard.css?v=20261007-main-dashboard-margins-v4">
+  <style>
+    html, body {
+      background-color: #081121 !important;
+      margin: 0;
+      padding: 0;
+      color: #f8fafc;
+    }
+    .app-initial-splash {
+      position: fixed;
+      inset: 0;
+      z-index: 999999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #081121;
+      padding: 1.25rem;
+      box-sizing: border-box;
+    }
+  </style>
+  <link rel="stylesheet" href="css/dashboard.css?v=20261102-responsive-tables-v2">
 </head>
 <body>
+  <!-- Full-screen Dark Theme Initial Loader with Pulsating Glowing LoveWorld Logo -->
+  <div id="appInitialSplash" class="app-initial-splash" aria-live="polite" aria-busy="true">
+    <div class="dept-loading-backdrop"></div>
+    <div class="dept-loading-card">
+      <div class="dept-loading-logo-wrapper">
+        <img src="assets/logo-ce.png" alt="LoveWorld" class="dept-loading-logo" onerror="this.onerror=null; this.src='logo-ce.png';">
+        <div class="dept-loading-glow"></div>
+      </div>
+      <div class="dept-loading-info">
+        <h3 class="dept-loading-title">Embaixada de Cristo</h3>
+        <div class="dept-loading-progress-track">
+          <div class="dept-loading-progress-bar"></div>
+        </div>
+        <p class="dept-loading-subtitle">A carregar portal...</p>
+      </div>
+    </div>
+    <script>
+      function dismissSplashFast() {
+        var s = document.getElementById("appInitialSplash");
+        if (s && !s.classList.contains("is-hidden")) {
+          s.classList.add("is-hidden");
+          setTimeout(function() { try { s.remove(); } catch(_) {} }, 300);
+        }
+      }
+      window.dismissAppInitialSplash = dismissSplashFast;
+      if (document.readyState === "complete" || document.readyState === "interactive") {
+        setTimeout(dismissSplashFast, 500);
+      } else {
+        document.addEventListener("DOMContentLoaded", function() { setTimeout(dismissSplashFast, 500); });
+      }
+      setTimeout(dismissSplashFast, 1200);
+    </script>
+  </div>
+
   <main id="loginView" class="login-shell">
     <div class="login-frame">
       <header class="login-header">
@@ -59,8 +121,8 @@
         <section class="login-panel">
           <div class="login-panel-top">
             <div class="dash-lang-switch" role="group" aria-label="Idioma">
-              <button type="button" data-lang="pt" class="active">PT</button>
-              <button type="button" data-lang="en">EN</button>
+              <button type="button" data-lang="pt" class="active" onclick="window.applyLanguage && window.applyLanguage('pt');">PT</button>
+              <button type="button" data-lang="en" onclick="window.applyLanguage && window.applyLanguage('en');">EN</button>
             </div>
           </div>
           
@@ -69,7 +131,7 @@
           <p class="login-subtitle" data-i18n="login.subtitle">Tudo para servir melhor, num só lugar.</p>
           <div id="loginModeBadge" class="mb-2"></div>
           
-          <form id="loginForm" class="login-form" onsubmit="event.preventDefault(); window.enterDashboard && window.enterDashboard(); return false;">
+          <form id="loginForm" class="login-form">
             <div class="form-group mb-3">
               <label class="form-label" for="loginEmail" data-i18n="login.emailOrUser">E-mail ou utilizador</label>
               <input id="loginEmail" class="form-control" type="text" placeholder="nome@embaixadadecristo.org" autocomplete="username" required>
@@ -146,6 +208,13 @@
               <span class="universal-search-text d-none d-lg-inline ms-1" data-i18n="topSearch">Pesquisar...</span>
               <kbd class="kbd-pill d-none d-lg-inline-block ms-1">Ctrl K</kbd>
             </button>
+            <button id="topbarFeedbackBtn" type="button" class="icon-btn topbar-feedback-btn me-1" data-route="feedback" aria-label="Feedback & Sugestões" title="Feedback & Sugestões">
+              <i class="bi bi-chat-heart text-gold"></i>
+            </button>
+            <button id="topbarAiReportsBtn" type="button" class="btn btn-sm btn-outline-info me-1 d-none d-sm-inline-flex align-items-center gap-1" style="border-radius: 20px; font-weight: 600; font-size: 0.78rem; border-color: rgba(56, 189, 248, 0.4); background: rgba(56, 189, 248, 0.08); color: #38bdf8;" aria-label="Relatórios" title="Relatórios" onclick="if(window.CEAIReportsModule) window.CEAIReportsModule.openCreationModal();">
+              <i class="bi bi-file-earmark-bar-graph"></i>
+              <span class="d-none d-md-inline" data-i18n="topReports">Relatórios</span>
+            </button>
             <div class="notification-wrap">
               <button id="notificationBell" class="icon-btn notification-bell" type="button" aria-label="Notificações" aria-expanded="false">
                 <i class="bi bi-bell"></i>
@@ -173,12 +242,12 @@
         </div>
 
         <div class="topbar-row topbar-row-secondary">
-          <button id="manualRefreshBtn" type="button" class="icon-btn refresh-btn" aria-label="Actualizar dados" title="Actualizar dados (Sincronizar)">
+          <button id="manualRefreshBtn" type="button" class="icon-btn refresh-btn" aria-label="Actualizar portal (Hard Refresh)" title="Actualizar portal (Hard Refresh & Limpar Cache)">
             <i class="bi bi-arrow-clockwise" id="manualRefreshIcon"></i>
           </button>
           <div class="dash-lang-switch" role="group" aria-label="Idioma">
-            <button type="button" data-lang="pt" class="active">PT</button>
-            <button type="button" data-lang="en">EN</button>
+            <button type="button" data-lang="pt" class="active" onclick="window.applyLanguage && window.applyLanguage('pt');">PT</button>
+            <button type="button" data-lang="en" onclick="window.applyLanguage && window.applyLanguage('en');">EN</button>
           </div>
           <div class="dash-theme-switch" role="group" aria-label="Tema">
             <button type="button" data-theme-toggle="light" class="theme-toggle-btn" title="Modo Claro" aria-label="Modo Claro">
@@ -189,11 +258,15 @@
             </button>
           </div>
           <a id="topbarSiteLink" class="btn topbar-site-btn" href="https://salesio.github.io/ce-mozambique-site/" target="_blank" rel="noopener" data-i18n="top.site">Ver Site</a>
-          <button id="logoutBtn" class="btn topbar-logout-btn" type="button" data-i18n="top.logout"><i class="bi bi-box-arrow-right d-none d-lg-inline me-1"></i><span id="logoutBtnText">Sair</span></button>
+          <button id="logoutBtn" class="btn topbar-logout-btn" type="button"><i class="bi bi-box-arrow-right d-none d-lg-inline me-1"></i><span id="logoutBtnText" data-i18n="top.logout">Sair</span></button>
         </div>
       </header>
 
+      <div id="notificationPromptHost" class="ops-notification-prompt-host px-3 pt-2"></div>
       <section id="content" class="ops-content page-shell-host"></section>
+      <button id="mobileQuickFab" type="button" class="mobile-quick-fab d-lg-none" aria-label="Acção Rápida" title="Novo Registo">
+        <i class="bi bi-plus-lg" aria-hidden="true"></i>
+      </button>
       <button id="backToTopBtn" type="button" class="back-to-top" aria-label="Voltar ao topo" title="Voltar ao topo">
         <i class="bi bi-arrow-up" aria-hidden="true"></i>
       </button>
@@ -245,9 +318,24 @@
     <div id="churchDrawerFoot" class="church-drawer-foot"></div>
   </aside>
 
+  <div id="cellSupervisionDrawerBackdrop" class="church-drawer-backdrop cell-supervision-drawer-backdrop d-none" aria-hidden="true"></div>
+  <aside id="cellSupervisionDrawer" class="church-drawer cell-supervision-drawer d-none" aria-hidden="true" aria-labelledby="cellSupervisionDrawerTitle">
+    <div class="church-drawer-head">
+      <div>
+        <span id="cellSupervisionDrawerEyebrow" class="eyebrow">Supervisão de Célula</span>
+        <h2 id="cellSupervisionDrawerTitle" class="church-drawer-title">Inspecção da Célula</h2>
+      </div>
+      <button type="button" class="icon-btn church-drawer-close" data-cell-supervision-drawer-close aria-label="Fechar">
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div id="cellSupervisionDrawerBody" class="church-drawer-body"></div>
+    <div id="cellSupervisionDrawerFoot" class="church-drawer-foot"></div>
+  </aside>
+
   <div class="modal fade ops-modal-shell" id="entryModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-scrollable ops-modal-dialog">
-      <form id="entryForm" class="modal-content ops-modal" novalidate>
+      <form id="entryForm" class="modal-content ops-modal" novalidate autocomplete="off">
         <div class="modal-header ops-modal-header">
           <div>
             <span id="modalEyebrow" class="eyebrow">Novo registo</span>
@@ -328,6 +416,8 @@
   <script src="js/runtime-diagnostics.js?v=20260923-auth-unblock-v4"></script>
   <!-- SheetJS / XLSX Excel parsing engine -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- html2pdf.js bundle for automated background PDF generation (deferred for non-blocking page load) -->
+  <script defer src="js/vendor/html2pdf.bundle.min.js"></script>
   <!-- Supabase bundled library (Vite compiled) -->
   <script src="js/supabase-bundle.js?v=20261012-member-register-fix-v1"></script>
   <script src="js/churches-data-bridge.js?v=20260928-cell-group-leader-fix-v2"></script>
@@ -335,22 +425,22 @@
   <script src="js/first-timers-data-bridge.js?v=20260928-cell-group-leader-fix-v2"></script>
   <script src="js/follow-ups-data-bridge.js?v=20260928-cell-group-leader-fix-v2"></script>
   <script src="js/foundation-school-data-bridge.js?v=20260928-cell-group-leader-fix-v2"></script>
-  <script src="js/cell-seed-data.js?v=20260928-cell-group-leader-fix-v2"></script>
-  <script src="js/cell-ministry-data-bridge.js?v=20260928-cell-group-leader-fix-v2"></script>
+  <script src="js/cell-seed-data.js?v=20261015-cell-groups-actions-v2"></script>
+  <script src="js/cell-ministry-data-bridge.js?v=20261015-cell-groups-actions-v2"></script>
   <script src="js/finance-data-bridge.js?v=20260928-cell-group-leader-fix-v2"></script>
   <script src="js/public-giving-bridge.js?v=20260928-cell-group-leader-fix-v2"></script>
   <script src="js/finance-disbursements-module.js?v=20260928-cell-group-leader-fix-v2"></script>
   <script src="js/finance-module.js?v=20260929-export-fix-v1"></script>
   <script src="js/partnerships-module.js?v=20260929-export-fix-v1"></script>
-  <script src="js/requisitions-data-bridge.js?v=20260929-export-fix-v1"></script>
-  <script src="js/requisitions-module.js?v=20260929-export-fix-v1"></script>
-  <script src="js/requisition-reports-module.js?v=20260929-export-fix-v1"></script>
+  <script src="js/requisitions-data-bridge.js?v=20261028-staff-req-workflow-v1"></script>
+  <script src="js/requisitions-module.js?v=20261028-staff-req-workflow-v1"></script>
+  <script src="js/requisition-reports-module.js?v=20261028-staff-req-workflow-v1"></script>
   <script src="js/venue-inventory-data-bridge.js?v=20260929-export-fix-v1"></script>
   <script src="js/staff-hr-data-bridge.js?v=20261001-staff-dob-save-fix-v1"></script>
   <script src="js/staff-hr-module.js?v=20261002-staff-dob-save-fix-v2"></script>
   <script src="js/attendance-data-bridge.js?v=20261002-attendance-0830-all-reports-fix-v2"></script>
-  <script src="js/attendance-module.js?v=20261002-attendance-0830-all-reports-fix-v2"></script>
-  <script src="js/access-control.js?v=20261012-pastoral-care-access-full-v1"></script>
+  <script src="js/attendance-module.js?v=20261028-pastor-portal-v2"></script>
+  <script src="js/access-control.js?v=20261028-staff-req-workflow-v1"></script>
   <script src="js/access-control-data-bridge.js?v=20261001-attendance-roles-v1"></script>
   <script src="js/media-data-bridge.js?v=20260929-export-fix-v1"></script>
   <script src="js/counseling-data-bridge.js?v=20260929-export-fix-v1"></script>
@@ -359,19 +449,31 @@
   <script src="js/prison-ministry-data-bridge.js?v=20260929-export-fix-v1"></script>
   <script src="js/ministry-materials-data-bridge.js?v=20260929-export-fix-v1"></script>
   <script src="js/programs-data-bridge.js?v=20260929-export-fix-v1"></script>
-  <script src="js/reports-framework-module.js?v=20260929-export-fix-v1"></script>
+  <script src="js/dop-module.js?v=20261027-dop-db-sync-v1"></script>
+  <script src="js/reports-framework-module.js?v=20261028-pastor-portal-v2"></script>
   <script src="js/domain-reports-module.js?v=20260929-export-fix-v1"></script>
   <script src="js/reports-export-module.js?v=20260929-export-fix-v1"></script>
-  <script src="js/summary-card-nav.js?v=20261001-reports-subroutes-v2"></script>
+  <script src="js/summary-card-nav.js?v=20261028-pastor-portal-v2"></script>
   <script src="js/settings-data-bridge.js?v=20260929-export-fix-v1"></script>
-  <script src="js/notifications-data-bridge.js?v=20260929-export-fix-v1"></script>
+  <script src="js/notifications-data-bridge.js?v=20261102-responsive-tables-v2"></script>
   <script src="js/mozambique-locations.js?v=20260929-export-fix-v1"></script>
   <script src="js/form-components.js?v=20260929-export-fix-v1"></script>
-  <script src="js/ui-components.js?v=20260929-export-fix-v1"></script>
-  <script src="js/user-export-module.js?v=20260929-export-fix-v1"></script>
-  <script src="js/dashboard.js?v=20261012-fix-title-rendering-v2"></script>
+  <script src="js/ui-components.js?v=20261028-pastor-portal-v2"></script>
+  <script src="js/user-export-module.js?v=20261013-theme-contrast-harmony-v1"></script>
+  <script src="js/feedback-data-bridge.js?v=20261102-responsive-tables-v2"></script>
+  <script src="js/feedback-module.js?v=20261102-responsive-tables-v2"></script>
+  <script src="js/ai-reports-data-bridge.js?v=20261015-ai-reports-dynamic-v2"></script>
+  <script src="js/ai-report-context-engine.js?v=20261015-ai-reports-dynamic-v2"></script>
+  <script src="js/gemini-ai-service.js?v=20261015-ai-reports-dynamic-v2"></script>
+  <script src="js/ai-report-a4-viewer.js?v=20261015-ai-reports-dynamic-v2"></script>
+  <script src="js/ai-report-whatsapp-modal.js?v=20261026-direct-send-btn-v7"></script>
+  <script src="js/ai-reports-module.js?v=20261026-syntax-fix-v1"></script>
+  <script src="js/quick-entity-creator.js?v=20261015-inline-entity-create-v1"></script>
+  <script src="js/pastoral-directory-module.js?v=20261028-pastor-portal-v2"></script>
+  <script src="js/whatsapp-hub-module.js?v=20261026-direct-send-btn-v7"></script>
+  <script src="js/dashboard.js?v=20261102-responsive-tables-v2"></script>
   <!-- UMD build (classic script) — ESM CDN breaks without type="module" -->
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-  <script defer src="js/supabase-bridge.js?v=20260928-cell-group-leader-fix-v2"></script>
+  <script defer src="js/supabase-bridge.js?v=20261013-real-data-sync-v5"></script>
 </body>
 </html>
