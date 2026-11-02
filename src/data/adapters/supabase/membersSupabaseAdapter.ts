@@ -36,8 +36,9 @@ const MEMBER_LIST_COLUMNS = [
   "cell_group_id", "cell_group_name", "cell_id", "cell_name", "department_id",
   "department_name", "status", "membership_status", "entry_date", "source",
   "cell_role", "cell_participation_status", "service_participation_status",
-  "legacy_foundation_status", "legacy_foundation_raw_value", "legacy_alec_status",
-  "legacy_baptism_status", "legacy_partner_status", "data_quality_status",
+  "foundation_status", "legacy_foundation_status", "legacy_foundation_raw_value",
+  "alec_status", "legacy_alec_status",
+  "baptized", "legacy_baptism_status", "legacy_partner_status", "data_quality_status",
   "reconciliation_status", "confirmed_by", "confirmed_at", "reconciliation_notes",
   "notes", "created_at", "updated_at"
 ].join(",");
@@ -159,9 +160,13 @@ export function mapMemberFromRow(row: SupabaseRow | null | undefined): Member | 
     cell_role: (row.cell_role as string) || "Member",
     cell_participation_status: (row.cell_participation_status as string) || "Unknown",
     service_participation_status: (row.service_participation_status as string) || "Unknown",
-    legacy_foundation_status: (row.legacy_foundation_status as string) || null,
+    foundation_status: (row.foundation_status as string) || (row.legacy_foundation_status as string) || null,
+    legacy_foundation_status: (row.legacy_foundation_status as string) || (row.foundation_status as string) || null,
     legacy_foundation_raw_value: (row.legacy_foundation_raw_value as string) || null,
-    legacy_alec_status: (row.legacy_alec_status as string) || null,
+    alec_status: (row.alec_status as string) || (row.legacy_alec_status as string) || null,
+    legacy_alec_status: (row.legacy_alec_status as string) || (row.alec_status as string) || null,
+    baptized: row.baptized != null ? Boolean(row.baptized) : undefined,
+    is_baptized: row.baptized != null ? Boolean(row.baptized) : undefined,
     legacy_baptism_status: (row.legacy_baptism_status as string) || null,
     legacy_partner_status: (row.legacy_partner_status as string) || null,
     data_quality_status: (row.data_quality_status as string) || "Valid",
@@ -230,10 +235,13 @@ export function mapMemberToRow(member: Partial<Member>, forUpdate = false): Supa
     cell_role: cleanString(member.cell_role) || "Member",
     cell_participation_status: cleanString(member.cell_participation_status) || "Unknown",
     service_participation_status: cleanString(member.service_participation_status) || "Unknown",
-    legacy_foundation_status: cleanString(member.legacy_foundation_status),
+    foundation_status: cleanString(member.foundation_status ?? member.legacy_foundation_status),
+    legacy_foundation_status: cleanString(member.legacy_foundation_status ?? member.foundation_status),
     legacy_foundation_raw_value: cleanString(member.legacy_foundation_raw_value),
-    legacy_alec_status: cleanString(member.legacy_alec_status),
+    alec_status: cleanString(member.alec_status ?? member.legacy_alec_status),
+    legacy_alec_status: cleanString(member.legacy_alec_status ?? member.alec_status),
     legacy_alec_raw_value: cleanString(member.legacy_alec_raw_value),
+    baptized: member.baptized != null ? Boolean(member.baptized) : (member.is_baptized != null ? Boolean(member.is_baptized) : null),
     legacy_baptism_status: cleanString(member.legacy_baptism_status),
     legacy_baptism_raw_value: cleanString(member.legacy_baptism_raw_value),
     legacy_partner_status: cleanString(member.legacy_partner_status),
@@ -256,33 +264,11 @@ export function mapMemberToRow(member: Partial<Member>, forUpdate = false): Supa
 }
 
 export async function listMembers(): Promise<DataResult<Member[]>> {
-  const client = getSupabaseFoundationClient();
-  if (!client) {
-    const mapped = mapSupabaseError("Supabase not configured");
-    return fail(mapped.error, mapped.code);
-  }
-  try {
-    let allItems: Member[] = [];
-    let pageNum = 1;
-    const batchSize = 1000;
-    while (true) {
-      const pageRes = await listMembersPage({ page: pageNum, pageSize: batchSize });
-      if (!pageRes.ok) {
-        if (allItems.length > 0) return ok(allItems);
-        return fail(pageRes.error, pageRes.code);
-      }
-      const items = pageRes.data.items || [];
-      allItems = allItems.concat(items);
-      if (!pageRes.data.hasNext || items.length < batchSize || allItems.length >= pageRes.data.totalCount) {
-        break;
-      }
-      pageNum++;
-    }
-    return ok(allItems);
-  } catch (error) {
-    const mapped = mapSupabaseError(error instanceof Error ? error.message : "listMembers failed");
-    return fail(mapped.error, mapped.code);
-  }
+  // Compatibility-only API. Never iterate through the entire remote table here:
+  // directory consumers must use listMembersPage() with explicit pagination.
+  const page = await listMembersPage({ page: 1, pageSize: MEMBER_PAGE_MAX_SIZE });
+  if (!page.ok) return fail(page.error, page.code);
+  return ok(page.data.items);
 }
 
 /**
@@ -373,7 +359,7 @@ export async function listMembersPage(query: MemberListQuery = {}): Promise<Data
   }
 
   const page = Math.max(1, Number(query.page) || 1);
-  const pageSize = Math.min(MEMBER_PAGE_MAX_SIZE, Math.max(25, Number(query.pageSize) || MEMBER_PAGE_DEFAULT_SIZE));
+  const pageSize = Math.min(MEMBER_PAGE_MAX_SIZE, Math.max(5, Number(query.pageSize) || MEMBER_PAGE_DEFAULT_SIZE));
   const from = (page - 1) * pageSize;
   const search = String(query.search || "").trim();
   try {
@@ -441,25 +427,40 @@ export async function listMembersPage(query: MemberListQuery = {}): Promise<Data
       if (cellNameStr) {
         const safeCell = cellNameStr.replace(/['"(),.%_]/g, " ").replace(/\s+/g, " ").trim();
         if (safeCell) {
-          cellTerms.push(`cell_name.ilike.%${safeCell}%`);
+          if (query.cellNameLike) {
+            cellTerms.push(`cell_name.ilike.%${safeCell}%`);
+          } else {
+            cellTerms.push(`cell_name.ilike.${safeCell}`);
+          }
         }
       }
       const allRegistry = [
         ...((typeof window !== "undefined" && (window as any).state?.cellRegistry) || []),
         ...REAL_CELLS_LIST
       ];
+      const normCellStr = (s: string) => String(s || "").toLowerCase().replace(/['"(),.%_-]/g, " ").replace(/\s+/g, " ").trim();
+      const targetCellNorm = cellNameStr ? normCellStr(cellNameStr) : "";
       const matchingCells = allRegistry.filter((c: any) => {
         if (cellIdStr && String(c.id) === cellIdStr) return true;
-        if (cellNameStr) {
-          const cName = String(c.cell_name || c.name || "").toLowerCase();
-          return cName.includes(cellNameStr.toLowerCase()) || cellNameStr.toLowerCase().includes(cName);
+        if (targetCellNorm) {
+          const cName = normCellStr(c.raw_cell_name || c.cell_name || c.name || "");
+          if (query.cellNameLike) {
+            return cName.includes(targetCellNorm) || targetCellNorm.includes(cName);
+          }
+          return cName === targetCellNorm;
         }
         return false;
       });
       matchingCells.forEach((c: any) => {
         if (c.id) cellTerms.push(`cell_id.eq.${c.id}`);
         const rawName = String(c.raw_cell_name || c.cell_name || c.name || "").replace(/['"(),.%_]/g, " ").replace(/\s+/g, " ").trim();
-        if (rawName) cellTerms.push(`cell_name.ilike.%${rawName}%`);
+        if (rawName) {
+          if (query.cellNameLike) {
+            cellTerms.push(`cell_name.ilike.%${rawName}%`);
+          } else {
+            cellTerms.push(`cell_name.ilike.${rawName}`);
+          }
+        }
       });
       if (cellTerms.length > 0) {
         const uniqueTerms = Array.from(new Set(cellTerms));
