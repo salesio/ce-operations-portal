@@ -21934,6 +21934,503 @@ function renderCellGroupReportsTab(data, isPt) {
   `;
 }
 
+function generateSecureRandomPassword() {
+  const words = ["Victory", "Grace", "Glory", "Dominion", "Praise", "Favor", "Faith", "Blessing", "Miracle", "Harvest"];
+  const word = words[Math.floor(Math.random() * words.length)];
+  const num = Math.floor(100 + Math.random() * 900);
+  return `Jaffagate@${word}${num}`;
+}
+
+function openCellLeaderAccountModal(targetCellId = "", existingLeader = null) {
+  const isPt = lang === "pt";
+  const groupCells = (cellPortalPageState.cellGroupId
+    ? getCellsForGroup(cellPortalPageState.cellGroupId, activeUser?.church_id, true)
+    : (authorizedCells || [])).filter(Boolean);
+
+  const defaultCellId = targetCellId || cellPortalPageState.cellId || (groupCells[0]?.id || "");
+  const defaultPassword = generateSecureRandomPassword();
+
+  byId("modalEyebrow").textContent = isPt ? "PORTAL DO LÍDER DE GRUPO • GESTÃO DE ACESSOS" : "GROUP LEADER PORTAL • ACCESS MANAGEMENT";
+  byId("modalTitle").textContent = isPt ? "Registar / Atribuir Líder de Célula" : "Register / Assign Cell Leader";
+
+  byId("entryForm").innerHTML = `
+    <div class="row g-3">
+      <div class="col-12">
+        <div class="alert alert-info d-flex align-items-center gap-2 p-3 mb-0 small" style="background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.25);">
+          <i class="bi bi-shield-check fs-4 text-info"></i>
+          <div>
+            <strong>${isPt ? "Autonomia do Grupo de Células:" : "Cell Group Autonomy:"}</strong>
+            ${isPt
+              ? "Crie o utilizador com o <strong>email pessoal real</strong> do líder (ex: Gmail, Outlook). Assim o líder terá a sua própria senha e poderá recuperá-la diretamente no portal a qualquer momento."
+              : "Register the leader using their <strong>real personal email</strong> (e.g. Gmail). This allows them to own their password and recover it independently."}
+          </div>
+        </div>
+      </div>
+
+      <!-- Célula Alvo -->
+      <div class="col-12 col-md-6">
+        <label class="form-label fw-semibold text-white">${isPt ? "Célula a Atribuir *" : "Assigned Cell *"}</label>
+        <select name="cell_leader_cell_id" class="form-select" required>
+          ${groupCells.map((c) => `<option value="${escapeAttr(c.id)}"${String(c.id) === String(defaultCellId) ? " selected" : ""}>${escapeHtml(portalCellName(c))}</option>`).join("")}
+        </select>
+      </div>
+
+      <!-- Cargo / Função -->
+      <div class="col-12 col-md-6">
+        <label class="form-label fw-semibold text-white">${isPt ? "Cargo / Função *" : "Role *"}</label>
+        <select name="cell_leader_role" class="form-select" required>
+          <option value="Cell Leader" selected>${isPt ? "Líder de Célula" : "Cell Leader"}</option>
+          <option value="Cell Assistant">${isPt ? "Assistente de Célula" : "Assistant Cell Leader"}</option>
+        </select>
+      </div>
+
+      <!-- Nome Completo -->
+      <div class="col-12 col-md-6">
+        <label class="form-label fw-semibold text-white">${isPt ? "Nome Completo do Líder *" : "Leader Full Name *"}</label>
+        <input type="text" name="cell_leader_name" class="form-control" required placeholder="Ex: Irmão Marcos Langa" value="${escapeAttr(existingLeader?.name || "")}">
+      </div>
+
+      <!-- Email Pessoal -->
+      <div class="col-12 col-md-6">
+        <label class="form-label fw-semibold text-white">${isPt ? "Email Pessoal do Líder *" : "Leader Personal Email *"}</label>
+        <input type="email" name="cell_leader_email" class="form-control" required placeholder="Ex: marcos.langa@gmail.com" value="${escapeAttr(existingLeader?.email || "")}">
+        <small class="text-secondary" style="font-size:0.75rem;">${isPt ? "Necessário para login e recuperação de palavra-passe autónoma." : "Required for login & password reset."}</small>
+      </div>
+
+      <!-- Telefone / WhatsApp -->
+      <div class="col-12 col-md-6">
+        <label class="form-label fw-semibold text-white">${isPt ? "Contacto Telefónico / WhatsApp *" : "Phone / WhatsApp *"}</label>
+        <input type="tel" name="cell_leader_phone" class="form-control" required placeholder="Ex: +258 84 123 4567" value="${escapeAttr(existingLeader?.phone || "")}">
+      </div>
+
+      <!-- Senha Provisória / Inicial -->
+      <div class="col-12 col-md-6">
+        <label class="form-label fw-semibold text-white">${isPt ? "Palavra-passe de Primeiro Acesso *" : "Initial Password *"}</label>
+        <div class="input-group">
+          <input type="text" name="cell_leader_password" id="cellLeaderPasswordInput" class="form-control font-monospace" required minlength="6" value="${escapeAttr(defaultPassword)}">
+          <button type="button" class="btn btn-outline-secondary" id="btnRegenerateLeaderPass" title="${isPt ? "Gerar outra senha" : "Generate another"}">
+            <i class="bi bi-arrow-repeat"></i>
+          </button>
+        </div>
+        <small class="text-secondary" style="font-size:0.75rem;">${isPt ? "O líder poderá alterar no portal ou redefinir a qualquer momento." : "Leader can change or reset anytime."}</small>
+      </div>
+
+      <!-- Formação Espiritual -->
+      <div class="col-12 col-md-6">
+        <label class="form-label text-white small">${isPt ? "Escola de Fundação" : "Foundation School"}</label>
+        <select name="cell_leader_foundation" class="form-select form-select-sm">
+          <option value="Graduado" selected>${isPt ? "Graduado" : "Graduated"}</option>
+          <option value="Em Curso">${isPt ? "Em Curso" : "In Progress"}</option>
+          <option value="Pendente">${isPt ? "Não Iniciado" : "Pending"}</option>
+        </select>
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label class="form-label text-white small">ALEC (Academia de Líderes)</label>
+        <select name="cell_leader_alec" class="form-select form-select-sm">
+          <option value="Concluído" selected>${isPt ? "Concluído" : "Completed"}</option>
+          <option value="Em Curso">${isPt ? "Em Curso" : "In Progress"}</option>
+          <option value="Não inscrito">${isPt ? "Não inscrito" : "Not Enrolled"}</option>
+        </select>
+      </div>
+    </div>
+  `;
+
+  modalType = "cellLeaderAccount";
+  const submitBtn = byId("entryForm")?.querySelector('button[type="submit"]') || byId("entrySubmitBtn");
+  if (submitBtn) {
+    submitBtn.className = "btn btn-ce-gold btn-touch";
+    submitBtn.classList.remove("d-none");
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = `<i class="bi bi-check-circle me-1"></i>${isPt ? "Criar Acesso do Líder" : "Create Leader Access"}`;
+  }
+
+  setTimeout(() => {
+    const regenBtn = byId("btnRegenerateLeaderPass");
+    if (regenBtn) {
+      regenBtn.onclick = () => {
+        const inp = byId("cellLeaderPasswordInput");
+        if (inp) inp.value = generateSecureRandomPassword();
+      };
+    }
+  }, 50);
+
+  bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
+}
+
+function openManageCellLeaderModal(cellId, leaderName, leaderPhone) {
+  const isPt = lang === "pt";
+  const allCells = (Array.isArray(state?.cells) && state.cells.length ? state.cells : (state.cellRegistry || []));
+  const cell = allCells.find((c) => String(c.id) === String(cellId));
+  const cellName = cell ? portalCellName(cell) : "Célula";
+
+  const existingUser = (state.users || []).find((u) => 
+    String(u.cell_id) === String(cellId) || 
+    (leaderName && (String(u.name || u.full_name || "").toLowerCase() === String(leaderName).toLowerCase()))
+  );
+  const currentEmail = existingUser?.email || cell?.leader_email || "";
+  const newPass = generateSecureRandomPassword();
+
+  byId("modalEyebrow").textContent = isPt ? "GESTÃO DE ACESSO DO LÍDER" : "LEADER ACCESS MANAGEMENT";
+  byId("modalTitle").textContent = `${isPt ? "Acesso de" : "Access for"}: ${leaderName} (${cellName})`;
+
+  byId("entryForm").innerHTML = `
+    <input type="hidden" name="cell_id" value="${escapeAttr(cellId)}">
+    <input type="hidden" name="user_id" value="${escapeAttr(existingUser?.id || "")}">
+    <div class="row g-3">
+      <div class="col-12">
+        <div class="alert alert-info d-flex align-items-center gap-2 p-3 mb-0 small" style="background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.25);">
+          <i class="bi bi-shield-lock-fill fs-4 text-info"></i>
+          <div>
+            <strong>${isPt ? "Actualização de Credenciais:" : "Credential Update:"}</strong>
+            ${isPt
+              ? "Se o líder esqueceu a senha ou precisa de um novo email pessoal para recuperação autónoma, atualize aqui."
+              : "Update email or reset password if the leader lost access."}
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label class="form-label fw-semibold text-white">${isPt ? "Nome do Líder" : "Leader Name"}</label>
+        <input type="text" name="leader_name" class="form-control" required value="${escapeAttr(leaderName)}">
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label class="form-label fw-semibold text-white">${isPt ? "Email do Líder (Pessoal) *" : "Leader Personal Email *"}</label>
+        <input type="email" name="leader_email" class="form-control" required value="${escapeAttr(currentEmail)}" placeholder="marcos.langa@gmail.com">
+        <small class="text-secondary" style="font-size:0.75rem;">${isPt ? "Permite ao líder receber links de recuperação." : "Allows leader to receive recovery links."}</small>
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label class="form-label fw-semibold text-white">${isPt ? "Telefone / WhatsApp" : "Phone"}</label>
+        <input type="tel" name="leader_phone" class="form-control" value="${escapeAttr(leaderPhone || existingUser?.phone || "")}">
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label class="form-label fw-semibold text-white">${isPt ? "Redefinir Palavra-passe *" : "Reset Password *"}</label>
+        <div class="input-group">
+          <input type="text" name="new_password" id="manageLeaderPasswordInput" class="form-control font-monospace" required minlength="6" value="${escapeAttr(newPass)}">
+          <button type="button" class="btn btn-outline-secondary" id="btnRegenerateManagePass" title="Gerar outra senha">
+            <i class="bi bi-arrow-repeat"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  modalType = "cellLeaderAccount";
+  const submitBtn = byId("entryForm")?.querySelector('button[type="submit"]') || byId("entrySubmitBtn");
+  if (submitBtn) {
+    submitBtn.className = "btn btn-ce-gold btn-touch";
+    submitBtn.classList.remove("d-none");
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = `<i class="bi bi-check-circle me-1"></i>${isPt ? "Guardar & Actualizar Senha" : "Save & Update Password"}`;
+  }
+
+  setTimeout(() => {
+    const regenBtn = byId("btnRegenerateManagePass");
+    if (regenBtn) {
+      regenBtn.onclick = () => {
+        const inp = byId("manageLeaderPasswordInput");
+        if (inp) inp.value = generateSecureRandomPassword();
+      };
+    }
+  }, 50);
+
+  bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
+}
+
+function openCreateCellForGroupModal() {
+  const isPt = lang === "pt";
+  const groupId = cellPortalPageState.cellGroupId || activeUser?.cell_group_id || "";
+  const groupObj = (state.cellGroups || window.REAL_CELL_GROUPS || []).find((g) => String(g.id) === String(groupId));
+  const groupName = groupObj ? (groupObj.group_name || groupObj.name) : (context?.cell_group_name || "Grupo");
+
+  byId("modalEyebrow").textContent = isPt ? "EXPANSÃO DO GRUPO • NOVA CÉLULA" : "GROUP EXPANSION • NEW CELL";
+  byId("modalTitle").textContent = `${isPt ? "Criar Nova Célula em" : "New Cell in"}: ${groupName}`;
+
+  byId("entryForm").innerHTML = `
+    <div class="row g-3">
+      <div class="col-12">
+        <label class="form-label fw-semibold text-white">${isPt ? "Nome da Nova Célula *" : "New Cell Name *"}</label>
+        <input type="text" name="new_cell_name" class="form-control" required placeholder="Ex: Célula Vitória B ou Célula Shalom">
+      </div>
+      <div class="col-12 col-md-6">
+        <label class="form-label fw-semibold text-white">${isPt ? "Dia da Reunião" : "Meeting Day"}</label>
+        <select name="new_cell_day" class="form-select">
+          <option value="Quarta-feira" selected>${isPt ? "Quarta-feira" : "Wednesday"}</option>
+          <option value="Quinta-feira">${isPt ? "Quinta-feira" : "Thursday"}</option>
+          <option value="Sexta-feira">${isPt ? "Sexta-feira" : "Friday"}</option>
+          <option value="Sábado">${isPt ? "Sábado" : "Saturday"}</option>
+          <option value="Domingo">${isPt ? "Domingo" : "Sunday"}</option>
+          <option value="Segunda-feira">${isPt ? "Segunda-feira" : "Monday"}</option>
+          <option value="Terça-feira">${isPt ? "Terça-feira" : "Tuesday"}</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-6">
+        <label class="form-label fw-semibold text-white">${isPt ? "Hora da Reunião" : "Meeting Time"}</label>
+        <input type="time" name="new_cell_time" class="form-control" value="18:00">
+      </div>
+      <div class="col-12">
+        <label class="form-label fw-semibold text-white">${isPt ? "Local / Bairro / Endereço" : "Meeting Address / Venue"}</label>
+        <input type="text" name="new_cell_venue" class="form-control" placeholder="Ex: Bairro Central, Av. Eduardo Mondlane, Casa nº 123">
+      </div>
+    </div>
+  `;
+
+  modalType = "cellCreateForGroup";
+  const submitBtn = byId("entryForm")?.querySelector('button[type="submit"]') || byId("entrySubmitBtn");
+  if (submitBtn) {
+    submitBtn.className = "btn btn-ce-gold btn-touch";
+    submitBtn.classList.remove("d-none");
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = `<i class="bi bi-plus-circle me-1"></i>${isPt ? "Criar Célula no Grupo" : "Create Cell in Group"}`;
+  }
+  bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
+}
+
+async function submitCellLeaderAccountForm(form) {
+  const isPt = lang === "pt";
+  const data = Object.fromEntries(new FormData(form).entries());
+  const cellId = data.cell_leader_cell_id || data.cell_id;
+  const fullName = (data.cell_leader_name || data.leader_name || "").trim();
+  const email = (data.cell_leader_email || data.leader_email || "").trim().toLowerCase();
+  const phone = (data.cell_leader_phone || data.leader_phone || "").trim();
+  const password = (data.cell_leader_password || data.new_password || "").trim();
+  const roleName = data.cell_leader_role || "Cell Leader";
+  const userId = data.user_id || undefined;
+
+  if (!cellId || !fullName || !email || !password) {
+    alert(isPt ? "Por favor, preencha todos os campos obrigatórios." : "Please fill all required fields.");
+    return;
+  }
+
+  const allCells = (Array.isArray(state?.cells) && state.cells.length ? state.cells : (state.cellRegistry || []));
+  const cell = allCells.find((c) => String(c.id) === String(cellId));
+  const cellName = cell ? portalCellName(cell) : "Célula";
+  const churchId = activeUser?.church_id || "a1111111-1111-4111-8111-111111111101";
+  const cellGroupId = cellPortalPageState.cellGroupId || cell?.group_id || cell?.cell_group_id || activeUser?.cell_group_id;
+
+  const userPayload = {
+    id: userId,
+    name: fullName,
+    full_name: fullName,
+    email: email,
+    phone: phone,
+    password: password,
+    role: roleName,
+    role_name: roleName,
+    church_id: churchId,
+    cell_group_id: cellGroupId,
+    cell_id: cellId,
+    assigned_cells: [cellId],
+    assigned_cell_groups: cellGroupId ? [cellGroupId] : [],
+    department_permissions: [],
+    status: "Active"
+  };
+
+  await syncUserToSupabase(userPayload);
+
+  if (cell) {
+    cell.primary_leader_name = fullName;
+    cell.leader_name = fullName;
+    cell.lider = fullName;
+    cell.leader_email = email;
+    cell.leader_phone = phone;
+    if (typeof dualWriteCellMinistryRecord === "function") {
+      void dualWriteCellMinistryRecord("cellRegistry", "update", cell);
+    }
+  }
+
+  try {
+    const sb = window.supabaseClient || window.CESupabase?.client;
+    if (sb) {
+      await sb.from("cell_user_assignments").insert({
+        user_id: userPayload.id || undefined,
+        church_id: churchId,
+        cell_group_id: cellGroupId,
+        cell_id: cellId,
+        assignment_role: roleName === "Cell Assistant" ? "assistant" : "primary_leader",
+        status: "active"
+      });
+    }
+  } catch (_) {}
+
+  saveState(`Líder de Célula atribuído para ${cellName}`);
+
+  try { bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide(); } catch (_) {}
+
+  showCellLeaderCreatedSuccessModal({
+    name: fullName,
+    email: email,
+    phone: phone,
+    password: password,
+    cellName: cellName
+  }, isPt);
+
+  setTimeout(() => {
+    if (activeRoute === "cellPortal") renderCellLeaderPortal();
+  }, 200);
+}
+
+async function submitCreateCellForGroupForm(form) {
+  const isPt = lang === "pt";
+  const data = Object.fromEntries(new FormData(form).entries());
+  const cellName = (data.new_cell_name || "").trim();
+  const day = data.new_cell_day || "Quarta-feira";
+  const time = data.new_cell_time || "18:00";
+  const venue = (data.new_cell_venue || "").trim();
+
+  if (!cellName) {
+    alert(isPt ? "Por favor, indique o nome da célula." : "Please provide a cell name.");
+    return;
+  }
+
+  const churchId = activeUser?.church_id || "a1111111-1111-4111-8111-111111111101";
+  const cellGroupId = cellPortalPageState.cellGroupId || activeUser?.cell_group_id || "";
+  const groupObj = (state.cellGroups || window.REAL_CELL_GROUPS || []).find((g) => String(g.id) === String(cellGroupId));
+  const groupName = groupObj ? (groupObj.group_name || groupObj.name) : "Grupo";
+
+  const newCellId = (typeof crypto !== "undefined" && crypto.randomUUID) ? crypto.randomUUID() : `cell-${Date.now()}`;
+
+  const newCell = {
+    id: newCellId,
+    cell_name: cellName,
+    nome_da_celula: cellName,
+    name: cellName,
+    church_id: churchId,
+    cell_group_id: cellGroupId,
+    group_id: cellGroupId,
+    cell_group_name: groupName,
+    meeting_day: day,
+    dia_reuniao: day,
+    meeting_time: time,
+    hora_reuniao: time,
+    meeting_address: venue,
+    venue: venue,
+    address: venue,
+    status: "Active",
+    estado: "Activo",
+    member_count: 0
+  };
+
+  if (!Array.isArray(state.cells)) state.cells = [];
+  state.cells.push(newCell);
+  if (!Array.isArray(state.cellRegistry)) state.cellRegistry = [];
+  state.cellRegistry.push(newCell);
+
+  if (typeof dualWriteCellMinistryRecord === "function") {
+    void dualWriteCellMinistryRecord("cellRegistry", "insert", newCell);
+  }
+
+  saveState(`Nova célula criada: ${cellName}`);
+
+  try { bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide(); } catch (_) {}
+
+  if (typeof showToast === "function") {
+    showToast(isPt ? `Célula "${cellName}" criada com sucesso no grupo!` : `Cell "${cellName}" created successfully!`);
+  }
+
+  setTimeout(() => {
+    if (confirm(isPt ? `A célula "${cellName}" foi criada com sucesso! Deseja registar e atribuir o líder desta célula agora?` : `Cell created! Do you want to assign a leader now?`)) {
+      openCellLeaderAccountModal(newCellId);
+    } else {
+      if (activeRoute === "cellPortal") renderCellLeaderPortal();
+    }
+  }, 350);
+}
+
+function showCellLeaderCreatedSuccessModal(info, isPt) {
+  const portalUrl = "https://portal.embaixadadecristo.org";
+  const waMessage = [
+    `🌟 *Christ Embassy — Portal de Operações* 🌟`,
+    ``,
+    `Olá *${info.name}*,`,
+    `A sua conta de acesso ao Portal para a *${info.cellName}* foi criada com sucesso pelo seu Líder de Grupo!`,
+    ``,
+    `🔗 *Portal:* ${portalUrl}`,
+    `📧 *Email de Login:* ${info.email}`,
+    `🔑 *Senha Inicial:* ${info.password}`,
+    ``,
+    `_Nota: Pode recuperar ou alterar a sua palavra-passe diretamente no portal a qualquer momento através do seu email pessoal._`
+  ].join("\n");
+
+  const cleanPhone = String(info.phone || "").replace(/[^\d]/g, "");
+  const waUrl = cleanPhone 
+    ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(waMessage)}`
+    : `https://api.whatsapp.com/send?text=${encodeURIComponent(waMessage)}`;
+
+  const modalHtml = `
+    <div class="modal fade" id="cellLeaderSuccessModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content glass-modal text-white">
+          <div class="modal-header border-secondary border-opacity-25 pb-2">
+            <h5 class="modal-title d-flex align-items-center gap-2 text-success">
+              <i class="bi bi-check-circle-fill"></i>
+              ${isPt ? "Acesso de Líder Criado com Sucesso!" : "Leader Access Created Successfully!"}
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body py-3">
+            <p class="small text-secondary mb-3">
+              ${isPt
+                ? "A conta foi provisionada no portal e está ativa para início de sessão imediato com o email pessoal do líder."
+                : "The account is active for immediate login using the leader's personal email."}
+            </p>
+
+            <div class="p-3 rounded mb-3" style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(56, 189, 248, 0.25);">
+              <div class="small mb-1"><span class="text-secondary">${isPt ? "Líder:" : "Leader:"}</span> <strong>${escapeHtml(info.name)}</strong></div>
+              <div class="small mb-1"><span class="text-secondary">${isPt ? "Célula:" : "Cell:"}</span> <strong>${escapeHtml(info.cellName)}</strong></div>
+              <div class="small mb-1"><span class="text-secondary">Email:</span> <span class="font-monospace text-info">${escapeHtml(info.email)}</span></div>
+              <div class="small"><span class="text-secondary">${isPt ? "Senha inicial:" : "Password:"}</span> <span class="font-monospace text-warning fw-bold">${escapeHtml(info.password)}</span></div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small text-secondary">${isPt ? "Mensagem para partilhar com o líder:" : "Message to share with leader:"}</label>
+              <textarea class="form-control font-monospace small" rows="5" id="txtLeaderWaMessage" readonly style="font-size: 0.8rem;">${escapeHtml(waMessage)}</textarea>
+            </div>
+          </div>
+          <div class="modal-footer border-secondary border-opacity-25 d-flex justify-content-between">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+              ${isPt ? "Concluir" : "Done"}
+            </button>
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-outline-cyan" id="btnCopyLeaderWaText">
+                <i class="bi bi-clipboard me-1"></i>${isPt ? "Copiar Mensagem" : "Copy Message"}
+              </button>
+              <a href="${waUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-success fw-bold">
+                <i class="bi bi-whatsapp me-1"></i>WhatsApp
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  let existing = document.getElementById("cellLeaderSuccessModal");
+  if (existing) existing.remove();
+  document.body.insertAdjacentHTML("beforeend", modalHtml);
+
+  const modalEl = document.getElementById("cellLeaderSuccessModal");
+  const bsModal = bootstrap.Modal.getOrCreateInstance(modalEl);
+  bsModal.show();
+
+  const copyBtn = document.getElementById("btnCopyLeaderWaText");
+  if (copyBtn) {
+    copyBtn.onclick = () => {
+      const txt = document.getElementById("txtLeaderWaMessage");
+      if (txt) {
+        navigator.clipboard.writeText(txt.value);
+        copyBtn.innerHTML = `<i class="bi bi-check2 me-1"></i>${isPt ? "Copiado!" : "Copied!"}`;
+        setTimeout(() => {
+          copyBtn.innerHTML = `<i class="bi bi-clipboard me-1"></i>${isPt ? "Copiar Mensagem" : "Copy Message"}`;
+        }, 2000);
+      }
+    };
+  }
+}
+
 function renderCellGroupLeadersTab(data, isPt) {
   const { rows, ownCellId } = data;
 
@@ -22018,6 +22515,27 @@ function renderCellGroupLeadersTab(data, isPt) {
         </div>
       </div>
 
+      <!-- Decentralized Leadership Action Toolbar -->
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+        <div>
+          <h4 class="h6 mb-1 text-white d-flex align-items-center gap-2">
+            <i class="bi bi-person-gear text-warning"></i>
+            ${isPt ? "Gestão Descentralizada de Líderes" : "Decentralized Leaders Management"}
+          </h4>
+          <p class="text-secondary small mb-0">
+            ${isPt ? "Registe líderes com os seus <strong>emails pessoais</strong> para que tenham senhas próprias e possam recuperá-las no portal autonomamente." : "Register leaders with personal emails so they can manage and recover passwords independently."}
+          </p>
+        </div>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <button type="button" class="btn btn-sm btn-ce-gold btn-touch" data-action="open-cell-leader-modal">
+            <i class="bi bi-person-plus-fill me-1"></i>${isPt ? "Novo Acesso de Líder" : "New Leader Access"}
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-cyan btn-touch" data-action="open-create-cell-modal">
+            <i class="bi bi-plus-circle me-1"></i>${isPt ? "Nova Célula no Grupo" : "New Cell in Group"}
+          </button>
+        </div>
+      </div>
+
       <!-- Leaders Pipeline Roster Table -->
       <div class="panel glass-panel p-0 overflow-hidden">
         <div class="table-responsive">
@@ -22030,7 +22548,7 @@ function renderCellGroupLeadersTab(data, isPt) {
                 <th>${isPt ? "Contacto" : "Contact"}</th>
                 <th>${isPt ? "Escola de Fundação" : "Foundation School"}</th>
                 <th>ALEC</th>
-                <th class="text-end">${isPt ? "Acções / Contacto" : "Actions / Contact"}</th>
+                <th class="text-end">${isPt ? "Acções / Acesso" : "Actions / Access"}</th>
               </tr>
             </thead>
             <tbody>
@@ -22060,7 +22578,16 @@ function renderCellGroupLeadersTab(data, isPt) {
                         : `<span class="badge bg-info-subtle text-info border border-info-subtle">${escapeHtml(person.alec)}</span>`}
                     </td>
                     <td class="text-end">
-                      <div class="d-inline-flex align-items-center gap-1 justify-content-end">
+                      <div class="d-inline-flex align-items-center gap-1 justify-content-end flex-wrap">
+                        ${person.isVacant ? `
+                          <button type="button" class="btn btn-sm btn-warning py-1 px-2" style="font-size:0.75rem;" data-action="nominate-cell-leader" data-cell-id="${escapeAttr(person.cellId)}" title="${isPt ? "Nomear Líder e Criar Acesso" : "Assign Leader & Create Access"}">
+                            <i class="bi bi-person-check-fill me-1"></i>${isPt ? "Nomear Líder" : "Assign"}
+                          </button>
+                        ` : `
+                          <button type="button" class="btn btn-sm btn-outline-warning py-1 px-2" style="font-size:0.75rem;" data-action="manage-cell-leader" data-cell-id="${escapeAttr(person.cellId)}" data-leader-name="${escapeAttr(person.name)}" data-leader-phone="${escapeAttr(person.phone)}" title="${isPt ? "Gerir Acesso / Redefinir Senha" : "Manage Access / Reset Password"}">
+                            <i class="bi bi-key-fill me-1"></i>${isPt ? "Acesso" : "Access"}
+                          </button>
+                        `}
                         ${waChatUrl ? `
                           <a href="${waChatUrl}" target="_blank" rel="noopener noreferrer" class="cell-group-wa-btn">
                             <i class="bi bi-whatsapp"></i>
@@ -56236,6 +56763,26 @@ document.addEventListener("click", async (event) => {
     if (targetCellId) openCellMultiplicationPlanModal(targetCellId);
     return;
   }
+  const openLeaderAccountBtn = event.target.closest('[data-action="open-cell-leader-modal"]');
+  if (openLeaderAccountBtn) {
+    return openCellLeaderAccountModal();
+  }
+  const nominateLeaderBtn = event.target.closest('[data-action="nominate-cell-leader"]');
+  if (nominateLeaderBtn) {
+    const targetCellId = nominateLeaderBtn.dataset.cellId || "";
+    return openCellLeaderAccountModal(targetCellId);
+  }
+  const manageLeaderBtn = event.target.closest('[data-action="manage-cell-leader"]');
+  if (manageLeaderBtn) {
+    const targetCellId = manageLeaderBtn.dataset.cellId || "";
+    const leaderName = manageLeaderBtn.dataset.leaderName || "";
+    const leaderPhone = manageLeaderBtn.dataset.leaderPhone || "";
+    return openManageCellLeaderModal(targetCellId, leaderName, leaderPhone);
+  }
+  const openCreateCellBtn = event.target.closest('[data-action="open-create-cell-modal"]');
+  if (openCreateCellBtn) {
+    return openCreateCellForGroupModal();
+  }
   const copyPendingBtn = event.target.closest("[data-cell-copy-pending-list]");
   if (copyPendingBtn) {
     return copyPendingCellReportsList();
@@ -57591,6 +58138,8 @@ byId("entryForm")?.addEventListener("submit", async (event) => {
     if (modalType === "cellMemberTransfer") return await submitCellMemberTransferForm(form);
     if (modalType === "cellMemberRemoval") return await submitCellMemberRemovalForm(form);
     if (modalType === "cellMultiplicationPlan") return await submitCellMultiplicationPlanForm(form);
+    if (modalType === "cellLeaderAccount") return await submitCellLeaderAccountForm(form);
+    if (modalType === "cellCreateForGroup") return await submitCreateCellForGroupForm(form);
     if (modalType === "cellGroupTargets") return await submitCellGroupTargetsForm(form);
     if (modalType === "followup") return await submitFollowup(form);
     if (modalType === "foundationStudent") return await submitFoundationStudent(form);
