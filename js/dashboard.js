@@ -21941,103 +21941,153 @@ function generateSecureRandomPassword() {
   return `Jaffagate@${word}${num}`;
 }
 
+function ensureEntryModalStructure() {
+  const form = byId("entryForm");
+  if (!form) return null;
+  let fields = byId("modalFields");
+  const footer = form.querySelector(".ops-modal-footer, .modal-footer");
+  const cancelBtn = form.querySelector('[data-bs-dismiss="modal"]');
+  const submitBtn = form.querySelector('button[type="submit"]');
+  if (!fields || !byId("modalTitle") || !byId("modalEyebrow") || !footer || !cancelBtn || !submitBtn) {
+    form.className = "modal-content ops-modal";
+    form.innerHTML = `
+      <div class="modal-header ops-modal-header">
+        <div>
+          <span id="modalEyebrow" class="eyebrow">Registo</span>
+          <h2 id="modalTitle" class="modal-title h4 mb-0">Título</h2>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div id="modalFields" class="modal-body ops-modal-body row g-3"></div>
+      <div class="modal-footer ops-modal-footer">
+        <button type="button" class="btn btn-outline-glass btn-touch" data-bs-dismiss="modal" data-i18n="cancel">Cancelar</button>
+        <button type="submit" class="btn btn-ce-gold btn-touch" data-i18n="save">Guardar</button>
+      </div>
+    `;
+    fields = byId("modalFields");
+  } else {
+    footer.classList.remove("d-none");
+    cancelBtn.classList.remove("d-none");
+    cancelBtn.disabled = false;
+    submitBtn.classList.remove("d-none");
+    submitBtn.disabled = false;
+  }
+  return fields;
+}
+
+function getGroupSupervisedCells() {
+  const groupId = String(cellPortalPageState?.cellGroupId || activeUser?.cell_group_id || activeUser?.cellGroupId || "").trim();
+  const allCells = (Array.isArray(state?.cells) && state.cells.length ? state.cells : (state.cellRegistry || window.REAL_CELLS_REGISTRY || [])).filter(Boolean);
+  if (groupId) {
+    if (typeof getCellsForGroup === "function") {
+      const list = getCellsForGroup(groupId, activeUser?.church_id, true);
+      if (list && list.length) return list;
+    }
+    const matched = allCells.filter((c) => String(c.cell_group_id || c.group_id) === groupId || (typeof isSameCellGroup === "function" && isSameCellGroup(c, groupId)));
+    if (matched.length) return matched;
+  }
+  const userAuthCells = (typeof getAuthorizedCellsForUser === "function" && activeUser?.id) 
+    ? getAuthorizedCellsForUser(activeUser.id) 
+    : [];
+  if (userAuthCells && userAuthCells.length) return userAuthCells;
+  return allCells;
+}
+
 function openCellLeaderAccountModal(targetCellId = "", existingLeader = null) {
   const isPt = lang === "pt";
-  const groupCells = (cellPortalPageState.cellGroupId
-    ? getCellsForGroup(cellPortalPageState.cellGroupId, activeUser?.church_id, true)
-    : (authorizedCells || [])).filter(Boolean);
+  const fields = ensureEntryModalStructure();
+  if (!fields) return;
 
+  const groupCells = getGroupSupervisedCells();
   const defaultCellId = targetCellId || cellPortalPageState.cellId || (groupCells[0]?.id || "");
   const defaultPassword = generateSecureRandomPassword();
 
   byId("modalEyebrow").textContent = isPt ? "PORTAL DO LÍDER DE GRUPO • GESTÃO DE ACESSOS" : "GROUP LEADER PORTAL • ACCESS MANAGEMENT";
   byId("modalTitle").textContent = isPt ? "Registar / Atribuir Líder de Célula" : "Register / Assign Cell Leader";
 
-  byId("entryForm").innerHTML = `
-    <div class="row g-3">
-      <div class="col-12">
-        <div class="alert alert-info d-flex align-items-center gap-2 p-3 mb-0 small" style="background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.25);">
-          <i class="bi bi-shield-check fs-4 text-info"></i>
-          <div>
-            <strong>${isPt ? "Autonomia do Grupo de Células:" : "Cell Group Autonomy:"}</strong>
-            ${isPt
-              ? "Crie o utilizador com o <strong>email pessoal real</strong> do líder (ex: Gmail, Outlook). Assim o líder terá a sua própria senha e poderá recuperá-la diretamente no portal a qualquer momento."
-              : "Register the leader using their <strong>real personal email</strong> (e.g. Gmail). This allows them to own their password and recover it independently."}
-          </div>
+  fields.innerHTML = `
+    <div class="col-12">
+      <div class="alert alert-info d-flex align-items-center gap-2 p-3 mb-0 small" style="background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.25);">
+        <i class="bi bi-shield-check fs-4 text-info"></i>
+        <div>
+          <strong>${isPt ? "Autonomia do Grupo de Células:" : "Cell Group Autonomy:"}</strong>
+          ${isPt
+            ? "Crie o utilizador com o <strong>email pessoal real</strong> do líder (ex: Gmail, Outlook). Assim o líder terá a sua própria senha e poderá recuperá-la diretamente no portal a qualquer momento."
+            : "Register the leader using their <strong>real personal email</strong> (e.g. Gmail). This allows them to own their password and recover it independently."}
         </div>
       </div>
+    </div>
 
-      <!-- Célula Alvo -->
-      <div class="col-12 col-md-6">
-        <label class="form-label fw-semibold text-white">${isPt ? "Célula a Atribuir *" : "Assigned Cell *"}</label>
-        <select name="cell_leader_cell_id" class="form-select" required>
-          ${groupCells.map((c) => `<option value="${escapeAttr(c.id)}"${String(c.id) === String(defaultCellId) ? " selected" : ""}>${escapeHtml(portalCellName(c))}</option>`).join("")}
-        </select>
-      </div>
+    <!-- Célula Alvo -->
+    <div class="col-12 col-md-6">
+      <label class="form-label fw-semibold text-white">${isPt ? "Célula a Atribuir *" : "Assigned Cell *"}</label>
+      <select name="cell_leader_cell_id" class="form-select" required>
+        ${groupCells.map((c) => `<option value="${escapeAttr(c.id)}"${String(c.id) === String(defaultCellId) ? " selected" : ""}>${escapeHtml(portalCellName(c))}</option>`).join("")}
+      </select>
+    </div>
 
-      <!-- Cargo / Função -->
-      <div class="col-12 col-md-6">
-        <label class="form-label fw-semibold text-white">${isPt ? "Cargo / Função *" : "Role *"}</label>
-        <select name="cell_leader_role" class="form-select" required>
-          <option value="Cell Leader" selected>${isPt ? "Líder de Célula" : "Cell Leader"}</option>
-          <option value="Cell Assistant">${isPt ? "Assistente de Célula" : "Assistant Cell Leader"}</option>
-        </select>
-      </div>
+    <!-- Cargo / Função -->
+    <div class="col-12 col-md-6">
+      <label class="form-label fw-semibold text-white">${isPt ? "Cargo / Função *" : "Role *"}</label>
+      <select name="cell_leader_role" class="form-select" required>
+        <option value="Cell Leader" selected>${isPt ? "Líder de Célula" : "Cell Leader"}</option>
+        <option value="Cell Assistant">${isPt ? "Assistente de Célula" : "Assistant Cell Leader"}</option>
+      </select>
+    </div>
 
-      <!-- Nome Completo -->
-      <div class="col-12 col-md-6">
-        <label class="form-label fw-semibold text-white">${isPt ? "Nome Completo do Líder *" : "Leader Full Name *"}</label>
-        <input type="text" name="cell_leader_name" class="form-control" required placeholder="Ex: Irmão Marcos Langa" value="${escapeAttr(existingLeader?.name || "")}">
-      </div>
+    <!-- Nome Completo -->
+    <div class="col-12 col-md-6">
+      <label class="form-label fw-semibold text-white">${isPt ? "Nome Completo do Líder *" : "Leader Full Name *"}</label>
+      <input type="text" name="cell_leader_name" class="form-control" required placeholder="Ex: Irmão Marcos Langa" value="${escapeAttr(existingLeader?.name || "")}">
+    </div>
 
-      <!-- Email Pessoal -->
-      <div class="col-12 col-md-6">
-        <label class="form-label fw-semibold text-white">${isPt ? "Email Pessoal do Líder *" : "Leader Personal Email *"}</label>
-        <input type="email" name="cell_leader_email" class="form-control" required placeholder="Ex: marcos.langa@gmail.com" value="${escapeAttr(existingLeader?.email || "")}">
-        <small class="text-secondary" style="font-size:0.75rem;">${isPt ? "Necessário para login e recuperação de palavra-passe autónoma." : "Required for login & password reset."}</small>
-      </div>
+    <!-- Email Pessoal -->
+    <div class="col-12 col-md-6">
+      <label class="form-label fw-semibold text-white">${isPt ? "Email Pessoal do Líder *" : "Leader Personal Email *"}</label>
+      <input type="email" name="cell_leader_email" class="form-control" required placeholder="Ex: marcos.langa@gmail.com" value="${escapeAttr(existingLeader?.email || "")}">
+      <small class="text-secondary" style="font-size:0.75rem;">${isPt ? "Necessário para login e recuperação de palavra-passe autónoma." : "Required for login & password reset."}</small>
+    </div>
 
-      <!-- Telefone / WhatsApp -->
-      <div class="col-12 col-md-6">
-        <label class="form-label fw-semibold text-white">${isPt ? "Contacto Telefónico / WhatsApp *" : "Phone / WhatsApp *"}</label>
-        <input type="tel" name="cell_leader_phone" class="form-control" required placeholder="Ex: +258 84 123 4567" value="${escapeAttr(existingLeader?.phone || "")}">
-      </div>
+    <!-- Telefone / WhatsApp -->
+    <div class="col-12 col-md-6">
+      <label class="form-label fw-semibold text-white">${isPt ? "Contacto Telefónico / WhatsApp *" : "Phone / WhatsApp *"}</label>
+      <input type="tel" name="cell_leader_phone" class="form-control" required placeholder="Ex: +258 84 123 4567" value="${escapeAttr(existingLeader?.phone || "")}">
+    </div>
 
-      <!-- Senha Provisória / Inicial -->
-      <div class="col-12 col-md-6">
-        <label class="form-label fw-semibold text-white">${isPt ? "Palavra-passe de Primeiro Acesso *" : "Initial Password *"}</label>
-        <div class="input-group">
-          <input type="text" name="cell_leader_password" id="cellLeaderPasswordInput" class="form-control font-monospace" required minlength="6" value="${escapeAttr(defaultPassword)}">
-          <button type="button" class="btn btn-outline-secondary" id="btnRegenerateLeaderPass" title="${isPt ? "Gerar outra senha" : "Generate another"}">
-            <i class="bi bi-arrow-repeat"></i>
-          </button>
-        </div>
-        <small class="text-secondary" style="font-size:0.75rem;">${isPt ? "O líder poderá alterar no portal ou redefinir a qualquer momento." : "Leader can change or reset anytime."}</small>
+    <!-- Senha Provisória / Inicial -->
+    <div class="col-12 col-md-6">
+      <label class="form-label fw-semibold text-white">${isPt ? "Palavra-passe de Primeiro Acesso *" : "Initial Password *"}</label>
+      <div class="input-group">
+        <input type="text" name="cell_leader_password" id="cellLeaderPasswordInput" class="form-control font-monospace" required minlength="6" value="${escapeAttr(defaultPassword)}">
+        <button type="button" class="btn btn-outline-secondary" id="btnRegenerateLeaderPass" title="${isPt ? "Gerar outra senha" : "Generate another"}">
+          <i class="bi bi-arrow-repeat"></i>
+        </button>
       </div>
+      <small class="text-secondary" style="font-size:0.75rem;">${isPt ? "O líder poderá alterar no portal ou redefinir a qualquer momento." : "Leader can change or reset anytime."}</small>
+    </div>
 
-      <!-- Formação Espiritual -->
-      <div class="col-12 col-md-6">
-        <label class="form-label text-white small">${isPt ? "Escola de Fundação" : "Foundation School"}</label>
-        <select name="cell_leader_foundation" class="form-select form-select-sm">
-          <option value="Graduado" selected>${isPt ? "Graduado" : "Graduated"}</option>
-          <option value="Em Curso">${isPt ? "Em Curso" : "In Progress"}</option>
-          <option value="Pendente">${isPt ? "Não Iniciado" : "Pending"}</option>
-        </select>
-      </div>
+    <!-- Formação Espiritual -->
+    <div class="col-12 col-md-6">
+      <label class="form-label text-white small">${isPt ? "Escola de Fundação" : "Foundation School"}</label>
+      <select name="cell_leader_foundation" class="form-select form-select-sm">
+        <option value="Graduado" selected>${isPt ? "Graduado" : "Graduated"}</option>
+        <option value="Em Curso">${isPt ? "Em Curso" : "In Progress"}</option>
+        <option value="Pendente">${isPt ? "Não Iniciado" : "Pending"}</option>
+      </select>
+    </div>
 
-      <div class="col-12 col-md-6">
-        <label class="form-label text-white small">ALEC (Academia de Líderes)</label>
-        <select name="cell_leader_alec" class="form-select form-select-sm">
-          <option value="Concluído" selected>${isPt ? "Concluído" : "Completed"}</option>
-          <option value="Em Curso">${isPt ? "Em Curso" : "In Progress"}</option>
-          <option value="Não inscrito">${isPt ? "Não inscrito" : "Not Enrolled"}</option>
-        </select>
-      </div>
+    <div class="col-12 col-md-6">
+      <label class="form-label text-white small">ALEC (Academia de Líderes)</label>
+      <select name="cell_leader_alec" class="form-select form-select-sm">
+        <option value="Concluído" selected>${isPt ? "Concluído" : "Completed"}</option>
+        <option value="Em Curso">${isPt ? "Em Curso" : "In Progress"}</option>
+        <option value="Não inscrito">${isPt ? "Não inscrito" : "Not Enrolled"}</option>
+      </select>
     </div>
   `;
 
   modalType = "cellLeaderAccount";
-  const submitBtn = byId("entryForm")?.querySelector('button[type="submit"]') || byId("entrySubmitBtn");
+  const submitBtn = byId("entryForm")?.querySelector('button[type="submit"]');
   if (submitBtn) {
     submitBtn.className = "btn btn-ce-gold btn-touch";
     submitBtn.classList.remove("d-none");
@@ -22060,7 +22110,10 @@ function openCellLeaderAccountModal(targetCellId = "", existingLeader = null) {
 
 function openManageCellLeaderModal(cellId, leaderName, leaderPhone) {
   const isPt = lang === "pt";
-  const allCells = (Array.isArray(state?.cells) && state.cells.length ? state.cells : (state.cellRegistry || []));
+  const fields = ensureEntryModalStructure();
+  if (!fields) return;
+
+  const allCells = (Array.isArray(state?.cells) && state.cells.length ? state.cells : (state.cellRegistry || window.REAL_CELLS_REGISTRY || [])).filter(Boolean);
   const cell = allCells.find((c) => String(c.id) === String(cellId));
   const cellName = cell ? portalCellName(cell) : "Célula";
 
@@ -22074,52 +22127,50 @@ function openManageCellLeaderModal(cellId, leaderName, leaderPhone) {
   byId("modalEyebrow").textContent = isPt ? "GESTÃO DE ACESSO DO LÍDER" : "LEADER ACCESS MANAGEMENT";
   byId("modalTitle").textContent = `${isPt ? "Acesso de" : "Access for"}: ${leaderName} (${cellName})`;
 
-  byId("entryForm").innerHTML = `
+  fields.innerHTML = `
     <input type="hidden" name="cell_id" value="${escapeAttr(cellId)}">
     <input type="hidden" name="user_id" value="${escapeAttr(existingUser?.id || "")}">
-    <div class="row g-3">
-      <div class="col-12">
-        <div class="alert alert-info d-flex align-items-center gap-2 p-3 mb-0 small" style="background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.25);">
-          <i class="bi bi-shield-lock-fill fs-4 text-info"></i>
-          <div>
-            <strong>${isPt ? "Actualização de Credenciais:" : "Credential Update:"}</strong>
-            ${isPt
-              ? "Se o líder esqueceu a senha ou precisa de um novo email pessoal para recuperação autónoma, atualize aqui."
-              : "Update email or reset password if the leader lost access."}
-          </div>
+    <div class="col-12">
+      <div class="alert alert-info d-flex align-items-center gap-2 p-3 mb-0 small" style="background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.25);">
+        <i class="bi bi-shield-lock-fill fs-4 text-info"></i>
+        <div>
+          <strong>${isPt ? "Actualização de Credenciais:" : "Credential Update:"}</strong>
+          ${isPt
+            ? "Se o líder esqueceu a senha ou precisa de um novo email pessoal para recuperação autónoma, atualize aqui."
+            : "Update email or reset password if the leader lost access."}
         </div>
       </div>
+    </div>
 
-      <div class="col-12 col-md-6">
-        <label class="form-label fw-semibold text-white">${isPt ? "Nome do Líder" : "Leader Name"}</label>
-        <input type="text" name="leader_name" class="form-control" required value="${escapeAttr(leaderName)}">
-      </div>
+    <div class="col-12 col-md-6">
+      <label class="form-label fw-semibold text-white">${isPt ? "Nome do Líder" : "Leader Name"}</label>
+      <input type="text" name="leader_name" class="form-control" required value="${escapeAttr(leaderName)}">
+    </div>
 
-      <div class="col-12 col-md-6">
-        <label class="form-label fw-semibold text-white">${isPt ? "Email do Líder (Pessoal) *" : "Leader Personal Email *"}</label>
-        <input type="email" name="leader_email" class="form-control" required value="${escapeAttr(currentEmail)}" placeholder="marcos.langa@gmail.com">
-        <small class="text-secondary" style="font-size:0.75rem;">${isPt ? "Permite ao líder receber links de recuperação." : "Allows leader to receive recovery links."}</small>
-      </div>
+    <div class="col-12 col-md-6">
+      <label class="form-label fw-semibold text-white">${isPt ? "Email do Líder (Pessoal) *" : "Leader Personal Email *"}</label>
+      <input type="email" name="leader_email" class="form-control" required value="${escapeAttr(currentEmail)}" placeholder="marcos.langa@gmail.com">
+      <small class="text-secondary" style="font-size:0.75rem;">${isPt ? "Permite ao líder receber links de recuperação." : "Allows leader to receive recovery links."}</small>
+    </div>
 
-      <div class="col-12 col-md-6">
-        <label class="form-label fw-semibold text-white">${isPt ? "Telefone / WhatsApp" : "Phone"}</label>
-        <input type="tel" name="leader_phone" class="form-control" value="${escapeAttr(leaderPhone || existingUser?.phone || "")}">
-      </div>
+    <div class="col-12 col-md-6">
+      <label class="form-label fw-semibold text-white">${isPt ? "Telefone / WhatsApp" : "Phone"}</label>
+      <input type="tel" name="leader_phone" class="form-control" value="${escapeAttr(leaderPhone || existingUser?.phone || "")}">
+    </div>
 
-      <div class="col-12 col-md-6">
-        <label class="form-label fw-semibold text-white">${isPt ? "Redefinir Palavra-passe *" : "Reset Password *"}</label>
-        <div class="input-group">
-          <input type="text" name="new_password" id="manageLeaderPasswordInput" class="form-control font-monospace" required minlength="6" value="${escapeAttr(newPass)}">
-          <button type="button" class="btn btn-outline-secondary" id="btnRegenerateManagePass" title="Gerar outra senha">
-            <i class="bi bi-arrow-repeat"></i>
-          </button>
-        </div>
+    <div class="col-12 col-md-6">
+      <label class="form-label fw-semibold text-white">${isPt ? "Redefinir Palavra-passe *" : "Reset Password *"}</label>
+      <div class="input-group">
+        <input type="text" name="new_password" id="manageLeaderPasswordInput" class="form-control font-monospace" required minlength="6" value="${escapeAttr(newPass)}">
+        <button type="button" class="btn btn-outline-secondary" id="btnRegenerateManagePass" title="Gerar outra senha">
+          <i class="bi bi-arrow-repeat"></i>
+        </button>
       </div>
     </div>
   `;
 
   modalType = "cellLeaderAccount";
-  const submitBtn = byId("entryForm")?.querySelector('button[type="submit"]') || byId("entrySubmitBtn");
+  const submitBtn = byId("entryForm")?.querySelector('button[type="submit"]');
   if (submitBtn) {
     submitBtn.className = "btn btn-ce-gold btn-touch";
     submitBtn.classList.remove("d-none");
@@ -22142,44 +22193,45 @@ function openManageCellLeaderModal(cellId, leaderName, leaderPhone) {
 
 function openCreateCellForGroupModal() {
   const isPt = lang === "pt";
-  const groupId = cellPortalPageState.cellGroupId || activeUser?.cell_group_id || "";
-  const groupObj = (state.cellGroups || window.REAL_CELL_GROUPS || []).find((g) => String(g.id) === String(groupId));
-  const groupName = groupObj ? (groupObj.group_name || groupObj.name) : (context?.cell_group_name || "Grupo");
+  const fields = ensureEntryModalStructure();
+  if (!fields) return;
+
+  const groupId = String(cellPortalPageState?.cellGroupId || activeUser?.cell_group_id || "").trim();
+  const groupObj = (state.cellGroups || window.REAL_CELL_GROUPS || []).find((g) => String(g.id) === groupId);
+  const groupName = groupObj ? (groupObj.group_name || groupObj.name) : (activeUser?.cell_group_name || (isPt ? "Grupo de Células" : "Cell Group"));
 
   byId("modalEyebrow").textContent = isPt ? "EXPANSÃO DO GRUPO • NOVA CÉLULA" : "GROUP EXPANSION • NEW CELL";
   byId("modalTitle").textContent = `${isPt ? "Criar Nova Célula em" : "New Cell in"}: ${groupName}`;
 
-  byId("entryForm").innerHTML = `
-    <div class="row g-3">
-      <div class="col-12">
-        <label class="form-label fw-semibold text-white">${isPt ? "Nome da Nova Célula *" : "New Cell Name *"}</label>
-        <input type="text" name="new_cell_name" class="form-control" required placeholder="Ex: Célula Vitória B ou Célula Shalom">
-      </div>
-      <div class="col-12 col-md-6">
-        <label class="form-label fw-semibold text-white">${isPt ? "Dia da Reunião" : "Meeting Day"}</label>
-        <select name="new_cell_day" class="form-select">
-          <option value="Quarta-feira" selected>${isPt ? "Quarta-feira" : "Wednesday"}</option>
-          <option value="Quinta-feira">${isPt ? "Quinta-feira" : "Thursday"}</option>
-          <option value="Sexta-feira">${isPt ? "Sexta-feira" : "Friday"}</option>
-          <option value="Sábado">${isPt ? "Sábado" : "Saturday"}</option>
-          <option value="Domingo">${isPt ? "Domingo" : "Sunday"}</option>
-          <option value="Segunda-feira">${isPt ? "Segunda-feira" : "Monday"}</option>
-          <option value="Terça-feira">${isPt ? "Terça-feira" : "Tuesday"}</option>
-        </select>
-      </div>
-      <div class="col-12 col-md-6">
-        <label class="form-label fw-semibold text-white">${isPt ? "Hora da Reunião" : "Meeting Time"}</label>
-        <input type="time" name="new_cell_time" class="form-control" value="18:00">
-      </div>
-      <div class="col-12">
-        <label class="form-label fw-semibold text-white">${isPt ? "Local / Bairro / Endereço" : "Meeting Address / Venue"}</label>
-        <input type="text" name="new_cell_venue" class="form-control" placeholder="Ex: Bairro Central, Av. Eduardo Mondlane, Casa nº 123">
-      </div>
+  fields.innerHTML = `
+    <div class="col-12">
+      <label class="form-label fw-semibold text-white">${isPt ? "Nome da Nova Célula *" : "New Cell Name *"}</label>
+      <input type="text" name="new_cell_name" class="form-control" required placeholder="Ex: Célula Vitória B ou Célula Shalom">
+    </div>
+    <div class="col-12 col-md-6">
+      <label class="form-label fw-semibold text-white">${isPt ? "Dia da Reunião" : "Meeting Day"}</label>
+      <select name="new_cell_day" class="form-select">
+        <option value="Quarta-feira" selected>${isPt ? "Quarta-feira" : "Wednesday"}</option>
+        <option value="Quinta-feira">${isPt ? "Quinta-feira" : "Thursday"}</option>
+        <option value="Sexta-feira">${isPt ? "Sexta-feira" : "Friday"}</option>
+        <option value="Sábado">${isPt ? "Sábado" : "Saturday"}</option>
+        <option value="Domingo">${isPt ? "Domingo" : "Sunday"}</option>
+        <option value="Segunda-feira">${isPt ? "Segunda-feira" : "Monday"}</option>
+        <option value="Terça-feira">${isPt ? "Terça-feira" : "Tuesday"}</option>
+      </select>
+    </div>
+    <div class="col-12 col-md-6">
+      <label class="form-label fw-semibold text-white">${isPt ? "Hora da Reunião" : "Meeting Time"}</label>
+      <input type="time" name="new_cell_time" class="form-control" value="18:00">
+    </div>
+    <div class="col-12">
+      <label class="form-label fw-semibold text-white">${isPt ? "Local / Bairro / Endereço" : "Meeting Address / Venue"}</label>
+      <input type="text" name="new_cell_venue" class="form-control" placeholder="Ex: Bairro Central, Av. Eduardo Mondlane, Casa nº 123">
     </div>
   `;
 
   modalType = "cellCreateForGroup";
-  const submitBtn = byId("entryForm")?.querySelector('button[type="submit"]') || byId("entrySubmitBtn");
+  const submitBtn = byId("entryForm")?.querySelector('button[type="submit"]');
   if (submitBtn) {
     submitBtn.className = "btn btn-ce-gold btn-touch";
     submitBtn.classList.remove("d-none");
