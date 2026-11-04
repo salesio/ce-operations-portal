@@ -15576,7 +15576,7 @@ function renderCellPortalSidebarSubnav() {
     const groupTabs = [
       { tab: "overview", icon: "bi-grid-1x2", labelPt: "Visão Geral do Grupo", labelEn: "Group Overview" },
       { tab: "myCell", icon: "bi-house-heart-fill", labelPt: myCellLabelPt, labelEn: myCellLabelEn },
-      { tab: "comparison", icon: "bi-bar-chart-steps", labelPt: "Comparativo de Células", labelEn: "Cell Comparisons" },
+      { tab: "comparison", icon: "bi-bar-chart-steps", labelPt: "Células", labelEn: "Cells" },
       { tab: "multiplication", icon: "bi-graph-up-arrow", labelPt: "Multiplicação & Metas", labelEn: "Multiplication & Goals" },
       { tab: "reports", icon: "bi-clipboard-check", labelPt: "Controlo de Relatórios", labelEn: "Report Compliance" },
       { tab: "leaders", icon: "bi-people", labelPt: "Equipa de Líderes", labelEn: "Leaders Pipeline" }
@@ -21165,7 +21165,7 @@ function renderCellGroupTabBar(activeTab, isPt, inspectedCellName = "", readyCou
       </button>
       <button type="button" class="cell-group-tab-btn ${activeTab === 'comparison' ? 'active' : ''}" data-cell-group-tab="comparison">
         <i class="bi bi-bar-chart-steps"></i>
-        <span>${isPt ? "Comparativo de Células" : "Cell Comparisons"}</span>
+        <span>${isPt ? "Células" : "Cells"}</span>
         <span class="badge bg-secondary-subtle text-dark ms-1">${totalCells}</span>
       </button>
       <button type="button" class="cell-group-tab-btn ${activeTab === 'multiplication' ? 'active' : ''}" data-cell-group-tab="multiplication">
@@ -21313,7 +21313,7 @@ function renderCellGroupOverviewTab(data, isPt) {
             <span class="text-secondary small">${isPt ? "Panorama do estado operacional e vital de todas as células do grupo" : "Operational and vital signs snapshot across all cells in the group"}</span>
           </div>
           <button type="button" class="btn btn-sm btn-outline-cyan" data-cell-group-tab="comparison">
-            <i class="bi bi-bar-chart-steps me-1"></i>${isPt ? "Ver Tabela Comparativa" : "View Comparison Table"}
+            <i class="bi bi-bar-chart-steps me-1"></i>${isPt ? "Ver Células" : "View Cells"}
           </button>
         </div>
 
