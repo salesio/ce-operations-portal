@@ -7425,6 +7425,9 @@ const CELL_REPORT_ROLE_PERMISSIONS = {
   "assistant_cell_leader": ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"],
   "Assistente de Célula": ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"],
   "Assistente de Celula": ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"],
+  "Cell Follow-up Head": ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"],
+  "cell_followup_head": ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"],
+  "Responsável de Follow-Up da Célula": ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"],
   "Attendance & Time Manager": ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"],
   "attendance_time_manager": ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"],
   "Gestor de Assiduidade & Ponto": ["cell_reports.view_own", "cell_reports.create_own", "cell_reports.edit_own_until_validated"],
@@ -7466,6 +7469,9 @@ const CELL_PORTAL_ROLE_PERMISSIONS = {
   "cell_assistant": CELL_PORTAL_PERMISSION_CODES.filter((code) => code !== "cell_portal.export_summary"),
   "Assistant Cell Leader": CELL_PORTAL_PERMISSION_CODES.filter((code) => code !== "cell_portal.export_summary"),
   "assistant_cell_leader": CELL_PORTAL_PERMISSION_CODES.filter((code) => code !== "cell_portal.export_summary"),
+  "Cell Follow-up Head": CELL_PORTAL_PERMISSION_CODES.filter((code) => code !== "cell_portal.export_summary"),
+  "cell_followup_head": CELL_PORTAL_PERMISSION_CODES.filter((code) => code !== "cell_portal.export_summary"),
+  "Responsável de Follow-Up da Célula": CELL_PORTAL_PERMISSION_CODES.filter((code) => code !== "cell_portal.export_summary"),
   "Attendance & Time Manager": [...CELL_PORTAL_PERMISSION_CODES],
   "Cell Ministry Reviewer": CELL_PORTAL_PERMISSION_CODES.filter((code) => code !== "cell_portal.submit_report"),
   "Cell Ministry Head": [...CELL_PORTAL_PERMISSION_CODES],
@@ -7495,6 +7501,14 @@ const cellPortalPageState = {
   tithe: "",
   reconciliationStatus: "",
   filtersExpanded: false,
+  groupCellsView: (function() {
+    try {
+      const v = localStorage.getItem("ce_cell_group_cells_view");
+      return v === "table" ? "table" : "cards";
+    } catch (_) {
+      return "cards";
+    }
+  })(),
   membersView: (function() {
     try {
       const v = localStorage.getItem("ce_cell_portal_members_view_mode");
@@ -14887,6 +14901,7 @@ function isCellLeaderOrAssistant(user = activeUser) {
   const isCellRole = [
     "cell leader", "cell assistant", "cell_leader", "assistant_cell_leader", "assistant cell leader",
     "cell_assistant", "líder de célula", "lider de celula", "assistente de célula", "assistente de celula",
+    "cell follow-up head", "cell_followup_head", "cell follow up head", "responsável de follow-up", "responsavel de follow-up da celula", "responsável de follow-up da célula",
     "cell group leader", "cell_group_leader", "líder de grupo de células", "lider de grupo de celulas",
     "cell group coordinator", "coordenador de grupo de células", "coordenador de grupo de celulas",
     "líder de grupo", "lider de grupo"
@@ -21099,6 +21114,39 @@ function getCellAssistantDetails(cell) {
   return { name: "", phone: "", alec_status: "", foundation_status: "" };
 }
 
+function getCellFollowupDetails(cell) {
+  if (!cell || typeof cell !== "object") return { name: "", phone: "", email: "", status: "" };
+  const cellId = String(cell.id || "").trim();
+  const cellName = String(cell.cell_name || cell.name || "").trim().toLowerCase();
+
+  if (cell.followup_leader_name || cell.followup_name || cell.responsavel_followup) {
+    return {
+      name: cell.followup_leader_name || cell.followup_name || cell.responsavel_followup,
+      phone: cell.followup_leader_phone || cell.followup_phone || "",
+      email: cell.followup_leader_email || cell.followup_email || "",
+      status: "Activo"
+    };
+  }
+
+  const followupUser = (state.users || []).find((u) => {
+    if (!u) return false;
+    const isAssigned = (cellId && (u.cell_id === cellId || (u.assigned_cells || []).includes(cellId))) ||
+      (cellName && String(u.cell_name || "").toLowerCase() === cellName);
+    const isFollowup = /follow.*up|responsavel.*follow/i.test(String(u.role || u.role_name || ""));
+    return isAssigned && isFollowup;
+  });
+
+  if (followupUser) {
+    return {
+      name: followupUser.name || followupUser.full_name || "",
+      phone: followupUser.phone || followupUser.whatsapp || "",
+      email: followupUser.email || "",
+      status: followupUser.status || "Activo"
+    };
+  }
+  return { name: "", phone: "", email: "", status: "" };
+}
+
 function renderCellGroupTabBar(activeTab, isPt, inspectedCellName = "", readyCount = 0, missingCount = 0, totalCells = 0, ownCellName = "", fevoReportsCount = 0) {
   return `
     <nav class="cell-group-tab-bar" role="tablist" aria-label="${isPt ? "Navegação do Grupo" : "Group Navigation"}">
@@ -21392,6 +21440,8 @@ function renderCellGroupComparisonTab(data, isPt) {
     searchQuery
   } = data;
 
+  const currentViewMode = cellPortalPageState.groupCellsView || "cards";
+
   const filteredRows = rows.filter((r) => {
     if (currentHealthFilter === "multiply" && r.healthStatus !== "multiply") return false;
     if (currentHealthFilter === "healthy" && r.healthStatus !== "healthy") return false;
@@ -21402,16 +21452,19 @@ function renderCellGroupComparisonTab(data, isPt) {
       const q = searchQuery.toLowerCase();
       const matchName = (r.name || "").toLowerCase().includes(q);
       const matchLeader = (r.leaderName || "").toLowerCase().includes(q);
-      if (!matchName && !matchLeader) return false;
+      const matchAssistant = (r.assistantName || "").toLowerCase().includes(q);
+      const matchFollowup = (r.followupName || "").toLowerCase().includes(q);
+      if (!matchName && !matchLeader && !matchAssistant && !matchFollowup) return false;
     }
     return true;
   });
 
   return `
     <div class="cell-group-comparison-tab">
+      <!-- Toolbar: Filters + Search + View Mode Switcher + Action -->
       <div class="panel glass-panel p-3 mb-3">
         <div class="row g-2 align-items-center justify-content-between">
-          <div class="col-12 col-md-auto d-flex flex-wrap align-items-center gap-1">
+          <div class="col-12 col-xl-auto d-flex flex-wrap align-items-center gap-1">
             <button type="button" class="btn btn-sm ${currentHealthFilter === 'all' ? 'btn-ce-gold' : 'btn-outline-secondary'} py-1 px-2" data-cell-group-filter-health="all">
               ${isPt ? "Todas" : "All"} (${totalCells})
             </button>
@@ -21431,100 +21484,343 @@ function renderCellGroupComparisonTab(data, isPt) {
               <i class="bi bi-clock-history me-1"></i>${isPt ? "Sem Relatório" : "No Report"} (${missingReports})
             </button>
           </div>
-          <div class="col-12 col-md-4 col-lg-3">
-            <div class="input-group input-group-sm">
+          
+          <div class="col-12 col-xl-auto d-flex align-items-center gap-2 flex-wrap">
+            <div class="input-group input-group-sm" style="min-width: 200px; max-width: 280px;">
               <span class="input-group-text bg-transparent border-secondary text-secondary"><i class="bi bi-search"></i></span>
-              <input type="search" class="form-control form-control-sm" placeholder="${isPt ? "Filtrar por nome ou líder..." : "Filter cell or leader..."}" data-cell-group-search value="${escapeAttr(searchQuery)}">
+              <input type="search" class="form-control form-control-sm" placeholder="${isPt ? "Filtrar célula ou líder..." : "Filter cell or leader..."}" data-cell-group-search value="${escapeAttr(searchQuery)}">
             </div>
+
+            <!-- View Switcher (Cards vs Table, Cards default) -->
+            <div class="view-toggle light-surface" role="group" aria-label="${isPt ? "Modo de Visualização" : "View Mode"}">
+              <button type="button" class="view-toggle-btn ${currentViewMode === 'cards' ? 'active' : ''}" data-cell-group-view="cards" title="${isPt ? "Modo Cartões (Padrão)" : "Card View (Default)"}">
+                <i class="bi bi-grid-fill me-1"></i>
+                <span>${isPt ? "Cartões (Padrão)" : "Cards (Default)"}</span>
+              </button>
+              <button type="button" class="view-toggle-btn ${currentViewMode === 'table' ? 'active' : ''}" data-cell-group-view="table" title="${isPt ? "Modo Tabela" : "Table View"}">
+                <i class="bi bi-table me-1"></i>
+                <span>${isPt ? "Tabela" : "Table"}</span>
+              </button>
+            </div>
+
+            <button type="button" class="btn btn-sm btn-ce-gold btn-touch" data-action="open-create-cell-modal" title="${isPt ? "Criar Nova Célula no Grupo" : "Create New Cell in Group"}">
+              <i class="bi bi-plus-circle me-1"></i>${isPt ? "Nova Célula" : "New Cell"}
+            </button>
           </div>
         </div>
       </div>
 
-      <div class="panel glass-panel p-0 overflow-hidden">
-        <div class="table-responsive">
-          <table class="table cell-portal-table table-hover align-middle mb-0" style="font-size:0.86rem;">
-            <thead>
-              <tr>
-                <th>${isPt ? "Célula" : "Cell"}</th>
-                <th>${isPt ? "Líder & Contacto" : "Leader & Contact"}</th>
-                <th>${isPt ? "Dia & Hora" : "Schedule"}</th>
-                <th class="text-center">${isPt ? "Membros" : "Members"}</th>
-                <th class="text-center">${isPt ? "Presença (Período)" : "Attendance (Period)"}</th>
-                <th class="text-center">${isPt ? "Almas (FT / NC)" : "Souls (FT / NC)"}</th>
-                <th>${isPt ? "Relatório Semanal" : "Weekly Report"}</th>
-                <th>${isPt ? "Estado de Saúde" : "Health Status"}</th>
-                <th class="text-end">${isPt ? "Acções" : "Actions"}</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${filteredRows.length > 0 ? filteredRows.map((row) => {
-                const waChatUrl = makeCellWhatsAppChatUrl(row.leaderPhone, row.leaderName, row.name, isPt);
-                return `
-                  <tr class="cell-group-matrix-row ${row.isCurrentCell ? "table-active cell-portal-supervision-active" : ""}">
-                    <td>
-                      <div class="fw-bold d-flex align-items-center gap-2">
-                        <i class="bi ${row.isCurrentCell ? "bi-record-circle-fill text-warning" : "bi-circle text-secondary"}"></i>
-                        <span class="text-white">${escapeHtml(row.name)}</span>
-                        ${row.isCurrentCell ? `<span class="badge bg-warning text-dark" style="font-size:0.65rem;">${isPt ? "Em foco" : "Active"}</span>` : ""}
+      ${currentViewMode === "cards" ? `
+        <!-- CARDS VIEW (DEFAULT) -->
+        <div class="row g-3">
+          ${filteredRows.length > 0 ? filteredRows.map((row) => {
+            const waLeaderChat = makeCellWhatsAppChatUrl(row.leaderPhone, row.leaderName, row.name, isPt);
+            const waAssistantChat = row.assistantPhone ? makeCellWhatsAppChatUrl(row.assistantPhone, row.assistantName, row.name, isPt) : "";
+            const waFollowupChat = row.followupPhone ? makeCellWhatsAppChatUrl(row.followupPhone, row.followupName, row.name, isPt) : "";
+
+            const healthBadgeColor = row.healthStatus === "multiply" ? "bg-success text-white" 
+              : (row.healthStatus === "healthy" ? "bg-info text-white" 
+              : (row.healthStatus === "stable" ? "bg-warning text-dark" : "bg-danger text-white"));
+
+            const hasLeader = Boolean(row.leaderName && row.leaderName !== "—" && !/a designar|aberta|vaga/i.test(row.leaderName));
+            const hasAssistant = Boolean(row.assistantName && row.assistantName !== "—" && !/a designar|vaga/i.test(row.assistantName));
+            const hasFollowup = Boolean(row.followupName && row.followupName !== "—" && !/a designar|vaga/i.test(row.followupName));
+
+            return `
+              <div class="col-12 col-md-6 col-xl-4">
+                <div class="card h-100 p-0 border-0 rounded-4 overflow-hidden shadow-lg ${row.isCurrentCell ? 'border-warning border-2' : ''}" 
+                     style="background: linear-gradient(145deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.95)); border: 1px solid rgba(255, 255, 255, 0.08); transition: transform 0.2s, box-shadow 0.2s;">
+                  
+                  <!-- Card Header -->
+                  <div class="p-3 border-bottom" style="border-color: rgba(255, 255, 255, 0.07) !important; background: rgba(255, 255, 255, 0.02);">
+                    <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+                      <div class="d-flex align-items-center gap-1 flex-wrap">
+                        <span class="badge ${healthBadgeColor}" style="font-size:0.72rem;">
+                          ${escapeHtml(isPt ? row.healthLabelPt : row.healthLabelEn)}
+                        </span>
+                        ${row.isCurrentCell ? `<span class="badge bg-warning text-dark" style="font-size:0.68rem;"><i class="bi bi-record-circle-fill me-1"></i>${isPt ? "Em foco" : "Active"}</span>` : ""}
+                        <span class="badge ${row.hasSubmittedInPeriod ? "bg-success-subtle text-success border border-success-subtle" : "bg-warning-subtle text-warning border border-warning-subtle"}" style="font-size:0.68rem;">
+                          <i class="bi ${row.hasSubmittedInPeriod ? "bi-check-circle-fill" : "bi-clock-history"} me-1"></i>${escapeHtml(row.statusLabel)}
+                        </span>
                       </div>
-                    </td>
-                    <td>
-                      <div class="d-flex align-items-center gap-2">
-                        <div>
-                          <strong class="d-block text-white" style="font-size:0.84rem;">${escapeHtml(row.leaderName)}</strong>
-                          ${row.assistantName ? `<small class="text-secondary d-block" style="font-size:0.75rem;">${isPt ? "Assist:" : "Asst:"} ${escapeHtml(row.assistantName)}</small>` : ""}
+                      
+                      <div class="dropdown">
+                        <button type="button" class="btn btn-sm btn-outline-glass py-0 px-2 text-secondary" data-bs-toggle="dropdown" aria-expanded="false" title="${isPt ? "Mais Opções" : "More Options"}">
+                          <i class="bi bi-three-dots-vertical"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow">
+                          <li>
+                            <button type="button" class="dropdown-item py-2" data-action="open-edit-cell-modal" data-cell-id="${escapeAttr(row.id)}">
+                              <i class="bi bi-pencil-square text-warning me-2"></i>${isPt ? "Editar Detalhes da Célula" : "Edit Cell Details"}
+                            </button>
+                          </li>
+                          <li>
+                            <button type="button" class="dropdown-item py-2" data-cell-group-inspect="${escapeAttr(row.id)}">
+                              <i class="bi bi-search text-info me-2"></i>${isPt ? "Inspecionar Célula" : "Inspect Cell"}
+                            </button>
+                          </li>
+                          <li>
+                            <button type="button" class="dropdown-item py-2" data-cell-group-drawer="${escapeAttr(row.id)}">
+                              <i class="bi bi-layout-sidebar-inset-reverse text-cyan me-2"></i>${isPt ? "Painel de Supervisão" : "Supervision Drawer"}
+                            </button>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    <h4 class="h6 mb-1 text-white fw-bold d-flex align-items-center gap-2">
+                      <i class="bi bi-house-door-fill text-warning"></i>
+                      <span>${escapeHtml(row.name)}</span>
+                    </h4>
+                    
+                    <div class="text-secondary small d-flex flex-wrap align-items-center gap-2" style="font-size:0.78rem;">
+                      <span><i class="bi bi-calendar3 text-info me-1"></i>${escapeHtml(row.meetingSchedule)}</span>
+                      <span><i class="bi bi-geo-alt-fill text-danger me-1"></i>${escapeHtml(row.meetingAddress || (isPt ? "Local a definir" : "Venue TBD"))}</span>
+                    </div>
+                  </div>
+
+                  <!-- Quick Stats Bar -->
+                  <div class="px-3 py-2 d-flex align-items-center justify-content-around text-center" style="background: rgba(0, 0, 0, 0.2); border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                    <div>
+                      <span class="text-secondary d-block" style="font-size:0.68rem;">${isPt ? "Membros" : "Members"}</span>
+                      <strong class="text-white fs-6">${row.memberTotal}</strong>
+                    </div>
+                    <div class="border-start border-end border-secondary border-opacity-25 px-3">
+                      <span class="text-secondary d-block" style="font-size:0.68rem;">${isPt ? "Presença Média" : "Avg Att"}</span>
+                      <strong class="text-info fs-6">
+                        ${row.periodAtt}
+                        ${row.trendDirection === "up" ? `<small class="text-success" style="font-size:0.65rem;">+${row.trendVariance}%↗</small>` : ""}
+                        ${row.trendDirection === "down" ? `<small class="text-danger" style="font-size:0.65rem;">${row.trendVariance}%↘</small>` : ""}
+                      </strong>
+                    </div>
+                    <div>
+                      <span class="text-secondary d-block" style="font-size:0.68rem;">${isPt ? "Almas (FT/NC)" : "Souls"}</span>
+                      <strong class="text-success fs-6">${row.periodFt + row.periodNc}</strong>
+                      <small class="text-secondary" style="font-size:0.65rem;">(${row.periodFt}·${row.periodNc})</small>
+                    </div>
+                  </div>
+
+                  <!-- Leadership Triad: Cell Leader, Assistant, Follow-up Head -->
+                  <div class="p-3 flex-grow-1" style="background: rgba(255, 255, 255, 0.015);">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                      <span class="text-uppercase fw-bold text-secondary" style="font-size:0.68rem; letter-spacing:0.05em;">
+                        <i class="bi bi-shield-lock-fill text-warning me-1"></i>${isPt ? "Liderança da Célula" : "Cell Leadership"}
+                      </span>
+                      <span class="text-secondary" style="font-size:0.68rem;">${isPt ? "Gestão Autónoma" : "Autonomous"}</span>
+                    </div>
+
+                    <!-- 1. Líder Titular -->
+                    <div class="p-2 rounded-3 mb-2 d-flex align-items-center justify-content-between gap-2" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.06);">
+                      <div class="min-w-0">
+                        <div class="d-flex align-items-center gap-1 mb-1">
+                          <span class="badge bg-primary-subtle text-primary border border-primary-subtle py-0 px-1" style="font-size:0.65rem;">${isPt ? "Líder Titular" : "Cell Leader"}</span>
+                          ${waLeaderChat ? `
+                            <a href="${waLeaderChat}" target="_blank" rel="noopener noreferrer" class="text-success ms-1" title="WhatsApp" style="font-size:0.8rem;">
+                              <i class="bi bi-whatsapp"></i>
+                            </a>
+                          ` : ""}
                         </div>
-                        ${waChatUrl ? `
-                          <a href="${waChatUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-success py-0 px-1" title="WhatsApp" style="font-size:0.75rem;">
-                            <i class="bi bi-whatsapp"></i>
-                          </a>
-                        ` : ""}
+                        <div class="text-truncate">
+                          ${hasLeader 
+                            ? `<strong class="text-white" style="font-size:0.82rem;">${escapeHtml(row.leaderName)}</strong>` 
+                            : `<span class="text-warning fst-italic" style="font-size:0.82rem;"><i class="bi bi-exclamation-circle me-1"></i>${isPt ? "Não atribuído" : "Vacant"}</span>`}
+                        </div>
+                        ${row.leaderPhone ? `<div class="text-secondary" style="font-size:0.72rem;">${escapeHtml(row.leaderPhone)}</div>` : ""}
                       </div>
-                    </td>
-                    <td><span class="text-secondary small">${escapeHtml(row.meetingSchedule)}</span></td>
-                    <td class="text-center fw-bold text-white">${row.memberTotal}</td>
-                    <td class="text-center fw-bold text-info">
-                      <span>${row.periodAtt}</span>
-                      ${row.trendDirection === "up" ? `<span class="badge bg-success-subtle text-success ms-1" style="font-size:0.65rem;">+${row.trendVariance}% ↗</span>` : ""}
-                      ${row.trendDirection === "down" ? `<span class="badge bg-danger-subtle text-danger ms-1" style="font-size:0.65rem;">${row.trendVariance}% ↘</span>` : ""}
-                    </td>
-                    <td class="text-center">
-                      <span class="badge bg-secondary-subtle">${row.periodFt} FT · ${row.periodNc} NC</span>
-                    </td>
-                    <td>
-                      <span class="badge ${row.hasSubmittedInPeriod ? "bg-success-subtle text-success border border-success-subtle" : "bg-warning-subtle text-warning border border-warning-subtle"}">
-                        <i class="bi ${row.hasSubmittedInPeriod ? "bi-check-circle-fill" : "bi-clock-history"} me-1"></i>${escapeHtml(row.statusLabel)}
-                      </span>
-                    </td>
-                    <td>
-                      <span class="badge ${row.healthStatus === "multiply" ? "bg-success text-white" : (row.healthStatus === "healthy" ? "bg-info text-white" : (row.healthStatus === "stable" ? "bg-warning text-dark" : "bg-danger text-white"))}">
-                        ${escapeHtml(isPt ? row.healthLabelPt : row.healthLabelEn)}
-                      </span>
-                    </td>
-                    <td class="text-end">
-                      <div class="d-inline-flex gap-1">
-                        <button type="button" class="btn btn-sm btn-outline-info py-1 px-2" style="font-size:0.75rem;" data-cell-group-drawer="${escapeAttr(row.id)}" title="${isPt ? "Painel de Supervisão e Directrizes" : "Supervision Drawer & Coaching"}">
-                          <i class="bi bi-layout-sidebar-inset-reverse me-1"></i>${isPt ? "Supervisionar" : "Supervise"}
-                        </button>
-                        <button type="button" class="btn btn-sm btn-outline-cyan py-1 px-2" style="font-size:0.75rem;" data-cell-group-inspect="${escapeAttr(row.id)}" title="${isPt ? "Inspecionar célula individualmente" : "Inspect single cell"}">
-                          <i class="bi bi-search me-1"></i>${isPt ? "Inspecionar" : "Inspect"}
-                        </button>
+                      <button type="button" class="btn btn-sm ${hasLeader ? 'btn-outline-warning' : 'btn-warning'} py-1 px-2 flex-shrink-0" style="font-size:0.75rem;" 
+                              data-action="assign-cell-role" data-cell-id="${escapeAttr(row.id)}" data-role="Cell Leader" title="${isPt ? "Atribuir ou Alterar Líder de Célula" : "Assign/Change Cell Leader"}">
+                        <i class="bi bi-person-gear me-1"></i>${hasLeader ? (isPt ? "Alterar" : "Change") : (isPt ? "Atribuir" : "Assign")}
+                      </button>
+                    </div>
+
+                    <!-- 2. Assistente de Célula -->
+                    <div class="p-2 rounded-3 mb-2 d-flex align-items-center justify-content-between gap-2" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.06);">
+                      <div class="min-w-0">
+                        <div class="d-flex align-items-center gap-1 mb-1">
+                          <span class="badge bg-secondary-subtle text-light border border-secondary-subtle py-0 px-1" style="font-size:0.65rem;">${isPt ? "Assistente" : "Assistant"}</span>
+                          ${waAssistantChat ? `
+                            <a href="${waAssistantChat}" target="_blank" rel="noopener noreferrer" class="text-success ms-1" title="WhatsApp" style="font-size:0.8rem;">
+                              <i class="bi bi-whatsapp"></i>
+                            </a>
+                          ` : ""}
+                        </div>
+                        <div class="text-truncate">
+                          ${hasAssistant 
+                            ? `<strong class="text-white" style="font-size:0.82rem;">${escapeHtml(row.assistantName)}</strong>` 
+                            : `<span class="text-secondary fst-italic" style="font-size:0.82rem;">${isPt ? "Não atribuído" : "Vacant"}</span>`}
+                        </div>
+                        ${row.assistantPhone ? `<div class="text-secondary" style="font-size:0.72rem;">${escapeHtml(row.assistantPhone)}</div>` : ""}
                       </div>
+                      <button type="button" class="btn btn-sm ${hasAssistant ? 'btn-outline-info' : 'btn-outline-secondary'} py-1 px-2 flex-shrink-0" style="font-size:0.75rem;" 
+                              data-action="assign-cell-role" data-cell-id="${escapeAttr(row.id)}" data-role="Cell Assistant" title="${isPt ? "Atribuir ou Alterar Assistente" : "Assign/Change Assistant"}">
+                        <i class="bi bi-person-gear me-1"></i>${hasAssistant ? (isPt ? "Alterar" : "Change") : (isPt ? "Atribuir" : "Assign")}
+                      </button>
+                    </div>
+
+                    <!-- 3. Responsável de Follow-Up -->
+                    <div class="p-2 rounded-3 d-flex align-items-center justify-content-between gap-2" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.06);">
+                      <div class="min-w-0">
+                        <div class="d-flex align-items-center gap-1 mb-1">
+                          <span class="badge bg-success-subtle text-success border border-success-subtle py-0 px-1" style="font-size:0.65rem;">${isPt ? "Follow-Up" : "Follow-Up Head"}</span>
+                          ${waFollowupChat ? `
+                            <a href="${waFollowupChat}" target="_blank" rel="noopener noreferrer" class="text-success ms-1" title="WhatsApp" style="font-size:0.8rem;">
+                              <i class="bi bi-whatsapp"></i>
+                            </a>
+                          ` : ""}
+                        </div>
+                        <div class="text-truncate">
+                          ${hasFollowup 
+                            ? `<strong class="text-white" style="font-size:0.82rem;">${escapeHtml(row.followupName)}</strong>` 
+                            : `<span class="text-secondary fst-italic" style="font-size:0.82rem;">${isPt ? "Não atribuído" : "Vacant"}</span>`}
+                        </div>
+                        ${row.followupPhone ? `<div class="text-secondary" style="font-size:0.72rem;">${escapeHtml(row.followupPhone)}</div>` : ""}
+                      </div>
+                      <button type="button" class="btn btn-sm ${hasFollowup ? 'btn-outline-success' : 'btn-outline-secondary'} py-1 px-2 flex-shrink-0" style="font-size:0.75rem;" 
+                              data-action="assign-cell-role" data-cell-id="${escapeAttr(row.id)}" data-role="Cell Follow-up Head" title="${isPt ? "Atribuir ou Alterar Responsável de Follow-Up" : "Assign/Change Follow-Up"}">
+                        <i class="bi bi-person-gear me-1"></i>${hasFollowup ? (isPt ? "Alterar" : "Change") : (isPt ? "Atribuir" : "Assign")}
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Card Footer Actions -->
+                  <div class="p-3 border-top d-flex align-items-center justify-content-between gap-2" style="border-color: rgba(255, 255, 255, 0.07) !important; background: rgba(0, 0, 0, 0.2);">
+                    <button type="button" class="btn btn-sm btn-outline-cyan py-1 px-2 flex-fill" style="font-size:0.78rem;" data-cell-group-inspect="${escapeAttr(row.id)}" title="${isPt ? "Inspecionar célula individualmente" : "Inspect single cell"}">
+                      <i class="bi bi-search me-1"></i>${isPt ? "Inspecionar" : "Inspect"}
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-info py-1 px-2 flex-fill" style="font-size:0.78rem;" data-cell-group-drawer="${escapeAttr(row.id)}" title="${isPt ? "Painel de Supervisão e Directrizes" : "Supervision Drawer"}">
+                      <i class="bi bi-layout-sidebar-inset-reverse me-1"></i>${isPt ? "Supervisionar" : "Supervise"}
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-glass py-1 px-2 text-warning" style="font-size:0.78rem;" data-action="open-edit-cell-modal" data-cell-id="${escapeAttr(row.id)}" title="${isPt ? "Editar detalhes da célula" : "Edit cell details"}">
+                      <i class="bi bi-gear-fill"></i>
+                    </button>
+                  </div>
+
+                </div>
+              </div>
+            `;
+          }).join("") : `
+            <div class="col-12 text-center py-5">
+              <i class="bi bi-filter fs-2 text-secondary d-block mb-2"></i>
+              <p class="text-secondary mb-0">${isPt ? "Nenhuma célula encontrada para os critérios seleccionados." : "No cells match the criteria."}</p>
+            </div>
+          `}
+        </div>
+      ` : `
+        <!-- TABLE VIEW -->
+        <div class="panel glass-panel p-0 overflow-hidden">
+          <div class="table-responsive">
+            <table class="table cell-portal-table table-hover align-middle mb-0" style="font-size:0.86rem;">
+              <thead>
+                <tr>
+                  <th>${isPt ? "Célula" : "Cell"}</th>
+                  <th>${isPt ? "Líder Titular" : "Leader"}</th>
+                  <th>${isPt ? "Assistente" : "Assistant"}</th>
+                  <th>${isPt ? "Follow-Up" : "Follow-Up"}</th>
+                  <th>${isPt ? "Dia & Hora" : "Schedule"}</th>
+                  <th class="text-center">${isPt ? "Membros" : "Members"}</th>
+                  <th class="text-center">${isPt ? "Presença" : "Attendance"}</th>
+                  <th class="text-center">${isPt ? "Almas (FT/NC)" : "Souls"}</th>
+                  <th>${isPt ? "Relatório" : "Report"}</th>
+                  <th>${isPt ? "Estado" : "Health"}</th>
+                  <th class="text-end">${isPt ? "Acções" : "Actions"}</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${filteredRows.length > 0 ? filteredRows.map((row) => {
+                  const waChatUrl = makeCellWhatsAppChatUrl(row.leaderPhone, row.leaderName, row.name, isPt);
+                  return `
+                    <tr class="cell-group-matrix-row ${row.isCurrentCell ? "table-active cell-portal-supervision-active" : ""}">
+                      <td>
+                        <div class="fw-bold d-flex align-items-center gap-2">
+                          <i class="bi ${row.isCurrentCell ? "bi-record-circle-fill text-warning" : "bi-circle text-secondary"}"></i>
+                          <span class="text-white">${escapeHtml(row.name)}</span>
+                          ${row.isCurrentCell ? `<span class="badge bg-warning text-dark" style="font-size:0.65rem;">${isPt ? "Em foco" : "Active"}</span>` : ""}
+                        </div>
+                      </td>
+                      <td>
+                        <div class="d-flex align-items-center gap-1">
+                          <div>
+                            <strong class="d-block text-white" style="font-size:0.84rem;">${escapeHtml(row.leaderName)}</strong>
+                            ${row.leaderPhone ? `<small class="text-secondary d-block" style="font-size:0.72rem;">${escapeHtml(row.leaderPhone)}</small>` : ""}
+                          </div>
+                          ${waChatUrl ? `
+                            <a href="${waChatUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-success py-0 px-1" title="WhatsApp" style="font-size:0.72rem;">
+                              <i class="bi bi-whatsapp"></i>
+                            </a>
+                          ` : ""}
+                          <button type="button" class="btn btn-sm btn-outline-warning py-0 px-1 ms-1" style="font-size:0.70rem;" data-action="assign-cell-role" data-cell-id="${escapeAttr(row.id)}" data-role="Cell Leader" title="${isPt ? "Alterar Líder" : "Change Leader"}">
+                            <i class="bi bi-pencil"></i>
+                          </button>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="d-flex align-items-center gap-1">
+                          <div>
+                            <span class="text-white d-block" style="font-size:0.82rem;">${escapeHtml(row.assistantName || "—")}</span>
+                          </div>
+                          <button type="button" class="btn btn-sm btn-outline-info py-0 px-1" style="font-size:0.70rem;" data-action="assign-cell-role" data-cell-id="${escapeAttr(row.id)}" data-role="Cell Assistant" title="${isPt ? "Alterar Assistente" : "Change Assistant"}">
+                            <i class="bi bi-pencil"></i>
+                          </button>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="d-flex align-items-center gap-1">
+                          <div>
+                            <span class="text-white d-block" style="font-size:0.82rem;">${escapeHtml(row.followupName || "—")}</span>
+                          </div>
+                          <button type="button" class="btn btn-sm btn-outline-success py-0 px-1" style="font-size:0.70rem;" data-action="assign-cell-role" data-cell-id="${escapeAttr(row.id)}" data-role="Cell Follow-up Head" title="${isPt ? "Alterar Follow-Up" : "Change Follow-Up"}">
+                            <i class="bi bi-pencil"></i>
+                          </button>
+                        </div>
+                      </td>
+                      <td><span class="text-secondary small">${escapeHtml(row.meetingSchedule)}</span></td>
+                      <td class="text-center fw-bold text-white">${row.memberTotal}</td>
+                      <td class="text-center fw-bold text-info">
+                        <span>${row.periodAtt}</span>
+                        ${row.trendDirection === "up" ? `<span class="badge bg-success-subtle text-success ms-1" style="font-size:0.65rem;">+${row.trendVariance}% ↗</span>` : ""}
+                        ${row.trendDirection === "down" ? `<span class="badge bg-danger-subtle text-danger ms-1" style="font-size:0.65rem;">${row.trendVariance}% ↘</span>` : ""}
+                      </td>
+                      <td class="text-center">
+                        <span class="badge bg-secondary-subtle">${row.periodFt} FT · ${row.periodNc} NC</span>
+                      </td>
+                      <td>
+                        <span class="badge ${row.hasSubmittedInPeriod ? "bg-success-subtle text-success border border-success-subtle" : "bg-warning-subtle text-warning border border-warning-subtle"}">
+                          <i class="bi ${row.hasSubmittedInPeriod ? "bi-check-circle-fill" : "bi-clock-history"} me-1"></i>${escapeHtml(row.statusLabel)}
+                        </span>
+                      </td>
+                      <td>
+                        <span class="badge ${row.healthStatus === "multiply" ? "bg-success text-white" : (row.healthStatus === "healthy" ? "bg-info text-white" : (row.healthStatus === "stable" ? "bg-warning text-dark" : "bg-danger text-white"))}">
+                          ${escapeHtml(isPt ? row.healthLabelPt : row.healthLabelEn)}
+                        </span>
+                      </td>
+                      <td class="text-end">
+                        <div class="d-inline-flex gap-1">
+                          <button type="button" class="btn btn-sm btn-outline-warning py-1 px-2" style="font-size:0.75rem;" data-action="open-edit-cell-modal" data-cell-id="${escapeAttr(row.id)}" title="${isPt ? "Editar detalhes da célula" : "Edit cell"}">
+                            <i class="bi bi-gear-fill"></i>
+                          </button>
+                          <button type="button" class="btn btn-sm btn-outline-info py-1 px-2" style="font-size:0.75rem;" data-cell-group-drawer="${escapeAttr(row.id)}" title="${isPt ? "Painel de Supervisão e Directrizes" : "Supervision Drawer & Coaching"}">
+                            <i class="bi bi-layout-sidebar-inset-reverse me-1"></i>${isPt ? "Supervisionar" : "Supervise"}
+                          </button>
+                          <button type="button" class="btn btn-sm btn-outline-cyan py-1 px-2" style="font-size:0.75rem;" data-cell-group-inspect="${escapeAttr(row.id)}" title="${isPt ? "Inspecionar célula individualmente" : "Inspect single cell"}">
+                            <i class="bi bi-search me-1"></i>${isPt ? "Inspecionar" : "Inspect"}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  `;
+                }).join("") : `
+                  <tr>
+                    <td colspan="11" class="text-center py-4 text-secondary">
+                      <i class="bi bi-filter fs-3 d-block mb-1"></i>
+                      <span>${isPt ? "Nenhuma célula corresponde aos filtros seleccionados." : "No cells match the selected filters."}</span>
                     </td>
                   </tr>
-                `;
-              }).join("") : `
-                <tr>
-                  <td colspan="9" class="text-center py-4 text-secondary">
-                    <i class="bi bi-filter fs-3 d-block mb-1"></i>
-                    <span>${isPt ? "Nenhuma célula corresponde aos filtros seleccionados." : "No cells match the selected filters."}</span>
-                  </td>
-                </tr>
-              `}
-            </tbody>
-          </table>
+                `}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      `}
     </div>
   `;
 }
@@ -21993,7 +22289,7 @@ function getGroupSupervisedCells() {
   return allCells;
 }
 
-function openCellLeaderAccountModal(targetCellId = "", existingLeader = null) {
+function openCellLeaderAccountModal(targetCellId = "", existingLeader = null, targetRole = "Cell Leader") {
   const isPt = lang === "pt";
   const fields = ensureEntryModalStructure();
   if (!fields) return;
@@ -22002,8 +22298,21 @@ function openCellLeaderAccountModal(targetCellId = "", existingLeader = null) {
   const defaultCellId = targetCellId || cellPortalPageState.cellId || (groupCells[0]?.id || "");
   const defaultPassword = generateSecureRandomPassword();
 
-  byId("modalEyebrow").textContent = isPt ? "PORTAL DO LÍDER DE GRUPO • GESTÃO DE ACESSOS" : "GROUP LEADER PORTAL • ACCESS MANAGEMENT";
-  byId("modalTitle").textContent = isPt ? "Registar / Atribuir Líder de Célula" : "Register / Assign Cell Leader";
+  const selectedCell = groupCells.find((c) => String(c.id) === String(defaultCellId));
+  const cellMembers = (state.members || []).filter((m) => {
+    if (!m) return false;
+    return String(m.cell_id) === String(defaultCellId) || (m.cell_name && defaultCellId && String(m.cell_name).toLowerCase() === String(defaultCellId).toLowerCase());
+  });
+
+  const roleTitleMap = {
+    "Cell Leader": isPt ? "Líder de Célula (Titular)" : "Cell Leader",
+    "Cell Assistant": isPt ? "Assistente de Célula" : "Assistant Cell Leader",
+    "Cell Follow-up Head": isPt ? "Responsável de Follow-Up da Célula" : "Cell Follow-up Head"
+  };
+
+  const currentRoleDisplay = roleTitleMap[targetRole] || roleTitleMap["Cell Leader"];
+  byId("modalEyebrow").textContent = isPt ? "PORTAL DO LÍDER DE GRUPO • GESTÃO DE LIDERANÇA" : "GROUP LEADER PORTAL • LEADERSHIP MANAGEMENT";
+  byId("modalTitle").textContent = `${isPt ? "Atribuir / Substituir" : "Assign / Replace"}: ${currentRoleDisplay}`;
 
   fields.innerHTML = `
     <div class="col-12">
@@ -22012,7 +22321,7 @@ function openCellLeaderAccountModal(targetCellId = "", existingLeader = null) {
         <div>
           <strong>${isPt ? "Autonomia do Grupo de Células:" : "Cell Group Autonomy:"}</strong>
           ${isPt
-            ? "Crie o utilizador com o <strong>email pessoal real</strong> do líder (ex: Gmail, Outlook). Assim o líder terá a sua própria senha e poderá recuperá-la diretamente no portal a qualquer momento."
+            ? "Crie o acesso com o <strong>email pessoal real</strong> do líder (ex: Gmail, Outlook). Assim o líder terá a sua própria senha e poderá recuperá-la diretamente no portal a qualquer momento."
             : "Register the leader using their <strong>real personal email</strong> (e.g. Gmail). This allows them to own their password and recover it independently."}
         </div>
       </div>
@@ -22021,49 +22330,63 @@ function openCellLeaderAccountModal(targetCellId = "", existingLeader = null) {
     <!-- Célula Alvo -->
     <div class="col-12 col-md-6">
       <label class="form-label fw-semibold text-white">${isPt ? "Célula a Atribuir *" : "Assigned Cell *"}</label>
-      <select name="cell_leader_cell_id" class="form-select" required>
+      <select name="cell_leader_cell_id" id="modalCellLeaderCellSelect" class="form-select" required>
         ${groupCells.map((c) => `<option value="${escapeAttr(c.id)}"${String(c.id) === String(defaultCellId) ? " selected" : ""}>${escapeHtml(portalCellName(c))}</option>`).join("")}
       </select>
     </div>
 
-    <!-- Cargo / Função -->
+    <!-- Cargo / Função (Tríade: Líder, Assistente, Follow-Up) -->
     <div class="col-12 col-md-6">
-      <label class="form-label fw-semibold text-white">${isPt ? "Cargo / Função *" : "Role *"}</label>
-      <select name="cell_leader_role" class="form-select" required>
-        <option value="Cell Leader" selected>${isPt ? "Líder de Célula" : "Cell Leader"}</option>
-        <option value="Cell Assistant">${isPt ? "Assistente de Célula" : "Assistant Cell Leader"}</option>
+      <label class="form-label fw-semibold text-white">${isPt ? "Função na Célula *" : "Cell Role *"}</label>
+      <select name="cell_leader_role" id="modalCellLeaderRoleSelect" class="form-select" required>
+        <option value="Cell Leader"${targetRole === 'Cell Leader' ? ' selected' : ''}>${isPt ? "Líder de Célula (Titular)" : "Cell Leader"}</option>
+        <option value="Cell Assistant"${targetRole === 'Cell Assistant' ? ' selected' : ''}>${isPt ? "Assistente de Célula" : "Assistant Cell Leader"}</option>
+        <option value="Cell Follow-up Head"${targetRole === 'Cell Follow-up Head' ? ' selected' : ''}>${isPt ? "Responsável de Follow-Up da Célula" : "Cell Follow-Up Head"}</option>
       </select>
     </div>
 
+    <!-- Quick Member Picker (Opcional) -->
+    ${cellMembers.length > 0 ? `
+      <div class="col-12">
+        <label class="form-label small text-secondary mb-1">
+          <i class="bi bi-person-badge text-warning me-1"></i>${isPt ? "Promover a partir dos membros actuais da célula (preenchimento rápido):" : "Promote existing cell member (auto-fill):"}
+        </label>
+        <select id="modalQuickMemberSelect" class="form-select form-select-sm" style="background: rgba(15, 23, 42, 0.7);">
+          <option value="">-- ${isPt ? "Escolher membro para preencher dados ou digitar manualmente..." : "Pick member to auto-fill or type below..."} --</option>
+          ${cellMembers.map((m) => `<option value="${escapeAttr(m.id)}" data-name="${escapeAttr(m.name || m.full_name || '')}" data-phone="${escapeAttr(m.phone || m.telefone || m.primary_phone || '')}" data-email="${escapeAttr(m.email || '')}">👤 ${escapeHtml(m.name || m.full_name || '')} (${escapeHtml(m.phone || m.telefone || (isPt ? 'sem contacto' : 'no phone'))})</option>`).join("")}
+        </select>
+      </div>
+    ` : ""}
+
     <!-- Nome Completo -->
     <div class="col-12 col-md-6">
-      <label class="form-label fw-semibold text-white">${isPt ? "Nome Completo do Líder *" : "Leader Full Name *"}</label>
-      <input type="text" name="cell_leader_name" class="form-control" required placeholder="Ex: Irmão Marcos Langa" value="${escapeAttr(existingLeader?.name || "")}">
+      <label class="form-label fw-semibold text-white">${isPt ? "Nome Completo *" : "Full Name *"}</label>
+      <input type="text" name="cell_leader_name" id="modalLeaderNameInput" class="form-control" required placeholder="Ex: Irmão Marcos Langa" value="${escapeAttr(existingLeader?.name || "")}">
     </div>
 
     <!-- Email Pessoal -->
     <div class="col-12 col-md-6">
-      <label class="form-label fw-semibold text-white">${isPt ? "Email Pessoal do Líder *" : "Leader Personal Email *"}</label>
-      <input type="email" name="cell_leader_email" class="form-control" required placeholder="Ex: marcos.langa@gmail.com" value="${escapeAttr(existingLeader?.email || "")}">
-      <small class="text-secondary" style="font-size:0.75rem;">${isPt ? "Necessário para login e recuperação de palavra-passe autónoma." : "Required for login & password reset."}</small>
+      <label class="form-label fw-semibold text-white">${isPt ? "Email Pessoal *" : "Personal Email *"}</label>
+      <input type="email" name="cell_leader_email" id="modalLeaderEmailInput" class="form-control" required placeholder="Ex: marcos.langa@gmail.com" value="${escapeAttr(existingLeader?.email || "")}">
+      <small class="text-secondary" style="font-size:0.75rem;">${isPt ? "Permite ao líder recuperar senhas de forma 100% autónoma." : "Enables autonomous password resets."}</small>
     </div>
 
     <!-- Telefone / WhatsApp -->
     <div class="col-12 col-md-6">
       <label class="form-label fw-semibold text-white">${isPt ? "Contacto Telefónico / WhatsApp *" : "Phone / WhatsApp *"}</label>
-      <input type="tel" name="cell_leader_phone" class="form-control" required placeholder="Ex: +258 84 123 4567" value="${escapeAttr(existingLeader?.phone || "")}">
+      <input type="tel" name="cell_leader_phone" id="modalLeaderPhoneInput" class="form-control" required placeholder="Ex: +258 84 123 4567" value="${escapeAttr(existingLeader?.phone || "")}">
     </div>
 
     <!-- Senha Provisória / Inicial -->
     <div class="col-12 col-md-6">
-      <label class="form-label fw-semibold text-white">${isPt ? "Palavra-passe de Primeiro Acesso *" : "Initial Password *"}</label>
+      <label class="form-label fw-semibold text-white">${isPt ? "Palavra-passe Inicial *" : "Initial Password *"}</label>
       <div class="input-group">
         <input type="text" name="cell_leader_password" id="cellLeaderPasswordInput" class="form-control font-monospace" required minlength="6" value="${escapeAttr(defaultPassword)}">
         <button type="button" class="btn btn-outline-secondary" id="btnRegenerateLeaderPass" title="${isPt ? "Gerar outra senha" : "Generate another"}">
           <i class="bi bi-arrow-repeat"></i>
         </button>
       </div>
-      <small class="text-secondary" style="font-size:0.75rem;">${isPt ? "O líder poderá alterar no portal ou redefinir a qualquer momento." : "Leader can change or reset anytime."}</small>
+      <small class="text-secondary" style="font-size:0.75rem;">${isPt ? "O utilizador poderá alterar no portal a qualquer momento." : "User can change password anytime."}</small>
     </div>
 
     <!-- Formação Espiritual -->
@@ -22092,7 +22415,7 @@ function openCellLeaderAccountModal(targetCellId = "", existingLeader = null) {
     submitBtn.className = "btn btn-ce-gold btn-touch";
     submitBtn.classList.remove("d-none");
     submitBtn.disabled = false;
-    submitBtn.innerHTML = `<i class="bi bi-check-circle me-1"></i>${isPt ? "Criar Acesso do Líder" : "Create Leader Access"}`;
+    submitBtn.innerHTML = `<i class="bi bi-check-circle me-1"></i>${isPt ? "Confirmar Atribuição / Acesso" : "Confirm Assignment & Access"}`;
   }
 
   setTimeout(() => {
@@ -22103,9 +22426,146 @@ function openCellLeaderAccountModal(targetCellId = "", existingLeader = null) {
         if (inp) inp.value = generateSecureRandomPassword();
       };
     }
+    const memberPicker = byId("modalQuickMemberSelect");
+    if (memberPicker) {
+      memberPicker.onchange = () => {
+        const opt = memberPicker.options[memberPicker.selectedIndex];
+        if (opt && opt.value) {
+          const nameInp = byId("modalLeaderNameInput");
+          const phoneInp = byId("modalLeaderPhoneInput");
+          const emailInp = byId("modalLeaderEmailInput");
+          if (nameInp && opt.dataset.name) nameInp.value = opt.dataset.name;
+          if (phoneInp && opt.dataset.phone) phoneInp.value = opt.dataset.phone;
+          if (emailInp && opt.dataset.email) emailInp.value = opt.dataset.email;
+        }
+      };
+    }
   }, 50);
 
   bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
+}
+
+function openAssignCellRoleModal(targetCellId = "", targetRole = "Cell Leader") {
+  return openCellLeaderAccountModal(targetCellId, null, targetRole);
+}
+
+function openEditCellDetailsModal(cellId) {
+  const isPt = lang === "pt";
+  const fields = ensureEntryModalStructure();
+  if (!fields) return;
+
+  const allCells = (Array.isArray(state?.cells) && state.cells.length ? state.cells : (state.cellRegistry || window.REAL_CELLS_REGISTRY || [])).filter(Boolean);
+  const cell = allCells.find((c) => String(c.id) === String(cellId)) || {};
+  const cellName = portalCellName(cell) || (isPt ? "Célula" : "Cell");
+  const day = cell.meeting_day || cell.dia_reuniao || "Quarta-feira";
+  const time = cell.meeting_time || cell.hora_reuniao || "18:00";
+  const venue = cell.meeting_address || cell.venue || cell.address || cell.local_reuniao || "";
+  const targetMult = cell.target_multiplication_date || "Q1 2026";
+  const status = cell.status || cell.estado || "Active";
+
+  byId("modalEyebrow").textContent = isPt ? "EXPANSÃO & CONFIGURAÇÃO • GESTÃO DA CÉLULA" : "CELL CONFIGURATION & EXPANSION";
+  byId("modalTitle").textContent = `${isPt ? "Editar Detalhes da Célula" : "Edit Cell Details"}: ${cellName}`;
+
+  fields.innerHTML = `
+    <input type="hidden" name="cell_id" value="${escapeAttr(cellId)}">
+    <div class="col-12">
+      <label class="form-label fw-semibold text-white">${isPt ? "Nome da Célula *" : "Cell Name *"}</label>
+      <input type="text" name="cell_name" class="form-control" required value="${escapeAttr(cell.cell_name || cell.name || "")}">
+    </div>
+    <div class="col-12 col-md-6">
+      <label class="form-label fw-semibold text-white">${isPt ? "Dia da Reunião" : "Meeting Day"}</label>
+      <select name="cell_day" class="form-select">
+        <option value="Quarta-feira"${day === "Quarta-feira" ? " selected" : ""}>${isPt ? "Quarta-feira" : "Wednesday"}</option>
+        <option value="Quinta-feira"${day === "Quinta-feira" ? " selected" : ""}>${isPt ? "Quinta-feira" : "Thursday"}</option>
+        <option value="Sexta-feira"${day === "Sexta-feira" ? " selected" : ""}>${isPt ? "Sexta-feira" : "Friday"}</option>
+        <option value="Sábado"${day === "Sábado" ? " selected" : ""}>${isPt ? "Sábado" : "Saturday"}</option>
+        <option value="Domingo"${day === "Domingo" ? " selected" : ""}>${isPt ? "Domingo" : "Sunday"}</option>
+        <option value="Segunda-feira"${day === "Segunda-feira" ? " selected" : ""}>${isPt ? "Segunda-feira" : "Monday"}</option>
+        <option value="Terça-feira"${day === "Terça-feira" ? " selected" : ""}>${isPt ? "Terça-feira" : "Tuesday"}</option>
+      </select>
+    </div>
+    <div class="col-12 col-md-6">
+      <label class="form-label fw-semibold text-white">${isPt ? "Hora da Reunião" : "Meeting Time"}</label>
+      <input type="time" name="cell_time" class="form-control" value="${escapeAttr(time)}">
+    </div>
+    <div class="col-12">
+      <label class="form-label fw-semibold text-white">${isPt ? "Local / Bairro / Endereço da Reunião" : "Meeting Venue / Address"}</label>
+      <input type="text" name="cell_venue" class="form-control" value="${escapeAttr(venue)}" placeholder="Ex: Bairro Central, Av. Eduardo Mondlane, Casa nº 123">
+    </div>
+    <div class="col-12 col-md-6">
+      <label class="form-label fw-semibold text-white">${isPt ? "Meta de Multiplicação" : "Multiplication Target"}</label>
+      <input type="text" name="target_multiplication_date" class="form-control" value="${escapeAttr(targetMult)}" placeholder="Ex: Q1 2026">
+    </div>
+    <div class="col-12 col-md-6">
+      <label class="form-label fw-semibold text-white">${isPt ? "Estado da Célula" : "Cell Status"}</label>
+      <select name="cell_status" class="form-select">
+        <option value="Active"${/activ|ativo/i.test(status) ? " selected" : ""}>${isPt ? "Activa" : "Active"}</option>
+        <option value="In Progress"${/trans|prog/i.test(status) ? " selected" : ""}>${isPt ? "Em Transição / Multiplicação" : "In Transition"}</option>
+        <option value="Inactive"${/inact|inativ/i.test(status) ? " selected" : ""}>${isPt ? "Inactiva" : "Inactive"}</option>
+      </select>
+    </div>
+  `;
+
+  modalType = "cellEditDetails";
+  const submitBtn = byId("entryForm")?.querySelector('button[type="submit"]');
+  if (submitBtn) {
+    submitBtn.className = "btn btn-ce-gold btn-touch";
+    submitBtn.classList.remove("d-none");
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = `<i class="bi bi-check-circle me-1"></i>${isPt ? "Guardar Detalhes da Célula" : "Save Cell Details"}`;
+  }
+  bootstrap.Modal.getOrCreateInstance(byId("entryModal")).show();
+}
+
+async function submitEditCellDetailsForm(form) {
+  const isPt = lang === "pt";
+  const data = Object.fromEntries(new FormData(form).entries());
+  const cellId = data.cell_id;
+  const newName = (data.cell_name || "").trim();
+  const day = data.cell_day || "Quarta-feira";
+  const time = data.cell_time || "18:00";
+  const venue = (data.cell_venue || "").trim();
+  const multDate = (data.target_multiplication_date || "").trim() || "Q1 2026";
+  const status = data.cell_status || "Active";
+
+  if (!cellId || !newName) {
+    alert(isPt ? "Por favor, indique o nome da célula." : "Please provide a cell name.");
+    return;
+  }
+
+  const allCells = (Array.isArray(state?.cells) && state.cells.length ? state.cells : (state.cellRegistry || window.REAL_CELLS_REGISTRY || [])).filter(Boolean);
+  const cell = allCells.find((c) => String(c.id) === String(cellId));
+  if (cell) {
+    cell.cell_name = newName;
+    cell.nome_da_celula = newName;
+    cell.name = newName;
+    cell.meeting_day = day;
+    cell.dia_reuniao = day;
+    cell.meeting_time = time;
+    cell.hora_reuniao = time;
+    cell.meeting_address = venue;
+    cell.venue = venue;
+    cell.address = venue;
+    cell.local_reuniao = venue;
+    cell.target_multiplication_date = multDate;
+    cell.status = status;
+    cell.estado = status === "Active" ? "Activo" : status;
+
+    if (typeof dualWriteCellMinistryRecord === "function") {
+      void dualWriteCellMinistryRecord("cellRegistry", "update", cell);
+    }
+  }
+
+  saveState(`Detalhes da célula ${newName} actualizados`);
+  try { bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide(); } catch (_) {}
+
+  if (typeof showToast === "function") {
+    showToast(isPt ? `Detalhes da célula "${newName}" guardados com sucesso!` : `Cell "${newName}" updated successfully!`);
+  }
+
+  setTimeout(() => {
+    if (activeRoute === "cellPortal") renderCellLeaderPortal();
+  }, 200);
 }
 
 function openManageCellLeaderModal(cellId, leaderName, leaderPhone) {
@@ -22277,18 +22737,30 @@ async function submitCellLeaderAccountForm(form) {
     cell_id: cellId,
     assigned_cells: [cellId],
     assigned_cell_groups: cellGroupId ? [cellGroupId] : [],
-    department_permissions: [],
+    department_permissions: roleName === "Cell Follow-up Head" ? ["followUp", "cellReports"] : ["cellReports"],
     status: "Active"
   };
 
   await syncUserToSupabase(userPayload);
 
   if (cell) {
-    cell.primary_leader_name = fullName;
-    cell.leader_name = fullName;
-    cell.lider = fullName;
-    cell.leader_email = email;
-    cell.leader_phone = phone;
+    if (roleName === "Cell Assistant") {
+      cell.assistant_leader_name = fullName;
+      cell.assistant_name = fullName;
+      cell.assistant_email = email;
+      cell.assistant_phone = phone;
+    } else if (roleName === "Cell Follow-up Head") {
+      cell.followup_leader_name = fullName;
+      cell.followup_name = fullName;
+      cell.followup_email = email;
+      cell.followup_phone = phone;
+    } else {
+      cell.primary_leader_name = fullName;
+      cell.leader_name = fullName;
+      cell.lider = fullName;
+      cell.leader_email = email;
+      cell.leader_phone = phone;
+    }
     if (typeof dualWriteCellMinistryRecord === "function") {
       void dualWriteCellMinistryRecord("cellRegistry", "update", cell);
     }
@@ -22297,18 +22769,21 @@ async function submitCellLeaderAccountForm(form) {
   try {
     const sb = window.supabaseClient || window.CESupabase?.client;
     if (sb) {
+      let assignmentRole = "primary_leader";
+      if (roleName === "Cell Assistant") assignmentRole = "assistant";
+      if (roleName === "Cell Follow-up Head") assignmentRole = "follow_up_head";
       await sb.from("cell_user_assignments").insert({
         user_id: userPayload.id || undefined,
         church_id: churchId,
         cell_group_id: cellGroupId,
         cell_id: cellId,
-        assignment_role: roleName === "Cell Assistant" ? "assistant" : "primary_leader",
+        assignment_role: assignmentRole,
         status: "active"
       });
     }
   } catch (_) {}
 
-  saveState(`Líder de Célula atribuído para ${cellName}`);
+  saveState(`Liderança (${roleName}) atribuída para ${cellName}`);
 
   try { bootstrap.Modal.getOrCreateInstance(byId("entryModal")).hide(); } catch (_) {}
 
@@ -22317,6 +22792,7 @@ async function submitCellLeaderAccountForm(form) {
     email: email,
     phone: phone,
     password: password,
+    roleName: roleName,
     cellName: cellName
   }, isPt);
 
@@ -22394,11 +22870,17 @@ async function submitCreateCellForGroupForm(form) {
 
 function showCellLeaderCreatedSuccessModal(info, isPt) {
   const portalUrl = "https://portal.embaixadadecristo.org";
+  const roleDisplay = info.roleName === "Cell Assistant"
+    ? (isPt ? "Assistente de Célula" : "Assistant Cell Leader")
+    : (info.roleName === "Cell Follow-up Head"
+      ? (isPt ? "Responsável de Follow-Up da Célula" : "Cell Follow-Up Head")
+      : (isPt ? "Líder de Célula (Titular)" : "Cell Leader"));
+
   const waMessage = [
     `🌟 *Christ Embassy — Portal de Operações* 🌟`,
     ``,
     `Olá *${info.name}*,`,
-    `A sua conta de acesso ao Portal para a *${info.cellName}* foi criada com sucesso pelo seu Líder de Grupo!`,
+    `A sua conta de acesso como *${roleDisplay}* para a *${info.cellName}* foi criada com sucesso pelo seu Líder de Grupo!`,
     ``,
     `🔗 *Portal:* ${portalUrl}`,
     `📧 *Email de Login:* ${info.email}`,
@@ -22419,7 +22901,7 @@ function showCellLeaderCreatedSuccessModal(info, isPt) {
           <div class="modal-header border-secondary border-opacity-25 pb-2">
             <h5 class="modal-title d-flex align-items-center gap-2 text-success">
               <i class="bi bi-check-circle-fill"></i>
-              ${isPt ? "Acesso de Líder Criado com Sucesso!" : "Leader Access Created Successfully!"}
+              ${isPt ? `Acesso de ${roleDisplay} Criado com Sucesso!` : `${roleDisplay} Access Created Successfully!`}
             </h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
@@ -22431,7 +22913,8 @@ function showCellLeaderCreatedSuccessModal(info, isPt) {
             </p>
 
             <div class="p-3 rounded mb-3" style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(56, 189, 248, 0.25);">
-              <div class="small mb-1"><span class="text-secondary">${isPt ? "Líder:" : "Leader:"}</span> <strong>${escapeHtml(info.name)}</strong></div>
+              <div class="small mb-1"><span class="text-secondary">${isPt ? "Nome:" : "Name:"}</span> <strong>${escapeHtml(info.name)}</strong></div>
+              <div class="small mb-1"><span class="text-secondary">${isPt ? "Função:" : "Role:"}</span> <span class="badge bg-primary-subtle text-primary border border-primary-subtle">${escapeHtml(roleDisplay)}</span></div>
               <div class="small mb-1"><span class="text-secondary">${isPt ? "Célula:" : "Cell:"}</span> <strong>${escapeHtml(info.cellName)}</strong></div>
               <div class="small mb-1"><span class="text-secondary">Email:</span> <span class="font-monospace text-info">${escapeHtml(info.email)}</span></div>
               <div class="small"><span class="text-secondary">${isPt ? "Senha inicial:" : "Password:"}</span> <span class="font-monospace text-warning fw-bold">${escapeHtml(info.password)}</span></div>
@@ -22529,6 +23012,19 @@ function renderCellGroupLeadersTab(data, isPt) {
         foundation: r.assistantFoundation || (isPt ? "Graduado" : "Graduated")
       });
     }
+    if (r.followupName) {
+      roster.push({
+        name: r.followupName,
+        role: isPt ? "Responsável de Follow-Up" : "Cell Follow-Up Head",
+        roleType: "followup",
+        isVacant: false,
+        cellId: r.id,
+        cellName: r.name,
+        phone: r.followupPhone,
+        alec: isPt ? "Concluído" : "Completed",
+        foundation: isPt ? "Graduado" : "Graduated"
+      });
+    }
   });
 
   const assignedRoster = roster.filter((item) => !item.isVacant);
@@ -22608,7 +23104,7 @@ function renderCellGroupLeadersTab(data, isPt) {
                 const waChatUrl = !person.isVacant ? makeCellWhatsAppChatUrl(person.phone, person.name, person.cellName, isPt) : "";
                 const roleBadgeClass = person.isVacant
                   ? "bg-warning-subtle text-warning border border-warning-subtle"
-                  : (person.roleType === "assistant" ? "bg-secondary" : "bg-primary");
+                  : (person.roleType === "assistant" ? "bg-secondary" : (person.roleType === "followup" ? "bg-success" : "bg-primary"));
                 return `
                   <tr>
                     <td>
@@ -23110,6 +23606,7 @@ function renderCellLeaderPortal() {
       const latestReport = cReports[0] || null;
       const leaderInfo = typeof getCellLeaderDetails === "function" ? getCellLeaderDetails(c) : { name: c.primary_leader_name || c.leader_name || c.lider || "—", phone: c.leader_phone || "" };
       const assistantInfo = typeof getCellAssistantDetails === "function" ? getCellAssistantDetails(c) : { name: (c.assistant_leader_names && c.assistant_leader_names[0]) || "", phone: "" };
+      const followupInfo = typeof getCellFollowupDetails === "function" ? getCellFollowupDetails(c) : { name: c.followup_leader_name || c.followup_name || "", phone: c.followup_leader_phone || "" };
       const meetingSchedule = [c.meeting_day || c.dia_reuniao, c.meeting_time || c.hora_reuniao].filter(Boolean).join(" • ") || "—";
       const meetingAddress = c.meeting_address || c.venue || c.local_reuniao || c.address || "";
       const memberTotal = Number(cStats.total_members || c.member_count || 0);
@@ -23173,6 +23670,7 @@ function renderCellLeaderPortal() {
 
       return {
         id: c.id,
+        rawCell: c,
         name: portalCellName(c),
         leaderName: leaderInfo.name || "—",
         leaderPhone: leaderInfo.phone || "",
@@ -23180,6 +23678,9 @@ function renderCellLeaderPortal() {
         assistantPhone: assistantInfo.phone || "",
         assistantAlec: assistantInfo.alec_status || "",
         assistantFoundation: assistantInfo.foundation_status || "",
+        followupName: followupInfo.name || "",
+        followupPhone: followupInfo.phone || "",
+        followupEmail: followupInfo.email || "",
         meetingSchedule,
         meetingAddress,
         memberTotal,
@@ -45316,6 +45817,8 @@ function renderUsers() {
     "Cell Leader": "Líder de Célula",
     "cell_assistant": "Assistente de Célula",
     "Cell Assistant": "Assistente de Célula",
+    "cell_followup_head": "Responsável de Follow-Up da Célula",
+    "Cell Follow-up Head": "Responsável de Follow-Up da Célula",
     "venue_manager": "Gestor de Património (Venue)",
     "Venue Manager": "Gestor de Património (Venue)",
     "finance_head": "Responsável de Finanças",
@@ -56815,6 +57318,25 @@ document.addEventListener("click", async (event) => {
     if (targetCellId) openCellMultiplicationPlanModal(targetCellId);
     return;
   }
+  const assignRoleBtn = event.target.closest('[data-action="assign-cell-role"]');
+  if (assignRoleBtn) {
+    const targetCellId = assignRoleBtn.dataset.cellId || "";
+    const targetRole = assignRoleBtn.dataset.role || "Cell Leader";
+    return openAssignCellRoleModal(targetCellId, targetRole);
+  }
+  const editCellBtn = event.target.closest('[data-action="open-edit-cell-modal"]');
+  if (editCellBtn) {
+    const targetCellId = editCellBtn.dataset.cellId || "";
+    return openEditCellDetailsModal(targetCellId);
+  }
+  const cellGroupViewBtn = event.target.closest("[data-cell-group-view]");
+  if (cellGroupViewBtn) {
+    const mode = cellGroupViewBtn.dataset.cellGroupView === "table" ? "table" : "cards";
+    cellPortalPageState.groupCellsView = mode;
+    try { localStorage.setItem("ce_cell_group_cells_view", mode); } catch (_) {}
+    renderCellLeaderPortal();
+    return;
+  }
   const openLeaderAccountBtn = event.target.closest('[data-action="open-cell-leader-modal"]');
   if (openLeaderAccountBtn) {
     return openCellLeaderAccountModal();
@@ -58192,6 +58714,7 @@ byId("entryForm")?.addEventListener("submit", async (event) => {
     if (modalType === "cellMultiplicationPlan") return await submitCellMultiplicationPlanForm(form);
     if (modalType === "cellLeaderAccount") return await submitCellLeaderAccountForm(form);
     if (modalType === "cellCreateForGroup") return await submitCreateCellForGroupForm(form);
+    if (modalType === "cellEditDetails") return await submitEditCellDetailsForm(form);
     if (modalType === "cellGroupTargets") return await submitCellGroupTargetsForm(form);
     if (modalType === "followup") return await submitFollowup(form);
     if (modalType === "foundationStudent") return await submitFoundationStudent(form);
@@ -59863,6 +60386,7 @@ function continueEnterDashboard() {
       "Cell Leader", "cell_leader", "Líder de Célula",
       "Cell Assistant", "cell_assistant", "Assistente de Célula",
       "Assistant Cell Leader", "assistant_cell_leader",
+      "Cell Follow-up Head", "cell_followup_head", "Responsável de Follow-Up da Célula", "Responsável de Follow-Up",
       "Cell Group Leader", "cell_group_leader", "Líder de Grupo de Células",
       "Cell Group Coordinator", "coordenador de grupo de células",
       "Attendance & Time Manager", "attendance_time_manager", "Gestor de Assiduidade & Ponto",
